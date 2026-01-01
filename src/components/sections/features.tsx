@@ -20,7 +20,7 @@ function FeatureCard({ title, description, icon, features, highlight, badge, cla
     <div
       className={cn(
         "group relative flex flex-col rounded-xl border bg-[var(--card)] p-6 transition-all duration-300 ease-out lg:p-8",
-        "hover:shadow-xl hover:shadow-black/30",
+        "hover:shadow-xl hover:shadow-black/20",
         "hover:-translate-y-1",
         "motion-reduce:transition-none motion-reduce:transform-none",
         highlight

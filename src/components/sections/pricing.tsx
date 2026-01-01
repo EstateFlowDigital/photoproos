@@ -97,11 +97,11 @@ function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean 
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-xl border bg-[var(--card)] p-6 transition-all duration-300 lg:p-8",
+        "group relative flex flex-col rounded-xl border bg-[var(--card)] p-6 transition-all duration-300 lg:p-8",
         "hover:-translate-y-1",
         tier.popular
           ? "border-[var(--primary)] shadow-lg shadow-[var(--primary)]/20 hover:shadow-xl hover:shadow-[var(--primary)]/30"
-          : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:shadow-xl hover:shadow-black/30"
+          : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/20"
       )}
     >
       {/* Glow effect for popular tier */}

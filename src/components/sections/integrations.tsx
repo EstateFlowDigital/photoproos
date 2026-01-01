@@ -162,7 +162,7 @@ export function IntegrationsSection() {
             return (
               <div
                 key={integration.name}
-                className="group relative rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all duration-300 hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/10 hover:-translate-y-1"
+                className="group relative rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all duration-300 hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/20 hover:-translate-y-1"
                 style={{
                   opacity: isVisible ? 1 : 0,
                   transform: isVisible ? "none" : "translateY(30px)",
