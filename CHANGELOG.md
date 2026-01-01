@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Complete Marketing Pages Suite)
+- **Pricing Page** (`/pricing`):
+  - Rewrote to match landing page with 4 tiers: Free ($0), Pro ($23/mo annual), Studio ($63/mo annual), Enterprise (custom)
+  - Feature comparison table with all plan features
+  - FAQ section with pricing-related questions
+  - CTA section for enterprise contact
+- **Feature Pages** (`/features/`):
+  - `/features/galleries` - Client galleries feature page with 8 features, stats, and workflow visualization
+  - `/features/payments` - Payment processing with stats, pricing info, and secure payment features
+  - `/features/clients` - Client management CRM with contact management, communication, and insights features
+  - `/features/automation` - Workflow automation with time savings stats and automation examples
+  - `/features/analytics` - Analytics dashboard preview with reporting capabilities
+  - `/features/contracts` - Coming soon page for Contracts & E-Sign with roadmap timeline
+- **Industry Pages** (`/industries/`):
+  - `/industries/real-estate` - Real estate photography with MLS delivery, virtual tours, property websites
+  - `/industries/commercial` - Commercial photography with brand consistency and asset management
+  - `/industries/architecture` - Architecture & interiors with HDR blending and design portfolio features
+  - `/industries/events` - Events & corporate with same-day delivery and branded galleries
+  - `/industries/portraits` - Headshots & portraits with retouching workflow and studio management
+  - `/industries/food` - Food & hospitality with menu integration and marketing deliverables
+- **Resource Pages**:
+  - `/changelog` - Product changelog with version history (v1.0.0 through v0.2.0 releases)
+  - `/roadmap` - Product roadmap with 5 phases from Core Platform to Website Builder
+- **Legal Pages**:
+  - `/legal/security` - Security page with certifications (SOC 2, GDPR, CCPA, ISO 27001), features, and data ownership
+
+### Changed (Footer Navigation)
+- Updated `/features/workflows` link to `/features/automation` for consistency
+- Updated `/industries/headshots` link to `/industries/portraits` for consistency
+- Updated `/security` link to `/legal/security` for proper legal section organization
+
 ### Fixed (Prisma 7 Compatibility)
 - **Database Client** (`/lib/db.ts`):
   - Updated to use `@prisma/adapter-pg` for Prisma 7 compatibility
