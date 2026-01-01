@@ -32,6 +32,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `/roadmap` - Product roadmap with 5 phases from Core Platform to Website Builder
 - **Legal Pages**:
   - `/legal/security` - Security page with certifications (SOC 2, GDPR, CCPA, ISO 27001), features, and data ownership
+  - `/legal/dpa` - Data Processing Agreement with sub-processors, security measures, and GDPR compliance
+- **Resource Pages (Additional)**:
+  - `/blog` - Blog page with featured posts, categories, and newsletter signup
+  - `/guides` - Guides & Tutorials with difficulty levels, search, and categorization
+  - `/webinars` - Webinars page with upcoming live sessions and on-demand library
+- **Company Pages**:
+  - `/careers` - Careers page with company values, benefits, and open positions
+  - `/press` - Press Kit with brand assets, company facts, and media contacts
+  - `/partners` - Partner Program with integration, referral, and technology partnerships
+  - `/affiliates` - Affiliate Program with 20% recurring commission, calculator, and FAQ
 
 ### Changed (Footer Navigation)
 - Updated `/features/workflows` link to `/features/automation` for consistency
