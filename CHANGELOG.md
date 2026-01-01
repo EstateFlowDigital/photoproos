@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Settings Pages)
+- Created `/settings/profile` page with personal and business information forms
+  - Avatar upload, full name, email, phone fields
+  - Business name, website, timezone settings
+  - Password change option
+- Created `/settings/billing` page with subscription management
+  - Current plan display with status and next billing date
+  - Usage meters: storage, galleries, clients, team members
+  - Plans comparison (Free, Pro, Studio) with upgrade options
+  - Payment method management
+  - Invoice history with download links
+- Created `/settings/team` page with team management
+  - Active team members list with roles (Owner, Admin, Member)
+  - Pending invitations with resend/revoke options
+  - Team seat usage indicator
+  - Role permissions matrix table
+- Created `/settings/branding` page with gallery customization
+  - Logo upload section
+  - Color picker with presets (Blue, Purple, Green, Orange, Pink, Teal)
+  - Gallery theme selector (Dark/Light)
+  - Watermark toggle with position options
+  - Custom domain/subdomain configuration
+  - Live preview of gallery appearance
+
 ### Added (Booking Detail Page)
 - Created `/scheduling/[id]` page with comprehensive booking view
 - Status banner showing confirmed/pending/completed/cancelled state with countdown
