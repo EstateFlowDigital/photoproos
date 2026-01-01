@@ -1,14 +1,27 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
+import { TravelInfoCard } from "@/components/dashboard/travel-info-card";
 import { createBooking } from "@/lib/actions/bookings";
+import { calculateTravelPreview } from "@/lib/actions/locations";
 import type { ServiceType } from "@/lib/services";
+import type { PlaceDetails } from "@/lib/google-maps/types";
+import type { TravelInfo } from "@/lib/google-maps/types";
 
 // Union type for selected service (can be static or database service)
 type SelectedService = ServiceType | DatabaseServiceType | null;
+
+// Location data from place selection
+interface LocationData {
+  address: string;
+  latitude: number;
+  longitude: number;
+  placeId?: string;
+}
 
 interface Client {
   id: string;
@@ -39,6 +52,49 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
 
+  // Location state
+  const [locationData, setLocationData] = useState<LocationData | null>(null);
+  const [addressValue, setAddressValue] = useState("");
+  const [travelInfo, setTravelInfo] = useState<TravelInfo | null>(null);
+  const [travelLoading, setTravelLoading] = useState(false);
+  const [travelError, setTravelError] = useState<string | null>(null);
+
+  // Handle place selection from autocomplete
+  const handlePlaceSelect = useCallback(async (place: PlaceDetails) => {
+    const newLocationData: LocationData = {
+      address: place.formattedAddress,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      placeId: place.placeId,
+    };
+    setLocationData(newLocationData);
+    setAddressValue(place.formattedAddress);
+
+    // Calculate travel info from home base
+    setTravelLoading(true);
+    setTravelError(null);
+    try {
+      const result = await calculateTravelPreview(place.latitude, place.longitude);
+      if (result.success) {
+        setTravelInfo({
+          distanceMiles: result.data.distanceMiles,
+          travelTimeMinutes: result.data.travelTimeMinutes,
+          travelFeeCents: result.data.travelFeeCents,
+          freeThresholdMiles: 0, // We'll get this from org settings
+          feePerMile: 0, // We'll get this from org settings
+        });
+      } else {
+        // If no home base configured, don't show error - just hide travel card
+        setTravelInfo(null);
+      }
+    } catch (err) {
+      // Silently fail - travel info is optional
+      setTravelInfo(null);
+    } finally {
+      setTravelLoading(false);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -50,7 +106,8 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
     const date = formData.get("date") as string;
     const startTime = formData.get("startTime") as string;
     const endTime = formData.get("endTime") as string;
-    const address = formData.get("address") as string;
+    // Use addressValue from state (set by autocomplete or manual input)
+    const address = addressValue || (formData.get("address") as string);
     const locationNotes = formData.get("locationNotes") as string;
     const notes = formData.get("notes") as string;
 
@@ -207,19 +264,26 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
         <h2 className="text-lg font-semibold text-foreground mb-4">Location</h2>
 
         <div className="space-y-4">
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium text-foreground mb-1.5">
-              Address <span className="text-[var(--error)]">*</span>
-            </label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              placeholder="123 Main Street, San Francisco, CA 94102"
-              required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          <AddressAutocomplete
+            label="Address"
+            placeholder="Start typing an address..."
+            value={addressValue}
+            onChange={setAddressValue}
+            onPlaceSelect={handlePlaceSelect}
+            required
+          />
+          {/* Hidden input for form validation */}
+          <input type="hidden" name="address" value={addressValue} />
+
+          {/* Travel Info Card - shows when location is selected and home base is configured */}
+          {(travelLoading || travelInfo) && (
+            <TravelInfoCard
+              travelInfo={travelInfo}
+              isLoading={travelLoading}
+              error={travelError}
+              showFeeBreakdown={false}
             />
-          </div>
+          )}
 
           <div>
             <label htmlFor="locationNotes" className="block text-sm font-medium text-foreground mb-1.5">

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Location & Team Features)
+- **Location Server Actions** (`/lib/actions/locations.ts`):
+  - `createLocation` / `createLocationFromAddress` - Create locations with geocoding
+  - `updateLocation` / `deleteLocation` - Manage saved locations
+  - `calculateTravelBetweenLocations` / `calculateTravelFromHomeBase` - Distance and travel fee calculation
+  - `calculateTravelPreview` - Real-time travel preview for booking forms
+  - `setOrganizationHomeBase` / `createAndSetHomeBase` - Home base management
+  - `validateAddressAction` - Address validation without creating location
+- **Equipment Server Actions** (`/lib/actions/equipment.ts`):
+  - Full CRUD for equipment management (camera, lens, lighting, drone, etc.)
+  - `assignEquipmentToUser` / `unassignEquipmentFromUser` - Team equipment assignments
+  - `addServiceEquipmentRequirement` - Link equipment to services
+  - `getEquipmentByCategory` - Grouped equipment listing
+- **Team Capabilities Server Actions** (`/lib/actions/team-capabilities.ts`):
+  - `assignServiceCapability` - Assign services to team members with skill levels (learning/capable/expert)
+  - `getQualifiedTeamMembers` - Find team members qualified for a service with equipment check
+  - `bulkAssignCapabilities` - Batch capability assignment
+  - `setUserHomeBase` - Per-user home base for travel calculations
+- **Booking Form Travel Integration** (`/scheduling/new/booking-new-form.tsx`):
+  - Added AddressAutocomplete with Google Places integration
+  - Shows TravelInfoCard with distance, time, and fee when address selected
+  - Hidden location coordinates passed to booking creation
+
 ### Fixed (Public Gallery)
 - **Public Gallery Preview Mode** (`/g/[slug]/page.tsx`, `/lib/actions/galleries.ts`):
   - Fixed public gallery page not working with project IDs in URL
