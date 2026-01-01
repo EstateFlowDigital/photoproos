@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ServiceSelector } from "@/components/dashboard/service-selector";
-import type { ServiceType } from "@/lib/services";
+import type { ServiceType, ServiceCategory } from "@/lib/services";
 
 interface Client {
   id: string;
@@ -19,6 +19,10 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
+  const [serviceName, setServiceName] = useState("");
+  const [deliverables, setDeliverables] = useState<string[]>([]);
+  const [category, setCategory] = useState<ServiceCategory>("other");
+  const [duration, setDuration] = useState("");
 
   return (
     <form className="space-y-6">
@@ -93,9 +97,17 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
           selectedServiceId={selectedService?.id}
           customPrice={price}
           customDescription={description}
+          customServiceName={serviceName}
+          customDeliverables={deliverables}
+          customCategory={category}
+          customDuration={duration}
           onServiceChange={setSelectedService}
           onPriceChange={setPrice}
           onDescriptionChange={setDescription}
+          onServiceNameChange={setServiceName}
+          onDeliverablesChange={setDeliverables}
+          onCategoryChange={setCategory}
+          onDurationChange={setDuration}
           mode="gallery"
         />
 
@@ -103,6 +115,10 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
         <input type="hidden" name="serviceId" value={selectedService?.id || ""} />
         <input type="hidden" name="price" value={price} />
         <input type="hidden" name="serviceDescription" value={description} />
+        <input type="hidden" name="serviceName" value={serviceName} />
+        <input type="hidden" name="deliverables" value={JSON.stringify(deliverables)} />
+        <input type="hidden" name="category" value={category} />
+        <input type="hidden" name="duration" value={duration} />
       </div>
 
       {/* Access Type Section */}

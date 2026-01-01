@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Inline Custom Service Editor)
+- Enhanced ServiceSelector component with full custom service creation capabilities
+  - Service name input with placeholder examples
+  - Category dropdown with all photography service categories
+  - Price input with dollar formatting
+  - Duration field for estimated session time
+  - Description textarea for service details
+  - Deliverables manager with add/remove functionality
+    - Tags display with remove buttons
+    - Enter key support for quick adding
+  - Live preview card showing how service will appear
+  - "Manage Services" link to settings page
+- Updated gallery creation form (`/galleries/new`) to use new ServiceSelector props
+  - Added state for serviceName, deliverables, category, duration
+  - Hidden form fields for all custom service data
+- Exported new `CustomServiceType` interface for external usage
+
 ### Added (Bulk Gallery Operations)
 - Added bulk selection mode to gallery list page (`src/app/(dashboard)/galleries/gallery-list-client.tsx`)
   - "Select" button toggles selection mode in gallery list
