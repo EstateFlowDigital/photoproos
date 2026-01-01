@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import {
   createGallerySchema,
   updateGallerySchema,
@@ -349,7 +350,7 @@ export async function duplicateGallery(
           sizeBytes: asset.sizeBytes,
           width: asset.width,
           height: asset.height,
-          exifData: asset.exifData ?? undefined,
+          exifData: (asset.exifData ?? undefined) as Prisma.InputJsonValue | undefined,
           sortOrder: index,
         })),
       });

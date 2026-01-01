@@ -83,13 +83,21 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
               Back
             </Link>
             {payment.status === "paid" && (
-              <button className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
+              <button
+                disabled
+                title="Coming soon: Download payment receipts"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground-muted cursor-not-allowed opacity-60"
+              >
                 <ReceiptIcon className="h-4 w-4" />
                 Download Receipt
               </button>
             )}
             {(payment.status === "pending" || payment.status === "overdue") && (
-              <button className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">
+              <button
+                disabled
+                title="Coming soon: Send payment reminders"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white opacity-60 cursor-not-allowed"
+              >
                 <EmailIcon className="h-4 w-4" />
                 Send Reminder
               </button>
@@ -256,11 +264,19 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
             <div className="space-y-2">
               {payment.status === "paid" && (
                 <>
-                  <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
+                  <button
+                    disabled
+                    title="Coming soon"
+                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
+                  >
                     <ReceiptIcon className="h-4 w-4 text-foreground-muted" />
                     Resend Receipt
                   </button>
-                  <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
+                  <button
+                    disabled
+                    title="Coming soon"
+                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
+                  >
                     <DownloadIcon className="h-4 w-4 text-foreground-muted" />
                     Download Invoice
                   </button>
@@ -268,17 +284,29 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
               )}
               {(payment.status === "pending" || payment.status === "overdue") && (
                 <>
-                  <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
+                  <button
+                    disabled
+                    title="Coming soon"
+                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
+                  >
                     <EmailIcon className="h-4 w-4 text-foreground-muted" />
                     Send Reminder
                   </button>
-                  <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
+                  <button
+                    disabled
+                    title="Coming soon"
+                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
+                  >
                     <LinkIcon className="h-4 w-4 text-foreground-muted" />
                     Copy Payment Link
                   </button>
                 </>
               )}
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
+              <button
+                disabled
+                title="Coming soon"
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
+              >
                 <ExportIcon className="h-4 w-4 text-foreground-muted" />
                 Export to CSV
               </button>
@@ -294,7 +322,9 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
               </p>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)] px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
+                disabled
+                title="Coming soon: Stripe refund integration"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/40 px-4 py-2 text-sm font-medium text-[var(--error)]/60 cursor-not-allowed"
               >
                 <RefundIcon className="h-4 w-4" />
                 Issue Refund

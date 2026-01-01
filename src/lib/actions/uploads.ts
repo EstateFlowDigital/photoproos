@@ -277,7 +277,7 @@ export async function createAssets(
             sizeBytes: asset.sizeBytes,
             width: asset.width,
             height: asset.height,
-            exifData: asset.exifData,
+            exifData: asset.exifData as Prisma.InputJsonValue | undefined,
             sortOrder: startingSortOrder + index,
           },
         })
@@ -288,9 +288,9 @@ export async function createAssets(
     await prisma.activityLog.create({
       data: {
         organizationId,
-        action: "file_uploaded",
-        resourceType: "project",
-        resourceId: projectId,
+        type: "file_uploaded",
+        description: `Uploaded ${assets.length} file${assets.length !== 1 ? "s" : ""} to gallery`,
+        projectId,
         metadata: {
           count: assets.length,
           filenames: assets.map((a) => a.filename),
@@ -375,19 +375,6 @@ export async function deleteAsset(
     // Delete from database
     await prisma.asset.delete({
       where: { id: assetId },
-    });
-
-    // Log activity
-    await prisma.activityLog.create({
-      data: {
-        organizationId,
-        action: "file_deleted",
-        resourceType: "asset",
-        resourceId: assetId,
-        metadata: {
-          galleryId: asset.projectId,
-        },
-      },
     });
 
     // Revalidate gallery pages

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { BookingNewForm } from "./booking-new-form";
-import { getClientsForBooking, getServicesForBooking } from "@/lib/actions/bookings";
+import { getClientsForBooking, getServicesForBooking, getScheduleStats } from "@/lib/actions/bookings";
 
 // Generate time slots
 function generateTimeSlots() {
@@ -26,9 +26,10 @@ export default async function NewBookingPage() {
   const timeSlots = generateTimeSlots();
 
   // Fetch real data from database
-  const [clients, services] = await Promise.all([
+  const [clients, services, scheduleStats] = await Promise.all([
     getClientsForBooking(),
     getServicesForBooking(),
+    getScheduleStats(),
   ]);
 
   // Map clients for dropdown
@@ -101,15 +102,17 @@ export default async function NewBookingPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-foreground-muted">This Week</span>
-                <span className="text-sm font-medium text-foreground">4 sessions</span>
+                <span className="text-sm font-medium text-foreground">
+                  {scheduleStats.thisWeekCount} session{scheduleStats.thisWeekCount !== 1 ? "s" : ""}
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground-muted">Next Available</span>
-                <span className="text-sm font-medium text-foreground">Tomorrow, 9 AM</span>
+                <span className="text-sm text-foreground-muted">Next Session</span>
+                <span className="text-sm font-medium text-foreground">{scheduleStats.nextAvailable}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-foreground-muted">Busiest Day</span>
-                <span className="text-sm font-medium text-foreground">Friday</span>
+                <span className="text-sm font-medium text-foreground">{scheduleStats.busiestDay}</span>
               </div>
             </div>
           </div>

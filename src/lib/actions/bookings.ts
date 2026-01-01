@@ -380,3 +380,123 @@ export async function getServicesForBooking() {
     return [];
   }
 }
+
+/**
+ * Get schedule statistics for the sidebar
+ */
+export async function getScheduleStats() {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+    // Count sessions this week
+    const thisWeekCount = await prisma.booking.count({
+      where: {
+        organizationId,
+        startTime: {
+          gte: startOfWeek,
+          lt: endOfWeek,
+        },
+        status: {
+          in: ["pending", "confirmed"],
+        },
+      },
+    });
+
+    // Find next available slot (next pending/confirmed booking)
+    const nextBooking = await prisma.booking.findFirst({
+      where: {
+        organizationId,
+        startTime: {
+          gte: now,
+        },
+        status: {
+          in: ["pending", "confirmed"],
+        },
+      },
+      orderBy: {
+        startTime: "asc",
+      },
+      select: {
+        startTime: true,
+      },
+    });
+
+    // Get day distribution to find busiest day
+    const bookingsThisMonth = await prisma.booking.findMany({
+      where: {
+        organizationId,
+        startTime: {
+          gte: new Date(now.getFullYear(), now.getMonth(), 1),
+          lt: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+        },
+      },
+      select: {
+        startTime: true,
+      },
+    });
+
+    // Count bookings per day of week
+    const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // Sun-Sat
+    bookingsThisMonth.forEach((booking) => {
+      dayCounts[booking.startTime.getDay()]++;
+    });
+
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let busiestDay = "No data";
+    let maxCount = 0;
+    dayCounts.forEach((count, index) => {
+      if (count > maxCount) {
+        maxCount = count;
+        busiestDay = dayNames[index];
+      }
+    });
+
+    // Format next available
+    let nextAvailable = "No upcoming sessions";
+    if (nextBooking) {
+      const nextDate = nextBooking.startTime;
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+
+      const nextDay = new Date(nextDate);
+      nextDay.setHours(0, 0, 0, 0);
+
+      const timeStr = nextDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      if (nextDay.getTime() === new Date(now.setHours(0, 0, 0, 0)).getTime()) {
+        nextAvailable = `Today, ${timeStr}`;
+      } else if (nextDay.getTime() === tomorrow.getTime()) {
+        nextAvailable = `Tomorrow, ${timeStr}`;
+      } else {
+        const dayName = nextDate.toLocaleDateString("en-US", { weekday: "long" });
+        nextAvailable = `${dayName}, ${timeStr}`;
+      }
+    }
+
+    return {
+      thisWeekCount,
+      nextAvailable,
+      busiestDay: maxCount > 0 ? busiestDay : "No data",
+    };
+  } catch (error) {
+    console.error("Error fetching schedule stats:", error);
+    return {
+      thisWeekCount: 0,
+      nextAvailable: "No upcoming sessions",
+      busiestDay: "No data",
+    };
+  }
+}

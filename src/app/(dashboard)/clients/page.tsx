@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ClientSearch } from "./client-search";
 
 // Helper to format currency
 function formatCurrency(cents: number): string {
@@ -28,7 +29,12 @@ const industryLabels: Record<string, string> = {
   other: "Other",
 };
 
-export default async function ClientsPage() {
+interface PageProps {
+  searchParams: Promise<{ q?: string }>;
+}
+
+export default async function ClientsPage({ searchParams }: PageProps) {
+  const { q: searchQuery } = await searchParams;
   // Get organization (later from auth)
   const organization = await prisma.organization.findFirst({
     orderBy: { createdAt: "asc" },
@@ -43,9 +49,18 @@ export default async function ClientsPage() {
     );
   }
 
-  // Fetch clients with project count
+  // Fetch clients with project count and optional search filter
   const clients = await prisma.client.findMany({
-    where: { organizationId: organization.id },
+    where: {
+      organizationId: organization.id,
+      ...(searchQuery && {
+        OR: [
+          { fullName: { contains: searchQuery, mode: "insensitive" } },
+          { email: { contains: searchQuery, mode: "insensitive" } },
+          { company: { contains: searchQuery, mode: "insensitive" } },
+        ],
+      }),
+    },
     include: {
       _count: { select: { projects: true } },
     },
@@ -69,14 +84,7 @@ export default async function ClientsPage() {
       />
 
       {/* Search bar */}
-      <div className="relative max-w-md">
-        <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
-        <input
-          type="text"
-          placeholder="Search clients..."
-          className="h-10 w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
-        />
-      </div>
+      <ClientSearch initialQuery={searchQuery || ""} />
 
       {/* Clients Table */}
       {clients.length > 0 ? (
@@ -177,14 +185,6 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-    </svg>
-  );
-}
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
     </svg>
   );
 }

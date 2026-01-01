@@ -132,7 +132,11 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
         title="Payments"
         subtitle="Track and manage your payment history"
         actions={
-          <button className="inline-flex items-center gap-2 rounded-lg bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-secondary)] border border-[var(--card-border)]">
+          <button
+            disabled
+            title="Coming soon: Export payment data to CSV"
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground-muted cursor-not-allowed opacity-60 border border-[var(--card-border)]"
+          >
             <ExportIcon className="h-4 w-4" />
             Export
           </button>

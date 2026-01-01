@@ -7,6 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Settings Pages - Real Data Integration)
+- **Settings Server Actions** (`/lib/actions/settings.ts`):
+  - `getOrganizationSettings()` - Fetch organization with home base location and members
+  - `updateOrganizationProfile()` - Update organization name and timezone
+  - `updateOrganizationBranding()` - Update logo, colors, and custom domain
+  - `updateTravelSettings()` - Update travel fee and threshold settings
+  - `getTeamMembers()` - Fetch organization team members with roles
+  - `updateMemberRole()` - Update team member roles with owner protection
+  - `removeMember()` - Remove team member with owner protection
+  - `getCurrentUser()` - Get current user with organization context
+  - `updateUserProfile()` - Update user profile information
+  - `getBillingStats()` - Get billing stats with plan limits and usage
+- **Profile Settings** (`/settings/profile`):
+  - Connected to real user and organization data
+  - Working form submission for profile updates
+  - Real-time plan, role, and member since display
+  - Client-side `ProfileSettingsForm` component with success/error states
+- **Billing Settings** (`/settings/billing`):
+  - Real billing and usage statistics from database
+  - Shows actual plan, galleries, clients, storage, and member usage
+  - Displays real Stripe connection status
+- **Team Settings** (`/settings/team`):
+  - Real team member list with roles and join dates
+  - Dynamic member limit based on subscription plan
+  - Role permissions table
+- **Branding Settings** (`/settings/branding`):
+  - Connected to real organization branding data
+  - Client-side `BrandingSettingsForm` with color pickers
+  - Live preview of gallery appearance
+- **Notifications Settings** (`/settings/notifications`):
+  - Removed demo mode banner (preferences are functional)
+- **Integrations Settings** (`/settings/integrations`):
+  - Fixed syntax errors and variable references
+  - Demo mode banner retained (integrations not implemented)
+- **Travel Settings** (`/settings/travel`):
+  - Connected to real organization travel settings
+  - Client-side `TravelSettingsForm` component
+  - Working fee calculator preview
+
+### Added (Scheduling)
+- **Schedule Stats** (`/lib/actions/bookings.ts`):
+  - `getScheduleStats()` - Fetch this week's sessions, next booking, busiest day
+- **Booking Creation Page** (`/scheduling/new`):
+  - Real schedule statistics in sidebar instead of hardcoded values
+  - Dynamic "This Week", "Next Session", and "Busiest Day" data
+
+### Added (Client Search)
+- **Client Search Component** (`/clients/client-search.tsx`):
+  - Client-side search component with URL parameter support
+  - Real-time search with loading indicator
+- **Clients Page** (`/clients/page.tsx`):
+  - Server-side search filtering by name, email, or company
+  - URL-based search state persistence
+
+### Changed
+- **Photo Upload Handler** (`/galleries/[id]/gallery-detail-client.tsx`):
+  - Fixed `handleUploadComplete` type to match `PhotoUploadModal` callback
+- **Activity Log** (`/api/upload/complete/route.ts`, `/lib/actions/uploads.ts`):
+  - Fixed ActivityLog schema usage (type + description instead of action + resourceType)
+  - Proper Prisma JSON type casting for exifData
+- **Contact Page** (`/contact/page.tsx`):
+  - Fixed conditional Link component type error
+
+### Fixed
+- Multiple type errors preventing build:
+  - PaymentStatus enum import (from previous session)
+  - ActivityLog schema mismatches
+  - JSON field type casting
+  - Link component type inference
+- Non-functional payment action buttons now display disabled state with "Coming soon" tooltips:
+  - Download Receipt, Send Reminder, Resend Receipt, Download Invoice
+  - Copy Payment Link, Export to CSV, Issue Refund
+
 ### Added (Marketing Pages)
 - **Marketing Route Group** (`/app/(marketing)/`):
   - Created shared layout with Navbar and Footer components
