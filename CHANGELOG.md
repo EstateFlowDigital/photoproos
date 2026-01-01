@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Invoice Builder & Enhanced Pricing)
+- Created comprehensive `InvoiceBuilder` component (`src/components/dashboard/invoice-builder.tsx`)
+  - Multi-select for adding multiple preset service packages at once
+  - Custom line items with description, quantity, and pricing
+  - Variable pricing types: Fixed, Per Square Foot, Per Item, Per Hour, Per Person
+  - Category filtering for quick service discovery
+  - Invoice-style item list with line numbers and subtotals
+  - Edit quantity inline for variable pricing items
+  - Remove individual items from invoice
+  - Real-time total calculation
+  - `InvoiceSummary` component for read-only invoice display
+- Exported new types: `LineItem`, `PricingType` for external usage
+
+### Added (Gallery Quick Actions)
+- Added quick action menus to gallery list view (`src/app/(dashboard)/galleries/gallery-list-client.tsx`)
+  - Hover-to-reveal action button on gallery cards (grid view)
+  - Action dropdown menu with Share, Duplicate, Archive, Delete options
+  - Actions column in list/table view with dropdown menu
+  - Toast notifications for all quick actions
+  - Share action copies gallery link to clipboard
+- Updated `GalleryCard` component (`src/components/dashboard/gallery-card.tsx`)
+  - Added optional `onQuickAction` callback prop
+  - Dropdown menu appears on hover with action items
+  - Click-outside handling to close menu
+  - Proper event propagation for action buttons
+  - Exported `QuickAction` type for external usage
+
+### Added (Drag-and-Drop Photo Reordering)
+- Implemented drag-and-drop photo reordering in gallery detail page
+  - Installed @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities
+  - "Reorder" button toggles reorder mode (only shown when 2+ photos)
+  - `SortablePhotoItem` component with drag handle and visual feedback
+  - Dragging shows ring highlight and shadow effect
+  - Drag instruction banner when in reorder mode
+  - Toast notification confirms order saved
+  - Mutually exclusive with selection mode
+
+### Added (Gallery Analytics Tab)
+- Added comprehensive Analytics tab to gallery detail page
+  - Total views, unique visitors, total downloads metrics
+  - Average time on page display
+  - Views by day chart visualization
+  - Device breakdown (Desktop, Mobile, Tablet) with percentages
+  - Top performing photos section
+  - Export analytics button for PDF reports
+  - Demo analytics data for preview
+
+### Added (Photo Favorites & Filtering)
+- Added photo favorites/starring system
+  - Heart icon button on photo cards (hover and always-visible for favorited)
+  - Toggle favorite from photo hover overlay
+  - Batch favorite action in selection mode
+  - Favorites count badge in filter tabs
+- Added photo filter tabs above photo grid
+  - All, Favorites, With Comments filter options
+  - Active filter styling with pill buttons
+  - Filter icon indicator
+
 ### Added (Gallery List Enhancements)
 - Created `GalleryListClient` component (`src/app/(dashboard)/galleries/gallery-list-client.tsx`)
   - Search input with debounced filtering by gallery name or client
