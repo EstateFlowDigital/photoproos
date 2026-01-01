@@ -317,10 +317,6 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
           {/* Generate Invoice */}
           <BookingActions
             bookingId={booking.id}
-            projectId={booking.projectId}
-            latitude={booking.locationRef?.latitude}
-            longitude={booking.locationRef?.longitude}
-            bookingDate={booking.startTime}
             hasService={!!booking.service}
             hasTravelFee={!!(booking.travelFeeCents && booking.travelFeeCents > 0)}
           />

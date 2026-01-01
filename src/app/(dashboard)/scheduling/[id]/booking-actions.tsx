@@ -10,10 +10,6 @@ import { cn } from "@/lib/utils";
 
 interface BookingActionsProps {
   bookingId: string;
-  projectId: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  bookingDate: Date;
   hasService: boolean;
   hasTravelFee: boolean;
   className?: string;
@@ -21,10 +17,6 @@ interface BookingActionsProps {
 
 export function BookingActions({
   bookingId,
-  projectId,
-  latitude,
-  longitude,
-  bookingDate,
   hasService,
   hasTravelFee,
   className,
@@ -35,11 +27,6 @@ export function BookingActions({
   const [success, setSuccess] = React.useState(false);
 
   const handleGenerateInvoice = async () => {
-    if (!projectId) {
-      setError("Booking must have a project to generate an invoice");
-      return;
-    }
-
     setIsGenerating(true);
     setError(null);
 
@@ -59,7 +46,7 @@ export function BookingActions({
     }
   };
 
-  const canGenerateInvoice = projectId && (hasService || hasTravelFee);
+  const canGenerateInvoice = hasService || hasTravelFee;
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -108,9 +95,7 @@ export function BookingActions({
           </div>
         ) : (
           <p className="text-sm text-foreground-muted">
-            {!projectId
-              ? "Link this booking to a project to generate invoices."
-              : "No billable items found for this booking."}
+            No billable items found for this booking. Add a service or travel fee to generate an invoice.
           </p>
         )}
       </div>

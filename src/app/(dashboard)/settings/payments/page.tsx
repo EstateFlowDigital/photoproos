@@ -36,7 +36,7 @@ export default async function PaymentsSettingsPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-semibold text-foreground">Stripe Connect</h2>
-                  {connectStatus.success && connectStatus.data?.isConnected ? (
+                  {connectStatus.success && connectStatus.data?.hasAccount ? (
                     <span
                       className={cn(
                         "rounded-full px-2.5 py-0.5 text-xs font-medium",
@@ -54,7 +54,7 @@ export default async function PaymentsSettingsPage() {
                   )}
                 </div>
                 <p className="mt-1 text-sm text-foreground-muted max-w-md">
-                  {connectStatus.success && connectStatus.data?.isConnected
+                  {connectStatus.success && connectStatus.data?.hasAccount
                     ? connectStatus.data.chargesEnabled
                       ? "Your Stripe account is connected and ready to accept payments."
                       : "Your Stripe account is connected but requires additional verification."
@@ -63,13 +63,13 @@ export default async function PaymentsSettingsPage() {
               </div>
             </div>
             <ConnectButton
-              isConnected={connectStatus.success && connectStatus.data?.isConnected}
+              isConnected={connectStatus.success && connectStatus.data?.hasAccount}
               chargesEnabled={connectStatus.success && connectStatus.data?.chargesEnabled}
             />
           </div>
 
           {/* Account Details */}
-          {connectStatus.success && connectStatus.data?.isConnected && (
+          {connectStatus.success && connectStatus.data?.hasAccount && (
             <div className="mt-6 grid gap-4 border-t border-[var(--card-border)] pt-6 sm:grid-cols-3">
               <StatusCard
                 label="Charges"
@@ -131,7 +131,7 @@ export default async function PaymentsSettingsPage() {
         </div>
 
         {/* Payout Settings */}
-        {connectStatus.success && connectStatus.data?.isConnected && connectStatus.data.chargesEnabled && (
+        {connectStatus.success && connectStatus.data?.hasAccount && connectStatus.data.chargesEnabled && (
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Payout Settings</h2>
             <p className="text-sm text-foreground-muted mb-4">

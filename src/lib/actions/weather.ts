@@ -1,7 +1,7 @@
 "use server";
 
 import { getForecastForDate, getWeatherForecast } from "@/lib/weather/forecast";
-import { getGoldenHourTimes } from "@/lib/weather/golden-hour";
+import { calculateGoldenHourLocal } from "@/lib/weather/golden-hour";
 import { isConfigured } from "@/lib/weather/client";
 import type { WeatherForecast, GoldenHourInfo } from "@/lib/weather/types";
 
@@ -38,7 +38,7 @@ export async function getBookingWeather(
     const isWithinForecastRange = daysDiff >= 0 && daysDiff <= 5;
 
     // Get golden hour times (always available via calculation)
-    const goldenHour = getGoldenHourTimes(latitude, longitude, bookingDate);
+    const goldenHour = calculateGoldenHourLocal(latitude, longitude, bookingDate);
 
     // Get forecast if within range
     let forecast: WeatherForecast | null = null;
@@ -98,7 +98,7 @@ export async function getGoldenHour(
   date: Date
 ): Promise<ActionResult<GoldenHourInfo>> {
   try {
-    const goldenHour = getGoldenHourTimes(latitude, longitude, date);
+    const goldenHour = calculateGoldenHourLocal(latitude, longitude, date);
     return { success: true, data: goldenHour };
   } catch (error) {
     console.error("Error calculating golden hour:", error);

@@ -2,114 +2,116 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { z } from "zod";
-import type { LineItemType } from "@prisma/client";
+import type { LineItemType, InvoiceStatus } from "@prisma/client";
+import { requireOrganizationId } from "./auth-helper";
 
 // Result type for server actions
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
-// Helper to get organization ID
-async function getOrganizationId(): Promise<string> {
-  const org = await prisma.organization.findFirst({
-    orderBy: { createdAt: "asc" },
-  });
-
-  if (!org) {
-    throw new Error("No organization found");
-  }
-
-  return org.id;
-}
-
-// ============================================================================
-// VALIDATION SCHEMAS
-// ============================================================================
-
-const lineItemSchema = z.object({
-  type: z.enum(["service", "travel", "custom", "discount", "tax"]),
-  serviceId: z.string().cuid().optional().nullable(),
-  bookingId: z.string().cuid().optional().nullable(),
-  name: z.string().min(1).max(200),
-  description: z.string().max(500).optional().nullable(),
-  unitPriceCents: z.number().int(),
-  quantity: z.number().min(0),
-  subtotalCents: z.number().int(),
-});
-
-const createInvoiceSchema = z.object({
-  projectId: z.string().cuid(),
-  dueDate: z.date().optional(),
-  notes: z.string().max(2000).optional().nullable(),
-  lineItems: z.array(lineItemSchema).min(1),
-});
-
-const updateInvoiceSchema = z.object({
-  invoiceId: z.string().cuid(),
-  dueDate: z.date().optional(),
-  notes: z.string().max(2000).optional().nullable(),
-  status: z.enum(["draft", "sent", "paid", "overdue", "cancelled"]).optional(),
-  lineItems: z.array(lineItemSchema).optional(),
-});
-
 // ============================================================================
 // INVOICE OPERATIONS
 // ============================================================================
 
 /**
- * Create an invoice for a project
+ * Generate the next invoice number for the organization
  */
+async function generateInvoiceNumber(organizationId: string): Promise<string> {
+  const lastInvoice = await prisma.invoice.findFirst({
+    where: { organizationId },
+    orderBy: { createdAt: "desc" },
+    select: { invoiceNumber: true },
+  });
+
+  if (!lastInvoice) {
+    return "INV-0001";
+  }
+
+  // Extract number from invoice number (e.g., "INV-0001" -> 1)
+  const match = lastInvoice.invoiceNumber.match(/(\d+)$/);
+  const lastNumber = match ? parseInt(match[1], 10) : 0;
+  const nextNumber = lastNumber + 1;
+
+  return `INV-${nextNumber.toString().padStart(4, "0")}`;
+}
+
+/**
+ * Create an invoice for a client
+ */
+interface CreateInvoiceInput {
+  clientId: string;
+  dueDate?: Date;
+  notes?: string;
+  terms?: string;
+  lineItems: {
+    itemType: LineItemType;
+    bookingId?: string;
+    description: string;
+    quantity: number;
+    unitCents: number;
+  }[];
+}
+
 export async function createInvoice(
-  input: z.infer<typeof createInvoiceSchema>
+  input: CreateInvoiceInput
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const validated = createInvoiceSchema.parse(input);
-    const organizationId = await getOrganizationId();
+    const organizationId = await requireOrganizationId();
 
-    // Verify project belongs to organization
-    const project = await prisma.project.findFirst({
+    // Verify client belongs to organization
+    const client = await prisma.client.findFirst({
       where: {
-        id: validated.projectId,
+        id: input.clientId,
         organizationId,
       },
     });
 
-    if (!project) {
-      return { success: false, error: "Project not found" };
+    if (!client) {
+      return { success: false, error: "Client not found" };
     }
 
-    // Calculate total
-    const totalCents = validated.lineItems.reduce(
-      (sum, item) => sum + item.subtotalCents,
+    // Calculate totals
+    const subtotalCents = input.lineItems.reduce(
+      (sum, item) => sum + item.unitCents * item.quantity,
       0
     );
+
+    // Generate invoice number
+    const invoiceNumber = await generateInvoiceNumber(organizationId);
+
+    // Set due date to 30 days from now if not provided
+    const dueDate = input.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     // Create invoice with line items
     const invoice = await prisma.invoice.create({
       data: {
-        projectId: validated.projectId,
+        organizationId,
+        clientId: input.clientId,
+        invoiceNumber,
         status: "draft",
-        totalCents,
-        dueDate: validated.dueDate,
-        notes: validated.notes,
+        subtotalCents,
+        totalCents: subtotalCents, // Can add tax/discount logic later
+        dueDate,
+        notes: input.notes,
+        terms: input.terms,
+        clientName: client.fullName || client.company,
+        clientEmail: client.email,
         lineItems: {
-          create: validated.lineItems.map((item, index) => ({
-            type: item.type as LineItemType,
-            serviceId: item.serviceId,
+          create: input.lineItems.map((item, index) => ({
+            itemType: item.itemType,
             bookingId: item.bookingId,
-            name: item.name,
             description: item.description,
-            unitPriceCents: item.unitPriceCents,
             quantity: item.quantity,
-            subtotalCents: item.subtotalCents,
-            order: index,
+            unitCents: item.unitCents,
+            totalCents: item.unitCents * item.quantity,
+            sortOrder: index,
           })),
         },
       },
     });
 
-    revalidatePath(`/projects/${validated.projectId}`);
+    revalidatePath("/invoices");
 
     return { success: true, data: { id: invoice.id } };
   } catch (error) {
@@ -129,7 +131,7 @@ export async function generateInvoiceFromBooking(
   bookingId: string
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = await requireOrganizationId();
 
     // Get booking with all related data
     const booking = await prisma.booking.findFirst({
@@ -139,7 +141,7 @@ export async function generateInvoiceFromBooking(
       },
       include: {
         service: true,
-        project: true,
+        client: true,
       },
     });
 
@@ -147,8 +149,8 @@ export async function generateInvoiceFromBooking(
       return { success: false, error: "Booking not found" };
     }
 
-    if (!booking.projectId) {
-      return { success: false, error: "Booking must have a project to generate an invoice" };
+    if (!booking.clientId) {
+      return { success: false, error: "Booking must have a client to generate an invoice" };
     }
 
     // Get organization travel settings
@@ -160,19 +162,16 @@ export async function generateInvoiceFromBooking(
       },
     });
 
-    const lineItems: z.infer<typeof lineItemSchema>[] = [];
+    const lineItems: CreateInvoiceInput["lineItems"] = [];
 
     // Add service line item if exists
     if (booking.service) {
       lineItems.push({
-        type: "service",
-        serviceId: booking.service.id,
+        itemType: "service",
         bookingId: booking.id,
-        name: booking.service.name,
-        description: booking.service.description,
-        unitPriceCents: booking.service.priceCents,
+        description: booking.service.name + (booking.service.description ? ` - ${booking.service.description}` : ""),
         quantity: 1,
-        subtotalCents: booking.service.priceCents,
+        unitCents: booking.service.priceCents,
       });
     }
 
@@ -180,23 +179,17 @@ export async function generateInvoiceFromBooking(
     if (
       booking.distanceMiles &&
       booking.travelFeeCents &&
-      booking.travelFeeCents > 0 &&
-      org?.travelFeePerMile
+      booking.travelFeeCents > 0
     ) {
-      const freeThreshold = org.travelFeeThreshold || 0;
-      const billableMiles = Math.max(0, booking.distanceMiles - freeThreshold);
+      const freeThreshold = org?.travelFeeThreshold || 0;
 
-      if (billableMiles > 0) {
-        lineItems.push({
-          type: "travel",
-          bookingId: booking.id,
-          name: "Travel Fee",
-          description: `${booking.distanceMiles.toFixed(1)} miles from home base (${freeThreshold} mi free)`,
-          unitPriceCents: org.travelFeePerMile,
-          quantity: billableMiles,
-          subtotalCents: booking.travelFeeCents,
-        });
-      }
+      lineItems.push({
+        itemType: "travel",
+        bookingId: booking.id,
+        description: `Travel Fee - ${booking.distanceMiles.toFixed(1)} miles from home base${freeThreshold > 0 ? ` (${freeThreshold} mi free)` : ""}`,
+        quantity: 1,
+        unitCents: booking.travelFeeCents,
+      });
     }
 
     if (lineItems.length === 0) {
@@ -205,7 +198,7 @@ export async function generateInvoiceFromBooking(
 
     // Create the invoice
     const result = await createInvoice({
-      projectId: booking.projectId,
+      clientId: booking.clientId,
       lineItems,
     });
 
@@ -227,15 +220,13 @@ export async function addTravelFeeToInvoice(
   bookingId: string
 ): Promise<ActionResult> {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = await requireOrganizationId();
 
     // Get the invoice
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: invoiceId,
-        project: {
-          organizationId,
-        },
+        organizationId,
       },
       include: {
         lineItems: true,
@@ -252,7 +243,7 @@ export async function addTravelFeeToInvoice(
 
     // Check if travel fee already exists for this booking
     const existingTravelFee = invoice.lineItems.find(
-      (item) => item.type === "travel" && item.bookingId === bookingId
+      (item) => item.itemType === "travel" && item.bookingId === bookingId
     );
 
     if (existingTravelFee) {
@@ -279,40 +270,35 @@ export async function addTravelFeeToInvoice(
     const org = await prisma.organization.findUnique({
       where: { id: organizationId },
       select: {
-        travelFeePerMile: true,
         travelFeeThreshold: true,
       },
     });
 
-    if (!org?.travelFeePerMile) {
-      return { success: false, error: "Travel fees not configured" };
-    }
-
-    const freeThreshold = org.travelFeeThreshold || 0;
-    const billableMiles = Math.max(0, booking.distanceMiles - freeThreshold);
+    const freeThreshold = org?.travelFeeThreshold || 0;
 
     // Add travel fee line item
-    const maxOrder = Math.max(...invoice.lineItems.map((i) => i.order), -1);
+    const maxOrder = Math.max(...invoice.lineItems.map((i) => i.sortOrder), -1);
 
     await prisma.invoiceLineItem.create({
       data: {
         invoiceId,
-        type: "travel",
+        itemType: "travel",
         bookingId: booking.id,
-        name: "Travel Fee",
-        description: `${booking.distanceMiles.toFixed(1)} miles from home base (${freeThreshold} mi free)`,
-        unitPriceCents: org.travelFeePerMile,
-        quantity: billableMiles,
-        subtotalCents: booking.travelFeeCents,
-        order: maxOrder + 1,
+        description: `Travel Fee - ${booking.distanceMiles.toFixed(1)} miles from home base${freeThreshold > 0 ? ` (${freeThreshold} mi free)` : ""}`,
+        quantity: 1,
+        unitCents: booking.travelFeeCents,
+        totalCents: booking.travelFeeCents,
+        sortOrder: maxOrder + 1,
       },
     });
 
-    // Update invoice total
+    // Update invoice totals
+    const newSubtotal = invoice.subtotalCents + booking.travelFeeCents;
     await prisma.invoice.update({
       where: { id: invoiceId },
       data: {
-        totalCents: invoice.totalCents + booking.travelFeeCents,
+        subtotalCents: newSubtotal,
+        totalCents: newSubtotal, // Can add tax/discount logic later
       },
     });
 
@@ -333,51 +319,31 @@ export async function addTravelFeeToInvoice(
  */
 export async function getInvoice(invoiceId: string) {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = await requireOrganizationId();
 
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: invoiceId,
-        project: {
-          organizationId,
-        },
+        organizationId,
       },
       include: {
-        project: {
-          include: {
-            client: true,
-          },
-        },
+        client: true,
         lineItems: {
-          orderBy: { order: "asc" },
+          orderBy: { sortOrder: "asc" },
           include: {
-            service: true,
-            booking: true,
+            booking: {
+              select: {
+                id: true,
+                title: true,
+                startTime: true,
+              },
+            },
           },
         },
       },
     });
 
-    if (!invoice) {
-      return null;
-    }
-
-    return {
-      ...invoice,
-      lineItems: invoice.lineItems.map((item) => ({
-        id: item.id,
-        type: item.type,
-        serviceId: item.serviceId,
-        bookingId: item.bookingId,
-        name: item.name,
-        description: item.description,
-        unitPriceCents: item.unitPriceCents,
-        quantity: item.quantity,
-        subtotalCents: item.subtotalCents,
-        service: item.service,
-        booking: item.booking,
-      })),
-    };
+    return invoice;
   } catch (error) {
     console.error("Error fetching invoice:", error);
     return null;
@@ -385,22 +351,35 @@ export async function getInvoice(invoiceId: string) {
 }
 
 /**
- * Get invoices for a project
+ * Get all invoices for the organization
  */
-export async function getProjectInvoices(projectId: string) {
+export async function getInvoices(filters?: {
+  status?: InvoiceStatus;
+  clientId?: string;
+}) {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = await requireOrganizationId();
 
     const invoices = await prisma.invoice.findMany({
       where: {
-        projectId,
-        project: {
-          organizationId,
-        },
+        organizationId,
+        ...(filters?.status && { status: filters.status }),
+        ...(filters?.clientId && { clientId: filters.clientId }),
       },
       include: {
+        client: {
+          select: {
+            id: true,
+            fullName: true,
+            company: true,
+            email: true,
+          },
+        },
         lineItems: {
-          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            itemType: true,
+          },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -408,7 +387,34 @@ export async function getProjectInvoices(projectId: string) {
 
     return invoices;
   } catch (error) {
-    console.error("Error fetching project invoices:", error);
+    console.error("Error fetching invoices:", error);
+    return [];
+  }
+}
+
+/**
+ * Get invoices for a client
+ */
+export async function getClientInvoices(clientId: string) {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        clientId,
+        organizationId,
+      },
+      include: {
+        lineItems: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return invoices;
+  } catch (error) {
+    console.error("Error fetching client invoices:", error);
     return [];
   }
 }
@@ -418,17 +424,15 @@ export async function getProjectInvoices(projectId: string) {
  */
 export async function updateInvoiceStatus(
   invoiceId: string,
-  status: "draft" | "sent" | "paid" | "overdue" | "cancelled"
+  status: InvoiceStatus
 ): Promise<ActionResult> {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = await requireOrganizationId();
 
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: invoiceId,
-        project: {
-          organizationId,
-        },
+        organizationId,
       },
     });
 
@@ -436,12 +440,25 @@ export async function updateInvoiceStatus(
       return { success: false, error: "Invoice not found" };
     }
 
+    const updateData: { status: InvoiceStatus; paidAt?: Date | null } = { status };
+
+    // Set paidAt when marking as paid
+    if (status === "paid" && !invoice.paidAt) {
+      updateData.paidAt = new Date();
+    }
+
+    // Clear paidAt if moving away from paid status
+    if (status !== "paid" && invoice.paidAt) {
+      updateData.paidAt = null;
+    }
+
     await prisma.invoice.update({
       where: { id: invoiceId },
-      data: { status },
+      data: updateData,
     });
 
     revalidatePath(`/invoices/${invoiceId}`);
+    revalidatePath("/invoices");
 
     return { success: true, data: undefined };
   } catch (error) {
@@ -458,14 +475,12 @@ export async function updateInvoiceStatus(
  */
 export async function deleteInvoice(invoiceId: string): Promise<ActionResult> {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = await requireOrganizationId();
 
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: invoiceId,
-        project: {
-          organizationId,
-        },
+        organizationId,
       },
     });
 
@@ -481,7 +496,7 @@ export async function deleteInvoice(invoiceId: string): Promise<ActionResult> {
       where: { id: invoiceId },
     });
 
-    revalidatePath(`/projects/${invoice.projectId}`);
+    revalidatePath("/invoices");
 
     return { success: true, data: undefined };
   } catch (error) {
@@ -505,7 +520,7 @@ export async function calculateTravelFeeForInvoice(
   travelFeeCents: number;
 }>> {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = await requireOrganizationId();
 
     // Get booking
     const booking = await prisma.booking.findFirst({
@@ -557,7 +572,3 @@ export async function calculateTravelFeeForInvoice(
     return { success: false, error: "Failed to calculate travel fee" };
   }
 }
-
-// Type exports
-export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
-export type LineItemInput = z.infer<typeof lineItemSchema>;

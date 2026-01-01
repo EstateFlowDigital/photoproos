@@ -25,9 +25,9 @@ export function ConnectButton({
       if (!isConnected) {
         // Create new Connect account and get onboarding link
         const result = await createConnectAccount();
-        if (result.success && result.data?.url) {
-          window.location.href = result.data.url;
-        } else {
+        if (result.success && result.data?.onboardingUrl) {
+          window.location.href = result.data.onboardingUrl;
+        } else if (!result.success) {
           setError(result.error || "Failed to create Connect account");
         }
       } else if (!chargesEnabled) {
@@ -35,7 +35,7 @@ export function ConnectButton({
         const result = await createAccountLink();
         if (result.success && result.data?.url) {
           window.location.href = result.data.url;
-        } else {
+        } else if (!result.success) {
           setError(result.error || "Failed to create onboarding link");
         }
       }
@@ -55,7 +55,7 @@ export function ConnectButton({
       const result = await createDashboardLink();
       if (result.success && result.data?.url) {
         window.open(result.data.url, "_blank");
-      } else {
+      } else if (!result.success) {
         setError(result.error || "Failed to open dashboard");
       }
     } catch (err) {

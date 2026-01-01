@@ -73,6 +73,14 @@ export async function getBooking(id: string) {
             email: true,
           },
         },
+        locationRef: {
+          select: {
+            id: true,
+            latitude: true,
+            longitude: true,
+            formattedAddress: true,
+          },
+        },
       },
     });
 

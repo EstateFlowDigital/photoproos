@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Build Errors**: Fixed Railway deployment failures
+  - Fixed `getGoldenHourTimes` import error - now correctly uses `calculateGoldenHourLocal` in weather actions
+  - Fixed `booking.projectId` type error - removed unused projectId from BookingActions component
+  - Added `locationRef` relation to `getBooking` for weather location data
+  - Rewrote `invoices.ts` to match actual Prisma schema (was using incorrect field names and relations)
+  - Updated invoice system to work with client-based invoicing instead of non-existent project relation
+
 ### Added (Booking Details & Property Features)
 - **Booking Detail Enhancements** (`/scheduling/[id]/page.tsx`):
   - Generate Invoice button with `generateInvoiceFromBooking` integration
@@ -56,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added Clerk components to mobile navigation
 
 - **Stripe Payments Integration** (Sprint 2):
-  - Created Stripe client (`/lib/stripe.ts`) with API version 2024-12-18.acacia
+  - Created Stripe client (`/lib/stripe.ts`) with API version 2025-12-15.clover
   - **Stripe Connect Actions** (`/lib/actions/stripe-connect.ts`):
     - `createConnectAccount` - Create Express account and generate onboarding link
     - `getConnectAccountStatus` - Check account connection and verification status
@@ -98,6 +106,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `gallery_paid` to `ActivityType` enum
   - Added `stripeCheckoutSessionId` field to Payment model
   - Added `clientId` field and Client relation to Payment model
+
+### Fixed
+- **Stripe Integration TypeScript Errors**:
+  - Updated Stripe API version from `2024-12-18.acacia` to `2025-12-15.clover` to match Stripe SDK v20.1.0
+  - Fixed `connect-button.tsx` to use `onboardingUrl` instead of `url` for createConnectAccount result
+  - Fixed ActionResult error handling pattern in connect-button.tsx (check `!result.success` before accessing `result.error`)
+  - Fixed payments/page.tsx to use `hasAccount` instead of `isConnected` (5 occurrences)
   - Added `payments` relation to Client model
   - Added index on `clientId` for Payment queries
 
