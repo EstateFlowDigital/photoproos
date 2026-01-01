@@ -2,69 +2,18 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { ServicesListClient } from "../services-list-client";
 import Link from "next/link";
-import { photographyServices, type ServiceCategory } from "@/lib/services";
-
-// Demo mode flag
-const DEMO_MODE = true;
-
-// Convert predefined services to demo data with usage counts
-const demoServices = photographyServices.map((service, index) => ({
-  id: service.id,
-  name: service.name,
-  category: service.category as ServiceCategory,
-  description: service.description,
-  priceCents: service.basePrice,
-  duration: service.estimatedDuration,
-  deliverables: service.deliverables,
-  isActive: true,
-  isDefault: true,
-  usageCount: Math.floor(Math.random() * 15) + 1, // Random usage count for demo
-}));
-
-// Add some custom user services for demo
-const customServices = [
-  {
-    id: "custom-1",
-    name: "Premium Real Estate Bundle",
-    category: "real_estate" as ServiceCategory,
-    description: "Complete real estate photography package with photos, video, and drone footage",
-    priceCents: 75000,
-    duration: "3-4 hours",
-    deliverables: ["50+ edited photos", "2-3 minute video tour", "Drone aerials", "Twilight shots", "Virtual staging for 3 rooms"],
-    isActive: true,
-    isDefault: false,
-    usageCount: 8,
-  },
-  {
-    id: "custom-2",
-    name: "Mini Session - Family",
-    category: "portrait" as ServiceCategory,
-    description: "Quick 30-minute family portrait session, perfect for holiday cards",
-    priceCents: 15000,
-    duration: "30 minutes",
-    deliverables: ["10 edited images", "Digital delivery", "Print release"],
-    isActive: true,
-    isDefault: false,
-    usageCount: 12,
-  },
-  {
-    id: "custom-3",
-    name: "Archived Package",
-    category: "event" as ServiceCategory,
-    description: "This service is no longer offered",
-    priceCents: 20000,
-    duration: "2 hours",
-    deliverables: ["Basic coverage"],
-    isActive: false,
-    isDefault: false,
-    usageCount: 3,
-  },
-];
+import { type ServiceCategory } from "@/lib/services";
+import { getServices, seedDefaultServices } from "@/lib/actions/services";
 
 export default async function ServicesPage() {
-  // Demo mode - use static data
-  if (DEMO_MODE) {
-    const allServices = [...customServices, ...demoServices];
+  // Fetch services from database
+  const services = await getServices();
+
+  // If no services exist, try to seed defaults
+  if (services.length === 0) {
+    await seedDefaultServices();
+    // Refetch after seeding
+    const seededServices = await getServices();
 
     return (
       <div className="space-y-6">
@@ -82,49 +31,34 @@ export default async function ServicesPage() {
           }
         />
 
-        {/* Demo Mode Banner */}
-        <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-          <p className="text-sm text-[var(--primary)]">
-            <strong>Demo Mode:</strong> Viewing sample service packages. Templates are pre-configured service options.
-          </p>
-        </div>
-
-        {/* Services List */}
-        <ServicesListClient services={allServices} />
+        {seededServices.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="rounded-full bg-[var(--primary)]/10 p-4 mb-4">
+              <ServiceIcon className="h-8 w-8 text-[var(--primary)]" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">No services yet</h2>
+            <p className="mt-2 text-foreground-muted max-w-md">
+              Create your first service package to start managing your photography offerings.
+            </p>
+            <Link
+              href="/galleries/services/new"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Create Your First Service
+            </Link>
+          </div>
+        ) : (
+          <ServicesListClient
+            services={seededServices.map((service) => ({
+              ...service,
+              category: service.category as ServiceCategory,
+            }))}
+          />
+        )}
       </div>
     );
   }
-
-  // Database mode
-  const { prisma } = await import("@/lib/db");
-
-  // Get organization (later from auth)
-  const organization = await prisma.organization.findFirst({
-    orderBy: { createdAt: "asc" },
-  });
-
-  if (!organization) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h2 className="text-xl font-semibold text-foreground">No organization found</h2>
-        <p className="mt-2 text-foreground-muted">Please run the seed script to populate demo data.</p>
-      </div>
-    );
-  }
-
-  // Fetch services with usage counts
-  const services = await prisma.service.findMany({
-    where: { organizationId: organization.id },
-    include: {
-      _count: {
-        select: {
-          projects: true,
-          bookings: true,
-        },
-      },
-    },
-    orderBy: [{ isDefault: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
-  });
 
   return (
     <div className="space-y-6">
@@ -145,16 +79,8 @@ export default async function ServicesPage() {
       {/* Services List */}
       <ServicesListClient
         services={services.map((service) => ({
-          id: service.id,
-          name: service.name,
+          ...service,
           category: service.category as ServiceCategory,
-          description: service.description,
-          priceCents: service.priceCents,
-          duration: service.duration,
-          deliverables: service.deliverables,
-          isActive: service.isActive,
-          isDefault: service.isDefault,
-          usageCount: service._count.projects + service._count.bookings,
         }))}
       />
     </div>
@@ -165,6 +91,15 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+    </svg>
+  );
+}
+
+function ServiceIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M7.5 5.25a3 3 0 0 1 3-3h3a3 3 0 0 1 3 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0 1 12 15.75c-2.73 0-5.357-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 0 1 7.5 5.455V5.25Zm7.5 0v.09a49.488 49.488 0 0 0-6 0v-.09a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5Zm-3 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
+      <path d="M3 18.4v-2.796a4.3 4.3 0 0 0 .713.31A26.226 26.226 0 0 0 12 17.25c2.892 0 5.68-.468 8.287-1.335.252-.084.49-.189.713-.311V18.4c0 1.452-1.047 2.728-2.523 2.923-2.12.282-4.282.427-6.477.427a49.19 49.19 0 0 1-6.477-.427C4.047 21.128 3 19.852 3 18.4Z" />
     </svg>
   );
 }

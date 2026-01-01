@@ -3,38 +3,8 @@ import { PageHeader } from "@/components/dashboard";
 import { ServiceForm } from "@/components/dashboard/service-form";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { photographyServices, type ServiceCategory } from "@/lib/services";
-
-// Demo mode flag
-const DEMO_MODE = true;
-
-// Demo custom services
-const demoCustomServices = [
-  {
-    id: "custom-1",
-    name: "Premium Real Estate Bundle",
-    category: "real_estate" as ServiceCategory,
-    description: "Complete real estate photography package with photos, video, and drone footage",
-    priceCents: 75000,
-    duration: "3-4 hours",
-    deliverables: ["50+ edited photos", "2-3 minute video tour", "Drone aerials", "Twilight shots", "Virtual staging for 3 rooms"],
-    isActive: true,
-    isDefault: false,
-    usageCount: 8,
-  },
-  {
-    id: "custom-2",
-    name: "Mini Session - Family",
-    category: "portrait" as ServiceCategory,
-    description: "Quick 30-minute family portrait session, perfect for holiday cards",
-    priceCents: 15000,
-    duration: "30 minutes",
-    deliverables: ["10 edited images", "Digital delivery", "Print release"],
-    isActive: true,
-    isDefault: false,
-    usageCount: 12,
-  },
-];
+import { type ServiceCategory } from "@/lib/services";
+import { getService } from "@/lib/actions/services";
 
 interface EditServicePageProps {
   params: Promise<{ id: string }>;
@@ -43,152 +13,8 @@ interface EditServicePageProps {
 export default async function EditServicePage({ params }: EditServicePageProps) {
   const { id } = await params;
 
-  // Demo mode - use static data
-  if (DEMO_MODE) {
-    // Try to find in custom services first
-    let service = demoCustomServices.find(s => s.id === id);
-
-    // If not found, try predefined services (templates)
-    if (!service) {
-      const predefined = photographyServices.find(s => s.id === id);
-      if (predefined) {
-        service = {
-          id: predefined.id,
-          name: predefined.name,
-          category: predefined.category as ServiceCategory,
-          description: predefined.description,
-          priceCents: predefined.basePrice,
-          duration: predefined.estimatedDuration,
-          deliverables: predefined.deliverables,
-          isActive: true,
-          isDefault: true,
-          usageCount: Math.floor(Math.random() * 15) + 1,
-        };
-      }
-    }
-
-    if (!service) {
-      notFound();
-    }
-
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title={service.isDefault ? "View Template" : "Edit Service"}
-          subtitle={service.isDefault ? "Template services are read-only. Duplicate to customize." : "Update your service package details"}
-        />
-
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-foreground-muted">
-          <Link href="/galleries" className="hover:text-foreground transition-colors">
-            Galleries
-          </Link>
-          <ChevronRightIcon className="h-4 w-4" />
-          <Link href="/galleries/services" className="hover:text-foreground transition-colors">
-            Services
-          </Link>
-          <ChevronRightIcon className="h-4 w-4" />
-          <span className="text-foreground">{service.name}</span>
-        </nav>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Form */}
-          <div className="lg:col-span-2">
-            <ServiceForm
-              mode="edit"
-              initialData={service}
-            />
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Usage Stats */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h3 className="font-semibold text-foreground mb-4">Usage</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground-muted">Galleries</span>
-                  <span className="text-sm font-medium text-foreground">{service.usageCount}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground-muted">Bookings</span>
-                  <span className="text-sm font-medium text-foreground">0</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground-muted">Status</span>
-                  {service.isActive ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--success)]/10 px-2 py-0.5 text-xs font-medium text-[var(--success)]">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
-                      Active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--foreground-muted)]/10 px-2 py-0.5 text-xs font-medium text-foreground-muted">
-                      <span className="h-1.5 w-1.5 rounded-full bg-foreground-muted" />
-                      Inactive
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h3 className="font-semibold text-foreground mb-4">Quick Actions</h3>
-              <div className="space-y-2">
-                <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors text-left">
-                  <DuplicateIcon className="h-4 w-4" />
-                  Duplicate Service
-                </button>
-                <Link
-                  href="/galleries/new"
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
-                >
-                  <GalleryIcon className="h-4 w-4" />
-                  Create Gallery with this Service
-                </Link>
-                <Link
-                  href="/scheduling/new"
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
-                >
-                  <CalendarIcon className="h-4 w-4" />
-                  Create Booking with this Service
-                </Link>
-              </div>
-            </div>
-
-            {service.isDefault && (
-              <div className="rounded-lg border border-[var(--warning)]/30 bg-[var(--warning)]/10 p-4">
-                <div className="flex gap-3">
-                  <InfoIcon className="h-5 w-5 text-[var(--warning)] shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--warning)]">Template Service</p>
-                    <p className="text-xs text-[var(--warning)]/80 mt-1">
-                      This is a system template. You can customize pricing and description per-gallery, or duplicate to create your own version.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Database mode
-  const { prisma } = await import("@/lib/db");
-
-  const service = await prisma.service.findUnique({
-    where: { id },
-    include: {
-      _count: {
-        select: {
-          projects: true,
-          bookings: true,
-        },
-      },
-    },
-  });
+  // Fetch service from database
+  const service = await getService(id);
 
   if (!service) {
     notFound();
@@ -198,7 +24,7 @@ export default async function EditServicePage({ params }: EditServicePageProps) 
     <div className="space-y-6">
       <PageHeader
         title={service.isDefault ? "View Template" : "Edit Service"}
-        subtitle={service.isDefault ? "Template services are read-only" : "Update your service package details"}
+        subtitle={service.isDefault ? "Template services are read-only. Duplicate to customize." : "Update your service package details"}
       />
 
       {/* Breadcrumb */}
@@ -229,7 +55,7 @@ export default async function EditServicePage({ params }: EditServicePageProps) 
               deliverables: service.deliverables,
               isActive: service.isActive,
               isDefault: service.isDefault,
-              usageCount: service._count.projects + service._count.bookings,
+              usageCount: service.usageCount,
             }}
           />
         </div>
@@ -241,12 +67,8 @@ export default async function EditServicePage({ params }: EditServicePageProps) 
             <h3 className="font-semibold text-foreground mb-4">Usage</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground-muted">Galleries</span>
-                <span className="text-sm font-medium text-foreground">{service._count.projects}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground-muted">Bookings</span>
-                <span className="text-sm font-medium text-foreground">{service._count.bookings}</span>
+                <span className="text-sm text-foreground-muted">Total Usage</span>
+                <span className="text-sm font-medium text-foreground">{service.usageCount}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-foreground-muted">Status</span>
@@ -289,6 +111,20 @@ export default async function EditServicePage({ params }: EditServicePageProps) 
               </Link>
             </div>
           </div>
+
+          {service.isDefault && (
+            <div className="rounded-lg border border-[var(--warning)]/30 bg-[var(--warning)]/10 p-4">
+              <div className="flex gap-3">
+                <InfoIcon className="h-5 w-5 text-[var(--warning)] shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-[var(--warning)]">Template Service</p>
+                  <p className="text-xs text-[var(--warning)]/80 mt-1">
+                    This is a system template. You can customize pricing and description per-gallery, or duplicate to create your own version.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

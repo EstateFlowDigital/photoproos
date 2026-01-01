@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ServiceSelector } from "@/components/dashboard/service-selector";
+import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { getServiceById, type ServiceType } from "@/lib/services";
+
+// Union type for selected service (can be static or database service)
+type SelectedService = ServiceType | DatabaseServiceType | null;
 
 interface Client {
   id: string;
@@ -36,7 +39,7 @@ interface GalleryEditFormProps {
 
 export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
   const initialService = gallery.serviceId ? getServiceById(gallery.serviceId) : null;
-  const [selectedService, setSelectedService] = useState<ServiceType | null>(initialService || null);
+  const [selectedService, setSelectedService] = useState<SelectedService>(initialService || null);
   const [price, setPrice] = useState(gallery.priceCents);
   const [description, setDescription] = useState(gallery.serviceDescription || "");
   const [settings, setSettings] = useState(gallery.settings);

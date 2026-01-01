@@ -9,6 +9,12 @@ import {
   formatServicePrice,
   type ServiceCategory,
 } from "@/lib/services";
+import {
+  createService,
+  updateService,
+  deleteService,
+} from "@/lib/actions/services";
+import { useToast } from "@/components/ui/toast";
 
 interface ServiceFormData {
   name: string;
@@ -37,11 +43,14 @@ const defaultFormData: ServiceFormData = {
 
 export function ServiceForm({ initialData, mode }: ServiceFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState<ServiceFormData>(
     initialData || defaultFormData
   );
   const [newDeliverable, setNewDeliverable] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const isDefault = initialData?.isDefault || false;
   const usageCount = initialData?.usageCount || 0;
@@ -67,14 +76,75 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
     e.preventDefault();
     setIsSaving(true);
 
-    // TODO: Implement server action
-    console.log("Saving service:", formData);
+    try {
+      if (mode === "create") {
+        const result = await createService({
+          name: formData.name,
+          category: formData.category,
+          description: formData.description || null,
+          priceCents: formData.priceCents,
+          duration: formData.duration || null,
+          deliverables: formData.deliverables,
+          isActive: formData.isActive,
+        });
 
-    // Simulate save delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (result.success) {
+          showToast("Service created successfully", "success");
+          router.push("/galleries/services");
+        } else {
+          showToast(result.error, "error");
+        }
+      } else {
+        if (!initialData?.id) {
+          showToast("Service ID is missing", "error");
+          setIsSaving(false);
+          return;
+        }
 
-    setIsSaving(false);
-    router.push("/galleries/services");
+        const result = await updateService({
+          id: initialData.id,
+          name: formData.name,
+          category: formData.category,
+          description: formData.description || null,
+          priceCents: formData.priceCents,
+          duration: formData.duration || null,
+          deliverables: formData.deliverables,
+          isActive: formData.isActive,
+        });
+
+        if (result.success) {
+          showToast("Service updated successfully", "success");
+          router.push("/galleries/services");
+        } else {
+          showToast(result.error, "error");
+        }
+      }
+    } catch {
+      showToast("An unexpected error occurred", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!initialData?.id) return;
+
+    setIsDeleting(true);
+    try {
+      const result = await deleteService(initialData.id, false);
+
+      if (result.success) {
+        showToast(usageCount > 0 ? "Service archived" : "Service deleted", "success");
+        router.push("/galleries/services");
+      } else {
+        showToast(result.error, "error");
+      }
+    } catch {
+      showToast("An unexpected error occurred", "error");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   return (
@@ -392,15 +462,54 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {usageCount > 0 ? "Archive Service?" : "Delete Service?"}
+            </h3>
+            <p className="text-sm text-foreground-muted mb-6">
+              {usageCount > 0
+                ? `This service is used in ${usageCount} ${usageCount === 1 ? "gallery" : "galleries"}. It will be archived and hidden from new galleries, but existing galleries will not be affected.`
+                : "This action cannot be undone. The service will be permanently deleted."}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+              >
+                {isDeleting
+                  ? "Processing..."
+                  : usageCount > 0
+                  ? "Archive"
+                  : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Form Actions */}
       <div className="flex items-center justify-between">
         <div>
-          {mode === "edit" && !isDefault && usageCount === 0 && (
+          {mode === "edit" && !isDefault && (
             <button
               type="button"
+              onClick={() => setShowDeleteConfirm(true)}
               className="rounded-lg border border-[var(--error)]/50 bg-transparent px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
             >
-              Delete Service
+              {usageCount > 0 ? "Archive Service" : "Delete Service"}
             </button>
           )}
         </div>

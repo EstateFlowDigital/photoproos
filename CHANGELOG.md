@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added (Services Management System)
+### Added (Services Management System - Full Implementation)
 - Created comprehensive Services Management System with database persistence
 - **Database Schema Updates:**
   - Added `Service` model to Prisma schema with fields: name, category, description, priceCents, duration, deliverables, isActive, isDefault, sortOrder
@@ -15,6 +15,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `serviceId` foreign key to `Project` model for gallery-service linking
   - Added `serviceId` foreign key to `Booking` model for booking-service linking
   - Updated `Organization` model with services relation
+- **Zod Validation Schemas** (`/lib/validations/services.ts`):
+  - `serviceSchema` - Base service validation with comprehensive field rules
+  - `createServiceSchema` - For creating new services
+  - `updateServiceSchema` - For updating existing services (partial with ID)
+  - `deleteServiceSchema` - For deleting/archiving services
+  - `duplicateServiceSchema` - For duplicating services
+  - `bulkUpdatePricesSchema` - For bulk price updates
+  - `bulkArchiveSchema` - For bulk archive/restore operations
+  - `serviceFiltersSchema` - For filtering services in queries
+- **Server Actions** (`/lib/actions/services.ts`):
+  - `createService` - Create new service with validation and revalidation
+  - `updateService` - Update service (blocks template edits)
+  - `deleteService` - Delete or archive service based on usage
+  - `duplicateService` - Create copy of existing service
+  - `toggleServiceStatus` - Toggle active/inactive status
+  - `getServices` - Fetch all services with filters
+  - `getService` - Fetch single service by ID
+  - `seedDefaultServices` - Seed predefined photography services from lib/services.ts
+- **ServiceForm Integration:**
+  - Connected form to server actions (createService/updateService)
+  - Added toast notifications for success/error feedback
+  - Added delete confirmation modal with archive option
+  - Loading states during form submission
+  - Error handling with user-friendly messages
+- **ServiceSelector Enhancements:**
+  - Added optional `services` prop for database services
+  - Falls back to static services when no database services provided
+  - Updated type definitions to support both static and database services
+  - Added `DatabaseServiceType` export for type-safe integration
 - **Services Tab in Galleries Section:**
   - Added Galleries | Services tab navigation to galleries page
   - Services tab links to `/galleries/services`
@@ -27,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Usage count display per service
   - Template badge for predefined services
   - Active/Inactive status indicators
+  - Auto-seeds default services on first visit
+  - Empty state with call-to-action
 - **Service Cards:**
   - Category badge with color coding
   - Price display with proper formatting
@@ -45,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Quick actions: Duplicate, Create Gallery, Create Booking
   - Active status toggle (disabled for templates)
   - Template notice for read-only system services
+  - Delete/Archive functionality
 - **Service Form Component** (`/components/dashboard/service-form.tsx`):
   - Reusable form for create/edit modes
   - Service name, category, price, duration, description fields
@@ -52,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Live preview card showing how service will appear
   - Active status toggle for custom services
   - Template-aware disabled states
+  - Delete confirmation modal
 - **Implementation Plan Documentation:**
   - Created `docs/SERVICES_IMPLEMENTATION_PLAN.md` with full roadmap
   - Phases: Database, UI, API/Actions, Integration, Analytics

@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ServiceSelector } from "@/components/dashboard/service-selector";
+import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import type { ServiceType } from "@/lib/services";
+
+// Union type for selected service (can be static or database service)
+type SelectedService = ServiceType | DatabaseServiceType | null;
 
 interface Client {
   id: string;
@@ -17,7 +20,7 @@ interface BookingNewFormProps {
 }
 
 export function BookingNewForm({ clients, timeSlots }: BookingNewFormProps) {
-  const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
+  const [selectedService, setSelectedService] = useState<SelectedService>(null);
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
 

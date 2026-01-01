@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ServiceSelector } from "@/components/dashboard/service-selector";
+import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { getServiceById, type ServiceType } from "@/lib/services";
 import { cn } from "@/lib/utils";
+
+// Union type for selected service (can be static or database service)
+type SelectedService = ServiceType | DatabaseServiceType | null;
 
 interface BookingEditFormProps {
   booking: {
@@ -31,7 +34,7 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
   // Get initial service if serviceId exists
   const initialService = booking.serviceId ? getServiceById(booking.serviceId) : null;
 
-  const [selectedService, setSelectedService] = useState<ServiceType | null>(initialService || null);
+  const [selectedService, setSelectedService] = useState<SelectedService>(initialService || null);
   const [price, setPrice] = useState(booking.price);
   const [description, setDescription] = useState(booking.serviceDescription || "");
 

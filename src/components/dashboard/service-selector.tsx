@@ -1,16 +1,28 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   photographyServices,
   serviceCategories,
-  getGroupedServices,
   formatServicePrice,
   type ServiceType,
   type ServiceCategory,
 } from "@/lib/services";
+
+// Service type for database services passed as props
+export interface DatabaseServiceType {
+  id: string;
+  name: string;
+  category: ServiceCategory;
+  description: string | null;
+  priceCents: number;
+  duration: string | null;
+  deliverables: string[];
+  isActive: boolean;
+  isDefault: boolean;
+}
 
 // Custom service type for user-created services
 export interface CustomServiceType {
@@ -25,6 +37,8 @@ export interface CustomServiceType {
 }
 
 interface ServiceSelectorProps {
+  /** Optional services from database. If not provided, uses static services */
+  services?: DatabaseServiceType[];
   selectedServiceId?: string;
   customPrice?: number;
   customDescription?: string;
@@ -32,7 +46,7 @@ interface ServiceSelectorProps {
   customDeliverables?: string[];
   customCategory?: ServiceCategory;
   customDuration?: string;
-  onServiceChange?: (service: ServiceType | null) => void;
+  onServiceChange?: (service: ServiceType | DatabaseServiceType | null) => void;
   onPriceChange?: (price: number) => void;
   onDescriptionChange?: (description: string) => void;
   onServiceNameChange?: (name: string) => void;
@@ -44,6 +58,7 @@ interface ServiceSelectorProps {
 }
 
 export function ServiceSelector({
+  services,
   selectedServiceId,
   customPrice = 0,
   customDescription = "",
@@ -66,9 +81,26 @@ export function ServiceSelector({
   const [expandedService, setExpandedService] = useState<string | null>(selectedServiceId || null);
   const [newDeliverable, setNewDeliverable] = useState("");
 
-  const groupedServices = getGroupedServices();
+  // Use database services if provided, otherwise fall back to static services
+  const availableServices = useMemo(() => {
+    if (services && services.length > 0) {
+      // Convert database services to a compatible format
+      return services.filter(s => s.isActive).map(s => ({
+        id: s.id,
+        name: s.name,
+        category: s.category,
+        description: s.description || "",
+        basePrice: s.priceCents,
+        estimatedDuration: s.duration || "",
+        deliverables: s.deliverables,
+        isDefault: s.isDefault,
+      }));
+    }
+    return photographyServices;
+  }, [services]);
+
   const selectedService = selectedServiceId
-    ? photographyServices.find((s) => s.id === selectedServiceId)
+    ? availableServices.find((s) => s.id === selectedServiceId)
     : null;
 
   const handleAddDeliverable = useCallback(() => {
@@ -86,13 +118,13 @@ export function ServiceSelector({
 
   const filteredServices =
     selectedCategory === "all"
-      ? photographyServices
-      : photographyServices.filter((s) => s.category === selectedCategory);
+      ? availableServices
+      : availableServices.filter((s) => s.category === selectedCategory);
 
-  const handleServiceSelect = (service: ServiceType) => {
+  const handleServiceSelect = (service: { id: string; name: string; category: ServiceCategory; description: string; basePrice: number; estimatedDuration: string; deliverables: string[]; isDefault?: boolean }) => {
     setIsCustom(false);
     setExpandedService(service.id);
-    onServiceChange?.(service);
+    onServiceChange?.(service as ServiceType);
     onPriceChange?.(service.basePrice);
     onDescriptionChange?.(service.description);
   };
@@ -506,6 +538,8 @@ function CheckIcon({ className }: { className?: string }) {
 
 // Also export a read-only display component for detail pages
 interface ServiceDisplayProps {
+  /** Optional database services to search */
+  services?: DatabaseServiceType[];
   serviceId?: string;
   customPrice?: number;
   customDescription?: string;
@@ -514,8 +548,31 @@ interface ServiceDisplayProps {
   showEditButton?: boolean;
 }
 
-export function ServiceDisplay({ serviceId, customPrice, customDescription, className, editHref, showEditButton = true }: ServiceDisplayProps) {
-  const service = serviceId ? photographyServices.find((s) => s.id === serviceId) : null;
+export function ServiceDisplay({ services, serviceId, customPrice, customDescription, className, editHref, showEditButton = true }: ServiceDisplayProps) {
+  // First try to find in database services, then fall back to static services
+  let service = null;
+  if (serviceId) {
+    if (services && services.length > 0) {
+      const dbService = services.find((s) => s.id === serviceId);
+      if (dbService) {
+        service = {
+          id: dbService.id,
+          name: dbService.name,
+          category: dbService.category,
+          description: dbService.description || "",
+          basePrice: dbService.priceCents,
+          estimatedDuration: dbService.duration || "",
+          deliverables: dbService.deliverables,
+        };
+      }
+    }
+    if (!service) {
+      const staticService = photographyServices.find((s) => s.id === serviceId);
+      if (staticService) {
+        service = staticService;
+      }
+    }
+  }
 
   const EditButton = editHref && showEditButton ? (
     <a
