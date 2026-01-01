@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Client Detail Page)
+- Created `/clients/[id]` page with comprehensive client profile
+- Stats row: lifetime revenue, total galleries, total payments
+- Galleries list with status badges and revenue
+- Payment history with paid/pending status indicators
+- Client info sidebar with avatar, industry, contact details
+- Notes section for client-specific information
+- Quick actions: Send email, create invoice, schedule shoot, delete
+- Demo data for clients 1, 2, 3, and 5 with related galleries/payments
+
 ### Added (Gallery Detail Page)
 - Created `/galleries/[id]` page with comprehensive gallery view
 - Stats row showing status, revenue, views, and downloads
