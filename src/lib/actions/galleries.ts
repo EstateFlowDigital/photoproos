@@ -17,6 +17,7 @@ import {
 } from "@/lib/validations/galleries";
 import type { ProjectStatus } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
+import { sendGalleryDeliveredEmail } from "@/lib/email/send";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -458,10 +459,32 @@ export async function deliverGallery(
       { projectId: id, clientId: existing.clientId || undefined }
     );
 
-    // TODO: Send email notification if requested
-    // if (sendEmail && existing.client?.email) {
-    //   await sendDeliveryEmail(existing.client.email, existing, message);
-    // }
+    // Send email notification if requested
+    if (sendEmail && existing.client?.email) {
+      // Get organization info for photographer name
+      const organization = await prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { name: true },
+      });
+
+      const deliverySlug = existing.deliveryLinks[0]?.slug || id;
+      const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliverySlug}`;
+
+      // Count photos for the email
+      const photoCount = await prisma.asset.count({
+        where: { projectId: id },
+      });
+
+      await sendGalleryDeliveredEmail({
+        to: existing.client.email,
+        clientName: existing.client.fullName || existing.client.company || "there",
+        galleryName: existing.name,
+        galleryUrl,
+        photographerName: organization?.name || "Your Photographer",
+        photoCount,
+        expiresAt: existing.expiresAt || undefined,
+      });
+    }
 
     revalidatePath("/galleries");
     revalidatePath(`/galleries/${id}`);

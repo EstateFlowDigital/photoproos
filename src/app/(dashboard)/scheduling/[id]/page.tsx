@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getBooking, updateBookingStatus } from "@/lib/actions/bookings";
 import { redirect } from "next/navigation";
+import { BookingActions, BookingWeather } from "./booking-actions";
 
 interface BookingDetailPageProps {
   params: Promise<{ id: string }>;
@@ -295,8 +296,43 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
                   <span className="text-sm text-foreground-secondary">Session Fee</span>
                   <span className="font-medium text-foreground">{formatCurrency(price)}</span>
                 </div>
+                {booking.travelFeeCents && booking.travelFeeCents > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-foreground-secondary">Travel Fee</span>
+                    <span className="font-medium text-foreground">{formatCurrency(booking.travelFeeCents)}</span>
+                  </div>
+                )}
+                {booking.travelFeeCents && booking.travelFeeCents > 0 && (
+                  <div className="pt-3 border-t border-[var(--card-border)]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">Total</span>
+                      <span className="font-semibold text-foreground">{formatCurrency(price + (booking.travelFeeCents || 0))}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+          )}
+
+          {/* Generate Invoice */}
+          <BookingActions
+            bookingId={booking.id}
+            projectId={booking.projectId}
+            latitude={booking.locationRef?.latitude}
+            longitude={booking.locationRef?.longitude}
+            bookingDate={booking.startTime}
+            hasService={!!booking.service}
+            hasTravelFee={!!(booking.travelFeeCents && booking.travelFeeCents > 0)}
+          />
+
+          {/* Weather Forecast */}
+          {booking.locationRef?.latitude && booking.locationRef?.longitude && (
+            <BookingWeather
+              latitude={booking.locationRef.latitude}
+              longitude={booking.locationRef.longitude}
+              bookingDate={booking.startTime}
+              shootTime={booking.startTime}
+            />
           )}
 
           {/* Quick Actions */}

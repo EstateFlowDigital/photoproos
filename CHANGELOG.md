@@ -7,6 +7,100 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Booking Details & Property Features)
+- **Booking Detail Enhancements** (`/scheduling/[id]/page.tsx`):
+  - Generate Invoice button with `generateInvoiceFromBooking` integration
+  - Travel fee display in pricing section with total calculation
+  - Weather forecast card showing conditions for upcoming shoots
+  - Golden hour times display for optimal photography scheduling
+  - Photo condition analysis with recommendations and warnings
+- **Weather Server Actions** (`/lib/actions/weather.ts`):
+  - `getBookingWeather` - Fetch forecast and golden hour for booking date
+  - `getLocationForecast` - 5-day forecast for any location
+  - `getGoldenHour` - Calculate sunrise/sunset times
+  - `checkWeatherApiAvailability` - Check if OpenWeather API is configured
+- **Property API Library** (`/lib/property/`):
+  - Property types and interfaces (`types.ts`)
+  - Package suggestion engine based on property details (`suggest-package.ts`)
+  - ATTOM API client configuration (optional) (`client.ts`)
+  - Square footage-based photo count recommendations
+  - Duration estimates based on property size
+  - Feature-based add-on suggestions (drone, twilight, video)
+- **PropertyDetailsCard Component** (`/components/dashboard/property-details-card.tsx`):
+  - Display property details (beds, baths, sqft, year built, etc.)
+  - Editable mode for manual property entry
+  - Feature toggles (pool, waterfront)
+  - Listing price and MLS number fields
+  - Smart package recommendations based on property
+  - Compact display mode for inline usage
+- **BookingActions Component** (`/scheduling/[id]/booking-actions.tsx`):
+  - Client component for interactive booking actions
+  - Generate Invoice button with loading state
+  - Error and success message handling
+  - Automatic redirect to new invoice after generation
+- **BookingWeather Component**:
+  - Weather forecast with photography analysis
+  - Golden hour times with visual indicators
+  - Recommendations for outdoor shooting conditions
+  - Warnings for rain, wind, and extreme temperatures
+
+### Added (Phase 1A: Core Integration Sprint)
+- **Authentication System** (Sprint 1):
+  - Created auth pages with Clerk integration (`/sign-in`, `/sign-up`)
+  - Custom dark theme styling matching design system
+  - Auth layout wrapper with centered styling
+  - Auth helper functions (`requireAuth`, `requireOrganizationId`) for server actions
+  - Fixed middleware to properly protect dashboard routes (was temporarily public)
+  - Updated 6 server action files (galleries, services, bookings, clients, payments, settings) with auth context
+  - Added `UserButton` and `OrganizationSwitcher` to dashboard sidebar
+  - Added Clerk components to mobile navigation
+
+- **Stripe Payments Integration** (Sprint 2):
+  - Created Stripe client (`/lib/stripe.ts`) with API version 2024-12-18.acacia
+  - **Stripe Connect Actions** (`/lib/actions/stripe-connect.ts`):
+    - `createConnectAccount` - Create Express account and generate onboarding link
+    - `getConnectAccountStatus` - Check account connection and verification status
+    - `createAccountLink` - Resume onboarding for incomplete accounts
+    - `createDashboardLink` - Open Stripe Express Dashboard
+  - **Stripe Checkout Actions** (`/lib/actions/stripe-checkout.ts`):
+    - `createGalleryCheckoutSession` - Pay-to-unlock galleries with platform fees
+    - `verifyPayment` - Verify payment after Stripe redirect
+    - `checkGalleryPaymentStatus` - Check if gallery has been paid for
+  - **Stripe Webhook Handler** (`/api/webhooks/stripe/route.ts`):
+    - `checkout.session.completed` - Record payment and unlock gallery
+    - `account.updated` - Update Connect account onboarding status
+    - `payment_intent.succeeded` - Backup payment recording
+    - `payment_intent.payment_failed` - Mark failed payments
+  - **Payments Settings Page** (`/settings/payments`):
+    - Stripe Connect onboarding flow with status indicators
+    - Account verification status (charges, payouts, onboarding)
+    - Platform fee information (5% per transaction)
+    - Link to Stripe Dashboard for payout management
+  - Added Payments card to main Settings page with Stripe icon
+
+- **Email System with Resend** (Sprint 3):
+  - Installed `@react-email/components` for template rendering
+  - Created Resend client (`/lib/email/resend.ts`) with send helper
+  - **Email Sending Functions** (`/lib/email/send.ts`):
+    - `sendGalleryDeliveredEmail` - Notify client when photos are ready
+    - `sendPaymentReceiptEmail` - Send receipt after gallery payment
+    - `sendBookingConfirmationEmail` - Confirm new bookings
+    - `sendWelcomeEmail` - Welcome new organizations
+  - **React Email Templates** (`/emails/`):
+    - `gallery-delivered.tsx` - Dark theme with CTA button and expiry notice
+    - `payment-receipt.tsx` - Receipt with transaction details and gallery link
+    - `booking-confirmation.tsx` - Session details with tips section
+    - `welcome.tsx` - Onboarding steps and feature highlights
+  - Integrated email sending into gallery delivery flow
+  - Integrated email sending into Stripe webhook for payment receipts
+
+- **Database Schema Updates**:
+  - Added `gallery_paid` to `ActivityType` enum
+  - Added `stripeCheckoutSessionId` field to Payment model
+  - Added `clientId` field and Client relation to Payment model
+  - Added `payments` relation to Client model
+  - Added index on `clientId` for Payment queries
+
 ### Added (Team Capabilities & Equipment Management)
 - **Equipment Manager Page** (`/settings/equipment`):
   - Full CRUD interface for managing photography equipment

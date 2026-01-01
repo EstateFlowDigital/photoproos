@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
+import { sendPaymentReceiptEmail } from "@/lib/email/send";
 import type Stripe from "stripe";
 
 /**
@@ -151,6 +152,36 @@ async function handleCheckoutSessionCompleted(
       clientId: clientId || null,
     },
   });
+
+  // Send payment receipt email
+  if (session.customer_email) {
+    // Get organization for photographer name
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { name: true },
+    });
+
+    // Get delivery link for gallery URL
+    const deliveryLink = await prisma.deliveryLink.findFirst({
+      where: { projectId: galleryId, isActive: true },
+      select: { slug: true },
+    });
+
+    const galleryUrl = deliveryLink
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliveryLink.slug}`
+      : `${process.env.NEXT_PUBLIC_APP_URL}/g/${galleryId}`;
+
+    await sendPaymentReceiptEmail({
+      to: session.customer_email,
+      clientName: session.customer_details?.name || "there",
+      galleryName: gallery.name,
+      galleryUrl,
+      amountCents: session.amount_total || 0,
+      currency: session.currency?.toUpperCase() || "USD",
+      photographerName: organization?.name || "Your Photographer",
+      transactionId: session.id,
+    });
+  }
 }
 
 /**
