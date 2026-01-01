@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var __prismaClient: PrismaClient | undefined;
 }
 
 /**
@@ -30,10 +30,25 @@ function createPrismaClient(): PrismaClient {
   });
 }
 
-export const prisma = globalThis.prisma || createPrismaClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalThis.prisma = prisma;
-}
+/**
+ * Lazy-initialized Prisma client using a Proxy.
+ * This prevents PrismaClient instantiation during build time (module load).
+ * The actual client is only created when first accessed at runtime.
+ */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    // Lazily create the client on first access
+    if (!globalThis.__prismaClient) {
+      globalThis.__prismaClient = createPrismaClient();
+    }
+    const client = globalThis.__prismaClient;
+    const value = (client as unknown as Record<string | symbol, unknown>)[prop];
+    // Bind functions to the client instance
+    if (typeof value === "function") {
+      return (value as (...args: unknown[]) => unknown).bind(client);
+    }
+    return value;
+  },
+});
 
 export default prisma;
