@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, RevenueChart, EmptyGalleries, EmptyActivity } from "@/components/dashboard";
+import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries } from "@/components/dashboard";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import Link from "next/link";
 
@@ -29,14 +29,6 @@ const demoData = {
     { id: "1", title: "Corporate Headshots", client: "Tech Solutions Inc", date: new Date(Date.now() + 1000 * 60 * 60 * 24), time: "10:00 AM", location: "123 Business Park", status: "confirmed" as const, serviceType: "Corporate" },
     { id: "2", title: "Restaurant Interior", client: "Bella Cucina", date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), time: "2:00 PM", location: "456 Downtown Ave", status: "confirmed" as const, serviceType: "Commercial" },
     { id: "3", title: "Luxury Home Shoot", client: "Premier Realty", date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 4), time: "9:30 AM", location: "789 Oceanview Dr", status: "pending" as const, serviceType: "Real Estate" },
-  ],
-  revenueData: [
-    { label: "Aug", value: 890000, previousValue: 720000 },
-    { label: "Sep", value: 1120000, previousValue: 850000 },
-    { label: "Oct", value: 980000, previousValue: 920000 },
-    { label: "Nov", value: 1350000, previousValue: 1100000 },
-    { label: "Dec", value: 1580000, previousValue: 1250000 },
-    { label: "Jan", value: 1247500, previousValue: 980000 },
   ],
 };
 
@@ -120,7 +112,7 @@ function getActivityIcon(type: string) {
 export default async function DashboardPage() {
   // Use demo data for UI review (database not connected yet)
   if (DEMO_MODE) {
-    const { organization, monthlyRevenue, activeGalleries, totalClients, pendingPayments, recentActivity, recentGalleries, upcomingBookings, revenueData } = demoData;
+    const { organization, monthlyRevenue, activeGalleries, totalClients, pendingPayments, recentActivity, recentGalleries, upcomingBookings } = demoData;
 
     return (
       <div className="space-y-8">
@@ -167,9 +159,6 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
           <QuickActions />
         </div>
-
-        {/* Revenue Chart */}
-        <RevenueChart data={revenueData} />
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-3">
@@ -349,16 +338,6 @@ export default async function DashboardPage() {
     serviceType: booking.service?.category || booking.service?.name || undefined,
   }));
 
-  // Generate revenue data from demo values (would be real aggregations in production)
-  const revenueData = [
-    { label: "Aug", value: 890000, previousValue: 720000 },
-    { label: "Sep", value: 1120000, previousValue: 850000 },
-    { label: "Oct", value: 980000, previousValue: 920000 },
-    { label: "Nov", value: 1350000, previousValue: 1100000 },
-    { label: "Dec", value: 1580000, previousValue: 1250000 },
-    { label: "Jan", value: monthlyRevenueValue, previousValue: 980000 },
-  ];
-
   return (
     <div className="space-y-8">
       <PageHeader
@@ -397,9 +376,6 @@ export default async function DashboardPage() {
         <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
         <QuickActions />
       </div>
-
-      {/* Revenue Chart */}
-      <RevenueChart data={revenueData} />
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
