@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Navigation Enhancements)
+- Added icons to Industries dropdown menu items:
+  - Real Estate (home icon)
+  - Commercial (briefcase icon)
+  - Architecture & Interiors (building icon)
+  - Events & Corporate (calendar icon)
+  - Headshots & Portraits (person icon)
+  - Food & Hospitality (plate icon)
+- Added icons to Resources dropdown menu items:
+  - Help Center (question mark icon)
+  - Blog (document icon)
+  - Changelog (clock icon)
+  - Roadmap (map icon)
+- Updated mobile menu to display icons consistently with desktop dropdowns
+- All icons displayed in primary color circular backgrounds matching Features dropdown style
+
 ### Changed (Design System - Border Refinements)
 - Updated card borders to 0.094rem width with 10% opacity for more visible yet subtle styling
 - Changed `--card-border` from `rgba(255, 255, 255, 0.03)` to `rgba(255, 255, 255, 0.10)`
