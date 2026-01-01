@@ -5,23 +5,32 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-const databaseUrl = process.env.DATABASE_URL;
+/**
+ * Create a PrismaClient instance with proper Accelerate support.
+ * This function ensures environment variables are read at runtime.
+ */
+function createPrismaClient(): PrismaClient {
+  const databaseUrl = process.env.DATABASE_URL;
+  const isAccelerate = databaseUrl?.startsWith("prisma+");
+  const logLevel = process.env.NODE_ENV === "development"
+    ? ["query", "error", "warn"] as const
+    : ["error"] as const;
 
-// Check if using Prisma Accelerate (prisma+postgres:// or prisma+mysql://)
-const isAccelerate = databaseUrl?.startsWith("prisma+");
-
-export const prisma =
-  globalThis.prisma ||
-  new PrismaClient({
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
-    ...(isAccelerate && {
-      // For Prisma Accelerate, use the accelerateUrl option
+  // For Prisma Accelerate, we must pass the accelerateUrl option
+  if (isAccelerate && databaseUrl) {
+    return new PrismaClient({
+      log: [...logLevel],
       accelerateUrl: databaseUrl,
-    }),
+    });
+  }
+
+  // Standard PrismaClient for direct database connections
+  return new PrismaClient({
+    log: [...logLevel],
   });
+}
+
+export const prisma = globalThis.prisma || createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalThis.prisma = prisma;
