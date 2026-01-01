@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { PageHeader } from "@/components/dashboard";
 import { ServiceForm } from "@/components/dashboard/service-form";
 import Link from "next/link";

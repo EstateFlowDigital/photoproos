@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries } from "@/components/dashboard";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { prisma } from "@/lib/db";
+import { getAuthContext } from "@/lib/auth/clerk";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 // Icons
@@ -107,16 +109,21 @@ function calculateCountChange(current: number, previous: number): { change: stri
 }
 
 export default async function DashboardPage() {
-  // For now, get the first organization (later this will come from auth)
-  const organization = await prisma.organization.findFirst({
-    orderBy: { createdAt: "asc" },
+  // Get authenticated user and organization
+  const auth = await getAuthContext();
+  if (!auth) {
+    redirect("/sign-in");
+  }
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: auth.organizationId },
   });
 
   if (!organization) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <h2 className="text-xl font-semibold text-foreground">No organization found</h2>
-        <p className="mt-2 text-foreground-muted">Please run the seed script to populate demo data.</p>
+        <p className="mt-2 text-foreground-muted">Please create an organization to get started.</p>
       </div>
     );
   }

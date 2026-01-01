@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 import { PageHeader, StatCard } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
+import { getAuthContext } from "@/lib/auth/clerk";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
