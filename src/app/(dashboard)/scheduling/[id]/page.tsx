@@ -2,131 +2,10 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { cn } from "@/lib/utils";
-
-// Demo booking data
-const demoBookings: Record<string, {
-  id: string;
-  title: string;
-  type: string;
-  status: "confirmed" | "pending" | "completed" | "cancelled";
-  client: { id: string; name: string; email: string; phone: string };
-  date: string;
-  startTime: string;
-  endTime: string;
-  location: { address: string; notes: string | null };
-  notes: string | null;
-  price: number;
-  deposit: number;
-  depositPaid: boolean;
-  serviceId?: string;
-  serviceDescription?: string;
-  createdAt: string;
-}> = {
-  "1": {
-    id: "1",
-    title: "Luxury Penthouse Shoot",
-    type: "Real Estate Photography",
-    status: "confirmed",
-    client: { id: "1", name: "Premier Realty", email: "contact@premierrealty.com", phone: "(555) 123-4567" },
-    date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    startTime: "10:00",
-    endTime: "13:00",
-    location: {
-      address: "888 Skyline Tower, Penthouse A\nSan Francisco, CA 94105",
-      notes: "Take elevator to 45th floor. Building manager will meet you in lobby with keys.",
-    },
-    notes: "Client wants drone shots of the terrace if weather permits. Bring wide-angle lens for living room. Property is staged and ready.",
-    price: 85000,
-    deposit: 25000,
-    depositPaid: true,
-    serviceId: "re-luxury",
-    serviceDescription: "Premium photography package for high-end and luxury properties",
-    createdAt: "2024-12-15",
-  },
-  "2": {
-    id: "2",
-    title: "Corporate Team Photos",
-    type: "Corporate Headshots",
-    status: "pending",
-    client: { id: "2", name: "Tech Solutions Inc", email: "admin@techsolutions.com", phone: "(555) 234-5678" },
-    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    startTime: "09:00",
-    endTime: "17:00",
-    location: {
-      address: "500 Innovation Drive, 3rd Floor\nPalo Alto, CA 94301",
-      notes: "Parking validation available. Ask for Sarah at reception.",
-    },
-    notes: "25 team members for headshots. They'll provide a schedule. Bring gray and white backdrops. On-site hair/makeup will be available.",
-    price: 325000,
-    deposit: 100000,
-    depositPaid: false,
-    serviceId: "portrait-team",
-    serviceDescription: "Consistent headshots for corporate teams and organizations",
-    createdAt: "2024-12-20",
-  },
-  "3": {
-    id: "3",
-    title: "Restaurant Menu Shoot",
-    type: "Food Photography",
-    status: "confirmed",
-    client: { id: "3", name: "Bella Cucina", email: "info@bellacucina.com", phone: "(555) 345-6789" },
-    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    startTime: "14:00",
-    endTime: "18:00",
-    location: {
-      address: "789 Restaurant Row\nSan Francisco, CA 94108",
-      notes: "Enter through back kitchen entrance. Chef Marco will have dishes ready.",
-    },
-    notes: "New spring menu items - approximately 12 dishes. Bring props for Italian styling. Natural light available from large windows.",
-    price: 125000,
-    deposit: 40000,
-    depositPaid: true,
-    serviceId: "product-food",
-    serviceDescription: "Professional food and beverage photography",
-    createdAt: "2024-12-18",
-  },
-  "4": {
-    id: "4",
-    title: "Product Launch Event",
-    type: "Event Photography",
-    status: "completed",
-    client: { id: "7", name: "Innovate Tech", email: "events@innovatetech.com", phone: "(555) 567-8901" },
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    startTime: "18:00",
-    endTime: "22:00",
-    location: {
-      address: "The Grand Ballroom\n100 Market Street, San Francisco, CA 94102",
-      notes: "VIP entrance on 2nd Street side. Media credentials required.",
-    },
-    notes: "Tech product launch event. Focus on keynote speaker, product demos, and networking. 200+ attendees expected. Deliver same-day highlights for social media.",
-    price: 200000,
-    deposit: 75000,
-    depositPaid: true,
-    serviceId: "event-corporate",
-    serviceDescription: "Coverage for conferences, meetings, and corporate gatherings",
-    createdAt: "2024-12-10",
-  },
-};
-
-const defaultBooking = {
-  id: "0",
-  title: "Sample Booking",
-  type: "Photography Session",
-  status: "pending" as const,
-  client: { id: "0", name: "Demo Client", email: "demo@example.com", phone: "(555) 000-0000" },
-  date: new Date().toISOString().split("T")[0],
-  startTime: "09:00",
-  endTime: "12:00",
-  location: { address: "123 Main Street\nSan Francisco, CA 94102", notes: null },
-  notes: null,
-  price: 0,
-  deposit: 0,
-  depositPaid: false,
-  serviceId: undefined,
-  serviceDescription: "",
-  createdAt: new Date().toISOString().split("T")[0],
-};
+import { getBooking, updateBookingStatus } from "@/lib/actions/bookings";
+import { redirect } from "next/navigation";
 
 interface BookingDetailPageProps {
   params: Promise<{ id: string }>;
@@ -134,7 +13,11 @@ interface BookingDetailPageProps {
 
 export default async function BookingDetailPage({ params }: BookingDetailPageProps) {
   const { id } = await params;
-  const booking = demoBookings[id] || { ...defaultBooking, id };
+  const booking = await getBooking(id);
+
+  if (!booking) {
+    notFound();
+  }
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -145,22 +28,21 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
     }).format(cents / 100);
   };
 
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+  const formatTime = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
       year: "numeric",
-    });
+    }).format(date);
   };
 
   const statusStyles = {
@@ -171,14 +53,32 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
   };
 
   const status = statusStyles[booking.status];
-  const isPast = new Date(booking.date) < new Date();
+  const isPast = booking.endTime < new Date();
   const isUpcoming = !isPast && booking.status !== "cancelled";
+
+  // Get client info - either from linked client or from booking fields
+  const clientInfo = booking.client
+    ? {
+        id: booking.client.id,
+        name: booking.client.company || booking.client.fullName || "Unknown Client",
+        email: booking.client.email,
+        phone: booking.client.phone || "",
+      }
+    : {
+        id: null,
+        name: booking.clientName || "Unknown Client",
+        email: booking.clientEmail || "",
+        phone: booking.clientPhone || "",
+      };
+
+  // Get service price
+  const price = booking.service?.priceCents || 0;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={booking.title}
-        subtitle={`${booking.type} • ${formatDate(booking.date)}`}
+        subtitle={`${booking.service?.name || booking.bookingType?.name || "Session"} • ${formatDate(booking.startTime)}`}
         actions={
           <div className="flex items-center gap-3">
             <Link
@@ -198,16 +98,27 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
             {isUpcoming && (
               <>
                 {booking.status === "pending" && (
-                  <button className="inline-flex items-center gap-2 rounded-lg bg-[var(--success)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--success)]/90">
-                    <CheckIcon className="h-4 w-4" />
-                    Confirm Booking
-                  </button>
+                  <form
+                    action={async () => {
+                      "use server";
+                      await updateBookingStatus(id, "confirmed");
+                      redirect(`/scheduling/${id}`);
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--success)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--success)]/90"
+                    >
+                      <CheckIcon className="h-4 w-4" />
+                      Confirm Booking
+                    </button>
+                  </form>
                 )}
               </>
             )}
-            {booking.status === "completed" && (
+            {booking.status === "completed" && clientInfo.id && (
               <Link
-                href={`/galleries/new?client=${booking.client.id}`}
+                href={`/galleries/new?client=${clientInfo.id}`}
                 className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
               >
                 <PhotoIcon className="h-4 w-4" />
@@ -217,13 +128,6 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
           </div>
         }
       />
-
-      {/* Demo Mode Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Demo Mode:</strong> Viewing sample booking data. Actions are disabled.
-        </p>
-      </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
@@ -248,20 +152,20 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
               <div className="text-right">
                 <p className="text-sm text-foreground-muted">Starts in</p>
                 <p className={cn("text-lg font-semibold", status.text)}>
-                  {Math.ceil((new Date(booking.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days
+                  {Math.max(0, Math.ceil((booking.startTime.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days
                 </p>
               </div>
             )}
           </div>
 
           {/* Service Package */}
-          {(booking.serviceId || booking.serviceDescription) && (
+          {booking.service && (
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Service Package</h2>
               <ServiceDisplay
-                serviceId={booking.serviceId}
-                customPrice={booking.price}
-                customDescription={booking.serviceDescription}
+                serviceId={booking.service.id}
+                customPrice={booking.service.priceCents}
+                customDescription={booking.service.description || undefined}
               />
             </div>
           )}
@@ -276,7 +180,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
                 </div>
                 <div>
                   <p className="text-sm text-foreground-muted">Date</p>
-                  <p className="font-medium text-foreground">{formatDate(booking.date)}</p>
+                  <p className="font-medium text-foreground">{formatDate(booking.startTime)}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -294,29 +198,31 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
           </div>
 
           {/* Location */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Location</h2>
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
-                <MapPinIcon className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground whitespace-pre-line">{booking.location.address}</p>
-                {booking.location.notes && (
-                  <p className="mt-2 text-sm text-foreground-secondary">{booking.location.notes}</p>
-                )}
-                <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(booking.location.address.replace(/\n/g, ", "))}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--primary)] hover:underline"
-                >
-                  <ExternalLinkIcon className="h-4 w-4" />
-                  Open in Maps
-                </a>
+          {booking.location && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Location</h2>
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                  <MapPinIcon className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground whitespace-pre-line">{booking.location}</p>
+                  {booking.locationNotes && (
+                    <p className="mt-2 text-sm text-foreground-secondary">{booking.locationNotes}</p>
+                  )}
+                  <a
+                    href={`https://maps.google.com/?q=${encodeURIComponent(booking.location.replace(/\n/g, ", "))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--primary)] hover:underline"
+                  >
+                    <ExternalLinkIcon className="h-4 w-4" />
+                    Open in Maps
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Notes */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
@@ -326,9 +232,12 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
             ) : (
               <p className="text-sm text-foreground-muted italic">No notes added yet</p>
             )}
-            <button className="mt-4 text-sm font-medium text-[var(--primary)] hover:underline">
+            <Link
+              href={`/scheduling/${id}/edit`}
+              className="mt-4 inline-block text-sm font-medium text-[var(--primary)] hover:underline"
+            >
               {booking.notes ? "Edit Notes" : "Add Notes"}
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -339,98 +248,106 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
             <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold">
-                {booking.client.name.charAt(0)}
+                {clientInfo.name.charAt(0)}
               </div>
               <div>
-                <p className="font-medium text-foreground">{booking.client.name}</p>
-                <p className="text-sm text-foreground-muted">{booking.client.email}</p>
+                <p className="font-medium text-foreground">{clientInfo.name}</p>
+                <p className="text-sm text-foreground-muted">{clientInfo.email}</p>
               </div>
             </div>
             <div className="space-y-3">
-              <a
-                href={`tel:${booking.client.phone}`}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
-              >
-                <PhoneIcon className="h-4 w-4 text-foreground-muted" />
-                {booking.client.phone}
-              </a>
-              <a
-                href={`mailto:${booking.client.email}`}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
-              >
-                <EmailIcon className="h-4 w-4 text-foreground-muted" />
-                Send Email
-              </a>
+              {clientInfo.phone && (
+                <a
+                  href={`tel:${clientInfo.phone}`}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                >
+                  <PhoneIcon className="h-4 w-4 text-foreground-muted" />
+                  {clientInfo.phone}
+                </a>
+              )}
+              {clientInfo.email && (
+                <a
+                  href={`mailto:${clientInfo.email}`}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                >
+                  <EmailIcon className="h-4 w-4 text-foreground-muted" />
+                  Send Email
+                </a>
+              )}
             </div>
-            <Link
-              href={`/clients/${booking.client.id}`}
-              className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-            >
-              View Client Profile
-              <ChevronRightIcon className="h-4 w-4" />
-            </Link>
+            {clientInfo.id && (
+              <Link
+                href={`/clients/${clientInfo.id}`}
+                className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
+                View Client Profile
+                <ChevronRightIcon className="h-4 w-4" />
+              </Link>
+            )}
           </div>
 
           {/* Pricing */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Pricing</h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground-secondary">Session Fee</span>
-                <span className="font-medium text-foreground">{formatCurrency(booking.price)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground-secondary">Deposit Required</span>
-                <span className="font-medium text-foreground">{formatCurrency(booking.deposit)}</span>
-              </div>
-              <hr className="border-[var(--card-border)]" />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground-secondary">Deposit Status</span>
-                <span className={cn(
-                  "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
-                  booking.depositPaid ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--warning)]/10 text-[var(--warning)]"
-                )}>
-                  {booking.depositPaid ? "Paid" : "Pending"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground-secondary">Balance Due</span>
-                <span className="font-semibold text-foreground">
-                  {formatCurrency(booking.price - (booking.depositPaid ? booking.deposit : 0))}
-                </span>
+          {price > 0 && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Pricing</h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground-secondary">Session Fee</span>
+                  <span className="font-medium text-foreground">{formatCurrency(price)}</span>
+                </div>
               </div>
             </div>
-            {!booking.depositPaid && booking.status !== "cancelled" && (
-              <button className="mt-4 w-full rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">
-                Send Payment Request
-              </button>
-            )}
-          </div>
+          )}
 
           {/* Quick Actions */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Actions</h2>
             <div className="space-y-2">
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
-                <EmailIcon className="h-4 w-4 text-foreground-muted" />
-                Send Reminder
-              </button>
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
-                <CalendarIcon className="h-4 w-4 text-foreground-muted" />
-                Add to Calendar
-              </button>
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
-                <DuplicateIcon className="h-4 w-4 text-foreground-muted" />
-                Duplicate Booking
-              </button>
+              {clientInfo.email && (
+                <a
+                  href={`mailto:${clientInfo.email}`}
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                >
+                  <EmailIcon className="h-4 w-4 text-foreground-muted" />
+                  Send Reminder
+                </a>
+              )}
               {booking.status !== "cancelled" && booking.status !== "completed" && (
                 <>
                   <hr className="border-[var(--card-border)]" />
-                  <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--error)] transition-colors hover:bg-[var(--error)]/10">
-                    <XIcon className="h-4 w-4" />
-                    Cancel Booking
-                  </button>
+                  <form
+                    action={async () => {
+                      "use server";
+                      await updateBookingStatus(id, "cancelled");
+                      redirect(`/scheduling/${id}`);
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
+                    >
+                      <XIcon className="h-4 w-4" />
+                      Cancel Booking
+                    </button>
+                  </form>
                 </>
+              )}
+              {booking.status === "confirmed" && isPast && (
+                <form
+                  action={async () => {
+                    "use server";
+                    await updateBookingStatus(id, "completed");
+                    redirect(`/scheduling/${id}`);
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--success)] transition-colors hover:bg-[var(--success)]/10"
+                  >
+                    <CheckCircleIcon className="h-4 w-4" />
+                    Mark as Completed
+                  </button>
+                </form>
               )}
             </div>
           </div>
@@ -544,15 +461,6 @@ function ChevronRightIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
-function DuplicateIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z" />
-      <path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-5.879a1.5 1.5 0 0 0-.44-1.06L9.44 6.439A1.5 1.5 0 0 0 8.378 6H4.5Z" />
     </svg>
   );
 }

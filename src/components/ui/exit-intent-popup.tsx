@@ -9,7 +9,7 @@ interface ExitIntentPopupProps {
 }
 
 export function ExitIntentPopup({
-  delay = 5000, // 5 seconds minimum before showing
+  delay = 3000, // 3 seconds minimum before showing
   cooldown = 86400000, // 24 hours before showing again
 }: ExitIntentPopupProps) {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -27,9 +27,11 @@ export function ExitIntentPopup({
       if (lastShown) {
         const elapsed = Date.now() - parseInt(lastShown, 10);
         if (elapsed < cooldown) {
+          console.log("[Exit Intent] In cooldown period, not enabling");
           return; // Don't show if within cooldown period
         }
       }
+      console.log("[Exit Intent] Ready - move mouse to top of browser to trigger");
       setCanShow(true);
     }, delay);
 

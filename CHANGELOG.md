@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Client & Booking CRUD - Real Data Connection)
+- **Client Server Actions** (`/lib/actions/clients.ts`):
+  - `getClient(id)` - Fetch single client with projects, bookings, payments, and activity logs
+  - `getClients(filters?)` - Fetch all clients with optional search and industry filters
+  - `createClient(input)` - Create new client with duplicate email check
+  - `updateClient(input)` - Update client with validation
+  - `deleteClient(id, force?)` - Delete client with cascade option
+  - Activity logging for all client events
+- **Booking Server Actions** (`/lib/actions/bookings.ts`):
+  - `getBooking(id)` - Fetch single booking with client, service, booking type, and assigned user
+  - `getBookings(filters?)` - Fetch all bookings with status, client, and date filters
+  - `createBooking(input)` - Create new booking
+  - `updateBooking(input)` - Update booking with validation
+  - `updateBookingStatus(id, status)` - Quick status change
+  - `deleteBooking(id)` - Delete booking and related reminders
+  - `getClientsForBooking()` - Get clients for dropdown
+  - `getServicesForBooking()` - Get services for dropdown
+
+### Changed (Detail Pages - Real Data Connection)
+- **Client Edit Page** (`/clients/[id]/edit/page.tsx`):
+  - Removed demo data - fetches real client using getClient action
+  - Shows real client stats, activity logs, and quick links
+  - Connected delete functionality to server action
+- **Client Edit Form** (`/clients/[id]/edit/client-edit-form.tsx`):
+  - New client component with full form state management
+  - Uses `useTransition` for loading states
+  - Toast-style success/error feedback
+  - Redirects to client profile on success
+- **Booking Detail Page** (`/scheduling/[id]/page.tsx`):
+  - Removed demo data - fetches real booking using getBooking action
+  - Status change buttons (Confirm, Complete, Cancel) connected to server actions
+  - Shows real client info, service package, and pricing
+- **Booking Edit Page** (`/scheduling/[id]/edit/page.tsx`):
+  - Removed demo data - fetches real booking and clients
+  - Status change sidebar with functional buttons
+  - Connected to real client and service data
+- **Booking Edit Form** (`/scheduling/[id]/edit/booking-edit-form.tsx`):
+  - Added form submission with updateBooking action
+  - Error/success state handling with user feedback
+  - Loading states during submission
+  - Redirects to booking detail on success
+- **New Booking Page** (`/scheduling/new/page.tsx`):
+  - Removed demo mode banner - now fully functional
+  - Fetches real clients and services from database
+  - Shows real recent clients in sidebar
+- **New Booking Form** (`/scheduling/new/booking-new-form.tsx`):
+  - Added form submission with createBooking action
+  - Client-side validation (required fields, time validation)
+  - Loading states and error handling
+  - Redirects to new booking detail on success
+
 ### Added (Landing Page - Conversion Optimizations)
 - **Sticky CTA Bar** (`/components/ui/sticky-cta.tsx`):
   - Fixed bottom bar appears after scrolling 600px
@@ -22,11 +73,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Custom slider styling with gradient fill and hover effects
 - **Exit-Intent Popup** (`/components/ui/exit-intent-popup.tsx`):
   - Detects when mouse leaves viewport from top
-  - 5-second delay before enabling (prevents immediate trigger)
+  - 3-second delay before enabling (prevents immediate trigger)
   - 24-hour cooldown stored in localStorage
   - Email capture form with success animation
   - Free guide offer: "5 Ways to Double Your Photography Income"
   - Trust indicators: No spam, Unsubscribe anytime
+- **Social Proof Toast** (`/components/ui/social-proof-toast.tsx`):
+  - Displays recent signup notifications in bottom-left corner
+  - 8-second initial delay, 25-second interval between toasts
+  - Shows name, location, specialty, and time ago
+  - Dismissible with localStorage persistence
+  - Verified signup badge for authenticity
+- **Chat Widget** (`/components/ui/chat-widget.tsx`):
+  - Floating chat bubble in bottom-right corner
+  - 3-second delay before appearing
+  - Quick question buttons (Pricing, Features, Free trial)
+  - Message input with send functionality
+  - Success state after message submission
+  - ESC key to close, pulse animation on bubble
+- **Animated Counter** (`/components/ui/animated-counter.tsx`):
+  - Scroll-triggered number animation with intersection observer
+  - Ease-out cubic easing for smooth counting
+  - Supports prefix, suffix, and decimal formatting
+  - `PercentageCounter` variant with visual progress bar
+  - `StatsCounter` grid layout for multiple stats
+- **Loading Skeletons** (`/components/ui/skeleton.tsx`):
+  - Reusable skeleton components for loading states
+  - `Skeleton` base component with multiple variants (default, circular, text, image)
+  - `ImageSkeleton` with shimmer effect and aspect ratio options
+  - `CardSkeleton` for card loading states
+  - `GallerySkeleton` for gallery grid loading
+  - Added shimmer-skeleton CSS animation to globals.css
 
 ### Changed (Global Styles)
 - Added slider input styles for ROI calculator

@@ -2,18 +2,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { BookingNewForm } from "./booking-new-form";
-
-// Demo clients for dropdown
-const demoClients = [
-  { id: "1", name: "Premier Realty", contact: "John Peterson" },
-  { id: "2", name: "Tech Solutions Inc", contact: "Lisa Chen" },
-  { id: "3", name: "Bella Cucina", contact: "Marco Rossi" },
-  { id: "4", name: "Design Studio Pro", contact: "Amanda Foster" },
-  { id: "5", name: "Sarah Mitchell", contact: "Sarah Mitchell" },
-  { id: "6", name: "Berkshire Properties", contact: "David Park" },
-  { id: "7", name: "Innovate Tech", contact: "Rachel Kim" },
-  { id: "8", name: "Luxury Living Realty", contact: "James Wilson" },
-];
+import { getClientsForBooking, getServicesForBooking } from "@/lib/actions/bookings";
 
 // Generate time slots
 function generateTimeSlots() {
@@ -33,8 +22,31 @@ function generateTimeSlots() {
   return slots;
 }
 
-export default function NewBookingPage() {
+export default async function NewBookingPage() {
   const timeSlots = generateTimeSlots();
+
+  // Fetch real data from database
+  const [clients, services] = await Promise.all([
+    getClientsForBooking(),
+    getServicesForBooking(),
+  ]);
+
+  // Map clients for dropdown
+  const clientsForForm = clients.map((client) => ({
+    id: client.id,
+    name: client.company || client.fullName || client.email,
+    contact: client.fullName || client.email,
+  }));
+
+  // Map services for form
+  const servicesForForm = services.map((service) => ({
+    id: service.id,
+    name: service.name,
+    category: service.category,
+    priceCents: service.priceCents,
+    duration: service.duration,
+    description: service.description,
+  }));
 
   return (
     <div className="space-y-6">
@@ -52,17 +64,14 @@ export default function NewBookingPage() {
         }
       />
 
-      {/* Demo Mode Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Demo Mode:</strong> Form submissions are disabled. This is a preview of the booking flow.
-        </p>
-      </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
         <div className="lg:col-span-2">
-          <BookingNewForm clients={demoClients} timeSlots={timeSlots} />
+          <BookingNewForm
+            clients={clientsForForm}
+            timeSlots={timeSlots}
+            services={servicesForForm}
+          />
         </div>
 
         {/* Sidebar */}
@@ -106,22 +115,24 @@ export default function NewBookingPage() {
           </div>
 
           {/* Recent Clients */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Recent Clients</h2>
-            <div className="space-y-3">
-              {demoClients.slice(0, 4).map((client) => (
-                <div key={client.id} className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium">
-                    {client.name.charAt(0)}
+          {clientsForForm.length > 0 && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Recent Clients</h2>
+              <div className="space-y-3">
+                {clientsForForm.slice(0, 4).map((client) => (
+                  <div key={client.id} className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium">
+                      {client.name.charAt(0)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate">{client.name}</p>
+                      <p className="text-xs text-foreground-muted truncate">{client.contact}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground truncate">{client.name}</p>
-                    <p className="text-xs text-foreground-muted truncate">{client.contact}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

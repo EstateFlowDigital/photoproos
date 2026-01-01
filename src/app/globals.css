@@ -955,9 +955,22 @@ html[data-scroll-theme="light"] {
 
 @media (prefers-reduced-motion: reduce) {
   .shimmer,
-  .shimmer-overlay::after {
+  .shimmer-overlay::after,
+  .shimmer-skeleton {
     animation: none;
   }
+}
+
+/* Shimmer Skeleton (for image placeholders) */
+.shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite ease-in-out;
 }
 
 /* Image Loading States */

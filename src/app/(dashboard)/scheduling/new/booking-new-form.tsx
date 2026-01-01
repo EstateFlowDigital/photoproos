@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
+import { createBooking } from "@/lib/actions/bookings";
 import type { ServiceType } from "@/lib/services";
 
 // Union type for selected service (can be static or database service)
@@ -14,18 +16,88 @@ interface Client {
   contact: string;
 }
 
+interface Service {
+  id: string;
+  name: string;
+  category: string;
+  priceCents: number;
+  duration: string | null;
+  description: string | null;
+}
+
 interface BookingNewFormProps {
   clients: Client[];
   timeSlots: { value: string; label: string }[];
+  services: Service[];
 }
 
-export function BookingNewForm({ clients, timeSlots }: BookingNewFormProps) {
+export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<SelectedService>(null);
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+
+    const title = formData.get("title") as string;
+    const clientId = formData.get("clientId") as string;
+    const date = formData.get("date") as string;
+    const startTime = formData.get("startTime") as string;
+    const endTime = formData.get("endTime") as string;
+    const address = formData.get("address") as string;
+    const locationNotes = formData.get("locationNotes") as string;
+    const notes = formData.get("notes") as string;
+
+    // Validate required fields
+    if (!title || !date || !startTime || !endTime || !address) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    // Create Date objects from date and time
+    const startDateTime = new Date(`${date}T${startTime}:00`);
+    const endDateTime = new Date(`${date}T${endTime}:00`);
+
+    if (endDateTime <= startDateTime) {
+      setError("End time must be after start time");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await createBooking({
+        title,
+        clientId: clientId || undefined,
+        serviceId: selectedService?.id || undefined,
+        startTime: startDateTime,
+        endTime: endDateTime,
+        location: address,
+        locationNotes: locationNotes || undefined,
+        notes: notes || undefined,
+      });
+
+      if (result.success) {
+        router.push(`/scheduling/${result.data.id}`);
+      } else {
+        setError(result.error);
+      }
+    });
+  };
+
   return (
-    <form className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-3">
+          <p className="text-sm text-[var(--error)]">{error}</p>
+        </div>
+      )}
+
       {/* Session Details */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Session Details</h2>
@@ -40,20 +112,21 @@ export function BookingNewForm({ clients, timeSlots }: BookingNewFormProps) {
               id="title"
               name="title"
               placeholder="e.g., Downtown Luxury Listing"
+              required
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
           </div>
 
           <div>
             <label htmlFor="client" className="block text-sm font-medium text-foreground mb-1.5">
-              Client <span className="text-[var(--error)]">*</span>
+              Client
             </label>
             <select
               id="client"
               name="clientId"
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             >
-              <option value="">Select a client...</option>
+              <option value="">Select a client (optional)...</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name} ({client.contact})
@@ -83,6 +156,7 @@ export function BookingNewForm({ clients, timeSlots }: BookingNewFormProps) {
               type="date"
               id="date"
               name="date"
+              required
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
           </div>
@@ -95,6 +169,7 @@ export function BookingNewForm({ clients, timeSlots }: BookingNewFormProps) {
               <select
                 id="startTime"
                 name="startTime"
+                required
                 className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
               >
                 <option value="">Select start time...</option>
@@ -112,6 +187,7 @@ export function BookingNewForm({ clients, timeSlots }: BookingNewFormProps) {
               <select
                 id="endTime"
                 name="endTime"
+                required
                 className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
               >
                 <option value="">Select end time...</option>
@@ -140,6 +216,7 @@ export function BookingNewForm({ clients, timeSlots }: BookingNewFormProps) {
               id="address"
               name="address"
               placeholder="123 Main Street, San Francisco, CA 94102"
+              required
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
           </div>
@@ -278,12 +355,28 @@ export function BookingNewForm({ clients, timeSlots }: BookingNewFormProps) {
         </Link>
         <button
           type="submit"
-          disabled
-          className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isPending}
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Create Booking
+          {isPending ? (
+            <>
+              <LoadingSpinner className="h-4 w-4" />
+              Creating...
+            </>
+          ) : (
+            "Create Booking"
+          )}
         </button>
       </div>
     </form>
+  );
+}
+
+function LoadingSpinner({ className }: { className?: string }) {
+  return (
+    <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
   );
 }

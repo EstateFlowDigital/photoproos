@@ -1,117 +1,9 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
+import { prisma } from "@/lib/db";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Demo client data
-const demoClients: Record<string, {
-  id: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  company: string | null;
-  industry: string;
-  address: string | null;
-  notes: string | null;
-  lifetimeRevenueCents: number;
-  createdAt: string;
-  galleries: { id: string; name: string; status: string; photos: number; revenue: number; date: string }[];
-  payments: { id: string; amount: number; status: string; gallery: string; date: string }[];
-}> = {
-  "1": {
-    id: "1",
-    fullName: "John Peterson",
-    email: "john@premierrealty.com",
-    phone: "(555) 123-4567",
-    company: "Premier Realty",
-    industry: "real_estate",
-    address: "123 Main Street, Suite 400\nSan Francisco, CA 94102",
-    notes: "VIP client - always delivers on time. Prefers drone shots for luxury listings. Usually books 2-3 properties per month.",
-    lifetimeRevenueCents: 4250000,
-    createdAt: "2024-03-15",
-    galleries: [
-      { id: "1", name: "Downtown Luxury Listing", status: "delivered", photos: 48, revenue: 425000, date: "2024-12-15" },
-      { id: "10", name: "Sunset Heights Property", status: "delivered", photos: 36, revenue: 320000, date: "2024-11-28" },
-      { id: "11", name: "Marina Bay Condo", status: "pending", photos: 24, revenue: 280000, date: "2024-12-22" },
-    ],
-    payments: [
-      { id: "p1", amount: 425000, status: "paid", gallery: "Downtown Luxury Listing", date: "2024-12-18" },
-      { id: "p2", amount: 320000, status: "paid", gallery: "Sunset Heights Property", date: "2024-12-01" },
-      { id: "p3", amount: 280000, status: "pending", gallery: "Marina Bay Condo", date: "2024-12-22" },
-    ],
-  },
-  "2": {
-    id: "2",
-    fullName: "Lisa Chen",
-    email: "admin@techsolutions.com",
-    phone: "(555) 234-5678",
-    company: "Tech Solutions Inc",
-    industry: "commercial",
-    address: "500 Innovation Drive\nPalo Alto, CA 94301",
-    notes: "Corporate headshots for their team. Quarterly shoots scheduled.",
-    lifetimeRevenueCents: 2180000,
-    createdAt: "2024-06-10",
-    galleries: [
-      { id: "3", name: "Corporate Headshots Q4", status: "pending", photos: 24, revenue: 218000, date: "2024-12-20" },
-      { id: "12", name: "Corporate Headshots Q3", status: "delivered", photos: 28, revenue: 245000, date: "2024-09-15" },
-    ],
-    payments: [
-      { id: "p4", amount: 245000, status: "paid", gallery: "Corporate Headshots Q3", date: "2024-09-20" },
-    ],
-  },
-  "3": {
-    id: "3",
-    fullName: "Marco Rossi",
-    email: "info@bellacucina.com",
-    phone: "(555) 345-6789",
-    company: "Bella Cucina",
-    industry: "food_hospitality",
-    address: "789 Restaurant Row\nSan Francisco, CA 94108",
-    notes: "Italian restaurant chain. Needs menu and interior photos for new locations.",
-    lifetimeRevenueCents: 1890000,
-    createdAt: "2024-08-01",
-    galleries: [
-      { id: "4", name: "Restaurant Grand Opening", status: "delivered", photos: 86, revenue: 189000, date: "2024-11-10" },
-    ],
-    payments: [
-      { id: "p5", amount: 189000, status: "paid", gallery: "Restaurant Grand Opening", date: "2024-11-12" },
-    ],
-  },
-  "5": {
-    id: "5",
-    fullName: "Sarah Mitchell",
-    email: "sarah.m@email.com",
-    phone: "(555) 456-7890",
-    company: null,
-    industry: "wedding",
-    address: "456 Oak Avenue\nBerkeley, CA 94704",
-    notes: "Wedding client - June 2025 wedding. Engagement shoot completed.",
-    lifetimeRevenueCents: 3500000,
-    createdAt: "2024-09-20",
-    galleries: [
-      { id: "6", name: "Wedding - Sarah & Michael", status: "delivered", photos: 156, revenue: 350000, date: "2024-10-15" },
-    ],
-    payments: [
-      { id: "p6", amount: 175000, status: "paid", gallery: "Wedding - Sarah & Michael (Deposit)", date: "2024-09-25" },
-      { id: "p7", amount: 175000, status: "paid", gallery: "Wedding - Sarah & Michael (Final)", date: "2024-10-20" },
-    ],
-  },
-};
-
-const defaultClient = {
-  id: "0",
-  fullName: "Demo Client",
-  email: "demo@example.com",
-  phone: "(555) 000-0000",
-  company: null,
-  industry: "other",
-  address: null,
-  notes: null,
-  lifetimeRevenueCents: 0,
-  createdAt: new Date().toISOString().split("T")[0],
-  galleries: [],
-  payments: [],
-};
 
 const industryLabels: Record<string, { label: string; color: string }> = {
   real_estate: { label: "Real Estate", color: "bg-blue-500/10 text-blue-400" },
@@ -120,6 +12,9 @@ const industryLabels: Record<string, { label: string; color: string }> = {
   food_hospitality: { label: "Food & Hospitality", color: "bg-orange-500/10 text-orange-400" },
   architecture: { label: "Architecture", color: "bg-emerald-500/10 text-emerald-400" },
   events: { label: "Events", color: "bg-yellow-500/10 text-yellow-400" },
+  headshots: { label: "Headshots", color: "bg-cyan-500/10 text-cyan-400" },
+  portrait: { label: "Portrait", color: "bg-rose-500/10 text-rose-400" },
+  product: { label: "Product", color: "bg-indigo-500/10 text-indigo-400" },
   other: { label: "Other", color: "bg-gray-500/10 text-gray-400" },
 };
 
@@ -129,7 +24,40 @@ interface ClientDetailPageProps {
 
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
   const { id } = await params;
-  const client = demoClients[id] || { ...defaultClient, id };
+
+  // Fetch client with related data
+  const client = await prisma.client.findUnique({
+    where: { id },
+    include: {
+      projects: {
+        include: {
+          _count: { select: { assets: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      bookings: {
+        orderBy: { startTime: "desc" },
+        take: 5,
+      },
+    },
+  });
+
+  if (!client) {
+    notFound();
+  }
+
+  // Fetch payments for this client's projects
+  const payments = await prisma.payment.findMany({
+    where: {
+      project: {
+        clientId: id,
+      },
+    },
+    include: {
+      project: { select: { name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -150,11 +78,16 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
   const industryInfo = industryLabels[client.industry] || industryLabels.other;
 
+  // Calculate totals
+  const totalGalleryRevenue = client.projects.reduce((sum, p) => sum + p.priceCents, 0);
+  const paidPayments = payments.filter((p) => p.status === "paid");
+  const pendingPayments = payments.filter((p) => p.status === "pending");
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title={client.fullName}
-        subtitle={client.company || client.email}
+        title={client.fullName || client.email}
+        subtitle={client.company || (client.fullName ? client.email : undefined)}
         actions={
           <div className="flex items-center gap-3">
             <Link
@@ -182,13 +115,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         }
       />
 
-      {/* Demo Mode Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Demo Mode:</strong> Viewing sample client data. Actions are disabled.
-        </p>
-      </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -200,11 +126,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             </div>
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Total Galleries</p>
-              <p className="mt-2 text-2xl font-bold text-foreground">{client.galleries.length}</p>
+              <p className="mt-2 text-2xl font-bold text-foreground">{client.projects.length}</p>
             </div>
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Total Payments</p>
-              <p className="mt-2 text-2xl font-bold text-foreground">{client.payments.length}</p>
+              <p className="mt-2 text-2xl font-bold text-foreground">{payments.length}</p>
             </div>
           </div>
 
@@ -220,9 +146,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               </Link>
             </div>
 
-            {client.galleries.length > 0 ? (
+            {client.projects.length > 0 ? (
               <div className="space-y-3">
-                {client.galleries.map((gallery) => (
+                {client.projects.map((gallery) => (
                   <Link
                     key={gallery.id}
                     href={`/galleries/${gallery.id}`}
@@ -234,14 +160,18 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">{gallery.name}</p>
-                        <p className="text-xs text-foreground-muted">{gallery.photos} photos • {new Date(gallery.date).toLocaleDateString()}</p>
+                        <p className="text-xs text-foreground-muted">
+                          {gallery._count.assets} photos • {new Date(gallery.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", statusStyles[gallery.status as keyof typeof statusStyles])}>
                         {gallery.status.charAt(0).toUpperCase() + gallery.status.slice(1)}
                       </span>
-                      <span className="text-sm font-medium text-foreground">{formatCurrency(gallery.revenue)}</span>
+                      {gallery.priceCents > 0 && (
+                        <span className="text-sm font-medium text-foreground">{formatCurrency(gallery.priceCents)}</span>
+                      )}
                       <ChevronRightIcon className="h-4 w-4 text-foreground-muted" />
                     </div>
                   </Link>
@@ -266,9 +196,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Payment History</h2>
 
-            {client.payments.length > 0 ? (
+            {payments.length > 0 ? (
               <div className="space-y-3">
-                {client.payments.map((payment) => (
+                {payments.map((payment) => (
                   <div
                     key={payment.id}
                     className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
@@ -281,15 +211,15 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                         {payment.status === "paid" ? <CheckIcon className="h-5 w-5" /> : <ClockIcon className="h-5 w-5" />}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">{payment.gallery}</p>
-                        <p className="text-xs text-foreground-muted">{new Date(payment.date).toLocaleDateString()}</p>
+                        <p className="text-sm font-medium text-foreground">{payment.project?.name || payment.description || "Payment"}</p>
+                        <p className="text-xs text-foreground-muted">{new Date(payment.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", statusStyles[payment.status as keyof typeof statusStyles])}>
                         {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                       </span>
-                      <span className="text-sm font-medium text-foreground">{formatCurrency(payment.amount)}</span>
+                      <span className="text-sm font-medium text-foreground">{formatCurrency(payment.amountCents)}</span>
                     </div>
                   </div>
                 ))}
@@ -310,10 +240,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div className="flex items-center gap-4 mb-6">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-2xl font-bold">
-                {client.fullName.charAt(0)}
+                {(client.fullName || client.email).charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-lg font-semibold text-foreground">{client.fullName}</p>
+                <p className="text-lg font-semibold text-foreground">{client.fullName || client.email}</p>
                 {client.company && (
                   <p className="text-sm text-foreground-secondary">{client.company}</p>
                 )}
@@ -335,12 +265,14 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 </a>
               </div>
 
-              <div>
-                <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider mb-1">Phone</p>
-                <a href={`tel:${client.phone}`} className="text-sm text-foreground hover:text-[var(--primary)]">
-                  {client.phone}
-                </a>
-              </div>
+              {client.phone && (
+                <div>
+                  <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider mb-1">Phone</p>
+                  <a href={`tel:${client.phone}`} className="text-sm text-foreground hover:text-[var(--primary)]">
+                    {client.phone}
+                  </a>
+                </div>
+              )}
 
               {client.address && (
                 <div>
@@ -366,32 +298,36 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             ) : (
               <p className="text-sm text-foreground-muted italic">No notes added yet</p>
             )}
-            <button className="mt-4 text-sm font-medium text-[var(--primary)] hover:underline">
+            <Link href={`/clients/${id}/edit`} className="mt-4 inline-block text-sm font-medium text-[var(--primary)] hover:underline">
               {client.notes ? "Edit Notes" : "Add Notes"}
-            </button>
+            </Link>
           </div>
 
           {/* Quick Actions */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Actions</h2>
             <div className="space-y-2">
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
+              <a
+                href={`mailto:${client.email}`}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
                 <EmailIcon className="h-4 w-4 text-foreground-muted" />
                 Send Email
-              </button>
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
-                <InvoiceIcon className="h-4 w-4 text-foreground-muted" />
-                Create Invoice
-              </button>
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]">
+              </a>
+              <Link
+                href={`/galleries/new?client=${id}`}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
+                <PhotoIcon className="h-4 w-4 text-foreground-muted" />
+                Create Gallery
+              </Link>
+              <Link
+                href={`/scheduling/new?client=${id}`}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
                 <CalendarIcon className="h-4 w-4 text-foreground-muted" />
                 Schedule Shoot
-              </button>
-              <hr className="border-[var(--card-border)]" />
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--error)] transition-colors hover:bg-[var(--error)]/10">
-                <TrashIcon className="h-4 w-4" />
-                Delete Client
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -475,26 +411,10 @@ function EmailIcon({ className }: { className?: string }) {
   );
 }
 
-function InvoiceIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
 function CalendarIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
-function TrashIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
     </svg>
   );
 }

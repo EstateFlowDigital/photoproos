@@ -18,6 +18,8 @@ import { CTASection } from "@/components/sections/cta";
 import { ScrollProgress, BackToTop } from "@/components/ui/scroll-progress";
 import { StickyCTA } from "@/components/ui/sticky-cta";
 import { ExitIntentPopup } from "@/components/ui/exit-intent-popup";
+import { SocialProofToast } from "@/components/ui/social-proof-toast";
+import { ChatWidget } from "@/components/ui/chat-widget";
 
 export default function Home() {
   return (
@@ -33,6 +35,12 @@ export default function Home() {
 
       {/* Exit Intent Popup */}
       <ExitIntentPopup />
+
+      {/* Social Proof Toast - Shows recent signup notifications */}
+      <SocialProofToast />
+
+      {/* Live Chat Widget */}
+      <ChatWidget />
 
       {/* Background Gradient */}
       <div className="pointer-events-none absolute inset-0 z-0">
