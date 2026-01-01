@@ -96,8 +96,9 @@
   --card: #141414;
   --card-foreground: #ffffff;
   --card-foreground-secondary: #a3a3a3;
-  --card-border: rgba(255, 255, 255, 0.03);
-  --card-border-hover: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.10);
+  --card-border-hover: rgba(255, 255, 255, 0.16);
+  --card-border-width: 0.094rem;
 
   /* --- Interactive Elements --- */
   /* Primary (High emphasis actions) */
@@ -111,7 +112,7 @@
   --secondary-hover: #2a2a2a;
   --secondary-active: #333333;
   --secondary-foreground: #ffffff;
-  --secondary-border: rgba(255, 255, 255, 0.03);
+  --secondary-border: rgba(255, 255, 255, 0.10);
 
   /* Ghost (Low emphasis actions) */
   --ghost-hover: #2a2a2a;
@@ -124,14 +125,15 @@
   --accent-ai-foreground: #ffffff;
 
   /* --- Borders --- */
-  --border: rgba(255, 255, 255, 0.03);
-  --border-subtle: rgba(255, 255, 255, 0.015);
-  --border-emphasis: rgba(255, 255, 255, 0.06);
-  --border-visible: #222222;
-  --border-hover: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-emphasis: rgba(255, 255, 255, 0.16);
+  --border-visible: #333333;
+  --border-hover: rgba(255, 255, 255, 0.16);
   --border-focus: var(--primary);
-  --input-border: rgba(255, 255, 255, 0.03);
-  --input-border-focus: rgba(255, 255, 255, 0.08);
+  --border-width: 0.094rem;
+  --input-border: rgba(255, 255, 255, 0.10);
+  --input-border-focus: rgba(255, 255, 255, 0.16);
 
   /* --- Focus & Ring --- */
   --ring: var(--primary);
@@ -560,13 +562,13 @@ ul, ol {
 
 /* Gradient divider between sections */
 .section-divider {
-  height: 1px;
+  height: var(--card-border-width);
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.06) 20%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.06) 80%,
+    rgba(255, 255, 255, 0.10) 20%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.10) 80%,
     transparent 100%
   );
   margin: 0 auto;
@@ -665,13 +667,13 @@ ul, ol {
   background: rgba(30, 30, 30, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: var(--border-width) solid var(--border);
 }
 
 /* Card Style */
 .card {
   background: var(--card);
-  border: 1px solid var(--card-border);
+  border: var(--card-border-width) solid var(--card-border);
   border-radius: var(--radius-md);
   transition: all 300ms cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -684,7 +686,7 @@ ul, ol {
 
 .card-interactive {
   background: var(--card);
-  border: 1px solid var(--card-border);
+  border: var(--card-border-width) solid var(--card-border);
   border-radius: var(--radius-md);
   transition: all 300ms cubic-bezier(0.33, 1, 0.68, 1);
   cursor: pointer;
@@ -923,7 +925,7 @@ html[data-scroll-theme="light"] {
   background: rgba(10, 10, 10, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: var(--border-width) solid var(--border);
 }
 
 /* Skip to Main Content Link */
