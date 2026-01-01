@@ -100,7 +100,7 @@ export function Footer() {
             <FooterLink href="/features/galleries">Client Galleries</FooterLink>
             <FooterLink href="/features/payments">Payment Processing</FooterLink>
             <FooterLink href="/features/clients">Client Management</FooterLink>
-            <FooterLink href="/features/workflows">Workflow Automation</FooterLink>
+            <FooterLink href="/features/automation">Workflow Automation</FooterLink>
             <FooterLink href="/features/analytics">Analytics & Reports</FooterLink>
             <FooterLink href="/features/contracts" badge="Soon">Contracts & E-Sign</FooterLink>
             <FooterLink href="/pricing">Pricing</FooterLink>
@@ -112,7 +112,7 @@ export function Footer() {
             <FooterLink href="/industries/commercial">Commercial</FooterLink>
             <FooterLink href="/industries/architecture">Architecture</FooterLink>
             <FooterLink href="/industries/events">Events & Corporate</FooterLink>
-            <FooterLink href="/industries/headshots">Headshots & Portraits</FooterLink>
+            <FooterLink href="/industries/portraits">Headshots & Portraits</FooterLink>
             <FooterLink href="/industries/food">Food & Hospitality</FooterLink>
           </FooterColumn>
 
@@ -156,7 +156,7 @@ export function Footer() {
             <Link href="/legal/cookies" className="text-sm text-foreground-muted hover:text-foreground">
               Cookie Policy
             </Link>
-            <Link href="/security" className="text-sm text-foreground-muted hover:text-foreground">
+            <Link href="/legal/security" className="text-sm text-foreground-muted hover:text-foreground">
               Security
             </Link>
             <Link href="/legal/dpa" className="text-sm text-foreground-muted hover:text-foreground">
