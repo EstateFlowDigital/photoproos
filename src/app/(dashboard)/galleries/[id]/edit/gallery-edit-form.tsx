@@ -1,0 +1,318 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { ServiceSelector } from "@/components/dashboard/service-selector";
+import { getServiceById, type ServiceType } from "@/lib/services";
+
+interface Client {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface GalleryData {
+  id: string;
+  name: string;
+  description: string;
+  clientId: string;
+  priceCents: number;
+  serviceId?: string;
+  serviceDescription?: string;
+  accessType: "public" | "password";
+  coverImageUrl: string | null;
+  settings: {
+    allowDownloads: boolean;
+    allowFavorites: boolean;
+    showWatermarks: boolean;
+    emailNotifications: boolean;
+  };
+}
+
+interface GalleryEditFormProps {
+  gallery: GalleryData;
+  clients: Client[];
+}
+
+export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
+  const initialService = gallery.serviceId ? getServiceById(gallery.serviceId) : null;
+  const [selectedService, setSelectedService] = useState<ServiceType | null>(initialService || null);
+  const [price, setPrice] = useState(gallery.priceCents);
+  const [description, setDescription] = useState(gallery.serviceDescription || "");
+  const [settings, setSettings] = useState(gallery.settings);
+
+  const toggleSetting = (key: keyof typeof settings) => {
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  return (
+    <form className="space-y-6">
+      {/* Gallery Details Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Details</h2>
+
+        <div className="space-y-4">
+          {/* Gallery Name */}
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1.5">
+              Gallery Name <span className="text-[var(--error)]">*</span>
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              defaultValue={gallery.name}
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label htmlFor="galleryDescription" className="block text-sm font-medium text-foreground mb-1.5">
+              Gallery Description
+            </label>
+            <textarea
+              id="galleryDescription"
+              name="galleryDescription"
+              rows={3}
+              defaultValue={gallery.description}
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
+            />
+          </div>
+
+          {/* Client Selection */}
+          <div>
+            <label htmlFor="client" className="block text-sm font-medium text-foreground mb-1.5">
+              Client <span className="text-[var(--error)]">*</span>
+            </label>
+            <select
+              id="client"
+              name="clientId"
+              defaultValue={gallery.clientId}
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            >
+              <option value="">Select a client...</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name} ({client.email})
+                </option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-xs text-foreground-muted">
+              Or{" "}
+              <Link href="/clients/new" className="text-[var(--primary)] hover:underline">
+                create a new client
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Service & Pricing Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Service & Pricing</h2>
+        <p className="text-sm text-foreground-muted mb-6">
+          Select a predefined service package or set custom pricing for this gallery.
+        </p>
+
+        <ServiceSelector
+          selectedServiceId={selectedService?.id}
+          customPrice={price}
+          customDescription={description}
+          onServiceChange={setSelectedService}
+          onPriceChange={setPrice}
+          onDescriptionChange={setDescription}
+          mode="gallery"
+        />
+
+        {/* Hidden inputs for form submission */}
+        <input type="hidden" name="serviceId" value={selectedService?.id || ""} />
+        <input type="hidden" name="price" value={price} />
+        <input type="hidden" name="serviceDescription" value={description} />
+      </div>
+
+      {/* Access Type Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Access Control</h2>
+
+        <div className="space-y-3">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="accessType"
+              value="public"
+              defaultChecked={gallery.accessType === "public"}
+              className="mt-0.5 h-4 w-4 border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+            />
+            <div>
+              <span className="text-sm font-medium text-foreground">Public Link</span>
+              <p className="text-xs text-foreground-muted">Anyone with the link can view (and pay to download)</p>
+            </div>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="accessType"
+              value="password"
+              defaultChecked={gallery.accessType === "password"}
+              className="mt-0.5 h-4 w-4 border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+            />
+            <div>
+              <span className="text-sm font-medium text-foreground">Password Protected</span>
+              <p className="text-xs text-foreground-muted">Require a password to view the gallery</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      {/* Cover Image Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Cover Image</h2>
+
+        {gallery.coverImageUrl ? (
+          <div className="space-y-4">
+            <div className="relative aspect-video overflow-hidden rounded-lg bg-[var(--background)]">
+              <img
+                src={gallery.coverImageUrl}
+                alt="Cover"
+                className="h-full w-full object-cover"
+              />
+              <button
+                type="button"
+                className="absolute top-2 right-2 rounded-lg bg-black/50 p-1.5 text-white hover:bg-black/70"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </div>
+            <button
+              type="button"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              Replace Cover Image
+            </button>
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-[var(--card-border)] rounded-lg p-8 text-center hover:border-[var(--primary)]/50 transition-colors cursor-pointer">
+            <UploadIcon className="mx-auto h-10 w-10 text-foreground-muted" />
+            <p className="mt-3 text-sm text-foreground">
+              <span className="text-[var(--primary)] font-medium">Click to upload</span> or drag and drop
+            </p>
+            <p className="mt-1 text-xs text-foreground-muted">
+              PNG, JPG, or WebP up to 10MB
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Gallery Settings Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Settings</h2>
+
+        <div className="space-y-4">
+          <ToggleSetting
+            label="Allow Downloads"
+            description="Let clients download photos after payment"
+            checked={settings.allowDownloads}
+            onToggle={() => toggleSetting("allowDownloads")}
+          />
+          <ToggleSetting
+            label="Allow Favorites"
+            description="Let clients mark their favorite photos"
+            checked={settings.allowFavorites}
+            onToggle={() => toggleSetting("allowFavorites")}
+          />
+          <ToggleSetting
+            label="Show Watermarks"
+            description="Display watermarks on photos until purchased"
+            checked={settings.showWatermarks}
+            onToggle={() => toggleSetting("showWatermarks")}
+          />
+          <ToggleSetting
+            label="Email Notifications"
+            description="Get notified when clients view or purchase"
+            checked={settings.emailNotifications}
+            onToggle={() => toggleSetting("emailNotifications")}
+          />
+        </div>
+      </div>
+
+      {/* Form Actions */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
+        >
+          <TrashIcon className="h-4 w-4" />
+          Delete Gallery
+        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/galleries/${gallery.id}`}
+            className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+          >
+            Cancel
+          </Link>
+          <button
+            type="submit"
+            disabled
+            className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+function ToggleSetting({
+  label,
+  description,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <label className="flex items-center justify-between cursor-pointer">
+      <div>
+        <span className="text-sm font-medium text-foreground">{label}</span>
+        <p className="text-xs text-foreground-muted">{description}</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={onToggle}
+        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)] ${
+          checked ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
+        }`}
+      >
+        <span
+          className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </label>
+  );
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}

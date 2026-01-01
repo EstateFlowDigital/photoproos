@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Service Selector & Pricing)
+- Created comprehensive photography services library (`src/lib/services.ts`)
+  - 20+ predefined service packages across 7 categories
+  - Real Estate: Standard, Luxury Property, Aerial/Drone, 3D Virtual Tour
+  - Portrait: Headshot, Team Headshots, Personal Branding, Family
+  - Event: Corporate Event, Party/Celebration, Conference Coverage
+  - Commercial: Architectural, Restaurant/Hospitality, Construction Progress
+  - Wedding: Engagement, Elopement, Full Wedding Coverage
+  - Product: E-commerce, Lifestyle, Food Photography
+  - Each service includes base price, estimated duration, and deliverables
+- Created reusable `ServiceSelector` component (`src/components/dashboard/service-selector.tsx`)
+  - Toggle between predefined services or custom pricing
+  - Category filtering (All, Real Estate, Portrait, Event, etc.)
+  - Expandable service cards showing deliverables
+  - Price override capability for selected services
+  - Custom pricing mode with description field
+  - `ServiceDisplay` component for read-only display on detail pages
+- Integrated service selector into gallery creation/edit flows
+  - `/galleries/new` now includes service & pricing section
+  - `/galleries/[id]/edit` supports editing service selection
+  - Hidden form fields for serviceId, price, and description
+- Integrated service selector into booking creation flow
+  - `/scheduling/new` now includes service & pricing section
+  - Deposit field moved under service selector
+  - Auto-fills pricing based on selected service package
+- Integrated service selector into booking edit flow
+  - Created `booking-edit-form.tsx` client component for form state management
+  - `/scheduling/[id]/edit` now includes service & pricing section with ServiceSelector
+  - Pre-populates service selection based on existing booking serviceId
+  - Hidden form fields for serviceId, price, and serviceDescription
+- Added service package display to gallery detail page
+  - `/galleries/[id]` now shows Service Package section using ServiceDisplay component
+  - Displays service name, category, price, and description for selected services
+  - Falls back to custom pricing display when no predefined service is selected
+- Added service package display to booking detail page
+  - `/scheduling/[id]` now shows Service Package section using ServiceDisplay component
+  - Consistent styling and behavior with gallery detail page
+
 ### Added (Edit & Detail Pages)
 - Created `/clients/[id]/edit` page with comprehensive client edit form
   - Pre-populated fields for name, company, industry, contact info

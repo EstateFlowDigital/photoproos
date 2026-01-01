@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
+import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +12,8 @@ const demoGalleries: Record<string, {
   client: { name: string; email: string };
   status: "delivered" | "pending" | "draft";
   priceCents: number;
+  serviceId?: string;
+  serviceDescription?: string;
   photos: { id: string; url: string; filename: string }[];
   deliveryLink: string | null;
   views: number;
@@ -24,7 +27,9 @@ const demoGalleries: Record<string, {
     description: "Beautiful downtown property with stunning city views. 3 bedroom, 2.5 bath luxury condo in the heart of the city.",
     client: { name: "Premier Realty", email: "contact@premierrealty.com" },
     status: "delivered",
-    priceCents: 425000,
+    priceCents: 45000,
+    serviceId: "re-luxury",
+    serviceDescription: "Premium photography package for high-end and luxury properties",
     photos: [
       { id: "p1", url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop", filename: "exterior-front.jpg" },
       { id: "p2", url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop", filename: "living-room.jpg" },
@@ -45,7 +50,9 @@ const demoGalleries: Record<string, {
     description: "Stunning oceanfront property with panoramic views. 5 bedroom estate with private beach access.",
     client: { name: "Berkshire Properties", email: "listings@berkshire.com" },
     status: "delivered",
-    priceCents: 580000,
+    priceCents: 58000,
+    serviceId: "re-luxury",
+    serviceDescription: "Premium photography package for high-end and luxury properties",
     photos: [
       { id: "p1", url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop", filename: "ocean-view.jpg" },
       { id: "p2", url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop", filename: "exterior.jpg" },
@@ -63,7 +70,9 @@ const demoGalleries: Record<string, {
     description: "Professional headshots for the Tech Solutions Inc team. Executive and staff photos.",
     client: { name: "Tech Solutions Inc", email: "admin@techsolutions.com" },
     status: "pending",
-    priceCents: 218000,
+    priceCents: 50000,
+    serviceId: "portrait-team",
+    serviceDescription: "Consistent headshots for corporate teams and organizations",
     photos: [
       { id: "p1", url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=300&fit=crop", filename: "ceo-portrait.jpg" },
       { id: "p2", url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop", filename: "cto-portrait.jpg" },
@@ -82,6 +91,8 @@ const demoGalleries: Record<string, {
     client: { name: "Design Studio Pro", email: "hello@designstudiopro.com" },
     status: "draft",
     priceCents: 0,
+    serviceId: undefined,
+    serviceDescription: "Complimentary coverage for portfolio building",
     photos: [
       { id: "p1", url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop", filename: "reception.jpg" },
       { id: "p2", url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop", filename: "workspace.jpg" },
@@ -102,6 +113,8 @@ const defaultGallery = {
   client: { name: "Demo Client", email: "demo@example.com" },
   status: "draft" as const,
   priceCents: 0,
+  serviceId: undefined,
+  serviceDescription: "",
   photos: [],
   deliveryLink: null,
   views: 0,
@@ -199,6 +212,18 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
               <p className="mt-2 text-2xl font-bold text-foreground">{gallery.downloads}</p>
             </div>
           </div>
+
+          {/* Service Package */}
+          {(gallery.serviceId || gallery.serviceDescription) && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Service Package</h2>
+              <ServiceDisplay
+                serviceId={gallery.serviceId}
+                customPrice={gallery.priceCents}
+                customDescription={gallery.serviceDescription}
+              />
+            </div>
+          )}
 
           {/* Photo Grid */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">

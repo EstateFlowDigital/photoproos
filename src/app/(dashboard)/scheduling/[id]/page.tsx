@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
+import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,8 @@ const demoBookings: Record<string, {
   price: number;
   deposit: number;
   depositPaid: boolean;
+  serviceId?: string;
+  serviceDescription?: string;
   createdAt: string;
 }> = {
   "1": {
@@ -37,6 +40,8 @@ const demoBookings: Record<string, {
     price: 85000,
     deposit: 25000,
     depositPaid: true,
+    serviceId: "re-luxury",
+    serviceDescription: "Premium photography package for high-end and luxury properties",
     createdAt: "2024-12-15",
   },
   "2": {
@@ -56,6 +61,8 @@ const demoBookings: Record<string, {
     price: 325000,
     deposit: 100000,
     depositPaid: false,
+    serviceId: "portrait-team",
+    serviceDescription: "Consistent headshots for corporate teams and organizations",
     createdAt: "2024-12-20",
   },
   "3": {
@@ -75,6 +82,8 @@ const demoBookings: Record<string, {
     price: 125000,
     deposit: 40000,
     depositPaid: true,
+    serviceId: "product-food",
+    serviceDescription: "Professional food and beverage photography",
     createdAt: "2024-12-18",
   },
   "4": {
@@ -94,6 +103,8 @@ const demoBookings: Record<string, {
     price: 200000,
     deposit: 75000,
     depositPaid: true,
+    serviceId: "event-corporate",
+    serviceDescription: "Coverage for conferences, meetings, and corporate gatherings",
     createdAt: "2024-12-10",
   },
 };
@@ -112,6 +123,8 @@ const defaultBooking = {
   price: 0,
   deposit: 0,
   depositPaid: false,
+  serviceId: undefined,
+  serviceDescription: "",
   createdAt: new Date().toISOString().split("T")[0],
 };
 
@@ -175,12 +188,15 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
               <ArrowLeftIcon className="h-4 w-4" />
               Back
             </Link>
+            <Link
+              href={`/scheduling/${id}/edit`}
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              <EditIcon className="h-4 w-4" />
+              Edit
+            </Link>
             {isUpcoming && (
               <>
-                <button className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
-                  <EditIcon className="h-4 w-4" />
-                  Reschedule
-                </button>
                 {booking.status === "pending" && (
                   <button className="inline-flex items-center gap-2 rounded-lg bg-[var(--success)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--success)]/90">
                     <CheckIcon className="h-4 w-4" />
@@ -237,6 +253,18 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
               </div>
             )}
           </div>
+
+          {/* Service Package */}
+          {(booking.serviceId || booking.serviceDescription) && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Service Package</h2>
+              <ServiceDisplay
+                serviceId={booking.serviceId}
+                customPrice={booking.price}
+                customDescription={booking.serviceDescription}
+              />
+            </div>
+          )}
 
           {/* Date & Time */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">

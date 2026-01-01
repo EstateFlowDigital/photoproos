@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { BookingEditForm } from "./booking-edit-form";
 
 // Demo booking data
 const demoBookings: Record<string, {
@@ -18,6 +19,8 @@ const demoBookings: Record<string, {
   price: number;
   deposit: number;
   depositPaid: boolean;
+  serviceId?: string;
+  serviceDescription?: string;
   createdAt: string;
 }> = {
   "1": {
@@ -37,6 +40,8 @@ const demoBookings: Record<string, {
     price: 85000,
     deposit: 25000,
     depositPaid: true,
+    serviceId: "re-luxury",
+    serviceDescription: "Premium photography package for high-end and luxury properties",
     createdAt: "2024-12-15",
   },
   "2": {
@@ -56,6 +61,8 @@ const demoBookings: Record<string, {
     price: 325000,
     deposit: 100000,
     depositPaid: false,
+    serviceId: "portrait-team",
+    serviceDescription: "Consistent headshots for corporate teams and organizations",
     createdAt: "2024-12-20",
   },
   "3": {
@@ -75,6 +82,8 @@ const demoBookings: Record<string, {
     price: 125000,
     deposit: 40000,
     depositPaid: true,
+    serviceId: "product-food",
+    serviceDescription: "Professional food and beverage photography",
     createdAt: "2024-12-18",
   },
 };
@@ -93,20 +102,10 @@ const defaultBooking = {
   price: 0,
   deposit: 0,
   depositPaid: false,
+  serviceId: undefined,
+  serviceDescription: "",
   createdAt: new Date().toISOString().split("T")[0],
 };
-
-const sessionTypes = [
-  { value: "real_estate", label: "Real Estate Photography" },
-  { value: "headshots", label: "Corporate Headshots" },
-  { value: "food", label: "Food Photography" },
-  { value: "event", label: "Event Photography" },
-  { value: "wedding", label: "Wedding Photography" },
-  { value: "portrait", label: "Portrait Session" },
-  { value: "product", label: "Product Photography" },
-  { value: "architecture", label: "Architecture & Interiors" },
-  { value: "other", label: "Other" },
-];
 
 const demoClients = [
   { id: "1", name: "Premier Realty" },
@@ -177,228 +176,7 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
         <div className="lg:col-span-2">
-          <form id="edit-booking-form" className="space-y-6">
-            {/* Basic Information */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-6">Session Details</h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-foreground mb-1.5">
-                    Session Title <span className="text-[var(--error)]">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    defaultValue={booking.title}
-                    placeholder="e.g., Downtown Luxury Listing"
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-foreground mb-1.5">
-                      Session Type <span className="text-[var(--error)]">*</span>
-                    </label>
-                    <select
-                      id="type"
-                      name="type"
-                      defaultValue={booking.type}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    >
-                      {sessionTypes.map((type) => (
-                        <option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="client" className="block text-sm font-medium text-foreground mb-1.5">
-                      Client <span className="text-[var(--error)]">*</span>
-                    </label>
-                    <select
-                      id="client"
-                      name="client"
-                      defaultValue={booking.client.id}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    >
-                      {demoClients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Date & Time */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-6">Date & Time</h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="date" className="block text-sm font-medium text-foreground mb-1.5">
-                    Date <span className="text-[var(--error)]">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    id="date"
-                    name="date"
-                    defaultValue={booking.date}
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="startTime" className="block text-sm font-medium text-foreground mb-1.5">
-                      Start Time <span className="text-[var(--error)]">*</span>
-                    </label>
-                    <input
-                      type="time"
-                      id="startTime"
-                      name="startTime"
-                      defaultValue={booking.startTime}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="endTime" className="block text-sm font-medium text-foreground mb-1.5">
-                      End Time <span className="text-[var(--error)]">*</span>
-                    </label>
-                    <input
-                      type="time"
-                      id="endTime"
-                      name="endTime"
-                      defaultValue={booking.endTime}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Location */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-6">Location</h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-foreground mb-1.5">
-                    Address <span className="text-[var(--error)]">*</span>
-                  </label>
-                  <textarea
-                    id="address"
-                    name="address"
-                    rows={3}
-                    defaultValue={booking.location.address}
-                    placeholder="Enter the full address..."
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="locationNotes" className="block text-sm font-medium text-foreground mb-1.5">
-                    Access Instructions
-                  </label>
-                  <textarea
-                    id="locationNotes"
-                    name="locationNotes"
-                    rows={2}
-                    defaultValue={booking.location.notes || ""}
-                    placeholder="Parking info, entry codes, contact on-site, etc."
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Pricing */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-6">Pricing</h2>
-
-              <div className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-foreground mb-1.5">
-                      Session Fee
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground-muted">$</span>
-                      <input
-                        type="number"
-                        id="price"
-                        name="price"
-                        defaultValue={booking.price / 100}
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-8 pr-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="deposit" className="block text-sm font-medium text-foreground mb-1.5">
-                      Deposit Required
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground-muted">$</span>
-                      <input
-                        type="number"
-                        id="deposit"
-                        name="deposit"
-                        defaultValue={booking.deposit / 100}
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-8 pr-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="depositPaid"
-                    name="depositPaid"
-                    defaultChecked={booking.depositPaid}
-                    className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)] focus:ring-[var(--primary)]"
-                  />
-                  <label htmlFor="depositPaid" className="text-sm text-foreground">
-                    Deposit has been paid
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-6">Session Notes</h2>
-
-              <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-foreground mb-1.5">
-                  Notes & Special Requirements
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  rows={4}
-                  defaultValue={booking.notes || ""}
-                  placeholder="Equipment needed, special requests, important details..."
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
-                />
-                <p className="mt-2 text-xs text-foreground-muted">
-                  These notes are visible only to you and your team
-                </p>
-              </div>
-            </div>
-          </form>
+          <BookingEditForm booking={booking} clients={demoClients} />
         </div>
 
         {/* Sidebar */}
