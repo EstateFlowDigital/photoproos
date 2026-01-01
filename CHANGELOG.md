@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Edit & Detail Pages)
+- Created `/clients/[id]/edit` page with comprehensive client edit form
+  - Pre-populated fields for name, company, industry, contact info
+  - Address and notes editing
+  - Tags management (VIP, Repeat Client, etc.)
+  - Sidebar with client stats, activity log, quick links, and danger zone
+- Created `/scheduling/[id]/edit` page with booking edit form
+  - Session details editing (title, type, client)
+  - Date/time/location modification
+  - Pricing and deposit management
+  - Sidebar with status selector, pricing summary, and client info
+- Created `/payments/[id]` detail page with payment information
+  - Status banner with payment amount and date
+  - Payment details: amount, fees, net amount
+  - Payment method display (card type, last 4)
+  - Activity timeline showing payment history
+  - Client and gallery information sidebars
+  - Refund and receipt actions
+
+### Fixed (Layout Consistency)
+- Fixed layout inconsistency in `/galleries/new` page - changed from narrow centered `max-w-2xl` to full-width grid layout matching other pages
+- Fixed layout inconsistency in `/clients/new` page - changed from narrow centered to full-width 3-column grid layout
+- Fixed layout inconsistency in `/scheduling/new` page - changed from narrow centered to full-width 3-column grid layout
+- Fixed layout inconsistency in `/settings/profile` page - changed from narrow centered to full-width 3-column grid layout with sidebar
+  - Added Account Status sidebar showing plan, status, and member since date
+  - Added Quick Links sidebar with billing, team, and notifications shortcuts
+  - Added Danger Zone for account deletion
+- All creation forms now use consistent 2/3 + 1/3 grid layout with helpful sidebar content
+
+### Changed (Payments Table)
+- Made payment table rows clickable - clicking anywhere on a row navigates to the payment detail page
+- Added hover effect on payment description for better click affordance
+
+### Added (Gallery Edit Page)
+- Created `/galleries/[id]/edit` page with comprehensive edit form
+  - Pre-populated form fields from gallery data
+  - Gallery details: name, description, client selection
+  - Pricing: price input, access type (public/password)
+  - Cover image: display with replace/remove options
+  - Settings: toggle switches reflecting current state
+  - Status dropdown in sidebar for quick status changes
+  - Activity log sidebar showing recent gallery events
+  - Danger zone with delete confirmation
+  - Demo data for galleries 1, 2, 3, and 5
+
+### Changed (Form Page Sidebars)
+- Added helpful Tips sidebar to `/galleries/new` with numbered guidance
+- Added Your Stats sidebar showing total galleries, deliveries, and revenue
+- Added Recent Clients sidebar with quick access to common clients
+- Added Tips sidebar to `/clients/new` with client management best practices
+- Added Your Stats sidebar with total clients and revenue overview
+- Added Client Industries sidebar showing distribution breakdown
+- Added Tips sidebar to `/scheduling/new` with booking best practices
+- Added Your Schedule sidebar with weekly/monthly booking counts
+- Added Upcoming Bookings sidebar with next scheduled sessions
+
 ### Added (Public Gallery View)
 - Created `/g/[slug]` customer-facing gallery page
 - Branded header with photographer name/logo

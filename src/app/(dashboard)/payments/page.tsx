@@ -176,12 +176,14 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
                   className="transition-colors hover:bg-[var(--background-hover)]"
                 >
                   <td className="px-6 py-4">
-                    <p className="font-medium text-foreground">
-                      {payment.projectName || payment.description}
-                    </p>
-                    {payment.clientEmail && (
-                      <p className="text-sm text-foreground-muted">{payment.clientEmail}</p>
-                    )}
+                    <Link href={`/payments/${payment.id}`} className="block">
+                      <p className="font-medium text-foreground hover:text-[var(--primary)]">
+                        {payment.projectName || payment.description}
+                      </p>
+                      {payment.clientEmail && (
+                        <p className="text-sm text-foreground-muted">{payment.clientEmail}</p>
+                      )}
+                    </Link>
                   </td>
                   <td className="hidden px-6 py-4 text-sm text-foreground-muted md:table-cell">
                     {formatDate(payment.createdAt)}
