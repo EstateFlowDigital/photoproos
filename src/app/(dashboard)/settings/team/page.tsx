@@ -2,19 +2,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Demo team data
-const demoTeam = {
-  members: [
-    { id: "1", name: "Alex Thompson", email: "alex@photoproos.com", role: "owner", status: "active", avatarUrl: null, joinedAt: "2024-01-15" },
-    { id: "2", name: "Sarah Chen", email: "sarah@photoproos.com", role: "admin", status: "active", avatarUrl: null, joinedAt: "2024-06-10" },
-    { id: "3", name: "Mike Johnson", email: "mike@photoproos.com", role: "member", status: "active", avatarUrl: null, joinedAt: "2024-09-20" },
-  ],
-  pendingInvites: [
-    { id: "inv1", email: "jessica@email.com", role: "member", sentAt: "2024-12-20", expiresAt: "2024-12-27" },
-  ],
-  limit: 3,
-};
+import { getTeamMembers, getBillingStats } from "@/lib/actions/settings";
 
 const roleLabels = {
   owner: { label: "Owner", color: "bg-purple-500/10 text-purple-400" },
@@ -22,7 +10,14 @@ const roleLabels = {
   member: { label: "Member", color: "bg-gray-500/10 text-gray-400" },
 };
 
-export default function TeamSettingsPage() {
+export default async function TeamSettingsPage() {
+  const [members, billingStats] = await Promise.all([
+    getTeamMembers(),
+    getBillingStats(),
+  ]);
+
+  const memberLimit = billingStats?.usage?.members?.limit || 1;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -37,7 +32,10 @@ export default function TeamSettingsPage() {
               <ArrowLeftIcon className="h-4 w-4" />
               Back
             </Link>
-            <button className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">
+            <button
+              disabled={memberLimit !== -1 && members.length >= memberLimit}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <PlusIcon className="h-4 w-4" />
               Invite Member
             </button>
@@ -45,112 +43,76 @@ export default function TeamSettingsPage() {
         }
       />
 
-      {/* Demo Mode Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Demo Mode:</strong> Team management is disabled. This is a preview of the team settings.
-        </p>
-      </div>
-
       {/* Team Limit */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-foreground-muted">Team Members</p>
             <p className="text-lg font-semibold text-foreground">
-              {demoTeam.members.length} / {demoTeam.limit} seats used
+              {members.length} / {memberLimit === -1 ? "∞" : memberLimit} seats used
             </p>
           </div>
-          <div className="w-32">
-            <div className="h-2 rounded-full bg-[var(--background-secondary)]">
-              <div
-                className="h-full rounded-full bg-[var(--primary)]"
-                style={{ width: `${(demoTeam.members.length / demoTeam.limit) * 100}%` }}
-              />
+          {memberLimit !== -1 && (
+            <div className="w-32">
+              <div className="h-2 rounded-full bg-[var(--background-secondary)]">
+                <div
+                  className="h-full rounded-full bg-[var(--primary)]"
+                  style={{ width: `${Math.min((members.length / memberLimit) * 100, 100)}%` }}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
       {/* Active Members */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Active Members</h2>
-        <div className="space-y-3">
-          {demoTeam.members.map((member) => {
-            const roleInfo = roleLabels[member.role as keyof typeof roleLabels];
-            return (
-              <div
-                key={member.id}
-                className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
-                    {member.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">{member.name}</p>
-                    <p className="text-sm text-foreground-muted">{member.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", roleInfo.color)}>
-                    {roleInfo.label}
-                  </span>
-                  <p className="text-sm text-foreground-muted">
-                    Joined {new Date(member.joinedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                  </p>
-                  {member.role !== "owner" && (
-                    <button className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
-                      <MoreIcon className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Pending Invites */}
-      {demoTeam.pendingInvites.length > 0 && (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Pending Invitations</h2>
+        {members.length > 0 ? (
           <div className="space-y-3">
-            {demoTeam.pendingInvites.map((invite) => {
-              const roleInfo = roleLabels[invite.role as keyof typeof roleLabels];
+            {members.map((member) => {
+              const roleInfo = roleLabels[member.role as keyof typeof roleLabels] || roleLabels.member;
               return (
                 <div
-                  key={invite.id}
-                  className="flex items-center justify-between rounded-lg border border-dashed border-[var(--card-border)] bg-[var(--background)] p-4"
+                  key={member.id}
+                  className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--warning)]/10 text-[var(--warning)]">
-                      <ClockIcon className="h-5 w-5" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+                      {(member.user.fullName || member.user.email).charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">{invite.email}</p>
-                      <p className="text-sm text-foreground-muted">
-                        Sent {new Date(invite.sentAt).toLocaleDateString()} • Expires {new Date(invite.expiresAt).toLocaleDateString()}
-                      </p>
+                      <p className="font-medium text-foreground">{member.user.fullName || member.user.email}</p>
+                      <p className="text-sm text-foreground-muted">{member.user.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", roleInfo.color)}>
                       {roleInfo.label}
                     </span>
-                    <button className="text-sm font-medium text-[var(--primary)] hover:underline">
-                      Resend
-                    </button>
-                    <button className="text-sm font-medium text-[var(--error)] hover:underline">
-                      Revoke
-                    </button>
+                    <p className="text-sm text-foreground-muted">
+                      Joined {new Date(member.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                    </p>
+                    {member.role !== "owner" && (
+                      <button className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
+                        <MoreIcon className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="rounded-lg border-2 border-dashed border-[var(--card-border)] p-8 text-center">
+            <UsersIcon className="mx-auto h-8 w-8 text-foreground-muted" />
+            <p className="mt-2 text-sm text-foreground">No team members yet</p>
+            <p className="mt-1 text-xs text-foreground-muted">
+              Invite team members to collaborate on projects
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Role Permissions */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
@@ -216,18 +178,18 @@ function PlusIcon({ className }: { className?: string }) {
   );
 }
 
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
 function MoreIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10 3a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM10 8.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM11.5 15.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z" />
+    </svg>
+  );
+}
+
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" />
     </svg>
   );
 }

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import {
   generateFileKey,
   generatePresignedUploadUrl,
@@ -198,7 +199,7 @@ export async function createAsset(
         sizeBytes: input.sizeBytes,
         width: input.width,
         height: input.height,
-        exifData: input.exifData,
+        exifData: input.exifData as Prisma.InputJsonValue | undefined,
         sortOrder: gallery._count.assets, // Add at end
       },
     });
@@ -207,9 +208,9 @@ export async function createAsset(
     await prisma.activityLog.create({
       data: {
         organizationId,
-        action: "file_uploaded",
-        resourceType: "asset",
-        resourceId: asset.id,
+        type: "file_uploaded",
+        description: `Uploaded file: ${input.filename}`,
+        projectId: input.projectId,
         metadata: {
           filename: input.filename,
           galleryId: input.projectId,

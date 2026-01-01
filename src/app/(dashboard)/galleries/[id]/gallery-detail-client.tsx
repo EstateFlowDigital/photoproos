@@ -294,13 +294,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     setUploadModalOpen(true);
   };
 
-  const handleUploadComplete = (uploadedFiles: File[]) => {
-    // In production, this would receive the uploaded photo data from the API
-    // For demo, we'll create placeholder entries
-    const newPhotos: Photo[] = uploadedFiles.map((file, index) => ({
-      id: `new-${Date.now()}-${index}`,
-      url: URL.createObjectURL(file),
-      filename: file.name,
+  const handleUploadComplete = (uploadedFiles: Array<{ id: string; url: string; filename: string }>) => {
+    const newPhotos: Photo[] = uploadedFiles.map((file) => ({
+      id: file.id,
+      url: file.url,
+      filename: file.filename,
     }));
 
     setPhotos((prev) => [...prev, ...newPhotos]);

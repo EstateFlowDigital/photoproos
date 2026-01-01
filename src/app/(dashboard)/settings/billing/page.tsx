@@ -2,31 +2,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Demo billing data
-const demoBilling = {
-  plan: "pro",
-  status: "active",
-  nextBillingDate: "2025-01-15",
-  amount: 4900, // $49/month in cents
-  paymentMethod: {
-    brand: "visa",
-    last4: "4242",
-    expMonth: 12,
-    expYear: 2026,
-  },
-  usage: {
-    storage: { used: 12.5, limit: 50 },
-    galleries: { used: 18, limit: -1 }, // -1 = unlimited
-    clients: { used: 42, limit: -1 },
-    teamMembers: { used: 2, limit: 3 },
-  },
-  invoices: [
-    { id: "inv_1", date: "2024-12-15", amount: 4900, status: "paid" },
-    { id: "inv_2", date: "2024-11-15", amount: 4900, status: "paid" },
-    { id: "inv_3", date: "2024-10-15", amount: 4900, status: "paid" },
-  ],
-};
+import { getBillingStats } from "@/lib/actions/settings";
 
 const plans = [
   {
@@ -34,14 +10,12 @@ const plans = [
     name: "Free",
     price: 0,
     features: ["2 GB storage", "5 galleries/month", "25 clients", "1 team member"],
-    current: false,
   },
   {
     id: "pro",
     name: "Pro",
     price: 4900,
     features: ["50 GB storage", "Unlimited galleries", "Unlimited clients", "3 team members", "Custom branding", "Contracts"],
-    current: true,
     popular: true,
   },
   {
@@ -49,17 +23,32 @@ const plans = [
     name: "Studio",
     price: 9900,
     features: ["500 GB storage", "Unlimited galleries", "Unlimited clients", "Unlimited team", "Advanced analytics", "API access"],
-    current: false,
   },
 ];
 
-export default function BillingSettingsPage() {
+export default async function BillingSettingsPage() {
+  const billingStats = await getBillingStats();
+
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
     }).format(cents / 100);
+  };
+
+  const currentPlan = billingStats?.plan || "free";
+  const usage = billingStats?.usage || {
+    storage: { used: 0, limit: 2 },
+    galleries: { used: 0, limit: 5 },
+    clients: { used: 0, limit: 25 },
+    members: { used: 0, limit: 1 },
+  };
+
+  const planPrices: Record<string, number> = {
+    free: 0,
+    pro: 4900,
+    studio: 9900,
   };
 
   return (
@@ -78,13 +67,6 @@ export default function BillingSettingsPage() {
         }
       />
 
-      {/* Demo Mode Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Demo Mode:</strong> Billing features are disabled. This is a preview of the billing page.
-        </p>
-      </div>
-
       <div className="space-y-6">
         {/* Current Plan */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
@@ -96,43 +78,54 @@ export default function BillingSettingsPage() {
                   Active
                 </span>
               </div>
-              <p className="mt-1 text-3xl font-bold text-foreground">
-                Pro <span className="text-lg font-normal text-foreground-muted">/ {formatCurrency(demoBilling.amount)}/mo</span>
+              <p className="mt-1 text-3xl font-bold text-foreground capitalize">
+                {currentPlan} <span className="text-lg font-normal text-foreground-muted">/ {formatCurrency(planPrices[currentPlan] || 0)}/mo</span>
               </p>
-              <p className="mt-2 text-sm text-foreground-muted">
-                Next billing date: {new Date(demoBilling.nextBillingDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-              </p>
+              {billingStats?.memberSince && (
+                <p className="mt-2 text-sm text-foreground-muted">
+                  Member since: {new Date(billingStats.memberSince).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                </p>
+              )}
             </div>
-            <button className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
-              Manage Subscription
-            </button>
+            {billingStats?.stripeSubscriptionId ? (
+              <button className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
+                Manage Subscription
+              </button>
+            ) : (
+              <Link
+                href="/settings/billing/upgrade"
+                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              >
+                Upgrade Plan
+              </Link>
+            )}
           </div>
         </div>
 
         {/* Usage */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Usage This Month</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Current Usage</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <UsageCard
               label="Storage"
-              used={demoBilling.usage.storage.used}
-              limit={demoBilling.usage.storage.limit}
+              used={usage.storage.used}
+              limit={usage.storage.limit}
               unit="GB"
             />
             <UsageCard
               label="Galleries"
-              used={demoBilling.usage.galleries.used}
-              limit={demoBilling.usage.galleries.limit}
+              used={usage.galleries.used}
+              limit={usage.galleries.limit}
             />
             <UsageCard
               label="Clients"
-              used={demoBilling.usage.clients.used}
-              limit={demoBilling.usage.clients.limit}
+              used={usage.clients.used}
+              limit={usage.clients.limit}
             />
             <UsageCard
               label="Team Members"
-              used={demoBilling.usage.teamMembers.used}
-              limit={demoBilling.usage.teamMembers.limit}
+              used={usage.members.used}
+              limit={usage.members.limit}
             />
           </div>
         </div>
@@ -141,104 +134,91 @@ export default function BillingSettingsPage() {
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Available Plans</h2>
           <div className="grid gap-4 md:grid-cols-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={cn(
-                  "rounded-xl border p-5 transition-all",
-                  plan.current
-                    ? "border-[var(--primary)] bg-[var(--primary)]/5"
-                    : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
-                )}
-              >
-                {plan.popular && (
-                  <span className="inline-flex rounded-full bg-[var(--primary)] px-2.5 py-0.5 text-xs font-medium text-white mb-3">
-                    Most Popular
-                  </span>
-                )}
-                <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
-                <p className="mt-1 text-2xl font-bold text-foreground">
-                  {plan.price === 0 ? "Free" : formatCurrency(plan.price)}
-                  {plan.price > 0 && <span className="text-sm font-normal text-foreground-muted">/mo</span>}
-                </p>
-                <ul className="mt-4 space-y-2">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2 text-sm text-foreground-secondary">
-                      <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button
+            {plans.map((plan) => {
+              const isCurrent = plan.id === currentPlan;
+              return (
+                <div
+                  key={plan.id}
                   className={cn(
-                    "mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                    plan.current
-                      ? "border border-[var(--primary)] text-[var(--primary)] cursor-default"
-                      : "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
+                    "rounded-xl border p-5 transition-all",
+                    isCurrent
+                      ? "border-[var(--primary)] bg-[var(--primary)]/5"
+                      : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
                   )}
-                  disabled={plan.current}
                 >
-                  {plan.current ? "Current Plan" : plan.price === 0 ? "Downgrade" : "Upgrade"}
-                </button>
-              </div>
-            ))}
+                  {plan.popular && (
+                    <span className="inline-flex rounded-full bg-[var(--primary)] px-2.5 py-0.5 text-xs font-medium text-white mb-3">
+                      Most Popular
+                    </span>
+                  )}
+                  <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
+                  <p className="mt-1 text-2xl font-bold text-foreground">
+                    {plan.price === 0 ? "Free" : formatCurrency(plan.price)}
+                    {plan.price > 0 && <span className="text-sm font-normal text-foreground-muted">/mo</span>}
+                  </p>
+                  <ul className="mt-4 space-y-2">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-sm text-foreground-secondary">
+                        <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    className={cn(
+                      "mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                      isCurrent
+                        ? "border border-[var(--primary)] text-[var(--primary)] cursor-default"
+                        : "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
+                    )}
+                    disabled={isCurrent}
+                  >
+                    {isCurrent ? "Current Plan" : plan.price === 0 ? "Downgrade" : "Upgrade"}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Payment Method */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Payment Method</h2>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-16 items-center justify-center rounded-lg bg-[var(--background)]">
-                <CreditCardIcon className="h-8 w-8 text-foreground-muted" />
+          {billingStats?.stripeCustomerId ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-16 items-center justify-center rounded-lg bg-[var(--background)]">
+                  <CreditCardIcon className="h-8 w-8 text-foreground-muted" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">Payment method on file</p>
+                  <p className="text-sm text-foreground-muted">Managed through Stripe</p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-foreground">
-                  {demoBilling.paymentMethod.brand.charAt(0).toUpperCase() + demoBilling.paymentMethod.brand.slice(1)} ending in {demoBilling.paymentMethod.last4}
-                </p>
-                <p className="text-sm text-foreground-muted">
-                  Expires {demoBilling.paymentMethod.expMonth}/{demoBilling.paymentMethod.expYear}
-                </p>
-              </div>
+              <button className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
+                Update
+              </button>
             </div>
-            <button className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
-              Update
-            </button>
-          </div>
+          ) : (
+            <div className="rounded-lg border-2 border-dashed border-[var(--card-border)] p-6 text-center">
+              <CreditCardIcon className="mx-auto h-8 w-8 text-foreground-muted" />
+              <p className="mt-2 text-sm text-foreground">No payment method on file</p>
+              <p className="mt-1 text-xs text-foreground-muted">
+                Add a payment method when you upgrade to a paid plan
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Invoices */}
+        {/* Invoice History - Coming Soon */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Invoice History</h2>
-          <div className="space-y-3">
-            {demoBilling.invoices.map((invoice) => (
-              <div
-                key={invoice.id}
-                className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success)]/10 text-[var(--success)]">
-                    <ReceiptIcon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {new Date(invoice.date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                    </p>
-                    <p className="text-sm text-foreground-muted">{invoice.id}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="rounded-full bg-[var(--success)]/10 px-2.5 py-1 text-xs font-medium text-[var(--success)]">
-                    Paid
-                  </span>
-                  <span className="font-medium text-foreground">{formatCurrency(invoice.amount)}</span>
-                  <button className="text-sm font-medium text-[var(--primary)] hover:underline">
-                    Download
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="rounded-lg border-2 border-dashed border-[var(--card-border)] p-8 text-center">
+            <ReceiptIcon className="mx-auto h-8 w-8 text-foreground-muted" />
+            <p className="mt-2 text-sm text-foreground">No invoices yet</p>
+            <p className="mt-1 text-xs text-foreground-muted">
+              Invoices will appear here when you have a paid subscription
+            </p>
           </div>
         </div>
       </div>

@@ -105,9 +105,9 @@ export async function POST(request: NextRequest) {
     await prisma.activityLog.create({
       data: {
         organizationId: gallery.organizationId,
-        action: "file_uploaded",
-        resourceType: "project",
-        resourceId: galleryId,
+        type: "file_uploaded",
+        description: `Uploaded ${assets.length} file${assets.length !== 1 ? "s" : ""} to gallery`,
+        projectId: galleryId,
         userId,
         metadata: {
           count: assets.length,

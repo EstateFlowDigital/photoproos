@@ -2,30 +2,10 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getOrganizationSettings } from "@/lib/actions/settings";
 
-// Demo integration data
-const integrations = {
-  connected: [
-    {
-      id: "stripe",
-      name: "Stripe",
-      description: "Accept payments from clients",
-      icon: "💳",
-      status: "connected",
-      connectedAt: "2024-06-15",
-      accountName: "Thompson Photography",
-    },
-    {
-      id: "google-calendar",
-      name: "Google Calendar",
-      description: "Sync bookings to your calendar",
-      icon: "📅",
-      status: "connected",
-      connectedAt: "2024-08-20",
-      accountName: "alex@photoproos.com",
-    },
-  ],
-  available: [
+// Available integrations catalog
+const availableIntegrations = [
     {
       id: "quickbooks",
       name: "QuickBooks",
@@ -82,8 +62,7 @@ const integrations = {
       icon: "📝",
       category: "Productivity",
     },
-  ],
-};
+  ];
 
 export default function IntegrationsSettingsPage() {
   return (
@@ -114,46 +93,9 @@ export default function IntegrationsSettingsPage() {
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Connected</h2>
 
-          {integrations.connected.length > 0 ? (
-            <div className="space-y-3">
-              {integrations.connected.map((integration) => (
-                <div
-                  key={integration.id}
-                  className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-2xl">
-                      {integration.icon}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">{integration.name}</p>
-                        <span className="rounded-full bg-[var(--success)]/10 px-2 py-0.5 text-xs font-medium text-[var(--success)]">
-                          Connected
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground-muted">{integration.accountName}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p className="text-xs text-foreground-muted">
-                      Since {new Date(integration.connectedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                    </p>
-                    <button className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
-                      Manage
-                    </button>
-                    <button className="rounded-lg border border-[var(--error)]/30 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10">
-                      Disconnect
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-lg border-2 border-dashed border-[var(--card-border)] p-8 text-center">
-              <p className="text-foreground-muted">No integrations connected yet</p>
-            </div>
-          )}
+          <div className="rounded-lg border-2 border-dashed border-[var(--card-border)] p-8 text-center">
+            <p className="text-foreground-muted">No integrations connected yet</p>
+          </div>
         </div>
 
         {/* Available Integrations */}
@@ -161,7 +103,7 @@ export default function IntegrationsSettingsPage() {
           <h2 className="text-lg font-semibold text-foreground mb-4">Available Integrations</h2>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {integrations.available.map((integration) => (
+            {availableIntegrations.map((integration) => (
               <div
                 key={integration.id}
                 className="flex items-start gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:border-[var(--border-hover)]"

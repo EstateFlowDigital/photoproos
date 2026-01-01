@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Marketing Pages)
+- **Marketing Route Group** (`/app/(marketing)/`):
+  - Created shared layout with Navbar and Footer components
+  - Proper page structure for all public marketing pages
+- **About Page** (`/about`):
+  - Hero section with company story
+  - Mission section with platform stats (photographers, photos delivered, etc.)
+  - Origin story and founding narrative
+  - Core values section (6 values with icons)
+  - Team section showcasing founders
+  - Call-to-action section
+- **Contact Page** (`/contact`):
+  - Contact form with name, email, company, subject, and message fields
+  - Form submission handling with success state
+  - Contact info sidebar (email, live chat, demo booking)
+  - Social media links
+  - FAQ preview section
+- **Pricing Page** (`/pricing`):
+  - Three pricing tiers (Starter Free, Pro $29/mo, Business $79/mo)
+  - Feature comparison lists for each plan
+  - "Most Popular" badge for Pro plan
+  - 6 FAQ items about pricing, billing, and storage
+  - Contact sales CTA section
+- **Help Center** (`/help`):
+  - Search bar for documentation
+  - 6 help categories (Getting Started, Galleries, Clients, Payments, Bookings, Account)
+  - Article links within each category
+  - Popular articles section
+  - Video tutorials section with placeholders
+  - Contact support CTA with live chat and email options
+- **Legal Pages**:
+  - **Privacy Policy** (`/legal/privacy`) - Comprehensive privacy policy covering data collection, usage, sharing, security, user rights
+  - **Terms of Service** (`/legal/terms`) - 15 sections covering account, subscriptions, content, acceptable use, liability, etc.
+  - **Cookie Policy** (`/legal/cookies`) - Cookie types, purposes, third-party cookies, management instructions
+
 ### Added (Cloudflare R2 File Upload Integration)
 - **R2 Storage Client** (`/lib/storage/r2.ts`):
   - S3-compatible client configuration for Cloudflare R2

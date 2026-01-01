@@ -3,8 +3,8 @@ import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// Demo notification preferences
-const demoPreferences = {
+// Default notification preferences (stored in local state until notification preferences are added to DB)
+const defaultPreferences = {
   email: {
     galleryDelivered: true,
     paymentReceived: true,
@@ -80,13 +80,6 @@ export default function NotificationsSettingsPage() {
         }
       />
 
-      {/* Demo Mode Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Demo Mode:</strong> Changes will not be saved. This is a preview of notification settings.
-        </p>
-      </div>
-
       <div className="space-y-6">
         {/* Email Notifications */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
@@ -106,7 +99,7 @@ export default function NotificationsSettingsPage() {
                 key={`email-${type.id}`}
                 label={type.label}
                 description={type.description}
-                defaultChecked={demoPreferences.email[type.id as keyof typeof demoPreferences.email]}
+                defaultChecked={defaultPreferences.email[type.id as keyof typeof defaultPreferences.email]}
               />
             ))}
           </div>
@@ -142,7 +135,7 @@ export default function NotificationsSettingsPage() {
                 key={`push-${type.id}`}
                 label={type.label}
                 description={type.description}
-                defaultChecked={demoPreferences.push[type.id as keyof typeof demoPreferences.push]}
+                defaultChecked={defaultPreferences.push[type.id as keyof typeof defaultPreferences.push]}
               />
             ))}
           </div>
