@@ -1,9 +1,31 @@
-import { prisma } from "@/lib/db";
-
 export const dynamic = "force-dynamic";
 import { StatCard, ActivityItem, PageHeader } from "@/components/dashboard";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import Link from "next/link";
+
+// Demo data for when database is not available
+const DEMO_MODE = true; // Set to false when database is connected
+
+const demoData = {
+  organization: { name: "PhotoProOS Demo" },
+  monthlyRevenue: 1247500, // $12,475
+  activeGalleries: 24,
+  totalClients: 156,
+  pendingPayments: 385000, // $3,850
+  recentActivity: [
+    { id: "1", type: "payment_received", description: "Payment received from Premier Realty - $4,250", createdAt: new Date(Date.now() - 1000 * 60 * 15) },
+    { id: "2", type: "gallery_delivered", description: "Gallery delivered to Tech Solutions Inc", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2) },
+    { id: "3", type: "client_added", description: "New client added: Bella Cucina Restaurant", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5) },
+    { id: "4", type: "gallery_viewed", description: "Sarah M. viewed Wedding Gallery (23 photos)", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8) },
+    { id: "5", type: "booking_confirmed", description: "Booking confirmed: Corporate Headshots - Jan 15", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24) },
+  ],
+  recentGalleries: [
+    { id: "1", name: "Downtown Luxury Listing", client: "Premier Realty", photos: 48, status: "delivered" as const, revenue: "$4,250", thumbnailUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop" },
+    { id: "2", name: "Corporate Headshots Q4", client: "Tech Solutions Inc", photos: 24, status: "pending" as const, revenue: "$2,180", thumbnailUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=300&fit=crop" },
+    { id: "3", name: "Restaurant Grand Opening", client: "Bella Cucina", photos: 86, status: "delivered" as const, revenue: "$1,890", thumbnailUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop" },
+    { id: "4", name: "Modern Office Space", client: "Design Studio Pro", photos: 32, status: "draft" as const, revenue: undefined, thumbnailUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+  ],
+};
 
 // Icons
 function PaymentIcon({ className }: { className?: string }) {
@@ -83,6 +105,104 @@ function getActivityIcon(type: string) {
 }
 
 export default async function DashboardPage() {
+  // Use demo data for UI review (database not connected yet)
+  if (DEMO_MODE) {
+    const { organization, monthlyRevenue, activeGalleries, totalClients, pendingPayments, recentActivity, recentGalleries } = demoData;
+
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          title="Dashboard"
+          subtitle={`Welcome back! Here's what's happening with ${organization.name}.`}
+        />
+
+        {/* Demo Mode Banner */}
+        <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
+          <p className="text-sm text-[var(--primary)]">
+            <strong>Demo Mode:</strong> Viewing sample data. Connect your database to see real metrics.
+          </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="Monthly Revenue"
+            value={formatCurrency(monthlyRevenue)}
+            change="+23%"
+            positive
+          />
+          <StatCard
+            label="Active Galleries"
+            value={activeGalleries.toString()}
+            change="+5"
+            positive
+          />
+          <StatCard
+            label="Total Clients"
+            value={totalClients.toString()}
+            change="+12"
+            positive
+          />
+          <StatCard
+            label="Pending Payments"
+            value={formatCurrency(pendingPayments)}
+          />
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Recent Galleries */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Recent Galleries</h2>
+              <Link
+                href="/galleries"
+                className="text-sm font-medium text-[var(--primary)] hover:underline"
+              >
+                View all
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {recentGalleries.map((gallery) => (
+                <GalleryCard
+                  key={gallery.id}
+                  id={gallery.id}
+                  title={gallery.name}
+                  client={gallery.client}
+                  photos={gallery.photos}
+                  status={gallery.status}
+                  revenue={gallery.revenue}
+                  thumbnailUrl={gallery.thumbnailUrl}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+              <div className="divide-y divide-[var(--card-border)]">
+                {recentActivity.map((activity) => (
+                  <ActivityItem
+                    key={activity.id}
+                    icon={getActivityIcon(activity.type)}
+                    text={activity.description}
+                    time={formatRelativeTime(activity.createdAt)}
+                    highlight={activity.type === "payment_received"}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Database mode (for when database is connected)
+  const { prisma } = await import("@/lib/db");
+
   // For now, get the first organization (later this will come from auth)
   const organization = await prisma.organization.findFirst({
     orderBy: { createdAt: "asc" },
