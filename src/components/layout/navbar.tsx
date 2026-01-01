@@ -391,10 +391,10 @@ export function Navbar({ className }: NavbarProps) {
       {/* Right Side Actions */}
       <div className="hidden gap-2 lg:flex">
         <Button variant="secondary" asChild>
-          <Link href="/login">Log in</Link>
+          <Link href="/dashboard">Log in</Link>
         </Button>
         <Button variant="default" asChild>
-          <Link href="/signup">Start free trial</Link>
+          <Link href="/dashboard">Start free trial</Link>
         </Button>
       </div>
 
@@ -539,12 +539,12 @@ export function Navbar({ className }: NavbarProps) {
             {/* CTA Buttons */}
             <div className="mt-auto space-y-3 pt-6">
               <Button variant="default" size="lg" className="w-full" asChild>
-                <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
                   Start free trial
                 </Link>
               </Button>
               <Button variant="outline" size="lg" className="w-full" asChild>
-                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
                   Log in
                 </Link>
               </Button>

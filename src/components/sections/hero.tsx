@@ -679,7 +679,7 @@ export function HeroSection() {
           {/* CTA Buttons */}
           <div className="hero-animate hero-animate-4 mt-6 flex flex-wrap justify-center gap-3">
             <Button variant="default" size="lg" asChild>
-              <Link href="/signup">Start free trial</Link>
+              <Link href="/dashboard">Start free trial</Link>
             </Button>
             <Button variant="outline" size="lg" asChild>
               <Link href="#demo" className="flex items-center gap-2">

@@ -95,7 +95,7 @@ export function CTASection() {
             }}
           >
             <ShimmerButton asChild size="lg" className="px-8 py-4 text-base">
-              <Link href="/auth/signup">
+              <Link href="/dashboard">
                 Start free trial
                 <ArrowIcon className="ml-2 h-4 w-4" />
               </Link>

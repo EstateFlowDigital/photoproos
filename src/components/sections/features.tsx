@@ -229,7 +229,7 @@ export function FeaturesSection() {
             Ready to streamline your photography business?
           </p>
           <Link
-            href="/signup"
+            href="/dashboard"
             className="inline-flex items-center gap-2 rounded-lg bg-foreground px-6 py-3 text-base font-medium text-[var(--background)] transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-foreground/20 motion-reduce:transform-none"
           >
             Get started free

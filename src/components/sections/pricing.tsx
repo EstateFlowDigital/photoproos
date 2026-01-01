@@ -31,7 +31,7 @@ const pricingTiers: PricingTier[] = [
       "PhotoProOS branding",
     ],
     cta: "Get started free",
-    ctaHref: "/signup",
+    ctaHref: "/dashboard",
   },
   {
     name: "Pro",
@@ -48,7 +48,7 @@ const pricingTiers: PricingTier[] = [
       "Analytics dashboard",
     ],
     cta: "Start free trial",
-    ctaHref: "/signup?plan=pro",
+    ctaHref: "/dashboard",
     popular: true,
   },
   {
@@ -67,7 +67,7 @@ const pricingTiers: PricingTier[] = [
       "Dedicated account manager",
     ],
     cta: "Start free trial",
-    ctaHref: "/signup?plan=studio",
+    ctaHref: "/dashboard",
   },
   {
     name: "Enterprise",
