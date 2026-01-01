@@ -1,133 +1,76 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { GalleryEditForm } from "./gallery-edit-form";
-
-// Demo clients for the dropdown
-const demoClients = [
-  { id: "1", name: "Premier Realty", email: "contact@premierrealty.com" },
-  { id: "2", name: "Tech Solutions Inc", email: "admin@techsolutions.com" },
-  { id: "3", name: "Bella Cucina", email: "info@bellacucina.com" },
-  { id: "4", name: "Design Studio Pro", email: "hello@designstudiopro.com" },
-  { id: "5", name: "Sarah Mitchell", email: "sarah.m@email.com" },
-  { id: "6", name: "Berkshire Properties", email: "listings@berkshire.com" },
-  { id: "7", name: "Innovate Tech", email: "events@innovatetech.com" },
-  { id: "8", name: "Luxury Living Realty", email: "info@luxuryliving.com" },
-];
-
-// Demo gallery data with service info
-const demoGalleries: Record<string, {
-  id: string;
-  name: string;
-  description: string;
-  clientId: string;
-  priceCents: number;
-  serviceId?: string;
-  serviceDescription?: string;
-  accessType: "public" | "password";
-  coverImageUrl: string | null;
-  settings: {
-    allowDownloads: boolean;
-    allowFavorites: boolean;
-    showWatermarks: boolean;
-    emailNotifications: boolean;
-  };
-}> = {
-  "1": {
-    id: "1",
-    name: "Downtown Luxury Listing",
-    description: "Beautiful downtown property with stunning city views. 3 bedroom, 2.5 bath luxury condo in the heart of the city.",
-    clientId: "1",
-    priceCents: 45000,
-    serviceId: "re-luxury",
-    serviceDescription: "Premium photography package for high-end and luxury properties",
-    accessType: "public",
-    coverImageUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
-    settings: {
-      allowDownloads: true,
-      allowFavorites: true,
-      showWatermarks: false,
-      emailNotifications: true,
-    },
-  },
-  "2": {
-    id: "2",
-    name: "Oceanfront Estate",
-    description: "Stunning oceanfront property with panoramic views. 5 bedroom estate with private beach access.",
-    clientId: "6",
-    priceCents: 58000,
-    serviceId: "re-luxury",
-    serviceDescription: "Premium photography package for high-end and luxury properties",
-    accessType: "public",
-    coverImageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop",
-    settings: {
-      allowDownloads: true,
-      allowFavorites: true,
-      showWatermarks: false,
-      emailNotifications: true,
-    },
-  },
-  "3": {
-    id: "3",
-    name: "Corporate Headshots Q4",
-    description: "Professional headshots for the Tech Solutions Inc team. Executive and staff photos.",
-    clientId: "2",
-    priceCents: 50000,
-    serviceId: "portrait-team",
-    serviceDescription: "Consistent headshots for corporate teams and organizations",
-    accessType: "password",
-    coverImageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=300&fit=crop",
-    settings: {
-      allowDownloads: true,
-      allowFavorites: false,
-      showWatermarks: true,
-      emailNotifications: true,
-    },
-  },
-  "5": {
-    id: "5",
-    name: "Modern Office Space",
-    description: "Contemporary office design for Design Studio Pro. Showcasing their new workspace.",
-    clientId: "4",
-    priceCents: 0,
-    serviceId: undefined,
-    serviceDescription: "Complimentary coverage for portfolio building",
-    accessType: "public",
-    coverImageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-    settings: {
-      allowDownloads: true,
-      allowFavorites: true,
-      showWatermarks: false,
-      emailNotifications: true,
-    },
-  },
-};
-
-const defaultGallery = {
-  id: "0",
-  name: "Sample Gallery",
-  description: "This is a sample gallery for demonstration purposes.",
-  clientId: "1",
-  priceCents: 0,
-  serviceId: undefined,
-  serviceDescription: "",
-  accessType: "public" as const,
-  coverImageUrl: null,
-  settings: {
-    allowDownloads: true,
-    allowFavorites: true,
-    showWatermarks: false,
-    emailNotifications: true,
-  },
-};
+import { getGallery } from "@/lib/actions/galleries";
+import { prisma } from "@/lib/db";
 
 interface EditGalleryPageProps {
   params: Promise<{ id: string }>;
 }
 
+async function getClients() {
+  try {
+    const org = await prisma.organization.findFirst({
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (!org) return [];
+
+    const clients = await prisma.client.findMany({
+      where: { organizationId: org.id },
+      select: {
+        id: true,
+        fullName: true,
+        company: true,
+        email: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+
+    return clients.map((c) => ({
+      id: c.id,
+      name: c.company || c.fullName || "Unknown",
+      email: c.email,
+    }));
+  } catch (error) {
+    console.error("Error fetching clients:", error);
+    return [];
+  }
+}
+
 export default async function EditGalleryPage({ params }: EditGalleryPageProps) {
   const { id } = await params;
-  const gallery = demoGalleries[id] || { ...defaultGallery, id };
+
+  const [gallery, clients] = await Promise.all([
+    getGallery(id),
+    getClients(),
+  ]);
+
+  if (!gallery) {
+    notFound();
+  }
+
+  // Map to the format expected by GalleryEditForm
+  const mappedGallery = {
+    id: gallery.id,
+    name: gallery.name,
+    description: gallery.description || "",
+    clientId: gallery.client?.id || "",
+    priceCents: gallery.priceCents,
+    serviceId: gallery.service?.id,
+    serviceDescription: gallery.service?.description || undefined,
+    accessType: gallery.password ? ("password" as const) : ("public" as const),
+    coverImageUrl: gallery.coverImageUrl,
+    settings: {
+      allowDownloads: gallery.allowDownloads,
+      allowFavorites: true, // Default - not in schema yet
+      showWatermarks: gallery.showWatermark,
+      emailNotifications: true, // Default - not in schema yet
+    },
+  };
 
   return (
     <div className="space-y-6">
@@ -147,17 +90,10 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
         }
       />
 
-      {/* Demo Mode Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Demo Mode:</strong> Form submissions are disabled. This is a preview of the gallery edit flow.
-        </p>
-      </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
         <div className="lg:col-span-2">
-          <GalleryEditForm gallery={gallery} clients={demoClients} />
+          <GalleryEditForm gallery={mappedGallery} clients={clients} />
         </div>
 
         {/* Sidebar */}
@@ -167,78 +103,130 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
             <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Status</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Status</label>
-                <select className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground">
-                  <option value="draft">Draft</option>
-                  <option value="pending">Pending Review</option>
-                  <option value="delivered">Delivered</option>
-                </select>
+                <label className="block text-sm font-medium text-foreground mb-2">Current Status</label>
+                <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ${
+                  gallery.status === "delivered"
+                    ? "bg-[var(--success)]/10 text-[var(--success)]"
+                    : gallery.status === "pending"
+                    ? "bg-[var(--warning)]/10 text-[var(--warning)]"
+                    : "bg-[var(--foreground-muted)]/10 text-foreground-muted"
+                }`}>
+                  {gallery.status === "delivered" ? "Delivered" : gallery.status === "pending" ? "Pending" : "Draft"}
+                </div>
               </div>
               <div className="pt-4 border-t border-[var(--card-border)]">
                 <p className="text-xs text-foreground-muted mb-3">Quick Actions</p>
                 <div className="space-y-2">
-                  <button className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
-                    Preview Gallery
-                  </button>
-                  <button className="w-full rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">
-                    Deliver to Client
-                  </button>
+                  {gallery.deliverySlug && (
+                    <Link
+                      href={`/g/${gallery.deliverySlug}`}
+                      target="_blank"
+                      className="flex w-full items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    >
+                      Preview Gallery
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Activity Log */}
+          {/* Stats */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h2>
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--success)]/10 text-[var(--success)] shrink-0">
-                  <CheckIcon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-sm text-foreground">Gallery delivered</p>
-                  <p className="text-xs text-foreground-muted">2 days ago</p>
-                </div>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Stats</h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground-muted">Photos</span>
+                <span className="text-sm font-medium text-foreground">{gallery.photos.length}</span>
               </div>
-              <div className="flex gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shrink-0">
-                  <EyeIcon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-sm text-foreground">Client viewed gallery</p>
-                  <p className="text-xs text-foreground-muted">2 days ago</p>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground-muted">Views</span>
+                <span className="text-sm font-medium text-foreground">{gallery.viewCount}</span>
               </div>
-              <div className="flex gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--warning)]/10 text-[var(--warning)] shrink-0">
-                  <CreditCardIcon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-sm text-foreground">Payment received</p>
-                  <p className="text-xs text-foreground-muted">1 day ago</p>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground-muted">Downloads</span>
+                <span className="text-sm font-medium text-foreground">{gallery.downloadCount}</span>
               </div>
+              {gallery.deliveredAt && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground-muted">Delivered</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {new Date(gallery.deliveredAt).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Danger Zone */}
-          <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
-            <h2 className="text-lg font-semibold text-[var(--error)] mb-2">Danger Zone</h2>
-            <p className="text-sm text-foreground-muted mb-4">
-              Deleting this gallery will permanently remove all photos and cannot be undone.
-            </p>
-            <button
-              type="button"
-              className="w-full rounded-lg border border-[var(--error)] bg-transparent px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
-            >
-              Delete Gallery
-            </button>
-          </div>
+          {/* Recent Activity */}
+          {gallery.activityLogs.length > 0 && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h2>
+              <div className="space-y-4">
+                {gallery.activityLogs.slice(0, 5).map((log) => (
+                  <div key={log.id} className="flex gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full shrink-0 ${getActivityStyle(log.type)}`}>
+                      {getActivityIcon(log.type)}
+                    </div>
+                    <div>
+                      <p className="text-sm text-foreground">{log.description}</p>
+                      <p className="text-xs text-foreground-muted">
+                        {formatRelativeTime(log.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+function getActivityStyle(type: string): string {
+  switch (type) {
+    case "gallery_delivered":
+      return "bg-[var(--success)]/10 text-[var(--success)]";
+    case "gallery_view":
+      return "bg-[var(--primary)]/10 text-[var(--primary)]";
+    case "gallery_download":
+      return "bg-[var(--warning)]/10 text-[var(--warning)]";
+    case "payment_received":
+      return "bg-[var(--success)]/10 text-[var(--success)]";
+    default:
+      return "bg-[var(--foreground-muted)]/10 text-foreground-muted";
+  }
+}
+
+function getActivityIcon(type: string) {
+  switch (type) {
+    case "gallery_delivered":
+      return <CheckIcon className="h-4 w-4" />;
+    case "gallery_view":
+      return <EyeIcon className="h-4 w-4" />;
+    case "gallery_download":
+      return <DownloadIcon className="h-4 w-4" />;
+    case "payment_received":
+      return <DollarIcon className="h-4 w-4" />;
+    default:
+      return <NoteIcon className="h-4 w-4" />;
+  }
+}
+
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  return date.toLocaleDateString();
 }
 
 function ArrowLeftIcon({ className }: { className?: string }) {
@@ -266,10 +254,28 @@ function EyeIcon({ className }: { className?: string }) {
   );
 }
 
-function CreditCardIcon({ className }: { className?: string }) {
+function DownloadIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M2.5 4A1.5 1.5 0 0 0 1 5.5V6h18v-.5A1.5 1.5 0 0 0 17.5 4h-15ZM19 8.5H1v6A1.5 1.5 0 0 0 2.5 16h15a1.5 1.5 0 0 0 1.5-1.5v-6ZM3 13.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Zm4.75-.75a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5h-3.5Z" clipRule="evenodd" />
+      <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+      <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+    </svg>
+  );
+}
+
+function DollarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 8.5a.75.75 0 0 0-1.5 0v.5h-.25a.75.75 0 0 0 0 1.5h1v.5H8.75a.75.75 0 0 0 0 1.5h1v.5a.75.75 0 0 0 1.5 0v-.5h.25a.75.75 0 0 0 0-1.5h-1V10h1.25a.75.75 0 0 0 0-1.5h-1v-.5Z" />
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-1.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function NoteIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
     </svg>
   );
 }

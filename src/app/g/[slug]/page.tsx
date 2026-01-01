@@ -1,79 +1,15 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { getPublicGallery, recordGalleryView } from "@/lib/actions/galleries";
 
-// Demo gallery data
-const demoGalleries: Record<string, {
+interface Photo {
   id: string;
-  name: string;
-  description: string;
-  photographer: { name: string; logoUrl: string | null };
-  status: "delivered" | "pending";
-  price: number;
-  isPaid: boolean;
-  allowDownload: boolean;
-  allowFavorites: boolean;
-  photos: { id: string; url: string; filename: string; width: number; height: number }[];
-  primaryColor: string;
-  theme: "dark" | "light";
-}> = {
-  "abc123": {
-    id: "1",
-    name: "Downtown Luxury Listing",
-    description: "Beautiful downtown property with stunning city views. Professional photography by Thompson Photography.",
-    photographer: { name: "Thompson Photography", logoUrl: null },
-    status: "delivered",
-    price: 42500,
-    isPaid: true,
-    allowDownload: true,
-    allowFavorites: true,
-    primaryColor: "#3b82f6",
-    theme: "dark",
-    photos: [
-      { id: "p1", url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800", filename: "exterior-front.jpg", width: 4, height: 3 },
-      { id: "p2", url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800", filename: "living-room.jpg", width: 4, height: 3 },
-      { id: "p3", url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800", filename: "kitchen.jpg", width: 4, height: 3 },
-      { id: "p4", url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800", filename: "master-bedroom.jpg", width: 4, height: 3 },
-      { id: "p5", url: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800", filename: "bathroom.jpg", width: 3, height: 4 },
-      { id: "p6", url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800", filename: "backyard.jpg", width: 4, height: 3 },
-      { id: "p7", url: "https://images.unsplash.com/photo-1600573472591-ee6c563ded48?w=800", filename: "dining-room.jpg", width: 4, height: 3 },
-      { id: "p8", url: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800", filename: "office.jpg", width: 4, height: 3 },
-    ],
-  },
-  "def456": {
-    id: "2",
-    name: "Oceanfront Estate",
-    description: "Stunning oceanfront property with panoramic views. 5 bedroom estate with private beach access.",
-    photographer: { name: "Thompson Photography", logoUrl: null },
-    status: "delivered",
-    price: 58000,
-    isPaid: false,
-    allowDownload: true,
-    allowFavorites: true,
-    primaryColor: "#3b82f6",
-    theme: "dark",
-    photos: [
-      { id: "p1", url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800", filename: "ocean-view.jpg", width: 4, height: 3 },
-      { id: "p2", url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800", filename: "exterior.jpg", width: 4, height: 3 },
-      { id: "p3", url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800", filename: "interior.jpg", width: 4, height: 3 },
-      { id: "p4", url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800", filename: "pool.jpg", width: 4, height: 3 },
-    ],
-  },
-};
-
-const defaultGallery = {
-  id: "0",
-  name: "Sample Gallery",
-  description: "This gallery does not exist or the link has expired.",
-  photographer: { name: "PhotoProOS", logoUrl: null },
-  status: "pending" as const,
-  price: 0,
-  isPaid: false,
-  allowDownload: false,
-  allowFavorites: false,
-  primaryColor: "#3b82f6",
-  theme: "dark" as const,
-  photos: [],
-};
+  url: string;
+  originalUrl: string;
+  filename: string;
+  width: number;
+  height: number;
+}
 
 interface PublicGalleryPageProps {
   params: Promise<{ slug: string }>;
@@ -81,7 +17,14 @@ interface PublicGalleryPageProps {
 
 export default async function PublicGalleryPage({ params }: PublicGalleryPageProps) {
   const { slug } = await params;
-  const gallery = demoGalleries[slug] || defaultGallery;
+  const gallery = await getPublicGallery(slug);
+
+  // Record the view (fire and forget)
+  if (gallery) {
+    recordGalleryView(slug).catch(() => {
+      // Silently ignore view recording errors
+    });
+  }
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -91,12 +34,16 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
     }).format(cents / 100);
   };
 
-  const bgColor = gallery.theme === "dark" ? "#0a0a0a" : "#ffffff";
-  const textColor = gallery.theme === "dark" ? "#ffffff" : "#0a0a0a";
-  const mutedColor = gallery.theme === "dark" ? "#a7a7a7" : "#6b7280";
-  const cardBg = gallery.theme === "dark" ? "#141414" : "#f3f4f6";
+  // Default theme settings
+  const theme = gallery?.theme || "dark";
+  const primaryColor = gallery?.primaryColor || "#3b82f6";
+  const bgColor = theme === "dark" ? "#0a0a0a" : "#ffffff";
+  const textColor = theme === "dark" ? "#ffffff" : "#0a0a0a";
+  const mutedColor = theme === "dark" ? "#a7a7a7" : "#6b7280";
+  const cardBg = theme === "dark" ? "#141414" : "#f3f4f6";
 
-  if (gallery.photos.length === 0) {
+  // Gallery not found or not available
+  if (!gallery || gallery.photos.length === 0) {
     return (
       <div
         className="min-h-screen flex flex-col items-center justify-center p-8"
@@ -108,12 +55,12 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
           </div>
           <h1 className="text-2xl font-bold mb-2">Gallery Not Found</h1>
           <p style={{ color: mutedColor }}>
-            This gallery does not exist or the link has expired. Please contact your photographer for assistance.
+            This gallery does not exist, has not been delivered yet, or the link has expired. Please contact your photographer for assistance.
           </p>
           <Link
             href="/"
             className="mt-6 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-            style={{ backgroundColor: gallery.primaryColor }}
+            style={{ backgroundColor: primaryColor }}
           >
             Go to Homepage
           </Link>
@@ -127,7 +74,7 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
       {/* Header */}
       <header
         className="sticky top-0 z-50 border-b"
-        style={{ backgroundColor: bgColor, borderColor: gallery.theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
+        style={{ backgroundColor: bgColor, borderColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -149,7 +96,7 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
                 >
                   <HeartIcon className="h-4 w-4" />
                   <span className="hidden sm:inline">Favorites</span>
-                  <span className="rounded-full px-1.5 py-0.5 text-xs" style={{ backgroundColor: gallery.primaryColor, color: "#fff" }}>
+                  <span className="rounded-full px-1.5 py-0.5 text-xs" style={{ backgroundColor: primaryColor, color: "#fff" }}>
                     0
                   </span>
                 </button>
@@ -157,7 +104,7 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
               {gallery.isPaid && gallery.allowDownload ? (
                 <button
                   className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: gallery.primaryColor }}
+                  style={{ backgroundColor: primaryColor }}
                 >
                   <DownloadIcon className="h-4 w-4" />
                   Download All
@@ -165,7 +112,7 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
               ) : !gallery.isPaid && gallery.price > 0 ? (
                 <button
                   className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: gallery.primaryColor }}
+                  style={{ backgroundColor: primaryColor }}
                 >
                   <LockIcon className="h-4 w-4" />
                   Unlock for {formatCurrency(gallery.price)}
@@ -177,10 +124,10 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
       </header>
 
       {/* Gallery Info */}
-      <div className="border-b" style={{ borderColor: gallery.theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}>
+      <div className="border-b" style={{ borderColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-3xl font-bold mb-2">{gallery.name}</h1>
-          <p style={{ color: mutedColor }}>{gallery.description}</p>
+          {gallery.description && <p style={{ color: mutedColor }}>{gallery.description}</p>}
           <div className="mt-4 flex items-center gap-4 text-sm" style={{ color: mutedColor }}>
             <span className="flex items-center gap-1">
               <PhotoIcon className="h-4 w-4" />
@@ -211,14 +158,14 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
         <div
           className="border-b"
           style={{
-            backgroundColor: `${gallery.primaryColor}15`,
-            borderColor: `${gallery.primaryColor}30`,
+            backgroundColor: `${primaryColor}15`,
+            borderColor: `${primaryColor}30`,
           }}
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium" style={{ color: gallery.primaryColor }}>
+                <p className="font-medium" style={{ color: primaryColor }}>
                   Unlock this gallery to download your photos
                 </p>
                 <p className="text-sm" style={{ color: mutedColor }}>
@@ -227,7 +174,7 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
               </div>
               <button
                 className="flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-colors"
-                style={{ backgroundColor: gallery.primaryColor }}
+                style={{ backgroundColor: primaryColor }}
               >
                 Pay {formatCurrency(gallery.price)}
               </button>
@@ -239,7 +186,7 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
       {/* Photo Grid */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {gallery.photos.map((photo) => (
+          {gallery.photos.map((photo: Photo) => (
             <div
               key={photo.id}
               className="group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer"
@@ -250,7 +197,7 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
                 alt={photo.filename}
                 className={cn(
                   "h-full w-full object-cover transition-transform duration-300 group-hover:scale-105",
-                  !gallery.isPaid && gallery.price > 0 && "blur-sm"
+                  !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
                 )}
               />
 
@@ -291,7 +238,7 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
       {/* Footer */}
       <footer
         className="border-t py-8"
-        style={{ borderColor: gallery.theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
+        style={{ borderColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -300,8 +247,8 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
             </p>
             <p className="text-sm" style={{ color: mutedColor }}>
               Powered by{" "}
-              <Link href="/" className="hover:underline" style={{ color: gallery.primaryColor }}>
-                PhotoProOS
+              <Link href="/" className="hover:underline" style={{ color: primaryColor }}>
+                Dovetail
               </Link>
             </p>
           </div>

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { getServiceById, type ServiceType } from "@/lib/services";
+import { updateGallery, deleteGallery } from "@/lib/actions/galleries";
+import { useToast } from "@/components/ui/toast";
 
 // Union type for selected service (can be static or database service)
 type SelectedService = ServiceType | DatabaseServiceType | null;
@@ -38,18 +41,93 @@ interface GalleryEditFormProps {
 }
 
 export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
+
+  // Service & pricing state
   const initialService = gallery.serviceId ? getServiceById(gallery.serviceId) : null;
   const [selectedService, setSelectedService] = useState<SelectedService>(initialService || null);
   const [price, setPrice] = useState(gallery.priceCents);
-  const [description, setDescription] = useState(gallery.serviceDescription || "");
+  const [serviceDescription, setServiceDescription] = useState(gallery.serviceDescription || "");
+
+  // Form field state
+  const [name, setName] = useState(gallery.name);
+  const [galleryDescription, setGalleryDescription] = useState(gallery.description);
+  const [clientId, setClientId] = useState(gallery.clientId);
+  const [accessType, setAccessType] = useState<"public" | "password">(gallery.accessType);
   const [settings, setSettings] = useState(gallery.settings);
+
+  // UI state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name.trim()) {
+      showToast("Gallery name is required", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await updateGallery({
+        id: gallery.id,
+        name: name.trim(),
+        description: galleryDescription.trim() || null,
+        clientId: clientId || null,
+        serviceId: selectedService?.id || null,
+        priceCents: price,
+        password: accessType === "password" ? undefined : null, // Keep existing password or clear
+        allowDownloads: settings.allowDownloads,
+        showWatermark: settings.showWatermarks,
+        // Note: allowFavorites and emailNotifications would need schema updates
+      });
+
+      if (result.success) {
+        showToast("Gallery updated successfully", "success");
+        router.push(`/galleries/${gallery.id}`);
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to update gallery", "error");
+      }
+    } catch (error) {
+      showToast("An unexpected error occurred", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteGallery(gallery.id);
+
+      if (result.success) {
+        showToast("Gallery deleted successfully", "success");
+        router.push("/galleries");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to delete gallery", "error");
+        setShowDeleteConfirm(false);
+      }
+    } catch (error) {
+      showToast("An unexpected error occurred", "error");
+      setShowDeleteConfirm(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <form className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Gallery Details Section */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Details</h2>
@@ -64,7 +142,8 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
               type="text"
               id="name"
               name="name"
-              defaultValue={gallery.name}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
           </div>
@@ -78,7 +157,8 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
               id="galleryDescription"
               name="galleryDescription"
               rows={3}
-              defaultValue={gallery.description}
+              value={galleryDescription}
+              onChange={(e) => setGalleryDescription(e.target.value)}
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
             />
           </div>
@@ -91,7 +171,8 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
             <select
               id="client"
               name="clientId"
-              defaultValue={gallery.clientId}
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             >
               <option value="">Select a client...</option>
@@ -121,17 +202,12 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
         <ServiceSelector
           selectedServiceId={selectedService?.id}
           customPrice={price}
-          customDescription={description}
+          customDescription={serviceDescription}
           onServiceChange={setSelectedService}
           onPriceChange={setPrice}
-          onDescriptionChange={setDescription}
+          onDescriptionChange={setServiceDescription}
           mode="gallery"
         />
-
-        {/* Hidden inputs for form submission */}
-        <input type="hidden" name="serviceId" value={selectedService?.id || ""} />
-        <input type="hidden" name="price" value={price} />
-        <input type="hidden" name="serviceDescription" value={description} />
       </div>
 
       {/* Access Type Section */}
@@ -144,7 +220,8 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
               type="radio"
               name="accessType"
               value="public"
-              defaultChecked={gallery.accessType === "public"}
+              checked={accessType === "public"}
+              onChange={() => setAccessType("public")}
               className="mt-0.5 h-4 w-4 border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
             />
             <div>
@@ -157,7 +234,8 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
               type="radio"
               name="accessType"
               value="password"
-              defaultChecked={gallery.accessType === "password"}
+              checked={accessType === "password"}
+              onChange={() => setAccessType("password")}
               className="mt-0.5 h-4 w-4 border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
             />
             <div>
@@ -243,6 +321,7 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
       <div className="flex items-center justify-between">
         <button
           type="button"
+          onClick={() => setShowDeleteConfirm(true)}
           className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
         >
           <TrashIcon className="h-4 w-4" />
@@ -257,13 +336,43 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
           </Link>
           <button
             type="submit"
-            disabled
+            disabled={isSubmitting}
             className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Save Changes
+            {isSubmitting ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-foreground">Delete Gallery</h3>
+            <p className="mt-2 text-sm text-foreground-muted">
+              Are you sure you want to delete &ldquo;{gallery.name}&rdquo;? This action cannot be undone and all photos will be permanently removed.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Delete Gallery"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

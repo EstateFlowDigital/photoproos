@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
+import { useToast } from "@/components/ui/toast";
+import { createGallery } from "@/lib/actions/galleries";
 import type { ServiceType, ServiceCategory } from "@/lib/services";
 
 // Union type for selected service (can be static or database service)
@@ -19,6 +22,13 @@ interface GalleryNewFormProps {
 }
 
 export function GalleryNewForm({ clients }: GalleryNewFormProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
+
+  // Form state
+  const [name, setName] = useState("");
+  const [galleryDescription, setGalleryDescription] = useState("");
+  const [clientId, setClientId] = useState("");
   const [selectedService, setSelectedService] = useState<SelectedService>(null);
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
@@ -30,8 +40,66 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
   const [galleryPassword, setGalleryPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Settings
+  const [allowDownloads, setAllowDownloads] = useState(true);
+  const [allowFavorites, setAllowFavorites] = useState(true);
+  const [showWatermark, setShowWatermark] = useState(false);
+  const [sendNotifications, setSendNotifications] = useState(true);
+
+  // Form submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validation
+    if (!name.trim()) {
+      showToast("Please enter a gallery name", "error");
+      return;
+    }
+
+    if (accessType === "password" && !galleryPassword.trim()) {
+      showToast("Please enter a password for protected galleries", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await createGallery({
+        name: name.trim(),
+        description: galleryDescription.trim() || null,
+        clientId: clientId || null,
+        serviceId: selectedService?.id || null,
+        locationId: null,
+        status: "draft",
+        priceCents: price,
+        currency: "USD",
+        coverImageUrl: null,
+        password: accessType === "password" ? galleryPassword : null,
+        expiresAt: null,
+        allowDownloads,
+        showWatermark,
+        allowFavorites,
+        sendNotifications,
+      });
+
+      if (result.success) {
+        showToast("Gallery created successfully!", "success");
+        router.push(`/galleries/${result.data.id}`);
+      } else {
+        showToast(result.error || "Failed to create gallery", "error");
+      }
+    } catch (error) {
+      console.error("Error creating gallery:", error);
+      showToast("An unexpected error occurred", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <form className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Gallery Details Section */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Details</h2>
@@ -46,8 +114,11 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
               type="text"
               id="name"
               name="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Downtown Luxury Listing"
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              required
             />
           </div>
 
@@ -60,6 +131,8 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
               id="galleryDescription"
               name="galleryDescription"
               rows={3}
+              value={galleryDescription}
+              onChange={(e) => setGalleryDescription(e.target.value)}
               placeholder="Add a description for this gallery..."
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
             />
@@ -68,11 +141,13 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
           {/* Client Selection */}
           <div>
             <label htmlFor="client" className="block text-sm font-medium text-foreground mb-1.5">
-              Client <span className="text-[var(--error)]">*</span>
+              Client
             </label>
             <select
               id="client"
               name="clientId"
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             >
               <option value="">Select a client...</option>
@@ -116,15 +191,6 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
           onDurationChange={setDuration}
           mode="gallery"
         />
-
-        {/* Hidden inputs for form submission */}
-        <input type="hidden" name="serviceId" value={selectedService?.id || ""} />
-        <input type="hidden" name="price" value={price} />
-        <input type="hidden" name="serviceDescription" value={description} />
-        <input type="hidden" name="serviceName" value={serviceName} />
-        <input type="hidden" name="deliverables" value={JSON.stringify(deliverables)} />
-        <input type="hidden" name="category" value={category} />
-        <input type="hidden" name="duration" value={duration} />
       </div>
 
       {/* Access Type Section */}
@@ -247,6 +313,9 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
           <p className="mt-1 text-xs text-foreground-muted">
             PNG, JPG, or WebP up to 10MB
           </p>
+          <p className="mt-2 text-xs text-foreground-muted">
+            You can add photos after creating the gallery
+          </p>
         </div>
       </div>
 
@@ -258,22 +327,26 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
           <ToggleSetting
             label="Allow Downloads"
             description="Let clients download photos after payment"
-            defaultChecked
+            checked={allowDownloads}
+            onChange={setAllowDownloads}
           />
           <ToggleSetting
             label="Allow Favorites"
             description="Let clients mark their favorite photos"
-            defaultChecked
+            checked={allowFavorites}
+            onChange={setAllowFavorites}
           />
           <ToggleSetting
             label="Show Watermarks"
             description="Display watermarks on photos until purchased"
-            defaultChecked={false}
+            checked={showWatermark}
+            onChange={setShowWatermark}
           />
           <ToggleSetting
             label="Email Notifications"
             description="Get notified when clients view or purchase"
-            defaultChecked
+            checked={sendNotifications}
+            onChange={setSendNotifications}
           />
         </div>
       </div>
@@ -288,10 +361,17 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
         </Link>
         <button
           type="submit"
-          disabled
-          className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isSubmitting}
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Create Gallery
+          {isSubmitting ? (
+            <>
+              <LoadingSpinner className="h-4 w-4" />
+              Creating...
+            </>
+          ) : (
+            "Create Gallery"
+          )}
         </button>
       </div>
     </form>
@@ -301,14 +381,14 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
 function ToggleSetting({
   label,
   description,
-  defaultChecked = false,
+  checked,
+  onChange,
 }: {
   label: string;
   description: string;
-  defaultChecked?: boolean;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
 }) {
-  const [checked, setChecked] = useState(defaultChecked);
-
   return (
     <label className="flex items-center justify-between cursor-pointer">
       <div>
@@ -319,7 +399,7 @@ function ToggleSetting({
         type="button"
         role="switch"
         aria-checked={checked}
-        onClick={() => setChecked(!checked)}
+        onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)] ${
           checked ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
         }`}
@@ -356,6 +436,15 @@ function EyeOffIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M3.28 2.22a.75.75 0 0 0-1.06 1.06l14.5 14.5a.75.75 0 1 0 1.06-1.06l-1.745-1.745a10.029 10.029 0 0 0 3.3-4.38 1.651 1.651 0 0 0 0-1.185A10.004 10.004 0 0 0 9.999 3a9.956 9.956 0 0 0-4.744 1.194L3.28 2.22ZM7.752 6.69l1.092 1.092a2.5 2.5 0 0 1 3.374 3.373l1.091 1.092a4 4 0 0 0-5.557-5.557Z" clipRule="evenodd" />
       <path d="m10.748 13.93 2.523 2.523a9.987 9.987 0 0 1-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 0 1 0-1.186A10.007 10.007 0 0 1 2.839 6.02L6.07 9.252a4 4 0 0 0 4.678 4.678Z" />
+    </svg>
+  );
+}
+
+function LoadingSpinner({ className }: { className?: string }) {
+  return (
+    <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
     </svg>
   );
 }

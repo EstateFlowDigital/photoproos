@@ -4,77 +4,75 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
-interface RoadmapItem {
+interface RoadmapPhase {
+  phase: string;
   title: string;
-  description: string;
   status: "completed" | "in-progress" | "upcoming" | "planned";
-  quarter: string;
-  icon: React.FC<{ className?: string }>;
+  description: string;
+  items: { title: string; icon: React.FC<{ className?: string }> }[];
 }
 
-const roadmapItems: RoadmapItem[] = [
+const roadmapPhases: RoadmapPhase[] = [
   {
-    title: "Client Galleries & Delivery",
-    description: "Beautiful, branded galleries with pay-to-unlock photo delivery and client portals.",
+    phase: "Phase 1",
+    title: "Core Platform",
     status: "completed",
-    quarter: "Q3 2024",
-    icon: GalleryIcon,
+    description: "The foundation of your photography business - galleries, payments, clients, and bookings.",
+    items: [
+      { title: "Client Galleries & Delivery", icon: GalleryIcon },
+      { title: "Payment Processing", icon: PaymentIcon },
+      { title: "Client Management", icon: ClientIcon },
+      { title: "Booking & Scheduling", icon: CalendarIcon },
+      { title: "Services & Pricing", icon: ContractIcon },
+    ],
   },
   {
-    title: "Payment Processing",
-    description: "Stripe and PayPal integration with automatic invoicing and payment tracking.",
-    status: "completed",
-    quarter: "Q3 2024",
-    icon: PaymentIcon,
-  },
-  {
-    title: "Client Management",
-    description: "Contact management, booking tracking, and client communication history.",
-    status: "completed",
-    quarter: "Q4 2024",
-    icon: ClientIcon,
-  },
-  {
-    title: "Contracts & E-Signatures",
-    description: "Send and sign contracts digitally with legally-binding electronic signatures.",
+    phase: "Phase 2",
+    title: "Property Websites & Client Portal",
     status: "in-progress",
-    quarter: "Q1 2025",
-    icon: ContractIcon,
+    description: "Single property websites, client portals, and auto-generated marketing materials.",
+    items: [
+      { title: "Single Property Websites", icon: WebsiteIcon },
+      { title: "Client Portal", icon: ClientIcon },
+      { title: "Marketing Kit Generator", icon: PipelineIcon },
+      { title: "Traffic Analytics", icon: AnalyticsIcon },
+    ],
   },
   {
-    title: "Lead Pipeline CRM",
-    description: "Track leads from inquiry to booking with customizable sales pipelines.",
-    status: "in-progress",
-    quarter: "Q1 2025",
-    icon: PipelineIcon,
-  },
-  {
-    title: "Advanced Analytics",
-    description: "Deep insights into revenue, client behavior, and business performance.",
+    phase: "Phase 3",
+    title: "Marketing Hub",
     status: "upcoming",
-    quarter: "Q2 2025",
-    icon: AnalyticsIcon,
+    description: "Email campaigns, social media management, and marketing automations.",
+    items: [
+      { title: "Email Marketing", icon: EmailIcon },
+      { title: "Content Calendar", icon: CalendarIcon },
+      { title: "Social Media Manager", icon: TeamIcon },
+      { title: "Referral Program", icon: LocationIcon },
+    ],
   },
   {
-    title: "Team Collaboration",
-    description: "Add team members with role-based permissions and workload management.",
-    status: "upcoming",
-    quarter: "Q2 2025",
-    icon: TeamIcon,
-  },
-  {
-    title: "Expense Tracking",
-    description: "Track business expenses and generate profit/loss reports automatically.",
+    phase: "Phase 4",
+    title: "Analytics Hub",
     status: "planned",
-    quarter: "Q3 2025",
-    icon: ExpenseIcon,
+    description: "Deep business insights, revenue forecasting, and custom reporting.",
+    items: [
+      { title: "Business Metrics", icon: AnalyticsIcon },
+      { title: "Revenue Forecasting", icon: ExpenseIcon },
+      { title: "Client Insights", icon: ClientIcon },
+      { title: "Custom Reports", icon: ContractIcon },
+    ],
   },
   {
-    title: "Multi-Location Support",
-    description: "Manage multiple studio locations or franchise operations from one account.",
+    phase: "Phase 5",
+    title: "Website Builder",
     status: "planned",
-    quarter: "Q4 2025",
-    icon: LocationIcon,
+    description: "Build your photography portfolio and business website without code.",
+    items: [
+      { title: "Portfolio Builder", icon: GalleryIcon },
+      { title: "Blog & Content", icon: ContractIcon },
+      { title: "SEO Tools", icon: AnalyticsIcon },
+      { title: "Custom Domains", icon: WebsiteIcon },
+    ],
   },
 ];
 
@@ -105,45 +103,62 @@ const statusConfig = {
   },
 };
 
-function RoadmapCard({ item, index }: { item: RoadmapItem; index: number }) {
-  const config = statusConfig[item.status];
+function PhaseCard({ phase, index }: { phase: RoadmapPhase; index: number }) {
+  const config = statusConfig[phase.status];
   const StatusIcon = config.icon;
-  const FeatureIcon = item.icon;
 
   return (
     <div className={cn(
-      "relative flex gap-4 rounded-xl border bg-[var(--card)] p-6 transition-all duration-300",
+      "relative rounded-xl border bg-[var(--card)] p-6 transition-all duration-300",
       "hover:shadow-lg hover:shadow-black/20",
-      item.status === "completed" && "border-[var(--success)]/30",
-      item.status === "in-progress" && "border-[var(--primary)]/30",
-      item.status === "upcoming" && "border-[var(--warning)]/30",
-      item.status === "planned" && "border-[var(--card-border)]"
+      phase.status === "completed" && "border-[var(--success)]/30",
+      phase.status === "in-progress" && "border-[var(--primary)]/30",
+      phase.status === "upcoming" && "border-[var(--warning)]/30",
+      phase.status === "planned" && "border-[var(--card-border)]"
     )}>
       {/* Timeline connector */}
-      {index < roadmapItems.length - 1 && (
-        <div className="absolute bottom-0 left-9 top-full h-8 w-px bg-[var(--card-border)]" />
+      {index < roadmapPhases.length - 1 && (
+        <div className="absolute bottom-0 left-1/2 top-full h-6 w-px -translate-x-1/2 bg-[var(--card-border)]" />
       )}
 
-      {/* Icon */}
-      <div className={cn(
-        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-        config.bg,
-        config.text
-      )}>
-        <FeatureIcon className="h-5 w-5" />
+      {/* Header */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold",
+            config.bg,
+            config.text
+          )}>
+            {index + 1}
+          </span>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-foreground-muted">{phase.phase}</p>
+            <h3 className="text-lg font-semibold text-foreground">{phase.title}</h3>
+          </div>
+        </div>
+        <span className={cn("inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium", config.bg, config.text)}>
+          <StatusIcon className="h-3 w-3" />
+          {config.label}
+        </span>
       </div>
 
-      {/* Content */}
-      <div className="flex-1">
-        <div className="mb-2 flex flex-wrap items-center gap-3">
-          <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
-          <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium", config.bg, config.text)}>
-            <StatusIcon className="h-3 w-3" />
-            {config.label}
-          </span>
-        </div>
-        <p className="text-sm text-foreground-secondary">{item.description}</p>
-        <p className="mt-2 text-xs text-foreground-muted">{item.quarter}</p>
+      {/* Description */}
+      <p className="mb-4 text-sm text-foreground-secondary">{phase.description}</p>
+
+      {/* Feature Items */}
+      <div className="flex flex-wrap gap-2">
+        {phase.items.map((item, i) => {
+          const ItemIcon = item.icon;
+          return (
+            <span
+              key={i}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--background-secondary)] px-3 py-1.5 text-xs text-foreground-secondary"
+            >
+              <ItemIcon className="h-3.5 w-3.5" />
+              {item.title}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -170,7 +185,7 @@ export function RoadmapSection() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              <span className="font-medium text-[var(--primary)]">New features</span> shipping monthly
+              <span className="font-medium text-[var(--primary)]">5 phases</span> to complete business OS
             </span>
           </div>
           <h2
@@ -182,8 +197,8 @@ export function RoadmapSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground">What's</span>{" "}
-            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">coming next</span>
+            <span className="text-foreground">Our</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">product roadmap</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"
@@ -194,23 +209,23 @@ export function RoadmapSection() {
               transitionDelay: "200ms",
             }}
           >
-            We're constantly building new features based on photographer feedback. Here's what's on our radar.
+            Building the complete business operating system for professional photographers, one phase at a time.
           </p>
         </div>
 
         {/* Roadmap Grid */}
-        <div className="mx-auto max-w-3xl space-y-4">
-          {roadmapItems.map((item, index) => (
+        <div className="mx-auto max-w-3xl space-y-6">
+          {roadmapPhases.map((phase, index) => (
             <div
-              key={item.title}
+              key={phase.phase}
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(40px)",
                 transition: "opacity 600ms ease-out, transform 600ms ease-out",
-                transitionDelay: `${300 + index * 80}ms`,
+                transitionDelay: `${300 + index * 100}ms`,
               }}
             >
-              <RoadmapCard item={item} index={index} />
+              <PhaseCard phase={phase} index={index} />
             </div>
           ))}
         </div>
@@ -350,6 +365,23 @@ function MessageIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M3.43 2.524A41.29 41.29 0 0 1 10 2c2.236 0 4.43.18 6.57.524 1.437.231 2.43 1.49 2.43 2.902v5.148c0 1.413-.993 2.67-2.43 2.902a41.102 41.102 0 0 1-3.55.414c-.28.02-.521.18-.643.413l-1.712 3.293a.75.75 0 0 1-1.33 0l-1.713-3.293a.783.783 0 0 0-.642-.413 41.108 41.108 0 0 1-3.55-.414C1.993 13.245 1 11.986 1 10.574V5.426c0-1.413.993-2.67 2.43-2.902Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function WebsiteIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM4.332 8.027a6.012 6.012 0 0 1 1.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 0 1 9 7.5V8a2 2 0 0 0 4 0 2 2 0 0 1 1.523-1.943 5.977 5.977 0 0 1 .923 3.902 5.97 5.97 0 0 1-1.446.03A2 2 0 0 0 12 12v1a2 2 0 0 0 1.586 1.956c-.092.064-.185.126-.28.186-.94.595-1.974.957-3.057 1.074a6.02 6.02 0 0 1-.748-2.966V12a2 2 0 0 0-2-2H6a5.997 5.997 0 0 1-1.668-1.973Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function EmailIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M3 4a2 2 0 0 0-2 2v1.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 7.162V6a2 2 0 0 0-2-2H3Z" />
+      <path d="m19 8.839-7.77 3.885a2.75 2.75 0 0 1-2.46 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z" />
     </svg>
   );
 }

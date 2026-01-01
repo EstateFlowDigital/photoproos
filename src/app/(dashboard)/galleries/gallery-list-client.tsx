@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { GalleryCard, type QuickAction } from "@/components/dashboard/gallery-card";
 import { useToast } from "@/components/ui/toast";
+import { duplicateGallery, archiveGallery, deleteGallery, bulkArchiveGalleries, bulkDeleteGalleries } from "@/lib/actions/galleries";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +30,7 @@ type SortOption = "newest" | "oldest" | "name-asc" | "name-desc" | "revenue-high
 type ViewMode = "grid" | "list";
 
 export function GalleryListClient({ galleries, filter }: GalleryListClientProps) {
+  const router = useRouter();
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
@@ -35,6 +38,9 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedGalleries, setSelectedGalleries] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const actionMenuRef = useRef<HTMLDivElement>(null);
 
   // Close action menu when clicking outside
@@ -51,7 +57,7 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
   }, [actionMenuOpen]);
 
   // Quick action handler
-  const handleQuickAction = (action: QuickAction, galleryId: string) => {
+  const handleQuickAction = async (action: QuickAction, galleryId: string) => {
     const gallery = galleries.find((g) => g.id === galleryId);
     const galleryName = gallery?.name || "Gallery";
 
@@ -61,17 +67,64 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
         showToast("Gallery link copied to clipboard", "success");
         break;
       case "duplicate":
-        showToast(`Duplicating "${galleryName}"...`, "info");
-        // In production, this would call an API to duplicate the gallery
+        setIsLoading(true);
+        try {
+          const result = await duplicateGallery(galleryId, undefined, false);
+          if (result.success) {
+            showToast(`"${galleryName}" duplicated successfully`, "success");
+            router.refresh();
+          } else {
+            showToast(result.error || "Failed to duplicate gallery", "error");
+          }
+        } catch (error) {
+          showToast("Failed to duplicate gallery", "error");
+        } finally {
+          setIsLoading(false);
+        }
         break;
       case "archive":
-        showToast(`"${galleryName}" has been archived`, "success");
-        // In production, this would call an API to archive the gallery
+        setIsLoading(true);
+        try {
+          const result = await archiveGallery(galleryId, true);
+          if (result.success) {
+            showToast(`"${galleryName}" has been archived`, "success");
+            router.refresh();
+          } else {
+            showToast(result.error || "Failed to archive gallery", "error");
+          }
+        } catch (error) {
+          showToast("Failed to archive gallery", "error");
+        } finally {
+          setIsLoading(false);
+        }
         break;
       case "delete":
-        showToast(`This would show a delete confirmation for "${galleryName}"`, "warning");
-        // In production, this would show a confirmation dialog
+        setShowDeleteConfirm(galleryId);
         break;
+    }
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!showDeleteConfirm) return;
+
+    const gallery = galleries.find((g) => g.id === showDeleteConfirm);
+    const galleryName = gallery?.name || "Gallery";
+
+    setIsLoading(true);
+    try {
+      const result = await deleteGallery(showDeleteConfirm);
+      if (result.success) {
+        showToast(`"${galleryName}" has been deleted`, "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to delete gallery", "error");
+      }
+    } catch (error) {
+      showToast("Failed to delete gallery", "error");
+    } finally {
+      setIsLoading(false);
+      setShowDeleteConfirm(null);
     }
   };
 
@@ -115,16 +168,53 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
   };
 
   // Bulk action handlers
-  const handleBulkArchive = () => {
+  const handleBulkArchive = async () => {
     const count = selectedGalleries.size;
-    showToast(`${count} gallery${count !== 1 ? "ies" : "y"} archived`, "success");
-    setSelectedGalleries(new Set());
-    setIsSelectMode(false);
+    const ids = Array.from(selectedGalleries);
+
+    setIsLoading(true);
+    try {
+      const result = await bulkArchiveGalleries(ids, true);
+      if (result.success) {
+        showToast(`${count} gallery${count !== 1 ? "ies" : "y"} archived`, "success");
+        setSelectedGalleries(new Set());
+        setIsSelectMode(false);
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to archive galleries", "error");
+      }
+    } catch (error) {
+      showToast("Failed to archive galleries", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBulkDelete = () => {
+    setShowBulkDeleteConfirm(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
     const count = selectedGalleries.size;
-    showToast(`This would show delete confirmation for ${count} gallery${count !== 1 ? "ies" : "y"}`, "warning");
+    const ids = Array.from(selectedGalleries);
+
+    setIsLoading(true);
+    try {
+      const result = await bulkDeleteGalleries(ids);
+      if (result.success) {
+        showToast(`${count} gallery${count !== 1 ? "ies" : "y"} deleted`, "success");
+        setSelectedGalleries(new Set());
+        setIsSelectMode(false);
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to delete galleries", "error");
+      }
+    } catch (error) {
+      showToast("Failed to delete galleries", "error");
+    } finally {
+      setIsLoading(false);
+      setShowBulkDeleteConfirm(false);
+    }
   };
 
   const handleBulkExport = () => {
@@ -582,6 +672,66 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
               Create Gallery
             </Link>
           )}
+        </div>
+      )}
+
+      {/* Single Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-foreground">Delete Gallery</h3>
+            <p className="mt-2 text-sm text-foreground-muted">
+              Are you sure you want to delete &ldquo;{galleries.find((g) => g.id === showDeleteConfirm)?.name}&rdquo;? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(null)}
+                disabled={isLoading}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                disabled={isLoading}
+                className="rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+              >
+                {isLoading ? "Deleting..." : "Delete Gallery"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {showBulkDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-foreground">Delete {selectedGalleries.size} Galleries</h3>
+            <p className="mt-2 text-sm text-foreground-muted">
+              Are you sure you want to delete {selectedGalleries.size} gallery{selectedGalleries.size !== 1 ? "ies" : "y"}? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowBulkDeleteConfirm(false)}
+                disabled={isLoading}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkDeleteConfirm}
+                disabled={isLoading}
+                className="rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+              >
+                {isLoading ? "Deleting..." : `Delete ${selectedGalleries.size} Galleries`}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

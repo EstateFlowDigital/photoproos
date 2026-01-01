@@ -7,6 +7,92 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Landing Page - Roadmap Section)
+- Restructured roadmap section from individual features to phased approach:
+  - Phase 1: Core Platform (Completed) - Galleries, Payments, Clients, Bookings, Services
+  - Phase 2: Property Websites & Client Portal (In Progress) - Single property websites, client portals, marketing kit, analytics
+  - Phase 3: Marketing Hub (Coming Soon) - Email marketing, content calendar, social media manager, referral program
+  - Phase 4: Analytics Hub (Planned) - Business metrics, revenue forecasting, client insights, custom reports
+  - Phase 5: Website Builder (Planned) - Portfolio builder, blog & content, SEO tools, custom domains
+- Updated roadmap header from "What's coming next" to "Our product roadmap"
+- Updated subheading to emphasize "complete business operating system"
+- Changed badge text from "New features shipping monthly" to "5 phases to complete business OS"
+- Created new `PhaseCard` component replacing individual `RoadmapCard` for phase-based display
+- Each phase shows status, description, and feature items with icons
+- Added `WebsiteIcon` and `EmailIcon` components for new feature items
+
+### Added (Gallery Production Mode)
+- **Gallery Validation Schemas** (`/lib/validations/galleries.ts`):
+  - Zod schemas for gallery CRUD operations matching services pattern
+  - Includes: gallerySchema, createGallerySchema, updateGallerySchema, deleteGallerySchema
+  - Additional schemas: duplicateGallerySchema, archiveGallerySchema, deliverGallerySchema
+  - Asset schemas: assetSchema, reorderAssetsSchema
+  - Full TypeScript type exports for all inputs
+- **Gallery Server Actions** (`/lib/actions/galleries.ts`):
+  - Complete CRUD operations: createGallery, updateGallery, deleteGallery
+  - Gallery lifecycle: duplicateGallery, archiveGallery, deliverGallery
+  - Bulk operations: bulkArchiveGalleries, bulkDeleteGalleries
+  - Query functions: getGalleries, getGallery, getGalleryCounts
+  - Photo management: reorderPhotos
+  - Analytics tracking: recordGalleryView, recordDownload
+  - Activity logging for all gallery events
+  - Slug generation for delivery links
+
+### Changed (Gallery Production Mode)
+- **Gallery List Page** (`/galleries/page.tsx`):
+  - Removed DEMO_MODE - now fetches real data from database
+  - Uses getGalleryCounts() for filter tab counts
+  - Fixed client field references (fullName instead of firstName/lastName)
+- **Gallery Detail Page** (`/galleries/[id]/page.tsx`):
+  - Removed demo data - fetches real gallery using getGallery action
+  - Added real activity log display
+  - Connected Deliver Gallery button to server action
+  - Shows real photos, stats, and delivery link
+- **Gallery Edit Page** (`/galleries/[id]/edit/page.tsx`):
+  - Removed demo data - fetches real gallery and clients
+  - Shows real gallery status, stats, and activity logs
+  - Connected to real database for form data
+- **Gallery New Form** (`/galleries/new/gallery-new-form.tsx`):
+  - Connected to createGallery server action
+  - Proper form state management with controlled inputs
+  - Toast notifications on success/error
+  - Redirects to gallery detail on creation
+- **Gallery New Page** (`/galleries/new/page.tsx`):
+  - Fetches real clients from database
+  - Shows real gallery stats in sidebar
+- **Dashboard Page** (`/dashboard/page.tsx`):
+  - Fixed booking location field reference
+
+### Fixed
+- Type errors with Client model using fullName instead of firstName/lastName
+- Type errors with Booking model location field reference
+- Type errors with GalleryComment model (uses clientName/clientEmail, not user relation)
+- Type errors with ActivityLog user relation field names
+- Zod record schema syntax for exifData field
+
+### Added (Gallery Improvements - Session 2)
+- **Gallery Edit Form** (`/galleries/[id]/edit/gallery-edit-form.tsx`):
+  - Connected to updateGallery and deleteGallery server actions
+  - Full form state management with controlled inputs
+  - Delete confirmation modal with loading states
+  - Toast notifications on success/error
+  - Automatic redirect after save/delete
+- **Public Gallery Page** (`/g/[slug]/page.tsx`):
+  - Removed demo data - fetches real gallery using getPublicGallery action
+  - Records gallery views automatically on page load
+  - Shows photographer branding (name, logo, colors)
+  - Payment status and download access handling
+  - Watermark support based on settings
+- **Gallery List Actions** (`/galleries/gallery-list-client.tsx`):
+  - Connected quick actions (duplicate, archive, delete) to server actions
+  - Connected bulk actions (archive, delete) to server actions
+  - Delete confirmation modals for single and bulk operations
+  - Loading states during async operations
+- **Public Gallery Server Action** (`/lib/actions/galleries.ts`):
+  - Added getPublicGallery(slug) function for public gallery viewing
+  - Validates delivery link status and expiration
+  - Returns organization branding for themed display
+
 ### Added (Dashboard Enhancements)
 - **Quick Actions Component** (`/components/dashboard/quick-actions.tsx`):
   - Four quick action cards: Create Gallery, Add Client, New Booking, Send Invoice
