@@ -69,6 +69,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Preview of upcoming contracts & e-signatures feature
   - Disabled Create Contract button with styling
   - Informative placeholder explaining future functionality
+- Added Tabs navigation to gallery detail page
+  - Photos tab: Photo grid, description, service package, contracts
+  - Activity tab: Internal notes editor and activity timeline
+  - Settings tab: Gallery settings toggles and download options
+  - Invoices tab: Invoice list and creation, payment reminders
+- Added Activity Timeline feature
+  - Tracks all gallery events (created, edited, delivered, viewed, downloaded, payment)
+  - Relative time formatting (Today, Yesterday, X days ago)
+  - Color-coded activity icons by event type
+  - Displays user attribution when available
+- Added Internal Notes section
+  - Editable notes textarea for internal use
+  - Save/Cancel buttons with toast feedback
+  - Preserved across sessions
+- Added Gallery Settings panel
+  - Watermark photos toggle
+  - Allow downloads toggle
+  - Password protection toggle
+  - Allow favorites toggle
+  - Allow comments toggle
+  - Download resolution options (Full, Web, Both)
+  - Gallery expiration date picker
+- Added Invoice Integration section
+  - Invoice list view with status badges
+  - Create Invoice button with toast feedback
+  - Payment pending alert with reminder functionality
+  - Invoice card showing amount and payment date
+- Enhanced Client section with quick actions
+  - Email and Call buttons
+  - Phone number display when available
+  - View Client Profile link
+- Added QR code generation for delivery links
+  - QR button added to link sharing options
+  - Generates shareable QR code on demand
 
 ### Changed (ServiceDisplay Component)
 - Added `editHref` prop for optional edit button
