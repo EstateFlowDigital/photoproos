@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoProOSLogo } from "@/components/ui/photoproos-logo";
+import { VideoModal } from "@/components/ui/video-modal";
 import { cn } from "@/lib/utils";
 
 // Animated counter hook
@@ -629,6 +630,7 @@ function PaymentRow({ description, amount, status }: { description: string; amou
 export function HeroSection() {
   const [activeSection, setActiveSection] = React.useState("dashboard");
   const [isPaused, setIsPaused] = React.useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = React.useState(false);
   const photographerCount = useAnimatedCounter(2500, 2000);
 
   // Auto-rotate through demo sections (pause on hover)
@@ -681,11 +683,14 @@ export function HeroSection() {
             <Button variant="default" size="lg" asChild>
               <Link href="/dashboard">Start free trial</Link>
             </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link href="#demo" className="flex items-center gap-2">
-                <PlayIcon className="h-4 w-4" />
-                Watch demo
-              </Link>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setIsVideoModalOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <PlayIcon className="h-4 w-4" />
+              Watch demo
             </Button>
           </div>
 
@@ -719,6 +724,13 @@ export function HeroSection() {
         {/* Bottom spacer - Minimal */}
         <div className="h-8 lg:h-12" />
       </div>
+
+      {/* Video Demo Modal */}
+      <VideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        // videoUrl="https://www.youtube.com/embed/your-video-id" // Add video URL when ready
+      />
     </section>
   );
 }

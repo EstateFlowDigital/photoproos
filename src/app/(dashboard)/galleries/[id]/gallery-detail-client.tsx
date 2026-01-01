@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { useToast } from "@/components/ui/toast";
 import { PhotoUploadModal } from "@/components/upload/photo-upload-modal";
+import { reorderPhotos } from "@/lib/actions/galleries";
 import {
   DndContext,
   closestCenter,
@@ -173,6 +175,7 @@ type TabType = "photos" | "activity" | "analytics" | "settings" | "invoices";
 
 export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
@@ -221,23 +224,38 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     })
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
+      // Optimistically update the UI
+      let newOrder: Photo[] = [];
       setPhotos((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+        newOrder = arrayMove(items, oldIndex, newIndex);
+        return newOrder;
       });
-      showToast("Photo order updated", "success");
+
+      // Persist to database
+      try {
+        const result = await reorderPhotos(gallery.id, newOrder.map(p => p.id));
+        if (result.success) {
+          showToast("Photo order saved", "success");
+        } else {
+          showToast(result.error || "Failed to save order", "error");
+          // Revert on error
+          setPhotos(gallery.photos);
+        }
+      } catch {
+        showToast("Failed to save order", "error");
+        // Revert on error
+        setPhotos(gallery.photos);
+      }
     }
   };
 
   const toggleReorderMode = () => {
-    if (isReorderMode) {
-      showToast("Photo order saved", "success");
-    }
     setIsReorderMode(!isReorderMode);
     // Exit select mode if entering reorder mode
     if (!isReorderMode && isSelectMode) {

@@ -4,22 +4,22 @@ import * as React from "react";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { AnimatedCounter } from "@/hooks/use-count-animation";
 
-// Stats to display
+// Stats to display - Pre-launch messaging
 const stats = [
-  { value: 2500, label: "Professional photographers", suffix: "+" },
-  { value: 150000, label: "Galleries delivered", suffix: "+" },
-  { value: 12, label: "Million in payments processed", prefix: "$", suffix: "M+" },
-  { value: 98, label: "Customer satisfaction", suffix: "%" },
+  { value: 5, label: "Free galleries to start", suffix: "" },
+  { value: 0, label: "Platform fees on payments", suffix: "%" },
+  { value: 1, label: "Platform for everything", suffix: "" },
+  { value: 24, label: "Hour gallery setup", suffix: "hr" },
 ];
 
-// Featured photography studios/businesses (placeholder names)
-const featuredStudios = [
-  "Chen Real Estate Media",
-  "Mitchell Events Co.",
-  "Okonkwo Architectural",
-  "Park Portraits",
-  "Studio Lumina",
-  "Apex Visual",
+// Photography specialties we support
+const photographyTypes = [
+  "Real Estate",
+  "Architecture",
+  "Commercial",
+  "Events",
+  "Portraits",
+  "Food & Product",
 ];
 
 export function LogosSection() {
@@ -42,7 +42,6 @@ export function LogosSection() {
               }}
             >
               <div className="text-3xl font-bold text-foreground lg:text-4xl">
-                {stat.prefix && <span>{stat.prefix}</span>}
                 <AnimatedCounter
                   end={stat.value}
                   duration={2000}
@@ -55,7 +54,7 @@ export function LogosSection() {
           ))}
         </div>
 
-        {/* Featured Studios */}
+        {/* Photography Types */}
         <div className="relative overflow-hidden">
           <p
             className="mb-6 text-center text-sm font-medium uppercase tracking-wider text-foreground-muted"
@@ -64,7 +63,7 @@ export function LogosSection() {
               transition: "opacity 500ms ease-out 300ms",
             }}
           >
-            Trusted by photographers at
+            Built for every photography specialty
           </p>
 
           {/* Fade edges */}
@@ -72,16 +71,16 @@ export function LogosSection() {
           <div className="pointer-events-none absolute right-0 top-10 z-10 hidden h-12 w-24 bg-gradient-to-l from-[var(--background)] to-transparent lg:block" />
 
           <div
-            className="flex flex-wrap items-center justify-center gap-6 lg:flex-nowrap lg:gap-12"
+            className="flex flex-wrap items-center justify-center gap-4 lg:flex-nowrap lg:gap-8"
             style={{
               opacity: isVisible ? 1 : 0,
               transition: "opacity 700ms ease-out 400ms",
             }}
           >
-            {featuredStudios.map((studio, index) => (
+            {photographyTypes.map((type, index) => (
               <div
-                key={studio}
-                className="group flex shrink-0 items-center"
+                key={type}
+                className="group flex shrink-0 items-center rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2"
                 style={{
                   opacity: isVisible ? 1 : 0,
                   transform: isVisible ? "none" : "translateY(15px) scale(0.95)",
@@ -89,33 +88,37 @@ export function LogosSection() {
                   transitionDelay: `${400 + index * 80}ms`,
                 }}
               >
-                <span className="text-lg font-medium text-foreground-muted transition-colors duration-300 group-hover:text-foreground">
-                  {studio}
+                <span className="text-sm font-medium text-foreground-secondary transition-colors duration-300 group-hover:text-foreground">
+                  {type}
                 </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Awards / Recognition */}
+        {/* Launch Benefits */}
         <div
-          className="mt-10 flex flex-wrap items-center justify-center gap-6 border-t border-[var(--card-border)] pt-8"
+          className="mt-10 flex flex-wrap items-center justify-center gap-4 border-t border-[var(--card-border)] pt-8"
           style={{
             opacity: isVisible ? 1 : 0,
             transition: "opacity 700ms ease-out 600ms",
           }}
         >
           <div className="flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
-            <StarIcon className="h-4 w-4 text-yellow-400" />
-            <span className="text-sm text-foreground-secondary">4.9/5 on G2</span>
+            <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+            <span className="text-sm text-foreground-secondary">No credit card required</span>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
-            <StarIcon className="h-4 w-4 text-yellow-400" />
-            <span className="text-sm text-foreground-secondary">4.8/5 on Capterra</span>
+            <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+            <span className="text-sm text-foreground-secondary">Free tier forever</span>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
-            <AwardIcon className="h-4 w-4 text-[var(--primary)]" />
-            <span className="text-sm text-foreground-secondary">Best Photo Delivery Software 2024</span>
+            <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+            <span className="text-sm text-foreground-secondary">Setup in minutes</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
+            <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+            <span className="text-sm text-foreground-secondary">Cancel anytime</span>
           </div>
         </div>
       </div>
@@ -123,18 +126,10 @@ export function LogosSection() {
   );
 }
 
-function StarIcon({ className }: { className?: string }) {
+function CheckIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
-function AwardIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10 1c-1.828 0-3.623.149-5.371.435a.75.75 0 0 0-.629.74v.387c-.827.157-1.642.345-2.445.564a.75.75 0 0 0-.552.698 5 5 0 0 0 4.503 5.152 6 6 0 0 0 2.946 1.822A6.451 6.451 0 0 1 7.768 13H7.5A1.5 1.5 0 0 0 6 14.5V17h-.75a.75.75 0 0 0 0 1.5h9.5a.75.75 0 0 0 0-1.5H14v-2.5a1.5 1.5 0 0 0-1.5-1.5h-.268a6.453 6.453 0 0 1-.684-2.202 6 6 0 0 0 2.946-1.822 5 5 0 0 0 4.503-5.152.75.75 0 0 0-.552-.698A31.804 31.804 0 0 0 16 2.562v-.387a.75.75 0 0 0-.629-.74A33.227 33.227 0 0 0 10 1ZM2.525 4.422a30.324 30.324 0 0 1 1.475-.29V6.63a3.5 3.5 0 0 1-1.475-2.208Zm14.95 0a3.5 3.5 0 0 1-1.475 2.208V4.132c.507.085 1 .181 1.475.29Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
     </svg>
   );
 }

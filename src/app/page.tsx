@@ -6,6 +6,7 @@ import { HowItWorksSection } from "@/components/sections/how-it-works";
 import { NoiseToKnowledgeSection } from "@/components/sections/noise-to-knowledge";
 import { FeaturesSection } from "@/components/sections/features";
 import { UseCasesSection } from "@/components/sections/use-cases";
+import { ComparisonSection } from "@/components/sections/comparison";
 import { IntegrationsSection } from "@/components/sections/integrations";
 import { PricingSection } from "@/components/sections/pricing";
 import { TestimonialsSection } from "@/components/sections/testimonials";
@@ -65,6 +66,11 @@ export default function Home() {
 
       {/* Use Cases Section - Photography verticals */}
       <UseCasesSection />
+
+      <div className="section-divider" />
+
+      {/* Comparison Section - vs Competitors */}
+      <ComparisonSection />
 
       <div className="section-divider" />
 

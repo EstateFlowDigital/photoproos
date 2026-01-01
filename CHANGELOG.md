@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Landing Page - Competitor Comparison)
+- **Comparison Section** (`/components/sections/comparison.tsx`):
+  - New competitor comparison table showing PhotoProOS vs Pixieset, Pic-Time, HoneyBook
+  - Category filter tabs: All Features, Core, Advanced, Business, Pricing
+  - Feature comparison with checkmarks, X marks, "Coming Soon", and custom text values
+  - Responsive design: desktop table view, mobile card view
+  - Scroll animations with fade-in effects
+  - "Recommended" badge for PhotoProOS column
+  - Bottom CTA with "Start your free trial" button
+
+### Added (Landing Page - Video Demo Modal)
+- **Video Modal Component** (`/components/ui/video-modal.tsx`):
+  - Reusable video modal with backdrop blur
+  - Keyboard support (ESC to close)
+  - Placeholder state for "Coming Soon" with subscribe prompt
+  - Supports YouTube/Vimeo embeds when video URL provided
+- Updated Hero section "Watch demo" button to open video modal
+
+### Changed (Landing Page - Logos/Stats Section)
+- Updated stats from placeholder numbers to pre-launch messaging:
+  - "5 Free galleries to start" (was 2500+ photographers)
+  - "0% Platform fees on payments" (was $12M+ processed)
+  - "1 Platform for everything" (was 150k+ galleries)
+  - "24hr Gallery setup" (was 98% satisfaction)
+- Changed "Trusted by photographers at" section to "Built for every photography specialty"
+  - Now shows photography types as pills: Real Estate, Architecture, Commercial, Events, Portraits, Food & Product
+- Replaced fake awards/ratings with pre-launch benefits:
+  - "No credit card required", "Free tier forever", "Setup in minutes", "Cancel anytime"
+
 ### Changed (Landing Page - Roadmap Section)
 - Restructured roadmap section from individual features to phased approach:
   - Phase 1: Core Platform (Completed) - Galleries, Payments, Clients, Bookings, Services
@@ -69,6 +98,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Type errors with GalleryComment model (uses clientName/clientEmail, not user relation)
 - Type errors with ActivityLog user relation field names
 - Zod record schema syntax for exifData field
+
+### Changed (Dashboard Analytics - Real Data)
+- **Dashboard Page** (`/dashboard/page.tsx`):
+  - Removed DEMO_MODE flag - now always uses real database data
+  - Added month-over-month comparison for revenue (percentage change)
+  - Added 30-day comparison for galleries and clients count (absolute change)
+  - Dynamic change indicators on stat cards (positive/negative/neutral)
+  - Shows no change indicator when values are unchanged
+  - Imported prisma client directly instead of dynamic import
+  - Fixed gallery assets count to use `_count` pattern for efficiency
+
+### Changed (Photo Reordering - Persistence)
+- **Gallery Detail Client** (`/galleries/[id]/gallery-detail-client.tsx`):
+  - Connected drag-and-drop photo reordering to `reorderPhotos` server action
+  - Optimistic UI update with automatic revert on error
+  - Saves order to database immediately after each drag operation
+  - Removed duplicate toast message when exiting reorder mode
+
+### Fixed
+- **Logos Section** (`/components/sections/logos.tsx`):
+  - Removed reference to non-existent `prefix` property on stats objects
 
 ### Added (Gallery Improvements - Session 2)
 - **Gallery Edit Form** (`/galleries/[id]/edit/gallery-edit-form.tsx`):
