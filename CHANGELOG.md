@@ -45,6 +45,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `/scheduling/[id]` now shows Service Package section using ServiceDisplay component
   - Consistent styling and behavior with gallery detail page
 
+### Added (Gallery Detail Improvements)
+- Created Toast notification system (`src/components/ui/toast.tsx`)
+  - Success, error, warning, and info toast types
+  - Auto-dismiss with configurable duration
+  - Accessible with proper ARIA attributes
+  - ToastProvider wraps dashboard layout for global access
+- Created Image Lightbox component (`src/components/ui/image-lightbox.tsx`)
+  - Full-screen photo viewer with keyboard navigation (←/→/Esc)
+  - Zoom in/out functionality
+  - Thumbnail strip for quick navigation
+  - Download and delete actions per photo
+  - Responsive design with touch support
+- Enhanced Gallery Detail page (`/galleries/[id]`)
+  - Clickable photos that open in lightbox viewer
+  - "View All" button for galleries with 6+ photos
+  - All action buttons now functional with toast feedback
+  - Copy to clipboard for delivery links
+  - Reorganized layout: Description now appears above Service Package
+  - Added Edit button on Description section
+  - ServiceDisplay now includes Edit button linking to edit page
+- Added Contracts section with "Coming Soon" state
+  - Preview of upcoming contracts & e-signatures feature
+  - Disabled Create Contract button with styling
+  - Informative placeholder explaining future functionality
+
+### Changed (ServiceDisplay Component)
+- Added `editHref` prop for optional edit button
+- Added `showEditButton` prop to control visibility
+- Edit button links directly to gallery/booking edit page
+
 ### Added (Edit & Detail Pages)
 - Created `/clients/[id]/edit` page with comprehensive client edit form
   - Pre-populated fields for name, company, industry, contact info

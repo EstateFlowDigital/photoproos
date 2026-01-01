@@ -303,10 +303,22 @@ interface ServiceDisplayProps {
   customPrice?: number;
   customDescription?: string;
   className?: string;
+  editHref?: string;
+  showEditButton?: boolean;
 }
 
-export function ServiceDisplay({ serviceId, customPrice, customDescription, className }: ServiceDisplayProps) {
+export function ServiceDisplay({ serviceId, customPrice, customDescription, className, editHref, showEditButton = true }: ServiceDisplayProps) {
   const service = serviceId ? photographyServices.find((s) => s.id === serviceId) : null;
+
+  const EditButton = editHref && showEditButton ? (
+    <a
+      href={editHref}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+    >
+      <EditIcon className="h-3.5 w-3.5" />
+      Edit
+    </a>
+  ) : null;
 
   if (service) {
     const categoryInfo = serviceCategories[service.category];
@@ -315,7 +327,7 @@ export function ServiceDisplay({ serviceId, customPrice, customDescription, clas
     return (
       <div className={cn("rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4", className)}>
         <div className="flex items-start justify-between gap-4">
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", categoryInfo.color)}>
                 {categoryInfo.label}
@@ -324,11 +336,14 @@ export function ServiceDisplay({ serviceId, customPrice, customDescription, clas
             <h4 className="font-medium text-foreground">{service.name}</h4>
             <p className="text-sm text-foreground-muted mt-1">{service.description}</p>
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-lg font-bold text-foreground">{formatServicePrice(displayPrice)}</p>
-            {customPrice && customPrice !== service.basePrice && (
-              <p className="text-xs text-foreground-muted line-through">{formatServicePrice(service.basePrice)}</p>
-            )}
+          <div className="flex items-start gap-3 shrink-0">
+            <div className="text-right">
+              <p className="text-lg font-bold text-foreground">{formatServicePrice(displayPrice)}</p>
+              {customPrice && customPrice !== service.basePrice && (
+                <p className="text-xs text-foreground-muted line-through">{formatServicePrice(service.basePrice)}</p>
+              )}
+            </div>
+            {EditButton}
           </div>
         </div>
 
@@ -351,7 +366,7 @@ export function ServiceDisplay({ serviceId, customPrice, customDescription, clas
     return (
       <div className={cn("rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4", className)}>
         <div className="flex items-start justify-between gap-4">
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="rounded-full bg-gray-500/10 px-2 py-0.5 text-xs font-medium text-gray-400">
                 Custom
@@ -362,8 +377,11 @@ export function ServiceDisplay({ serviceId, customPrice, customDescription, clas
               <p className="text-sm text-foreground-muted mt-1">{customDescription}</p>
             )}
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-lg font-bold text-foreground">{formatServicePrice(customPrice || 0)}</p>
+          <div className="flex items-start gap-3 shrink-0">
+            <div className="text-right">
+              <p className="text-lg font-bold text-foreground">{formatServicePrice(customPrice || 0)}</p>
+            </div>
+            {EditButton}
           </div>
         </div>
       </div>
@@ -371,4 +389,13 @@ export function ServiceDisplay({ serviceId, customPrice, customDescription, clas
   }
 
   return null;
+}
+
+function EditIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
+      <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
+    </svg>
+  );
 }
