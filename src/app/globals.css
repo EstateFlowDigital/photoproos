@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Override Tailwind's preflight border color to prevent white flash */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: transparent;
+  }
+}
+
 /* ============================================
    LUMOS DESIGN SYSTEM - TOKENS
    Version: 4.1.0 (Dovetail-Inspired)
