@@ -98,15 +98,20 @@ function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean 
     <div
       className={cn(
         "relative flex flex-col rounded-xl border bg-[var(--card)] p-6 transition-all duration-300 lg:p-8",
-        "hover:shadow-xl hover:shadow-black/30",
+        "hover:-translate-y-1",
         tier.popular
-          ? "border-[var(--primary)] shadow-lg shadow-[var(--primary)]/10"
-          : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+          ? "border-[var(--primary)] shadow-lg shadow-[var(--primary)]/20 hover:shadow-xl hover:shadow-[var(--primary)]/30"
+          : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:shadow-xl hover:shadow-black/30"
       )}
     >
+      {/* Glow effect for popular tier */}
+      {tier.popular && (
+        <div className="pointer-events-none absolute -inset-px rounded-xl bg-gradient-to-b from-[var(--primary)]/20 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      )}
+
       {/* Popular badge */}
       {tier.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--primary)] px-4 py-1 text-xs font-medium text-white">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--primary)] px-4 py-1 text-xs font-medium text-white shadow-lg shadow-[var(--primary)]/30">
           Most Popular
         </div>
       )}

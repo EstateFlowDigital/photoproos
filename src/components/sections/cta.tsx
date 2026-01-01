@@ -135,6 +135,30 @@ export function CTASection() {
             </div>
           </div>
 
+          {/* Trust badges */}
+          <div
+            className="mt-8 flex flex-wrap items-center justify-center gap-6"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "none" : "translateY(30px)",
+              transition: "opacity 700ms ease-out, transform 700ms ease-out",
+              transitionDelay: "500ms",
+            }}
+          >
+            <div className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/50 px-3 py-2">
+              <StripeIcon className="h-5 w-5" />
+              <span className="text-xs text-foreground-muted">Powered by Stripe</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/50 px-3 py-2">
+              <ShieldIcon className="h-5 w-5 text-[var(--success)]" />
+              <span className="text-xs text-foreground-muted">256-bit SSL</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/50 px-3 py-2">
+              <LockIcon className="h-5 w-5 text-[var(--primary)]" />
+              <span className="text-xs text-foreground-muted">SOC 2 Compliant</span>
+            </div>
+          </div>
+
           {/* Comparison teaser */}
           <div
             className="mt-16 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
@@ -178,6 +202,30 @@ function ArrowIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden="true">
       <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function StripeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" fill="#635BFF"/>
+    </svg>
+  );
+}
+
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden="true">
+      <path fillRule="evenodd" d="M9.661 2.237a.531.531 0 0 1 .678 0 11.947 11.947 0 0 0 7.078 2.749.5.5 0 0 1 .479.425c.069.52.104 1.05.104 1.59 0 5.162-3.26 9.563-7.834 11.256a.48.48 0 0 1-.332 0C5.26 16.564 2 12.163 2 7c0-.538.035-1.069.104-1.589a.5.5 0 0 1 .48-.425 11.947 11.947 0 0 0 7.077-2.75Zm4.196 5.954a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden="true">
+      <path fillRule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clipRule="evenodd" />
     </svg>
   );
 }

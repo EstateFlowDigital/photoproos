@@ -6,6 +6,32 @@ import { Button } from "@/components/ui/button";
 import { PhotoProOSLogo } from "@/components/ui/photoproos-logo";
 import { cn } from "@/lib/utils";
 
+// Animated counter hook
+function useAnimatedCounter(end: number, duration: number = 2000, startOnMount: boolean = true) {
+  const [count, setCount] = React.useState(0);
+  const [hasStarted, setHasStarted] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!startOnMount || hasStarted) return;
+    setHasStarted(true);
+
+    let startTime: number | null = null;
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      // Ease out cubic for smooth deceleration
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(easeOut * end));
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    requestAnimationFrame(animate);
+  }, [end, duration, startOnMount, hasStarted]);
+
+  return count;
+}
+
 // Demo sections for the interactive demo
 const demoSections = [
   { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
@@ -545,13 +571,13 @@ function GalleryCard({ title, client, photos, status, revenue, image }: { title:
   };
 
   return (
-    <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3 transition-colors hover:border-[var(--border-hover)]">
+    <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3 transition-all duration-200 hover:border-[var(--border-hover)] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20">
       <div className="mb-2 aspect-video rounded-md overflow-hidden bg-gradient-to-br from-[var(--primary)]/20 to-[var(--ai)]/20">
         {image && (
           <img
             src={image}
             alt={title}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
           />
         )}
       </div>
@@ -603,6 +629,7 @@ function PaymentRow({ description, amount, status }: { description: string; amou
 export function HeroSection() {
   const [activeSection, setActiveSection] = React.useState("dashboard");
   const [isPaused, setIsPaused] = React.useState(false);
+  const photographerCount = useAnimatedCounter(2500, 2000);
 
   // Auto-rotate through demo sections (pause on hover)
   React.useEffect(() => {
@@ -632,7 +659,7 @@ export function HeroSection() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              Now serving <span className="font-medium text-[var(--primary)]">2,500+</span> photographers
+              Now serving <span className="font-medium text-[var(--primary)] tabular-nums">{photographerCount.toLocaleString()}+</span> photographers
             </span>
           </div>
 
