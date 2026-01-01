@@ -8,6 +8,7 @@ import { FeaturesSection } from "@/components/sections/features";
 import { UseCasesSection } from "@/components/sections/use-cases";
 import { ComparisonSection } from "@/components/sections/comparison";
 import { IntegrationsSection } from "@/components/sections/integrations";
+import { ROICalculatorSection } from "@/components/sections/roi-calculator";
 import { PricingSection } from "@/components/sections/pricing";
 import { TestimonialsSection } from "@/components/sections/testimonials";
 import { SecuritySection } from "@/components/sections/security";
@@ -15,6 +16,8 @@ import { RoadmapSection } from "@/components/sections/roadmap";
 import { FAQSection } from "@/components/sections/faq";
 import { CTASection } from "@/components/sections/cta";
 import { ScrollProgress, BackToTop } from "@/components/ui/scroll-progress";
+import { StickyCTA } from "@/components/ui/sticky-cta";
+import { ExitIntentPopup } from "@/components/ui/exit-intent-popup";
 
 export default function Home() {
   return (
@@ -24,6 +27,12 @@ export default function Home() {
 
       {/* Back to Top Button */}
       <BackToTop showAfter={400} />
+
+      {/* Sticky CTA Bar */}
+      <StickyCTA />
+
+      {/* Exit Intent Popup */}
+      <ExitIntentPopup />
 
       {/* Background Gradient */}
       <div className="pointer-events-none absolute inset-0 z-0">
@@ -76,6 +85,11 @@ export default function Home() {
 
       {/* Integrations Section - Third-party apps */}
       <IntegrationsSection />
+
+      <div className="section-divider" />
+
+      {/* ROI Calculator - Show potential savings */}
+      <ROICalculatorSection />
 
       <div className="section-divider" />
 

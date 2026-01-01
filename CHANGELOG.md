@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Landing Page - Conversion Optimizations)
+- **Sticky CTA Bar** (`/components/ui/sticky-cta.tsx`):
+  - Fixed bottom bar appears after scrolling 600px
+  - Shows benefit pills: "5 free galleries", "No credit card", "Set up in minutes"
+  - Responsive design with mobile-optimized layout
+  - Smooth slide-up animation with gradient blur backdrop
+  - "Start free trial" button with hover effects
+- **ROI/Savings Calculator** (`/components/sections/roi-calculator.tsx`):
+  - Interactive calculator section with 4 sliders
+  - Inputs: sessions/month, photos/session, hourly rate, admin hours
+  - Calculates: yearly time saved, money saved, faster payments, total value
+  - ROI badge showing return on investment vs Pro plan cost
+  - Custom slider styling with gradient fill and hover effects
+- **Exit-Intent Popup** (`/components/ui/exit-intent-popup.tsx`):
+  - Detects when mouse leaves viewport from top
+  - 5-second delay before enabling (prevents immediate trigger)
+  - 24-hour cooldown stored in localStorage
+  - Email capture form with success animation
+  - Free guide offer: "5 Ways to Double Your Photography Income"
+  - Trust indicators: No spam, Unsubscribe anytime
+
+### Changed (Global Styles)
+- Added slider input styles for ROI calculator
+- Added `animate-scale-in` animation for popup modals
+
 ### Changed (Core Pages - Real Data Connection)
 - **Clients Page** (`/clients/page.tsx`):
   - Removed DEMO_MODE flag - now fetches real client data from database

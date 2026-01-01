@@ -366,6 +366,17 @@ ul, ol {
   }
 }
 
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes numberPop {
   0% {
     opacity: 0;
@@ -438,6 +449,10 @@ ul, ol {
 
 .animate-slide-down {
   animation: slideDown 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-number-pop {
@@ -830,6 +845,61 @@ ul, ol {
   letter-spacing: 1px;
   line-height: 140%;
   text-transform: uppercase;
+}
+
+/* Slider Input */
+.slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.slider-input::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+}
+
+.slider-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.slider-input::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.slider-input:focus {
+  outline: none;
+}
+
+.slider-input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Scroll Theme Support */
