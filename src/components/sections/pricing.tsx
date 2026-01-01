@@ -266,20 +266,30 @@ export function PricingSection() {
         </p>
 
         {/* Feature Comparison Table */}
-        <div
-          className="mt-20"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? "none" : "translateY(30px)",
-            transition: "opacity 700ms ease-out, transform 700ms ease-out",
-            transitionDelay: "900ms",
-          }}
-        >
-          <h3 className="mb-8 text-center text-2xl font-medium text-foreground">Compare all features</h3>
+        <div className="mt-20">
+          <h3
+            className="mb-8 text-center text-2xl font-medium text-foreground"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "none" : "translateY(20px)",
+              transition: "opacity 600ms ease-out, transform 600ms ease-out",
+              transitionDelay: "900ms",
+            }}
+          >
+            Compare all features
+          </h3>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-[var(--card-border)]">
+                <tr
+                  className="border-b border-[var(--card-border)]"
+                  style={{
+                    opacity: isVisible ? 1 : 0,
+                    transform: isVisible ? "none" : "translateY(20px)",
+                    transition: "opacity 500ms ease-out, transform 500ms ease-out",
+                    transitionDelay: "950ms",
+                  }}
+                >
                   <th className="py-4 pr-4 text-left text-sm font-medium text-foreground-muted">Feature</th>
                   <th className="px-4 py-4 text-center text-sm font-medium text-foreground">Free</th>
                   <th className="px-4 py-4 text-center text-sm font-medium text-foreground">Pro</th>
@@ -289,7 +299,16 @@ export function PricingSection() {
               </thead>
               <tbody>
                 {comparisonFeatures.map((feature, index) => (
-                  <tr key={index} className="border-b border-[var(--card-border)]">
+                  <tr
+                    key={index}
+                    className="border-b border-[var(--card-border)] hover:bg-[var(--background-secondary)] transition-colors"
+                    style={{
+                      opacity: isVisible ? 1 : 0,
+                      transform: isVisible ? "none" : "translateY(20px)",
+                      transition: "opacity 500ms ease-out, transform 500ms ease-out, background-color 200ms ease",
+                      transitionDelay: `${1000 + index * 50}ms`,
+                    }}
+                  >
                     <td className="py-4 pr-4 text-sm text-foreground-secondary">{feature.name}</td>
                     <td className="px-4 py-4 text-center">
                       <FeatureValue value={feature.free} />

@@ -228,31 +228,35 @@ function GalleriesDemo() {
 
       <div className="grid grid-cols-2 gap-3">
         <GalleryCard
-          title="Coastal Home - 142 Ocean Dr"
+          title="Luxury Estate - Twilight"
           client="Premier Realty"
           photos={32}
           status="delivered"
-          revenue="$275"
+          revenue="$475"
+          image="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop&q=80"
         />
         <GalleryCard
-          title="Corporate Headshots Batch"
-          client="Tech Solutions Inc"
+          title="Modern Penthouse Suite"
+          client="Berkshire Properties"
           photos={24}
           status="pending"
-          revenue="$450"
+          revenue="$650"
+          image="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop&q=80"
         />
         <GalleryCard
-          title="Restaurant Grand Opening"
-          client="Bella Cucina"
-          photos={86}
-          status="delivered"
-          revenue="$680"
-        />
-        <GalleryCard
-          title="Modern Office Space"
-          client="Design Studio Pro"
+          title="Beachfront Villa Sunset"
+          client="Coastal Living Realty"
           photos={48}
+          status="delivered"
+          revenue="$890"
+          image="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop&q=80"
+        />
+        <GalleryCard
+          title="Downtown Loft - Dusk"
+          client="Urban Spaces Co"
+          photos={36}
           status="draft"
+          image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop&q=80"
         />
       </div>
     </div>
@@ -533,7 +537,7 @@ function ActivityItem({ icon, text, time, highlight }: { icon: React.ReactNode; 
   );
 }
 
-function GalleryCard({ title, client, photos, status, revenue }: { title: string; client: string; photos: number; status: "delivered" | "pending" | "draft"; revenue?: string }) {
+function GalleryCard({ title, client, photos, status, revenue, image }: { title: string; client: string; photos: number; status: "delivered" | "pending" | "draft"; revenue?: string; image?: string }) {
   const statusColors = {
     delivered: "bg-[var(--success)]/10 text-[var(--success)]",
     pending: "bg-[var(--warning)]/10 text-[var(--warning)]",
@@ -542,7 +546,15 @@ function GalleryCard({ title, client, photos, status, revenue }: { title: string
 
   return (
     <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3 transition-colors hover:border-[var(--border-hover)]">
-      <div className="mb-2 aspect-video rounded-md bg-gradient-to-br from-[var(--primary)]/20 to-[var(--ai)]/20" />
+      <div className="mb-2 aspect-video rounded-md overflow-hidden bg-gradient-to-br from-[var(--primary)]/20 to-[var(--ai)]/20">
+        {image && (
+          <img
+            src={image}
+            alt={title}
+            className="h-full w-full object-cover"
+          />
+        )}
+      </div>
       <h4 className="truncate text-sm font-medium text-foreground">{title}</h4>
       <p className="text-xs text-foreground-muted">{client}</p>
       <div className="mt-2 flex items-center justify-between">
