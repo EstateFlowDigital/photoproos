@@ -103,6 +103,16 @@ enum MemberRole {
   member
 }
 
+enum ServiceCategory {
+  real_estate
+  portrait
+  event
+  commercial
+  wedding
+  product
+  other
+}
+
 // ============================================================================
 // CORE MODELS
 // ============================================================================
@@ -147,6 +157,7 @@ model Organization {
   notifications         Notification[]
   usageMeters           UsageMeter[]
   onboardingProgress    OnboardingProgress?
+  services              Service[]
 
   @@index([slug])
   @@index([plan])
@@ -244,6 +255,37 @@ model ClientSession {
 }
 
 // ============================================================================
+// SERVICES
+// ============================================================================
+
+model Service {
+  id              String          @id @default(cuid())
+  organizationId  String
+  name            String
+  category        ServiceCategory @default(other)
+  description     String?
+  priceCents      Int             @default(0)
+  duration        String?         // e.g., "2-3 hours"
+  deliverables    String[]        // Array of included items
+  isActive        Boolean         @default(true)
+  isDefault       Boolean         @default(false) // System-provided template
+  sortOrder       Int             @default(0)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projects        Project[]       // Galleries using this service
+  bookings        Booking[]       // Bookings using this service
+
+  @@index([organizationId])
+  @@index([category])
+  @@index([isActive])
+  @@index([isDefault])
+}
+
+// ============================================================================
 // GALLERIES / PROJECTS
 // ============================================================================
 
@@ -251,6 +293,7 @@ model Project {
   id                  String          @id @default(cuid())
   organizationId      String
   clientId            String?
+  serviceId           String?
   name                String
   description         String?
   status              ProjectStatus   @default(draft)
@@ -277,6 +320,7 @@ model Project {
   // Relations
   organization        Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client              Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  service             Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   assets              Asset[]
   deliveryLinks       DeliveryLink[]
   payments            Payment[]
@@ -285,6 +329,7 @@ model Project {
 
   @@index([organizationId])
   @@index([clientId])
+  @@index([serviceId])
   @@index([status])
   @@index([createdAt])
 }
@@ -451,6 +496,7 @@ model Booking {
   organizationId  String
   clientId        String?
   bookingTypeId   String?
+  serviceId       String?
 
   // Details
   title           String
@@ -483,10 +529,12 @@ model Booking {
   organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client          Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
   bookingType     BookingType?    @relation(fields: [bookingTypeId], references: [id], onDelete: SetNull)
+  service         Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   reminders       BookingReminder[]
 
   @@index([organizationId])
   @@index([clientId])
+  @@index([serviceId])
   @@index([startTime])
   @@index([status])
 }

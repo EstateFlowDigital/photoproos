@@ -4,6 +4,12 @@ import { GalleryListClient } from "./gallery-list-client";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+// Main tabs for the galleries section
+const mainTabs = [
+  { id: "galleries", label: "Galleries", href: "/galleries" },
+  { id: "services", label: "Services", href: "/galleries/services" },
+];
+
 // Demo mode flag
 const DEMO_MODE = true;
 
@@ -70,6 +76,27 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
             </Link>
           }
         />
+
+        {/* Main Section Tabs */}
+        <div className="flex border-b border-[var(--card-border)]">
+          {mainTabs.map((tab) => (
+            <Link
+              key={tab.id}
+              href={tab.href}
+              className={cn(
+                "relative px-4 py-2.5 text-sm font-medium transition-colors",
+                tab.id === "galleries"
+                  ? "text-foreground"
+                  : "text-foreground-muted hover:text-foreground"
+              )}
+            >
+              {tab.label}
+              {tab.id === "galleries" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary)]" />
+              )}
+            </Link>
+          ))}
+        </div>
 
         {/* Demo Mode Banner */}
         <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
@@ -182,6 +209,27 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
           </Link>
         }
       />
+
+      {/* Main Section Tabs */}
+      <div className="flex border-b border-[var(--card-border)]">
+        {mainTabs.map((tab) => (
+          <Link
+            key={tab.id}
+            href={tab.href}
+            className={cn(
+              "relative px-4 py-2.5 text-sm font-medium transition-colors",
+              tab.id === "galleries"
+                ? "text-foreground"
+                : "text-foreground-muted hover:text-foreground"
+            )}
+          >
+            {tab.label}
+            {tab.id === "galleries" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary)]" />
+            )}
+          </Link>
+        ))}
+      </div>
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2">

@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Services Management System)
+- Created comprehensive Services Management System with database persistence
+- **Database Schema Updates:**
+  - Added `Service` model to Prisma schema with fields: name, category, description, priceCents, duration, deliverables, isActive, isDefault, sortOrder
+  - Added `ServiceCategory` enum matching existing lib/services.ts categories
+  - Added `serviceId` foreign key to `Project` model for gallery-service linking
+  - Added `serviceId` foreign key to `Booking` model for booking-service linking
+  - Updated `Organization` model with services relation
+- **Services Tab in Galleries Section:**
+  - Added Galleries | Services tab navigation to galleries page
+  - Services tab links to `/galleries/services`
+- **Services List Page** (`/galleries/services`):
+  - Grid/List view toggle (consistent with galleries)
+  - Search by service name and deliverables
+  - Filter by category (All, Real Estate, Portrait, Event, Commercial, Wedding, Product, Other)
+  - Sort options: Name A-Z/Z-A, Price High/Low, Most Used
+  - Show/hide inactive services toggle
+  - Usage count display per service
+  - Template badge for predefined services
+  - Active/Inactive status indicators
+- **Service Cards:**
+  - Category badge with color coding
+  - Price display with proper formatting
+  - Duration and deliverables preview
+  - Usage count footer
+  - Click to edit navigation
+- **Create Service Page** (`/galleries/services/new`):
+  - Full service form with validation
+  - Deliverables tag manager with Enter key support
+  - Live preview card
+  - Tips sidebar for guidance
+  - Templates link for inspiration
+- **Edit Service Page** (`/galleries/services/[id]`):
+  - Pre-populated form with existing data
+  - Usage stats sidebar (galleries/bookings count)
+  - Quick actions: Duplicate, Create Gallery, Create Booking
+  - Active status toggle (disabled for templates)
+  - Template notice for read-only system services
+- **Service Form Component** (`/components/dashboard/service-form.tsx`):
+  - Reusable form for create/edit modes
+  - Service name, category, price, duration, description fields
+  - Deliverables manager with add/remove functionality
+  - Live preview card showing how service will appear
+  - Active status toggle for custom services
+  - Template-aware disabled states
+- **Implementation Plan Documentation:**
+  - Created `docs/SERVICES_IMPLEMENTATION_PLAN.md` with full roadmap
+  - Phases: Database, UI, API/Actions, Integration, Analytics
+  - File structure and testing checklist
+
 ### Added (Gallery List Enhancements)
 - Added views and downloads statistics columns to gallery list table view
   - EyeIcon for views count display
