@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Dashboard Enhancements)
+- **Quick Actions Component** (`/components/dashboard/quick-actions.tsx`):
+  - Four quick action cards: Create Gallery, Add Client, New Booking, Send Invoice
+  - Color-coded icons with hover states using design system tokens
+  - Responsive grid layout (1 → 2 → 4 columns)
+- **Upcoming Bookings Component** (`/components/dashboard/upcoming-bookings.tsx`):
+  - Displays next 3 upcoming bookings with status indicators
+  - Shows date, time, location, and service type
+  - Smart date formatting (Today, Tomorrow, or date)
+  - Status badges (Confirmed, Pending, Cancelled)
+  - Empty state with call-to-action
+- **Revenue Chart Component** (`/components/dashboard/revenue-chart.tsx`):
+  - Bar chart showing 6-month revenue trends
+  - Comparison with previous period
+  - Percentage change indicator with positive/negative styling
+  - Responsive header layout for mobile
+  - `RevenueSparkline` compact variant for smaller spaces
+- **Loading Skeletons** (`/components/dashboard/skeleton.tsx`):
+  - `DashboardSkeleton` - Full page loading state
+  - Individual skeletons: `StatCardSkeleton`, `QuickActionsSkeleton`, `RevenueChartSkeleton`, `GalleryCardSkeleton`, `UpcomingBookingsSkeleton`, `RecentActivitySkeleton`
+  - Animated pulse effect using design system colors
+- **Empty States** (`/components/dashboard/empty-state.tsx`):
+  - Reusable `EmptyState` component with default and compact variants
+  - Pre-configured: `EmptyGalleries`, `EmptyBookings`, `EmptyActivity`, `EmptyClients`, `EmptyPayments`
+  - Consistent styling with primary and secondary actions
+- **Dashboard Loading Page** (`/app/(dashboard)/dashboard/loading.tsx`):
+  - Server-side loading skeleton using Next.js loading convention
+
+### Changed (Dashboard Improvements)
+- Updated dashboard layout with new sections:
+  - Quick Actions section below stats grid
+  - Revenue Chart section for financial overview
+  - Restructured right sidebar with Upcoming Bookings above Recent Activity
+- Enhanced empty states in database mode with icons and better copy
+- Improved responsive design for Revenue Chart header
+
 ### Added (Location, Travel & Team Capabilities - Foundation)
 - **Database Schema Updates (Prisma):**
   - Added `Location` model with Google Places integration (placeId, coordinates, address components)

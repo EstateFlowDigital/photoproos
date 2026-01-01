@@ -2,6 +2,28 @@ export { StatCard } from "./stat-card";
 export { ActivityItem } from "./activity-item";
 export { GalleryCard } from "./gallery-card";
 export { PageHeader } from "./page-header";
+export { QuickActions } from "./quick-actions";
+export { UpcomingBookings } from "./upcoming-bookings";
+export { RevenueChart, RevenueSparkline } from "./revenue-chart";
+export {
+  Skeleton,
+  StatCardSkeleton,
+  QuickActionsSkeleton,
+  RevenueChartSkeleton,
+  GalleryCardSkeleton,
+  UpcomingBookingsSkeleton,
+  ActivityItemSkeleton,
+  RecentActivitySkeleton,
+  DashboardSkeleton,
+} from "./skeleton";
+export {
+  EmptyState,
+  EmptyGalleries,
+  EmptyBookings,
+  EmptyActivity,
+  EmptyClients,
+  EmptyPayments,
+} from "./empty-state";
 export { InvoiceBuilder, InvoiceSummary, type LineItem, type PricingType } from "./invoice-builder";
 export { ServiceSelector, ServiceDisplay } from "./service-selector";
 export { ServiceForm } from "./service-form";

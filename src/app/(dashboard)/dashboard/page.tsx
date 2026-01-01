@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { StatCard, ActivityItem, PageHeader } from "@/components/dashboard";
+import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, RevenueChart, EmptyGalleries, EmptyActivity } from "@/components/dashboard";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import Link from "next/link";
 
@@ -24,6 +24,19 @@ const demoData = {
     { id: "2", name: "Corporate Headshots Q4", client: "Tech Solutions Inc", photos: 24, status: "pending" as const, revenue: "$2,180", thumbnailUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=300&fit=crop" },
     { id: "3", name: "Restaurant Grand Opening", client: "Bella Cucina", photos: 86, status: "delivered" as const, revenue: "$1,890", thumbnailUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop" },
     { id: "4", name: "Modern Office Space", client: "Design Studio Pro", photos: 32, status: "draft" as const, revenue: undefined, thumbnailUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+  ],
+  upcomingBookings: [
+    { id: "1", title: "Corporate Headshots", client: "Tech Solutions Inc", date: new Date(Date.now() + 1000 * 60 * 60 * 24), time: "10:00 AM", location: "123 Business Park", status: "confirmed" as const, serviceType: "Corporate" },
+    { id: "2", title: "Restaurant Interior", client: "Bella Cucina", date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), time: "2:00 PM", location: "456 Downtown Ave", status: "confirmed" as const, serviceType: "Commercial" },
+    { id: "3", title: "Luxury Home Shoot", client: "Premier Realty", date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 4), time: "9:30 AM", location: "789 Oceanview Dr", status: "pending" as const, serviceType: "Real Estate" },
+  ],
+  revenueData: [
+    { label: "Aug", value: 890000, previousValue: 720000 },
+    { label: "Sep", value: 1120000, previousValue: 850000 },
+    { label: "Oct", value: 980000, previousValue: 920000 },
+    { label: "Nov", value: 1350000, previousValue: 1100000 },
+    { label: "Dec", value: 1580000, previousValue: 1250000 },
+    { label: "Jan", value: 1247500, previousValue: 980000 },
   ],
 };
 
@@ -107,7 +120,7 @@ function getActivityIcon(type: string) {
 export default async function DashboardPage() {
   // Use demo data for UI review (database not connected yet)
   if (DEMO_MODE) {
-    const { organization, monthlyRevenue, activeGalleries, totalClients, pendingPayments, recentActivity, recentGalleries } = demoData;
+    const { organization, monthlyRevenue, activeGalleries, totalClients, pendingPayments, recentActivity, recentGalleries, upcomingBookings, revenueData } = demoData;
 
     return (
       <div className="space-y-8">
@@ -149,6 +162,15 @@ export default async function DashboardPage() {
           />
         </div>
 
+        {/* Quick Actions */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
+          <QuickActions />
+        </div>
+
+        {/* Revenue Chart */}
+        <RevenueChart data={revenueData} />
+
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Recent Galleries */}
@@ -178,20 +200,37 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Recent Activity */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-              <div className="divide-y divide-[var(--card-border)]">
-                {recentActivity.map((activity) => (
-                  <ActivityItem
-                    key={activity.id}
-                    icon={getActivityIcon(activity.type)}
-                    text={activity.description}
-                    time={formatRelativeTime(activity.createdAt)}
-                    highlight={activity.type === "payment_received"}
-                  />
-                ))}
+          {/* Right Sidebar - Upcoming Bookings & Recent Activity */}
+          <div className="space-y-6">
+            {/* Upcoming Bookings */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-foreground">Upcoming Bookings</h2>
+                <Link
+                  href="/scheduling"
+                  className="text-sm font-medium text-[var(--primary)] hover:underline"
+                >
+                  View all
+                </Link>
+              </div>
+              <UpcomingBookings bookings={upcomingBookings} />
+            </div>
+
+            {/* Recent Activity */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+                <div className="divide-y divide-[var(--card-border)]">
+                  {recentActivity.map((activity) => (
+                    <ActivityItem
+                      key={activity.id}
+                      icon={getActivityIcon(activity.type)}
+                      text={activity.description}
+                      time={formatRelativeTime(activity.createdAt)}
+                      highlight={activity.type === "payment_received"}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -225,6 +264,7 @@ export default async function DashboardPage() {
     pendingPayments,
     recentActivity,
     recentGalleries,
+    upcomingBookings,
   ] = await Promise.all([
     // Monthly revenue (this month)
     prisma.payment.aggregate({
@@ -277,10 +317,47 @@ export default async function DashboardPage() {
       orderBy: { createdAt: "desc" },
       take: 4,
     }),
+
+    // Upcoming bookings
+    prisma.booking.findMany({
+      where: {
+        organizationId: organization.id,
+        startTime: { gte: new Date() },
+        status: { in: ["pending", "confirmed"] },
+      },
+      include: {
+        client: { select: { fullName: true, company: true } },
+        service: { select: { name: true, category: true } },
+      },
+      orderBy: { startTime: "asc" },
+      take: 3,
+    }),
   ]);
 
   const monthlyRevenueValue = monthlyRevenue._sum.amountCents || 0;
   const pendingPaymentsValue = pendingPayments._sum.amountCents || 0;
+
+  // Transform bookings to match UpcomingBookings component format
+  const formattedBookings = upcomingBookings.map((booking) => ({
+    id: booking.id,
+    title: booking.title,
+    client: booking.client?.company || booking.client?.fullName || booking.clientName || "Unknown Client",
+    date: booking.startTime,
+    time: booking.startTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
+    location: booking.location || undefined,
+    status: booking.status as "confirmed" | "pending" | "cancelled",
+    serviceType: booking.service?.category || booking.service?.name || undefined,
+  }));
+
+  // Generate revenue data from demo values (would be real aggregations in production)
+  const revenueData = [
+    { label: "Aug", value: 890000, previousValue: 720000 },
+    { label: "Sep", value: 1120000, previousValue: 850000 },
+    { label: "Oct", value: 980000, previousValue: 920000 },
+    { label: "Nov", value: 1350000, previousValue: 1100000 },
+    { label: "Dec", value: 1580000, previousValue: 1250000 },
+    { label: "Jan", value: monthlyRevenueValue, previousValue: 980000 },
+  ];
 
   return (
     <div className="space-y-8">
@@ -315,6 +392,15 @@ export default async function DashboardPage() {
         />
       </div>
 
+      {/* Quick Actions */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
+        <QuickActions />
+      </div>
+
+      {/* Revenue Chart */}
+      <RevenueChart data={revenueData} />
+
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Galleries */}
@@ -342,44 +428,53 @@ export default async function DashboardPage() {
               />
             ))}
           </div>
-          {recentGalleries.length === 0 && (
-            <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] p-8 text-center">
-              <GalleryIcon className="mx-auto h-10 w-10 text-foreground-muted" />
-              <h3 className="mt-3 text-sm font-medium text-foreground">No galleries yet</h3>
-              <p className="mt-1 text-sm text-foreground-muted">
-                Create your first gallery to get started.
-              </p>
-              <Link
-                href="/galleries/new"
-                className="mt-4 inline-flex items-center rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
-              >
-                Create Gallery
-              </Link>
-            </div>
-          )}
+          {recentGalleries.length === 0 && <EmptyGalleries />}
         </div>
 
-        {/* Recent Activity */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-            {recentActivity.length > 0 ? (
-              <div className="divide-y divide-[var(--card-border)]">
-                {recentActivity.map((activity) => (
-                  <ActivityItem
-                    key={activity.id}
-                    icon={getActivityIcon(activity.type)}
-                    text={activity.description}
-                    time={formatRelativeTime(activity.createdAt)}
-                    highlight={activity.type === "payment_received"}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="p-6 text-center">
-                <p className="text-sm text-foreground-muted">No recent activity</p>
-              </div>
-            )}
+        {/* Right Sidebar - Upcoming Bookings & Recent Activity */}
+        <div className="space-y-6">
+          {/* Upcoming Bookings */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Upcoming Bookings</h2>
+              <Link
+                href="/scheduling"
+                className="text-sm font-medium text-[var(--primary)] hover:underline"
+              >
+                View all
+              </Link>
+            </div>
+            <UpcomingBookings bookings={formattedBookings} />
+          </div>
+
+          {/* Recent Activity */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+              {recentActivity.length > 0 ? (
+                <div className="divide-y divide-[var(--card-border)]">
+                  {recentActivity.map((activity) => (
+                    <ActivityItem
+                      key={activity.id}
+                      icon={getActivityIcon(activity.type)}
+                      text={activity.description}
+                      time={formatRelativeTime(activity.createdAt)}
+                      highlight={activity.type === "payment_received"}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-secondary)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-foreground-muted">
+                      <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <p className="mt-2 text-sm font-medium text-foreground">No recent activity</p>
+                  <p className="mt-1 text-xs text-foreground-muted">Activity will appear here as you work</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
