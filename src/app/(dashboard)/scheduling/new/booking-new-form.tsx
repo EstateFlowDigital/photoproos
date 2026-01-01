@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { TravelInfoCard } from "@/components/dashboard/travel-info-card";
+import { TeamMemberSelector } from "@/components/dashboard/team-member-selector";
 import { createBooking } from "@/lib/actions/bookings";
 import { calculateTravelPreview } from "@/lib/actions/locations";
 import type { ServiceType } from "@/lib/services";
@@ -51,6 +52,7 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
   const [selectedService, setSelectedService] = useState<SelectedService>(null);
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
+  const [assignedMemberId, setAssignedMemberId] = useState<string | undefined>(undefined);
 
   // Location state
   const [locationData, setLocationData] = useState<LocationData | null>(null);
@@ -59,22 +61,12 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
   const [travelLoading, setTravelLoading] = useState(false);
   const [travelError, setTravelError] = useState<string | null>(null);
 
-  // Handle place selection from autocomplete
-  const handlePlaceSelect = useCallback(async (place: PlaceDetails) => {
-    const newLocationData: LocationData = {
-      address: place.formattedAddress,
-      latitude: place.latitude,
-      longitude: place.longitude,
-      placeId: place.placeId,
-    };
-    setLocationData(newLocationData);
-    setAddressValue(place.formattedAddress);
-
-    // Calculate travel info from home base
+  // Calculate travel from home base
+  const calculateTravel = useCallback(async (lat: number, lng: number, userId?: string) => {
     setTravelLoading(true);
     setTravelError(null);
     try {
-      const result = await calculateTravelPreview(place.latitude, place.longitude);
+      const result = await calculateTravelPreview(lat, lng, userId);
       if (result.success) {
         setTravelInfo({
           distanceMiles: result.data.distanceMiles,
@@ -94,6 +86,31 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
       setTravelLoading(false);
     }
   }, []);
+
+  // Handle place selection from autocomplete
+  const handlePlaceSelect = useCallback(async (place: PlaceDetails) => {
+    const newLocationData: LocationData = {
+      address: place.formattedAddress,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      placeId: place.placeId,
+    };
+    setLocationData(newLocationData);
+    setAddressValue(place.formattedAddress);
+
+    // Calculate travel info from assigned member's or org's home base
+    await calculateTravel(place.latitude, place.longitude, assignedMemberId);
+  }, [calculateTravel, assignedMemberId]);
+
+  // Recalculate travel when assigned member changes
+  const handleAssignedMemberChange = useCallback(async (memberId: string | undefined) => {
+    setAssignedMemberId(memberId);
+
+    // Recalculate travel if we have a location
+    if (locationData) {
+      await calculateTravel(locationData.latitude, locationData.longitude, memberId);
+    }
+  }, [calculateTravel, locationData]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -343,6 +360,30 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
             Optional deposit to secure the booking
           </p>
         </div>
+      </div>
+
+      {/* Team Assignment */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Team Assignment</h2>
+        <p className="text-sm text-foreground-muted mb-6">
+          Assign a team member who is qualified to perform this service.
+        </p>
+
+        <TeamMemberSelector
+          serviceId={selectedService?.id}
+          value={assignedMemberId}
+          onChange={handleAssignedMemberChange}
+          label="Assigned Team Member"
+          helperText={
+            selectedService
+              ? "Only showing team members qualified for this service"
+              : "Select a service first to see qualified team members"
+          }
+          showUnqualified={false}
+        />
+
+        {/* Hidden input for form submission */}
+        <input type="hidden" name="assignedUserId" value={assignedMemberId || ""} />
       </div>
 
       {/* Notes */}

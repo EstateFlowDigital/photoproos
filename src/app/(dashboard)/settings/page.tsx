@@ -49,6 +49,12 @@ export default function SettingsPage() {
           icon={<CreditCardIcon className="h-5 w-5" />}
         />
         <SettingCard
+          title="Payments"
+          description="Connect Stripe to accept payments from clients"
+          href="/settings/payments"
+          icon={<StripeIcon className="h-5 w-5" />}
+        />
+        <SettingCard
           title="Team"
           description="Invite team members and manage permissions"
           href="/settings/team"
@@ -77,6 +83,12 @@ export default function SettingsPage() {
           description="Configure travel fees, mileage rates, and home base location"
           href="/settings/travel"
           icon={<CarIcon className="h-5 w-5" />}
+        />
+        <SettingCard
+          title="Equipment"
+          description="Manage your photography equipment inventory"
+          href="/settings/equipment"
+          icon={<CameraIcon className="h-5 w-5" />}
         />
       </div>
 
@@ -160,6 +172,14 @@ function CarIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M6.5 3c-1.051 0-2.093.04-3.125.117A1.49 1.49 0 002 4.607V10.5h-.5a.5.5 0 00-.5.5v2a.5.5 0 00.5.5H2v.5a1 1 0 001 1h1a1 1 0 001-1v-.5h10v.5a1 1 0 001 1h1a1 1 0 001-1v-.5h.5a.5.5 0 00.5-.5v-2a.5.5 0 00-.5-.5H18V4.607a1.49 1.49 0 00-1.375-1.49A49.214 49.214 0 0013.5 3h-7zM5 8a1 1 0 11-2 0 1 1 0 012 0zm12 0a1 1 0 11-2 0 1 1 0 012 0zM6.5 5h7a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-7a.5.5 0 01-.5-.5v-2a.5.5 0 01.5-.5z" />
+    </svg>
+  );
+}
+
+function CameraIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M1 8a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 8.07 3h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 16.07 6H17a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8Zm13.5 3a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM10 14a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clipRule="evenodd" />
     </svg>
   );
 }

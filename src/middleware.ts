@@ -1,26 +1,38 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // Public routes that don't require authentication
-// NOTE: Dashboard routes temporarily public for development/review
 const isPublicRoute = createRouteMatcher([
+  // Home and auth pages
   "/",
-  "/pricing",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/login(.*)",
   "/signup(.*)",
+
+  // Public gallery view (clients access their photos here)
+  "/g/(.*)",
+  "/api/gallery/(.*)",
+
+  // Webhooks (Stripe, Clerk, etc.)
   "/api/webhooks/(.*)",
-  "/g/(.*)", // Public gallery view
-  "/api/gallery/(.*)", // Public gallery API
-  "/dashboard(.*)", // TEMPORARY: Dashboard public for review
-  "/galleries(.*)", // TEMPORARY: Galleries public for review
-  "/clients(.*)", // TEMPORARY: Clients public for review
-  "/payments(.*)", // TEMPORARY: Payments public for review
-  "/scheduling(.*)", // TEMPORARY: Scheduling public for review
-  "/settings(.*)", // TEMPORARY: Settings public for review
-  "/invoices(.*)", // TEMPORARY: Invoices public for review
-  "/contracts(.*)", // TEMPORARY: Contracts public for review
-  "/analytics(.*)", // TEMPORARY: Analytics public for review
+
+  // Marketing pages
+  "/pricing",
+  "/features(.*)",
+  "/industries(.*)",
+  "/about",
+  "/contact",
+  "/careers",
+  "/press",
+  "/partners",
+  "/affiliates",
+  "/blog(.*)",
+  "/guides(.*)",
+  "/webinars(.*)",
+  "/changelog",
+  "/roadmap",
+  "/help(.*)",
+  "/legal(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

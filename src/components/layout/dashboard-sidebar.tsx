@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -115,18 +116,45 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
           );
         })}
 
-        {/* User info */}
-        <div className="mt-4 flex items-center gap-3 rounded-lg bg-[var(--background-secondary)] p-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-medium text-white">
-            JD
+        {/* Organization Switcher */}
+        <div className="mt-4 rounded-lg bg-[var(--background-secondary)] p-3">
+          <OrganizationSwitcher
+            appearance={{
+              elements: {
+                rootBox: "w-full",
+                organizationSwitcherTrigger:
+                  "w-full rounded-lg p-2 hover:bg-[var(--background-hover)] [&>span]:text-foreground",
+                organizationPreviewMainIdentifier: "text-sm font-medium text-foreground",
+                organizationPreviewSecondaryIdentifier: "text-xs text-foreground-muted",
+                organizationSwitcherPopoverCard:
+                  "bg-[var(--card)] border border-[var(--card-border)]",
+              },
+            }}
+            afterSelectOrganizationUrl="/dashboard"
+            afterCreateOrganizationUrl="/dashboard"
+          />
+        </div>
+
+        {/* User Button */}
+        <div className="mt-3 flex items-center gap-3 rounded-lg bg-[var(--background-secondary)] p-3">
+          <UserButton
+            appearance={{
+              elements: {
+                rootBox: "flex-shrink-0",
+                avatarBox: "h-9 w-9",
+                userButtonPopoverCard:
+                  "bg-[var(--card)] border border-[var(--card-border)]",
+                userButtonPopoverActionButton:
+                  "text-foreground hover:bg-[var(--background-hover)]",
+                userButtonPopoverActionButtonText: "text-foreground",
+                userButtonPopoverFooter: "hidden",
+              },
+            }}
+            afterSignOutUrl="/"
+          />
+          <div className="flex-1 min-w-0 hidden sm:block">
+            <p className="truncate text-xs text-foreground-muted">Signed in</p>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-foreground">John Doe</p>
-            <p className="truncate text-xs text-foreground-muted">Pro Plan</p>
-          </div>
-          <button className="rounded-md p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground">
-            <ChevronUpDownIcon className="h-4 w-4" />
-          </button>
         </div>
       </div>
     </aside>
@@ -190,10 +218,3 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
-function ChevronUpDownIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10.53 3.47a.75.75 0 0 0-1.06 0L6.22 6.72a.75.75 0 0 0 1.06 1.06L10 5.06l2.72 2.72a.75.75 0 1 0 1.06-1.06l-3.25-3.25Zm-4.31 9.81 3.25 3.25a.75.75 0 0 0 1.06 0l3.25-3.25a.75.75 0 1 0-1.06-1.06L10 14.94l-2.72-2.72a.75.75 0 0 0-1.06 1.06Z" clipRule="evenodd" />
-    </svg>
-  );
-}

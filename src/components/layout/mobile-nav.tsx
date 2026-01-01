@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -122,15 +123,46 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           })}
         </nav>
 
-        {/* User info */}
-        <div className="border-t border-[var(--card-border)] p-4">
+        {/* Organization & User */}
+        <div className="border-t border-[var(--card-border)] p-4 space-y-3">
+          {/* Organization Switcher */}
+          <div className="rounded-lg bg-[var(--background-secondary)] p-3">
+            <OrganizationSwitcher
+              appearance={{
+                elements: {
+                  rootBox: "w-full",
+                  organizationSwitcherTrigger:
+                    "w-full rounded-lg p-2 hover:bg-[var(--background-hover)] [&>span]:text-foreground",
+                  organizationPreviewMainIdentifier: "text-sm font-medium text-foreground",
+                  organizationPreviewSecondaryIdentifier: "text-xs text-foreground-muted",
+                  organizationSwitcherPopoverCard:
+                    "bg-[var(--card)] border border-[var(--card-border)]",
+                },
+              }}
+              afterSelectOrganizationUrl="/dashboard"
+              afterCreateOrganizationUrl="/dashboard"
+            />
+          </div>
+
+          {/* User Button */}
           <div className="flex items-center gap-3 rounded-lg bg-[var(--background-secondary)] p-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-medium text-white">
-              JD
-            </div>
+            <UserButton
+              appearance={{
+                elements: {
+                  rootBox: "flex-shrink-0",
+                  avatarBox: "h-9 w-9",
+                  userButtonPopoverCard:
+                    "bg-[var(--card)] border border-[var(--card-border)]",
+                  userButtonPopoverActionButton:
+                    "text-foreground hover:bg-[var(--background-hover)]",
+                  userButtonPopoverActionButtonText: "text-foreground",
+                  userButtonPopoverFooter: "hidden",
+                },
+              }}
+              afterSignOutUrl="/"
+            />
             <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">John Doe</p>
-              <p className="truncate text-xs text-foreground-muted">Pro Plan</p>
+              <p className="truncate text-xs text-foreground-muted">Signed in</p>
             </div>
           </div>
         </div>

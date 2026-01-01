@@ -74,6 +74,7 @@ enum ActivityType {
   gallery_created
   gallery_delivered
   gallery_viewed
+  gallery_paid
   payment_received
   payment_failed
   client_added
@@ -283,6 +284,7 @@ model Client {
   bookings       Booking[]
   invoices       Invoice[]
   contracts      Contract[]
+  payments       Payment[]
   clientSessions ClientSession[]
 
   @@unique([organizationId, email])
@@ -489,6 +491,7 @@ model Payment {
   organizationId String
   projectId      String?
   invoiceId      String?
+  clientId       String?
 
   // Amount
   amountCents Int
@@ -496,8 +499,9 @@ model Payment {
   status      PaymentStatus @default(pending)
 
   // Stripe
-  stripePaymentIntentId String? @unique
-  stripeChargeId        String?
+  stripePaymentIntentId    String? @unique
+  stripeCheckoutSessionId  String? @unique
+  stripeChargeId           String?
 
   // Client info
   clientEmail String?
@@ -515,10 +519,12 @@ model Payment {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   project      Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
   invoice      Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([projectId])
   @@index([invoiceId])
+  @@index([clientId])
   @@index([status])
   @@index([createdAt])
 }

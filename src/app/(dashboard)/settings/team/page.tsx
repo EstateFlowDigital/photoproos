@@ -93,6 +93,12 @@ export default async function TeamSettingsPage() {
                     <p className="text-sm text-foreground-muted">
                       Joined {new Date(member.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                     </p>
+                    <Link
+                      href={`/settings/team/${member.userId}/capabilities`}
+                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 transition-colors hover:bg-[var(--primary)]/20"
+                    >
+                      Skills & Equipment
+                    </Link>
                     {member.role !== "owner" && (
                       <button className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
                         <MoreIcon className="h-4 w-4" />

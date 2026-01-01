@@ -16,24 +16,16 @@ import {
   type GalleryFilters,
 } from "@/lib/validations/galleries";
 import type { ProjectStatus } from "@prisma/client";
+import { requireAuth, requireOrganizationId } from "./auth-helper";
 
 // Result type for server actions
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
-// Helper to get organization ID (simplified for now - will integrate with auth later)
+// Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
-  // TODO: Get from Clerk auth context
-  const org = await prisma.organization.findFirst({
-    orderBy: { createdAt: "asc" },
-  });
-
-  if (!org) {
-    throw new Error("No organization found");
-  }
-
-  return org.id;
+  return requireOrganizationId();
 }
 
 // Helper to log activity

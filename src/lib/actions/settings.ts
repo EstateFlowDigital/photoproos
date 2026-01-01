@@ -3,18 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { MemberRole } from "@prisma/client";
+import { requireAuth, requireOrganizationId } from "./auth-helper";
 
-// Helper to get organization ID (simplified for now - will integrate with auth later)
+// Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
-  const org = await prisma.organization.findFirst({
-    orderBy: { createdAt: "asc" },
-  });
-
-  if (!org) {
-    throw new Error("No organization found");
-  }
-
-  return org.id;
+  return requireOrganizationId();
 }
 
 // ============================================================================

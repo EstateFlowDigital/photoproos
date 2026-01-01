@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Team Capabilities & Equipment Management)
+- **Equipment Manager Page** (`/settings/equipment`):
+  - Full CRUD interface for managing photography equipment
+  - Equipment grouped by category (camera, lens, lighting, drone, etc.)
+  - Modal form for adding/editing equipment with name, description, and category
+  - User assignment display showing which team members have each equipment
+  - Empty states with helpful onboarding messages
+- **Team Capabilities Page** (`/settings/team/[id]/capabilities`):
+  - Manage team member service capabilities and equipment assignments
+  - Tabs for Skills and Equipment management
+  - Service skill levels: Learning, Capable, Expert with color-coded buttons
+  - Notes field for each service capability
+  - Equipment checkbox assignment for team members
+  - Real-time updates via server actions
+- **TeamMemberSelector Component** (`/components/dashboard/team-member-selector.tsx`):
+  - Dropdown selector for assigning team members to bookings
+  - Filters by qualified members based on service and skill level
+  - Shows equipment status (has required equipment or missing)
+  - Skill level badges with color coding
+  - Empty state when no qualified members
+  - Integrated into booking form with travel recalculation on change
+- **Invoice Server Actions** (`/lib/actions/invoices.ts`):
+  - `createInvoice` - Create invoice with line items
+  - `generateInvoiceFromBooking` - Auto-generate invoice from booking with service + travel fees
+  - `addTravelFeeToInvoice` - Add travel fee to existing draft invoice
+  - `getInvoice` / `getProjectInvoices` - Fetch invoices with line items
+  - `updateInvoiceStatus` - Change invoice status (draft/sent/paid/overdue/cancelled)
+  - `deleteInvoice` - Delete draft invoices
+  - `calculateTravelFeeForInvoice` - Get travel fee preview for invoice builder
+- **Settings Page Updates**:
+  - Added Equipment settings card with CameraIcon linking to `/settings/equipment`
+  - Added "Skills & Equipment" link to each team member row in team settings
+
 ### Added (Location & Team Features)
 - **Location Server Actions** (`/lib/actions/locations.ts`):
   - `createLocation` / `createLocationFromAddress` - Create locations with geocoding
