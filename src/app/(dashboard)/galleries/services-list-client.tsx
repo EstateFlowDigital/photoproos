@@ -142,40 +142,42 @@ export function ServicesListClient({ services }: ServicesListClientProps) {
       </div>
 
       {/* Category Filter */}
-      <div className="flex flex-wrap gap-2">
-        {categories.map((category) => {
-          const count = category.id === "all"
-            ? services.filter(s => showInactive || s.isActive).length
-            : services.filter(s => s.category === category.id && (showInactive || s.isActive)).length;
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex flex-wrap gap-2 flex-1">
+          {categories.map((category) => {
+            const count = category.id === "all"
+              ? services.filter(s => showInactive || s.isActive).length
+              : services.filter(s => s.category === category.id && (showInactive || s.isActive)).length;
 
-          return (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-                selectedCategory === category.id
-                  ? "bg-[var(--primary)] text-white"
-                  : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-              )}
-            >
-              {category.label}
-              <span
+            return (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
                 className={cn(
-                  "rounded-full px-1.5 py-0.5 text-xs",
+                  "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
                   selectedCategory === category.id
-                    ? "bg-white/20"
-                    : "bg-[var(--background-secondary)]"
+                    ? "bg-[var(--primary)] text-white"
+                    : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                 )}
               >
-                {count}
-              </span>
-            </button>
-          );
-        })}
+                {category.label}
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.5 text-xs",
+                    selectedCategory === category.id
+                      ? "bg-white/20"
+                      : "bg-[var(--background-secondary)]"
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
         {/* Show Inactive Toggle */}
-        <label className="ml-auto flex items-center gap-2 text-sm text-foreground-muted cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-foreground-muted cursor-pointer whitespace-nowrap">
           <input
             type="checkbox"
             checked={showInactive}
@@ -218,8 +220,8 @@ export function ServicesListClient({ services }: ServicesListClientProps) {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
-          <table className="w-full">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
+          <table className="w-full min-w-[600px]">
             <thead className="bg-[var(--background-secondary)] border-b border-[var(--card-border)]">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">

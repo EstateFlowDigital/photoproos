@@ -288,7 +288,7 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
 
       {/* Bulk Action Bar */}
       {isSelectMode && selectedGalleries.size > 0 && (
-        <div className="flex items-center justify-between rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3">
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-foreground">
               {selectedGalleries.size} gallery{selectedGalleries.size !== 1 ? "ies" : "y"} selected
@@ -300,34 +300,34 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
               {selectedGalleries.size === displayedGalleries.length ? "Deselect All" : "Select All"}
             </button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleBulkShare}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ShareIcon className="h-4 w-4" />
-              Share
+              <span className="hidden xs:inline">Share</span>
             </button>
             <button
               onClick={handleBulkExport}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ExportIcon className="h-4 w-4" />
-              Export
+              <span className="hidden xs:inline">Export</span>
             </button>
             <button
               onClick={handleBulkArchive}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ArchiveIcon className="h-4 w-4" />
-              Archive
+              <span className="hidden xs:inline">Archive</span>
             </button>
             <button
               onClick={handleBulkDelete}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
             >
               <TrashIcon className="h-4 w-4" />
-              Delete
+              <span className="hidden xs:inline">Delete</span>
             </button>
           </div>
         </div>
@@ -381,8 +381,8 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
-            <table className="w-full">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
+            <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="border-b border-[var(--card-border)]">
                   {isSelectMode && (

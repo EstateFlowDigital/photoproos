@@ -153,20 +153,20 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   };
 
   return (
-    <header
+    <div
       className={cn(
-        "flex h-16 items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-6",
+        "flex h-16 items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-4 lg:px-6",
         className
       )}
     >
       {/* Left side - Search */}
       <div className="flex flex-1 items-center gap-4">
-        <div ref={searchRef} className="relative max-w-md flex-1">
+        <div ref={searchRef} className="relative max-w-md flex-1 hidden sm:block">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted pointer-events-none z-10" />
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search galleries, clients, payments..."
+            placeholder="Search galleries, clients..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             onFocus={() => setSearchOpen(true)}
@@ -355,7 +355,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
         isOpen={shortcutsOpen}
         onClose={() => setShortcutsOpen(false)}
       />
-    </header>
+    </div>
   );
 }
 

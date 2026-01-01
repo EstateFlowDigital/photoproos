@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Mobile Navigation)
+- Created mobile navigation system for dashboard (`/components/layout/mobile-nav.tsx`)
+  - Slide-out sidebar with all navigation items
+  - Backdrop overlay with blur effect
+  - Close on route change (auto-navigate)
+  - Body scroll prevention when open
+  - Escape key to close
+  - MobileMenuButton hamburger component
+- Created client layout wrapper (`/components/layout/dashboard-layout-client.tsx`)
+  - Manages mobile menu open/close state
+  - Composes sidebar, topbar, and mobile navigation
+  - Responsive header with mobile menu button
+- Updated dashboard layout to use client wrapper
+
+### Added (Service Quick Actions)
+- Created ServiceQuickActions client component (`/components/dashboard/service-quick-actions.tsx`)
+  - Working "Duplicate Service" button with toast notifications
+  - Links to create gallery/booking with service ID in URL params
+  - Navigates to duplicated service page on success
+- Connected duplicate functionality to existing `duplicateService` server action
+
+### Fixed (Responsiveness)
+- Fixed services list table overflow on mobile with horizontal scroll
+- Fixed galleries list table overflow on mobile with horizontal scroll
+- Fixed category filter layout in services list (stacking on mobile)
+- Fixed "Show inactive" toggle layout (now wraps properly)
+- Fixed bulk action bar in galleries list (stacks on mobile, icon-only buttons on small screens)
+- Fixed service form action buttons (stack vertically on mobile)
+- Made dashboard topbar search hidden on extra small screens
+- Improved dashboard topbar flexibility with className prop
+
 ### Added (Services Management System - Full Implementation)
 - Created comprehensive Services Management System with database persistence
 - **Database Schema Updates:**

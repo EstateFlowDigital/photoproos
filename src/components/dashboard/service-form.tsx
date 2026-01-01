@@ -501,23 +501,23 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
       )}
 
       {/* Form Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           {mode === "edit" && !isDefault && (
             <button
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
-              className="rounded-lg border border-[var(--error)]/50 bg-transparent px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
+              className="w-full sm:w-auto rounded-lg border border-[var(--error)]/50 bg-transparent px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
             >
               {usageCount > 0 ? "Archive Service" : "Delete Service"}
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Link
             href="/galleries/services"
-            className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] text-center"
           >
             Cancel
           </Link>
