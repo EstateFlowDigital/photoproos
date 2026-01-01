@@ -182,8 +182,8 @@ export function FeaturesSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground-secondary">Everything you need to</span>{" "}
-            <span className="text-[var(--primary)]">run your photography business</span>
+            <span className="text-foreground">Everything you need to</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">run your photography business</span>
           </h2>
           <p
             className="mx-auto mt-4 max-w-2xl text-base text-foreground-secondary lg:text-lg"

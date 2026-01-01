@@ -113,8 +113,8 @@ export function IntegrationsSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground-secondary">Plays nice with</span>{" "}
-            <span className="text-[var(--primary)]">your favorite tools</span>
+            <span className="text-foreground">Plays nice with</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">your favorite tools</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"

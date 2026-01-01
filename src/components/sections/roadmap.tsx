@@ -166,8 +166,8 @@ export function RoadmapSection() {
             }}
           >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--warning)] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--warning)]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
               <span className="font-medium text-[var(--primary)]">New features</span> shipping monthly
@@ -182,8 +182,8 @@ export function RoadmapSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground-secondary">What's</span>{" "}
-            <span className="text-[var(--primary)]">coming next</span>
+            <span className="text-foreground">What's</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">coming next</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"

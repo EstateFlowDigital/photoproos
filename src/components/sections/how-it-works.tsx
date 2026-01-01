@@ -100,8 +100,8 @@ export function HowItWorksSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground-secondary">From shoot to</span>{" "}
-            <span className="text-[var(--primary)]">payment in minutes</span>
+            <span className="text-foreground">From shoot to</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">payment in minutes</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"

@@ -239,8 +239,8 @@ export function NoiseToKnowledgeSection() {
                 transitionDelay: "100ms",
               }}
             >
-              <span className="text-[var(--primary)]">Everything in one place.</span>{" "}
-              <span className="text-foreground-secondary">Finally simple.</span>
+              <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">Everything in one place.</span>{" "}
+              <span className="text-foreground">Finally simple.</span>
             </h2>
 
             <p

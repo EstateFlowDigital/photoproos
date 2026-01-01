@@ -86,8 +86,8 @@ export function SecuritySection() {
               }}
             >
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
               </span>
               <span className="text-sm text-foreground-secondary">
                 <span className="font-medium text-[var(--primary)]">SOC 2</span> certified security
@@ -102,8 +102,8 @@ export function SecuritySection() {
                 transitionDelay: "100ms",
               }}
             >
-              <span className="text-foreground-secondary">Your photos are</span>{" "}
-              <span className="text-[var(--primary)]">safe with us</span>
+              <span className="text-foreground">Your photos are</span>{" "}
+              <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">safe with us</span>
             </h2>
             <p
               className="mb-8 text-lg text-foreground-secondary"

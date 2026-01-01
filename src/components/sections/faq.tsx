@@ -142,8 +142,8 @@ export function FAQSection() {
                 transitionDelay: "100ms",
               }}
             >
-              <span className="text-foreground-secondary">Questions?</span>{" "}
-              <span className="text-[var(--primary)]">We've got answers.</span>
+              <span className="text-foreground">Questions?</span>{" "}
+              <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">We've got answers.</span>
             </h2>
             <p
               className="text-lg leading-relaxed text-foreground-secondary"

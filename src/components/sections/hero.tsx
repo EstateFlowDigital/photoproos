@@ -616,8 +616,8 @@ export function HeroSection() {
           {/* Badge */}
           <div className="hero-animate hero-animate-1 mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
               Now serving <span className="font-medium text-[var(--primary)]">2,500+</span> photographers
@@ -626,7 +626,7 @@ export function HeroSection() {
 
           {/* Main Heading - Two-tone style */}
           <h1 className="hero-animate hero-animate-2 text-[36px] font-medium leading-[42px] tracking-[-1px] md:text-[48px] md:leading-[54px] md:tracking-[-2px] lg:text-[56px] lg:leading-[62px]">
-            <span className="text-foreground-secondary">The Business OS for</span>{" "}
+            <span className="text-foreground">The Business OS for</span>{" "}
             <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">
               Professional Photographers
             </span>

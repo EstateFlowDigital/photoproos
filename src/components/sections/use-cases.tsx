@@ -209,8 +209,8 @@ export function UseCasesSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground-secondary">Built for</span>{" "}
-            <span className="text-[var(--primary)]">your photography vertical</span>
+            <span className="text-foreground">Built for</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">your photography vertical</span>
           </h2>
           <p
             className="mx-auto mt-4 max-w-2xl text-base text-foreground-secondary lg:text-lg"

@@ -163,8 +163,8 @@ export function TestimonialsSection() {
             }}
           >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
               Trusted by <span className="font-medium text-[var(--primary)]">2,500+</span> photographers
@@ -179,8 +179,8 @@ export function TestimonialsSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground-secondary">Real photographers.</span>{" "}
-            <span className="text-[var(--primary)]">Real results.</span>
+            <span className="text-foreground">Real photographers.</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">Real results.</span>
           </h2>
         </div>
 

@@ -184,8 +184,8 @@ export function PricingSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground-secondary">Simple,</span>{" "}
-            <span className="text-[var(--primary)]">transparent pricing</span>
+            <span className="text-foreground">Simple,</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">transparent pricing</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"
