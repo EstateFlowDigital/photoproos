@@ -28,12 +28,12 @@ const faqs: FAQItem[] = [
   },
   {
     question: "How do I migrate from my current gallery solution?",
-    answer: "We make switching easy. Import client data via CSV, and use our bulk uploader to transfer your existing galleries. Most photographers complete migration in under a day. Our support team is available to help if you get stuck—we've helped thousands of photographers switch from Pixieset, ShootProof, and others.",
+    answer: "We make switching easy. Import client data via CSV, and use our bulk uploader to transfer your existing galleries. Most photographers complete migration in under a day. Our support team is available to help if you get stuck—we're here to make your transition from Pixieset, ShootProof, or others as smooth as possible.",
     category: "getting-started",
   },
   {
     question: "Is there a limit on storage or number of galleries?",
-    answer: "Free accounts include 2GB of storage and up to 3 active galleries. Pro plans include 100GB with unlimited galleries, and Studio plans get 500GB. Enterprise customers receive unlimited storage. All plans support full-resolution uploads with no compression.",
+    answer: "Free accounts include 2GB of storage and up to 5 active galleries. Pro plans include 100GB with unlimited galleries, and Studio plans get 500GB. Enterprise customers receive unlimited storage. All plans support full-resolution uploads with no compression.",
     category: "pricing",
   },
   {

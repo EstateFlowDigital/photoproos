@@ -167,7 +167,7 @@ export function TestimonialsSection() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              Trusted by <span className="font-medium text-[var(--primary)]">2,500+</span> photographers
+              Built by photographers, <span className="font-medium text-[var(--primary)]">for photographers</span>
             </span>
           </div>
           <h2
@@ -318,24 +318,17 @@ export function TestimonialsSection() {
             transitionDelay: "400ms",
           }}
         >
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-8 w-8 rounded-full border-2 border-[var(--background)] bg-gradient-to-br from-blue-400 to-purple-400"
-                />
-              ))}
-            </div>
-            <span className="ml-2 text-sm text-foreground-secondary">2,500+ photographers</span>
+          <div className="flex items-center gap-2 text-sm text-foreground-secondary">
+            <CheckIcon className="h-5 w-5 text-[var(--success)]" />
+            <span>Free tier forever</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-foreground-secondary">
-            <StarIcon className="h-5 w-5 text-yellow-400" />
-            <span><strong className="text-foreground">4.9/5</strong> from 500+ reviews</span>
+            <CheckIcon className="h-5 w-5 text-[var(--success)]" />
+            <span>No credit card required</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-foreground-secondary">
             <ShieldIcon className="h-5 w-5 text-green-400" />
-            <span>SOC 2 Type II Certified</span>
+            <span>Bank-level security</span>
           </div>
         </div>
       </div>
@@ -352,10 +345,10 @@ function SpecialtyIcon({ className }: { className?: string }) {
   );
 }
 
-function StarIcon({ className }: { className?: string }) {
+function CheckIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
     </svg>
   );
 }

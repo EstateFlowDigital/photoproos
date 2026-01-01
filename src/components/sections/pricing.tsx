@@ -24,7 +24,7 @@ const pricingTiers: PricingTier[] = [
     period: "forever",
     description: "Perfect for getting started and trying out PhotoProOS.",
     features: [
-      "Up to 3 active galleries",
+      "Up to 5 active galleries",
       "Basic gallery themes",
       "Client portal access",
       "Email support",
@@ -340,7 +340,7 @@ export function PricingSection() {
 
 // Feature comparison data
 const comparisonFeatures = [
-  { name: "Active galleries", free: "3", pro: "Unlimited", studio: "Unlimited", enterprise: "Unlimited" },
+  { name: "Active galleries", free: "5", pro: "Unlimited", studio: "Unlimited", enterprise: "Unlimited" },
   { name: "Storage", free: "2 GB", pro: "100 GB", studio: "500 GB", enterprise: "Unlimited" },
   { name: "Custom branding", free: false, pro: true, studio: true, enterprise: true },
   { name: "Remove PhotoProOS branding", free: false, pro: true, studio: true, enterprise: true },

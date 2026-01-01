@@ -201,7 +201,7 @@ export function SecuritySection() {
           }}
         >
           <p className="mb-4 text-lg text-foreground">
-            <strong className="text-foreground">2,500+ photographers</strong> trust PhotoProOS with their work
+            <strong className="text-foreground">Your photos deserve enterprise-grade protection</strong>
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-foreground-muted">
             <span className="flex items-center gap-2">

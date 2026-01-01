@@ -657,11 +657,11 @@ export function HeroSection() {
           {/* Badge */}
           <div className="hero-animate hero-animate-1 mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              Now serving <span className="font-medium text-[var(--primary)] tabular-nums">{photographerCount.toLocaleString()}+</span> photographers
+              <span className="font-medium text-[var(--success)]">Now in beta</span> — Start free today
             </span>
           </div>
 
@@ -696,18 +696,19 @@ export function HeroSection() {
 
           {/* Social proof - Compact */}
           <div className="hero-animate hero-animate-5 mt-5 flex flex-wrap items-center justify-center gap-4">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <StarIcon key={i} className="h-3.5 w-3.5 text-[#fbbf24]" />
-              ))}
-              <span className="ml-1.5 text-xs text-foreground-secondary">
-                <span className="font-semibold text-foreground">4.9</span> from 500+ reviews
-              </span>
+            <div className="flex items-center gap-1.5">
+              <CheckCircleIcon className="h-3.5 w-3.5 text-[var(--success)]" />
+              <span className="text-xs text-foreground-secondary">No credit card required</span>
             </div>
             <div className="hidden h-3 w-px bg-[var(--border)] sm:block" />
             <div className="flex items-center gap-1.5">
               <CheckCircleIcon className="h-3.5 w-3.5 text-[var(--success)]" />
-              <span className="text-xs text-foreground-secondary">No credit card required</span>
+              <span className="text-xs text-foreground-secondary">5 free galleries included</span>
+            </div>
+            <div className="hidden h-3 w-px bg-[var(--border)] sm:block" />
+            <div className="flex items-center gap-1.5">
+              <CheckCircleIcon className="h-3.5 w-3.5 text-[var(--success)]" />
+              <span className="text-xs text-foreground-secondary">Cancel anytime</span>
             </div>
           </div>
         </div>

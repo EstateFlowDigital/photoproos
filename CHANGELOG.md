@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Core Pages - Real Data Connection)
+- **Clients Page** (`/clients/page.tsx`):
+  - Removed DEMO_MODE flag - now fetches real client data from database
+  - Shows project count and lifetime revenue from database
+  - Direct prisma import instead of dynamic import
+- **Payments Page** (`/payments/page.tsx`):
+  - Removed DEMO_MODE flag - now fetches real payment data from database
+  - Shows this month's revenue, pending and overdue totals from database
+  - Filter tabs show real counts by payment status
+- **Scheduling Page** (`/scheduling/page.tsx`):
+  - Removed DEMO_MODE flag - now fetches real booking data from database
+  - Mini calendar shows days with actual bookings
+  - Upcoming bookings list populated from database
+
 ### Added (Landing Page - Competitor Comparison)
 - **Comparison Section** (`/components/sections/comparison.tsx`):
   - New competitor comparison table showing PhotoProOS vs Pixieset, Pic-Time, HoneyBook
@@ -25,16 +39,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supports YouTube/Vimeo embeds when video URL provided
 - Updated Hero section "Watch demo" button to open video modal
 
-### Changed (Landing Page - Logos/Stats Section)
-- Updated stats from placeholder numbers to pre-launch messaging:
-  - "5 Free galleries to start" (was 2500+ photographers)
-  - "0% Platform fees on payments" (was $12M+ processed)
-  - "1 Platform for everything" (was 150k+ galleries)
-  - "24hr Gallery setup" (was 98% satisfaction)
-- Changed "Trusted by photographers at" section to "Built for every photography specialty"
-  - Now shows photography types as pills: Real Estate, Architecture, Commercial, Events, Portraits, Food & Product
-- Replaced fake awards/ratings with pre-launch benefits:
-  - "No credit card required", "Free tier forever", "Setup in minutes", "Cancel anytime"
+### Changed (Landing Page - Pre-Launch Consistency)
+- **Hero Section**:
+  - Changed badge from "Now serving 2,500+ photographers" to "Now in beta — Start free today"
+  - Replaced fake "4.9 from 500+ reviews" with benefit pills (No credit card, 5 free galleries, Cancel anytime)
+- **Logos/Stats Section**:
+  - Updated stats to pre-launch messaging (5 free galleries, 0% fees, 1 platform, 24hr setup)
+  - Changed "Trusted by photographers at" to "Built for every photography specialty" with specialty pills
+  - Replaced fake G2/Capterra ratings with launch benefits
+- **Testimonials Section**:
+  - Changed badge from "Trusted by 2,500+ photographers" to "Built by photographers, for photographers"
+  - Replaced fake review stats with benefit pills (Free tier, No credit card, Bank-level security)
+- **CTA Section**:
+  - Removed "Join 2,500+ photographers" claim
+  - Updated subheading to focus on platform benefits
+- **Security Section**:
+  - Removed "2,500+ photographers trust PhotoProOS" claim
+  - Updated to "Your photos deserve enterprise-grade protection"
+- **FAQ Section**:
+  - Removed "helped thousands of photographers switch" claim
+  - Updated storage limit from 3 to 5 galleries for consistency
+- **Pricing Section**:
+  - Updated free tier from 3 to 5 galleries for consistency across all sections
 
 ### Changed (Landing Page - Roadmap Section)
 - Restructured roadmap section from individual features to phased approach:

@@ -81,7 +81,7 @@ export function CTASection() {
               transitionDelay: "200ms",
             }}
           >
-            Join 2,500+ photographers who've upgraded from scattered tools to one unified platform.
+            Stop juggling Dropbox, PayPal, and spreadsheets. Get galleries, payments, clients, and scheduling in one platform.
             Start free, upgrade when you're ready.
           </p>
 
