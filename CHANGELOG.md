@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Cloudflare R2 File Upload Integration)
+- **R2 Storage Client** (`/lib/storage/r2.ts`):
+  - S3-compatible client configuration for Cloudflare R2
+  - Presigned URL generation for secure browser uploads
+  - File key generation with organization/gallery scoping
+  - Helper functions: `generateFileKey`, `getPublicUrl`, `isAllowedImageType`, `isValidFileSize`
+  - Batch presigned URL generation for multi-file uploads
+  - File deletion: `deleteFile`, `deleteFiles`, `deleteFolder`
+  - File metadata retrieval and existence checks
+- **Upload Server Actions** (`/lib/actions/uploads.ts`):
+  - `getUploadPresignedUrls` - Generate presigned URLs with gallery/org validation
+  - `createAsset` / `createAssets` - Create asset records after successful upload
+  - `deleteAsset` / `deleteAssets` - Delete assets from R2 and database
+  - `updateAssetUrls` - Update asset with processed image URLs (thumbnails, watermarks)
+  - Activity logging for all file operations
+- **Upload API Routes**:
+  - `POST /api/upload/presigned-url` - Get presigned URLs for browser uploads
+  - `POST /api/upload/complete` - Create asset records after upload completion
+  - Authentication via Clerk with organization scoping
+  - File type and size validation (JPEG, PNG, GIF, WEBP, HEIC - max 50MB)
+- **Photo Upload Modal** (`/components/upload/photo-upload-modal.tsx`):
+  - Now uses real R2 uploads via presigned URLs
+  - Real-time upload progress tracking using XMLHttpRequest
+  - Parallel file uploads with individual progress bars
+  - Abort/cancel upload support
+  - Error handling with retry capability
+  - Creates asset records in database after successful upload
+
+### Added (Payments CRUD - Real Data Connection)
+- **Payment Server Actions** (`/lib/actions/payments.ts`):
+  - `getPayment(id)` - Fetch single payment with project and client info
+  - `getPayments(filters?)` - Fetch all payments with status, client, and date filters
+  - `getPaymentStats()` - Get aggregated payment stats (paid, pending, overdue)
+  - `markPaymentAsPaid(id)` - Testing function for marking payments as paid
+
+### Changed (Detail Pages - Real Data Connection)
+- **Payment Detail Page** (`/payments/[id]/page.tsx`):
+  - Removed demo data - fetches real payment using getPayment action
+  - Shows real client info from payment.project.client
+  - Shows real gallery/project info from payment.project
+  - Added notFound() for missing payments
+  - Connected to real organization-scoped data
+- **New Client Page** (`/clients/new/page.tsx`):
+  - Removed demo mode banner - now fully functional
+  - Fetches real stats for sidebar (total clients, industry breakdown, total revenue)
+  - Uses new ClientNewForm component for form submission
+- **New Client Form** (`/clients/new/client-new-form.tsx`):
+  - New client component with full form state management
+  - Uses useTransition for loading states
+  - Calls createClient action on submit
+  - Handles error/success states with user feedback
+  - Option to create gallery after client creation
+  - Redirects to client profile or gallery creation on success
+
 ### Added (Client & Booking CRUD - Real Data Connection)
 - **Client Server Actions** (`/lib/actions/clients.ts`):
   - `getClient(id)` - Fetch single client with projects, bookings, payments, and activity logs

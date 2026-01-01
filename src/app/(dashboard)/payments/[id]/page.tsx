@@ -2,140 +2,8 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Demo payment data
-const demoPayments: Record<string, {
-  id: string;
-  description: string;
-  clientName: string;
-  clientEmail: string;
-  clientId: string;
-  projectName: string;
-  projectId: string;
-  amountCents: number;
-  feeCents: number;
-  netCents: number;
-  status: "paid" | "pending" | "overdue" | "refunded" | "failed";
-  paymentMethod: string;
-  last4: string;
-  stripePaymentIntentId: string | null;
-  createdAt: Date;
-  paidAt: Date | null;
-  timeline: { action: string; date: Date; description: string }[];
-}> = {
-  "1": {
-    id: "1",
-    description: "Downtown Luxury Listing - Photo Gallery",
-    clientName: "John Peterson",
-    clientEmail: "john@premierrealty.com",
-    clientId: "1",
-    projectName: "Downtown Luxury Listing",
-    projectId: "1",
-    amountCents: 425000,
-    feeCents: 12750,
-    netCents: 412250,
-    status: "paid",
-    paymentMethod: "Visa",
-    last4: "4242",
-    stripePaymentIntentId: "pi_3QMxxxxxxxxxxxxxR",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48),
-    paidAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    timeline: [
-      { action: "Payment completed", date: new Date(Date.now() - 1000 * 60 * 60 * 2), description: "Payment was successfully processed" },
-      { action: "Payment initiated", date: new Date(Date.now() - 1000 * 60 * 60 * 3), description: "Client initiated payment" },
-      { action: "Gallery delivered", date: new Date(Date.now() - 1000 * 60 * 60 * 48), description: "Gallery was delivered to client" },
-      { action: "Payment link created", date: new Date(Date.now() - 1000 * 60 * 60 * 48), description: "Payment link was generated" },
-    ],
-  },
-  "2": {
-    id: "2",
-    description: "Corporate Headshots Q4",
-    clientName: "Lisa Chen",
-    clientEmail: "admin@techsolutions.com",
-    clientId: "2",
-    projectName: "Corporate Headshots Q4",
-    projectId: "3",
-    amountCents: 218000,
-    feeCents: 0,
-    netCents: 218000,
-    status: "pending",
-    paymentMethod: "",
-    last4: "",
-    stripePaymentIntentId: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    paidAt: null,
-    timeline: [
-      { action: "Reminder sent", date: new Date(Date.now() - 1000 * 60 * 60 * 12), description: "Payment reminder email sent" },
-      { action: "Gallery delivered", date: new Date(Date.now() - 1000 * 60 * 60 * 24), description: "Gallery was delivered to client" },
-      { action: "Payment link created", date: new Date(Date.now() - 1000 * 60 * 60 * 24), description: "Payment link was generated" },
-    ],
-  },
-  "3": {
-    id: "3",
-    description: "Restaurant Grand Opening",
-    clientName: "Marco Rossi",
-    clientEmail: "info@bellacucina.com",
-    clientId: "3",
-    projectName: "Restaurant Grand Opening",
-    projectId: "4",
-    amountCents: 189000,
-    feeCents: 5670,
-    netCents: 183330,
-    status: "paid",
-    paymentMethod: "Mastercard",
-    last4: "5555",
-    stripePaymentIntentId: "pi_3QNyxxxxxxxxxxxxZ",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 72),
-    paidAt: new Date(Date.now() - 1000 * 60 * 60 * 48),
-    timeline: [
-      { action: "Payment completed", date: new Date(Date.now() - 1000 * 60 * 60 * 48), description: "Payment was successfully processed" },
-      { action: "Gallery delivered", date: new Date(Date.now() - 1000 * 60 * 60 * 72), description: "Gallery was delivered to client" },
-    ],
-  },
-  "6": {
-    id: "6",
-    description: "Product Launch Event",
-    clientName: "Alex Thompson",
-    clientEmail: "alex@innovatetech.io",
-    clientId: "7",
-    projectName: "Product Launch Event",
-    projectId: "6",
-    amountCents: 120000,
-    feeCents: 0,
-    netCents: 120000,
-    status: "overdue",
-    paymentMethod: "",
-    last4: "",
-    stripePaymentIntentId: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 168),
-    paidAt: null,
-    timeline: [
-      { action: "Payment overdue", date: new Date(Date.now() - 1000 * 60 * 60 * 24), description: "Payment is now 7 days overdue" },
-      { action: "Reminder sent", date: new Date(Date.now() - 1000 * 60 * 60 * 96), description: "Payment reminder email sent" },
-      { action: "Gallery delivered", date: new Date(Date.now() - 1000 * 60 * 60 * 168), description: "Gallery was delivered to client" },
-    ],
-  },
-};
-
-const defaultPayment = {
-  id: "0",
-  description: "Sample Payment",
-  clientName: "Demo Client",
-  clientEmail: "demo@example.com",
-  clientId: "0",
-  projectName: "Sample Gallery",
-  projectId: "0",
-  amountCents: 0,
-  feeCents: 0,
-  netCents: 0,
-  status: "pending" as const,
-  paymentMethod: "",
-  last4: "",
-  stripePaymentIntentId: null,
-  createdAt: new Date(),
-  paidAt: null,
-  timeline: [],
-};
+import { notFound } from "next/navigation";
+import { getPayment } from "@/lib/actions/payments";
 
 interface PaymentDetailPageProps {
   params: Promise<{ id: string }>;
@@ -143,7 +11,12 @@ interface PaymentDetailPageProps {
 
 export default async function PaymentDetailPage({ params }: PaymentDetailPageProps) {
   const { id } = await params;
-  const payment = demoPayments[id] || { ...defaultPayment, id };
+
+  const payment = await getPayment(id);
+
+  if (!payment) {
+    notFound();
+  }
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -172,7 +45,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
     }).format(date);
   };
 
-  const statusStyles = {
+  const statusStyles: Record<string, { bg: string; text: string; label: string }> = {
     paid: { bg: "bg-[var(--success)]/10", text: "text-[var(--success)]", label: "Paid" },
     pending: { bg: "bg-[var(--warning)]/10", text: "text-[var(--warning)]", label: "Pending" },
     overdue: { bg: "bg-[var(--error)]/10", text: "text-[var(--error)]", label: "Overdue" },
@@ -180,13 +53,26 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
     failed: { bg: "bg-[var(--error)]/10", text: "text-[var(--error)]", label: "Failed" },
   };
 
-  const status = statusStyles[payment.status];
+  const status = statusStyles[payment.status] || statusStyles.pending;
+
+  // Calculate days since creation for overdue display
+  const daysSinceCreation = Math.ceil((Date.now() - new Date(payment.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+
+  // Get client info from project
+  const client = payment.project?.client;
+  const clientName = client?.company || client?.fullName || "Unknown Client";
+  const clientEmail = client?.email || "";
+  const clientId = client?.id;
+
+  // Calculate fee (assuming 3% for demo - this would come from Stripe in production)
+  const feeCents = payment.status === "paid" ? Math.round(payment.amountCents * 0.03) : 0;
+  const netCents = payment.amountCents - feeCents;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Payment #${payment.id}`}
-        subtitle={payment.description}
+        title={`Payment #${payment.id.slice(0, 8)}`}
+        subtitle={payment.description || payment.project?.name || "Payment"}
         actions={
           <div className="flex items-center gap-3">
             <Link
@@ -212,13 +98,6 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
         }
       />
 
-      {/* Demo Mode Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Demo Mode:</strong> Viewing sample payment data. Actions are disabled.
-        </p>
-      </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -235,9 +114,11 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
               <div>
                 <p className={cn("font-semibold", status.text)}>{status.label}</p>
                 <p className="text-sm text-foreground-secondary">
-                  {payment.status === "paid" && `Paid on ${formatDate(payment.paidAt!)}`}
-                  {payment.status === "pending" && `Created on ${formatDate(payment.createdAt)}`}
-                  {payment.status === "overdue" && `${Math.ceil((Date.now() - payment.createdAt.getTime()) / (1000 * 60 * 60 * 24))} days overdue`}
+                  {payment.status === "paid" && payment.paidAt && `Paid on ${formatDate(new Date(payment.paidAt))}`}
+                  {payment.status === "pending" && `Created on ${formatDate(new Date(payment.createdAt))}`}
+                  {payment.status === "overdue" && `${daysSinceCreation} days overdue`}
+                  {payment.status === "refunded" && `Refunded`}
+                  {payment.status === "failed" && `Payment failed`}
                 </p>
               </div>
             </div>
@@ -258,20 +139,20 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
                 <div>
                   <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider mb-1">Processing Fee</p>
                   <p className="text-lg font-semibold text-foreground">
-                    {payment.feeCents > 0 ? `-${formatCurrency(payment.feeCents)}` : "--"}
+                    {feeCents > 0 ? `-${formatCurrency(feeCents)}` : "--"}
                   </p>
                 </div>
               </div>
               <hr className="border-[var(--card-border)]" />
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-foreground">Net Amount</p>
-                <p className="text-xl font-bold text-[var(--success)]">{formatCurrency(payment.netCents)}</p>
+                <p className="text-xl font-bold text-[var(--success)]">{formatCurrency(netCents)}</p>
               </div>
             </div>
           </div>
 
           {/* Payment Method */}
-          {payment.status === "paid" && payment.paymentMethod && (
+          {payment.status === "paid" && payment.stripePaymentIntentId && (
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Payment Method</h2>
               <div className="flex items-center gap-4">
@@ -279,8 +160,8 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
                   <CreditCardIcon className="h-6 w-6 text-foreground-muted" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">{payment.paymentMethod} •••• {payment.last4}</p>
-                  <p className="text-sm text-foreground-muted">Stripe Payment ID: {payment.stripePaymentIntentId}</p>
+                  <p className="font-medium text-foreground">Card Payment</p>
+                  <p className="text-sm text-foreground-muted">Stripe: {payment.stripePaymentIntentId}</p>
                 </div>
               </div>
             </div>
@@ -290,23 +171,33 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Activity</h2>
             <div className="space-y-4">
-              {payment.timeline.map((event, index) => (
-                <div key={index} className="flex gap-4">
+              {payment.status === "paid" && payment.paidAt && (
+                <div className="flex gap-4">
                   <div className="relative">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--background)]">
-                      <ActivityIcon className="h-4 w-4 text-foreground-muted" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--success)]/10">
+                      <CheckIcon className="h-4 w-4 text-[var(--success)]" />
                     </div>
-                    {index < payment.timeline.length - 1 && (
-                      <div className="absolute left-4 top-8 h-full w-px bg-[var(--card-border)]" />
-                    )}
+                    <div className="absolute left-4 top-8 h-full w-px bg-[var(--card-border)]" />
                   </div>
                   <div className="flex-1 pb-4">
-                    <p className="text-sm font-medium text-foreground">{event.action}</p>
-                    <p className="text-xs text-foreground-muted">{event.description}</p>
-                    <p className="mt-1 text-xs text-foreground-muted">{formatDateTime(event.date)}</p>
+                    <p className="text-sm font-medium text-foreground">Payment completed</p>
+                    <p className="text-xs text-foreground-muted">Payment was successfully processed</p>
+                    <p className="mt-1 text-xs text-foreground-muted">{formatDateTime(new Date(payment.paidAt))}</p>
                   </div>
                 </div>
-              ))}
+              )}
+              <div className="flex gap-4">
+                <div className="relative">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--background)]">
+                    <ActivityIcon className="h-4 w-4 text-foreground-muted" />
+                  </div>
+                </div>
+                <div className="flex-1 pb-4">
+                  <p className="text-sm font-medium text-foreground">Payment created</p>
+                  <p className="text-xs text-foreground-muted">Invoice was generated for this payment</p>
+                  <p className="mt-1 text-xs text-foreground-muted">{formatDateTime(new Date(payment.createdAt))}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -314,46 +205,50 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Client Info */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold">
-                {payment.clientName.charAt(0)}
+          {clientId && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold">
+                  {clientName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{clientName}</p>
+                  <p className="text-sm text-foreground-muted">{clientEmail}</p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-foreground">{payment.clientName}</p>
-                <p className="text-sm text-foreground-muted">{payment.clientEmail}</p>
-              </div>
+              <Link
+                href={`/clients/${clientId}`}
+                className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
+                View Client Profile
+                <ChevronRightIcon className="h-4 w-4" />
+              </Link>
             </div>
-            <Link
-              href={`/clients/${payment.clientId}`}
-              className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-            >
-              View Client Profile
-              <ChevronRightIcon className="h-4 w-4" />
-            </Link>
-          </div>
+          )}
 
           {/* Gallery Info */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Gallery</h2>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
-                <PhotoIcon className="h-5 w-5" />
+          {payment.project && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Gallery</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                  <PhotoIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{payment.project.name}</p>
+                  <p className="text-xs text-foreground-muted">Gallery</p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-foreground">{payment.projectName}</p>
-                <p className="text-xs text-foreground-muted">Gallery #{payment.projectId}</p>
-              </div>
+              <Link
+                href={`/galleries/${payment.project.id}`}
+                className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
+                View Gallery
+                <ChevronRightIcon className="h-4 w-4" />
+              </Link>
             </div>
-            <Link
-              href={`/galleries/${payment.projectId}`}
-              className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-            >
-              View Gallery
-              <ChevronRightIcon className="h-4 w-4" />
-            </Link>
-          </div>
+          )}
 
           {/* Quick Actions */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
@@ -399,8 +294,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
               </p>
               <button
                 type="button"
-                disabled
-                className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)] px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)] px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
               >
                 <RefundIcon className="h-4 w-4" />
                 Issue Refund
@@ -425,7 +319,7 @@ function ArrowLeftIcon({ className }: { className?: string }) {
 function ReceiptIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
     </svg>
   );
 }

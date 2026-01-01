@@ -10,12 +10,22 @@ interface UploadFile {
   progress: number;
   status: "pending" | "uploading" | "complete" | "error";
   error?: string;
+  key?: string; // R2 object key after upload
+  publicUrl?: string; // Public URL after upload
+}
+
+interface PresignedUrlFile {
+  filename: string;
+  key: string;
+  uploadUrl: string;
+  publicUrl: string;
+  expiresAt: string;
 }
 
 interface PhotoUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUploadComplete: (files: File[]) => void;
+  onUploadComplete: (files: Array<{ id: string; url: string; filename: string }>) => void;
   galleryId: string;
   galleryName: string;
 }
@@ -33,8 +43,10 @@ export function PhotoUploadModal({
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounterRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -42,7 +54,12 @@ export function PhotoUploadModal({
       setFiles([]);
       setIsDragging(false);
       setIsUploading(false);
+      setUploadError(null);
       dragCounterRef.current = 0;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
     }
   }, [isOpen]);
 
@@ -155,46 +172,208 @@ export function PhotoUploadModal({
     [addFiles]
   );
 
+  // Upload a single file to R2 using presigned URL
+  const uploadFileToR2 = async (
+    uploadFile: UploadFile,
+    presignedData: PresignedUrlFile,
+    signal: AbortSignal
+  ): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === uploadFile.id ? { ...f, progress } : f
+            )
+          );
+        }
+      });
+
+      xhr.addEventListener("load", () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    status: "complete" as const,
+                    progress: 100,
+                    key: presignedData.key,
+                    publicUrl: presignedData.publicUrl,
+                  }
+                : f
+            )
+          );
+          resolve();
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("Upload failed"));
+      });
+
+      xhr.addEventListener("abort", () => {
+        reject(new Error("Upload aborted"));
+      });
+
+      // Handle abort signal
+      signal.addEventListener("abort", () => {
+        xhr.abort();
+      });
+
+      xhr.open("PUT", presignedData.uploadUrl);
+      xhr.setRequestHeader("Content-Type", uploadFile.file.type);
+      xhr.send(uploadFile.file);
+    });
+  };
+
   const handleUpload = async () => {
     const validFiles = files.filter((f) => f.status === "pending");
     if (validFiles.length === 0) return;
 
     setIsUploading(true);
+    setUploadError(null);
+    abortControllerRef.current = new AbortController();
 
-    // Simulate upload with progress for demo
-    // In production, this would use presigned URLs to R2
-    for (const uploadFile of validFiles) {
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === uploadFile.id ? { ...f, status: "uploading" as const } : f
-        )
-      );
+    try {
+      // Step 1: Get presigned URLs from our API
+      const presignedResponse = await fetch("/api/upload/presigned-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          galleryId,
+          files: validFiles.map((f) => ({
+            filename: f.file.name,
+            contentType: f.file.type,
+            size: f.file.size,
+          })),
+        }),
+        signal: abortControllerRef.current.signal,
+      });
 
-      // Simulate upload progress
-      for (let progress = 0; progress <= 100; progress += 10) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadFile.id ? { ...f, progress } : f
-          )
-        );
+      const presignedResult = await presignedResponse.json();
+
+      if (!presignedResult.success) {
+        throw new Error(presignedResult.error || "Failed to get upload URLs");
       }
 
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === uploadFile.id ? { ...f, status: "complete" as const, progress: 100 } : f
-        )
+      const presignedFiles: PresignedUrlFile[] = presignedResult.data.files;
+
+      // Step 2: Upload each file to R2
+      const uploadPromises = validFiles.map(async (uploadFile, index) => {
+        const presignedData = presignedFiles[index];
+
+        // Mark as uploading
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === uploadFile.id ? { ...f, status: "uploading" as const } : f
+          )
+        );
+
+        try {
+          await uploadFileToR2(
+            uploadFile,
+            presignedData,
+            abortControllerRef.current!.signal
+          );
+        } catch (error) {
+          // Mark individual file as error
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    status: "error" as const,
+                    error: error instanceof Error ? error.message : "Upload failed",
+                  }
+                : f
+            )
+          );
+          throw error;
+        }
+      });
+
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
+
+      // Step 3: Confirm uploads and create asset records
+      const successfulFiles = files.filter(
+        (f) => f.status === "complete" || (validFiles.some((v) => v.id === f.id) && f.status !== "error")
       );
+
+      // Get the updated files with keys from state
+      const completedFiles = files.filter((f) => f.key && f.publicUrl);
+
+      if (completedFiles.length > 0) {
+        const completeResponse = await fetch("/api/upload/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            galleryId,
+            assets: completedFiles.map((f) => ({
+              key: f.key,
+              filename: f.file.name,
+              mimeType: f.file.type,
+              sizeBytes: f.file.size,
+            })),
+          }),
+          signal: abortControllerRef.current.signal,
+        });
+
+        const completeResult = await completeResponse.json();
+
+        if (!completeResult.success) {
+          console.error("Failed to confirm uploads:", completeResult.error);
+          // Don't throw - files are already in R2, just log the error
+        }
+
+        // Call completion handler with successful files
+        if (completeResult.success && completeResult.data?.assets) {
+          onUploadComplete(
+            completeResult.data.assets.map((asset: { id: string; originalUrl: string; filename: string }) => ({
+              id: asset.id,
+              url: asset.originalUrl,
+              filename: asset.filename,
+            }))
+          );
+        } else {
+          // Fallback: return file info even if DB save failed
+          onUploadComplete(
+            completedFiles.map((f) => ({
+              id: f.id,
+              url: f.publicUrl!,
+              filename: f.file.name,
+            }))
+          );
+        }
+      }
+
+      onClose();
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        // Upload was cancelled
+        return;
+      }
+
+      console.error("Upload error:", error);
+      setUploadError(
+        error instanceof Error ? error.message : "Upload failed. Please try again."
+      );
+    } finally {
+      setIsUploading(false);
+      abortControllerRef.current = null;
     }
+  };
 
-    setIsUploading(false);
-
-    // Call completion handler with successful files
-    const successfulFiles = files
-      .filter((f) => f.status === "pending" || f.status === "complete")
-      .map((f) => f.file);
-
-    onUploadComplete(successfulFiles);
+  const handleCancel = () => {
+    if (isUploading && abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
     onClose();
   };
 
@@ -237,7 +416,7 @@ export function PhotoUploadModal({
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleCancel}
             disabled={isUploading}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
           >
@@ -247,6 +426,19 @@ export function PhotoUploadModal({
 
         {/* Content */}
         <div className="overflow-y-auto p-6" style={{ maxHeight: "calc(90vh - 180px)" }}>
+          {/* Error Banner */}
+          {uploadError && (
+            <div className="mb-4 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-4">
+              <div className="flex items-start gap-3">
+                <ErrorIcon className="h-5 w-5 shrink-0 text-[var(--error)]" />
+                <div>
+                  <p className="text-sm font-medium text-[var(--error)]">Upload failed</p>
+                  <p className="mt-1 text-sm text-foreground-secondary">{uploadError}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Drop Zone */}
           <div
             onDragEnter={handleDragEnter}
@@ -356,6 +548,9 @@ export function PhotoUploadModal({
                               style={{ width: `${uploadFile.progress}%` }}
                             />
                           </div>
+                          <p className="mt-1 text-xs text-foreground-muted">
+                            {uploadFile.progress}%
+                          </p>
                         </div>
                       ) : uploadFile.status === "complete" ? (
                         <p className="text-xs text-[var(--success)]">Uploaded</p>
@@ -390,7 +585,7 @@ export function PhotoUploadModal({
           <div className="text-sm text-foreground-muted">
             {isUploading ? (
               <span>
-                Uploading {uploadingCount + completeCount} of {pendingCount + uploadingCount + completeCount}...
+                Uploading {completeCount} of {pendingCount + uploadingCount + completeCount}...
               </span>
             ) : errorCount > 0 ? (
               <span className="text-[var(--error)]">{errorCount} file(s) have errors</span>
@@ -402,11 +597,10 @@ export function PhotoUploadModal({
           </div>
           <div className="flex gap-3">
             <button
-              onClick={onClose}
-              disabled={isUploading}
-              className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              onClick={handleCancel}
+              className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
-              Cancel
+              {isUploading ? "Cancel" : "Close"}
             </button>
             <button
               onClick={handleUpload}
@@ -459,6 +653,14 @@ function CheckIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ErrorIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
     </svg>
   );
 }
