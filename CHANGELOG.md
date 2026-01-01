@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Location, Travel & Team Capabilities - Foundation)
+- **Database Schema Updates (Prisma):**
+  - Added `Location` model with Google Places integration (placeId, coordinates, address components)
+  - Added `PropertyDetails` model for real estate property data (beds, baths, sqft, MLS info)
+  - Added `Equipment` model for photography equipment tracking (cameras, lenses, drones, etc.)
+  - Added `UserEquipment` model for team member equipment assignments
+  - Added `UserServiceCapability` model for tracking which services team members can perform
+  - Added `ServiceEquipmentRequirement` model for service-to-equipment mapping
+  - New enums: `PropertyType`, `EquipmentCategory`, `CapabilityLevel`, `LineItemType`
+  - Updated `Organization` with travel fee settings (homeBaseLocationId, travelFeePerMile, travelFeeThreshold)
+  - Updated `User` with home base location override for per-member travel calculations
+  - Updated `Booking` with location reference, travel calculations (distanceMiles, travelTimeMinutes, travelFeeCents), weather cache, and team member assignment
+  - Updated `Project` with location reference for galleries
+  - Updated `InvoiceLineItem` with itemType and booking reference for travel fees
+- **Google Maps API Library** (`/lib/google-maps/`):
+  - `types.ts` - TypeScript types for Places, Geocoding, Distance Matrix APIs
+  - `client.ts` - API client configuration and URL builders
+  - `places.ts` - Places Autocomplete and Place Details functions
+  - `geocoding.ts` - Address geocoding and reverse geocoding
+  - `distance.ts` - Distance Matrix calculations, travel fee computation, formatting utilities
+  - `index.ts` - Centralized exports
+- **Environment Configuration:**
+  - Added `GOOGLE_MAPS_API_KEY` for server-side API calls
+  - Added `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` for client-side map embeds
+  - Added `OPENWEATHER_API_KEY` for weather forecasts
+  - Added `ATTOM_API_KEY` (optional) for property data lookups
+
 ### Added (Mobile Navigation)
 - Created mobile navigation system for dashboard (`/components/layout/mobile-nav.tsx`)
   - Slide-out sidebar with all navigation items
