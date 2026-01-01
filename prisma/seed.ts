@@ -1,6 +1,17 @@
+import "dotenv/config";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, ClientIndustry, ProjectStatus, PaymentStatus, BookingStatus, InvoiceStatus, ContractStatus, ActivityType, PlanName, MemberRole } from "@prisma/client";
 
-const prisma = new PrismaClient();
+// Create PostgreSQL connection pool
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is not set");
+}
+
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // Helper to generate random date within range
 function randomDate(start: Date, end: Date): Date {
