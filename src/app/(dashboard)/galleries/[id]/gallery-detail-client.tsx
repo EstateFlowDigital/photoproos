@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { useToast } from "@/components/ui/toast";
+import { PhotoUploadModal } from "@/components/upload/photo-upload-modal";
 
 interface Photo {
   id: string;
@@ -88,6 +89,8 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [notes, setNotes] = useState(gallery.notes || "");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [settings, setSettings] = useState<GallerySettings>(gallery.settings || defaultSettings);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [photos, setPhotos] = useState<Photo[]>(gallery.photos);
   const activity = gallery.activity || demoActivity;
 
   const statusStyles = {
@@ -117,7 +120,20 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   };
 
   const handleAddPhotos = () => {
-    showToast("Photo upload would open here", "info");
+    setUploadModalOpen(true);
+  };
+
+  const handleUploadComplete = (uploadedFiles: File[]) => {
+    // In production, this would receive the uploaded photo data from the API
+    // For demo, we'll create placeholder entries
+    const newPhotos: Photo[] = uploadedFiles.map((file, index) => ({
+      id: `new-${Date.now()}-${index}`,
+      url: URL.createObjectURL(file),
+      filename: file.name,
+    }));
+
+    setPhotos((prev) => [...prev, ...newPhotos]);
+    showToast(`${uploadedFiles.length} photo${uploadedFiles.length !== 1 ? "s" : ""} uploaded successfully`, "success");
   };
 
   const handleDownloadAll = () => {
@@ -221,8 +237,8 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   };
 
   // Limit photos shown initially
-  const displayedPhotos = showAllPhotos ? gallery.photos : gallery.photos.slice(0, 6);
-  const hasMorePhotos = gallery.photos.length > 6;
+  const displayedPhotos = showAllPhotos ? photos : photos.slice(0, 6);
+  const hasMorePhotos = photos.length > 6;
 
   // Demo invoice data
   const demoInvoices = gallery.status === "delivered" ? [
@@ -349,7 +365,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">
-                Photos <span className="text-foreground-muted font-normal">({gallery.photos.length})</span>
+                Photos <span className="text-foreground-muted font-normal">({photos.length})</span>
               </h2>
               <div className="flex items-center gap-2">
                 {hasMorePhotos && !showAllPhotos && (
@@ -371,7 +387,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               </div>
             </div>
 
-            {gallery.photos.length > 0 ? (
+            {photos.length > 0 ? (
               <>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {displayedPhotos.map((photo, index) => (
@@ -404,7 +420,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     onClick={() => setShowAllPhotos(true)}
                     className="mt-4 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
                   >
-                    Show all {gallery.photos.length} photos
+                    Show all {photos.length} photos
                   </button>
                 )}
 
@@ -843,12 +859,21 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
       {/* Image Lightbox */}
       <ImageLightbox
-        photos={gallery.photos}
+        photos={photos}
         initialIndex={lightboxIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
         onDownload={handlePhotoDownload}
         onDelete={handlePhotoDelete}
+      />
+
+      {/* Photo Upload Modal */}
+      <PhotoUploadModal
+        isOpen={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        onUploadComplete={handleUploadComplete}
+        galleryId={gallery.id}
+        galleryName={gallery.name}
       />
     </>
   );

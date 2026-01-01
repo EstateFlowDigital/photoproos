@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Photo Upload Modal)
+- Created `PhotoUploadModal` component (`src/components/upload/photo-upload-modal.tsx`)
+  - Drag-and-drop upload zone with visual feedback
+  - File input fallback for click-to-browse
+  - File type validation (JPG, PNG, GIF, WEBP, HEIC)
+  - File size validation (max 50MB per file)
+  - Preview grid showing selected files with thumbnails
+  - Upload progress indicators with animated progress bars
+  - Individual file removal before upload
+  - Error state display for invalid files
+  - Keyboard accessible (Escape to close)
+  - Prevents body scroll when open
+- Integrated PhotoUploadModal into gallery detail page
+  - "Add Photos" button now opens upload modal
+  - Uploaded photos appear immediately in gallery grid
+  - Success toast notification after upload completion
+  - Photos state managed locally (ready for API integration)
+
 ### Added (Service Selector & Pricing)
 - Created comprehensive photography services library (`src/lib/services.ts`)
   - 20+ predefined service packages across 7 categories
