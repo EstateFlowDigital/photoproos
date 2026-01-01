@@ -1,3 +1,5 @@
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
 declare global {
@@ -6,49 +8,47 @@ declare global {
 }
 
 /**
- * Create a PrismaClient instance with proper Accelerate support.
- * This function ensures environment variables are read at runtime.
+ * Create a singleton PrismaClient instance with PostgreSQL adapter.
+ * Prisma 7 requires an adapter for the default "client" engine type.
+ * In development, we use globalThis to preserve the client across hot reloads.
  */
-function createPrismaClient(): PrismaClient {
-  const databaseUrl = process.env.DATABASE_URL;
-  const isAccelerate = databaseUrl?.startsWith("prisma+");
-  const logLevel = process.env.NODE_ENV === "development"
-    ? ["query", "error", "warn"] as const
-    : ["error"] as const;
-
-  // For Prisma Accelerate, we must pass the accelerateUrl option
-  if (isAccelerate && databaseUrl) {
-    return new PrismaClient({
-      log: [...logLevel],
-      accelerateUrl: databaseUrl,
-    });
+function getPrismaClient(): PrismaClient {
+  if (globalThis.__prismaClient) {
+    return globalThis.__prismaClient;
   }
 
-  // Standard PrismaClient for direct database connections
-  return new PrismaClient({
-    log: [...logLevel],
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+
+  // Create a PostgreSQL connection pool
+  const pool = new Pool({
+    connectionString,
+    // Connection pool settings optimized for serverless
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
   });
+
+  // Create the Prisma adapter
+  const adapter = new PrismaPg(pool);
+
+  // Create PrismaClient with the adapter
+  const client = new PrismaClient({
+    adapter,
+    log: process.env.NODE_ENV === "development"
+      ? ["query", "error", "warn"]
+      : ["error"],
+  });
+
+  if (process.env.NODE_ENV !== "production") {
+    globalThis.__prismaClient = client;
+  }
+
+  return client;
 }
 
-/**
- * Lazy-initialized Prisma client using a Proxy.
- * This prevents PrismaClient instantiation during build time (module load).
- * The actual client is only created when first accessed at runtime.
- */
-export const prisma = new Proxy({} as PrismaClient, {
-  get(_target, prop) {
-    // Lazily create the client on first access
-    if (!globalThis.__prismaClient) {
-      globalThis.__prismaClient = createPrismaClient();
-    }
-    const client = globalThis.__prismaClient;
-    const value = (client as unknown as Record<string | symbol, unknown>)[prop];
-    // Bind functions to the client instance
-    if (typeof value === "function") {
-      return (value as (...args: unknown[]) => unknown).bind(client);
-    }
-    return value;
-  },
-});
-
+export const prisma = getPrismaClient();
 export default prisma;

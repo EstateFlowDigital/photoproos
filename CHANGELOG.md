@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (Prisma 7 Compatibility)
+- **Database Client** (`/lib/db.ts`):
+  - Updated to use `@prisma/adapter-pg` for Prisma 7 compatibility
+  - Added PostgreSQL connection pool with optimized settings
+  - Fixed "engine type client requires adapter" error in production builds
+- **Next.js Config** (`next.config.mjs`):
+  - Added `pg` to serverExternalPackages for proper Node.js module resolution
+- **Dependencies**:
+  - Added `@prisma/adapter-pg` for Prisma 7 driver adapter
+  - Added `pg` for PostgreSQL connection pooling
+
 ### Added (Settings Pages - Real Data Integration)
 - **Settings Server Actions** (`/lib/actions/settings.ts`):
   - `getOrganizationSettings()` - Fetch organization with home base location and members

@@ -1,0 +1,61 @@
+import { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Headshots & Portraits Photography | PhotoProOS",
+  description: "Professional portraits and team photography with individual delivery options and client-friendly galleries.",
+};
+
+const features = [
+  { title: "Individual Delivery", description: "Each person gets their own private gallery link." },
+  { title: "Team Packages", description: "Organize corporate headshot sessions by department." },
+  { title: "Retouching Workflow", description: "Track retouching requests and approvals." },
+  { title: "Print Ordering", description: "Enable clients to order prints directly from galleries." },
+  { title: "Selection Galleries", description: "Let clients choose their favorites before final edits." },
+  { title: "Instant Delivery", description: "Deliver web-ready portraits for LinkedIn and email." },
+];
+
+export default function PortraitsIndustryPage() {
+  return (
+    <main className="relative min-h-screen bg-background">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2" style={{ background: `radial-gradient(ellipse 80% 50% at 50% -20%, rgba(236, 72, 153, 0.12) 0%, transparent 50%)` }} />
+        </div>
+        <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-20 lg:px-[124px] lg:py-28">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-pink-500/20 bg-pink-500/5 px-4 py-1.5 text-sm font-medium text-pink-500">For Portrait Photographers</span>
+            <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">Headshots & Portraits</h1>
+            <p className="mb-8 text-lg text-foreground-secondary">Professional portraits and team photography with individual delivery options.</p>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">Start free trial</Link>
+              <Link href="/pricing" className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">View pricing</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+        <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Built for portrait photography</h2>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => (
+              <div key={feature.title} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>
+                <p className="text-sm text-foreground-secondary">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+        <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">Ready to grow your portrait business?</h2>
+          <p className="mb-8 text-foreground-secondary">Join professional portrait photographers using PhotoProOS.</p>
+          <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">Start free trial</Link>
+        </div>
+      </section>
+    </main>
+  );
+}
