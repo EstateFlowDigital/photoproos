@@ -1,0 +1,776 @@
+// PhotoProOS - The Business OS for Professional Photographers
+// Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum PlanName {
+  free
+  pro
+  studio
+}
+
+enum ProjectStatus {
+  draft
+  pending
+  delivered
+  archived
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+  overdue
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  completed
+  cancelled
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  overdue
+  cancelled
+}
+
+enum ContractStatus {
+  draft
+  sent
+  signed
+  expired
+  cancelled
+}
+
+enum ClientIndustry {
+  real_estate
+  wedding
+  portrait
+  commercial
+  architecture
+  food_hospitality
+  events
+  headshots
+  product
+  other
+}
+
+enum ActivityType {
+  gallery_created
+  gallery_delivered
+  gallery_viewed
+  payment_received
+  payment_failed
+  client_added
+  booking_created
+  booking_confirmed
+  invoice_sent
+  invoice_paid
+  contract_sent
+  contract_signed
+  email_sent
+  file_uploaded
+  settings_updated
+}
+
+enum NotificationType {
+  payment_received
+  gallery_viewed
+  contract_signed
+  booking_confirmed
+  invoice_overdue
+  system
+}
+
+enum MemberRole {
+  owner
+  admin
+  member
+}
+
+// ============================================================================
+// CORE MODELS
+// ============================================================================
+
+model Organization {
+  id                    String    @id @default(cuid())
+  clerkOrganizationId   String?   @unique
+  name                  String
+  slug                  String    @unique
+  plan                  PlanName  @default(free)
+
+  // Stripe
+  stripeCustomerId      String?   @unique
+  stripeSubscriptionId  String?
+  stripeConnectAccountId String?
+  stripeConnectOnboarded Boolean  @default(false)
+
+  // Branding
+  logoUrl               String?
+  primaryColor          String?   @default("#3b82f6")
+  secondaryColor        String?   @default("#8b5cf6")
+  customDomain          String?   @unique
+
+  // Settings
+  timezone              String    @default("America/New_York")
+  currency              String    @default("USD")
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  members               OrganizationMember[]
+  projects              Project[]
+  clients               Client[]
+  payments              Payment[]
+  bookings              Booking[]
+  bookingTypes          BookingType[]
+  invoices              Invoice[]
+  contracts             Contract[]
+  contractTemplates     ContractTemplate[]
+  activityLogs          ActivityLog[]
+  notifications         Notification[]
+  usageMeters           UsageMeter[]
+  onboardingProgress    OnboardingProgress?
+
+  @@index([slug])
+  @@index([plan])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  clerkUserId   String    @unique
+  email         String    @unique
+  fullName      String?
+  avatarUrl     String?
+  phone         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  memberships   OrganizationMember[]
+  activityLogs  ActivityLog[]
+
+  @@index([email])
+  @@index([clerkUserId])
+}
+
+model OrganizationMember {
+  id              String      @id @default(cuid())
+  organizationId  String
+  userId          String
+  role            MemberRole  @default(member)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+// ============================================================================
+// CLIENTS
+// ============================================================================
+
+model Client {
+  id                    String          @id @default(cuid())
+  organizationId        String
+  email                 String
+  fullName              String?
+  company               String?
+  phone                 String?
+  address               String?
+  industry              ClientIndustry  @default(other)
+  notes                 String?
+
+  // Metrics
+  lifetimeRevenueCents  Int             @default(0)
+  totalProjects         Int             @default(0)
+
+  // Portal access
+  portalAccessToken     String?         @unique
+  lastPortalAccess      DateTime?
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  // Relations
+  organization          Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projects              Project[]
+  bookings              Booking[]
+  invoices              Invoice[]
+  contracts             Contract[]
+  clientSessions        ClientSession[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+  @@index([industry])
+}
+
+model ClientSession {
+  id          String    @id @default(cuid())
+  clientId    String
+  token       String    @unique
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([token])
+}
+
+// ============================================================================
+// GALLERIES / PROJECTS
+// ============================================================================
+
+model Project {
+  id                  String          @id @default(cuid())
+  organizationId      String
+  clientId            String?
+  name                String
+  description         String?
+  status              ProjectStatus   @default(draft)
+
+  // Pricing
+  priceCents          Int             @default(0)
+  currency            String          @default("USD")
+
+  // Gallery Settings
+  coverImageUrl       String?
+  password            String?
+  expiresAt           DateTime?
+  allowDownloads      Boolean         @default(true)
+  showWatermark       Boolean         @default(false)
+
+  // Delivery
+  deliveredAt         DateTime?
+  viewCount           Int             @default(0)
+  downloadCount       Int             @default(0)
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  // Relations
+  organization        Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client              Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  assets              Asset[]
+  deliveryLinks       DeliveryLink[]
+  payments            Payment[]
+  favorites           GalleryFavorite[]
+  comments            GalleryComment[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Asset {
+  id              String    @id @default(cuid())
+  projectId       String
+
+  // File info
+  filename        String
+  originalUrl     String
+  thumbnailUrl    String?
+  mediumUrl       String?
+  watermarkedUrl  String?
+
+  // Metadata
+  mimeType        String
+  sizeBytes       Int
+  width           Int?
+  height          Int?
+
+  // EXIF data
+  exifData        Json?
+
+  // Ordering
+  sortOrder       Int       @default(0)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  favorites       GalleryFavorite[]
+
+  @@index([projectId])
+  @@index([sortOrder])
+}
+
+model DeliveryLink {
+  id          String    @id @default(cuid())
+  projectId   String
+  slug        String    @unique
+
+  // Settings
+  password    String?
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+
+  // Analytics
+  viewCount   Int       @default(0)
+  lastViewedAt DateTime?
+
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([slug])
+}
+
+model GalleryFavorite {
+  id          String    @id @default(cuid())
+  projectId   String
+  assetId     String
+  clientEmail String?
+  sessionId   String?
+
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  asset       Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, assetId, clientEmail])
+  @@index([projectId])
+  @@index([assetId])
+}
+
+model GalleryComment {
+  id          String    @id @default(cuid())
+  projectId   String
+  clientEmail String?
+  clientName  String?
+  content     String
+
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+// ============================================================================
+// PAYMENTS
+// ============================================================================
+
+model Payment {
+  id                      String          @id @default(cuid())
+  organizationId          String
+  projectId               String?
+  invoiceId               String?
+
+  // Amount
+  amountCents             Int
+  currency                String          @default("USD")
+  status                  PaymentStatus   @default(pending)
+
+  // Stripe
+  stripePaymentIntentId   String?         @unique
+  stripeChargeId          String?
+
+  // Client info
+  clientEmail             String?
+  clientName              String?
+
+  // Metadata
+  description             String?
+  receiptUrl              String?
+
+  paidAt                  DateTime?
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+
+  // Relations
+  organization            Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project                 Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  invoice                 Invoice?        @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([invoiceId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// BOOKINGS
+// ============================================================================
+
+model BookingType {
+  id              String    @id @default(cuid())
+  organizationId  String
+  name            String
+  description     String?
+  durationMinutes Int       @default(60)
+  priceCents      Int       @default(0)
+  color           String    @default("#3b82f6")
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+
+  @@index([organizationId])
+}
+
+model Booking {
+  id              String          @id @default(cuid())
+  organizationId  String
+  clientId        String?
+  bookingTypeId   String?
+
+  // Details
+  title           String
+  description     String?
+  status          BookingStatus   @default(pending)
+
+  // Time
+  startTime       DateTime
+  endTime         DateTime
+  timezone        String          @default("America/New_York")
+
+  // Client info (for non-registered clients)
+  clientName      String?
+  clientEmail     String?
+  clientPhone     String?
+
+  // Location
+  location        String?
+  isVirtual       Boolean         @default(false)
+  meetingUrl      String?
+
+  // Notes
+  notes           String?
+  internalNotes   String?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client          Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  bookingType     BookingType?    @relation(fields: [bookingTypeId], references: [id], onDelete: SetNull)
+  reminders       BookingReminder[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([startTime])
+  @@index([status])
+}
+
+model BookingReminder {
+  id          String    @id @default(cuid())
+  bookingId   String
+  sendAt      DateTime
+  sent        Boolean   @default(false)
+  sentAt      DateTime?
+
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([sendAt])
+}
+
+// ============================================================================
+// INVOICES
+// ============================================================================
+
+model Invoice {
+  id              String          @id @default(cuid())
+  organizationId  String
+  clientId        String?
+  invoiceNumber   String
+
+  // Status
+  status          InvoiceStatus   @default(draft)
+
+  // Amounts
+  subtotalCents   Int             @default(0)
+  taxCents        Int             @default(0)
+  discountCents   Int             @default(0)
+  totalCents      Int             @default(0)
+  currency        String          @default("USD")
+
+  // Dates
+  issueDate       DateTime        @default(now())
+  dueDate         DateTime
+  paidAt          DateTime?
+
+  // Client info
+  clientName      String?
+  clientEmail     String?
+  clientAddress   String?
+
+  // Notes
+  notes           String?
+  terms           String?
+
+  // Payment link
+  stripePaymentLinkId String?
+  paymentLinkUrl  String?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client          Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  lineItems       InvoiceLineItem[]
+  payments        Payment[]
+
+  @@unique([organizationId, invoiceNumber])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model InvoiceLineItem {
+  id          String    @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Int       @default(1)
+  unitCents   Int
+  totalCents  Int
+  sortOrder   Int       @default(0)
+
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  invoice     Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+// ============================================================================
+// CONTRACTS
+// ============================================================================
+
+model ContractTemplate {
+  id              String    @id @default(cuid())
+  organizationId  String
+  name            String
+  description     String?
+  content         String    @db.Text
+  isDefault       Boolean   @default(false)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contracts       Contract[]
+
+  @@index([organizationId])
+}
+
+model Contract {
+  id              String          @id @default(cuid())
+  organizationId  String
+  clientId        String?
+  templateId      String?
+
+  // Details
+  name            String
+  content         String          @db.Text
+  status          ContractStatus  @default(draft)
+
+  // Metadata
+  pdfUrl          String?
+
+  // Dates
+  sentAt          DateTime?
+  signedAt        DateTime?
+  expiresAt       DateTime?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client          Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  template        ContractTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  signers         ContractSigner[]
+  auditLogs       ContractAuditLog[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+}
+
+model ContractSigner {
+  id              String    @id @default(cuid())
+  contractId      String
+  email           String
+  name            String?
+
+  // Signing
+  signatureUrl    String?
+  signedAt        DateTime?
+  signedIp        String?
+  signedUserAgent String?
+
+  // Token for signing
+  signingToken    String    @unique
+  tokenExpiresAt  DateTime?
+
+  sortOrder       Int       @default(0)
+
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  contract        Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([signingToken])
+}
+
+model ContractAuditLog {
+  id          String    @id @default(cuid())
+  contractId  String
+  action      String
+  actorEmail  String?
+  actorIp     String?
+  metadata    Json?
+
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// ACTIVITY & NOTIFICATIONS
+// ============================================================================
+
+model ActivityLog {
+  id              String        @id @default(cuid())
+  organizationId  String
+  userId          String?
+  type            ActivityType
+  description     String
+  metadata        Json?
+
+  // Related entities
+  projectId       String?
+  clientId        String?
+  paymentId       String?
+  bookingId       String?
+  invoiceId       String?
+  contractId      String?
+
+  createdAt       DateTime      @default(now())
+
+  // Relations
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Notification {
+  id              String            @id @default(cuid())
+  organizationId  String
+  type            NotificationType
+  title           String
+  message         String
+  linkUrl         String?
+  read            Boolean           @default(false)
+  readAt          DateTime?
+
+  createdAt       DateTime          @default(now())
+
+  // Relations
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// USAGE & METERING
+// ============================================================================
+
+model UsageMeter {
+  id                String    @id @default(cuid())
+  organizationId    String
+  month             String    // "2025-01" format
+
+  // Usage counts
+  storageBytes      BigInt    @default(0)
+  galleriesCreated  Int       @default(0)
+  emailsSent        Int       @default(0)
+  apiCalls          Int       @default(0)
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, month])
+  @@index([organizationId])
+  @@index([month])
+}
+
+model OnboardingProgress {
+  id                    String    @id @default(cuid())
+  organizationId        String    @unique
+
+  // Steps
+  profileComplete       Boolean   @default(false)
+  brandingComplete      Boolean   @default(false)
+  firstGalleryCreated   Boolean   @default(false)
+  stripeConnected       Boolean   @default(false)
+
+  completedAt           DateTime?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
