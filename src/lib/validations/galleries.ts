@@ -24,22 +24,28 @@ export const gallerySchema = z.object({
     .transform((val) => val || null),
   clientId: z
     .string()
-    .cuid("Invalid client ID")
     .optional()
     .nullable()
-    .transform((val) => val || null),
+    .transform((val) => val || null)
+    .refine((val) => val === null || /^[cC][^\s-]{8,}$/.test(val), {
+      message: "Invalid client ID",
+    }),
   serviceId: z
     .string()
-    .cuid("Invalid service ID")
     .optional()
     .nullable()
-    .transform((val) => val || null),
+    .transform((val) => val || null)
+    .refine((val) => val === null || /^[cC][^\s-]{8,}$/.test(val), {
+      message: "Invalid service ID",
+    }),
   locationId: z
     .string()
-    .cuid("Invalid location ID")
     .optional()
     .nullable()
-    .transform((val) => val || null),
+    .transform((val) => val || null)
+    .refine((val) => val === null || /^[cC][^\s-]{8,}$/.test(val), {
+      message: "Invalid location ID",
+    }),
   status: projectStatusSchema.default("draft"),
   // Pricing
   priceCents: z
