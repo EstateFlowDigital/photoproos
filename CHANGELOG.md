@@ -28,6 +28,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `geocoding.ts` - Address geocoding and reverse geocoding
   - `distance.ts` - Distance Matrix calculations, travel fee computation, formatting utilities
   - `index.ts` - Centralized exports
+- **Weather API Library** (`/lib/weather/`):
+  - `types.ts` - TypeScript types for weather forecasts, golden hour, photo conditions
+  - `client.ts` - OpenWeather API client configuration
+  - `forecast.ts` - Current weather, 5-day forecasts, hourly forecasts, photo condition analysis
+  - `golden-hour.ts` - Sunrise/sunset calculations, golden hour times, local fallback calculations
+  - `index.ts` - Centralized exports
+- **UI Components** (`/components/ui/`):
+  - `AddressAutocomplete` - Google Places autocomplete input with session tokens for billing optimization
+  - `MapPreview` - Static and embedded Google Maps preview with directions link
+  - `MapPreviewCard` - Card wrapper with distance and travel time display
+- **Dashboard Components** (`/components/dashboard/`):
+  - `TravelInfoCard` - Distance, travel time, and travel fee display with breakdown
+  - `TravelInfoCompact` - Compact inline version for tables/lists
+  - `TravelFeeBadge` - Badge showing travel fee or "free" for line items
+  - `WeatherForecastCard` - Weather forecast with photo condition ratings
+  - `WeatherForecastCompact` - Compact inline version for tables/lists
+  - `GoldenHourBadge` - Badge showing if shoot time is during golden hour
 - **Environment Configuration:**
   - Added `GOOGLE_MAPS_API_KEY` for server-side API calls
   - Added `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` for client-side map embeds
