@@ -51,6 +51,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `OPENWEATHER_API_KEY` for weather forecasts
   - Added `ATTOM_API_KEY` (optional) for property data lookups
 
+### Added (Smart Invoicing - Travel Fee Integration)
+- **InvoiceBuilder Enhancements** (`/components/dashboard/invoice-builder.tsx`):
+  - Added `LineItemType` enum: `service`, `travel`, `custom`, `discount`, `tax`
+  - Added `TravelFeeInput` interface for travel fee calculation parameters
+  - Added "Add Travel Fee" button with travel fee calculation
+  - Added travel fee line items with automatic calculation (distance × rate - threshold)
+  - Added visual badges for line item types (Travel, Discount, Tax)
+  - Updated line item display with type-specific styling
+
+### Added (Travel Settings Page)
+- Created `/settings/travel` page for travel & mileage configuration:
+  - Home base address configuration with `AddressAutocomplete` integration
+  - `MapPreview` showing current home base location
+  - Free travel threshold setting (miles within which travel is free)
+  - Per-mile rate configuration with IRS rate reference ($0.67/mile for 2024)
+  - Auto-calculate travel fees toggle for new bookings
+  - Live fee calculator preview using `TravelInfoCard`
+  - Example calculations table showing fees at 5, 15, 25, and 50 miles
+  - Team member override information with link to team settings
+  - Demo mode banner (settings not persisted without database)
+- Added Travel & Mileage card to main settings page (`/settings`)
+
 ### Added (Mobile Navigation)
 - Created mobile navigation system for dashboard (`/components/layout/mobile-nav.tsx`)
   - Slide-out sidebar with all navigation items

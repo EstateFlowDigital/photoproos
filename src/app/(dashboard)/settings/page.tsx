@@ -72,6 +72,12 @@ export default function SettingsPage() {
           href="/settings/integrations"
           icon={<PlugIcon className="h-5 w-5" />}
         />
+        <SettingCard
+          title="Travel & Mileage"
+          description="Configure travel fees, mileage rates, and home base location"
+          href="/settings/travel"
+          icon={<CarIcon className="h-5 w-5" />}
+        />
       </div>
 
       {/* Danger Zone */}
@@ -146,6 +152,14 @@ function ChevronRightIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M6.5 3c-1.051 0-2.093.04-3.125.117A1.49 1.49 0 002 4.607V10.5h-.5a.5.5 0 00-.5.5v2a.5.5 0 00.5.5H2v.5a1 1 0 001 1h1a1 1 0 001-1v-.5h10v.5a1 1 0 001 1h1a1 1 0 001-1v-.5h.5a.5.5 0 00.5-.5v-2a.5.5 0 00-.5-.5H18V4.607a1.49 1.49 0 00-1.375-1.49A49.214 49.214 0 0013.5 3h-7zM5 8a1 1 0 11-2 0 1 1 0 012 0zm12 0a1 1 0 11-2 0 1 1 0 012 0zM6.5 5h7a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-7a.5.5 0 01-.5-.5v-2a.5.5 0 01.5-.5z" />
     </svg>
   );
 }

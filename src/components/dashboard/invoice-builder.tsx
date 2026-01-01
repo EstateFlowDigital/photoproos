@@ -11,20 +11,34 @@ import {
 } from "@/lib/services";
 
 // Variable pricing types
-export type PricingType = "fixed" | "per_sqft" | "per_item" | "per_hour" | "per_person";
+export type PricingType = "fixed" | "per_sqft" | "per_item" | "per_hour" | "per_person" | "per_mile";
+
+// Line item types matching database enum
+export type LineItemType = "service" | "travel" | "custom" | "discount" | "tax";
 
 export interface LineItem {
   id: string;
-  type: "service" | "custom" | "variable";
+  type: LineItemType;
   serviceId?: string;
+  bookingId?: string; // Link to booking for travel fees
   name: string;
   description?: string;
   category?: ServiceCategory;
   unitPrice: number; // in cents
   quantity: number;
   pricingType: PricingType;
-  pricingUnit?: string; // e.g., "sq ft", "item", "hour"
+  pricingUnit?: string; // e.g., "sq ft", "item", "hour", "miles"
   subtotal: number; // calculated: unitPrice * quantity
+  // Travel-specific fields
+  distanceMiles?: number;
+  freeThresholdMiles?: number;
+}
+
+export interface TravelFeeInput {
+  distanceMiles: number;
+  feePerMileCents: number;
+  freeThresholdMiles: number;
+  bookingId?: string;
 }
 
 interface InvoiceBuilderProps {
@@ -32,6 +46,9 @@ interface InvoiceBuilderProps {
   onLineItemsChange: (items: LineItem[]) => void;
   disabled?: boolean;
   showCategoryFilter?: boolean;
+  // Travel fee integration
+  travelFeeInfo?: TravelFeeInput | null;
+  showTravelFeeButton?: boolean;
 }
 
 const pricingTypes: { value: PricingType; label: string; unit: string }[] = [
@@ -47,6 +64,8 @@ export function InvoiceBuilder({
   onLineItemsChange,
   disabled = false,
   showCategoryFilter = true,
+  travelFeeInfo,
+  showTravelFeeButton = false,
 }: InvoiceBuilderProps) {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | "all">("all");
   const [showServicePicker, setShowServicePicker] = useState(false);
@@ -67,6 +86,9 @@ export function InvoiceBuilder({
   // Check if a service is already added
   const isServiceAdded = (serviceId: string) =>
     lineItems.some((item) => item.serviceId === serviceId);
+
+  // Check if travel fee is already added
+  const hasTravelFee = lineItems.some((item) => item.type === "travel");
 
   // Calculate totals
   const subtotal = lineItems.reduce((sum, item) => sum + item.subtotal, 0);
@@ -115,7 +137,7 @@ export function InvoiceBuilder({
 
     const newItem: LineItem = {
       id: `custom-${Date.now()}`,
-      type: customItem.pricingType === "fixed" ? "custom" : "variable",
+      type: "custom",
       name: customItem.name,
       description: customItem.description,
       unitPrice: customItem.unitPrice || 0,
@@ -135,6 +157,37 @@ export function InvoiceBuilder({
     });
     setShowCustomForm(false);
   };
+
+  // Add travel fee line item
+  const addTravelFee = () => {
+    if (!travelFeeInfo || hasTravelFee) return;
+
+    const { distanceMiles, feePerMileCents, freeThresholdMiles, bookingId } = travelFeeInfo;
+    const billableMiles = Math.max(0, distanceMiles - freeThresholdMiles);
+    const travelFeeCents = Math.round(billableMiles * feePerMileCents);
+
+    if (travelFeeCents === 0) return; // No fee if within free threshold
+
+    const newItem: LineItem = {
+      id: `travel-${Date.now()}`,
+      type: "travel",
+      bookingId,
+      name: "Travel Fee",
+      description: `${distanceMiles.toFixed(1)} miles from home base (${freeThresholdMiles} mi free)`,
+      unitPrice: feePerMileCents,
+      quantity: billableMiles,
+      pricingType: "per_mile",
+      pricingUnit: "miles",
+      subtotal: travelFeeCents,
+      distanceMiles,
+      freeThresholdMiles,
+    };
+
+    onLineItemsChange([...lineItems, newItem]);
+  };
+
+  // Calculate if travel fee would be billable
+  const travelFeeBillable = travelFeeInfo && travelFeeInfo.distanceMiles > travelFeeInfo.freeThresholdMiles;
 
   return (
     <div className="space-y-6">
@@ -176,6 +229,23 @@ export function InvoiceBuilder({
           <PlusIcon className="h-4 w-4" />
           Add Custom Item
         </button>
+        {showTravelFeeButton && travelFeeInfo && travelFeeBillable && (
+          <button
+            type="button"
+            onClick={addTravelFee}
+            disabled={disabled || hasTravelFee}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all",
+              hasTravelFee
+                ? "border-[var(--success)]/30 bg-[var(--success)]/10 text-[var(--success)] cursor-not-allowed"
+                : "border-[var(--card-border)] text-foreground hover:border-[var(--primary)] hover:bg-[var(--primary)]/5",
+              disabled && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <CarIcon className="h-4 w-4" />
+            {hasTravelFee ? "Travel Fee Added" : `Add Travel Fee ($${(Math.round(Math.max(0, travelFeeInfo.distanceMiles - travelFeeInfo.freeThresholdMiles) * travelFeeInfo.feePerMileCents) / 100).toFixed(2)})`}
+          </button>
+        )}
       </div>
 
       {/* Service Picker */}
@@ -417,14 +487,25 @@ export function InvoiceBuilder({
                           {categoryInfo.label}
                         </span>
                       )}
+                      {item.type === "travel" && (
+                        <span className="rounded-full bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400 inline-flex items-center gap-1">
+                          <CarIcon className="h-2.5 w-2.5" />
+                          Travel
+                        </span>
+                      )}
                       {item.type === "custom" && (
                         <span className="rounded-full bg-gray-500/10 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
                           Custom
                         </span>
                       )}
-                      {item.type === "variable" && (
-                        <span className="rounded-full bg-purple-500/10 px-1.5 py-0.5 text-[10px] font-medium text-purple-400">
-                          Variable
+                      {item.type === "discount" && (
+                        <span className="rounded-full bg-green-500/10 px-1.5 py-0.5 text-[10px] font-medium text-green-400">
+                          Discount
+                        </span>
+                      )}
+                      {item.type === "tax" && (
+                        <span className="rounded-full bg-orange-500/10 px-1.5 py-0.5 text-[10px] font-medium text-orange-400">
+                          Tax
                         </span>
                       )}
                     </div>
@@ -528,10 +609,18 @@ export function InvoiceSummary({ lineItems, className, showEdit, onEdit }: Invoi
         {lineItems.map((item) => (
           <div key={item.id} className="px-4 py-2.5 flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground truncate">{item.name}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-foreground truncate">{item.name}</p>
+                {item.type === "travel" && (
+                  <span className="rounded-full bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400 inline-flex items-center gap-1 shrink-0">
+                    <CarIcon className="h-2.5 w-2.5" />
+                    Travel
+                  </span>
+                )}
+              </div>
               {item.pricingType !== "fixed" && (
                 <p className="text-xs text-foreground-muted">
-                  {item.quantity} {item.pricingUnit} × {formatServicePrice(item.unitPrice)}
+                  {item.type === "travel" ? item.quantity.toFixed(1) : item.quantity} {item.pricingUnit} × {formatServicePrice(item.unitPrice)}
                 </p>
               )}
             </div>
@@ -598,6 +687,14 @@ function EditIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
       <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
+    </svg>
+  );
+}
+
+function CarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M6.5 3c-1.051 0-2.093.04-3.125.117A1.49 1.49 0 002 4.607V10.5h-.5a.5.5 0 00-.5.5v2a.5.5 0 00.5.5H2v.5a1 1 0 001 1h1a1 1 0 001-1v-.5h10v.5a1 1 0 001 1h1a1 1 0 001-1v-.5h.5a.5.5 0 00.5-.5v-2a.5.5 0 00-.5-.5H18V4.607a1.49 1.49 0 00-1.375-1.49A49.214 49.214 0 0013.5 3h-7zM5 8a1 1 0 11-2 0 1 1 0 012 0zm12 0a1 1 0 11-2 0 1 1 0 012 0zM6.5 5h7a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-7a.5.5 0 01-.5-.5v-2a.5.5 0 01.5-.5z" />
     </svg>
   );
 }
