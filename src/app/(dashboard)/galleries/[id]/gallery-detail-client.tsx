@@ -187,10 +187,27 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [coverPhotoId, setCoverPhotoId] = useState<string | null>(photos[0]?.id || null);
   const [favoritePhotos, setFavoritePhotos] = useState<Set<string>>(new Set());
   const [showCommentsPanel, setShowCommentsPanel] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [comments, setComments] = useState<PhotoComment[]>(demoComments);
   const [photoFilter, setPhotoFilter] = useState<"all" | "favorites" | "commented">("all");
   const [isReorderMode, setIsReorderMode] = useState(false);
   const activity = gallery.activity || demoActivity;
   const analytics = gallery.analytics || demoAnalytics;
+
+  // Handle submitting a new comment
+  const handleSubmitComment = () => {
+    if (!newComment.trim()) return;
+    const comment: PhotoComment = {
+      id: `c${Date.now()}`,
+      author: "You",
+      text: newComment.trim(),
+      timestamp: new Date().toISOString(),
+      isClient: false,
+    };
+    setComments((prev) => [...prev, comment]);
+    setNewComment("");
+    showToast("Comment added", "success");
+  };
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -495,6 +512,69 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
   return (
     <>
+      {/* Expiration Warning Banner */}
+      {(isExpiringSoon || isExpired) && (
+        <div
+          className={cn(
+            "mb-6 flex items-center justify-between rounded-xl border px-6 py-4",
+            isExpired
+              ? "border-[var(--error)]/30 bg-[var(--error)]/10"
+              : "border-[var(--warning)]/30 bg-[var(--warning)]/10"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg",
+                isExpired ? "bg-[var(--error)]/20" : "bg-[var(--warning)]/20"
+              )}
+            >
+              {isExpired ? (
+                <ExpiredIcon className={cn("h-5 w-5", "text-[var(--error)]")} />
+              ) : (
+                <ClockIcon className={cn("h-5 w-5", "text-[var(--warning)]")} />
+              )}
+            </div>
+            <div>
+              <p className={cn("text-sm font-medium", isExpired ? "text-[var(--error)]" : "text-[var(--warning)]")}>
+                {isExpired ? "Gallery Has Expired" : `Gallery Expires in ${daysUntilExpiration} Day${daysUntilExpiration !== 1 ? "s" : ""}`}
+              </p>
+              <p className="text-sm text-foreground-muted">
+                {isExpired
+                  ? "This gallery is no longer accessible to clients. Extend the expiration to restore access."
+                  : "Consider extending the expiration date or reminding your client to download their photos."}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {!isExpired && (
+              <button
+                onClick={handleSendReminder}
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
+                <EmailIcon className="h-4 w-4" />
+                Send Reminder
+              </button>
+            )}
+            <button
+              onClick={() => {
+                showToast("Opening expiration settings...", "info");
+                setActiveTab("settings");
+              }}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                isExpired
+                  ? "bg-[var(--error)] text-white hover:bg-[var(--error)]/90"
+                  : "bg-[var(--warning)] text-white hover:bg-[var(--warning)]/90"
+              )}
+            >
+              <CalendarIcon className="h-4 w-4" />
+              Extend Expiration
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -675,6 +755,18 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                         View All
                       </button>
                     )}
+                    <button
+                      onClick={() => setShowCommentsPanel(true)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    >
+                      <CommentBubbleIcon className="h-4 w-4" />
+                      Comments
+                      {demoComments.length > 0 && (
+                        <span className="rounded-full bg-[var(--primary)] px-1.5 py-0.5 text-xs text-white">
+                          {demoComments.length}
+                        </span>
+                      )}
+                    </button>
                     <button
                       onClick={handleAddPhotos}
                       className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -1419,7 +1511,16 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
           {/* Delivery Link */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Delivery Link</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Delivery Link</h2>
+              <button
+                onClick={handlePreviewDelivery}
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              >
+                <PreviewIcon className="h-3.5 w-3.5" />
+                Preview as Client
+              </button>
+            </div>
             {gallery.deliveryLink ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 rounded-lg bg-[var(--background)] px-3 py-2 text-sm">
@@ -1527,6 +1628,126 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         galleryId={gallery.id}
         galleryName={gallery.name}
       />
+
+      {/* Comments Panel Slide-over */}
+      {showCommentsPanel && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 transition-opacity"
+            onClick={() => setShowCommentsPanel(false)}
+          />
+
+          {/* Panel */}
+          <div className="absolute inset-y-0 right-0 flex max-w-full pl-10">
+            <div className="w-screen max-w-md transform transition-transform">
+              <div className="flex h-full flex-col overflow-y-scroll bg-[var(--card)] shadow-xl">
+                {/* Header */}
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Comments & Feedback</h2>
+                    <p className="text-sm text-foreground-muted">{comments.length} comments on this gallery</p>
+                  </div>
+                  <button
+                    onClick={() => setShowCommentsPanel(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                  >
+                    <CloseIcon className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Comments List */}
+                <div className="flex-1 px-6 py-4">
+                  {comments.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <CommentBubbleIcon className="h-12 w-12 text-foreground-muted" />
+                      <h3 className="mt-4 text-sm font-medium text-foreground">No comments yet</h3>
+                      <p className="mt-1 text-sm text-foreground-muted">
+                        Comments from you and your clients will appear here.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {comments.map((comment) => (
+                        <div
+                          key={comment.id}
+                          className={cn(
+                            "rounded-lg p-4",
+                            comment.isClient
+                              ? "bg-[var(--background)] border border-[var(--card-border)]"
+                              : "bg-[var(--primary)]/10 border border-[var(--primary)]/20"
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={cn(
+                                  "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
+                                  comment.isClient
+                                    ? "bg-[var(--warning)]/10 text-[var(--warning)]"
+                                    : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                                )}
+                              >
+                                {comment.author.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-foreground">{comment.author}</p>
+                                <p className="text-xs text-foreground-muted">
+                                  {comment.isClient ? "Client" : "You"}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-xs text-foreground-muted">
+                              {new Date(comment.timestamp).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                          <p className="mt-3 text-sm text-foreground">{comment.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* New Comment Input */}
+                <div className="sticky bottom-0 border-t border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
+                  <div className="flex gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
+                      Y
+                    </div>
+                    <div className="flex-1">
+                      <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Add a comment or feedback..."
+                        rows={3}
+                        className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 transition-all resize-none"
+                      />
+                      <div className="mt-2 flex items-center justify-between">
+                        <p className="text-xs text-foreground-muted">
+                          Press Enter to submit
+                        </p>
+                        <button
+                          onClick={handleSubmitComment}
+                          disabled={!newComment.trim()}
+                          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <SendIcon className="h-4 w-4" />
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -1913,6 +2134,48 @@ function CommentIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 0 0 1.28.53l3.58-3.579a.78.78 0 0 1 .527-.224 41.202 41.202 0 0 0 5.183-.5c1.437-.232 2.43-1.49 2.43-2.903V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0 0 10 2Zm0 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM8 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm5 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CommentBubbleIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M3.505 2.365A41.369 41.369 0 0 1 9 2c1.863 0 3.697.124 5.495.365 1.247.167 2.18 1.108 2.435 2.268a4.45 4.45 0 0 0-.577-.069 43.141 43.141 0 0 0-4.706 0C9.229 4.696 7.5 6.727 7.5 8.998v2.24c0 1.413.67 2.735 1.76 3.562l-2.98 2.98A.75.75 0 0 1 5 17.25v-3.443a41.15 41.15 0 0 1-1.5-.238c-1.239-.166-2.183-1.1-2.442-2.276A38.03 38.03 0 0 1 .75 7.001c0-1.553.085-3.065.245-4.534.17-1.154 1.11-2.085 2.352-2.252l.158.15Z" />
+      <path d="M12.147 4.764a41.94 41.94 0 0 1 4.206 0C17.5 4.91 18.5 5.95 18.5 7.164v4.669c0 1.213-.974 2.254-2.147 2.4a41.94 41.94 0 0 1-4.206 0C11 14.08 10 13.041 10 11.833v-4.67c0-1.212.974-2.253 2.147-2.399Z" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+    </svg>
+  );
+}
+
+function ExpiredIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PreviewIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
     </svg>
   );
 }

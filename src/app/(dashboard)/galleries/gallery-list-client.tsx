@@ -31,6 +31,8 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedGalleries, setSelectedGalleries] = useState<Set<string>>(new Set());
   const actionMenuRef = useRef<HTMLDivElement>(null);
 
   // Close action menu when clicking outside
@@ -76,6 +78,65 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
     e.stopPropagation();
     setActionMenuOpen(null);
     handleQuickAction(action, galleryId);
+  };
+
+  // Selection mode handlers
+  const toggleSelectMode = () => {
+    if (isSelectMode) {
+      setSelectedGalleries(new Set());
+    }
+    setIsSelectMode(!isSelectMode);
+  };
+
+  const toggleGallerySelection = (galleryId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setSelectedGalleries((prev) => {
+      const next = new Set(prev);
+      if (next.has(galleryId)) {
+        next.delete(galleryId);
+      } else {
+        next.add(galleryId);
+      }
+      return next;
+    });
+  };
+
+  const selectAllGalleries = () => {
+    setSelectedGalleries(new Set(displayedGalleries.map((g) => g.id)));
+  };
+
+  const deselectAllGalleries = () => {
+    setSelectedGalleries(new Set());
+  };
+
+  // Bulk action handlers
+  const handleBulkArchive = () => {
+    const count = selectedGalleries.size;
+    showToast(`${count} gallery${count !== 1 ? "ies" : "y"} archived`, "success");
+    setSelectedGalleries(new Set());
+    setIsSelectMode(false);
+  };
+
+  const handleBulkDelete = () => {
+    const count = selectedGalleries.size;
+    showToast(`This would show delete confirmation for ${count} gallery${count !== 1 ? "ies" : "y"}`, "warning");
+  };
+
+  const handleBulkExport = () => {
+    const count = selectedGalleries.size;
+    showToast(`Exporting ${count} gallery${count !== 1 ? "ies" : "y"}...`, "info");
+  };
+
+  const handleBulkShare = () => {
+    const count = selectedGalleries.size;
+    const links = Array.from(selectedGalleries)
+      .map((id) => `${window.location.origin}/g/${id}`)
+      .join("\n");
+    navigator.clipboard.writeText(links);
+    showToast(`${count} gallery link${count !== 1 ? "s" : ""} copied to clipboard`, "success");
   };
 
   // Parse revenue string to number for sorting
@@ -204,8 +265,71 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
               <ListIcon className="h-4 w-4" />
             </button>
           </div>
+
+          {/* Select Mode Toggle */}
+          {displayedGalleries.length > 0 && (
+            <button
+              onClick={toggleSelectMode}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                isSelectMode
+                  ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+                  : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
+              )}
+            >
+              <CheckboxIcon className="h-4 w-4" />
+              {isSelectMode ? "Cancel" : "Select"}
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Bulk Action Bar */}
+      {isSelectMode && selectedGalleries.size > 0 && (
+        <div className="flex items-center justify-between rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-foreground">
+              {selectedGalleries.size} gallery{selectedGalleries.size !== 1 ? "ies" : "y"} selected
+            </span>
+            <button
+              onClick={selectedGalleries.size === displayedGalleries.length ? deselectAllGalleries : selectAllGalleries}
+              className="text-sm text-[var(--primary)] hover:underline"
+            >
+              {selectedGalleries.size === displayedGalleries.length ? "Deselect All" : "Select All"}
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBulkShare}
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              <ShareIcon className="h-4 w-4" />
+              Share
+            </button>
+            <button
+              onClick={handleBulkExport}
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              <ExportIcon className="h-4 w-4" />
+              Export
+            </button>
+            <button
+              onClick={handleBulkArchive}
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              <ArchiveIcon className="h-4 w-4" />
+              Archive
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
+            >
+              <TrashIcon className="h-4 w-4" />
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Results Count */}
       {search && (
@@ -219,17 +343,39 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
         viewMode === "grid" ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {displayedGalleries.map((gallery) => (
-              <GalleryCard
-                key={gallery.id}
-                id={gallery.id}
-                title={gallery.name}
-                client={gallery.client}
-                photos={gallery.photos}
-                status={gallery.status}
-                revenue={gallery.revenue}
-                thumbnailUrl={gallery.thumbnailUrl}
-                onQuickAction={handleQuickAction}
-              />
+              <div key={gallery.id} className="relative">
+                {isSelectMode && (
+                  <button
+                    onClick={(e) => toggleGallerySelection(gallery.id, e)}
+                    className={cn(
+                      "absolute top-3 left-3 z-10 flex h-6 w-6 items-center justify-center rounded border transition-colors",
+                      selectedGalleries.has(gallery.id)
+                        ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                        : "bg-[var(--card)] border-[var(--card-border)] hover:border-[var(--primary)]"
+                    )}
+                  >
+                    {selectedGalleries.has(gallery.id) && <CheckIcon className="h-4 w-4" />}
+                  </button>
+                )}
+                <div
+                  onClick={() => isSelectMode && toggleGallerySelection(gallery.id)}
+                  className={cn(
+                    isSelectMode && "cursor-pointer",
+                    isSelectMode && selectedGalleries.has(gallery.id) && "ring-2 ring-[var(--primary)] rounded-xl"
+                  )}
+                >
+                  <GalleryCard
+                    id={gallery.id}
+                    title={gallery.name}
+                    client={gallery.client}
+                    photos={gallery.photos}
+                    status={gallery.status}
+                    revenue={gallery.revenue}
+                    thumbnailUrl={gallery.thumbnailUrl}
+                    onQuickAction={isSelectMode ? undefined : handleQuickAction}
+                  />
+                </div>
+              </div>
             ))}
           </div>
         ) : (
@@ -237,6 +383,21 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[var(--card-border)]">
+                  {isSelectMode && (
+                    <th className="px-4 py-3 w-10">
+                      <button
+                        onClick={selectedGalleries.size === displayedGalleries.length ? deselectAllGalleries : selectAllGalleries}
+                        className={cn(
+                          "flex h-5 w-5 items-center justify-center rounded border transition-colors",
+                          selectedGalleries.size === displayedGalleries.length
+                            ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                            : "border-[var(--card-border)] hover:border-[var(--primary)]"
+                        )}
+                      >
+                        {selectedGalleries.size === displayedGalleries.length && <CheckIcon className="h-3 w-3" />}
+                      </button>
+                    </th>
+                  )}
                   <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">
                     Gallery
                   </th>
@@ -252,21 +413,44 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
                   <th className="px-4 py-3 text-right text-xs font-medium text-foreground-muted uppercase tracking-wider">
                     Revenue
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-foreground-muted uppercase tracking-wider w-16">
-                    Actions
-                  </th>
+                  {!isSelectMode && (
+                    <th className="px-4 py-3 text-right text-xs font-medium text-foreground-muted uppercase tracking-wider w-16">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--card-border)]">
                 {displayedGalleries.map((gallery) => (
                   <tr
                     key={gallery.id}
-                    className="hover:bg-[var(--background-hover)] transition-colors"
+                    onClick={() => isSelectMode && toggleGallerySelection(gallery.id)}
+                    className={cn(
+                      "hover:bg-[var(--background-hover)] transition-colors",
+                      isSelectMode && "cursor-pointer",
+                      isSelectMode && selectedGalleries.has(gallery.id) && "bg-[var(--primary)]/5"
+                    )}
                   >
+                    {isSelectMode && (
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={(e) => toggleGallerySelection(gallery.id, e)}
+                          className={cn(
+                            "flex h-5 w-5 items-center justify-center rounded border transition-colors",
+                            selectedGalleries.has(gallery.id)
+                              ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                              : "border-[var(--card-border)] hover:border-[var(--primary)]"
+                          )}
+                        >
+                          {selectedGalleries.has(gallery.id) && <CheckIcon className="h-3 w-3" />}
+                        </button>
+                      </td>
+                    )}
                     <td className="px-4 py-3">
                       <Link
                         href={`/galleries/${gallery.id}`}
                         className="flex items-center gap-3"
+                        onClick={(e) => isSelectMode && e.preventDefault()}
                       >
                         {gallery.thumbnailUrl && (
                           <img
@@ -301,53 +485,55 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
                     <td className="px-4 py-3 text-right text-sm font-medium text-foreground">
                       {gallery.revenue || "—"}
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="relative" ref={actionMenuOpen === gallery.id ? actionMenuRef : undefined}>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setActionMenuOpen(actionMenuOpen === gallery.id ? null : gallery.id);
-                          }}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:bg-[var(--background)] hover:text-foreground transition-colors"
-                        >
-                          <MoreIcon className="h-4 w-4" />
-                        </button>
-                        {actionMenuOpen === gallery.id && (
-                          <div className="absolute right-0 top-10 z-10 w-44 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-xl">
-                            <button
-                              onClick={(e) => handleListAction("share", gallery.id, e)}
-                              className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
-                            >
-                              <ShareIcon className="h-4 w-4 text-foreground-muted" />
-                              Share Link
-                            </button>
-                            <button
-                              onClick={(e) => handleListAction("duplicate", gallery.id, e)}
-                              className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
-                            >
-                              <DuplicateIcon className="h-4 w-4 text-foreground-muted" />
-                              Duplicate
-                            </button>
-                            <button
-                              onClick={(e) => handleListAction("archive", gallery.id, e)}
-                              className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
-                            >
-                              <ArchiveIcon className="h-4 w-4 text-foreground-muted" />
-                              Archive
-                            </button>
-                            <hr className="my-1 border-[var(--card-border)]" />
-                            <button
-                              onClick={(e) => handleListAction("delete", gallery.id, e)}
-                              className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-[var(--error)] hover:bg-[var(--error)]/10"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
+                    {!isSelectMode && (
+                      <td className="px-4 py-3 text-right">
+                        <div className="relative" ref={actionMenuOpen === gallery.id ? actionMenuRef : undefined}>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setActionMenuOpen(actionMenuOpen === gallery.id ? null : gallery.id);
+                            }}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:bg-[var(--background)] hover:text-foreground transition-colors"
+                          >
+                            <MoreIcon className="h-4 w-4" />
+                          </button>
+                          {actionMenuOpen === gallery.id && (
+                            <div className="absolute right-0 top-10 z-10 w-44 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-xl">
+                              <button
+                                onClick={(e) => handleListAction("share", gallery.id, e)}
+                                className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
+                              >
+                                <ShareIcon className="h-4 w-4 text-foreground-muted" />
+                                Share Link
+                              </button>
+                              <button
+                                onClick={(e) => handleListAction("duplicate", gallery.id, e)}
+                                className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
+                              >
+                                <DuplicateIcon className="h-4 w-4 text-foreground-muted" />
+                                Duplicate
+                              </button>
+                              <button
+                                onClick={(e) => handleListAction("archive", gallery.id, e)}
+                                className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
+                              >
+                                <ArchiveIcon className="h-4 w-4 text-foreground-muted" />
+                                Archive
+                              </button>
+                              <hr className="my-1 border-[var(--card-border)]" />
+                              <button
+                                onClick={(e) => handleListAction("delete", gallery.id, e)}
+                                className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-[var(--error)] hover:bg-[var(--error)]/10"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -477,6 +663,31 @@ function TrashIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CheckboxIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h9.5A2.25 2.25 0 0 1 17 4.25v11.5A2.25 2.25 0 0 1 14.75 18h-9.5A2.25 2.25 0 0 1 3 15.75V4.25Zm2.25-.75a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h9.5a.75.75 0 0 0 .75-.75V4.25a.75.75 0 0 0-.75-.75h-9.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ExportIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+      <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
     </svg>
   );
 }

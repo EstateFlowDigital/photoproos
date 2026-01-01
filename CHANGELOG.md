@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Bulk Gallery Operations)
+- Added bulk selection mode to gallery list page (`src/app/(dashboard)/galleries/gallery-list-client.tsx`)
+  - "Select" button toggles selection mode in gallery list
+  - Checkboxes appear on gallery cards in grid view
+  - Checkbox column appears in list/table view
+  - Click anywhere on row/card to toggle selection
+  - Visual highlighting for selected galleries (ring highlight in grid, background in list)
+  - Select All / Deselect All toggle
+  - Bulk action bar with selected count
+  - **Bulk actions available:**
+    - Share: Copy all selected gallery links to clipboard
+    - Export: Export selected galleries
+    - Archive: Archive multiple galleries at once
+    - Delete: Bulk delete with confirmation
+  - Actions column hidden during select mode
+  - Quick actions disabled during select mode
+
+### Added (Delivery Preview Button)
+- Added "Preview as Client" button to gallery detail sidebar
+  - Prominently displayed in Delivery Link section header
+  - Opens gallery in new tab as client would see it
+  - Visual preview icon with clear labeling
+
+### Added (Gallery Expiration Warning Banner)
+- Added prominent expiration warning banner to gallery detail page
+  - Shows when gallery expires within 7 days (warning state)
+  - Shows when gallery has already expired (error state)
+  - Different styling for warning vs expired states
+  - "Send Reminder" button to notify client (warning state only)
+  - "Extend Expiration" button that navigates to settings tab
+  - Countdown showing days until expiration
+  - Helpful messages explaining the situation and suggested actions
+
+### Added (Photo Comments Panel)
+- Added slide-over comments panel to gallery detail page
+  - "Comments" button with badge showing comment count
+  - Slide-over panel from right side with backdrop
+  - List of all comments with author avatars and timestamps
+  - Distinction between client comments and photographer comments
+  - New comment textarea with send button
+  - Real-time comment adding with toast confirmation
+  - Empty state when no comments exist
+  - Close button and click-outside to dismiss
+
+### Added (Dashboard Topbar Functionality)
+- Made dashboard topbar fully functional (`src/components/layout/dashboard-topbar.tsx`)
+  - **Search**: Real-time search across galleries, clients, and payments
+    - Keyboard shortcut (⌘K/Ctrl+K) to focus search
+    - Search results dropdown with icons by type
+    - Click-to-navigate to results
+    - Empty state for no results
+  - **New Gallery button**: Now links to `/galleries/new` creation page
+  - **Notifications dropdown**:
+    - Shows recent notifications (payments, views, downloads, comments, expirations)
+    - Unread indicator with animated ping effect
+    - Mark individual or all notifications as read
+    - Link to notifications settings
+    - Type-specific icons with color coding
+  - **Help menu dropdown**:
+    - Documentation link
+    - Support link
+    - Keyboard shortcuts button
+    - Send feedback option
+  - Click-outside handling for all dropdowns
+  - Escape key closes all dropdowns
+
 ### Added (Invoice Builder & Enhanced Pricing)
 - Created comprehensive `InvoiceBuilder` component (`src/components/dashboard/invoice-builder.tsx`)
   - Multi-select for adding multiple preset service packages at once
