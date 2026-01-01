@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Demo Mode for Production Review)
+- Added DEMO_MODE flag to all dashboard pages to allow UI review without database connection
+- Dashboard page: Shows sample metrics ($12,475 revenue, 24 galleries, 156 clients), activity feed, and gallery cards
+- Galleries page: Displays 8 demo galleries with real estate, corporate, wedding, and event photography examples
+- Clients page: Shows 10 sample clients across industries (Real Estate, Wedding, Commercial, Food & Hospitality, etc.)
+- Payments page: Displays sample payment history with paid, pending, and overdue statuses
+- Scheduling page: Shows upcoming demo bookings with calendar week view and booking cards
+- Each page displays a blue "Demo Mode" banner indicating sample data is being shown
+- Prisma imports moved to dynamic import pattern to prevent database connection attempts in demo mode
+
 ### Added (Navigation Enhancements)
 - Added icons to Industries dropdown menu items:
   - Real Estate (home icon)
