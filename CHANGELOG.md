@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Booking Detail Page)
+- Created `/scheduling/[id]` page with comprehensive booking view
+- Status banner showing confirmed/pending/completed/cancelled state with countdown
+- Schedule section with date, time, and duration
+- Location section with address, notes, and Google Maps link
+- Session notes with edit capability
+- Client info sidebar with contact details and profile link
+- Pricing section showing session fee, deposit status, and balance due
+- Quick actions: Send reminder, add to calendar, duplicate, cancel
+- Demo data for bookings 1, 2, 3, and 4 with sample shoot details
+
 ### Added (Client Detail Page)
 - Created `/clients/[id]` page with comprehensive client profile
 - Stats row: lifetime revenue, total galleries, total payments
