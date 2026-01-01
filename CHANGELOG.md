@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Design System - Border Refinements)
+- Updated card borders to 0.094rem width with 10% opacity for more visible yet subtle styling
+- Changed `--card-border` from `rgba(255, 255, 255, 0.03)` to `rgba(255, 255, 255, 0.10)`
+- Changed `--card-border-hover` from `rgba(255, 255, 255, 0.06)` to `rgba(255, 255, 255, 0.16)`
+- Added `--card-border-width: 0.094rem` variable for consistent border width
+- Updated all general border variables to use 10% opacity:
+  - `--border`: now `rgba(255, 255, 255, 0.10)`
+  - `--border-subtle`: now `rgba(255, 255, 255, 0.05)`
+  - `--border-emphasis`: now `rgba(255, 255, 255, 0.16)`
+  - `--border-hover`: now `rgba(255, 255, 255, 0.16)`
+  - `--input-border`: now `rgba(255, 255, 255, 0.10)`
+  - `--input-border-focus`: now `rgba(255, 255, 255, 0.16)`
+- Added `--border-width: 0.094rem` for general use
+- Updated `.card`, `.card-interactive`, `.glass`, `.nav-scrolled` utilities to use new border width variable
+- Updated `.section-divider` height to use `--card-border-width` for consistency
+
 ### Added (Portal Application - Sprint 2)
 - Created complete dashboard layout system:
   - `DashboardSidebar` component (`src/components/layout/dashboard-sidebar.tsx`) with navigation, user info, and active state detection
