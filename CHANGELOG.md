@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Gallery List Enhancements)
+- Added views and downloads statistics columns to gallery list table view
+  - EyeIcon for views count display
+  - DownloadIcon for downloads count display
+  - Hidden on mobile, visible on large screens (responsive design)
+  - Updated Gallery interface to include optional views/downloads properties
+
+### Added (Keyboard Shortcuts Modal)
+- Created `KeyboardShortcutsModal` component (`src/components/ui/keyboard-shortcuts-modal.tsx`)
+  - Comprehensive shortcuts reference with 4 groups:
+    - Navigation: G+D (Dashboard), G+G (Galleries), G+C (Clients), G+P (Payments), G+S (Scheduling)
+    - Global: ⌘K (Search), ? (Shortcuts), Esc (Close), N (New gallery)
+    - Gallery View: S (Select), A (Select all), R (Reorder), Delete (Delete selected)
+    - Photo Lightbox: ←/→ (Navigate), +/- (Zoom), Esc (Close)
+  - Backdrop with blur effect
+  - Escape key to close
+  - Body scroll lock when open
+  - Grid layout for shortcut groups
+- Integrated keyboard shortcuts modal into dashboard topbar
+  - "?" key opens modal from anywhere (when not in input fields)
+  - Help menu button opens modal
+
+### Added (Password Protection UI)
+- Added password input UI to gallery creation form (`/galleries/new`)
+  - Password input field appears when "Password Protected" access type is selected
+  - Show/hide password toggle with EyeIcon/EyeOffIcon
+  - Password strength indicator with visual progress bar
+    - Weak (red, <4 chars), Fair (orange, <8 chars), Good (blue, <12 chars), Strong (green, 12+ chars)
+  - Helpful description text for sharing password with clients
+
 ### Added (Inline Custom Service Editor)
 - Enhanced ServiceSelector component with full custom service creation capabilities
   - Service name input with placeholder examples

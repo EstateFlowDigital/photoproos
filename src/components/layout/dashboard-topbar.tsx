@@ -5,6 +5,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
 
 interface DashboardTopbarProps {
   className?: string;
@@ -46,6 +47,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState(demoNotifications);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -76,18 +78,30 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
     setSearchResults([]);
   };
 
-  // Keyboard shortcut for search (⌘K)
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in inputs
+      const target = e.target as HTMLElement;
+      const isTyping = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setSearchOpen(true);
         setTimeout(() => searchInputRef.current?.focus(), 0);
       }
+
+      // Open keyboard shortcuts modal with "?"
+      if (e.key === "?" && !isTyping) {
+        e.preventDefault();
+        setShortcutsOpen(true);
+      }
+
       if (e.key === "Escape") {
         setSearchOpen(false);
         setNotificationsOpen(false);
         setHelpOpen(false);
+        setShortcutsOpen(false);
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -314,7 +328,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
                 <button
                   onClick={() => {
                     setHelpOpen(false);
-                    // Would open keyboard shortcuts modal
+                    setShortcutsOpen(true);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] transition-colors"
                 >
@@ -335,6 +349,12 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
           )}
         </div>
       </div>
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
     </header>
   );
 }

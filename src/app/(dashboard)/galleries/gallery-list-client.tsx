@@ -15,6 +15,8 @@ interface Gallery {
   revenue?: string;
   thumbnailUrl?: string;
   createdAt?: string;
+  views?: number;
+  downloads?: number;
 }
 
 interface GalleryListClientProps {
@@ -410,6 +412,12 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
                   <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">
                     Status
                   </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-foreground-muted uppercase tracking-wider hidden lg:table-cell">
+                    Views
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-foreground-muted uppercase tracking-wider hidden lg:table-cell">
+                    Downloads
+                  </th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-foreground-muted uppercase tracking-wider">
                     Revenue
                   </th>
@@ -481,6 +489,18 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
                       >
                         {gallery.status.charAt(0).toUpperCase() + gallery.status.slice(1)}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-center hidden lg:table-cell">
+                      <div className="flex items-center justify-center gap-1 text-sm text-foreground-secondary">
+                        <EyeIcon className="h-3.5 w-3.5 text-foreground-muted" />
+                        {gallery.views ?? 0}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center hidden lg:table-cell">
+                      <div className="flex items-center justify-center gap-1 text-sm text-foreground-secondary">
+                        <DownloadIcon className="h-3.5 w-3.5 text-foreground-muted" />
+                        {gallery.downloads ?? 0}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-right text-sm font-medium text-foreground">
                       {gallery.revenue || "—"}
@@ -684,6 +704,24 @@ function CheckIcon({ className }: { className?: string }) {
 }
 
 function ExportIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+      <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+    </svg>
+  );
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
