@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `locationRef` relation to `getBooking` for weather location data
   - Rewrote `invoices.ts` to match actual Prisma schema (was using incorrect field names and relations)
   - Updated invoice system to work with client-based invoicing instead of non-existent project relation
+  - Fixed blog page SSR error - extracted newsletter form into client component to handle onSubmit event
 
 ### Added (Booking Details & Property Features)
 - **Booking Detail Enhancements** (`/scheduling/[id]/page.tsx`):

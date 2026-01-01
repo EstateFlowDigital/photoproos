@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { NewsletterForm } from "./newsletter-form";
 
 export const metadata: Metadata = {
   title: "Blog | PhotoProOS",
@@ -215,22 +216,7 @@ export default function BlogPage() {
           <p className="mb-8 text-foreground-secondary">
             Get the latest tips and insights delivered to your inbox every week.
           </p>
-          <form className="mx-auto flex max-w-md gap-3" onSubmit={(e) => e.preventDefault()}>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-            >
-              Subscribe
-            </button>
-          </form>
-          <p className="mt-4 text-xs text-foreground-muted">
-            No spam. Unsubscribe anytime.
-          </p>
+          <NewsletterForm />
         </div>
       </section>
     </main>
