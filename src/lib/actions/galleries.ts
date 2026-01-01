@@ -818,58 +818,111 @@ export async function reorderPhotos(
 }
 
 /**
- * Get public gallery data by delivery link slug (for public viewing)
+ * Get public gallery data by delivery link slug or project ID (for public viewing)
+ * @param slugOrId - Either a delivery link slug (8 chars) or a project CUID
+ * @param isPreview - If true, bypasses delivery status check (for authenticated admin preview)
  */
-export async function getPublicGallery(slug: string) {
+export async function getPublicGallery(slugOrId: string, isPreview: boolean = false) {
   try {
-    // Find the delivery link and associated project
-    const deliveryLink = await prisma.deliveryLink.findUnique({
-      where: { slug },
-      include: {
-        project: {
-          include: {
-            organization: {
-              select: {
-                name: true,
-                logoUrl: true,
-                primaryColor: true,
-              },
+    // Determine if this is a project ID (CUID format starts with 'c' and is longer)
+    // or a delivery link slug (8 random alphanumeric chars)
+    const isProjectId = slugOrId.length > 8 && slugOrId.startsWith("c");
+
+    let project;
+
+    if (isProjectId) {
+      // Direct lookup by project ID (mainly for preview mode)
+      project = await prisma.project.findUnique({
+        where: { id: slugOrId },
+        include: {
+          organization: {
+            select: {
+              name: true,
+              logoUrl: true,
+              primaryColor: true,
             },
-            assets: {
-              orderBy: { sortOrder: "asc" },
-              select: {
-                id: true,
-                filename: true,
-                originalUrl: true,
-                thumbnailUrl: true,
-                width: true,
-                height: true,
-              },
+          },
+          assets: {
+            orderBy: { sortOrder: "asc" },
+            select: {
+              id: true,
+              filename: true,
+              originalUrl: true,
+              thumbnailUrl: true,
+              width: true,
+              height: true,
             },
-            payments: {
-              where: { status: "paid" },
-              select: { id: true },
+          },
+          payments: {
+            where: { status: "paid" },
+            select: { id: true },
+          },
+          deliveryLinks: {
+            where: { isActive: true },
+            take: 1,
+          },
+        },
+      });
+
+      if (!project) {
+        return null;
+      }
+
+      // For direct project ID access, require preview mode unless delivered
+      if (!isPreview && project.status !== "delivered") {
+        return null;
+      }
+    } else {
+      // Find by delivery link slug
+      const deliveryLink = await prisma.deliveryLink.findUnique({
+        where: { slug: slugOrId },
+        include: {
+          project: {
+            include: {
+              organization: {
+                select: {
+                  name: true,
+                  logoUrl: true,
+                  primaryColor: true,
+                },
+              },
+              assets: {
+                orderBy: { sortOrder: "asc" },
+                select: {
+                  id: true,
+                  filename: true,
+                  originalUrl: true,
+                  thumbnailUrl: true,
+                  width: true,
+                  height: true,
+                },
+              },
+              payments: {
+                where: { status: "paid" },
+                select: { id: true },
+              },
             },
           },
         },
-      },
-    });
+      });
 
-    if (!deliveryLink || !deliveryLink.isActive) {
+      if (!deliveryLink || !deliveryLink.isActive) {
+        return null;
+      }
+
+      project = deliveryLink.project;
+    }
+
+    // Check if gallery has been delivered (bypass in preview mode)
+    if (!isPreview && project.status !== "delivered") {
       return null;
     }
 
-    // Check if gallery has been delivered
-    if (deliveryLink.project.status !== "delivered") {
+    // Check if expired (bypass in preview mode)
+    if (!isPreview && project.expiresAt && project.expiresAt < new Date()) {
       return null;
     }
 
-    // Check if expired
-    if (deliveryLink.project.expiresAt && deliveryLink.project.expiresAt < new Date()) {
-      return null;
-    }
-
-    const project = deliveryLink.project;
     const isPaid = project.payments.length > 0 || project.priceCents === 0;
 
     return {
@@ -888,6 +941,7 @@ export async function getPublicGallery(slug: string) {
       showWatermark: project.showWatermark,
       primaryColor: project.organization.primaryColor || "#3b82f6",
       theme: "dark" as const, // Could make this configurable
+      isPreview, // Let the UI know this is a preview
       photos: project.assets.map((asset) => ({
         id: asset.id,
         url: asset.thumbnailUrl || asset.originalUrl,

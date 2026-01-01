@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (Public Gallery)
+- **Public Gallery Preview Mode** (`/g/[slug]/page.tsx`, `/lib/actions/galleries.ts`):
+  - Fixed public gallery page not working with project IDs in URL
+  - Added `?preview=true` support for previewing galleries before delivery
+  - Now supports both delivery link slugs (8 chars) and project CUIDs
+  - Preview mode bypasses delivery status and expiration checks
+  - Added amber preview banner indicating gallery not delivered yet
+  - Disabled view recording in preview mode to avoid inflating stats
+  - Header position adjusts for preview banner visibility
+
 ### Added (Complete Marketing Pages Suite)
 - **Pricing Page** (`/pricing`):
   - Rewrote to match landing page with 4 tiers: Free ($0), Pro ($23/mo annual), Studio ($63/mo annual), Enterprise (custom)

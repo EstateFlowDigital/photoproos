@@ -13,14 +13,17 @@ interface Photo {
 
 interface PublicGalleryPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }
 
-export default async function PublicGalleryPage({ params }: PublicGalleryPageProps) {
+export default async function PublicGalleryPage({ params, searchParams }: PublicGalleryPageProps) {
   const { slug } = await params;
-  const gallery = await getPublicGallery(slug);
+  const { preview } = await searchParams;
+  const isPreview = preview === "true";
+  const gallery = await getPublicGallery(slug, isPreview);
 
-  // Record the view (fire and forget)
-  if (gallery) {
+  // Record the view (fire and forget) - skip in preview mode
+  if (gallery && !isPreview) {
     recordGalleryView(slug).catch(() => {
       // Silently ignore view recording errors
     });
@@ -71,9 +74,19 @@ export default async function PublicGalleryPage({ params }: PublicGalleryPagePro
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: bgColor, color: textColor }}>
+      {/* Preview Mode Banner */}
+      {isPreview && (
+        <div className="sticky top-0 z-[60] bg-amber-500 text-black px-4 py-2 text-center text-sm font-medium">
+          <span className="inline-flex items-center gap-2">
+            <EyeIcon className="h-4 w-4" />
+            Preview Mode - This gallery has not been delivered to the client yet
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <header
-        className="sticky top-0 z-50 border-b"
+        className={cn("sticky z-50 border-b", isPreview ? "top-[36px]" : "top-0")}
         style={{ backgroundColor: bgColor, borderColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -304,6 +317,15 @@ function ExclamationIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
     </svg>
   );
 }
