@@ -77,18 +77,18 @@ export function SecuritySection() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
           {/* Left: Content */}
           <div>
-            <p
-              className="mb-4 font-mono text-sm uppercase tracking-wider text-[var(--success)]"
+            <div
+              className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--success)]/20 bg-[var(--success)]/5 px-3 py-1"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(20px)",
                 transition: "opacity 600ms ease-out, transform 600ms ease-out",
               }}
             >
-              Enterprise-Grade Security
-            </p>
+              <span className="text-xs font-medium uppercase tracking-wider text-[var(--success)]">Enterprise-Grade Security</span>
+            </div>
             <h2
-              className="mb-6 text-4xl font-medium leading-tight tracking-[-1px] text-foreground lg:text-5xl lg:leading-tight"
+              className="mb-6 text-4xl font-medium leading-tight tracking-[-1px] lg:text-5xl lg:leading-tight"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(30px)",
@@ -96,7 +96,8 @@ export function SecuritySection() {
                 transitionDelay: "100ms",
               }}
             >
-              Your photos are safe with us
+              <span className="text-foreground-secondary">Your photos are</span>{" "}
+              <span className="text-foreground">safe with us</span>
             </h2>
             <p
               className="mb-8 text-lg text-foreground-secondary"

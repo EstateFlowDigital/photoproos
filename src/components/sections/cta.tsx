@@ -58,7 +58,7 @@ export function CTASection() {
           </div>
 
           <h2
-            className="mb-6 text-4xl font-medium leading-tight tracking-[-1px] text-foreground lg:text-[56px] lg:leading-[64px]"
+            className="mb-6 text-4xl font-medium leading-tight tracking-[-1px] lg:text-[56px] lg:leading-[64px]"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(30px)",
@@ -66,7 +66,8 @@ export function CTASection() {
               transitionDelay: "100ms",
             }}
           >
-            Ready to run your photography business like a pro?
+            <span className="text-foreground-secondary">Ready to run your photography</span>{" "}
+            <span className="text-foreground">business like a pro?</span>
           </h2>
 
           <p

@@ -157,18 +157,18 @@ export function FeaturesSection() {
       <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
         {/* Section Header */}
         <div className="mb-12 text-center lg:mb-16">
-          <p
-            className="mb-4 font-mono text-sm uppercase tracking-wider text-[var(--primary)]"
+          <div
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(20px)",
               transition: "opacity 600ms ease-out, transform 600ms ease-out",
             }}
           >
-            Platform Features
-          </p>
+            <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">Platform Features</span>
+          </div>
           <h2
-            className="mx-auto max-w-3xl text-4xl font-medium leading-tight tracking-[-1px] text-foreground lg:text-5xl lg:leading-tight"
+            className="mx-auto max-w-3xl text-3xl font-medium leading-tight tracking-[-1px] lg:text-4xl lg:leading-tight"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(30px)",
@@ -176,10 +176,11 @@ export function FeaturesSection() {
               transitionDelay: "100ms",
             }}
           >
-            Everything you need to run your photography business
+            <span className="text-foreground-secondary">Everything you need to</span>{" "}
+            <span className="text-foreground">run your photography business</span>
           </h2>
           <p
-            className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"
+            className="mx-auto mt-4 max-w-2xl text-base text-foreground-secondary lg:text-lg"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(30px)",
@@ -187,7 +188,7 @@ export function FeaturesSection() {
               transitionDelay: "200ms",
             }}
           >
-            One platform to manage clients, deliver photos, collect payments, and grow your business. No more juggling multiple tools.
+            One platform to manage clients, deliver photos, collect payments, and grow your business.
           </p>
         </div>
 

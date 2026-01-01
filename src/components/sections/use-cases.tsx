@@ -101,42 +101,77 @@ function UseCaseCard({ useCase, isActive, onClick }: { useCase: UseCase; isActiv
     <button
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col items-start rounded-xl border p-6 text-left transition-all duration-300",
-        "hover:shadow-xl hover:shadow-black/30",
+        "group relative flex flex-col items-start rounded-xl border p-5 text-left transition-all duration-300",
+        "hover:shadow-lg hover:shadow-black/20",
         isActive
-          ? "border-[var(--primary)] bg-[var(--primary)]/5 shadow-lg"
+          ? "border-[var(--primary)] bg-[var(--primary)]/5"
           : "border-[var(--card-border)] bg-[var(--card)] hover:border-[var(--border-hover)]"
       )}
     >
-      {/* Icon */}
-      <div className={cn(
-        "mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white transition-transform duration-300 group-hover:scale-110",
-        useCase.color
-      )}>
-        <IconComponent className="h-6 w-6" />
+      <div className="flex w-full items-start justify-between gap-3">
+        {/* Icon */}
+        <div className={cn(
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white transition-transform duration-300 group-hover:scale-105",
+          useCase.color
+        )}>
+          <IconComponent className="h-5 w-5" />
+        </div>
+
+        {/* Plus/Minus indicator */}
+        <div className={cn(
+          "flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all duration-200",
+          isActive
+            ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+            : "bg-[var(--background-elevated)] text-foreground-muted"
+        )}>
+          {isActive ? (
+            <MinusIcon className="h-3.5 w-3.5" />
+          ) : (
+            <PlusIcon className="h-3.5 w-3.5" />
+          )}
+        </div>
       </div>
 
       {/* Title */}
-      <h3 className="text-lg font-semibold text-foreground">{useCase.title}</h3>
+      <h3 className="mt-3 text-base font-semibold text-foreground">{useCase.title}</h3>
 
       {/* Description */}
-      <p className="mt-2 text-sm text-foreground-secondary">{useCase.description}</p>
+      <p className="mt-1 text-sm text-foreground-secondary line-clamp-2">{useCase.description}</p>
 
-      {/* Features - always visible but opacity controlled to prevent layout shift */}
+      {/* Features - expandable with animation */}
       <div className={cn(
-        "mt-4 transition-opacity duration-300",
-        isActive ? "opacity-100" : "opacity-0"
+        "w-full grid transition-all duration-300 ease-in-out",
+        isActive ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0 mt-0"
       )}>
-        <ul className="space-y-2 pt-2 border-t border-[var(--card-border)]">
-          {useCase.features.map((feature, index) => (
-            <li key={index} className="flex items-center gap-2 text-sm text-foreground-secondary">
-              <CheckIcon className="h-4 w-4 shrink-0 text-[var(--success)]" />
-              {feature}
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-hidden">
+          <ul className="space-y-1.5 pt-3 border-t border-[var(--card-border)]">
+            {useCase.features.map((feature, index) => (
+              <li key={index} className="flex items-center gap-2 text-sm text-foreground-secondary">
+                <CheckIcon className="h-3.5 w-3.5 shrink-0 text-[var(--success)]" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </button>
+  );
+}
+
+// Icons for expandable state
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+    </svg>
+  );
+}
+
+function MinusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clipRule="evenodd" />
+    </svg>
   );
 }
 
@@ -149,18 +184,18 @@ export function UseCasesSection() {
       <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
         {/* Section Header */}
         <div className="mb-12 text-center lg:mb-16">
-          <p
-            className="mb-4 font-mono text-sm uppercase tracking-wider text-[var(--primary)]"
+          <div
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(20px)",
               transition: "opacity 600ms ease-out, transform 600ms ease-out",
             }}
           >
-            For Every Photography Vertical
-          </p>
+            <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">For Every Specialty</span>
+          </div>
           <h2
-            className="mx-auto max-w-3xl text-4xl font-medium leading-tight tracking-[-1px] text-foreground lg:text-5xl lg:leading-tight"
+            className="mx-auto max-w-3xl text-3xl font-medium leading-tight tracking-[-1px] lg:text-4xl lg:leading-tight"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(30px)",
@@ -168,10 +203,11 @@ export function UseCasesSection() {
               transitionDelay: "100ms",
             }}
           >
-            Tailored for your specialty
+            <span className="text-foreground-secondary">Built for</span>{" "}
+            <span className="text-foreground">your photography vertical</span>
           </h2>
           <p
-            className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"
+            className="mx-auto mt-4 max-w-2xl text-base text-foreground-secondary lg:text-lg"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(30px)",
@@ -179,7 +215,7 @@ export function UseCasesSection() {
               transitionDelay: "200ms",
             }}
           >
-            During onboarding, PhotoProOS automatically configures the best features and workflows for your industry.
+            PhotoProOS automatically configures the best features and workflows for your industry.
           </p>
         </div>
 

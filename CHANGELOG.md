@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Landing Page Polish)
+- Updated all section eyebrow text from `font-mono` to styled badge design with border and background for visual consistency across:
+  - Testimonials section
+  - Pricing section
+  - How It Works section
+  - Security section
+  - Integrations section
+  - Roadmap section
+  - FAQ section
+- Updated all section headings to use two-tone typography (secondary color for introductory text, primary color for emphasis) across all sections
+- Updated FAQ accordion icons from chevron to plus/minus icons with color state change for better expandability indication
+- FAQ expand icons now highlight with primary color when section is open
+
 ### Added (Portal Infrastructure - Sprint 1)
 - Installed core dependencies: `@clerk/nextjs`, `@prisma/client`, `stripe`, `zod`, `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `resend`
 - Created comprehensive Prisma schema with 25 models:

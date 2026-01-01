@@ -154,18 +154,18 @@ export function TestimonialsSection() {
       <div className="relative mx-auto max-w-[1512px] px-6 lg:px-[124px]">
         {/* Section Header */}
         <div className="mb-12 text-center lg:mb-16">
-          <p
-            className="mb-4 font-mono text-sm uppercase tracking-wider text-[var(--primary)]"
+          <div
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(20px)",
               transition: "opacity 600ms ease-out, transform 600ms ease-out",
             }}
           >
-            Trusted by Photographers Worldwide
-          </p>
+            <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">Trusted by Photographers</span>
+          </div>
           <h2
-            className="mx-auto max-w-3xl text-4xl font-medium leading-tight tracking-[-1px] text-foreground lg:text-5xl lg:leading-tight"
+            className="mx-auto max-w-3xl text-4xl font-medium leading-tight tracking-[-1px] lg:text-5xl lg:leading-tight"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(30px)",
@@ -173,7 +173,8 @@ export function TestimonialsSection() {
               transitionDelay: "100ms",
             }}
           >
-            Real photographers. Real results.
+            <span className="text-foreground-secondary">Real photographers.</span>{" "}
+            <span className="text-foreground">Real results.</span>
           </h2>
         </div>
 

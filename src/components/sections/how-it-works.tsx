@@ -75,18 +75,18 @@ export function HowItWorksSection() {
       <div className="relative mx-auto max-w-[1512px] px-6 lg:px-[124px]">
         {/* Section Header */}
         <div className="mb-12 text-center lg:mb-16">
-          <p
-            className="mb-4 font-mono text-sm uppercase tracking-wider text-[var(--primary)]"
+          <div
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(20px)",
               transition: "opacity 600ms ease-out, transform 600ms ease-out",
             }}
           >
-            Simple as 1-2-3
-          </p>
+            <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">Simple as 1-2-3</span>
+          </div>
           <h2
-            className="mx-auto max-w-3xl text-4xl font-medium leading-tight tracking-[-1px] text-foreground lg:text-5xl lg:leading-tight"
+            className="mx-auto max-w-3xl text-4xl font-medium leading-tight tracking-[-1px] lg:text-5xl lg:leading-tight"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(30px)",
@@ -94,7 +94,8 @@ export function HowItWorksSection() {
               transitionDelay: "100ms",
             }}
           >
-            From shoot to payment in minutes
+            <span className="text-foreground-secondary">From shoot to</span>{" "}
+            <span className="text-foreground">payment in minutes</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"

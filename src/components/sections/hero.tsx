@@ -12,6 +12,8 @@ const demoSections = [
   { id: "galleries", label: "Galleries", icon: GalleryIcon },
   { id: "clients", label: "Clients", icon: ClientIcon },
   { id: "payments", label: "Payments", icon: PaymentIcon },
+  { id: "scheduling", label: "Scheduling", icon: CalendarIcon },
+  { id: "invoices", label: "Invoices", icon: InvoiceIcon },
 ];
 
 // Animated grid background component
@@ -46,12 +48,12 @@ function GridBackground() {
   );
 }
 
-// Interactive app demo component
+// Interactive app demo component - Full-screen app experience
 function InteractiveDemo({ activeSection, onSectionChange }: { activeSection: string; onSectionChange: (id: string) => void }) {
   return (
-    <div className="relative w-full max-w-4xl mx-auto">
-      {/* Browser chrome */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl shadow-black/40 overflow-hidden">
+    <div className="relative w-full mx-auto">
+      {/* Browser chrome - Full width */}
+      <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl shadow-black/50 overflow-hidden">
         {/* Browser header */}
         <div className="flex items-center gap-2 border-b border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3">
           {/* Traffic lights */}
@@ -61,16 +63,26 @@ function InteractiveDemo({ activeSection, onSectionChange }: { activeSection: st
             <div className="h-3 w-3 rounded-full bg-[#28c840]" />
           </div>
           {/* URL bar */}
-          <div className="ml-4 flex flex-1 items-center gap-2 rounded-lg bg-[var(--background)] px-3 py-1.5">
+          <div className="ml-4 flex flex-1 items-center gap-2 rounded-lg bg-[var(--background)] px-3 py-1.5 max-w-md">
             <LockIcon className="h-3.5 w-3.5 text-[var(--success)]" />
-            <span className="text-xs text-foreground-muted">app.photoproos.com</span>
+            <span className="text-xs text-foreground-muted">app.photoproos.com/dashboard</span>
+          </div>
+          {/* User avatar */}
+          <div className="ml-auto flex items-center gap-3">
+            <button className="relative rounded-lg p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors">
+              <BellIcon className="h-4 w-4" />
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[var(--primary)]" />
+            </button>
+            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[var(--primary)] to-purple-600 flex items-center justify-center text-[10px] font-medium text-white">
+              JD
+            </div>
           </div>
         </div>
 
-        {/* App content */}
-        <div className="flex h-[400px] lg:h-[480px]">
+        {/* App content - Taller for full-screen feel */}
+        <div className="flex h-[500px] md:h-[560px] lg:h-[620px]">
           {/* Sidebar */}
-          <div className="w-14 shrink-0 border-r border-[var(--card-border)] bg-[var(--background-secondary)] py-4 lg:w-48">
+          <div className="w-14 shrink-0 border-r border-[var(--card-border)] bg-[var(--background-secondary)] py-4 lg:w-56">
             {/* Logo */}
             <div className="mb-6 px-3 lg:px-4">
               <div className="hidden lg:block">
@@ -87,34 +99,49 @@ function InteractiveDemo({ activeSection, onSectionChange }: { activeSection: st
                   key={section.id}
                   onClick={() => onSectionChange(section.id)}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm font-medium transition-colors lg:px-3",
+                    "flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-sm font-medium transition-all duration-200 lg:px-3",
                     activeSection === section.id
-                      ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                      ? "bg-[var(--primary)]/10 text-[var(--primary)] shadow-sm"
                       : "text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
                   )}
                 >
                   <section.icon className="h-5 w-5 shrink-0" />
                   <span className="hidden lg:inline">{section.label}</span>
+                  {activeSection === section.id && (
+                    <div className="ml-auto hidden lg:block h-1.5 w-1.5 rounded-full bg-[var(--primary)]" />
+                  )}
                 </button>
               ))}
             </nav>
+
+            {/* Bottom nav items */}
+            <div className="absolute bottom-4 left-0 right-0 px-2 lg:w-56">
+              <div className="border-t border-[var(--card-border)] pt-4 space-y-1">
+                <button className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors lg:px-3">
+                  <SettingsIcon className="h-5 w-5 shrink-0" />
+                  <span className="hidden lg:inline">Settings</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Main content area - fixed height with overflow for consistent layout */}
-          <div className="relative flex-1 overflow-hidden">
+          {/* Main content area */}
+          <div className="relative flex-1 overflow-hidden bg-[var(--background)]">
             <div className="absolute inset-0 overflow-y-auto p-4 lg:p-6">
               {activeSection === "dashboard" && <DashboardDemo />}
               {activeSection === "galleries" && <GalleriesDemo />}
               {activeSection === "clients" && <ClientsDemo />}
               {activeSection === "payments" && <PaymentsDemo />}
+              {activeSection === "scheduling" && <SchedulingDemo />}
+              {activeSection === "invoices" && <InvoicesDemo />}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Floating badges */}
-      <div className="absolute -right-4 top-1/4 hidden animate-float xl:block" style={{ animationDelay: "0ms" }}>
-        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl">
+      {/* Floating notification badges */}
+      <div className="absolute -right-2 lg:-right-6 top-1/4 hidden animate-float md:block" style={{ animationDelay: "0ms" }}>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-[var(--success)] animate-pulse" />
             <span className="text-xs font-medium text-foreground">Payment received</span>
@@ -123,13 +150,23 @@ function InteractiveDemo({ activeSection, onSectionChange }: { activeSection: st
         </div>
       </div>
 
-      <div className="absolute -left-4 bottom-1/4 hidden animate-float xl:block" style={{ animationDelay: "500ms" }}>
-        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl">
+      <div className="absolute -left-2 lg:-left-6 bottom-1/3 hidden animate-float md:block" style={{ animationDelay: "500ms" }}>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <CheckCircleIcon className="h-4 w-4 text-[var(--success)]" />
             <span className="text-xs font-medium text-foreground">Gallery delivered</span>
           </div>
-          <p className="mt-1 text-xs text-foreground-muted">24 photos unlocked</p>
+          <p className="mt-1 text-xs text-foreground-muted">24 photos • Premier Realty</p>
+        </div>
+      </div>
+
+      <div className="absolute -right-2 lg:-right-6 bottom-1/4 hidden animate-float lg:block" style={{ animationDelay: "1000ms" }}>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="h-4 w-4 text-[var(--primary)]" />
+            <span className="text-xs font-medium text-foreground">Booking confirmed</span>
+          </div>
+          <p className="mt-1 text-xs text-foreground-muted">Tomorrow, 2:00 PM</p>
         </div>
       </div>
     </div>
@@ -302,6 +339,169 @@ function PaymentsDemo() {
   );
 }
 
+// Scheduling demo content
+function SchedulingDemo() {
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const currentDay = 3; // Thursday
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-foreground">Scheduling</h3>
+        <div className="flex gap-2">
+          <Button size="sm" variant="secondary">Week</Button>
+          <Button size="sm" variant="default">+ New Booking</Button>
+        </div>
+      </div>
+
+      {/* Mini calendar week view */}
+      <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm font-medium text-foreground">December 2025</span>
+          <div className="flex gap-1">
+            <button className="p-1 rounded hover:bg-[var(--background-hover)]">
+              <ChevronLeftIcon className="h-4 w-4 text-foreground-muted" />
+            </button>
+            <button className="p-1 rounded hover:bg-[var(--background-hover)]">
+              <ChevronRightIcon className="h-4 w-4 text-foreground-muted" />
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-7 gap-2">
+          {days.map((day, i) => (
+            <div key={day} className="text-center">
+              <p className="text-xs text-foreground-muted mb-1">{day}</p>
+              <div className={cn(
+                "h-8 w-8 mx-auto rounded-full flex items-center justify-center text-sm font-medium",
+                i === currentDay ? "bg-[var(--primary)] text-white" : "text-foreground hover:bg-[var(--background-hover)]"
+              )}>
+                {23 + i}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Upcoming bookings */}
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-foreground">Upcoming</p>
+        <div className="space-y-2">
+          <BookingCard
+            time="2:00 PM"
+            title="Corporate Headshots"
+            client="Tech Solutions Inc"
+            duration="2 hours"
+            color="bg-blue-500"
+          />
+          <BookingCard
+            time="5:30 PM"
+            title="Property Shoot"
+            client="Premier Realty"
+            duration="1.5 hours"
+            color="bg-purple-500"
+          />
+          <BookingCard
+            time="Tomorrow, 10:00 AM"
+            title="Restaurant Photography"
+            client="Bella Cucina"
+            duration="3 hours"
+            color="bg-amber-500"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Invoices demo content
+function InvoicesDemo() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-foreground">Invoices</h3>
+        <Button size="sm" variant="default">+ Create Invoice</Button>
+      </div>
+
+      {/* Invoice summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3">
+          <p className="text-xs text-foreground-muted">Draft</p>
+          <p className="text-lg font-bold text-foreground">3</p>
+        </div>
+        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3">
+          <p className="text-xs text-foreground-muted">Sent</p>
+          <p className="text-lg font-bold text-[var(--primary)]">5</p>
+        </div>
+        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3">
+          <p className="text-xs text-foreground-muted">Paid</p>
+          <p className="text-lg font-bold text-[var(--success)]">12</p>
+        </div>
+        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3">
+          <p className="text-xs text-foreground-muted">Overdue</p>
+          <p className="text-lg font-bold text-[var(--error)]">1</p>
+        </div>
+      </div>
+
+      {/* Invoice list */}
+      <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-[var(--background-secondary)]">
+            <tr>
+              <th className="px-4 py-2 text-left font-medium text-foreground-muted">Invoice</th>
+              <th className="hidden px-4 py-2 text-left font-medium text-foreground-muted lg:table-cell">Client</th>
+              <th className="px-4 py-2 text-right font-medium text-foreground-muted">Amount</th>
+              <th className="px-4 py-2 text-right font-medium text-foreground-muted">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[var(--card-border)]">
+            <InvoiceRow id="INV-001" client="Premier Realty" amount="$1,250" status="paid" />
+            <InvoiceRow id="INV-002" client="Tech Solutions" amount="$680" status="sent" />
+            <InvoiceRow id="INV-003" client="Bella Cucina" amount="$890" status="sent" />
+            <InvoiceRow id="INV-004" client="Design Studio" amount="$450" status="overdue" />
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// Booking card helper
+function BookingCard({ time, title, client, duration, color }: { time: string; title: string; client: string; duration: string; color: string }) {
+  return (
+    <div className="flex gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3 hover:border-[var(--border-hover)] transition-colors">
+      <div className={cn("w-1 rounded-full", color)} />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-foreground-muted">{time}</p>
+        <p className="text-sm font-medium text-foreground truncate">{title}</p>
+        <p className="text-xs text-foreground-muted">{client} • {duration}</p>
+      </div>
+    </div>
+  );
+}
+
+// Invoice row helper
+function InvoiceRow({ id, client, amount, status }: { id: string; client: string; amount: string; status: "paid" | "sent" | "draft" | "overdue" }) {
+  const statusColors = {
+    paid: "bg-[var(--success)]/10 text-[var(--success)]",
+    sent: "bg-[var(--primary)]/10 text-[var(--primary)]",
+    draft: "bg-[var(--border)] text-foreground-muted",
+    overdue: "bg-[var(--error)]/10 text-[var(--error)]",
+  };
+
+  return (
+    <tr className="bg-[var(--card)] hover:bg-[var(--background-hover)]">
+      <td className="px-4 py-3 font-medium text-foreground">{id}</td>
+      <td className="hidden px-4 py-3 text-foreground-muted lg:table-cell">{client}</td>
+      <td className="px-4 py-3 text-right font-medium text-foreground">{amount}</td>
+      <td className="px-4 py-3 text-right">
+        <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium uppercase", statusColors[status])}>
+          {status}
+        </span>
+      </td>
+    </tr>
+  );
+}
+
 // Helper components
 function StatCard({ label, value, change, positive }: { label: string; value: string; change?: string; positive?: boolean }) {
   return (
@@ -390,29 +590,31 @@ function PaymentRow({ description, amount, status }: { description: string; amou
 
 export function HeroSection() {
   const [activeSection, setActiveSection] = React.useState("dashboard");
+  const [isPaused, setIsPaused] = React.useState(false);
 
-  // Auto-rotate through demo sections
+  // Auto-rotate through demo sections (pause on hover)
   React.useEffect(() => {
+    if (isPaused) return;
     const interval = setInterval(() => {
       setActiveSection((current) => {
         const currentIndex = demoSections.findIndex((s) => s.id === current);
         const nextIndex = (currentIndex + 1) % demoSections.length;
         return demoSections[nextIndex].id;
       });
-    }, 5000);
+    }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isPaused]);
 
   return (
     <section className="relative z-10 min-h-screen overflow-hidden">
       <GridBackground />
 
-      {/* Content Container */}
-      <div className="relative z-10 mx-auto max-w-[1512px] px-6 pt-32 lg:px-[124px] lg:pt-40">
-        {/* Text content */}
+      {/* Content Container - Tighter spacing for more demo visibility */}
+      <div className="relative z-10 mx-auto max-w-[1600px] px-4 pt-24 lg:px-8 lg:pt-28 xl:px-12">
+        {/* Text content - Compact */}
         <div className="mx-auto max-w-3xl text-center">
           {/* Badge */}
-          <div className="hero-animate hero-animate-1 mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
+          <div className="hero-animate hero-animate-1 mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
@@ -422,21 +624,21 @@ export function HeroSection() {
             </span>
           </div>
 
-          {/* Main Heading */}
-          <h1 className="hero-animate hero-animate-2 text-[40px] font-medium leading-[48px] tracking-[-1px] text-foreground md:text-[56px] md:leading-[64px] md:tracking-[-2px] lg:text-[72px] lg:leading-[80px]">
-            <span className="block">The Business OS for</span>
-            <span className="block bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">
+          {/* Main Heading - Two-tone style */}
+          <h1 className="hero-animate hero-animate-2 text-[36px] font-medium leading-[42px] tracking-[-1px] md:text-[48px] md:leading-[54px] md:tracking-[-2px] lg:text-[56px] lg:leading-[62px]">
+            <span className="text-foreground-secondary">The Business OS for</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">
               Professional Photographers
             </span>
           </h1>
 
           {/* Subheading */}
-          <p className="hero-animate hero-animate-3 mx-auto mt-6 max-w-2xl text-lg leading-7 text-foreground-secondary lg:text-xl lg:leading-8">
-            Everything you need in one place. Deliver stunning galleries, collect payments automatically, and run your entire photography business with ease.
+          <p className="hero-animate hero-animate-3 mx-auto mt-4 max-w-2xl text-base leading-6 text-foreground-secondary lg:text-lg lg:leading-7">
+            Deliver galleries, collect payments, manage clients, and run your entire business from one platform.
           </p>
 
           {/* CTA Buttons */}
-          <div className="hero-animate hero-animate-4 mt-8 flex flex-wrap justify-center gap-3">
+          <div className="hero-animate hero-animate-4 mt-6 flex flex-wrap justify-center gap-3">
             <Button variant="default" size="lg" asChild>
               <Link href="/signup">Start free trial</Link>
             </Button>
@@ -448,31 +650,35 @@ export function HeroSection() {
             </Button>
           </div>
 
-          {/* Social proof */}
-          <div className="hero-animate hero-animate-5 mt-8 flex flex-wrap items-center justify-center gap-4 lg:gap-6">
+          {/* Social proof - Compact */}
+          <div className="hero-animate hero-animate-5 mt-5 flex flex-wrap items-center justify-center gap-4">
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
-                <StarIcon key={i} className="h-4 w-4 text-[#fbbf24]" />
+                <StarIcon key={i} className="h-3.5 w-3.5 text-[#fbbf24]" />
               ))}
-              <span className="ml-2 text-sm text-foreground-secondary">
-                <span className="font-semibold text-foreground">4.9/5</span> from 500+ reviews
+              <span className="ml-1.5 text-xs text-foreground-secondary">
+                <span className="font-semibold text-foreground">4.9</span> from 500+ reviews
               </span>
             </div>
-            <div className="hidden h-4 w-px bg-[var(--border)] lg:block" />
-            <div className="flex items-center gap-2">
-              <CheckCircleIcon className="h-4 w-4 text-[var(--success)]" />
-              <span className="text-sm text-foreground-secondary">No credit card required</span>
+            <div className="hidden h-3 w-px bg-[var(--border)] sm:block" />
+            <div className="flex items-center gap-1.5">
+              <CheckCircleIcon className="h-3.5 w-3.5 text-[var(--success)]" />
+              <span className="text-xs text-foreground-secondary">No credit card required</span>
             </div>
           </div>
         </div>
 
-        {/* Interactive Demo */}
-        <div className="hero-animate hero-animate-6 mt-12 lg:mt-16">
+        {/* Interactive Demo - Full width, taller */}
+        <div
+          className="hero-animate hero-animate-6 mt-8 lg:mt-10"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           <InteractiveDemo activeSection={activeSection} onSectionChange={setActiveSection} />
         </div>
 
-        {/* Bottom spacer */}
-        <div className="h-16 lg:h-24" />
+        {/* Bottom spacer - Minimal */}
+        <div className="h-8 lg:h-12" />
       </div>
     </section>
   );
@@ -539,6 +745,54 @@ function PlayIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9.555 7.168A1 1 0 0 0 8 8v4a1 1 0 0 0 1.555.832l3-2a1 1 0 0 0 0-1.664l-3-2z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function InvoiceIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M7.84 1.804A1 1 0 0 1 8.82 1h2.36a1 1 0 0 1 .98.804l.331 1.652a6.993 6.993 0 0 1 1.929 1.115l1.598-.54a1 1 0 0 1 1.186.447l1.18 2.044a1 1 0 0 1-.205 1.251l-1.267 1.113a7.047 7.047 0 0 1 0 2.228l1.267 1.113a1 1 0 0 1 .206 1.25l-1.18 2.045a1 1 0 0 1-1.187.447l-1.598-.54a6.993 6.993 0 0 1-1.929 1.115l-.33 1.652a1 1 0 0 1-.98.804H8.82a1 1 0 0 1-.98-.804l-.331-1.652a6.993 6.993 0 0 1-1.929-1.115l-1.598.54a1 1 0 0 1-1.186-.447l-1.18-2.044a1 1 0 0 1 .205-1.251l1.267-1.114a7.05 7.05 0 0 1 0-2.227L1.821 7.773a1 1 0 0 1-.206-1.25l1.18-2.045a1 1 0 0 1 1.187-.447l1.598.54A6.993 6.993 0 0 1 7.51 3.456l.33-1.652ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
     </svg>
   );
 }

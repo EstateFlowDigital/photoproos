@@ -32,7 +32,7 @@ const benefits = [
   },
 ];
 
-// Tools comparison visualization
+// Original visualization (kept for reference)
 function ToolsVisualization() {
   const tools = [
     { name: "Gallery tool", icon: "📸" },
@@ -113,6 +113,89 @@ function ToolsVisualization() {
   );
 }
 
+// Improved vertical stacked visualization (cleaner, less cluttered)
+function ImprovedToolsVisualization() {
+  const tools = [
+    { name: "Gallery", icon: "📸", color: "bg-blue-500/10 text-blue-500" },
+    { name: "Payments", icon: "💳", color: "bg-green-500/10 text-green-500" },
+    { name: "Email", icon: "📧", color: "bg-purple-500/10 text-purple-500" },
+    { name: "Calendar", icon: "📅", color: "bg-amber-500/10 text-amber-500" },
+    { name: "Analytics", icon: "📊", color: "bg-pink-500/10 text-pink-500" },
+    { name: "Contracts", icon: "📝", color: "bg-cyan-500/10 text-cyan-500" },
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* Before Section */}
+      <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-2 w-2 rounded-full bg-[var(--error)]" />
+          <span className="text-xs font-medium uppercase tracking-wider text-foreground-muted">Before</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {tools.map((tool, index) => (
+            <div
+              key={tool.name}
+              className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3 animate-float"
+              style={{ animationDelay: `${index * 150}ms` }}
+            >
+              <span className="text-lg">{tool.icon}</span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{tool.name}</p>
+                <p className="text-xs text-foreground-muted">Separate tool</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-center text-sm text-[var(--error)]">
+          6 subscriptions · Multiple logins · No integration
+        </p>
+      </div>
+
+      {/* Arrow */}
+      <div className="flex justify-center">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/30">
+          <ArrowDownIcon className="h-5 w-5" />
+        </div>
+      </div>
+
+      {/* After Section */}
+      <div className="rounded-2xl border-2 border-[var(--primary)] bg-[var(--card)] p-6 shadow-xl shadow-[var(--primary)]/10">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-2 w-2 rounded-full bg-[var(--success)]" />
+          <span className="text-xs font-medium uppercase tracking-wider text-foreground-muted">After</span>
+        </div>
+        <div className="flex items-center gap-4 mb-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--primary)] to-purple-600 shadow-lg">
+            <CameraIcon className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-foreground">PhotoProOS</p>
+            <p className="text-sm text-foreground-muted">All-in-one platform</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {tools.map((tool) => (
+            <div
+              key={tool.name}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-lg p-3",
+                tool.color
+              )}
+            >
+              <span className="text-xl">{tool.icon}</span>
+              <p className="text-xs font-medium">{tool.name}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-center text-sm text-[var(--success)]">
+          1 platform · 1 login · Everything connected
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function NoiseToKnowledgeSection() {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const { ref, isVisible } = useScrollAnimation();
@@ -128,21 +211,21 @@ export function NoiseToKnowledgeSection() {
   return (
     <section ref={ref} className="relative z-10 py-20 lg:py-32">
       <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-24">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left Column - Content */}
           <div>
-            <p
-              className="mb-4 font-mono text-sm uppercase tracking-wider text-[var(--primary)]"
+            <div
+              className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(20px)",
                 transition: "opacity 600ms ease-out, transform 600ms ease-out",
               }}
             >
-              Why PhotoProOS
-            </p>
+              <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">Why PhotoProOS</span>
+            </div>
             <h2
-              className="mb-8 text-4xl font-medium leading-tight tracking-[-1px] text-foreground lg:text-5xl lg:leading-tight"
+              className="mb-6 text-3xl font-medium leading-tight tracking-[-1px] lg:text-4xl lg:leading-tight"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(30px)",
@@ -150,12 +233,12 @@ export function NoiseToKnowledgeSection() {
                 transitionDelay: "100ms",
               }}
             >
-              Everything in one place.<br />
+              <span className="text-foreground">Everything in one place.</span>{" "}
               <span className="text-foreground-secondary">Finally simple.</span>
             </h2>
 
             <p
-              className="mb-8 text-lg text-foreground-secondary"
+              className="mb-6 text-base text-foreground-secondary lg:text-lg"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(30px)",
@@ -167,47 +250,68 @@ export function NoiseToKnowledgeSection() {
               clients, and workflows into one beautifully simple platform.
             </p>
 
-            {/* Benefits List */}
-            <div className="space-y-2">
+            {/* Benefits List with Plus Icons */}
+            <div className="space-y-1">
               {benefits.map((benefit, index) => {
                 const IconComponent = benefit.icon;
+                const isExpanded = index === activeIndex;
                 return (
                   <button
                     key={index}
                     onClick={() => setActiveIndex(index)}
-                    className="flex w-full gap-4 rounded-lg p-3 text-left transition-colors hover:bg-[var(--background-hover)]"
+                    className={cn(
+                      "flex w-full gap-3 rounded-xl p-3 text-left transition-all duration-200",
+                      isExpanded
+                        ? "bg-[var(--card)] border border-[var(--card-border)]"
+                        : "hover:bg-[var(--background-hover)]"
+                    )}
                     aria-label={`Learn about ${benefit.title}`}
-                    aria-expanded={index === activeIndex}
+                    aria-expanded={isExpanded}
                     style={{
                       opacity: isVisible ? 1 : 0,
                       transform: isVisible ? "none" : "translateY(20px)",
-                      transition: "opacity 500ms ease-out, transform 500ms ease-out, background-color 150ms ease",
+                      transition: "opacity 500ms ease-out, transform 500ms ease-out, background-color 150ms ease, border-color 150ms ease",
                       transitionDelay: `${300 + index * 100}ms`,
                     }}
                   >
                     <div className={cn(
                       "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
-                      index === activeIndex
+                      isExpanded
                         ? "bg-[var(--primary)]/10 text-[var(--primary)]"
                         : "bg-[var(--background-elevated)] text-foreground-muted"
                     )}>
                       <IconComponent className="h-4 w-4" />
                     </div>
-                    <div>
-                      <h3 className={cn(
-                        "text-lg font-medium transition-colors",
-                        index === activeIndex ? "text-foreground" : "text-foreground-muted hover:text-foreground-secondary"
-                      )}>
-                        {benefit.title}
-                      </h3>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className={cn(
+                          "text-base font-medium transition-colors",
+                          isExpanded ? "text-foreground" : "text-foreground-muted hover:text-foreground-secondary"
+                        )}>
+                          {benefit.title}
+                        </h3>
+                        {/* Plus/Minus Icon */}
+                        <div className={cn(
+                          "flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-all duration-200",
+                          isExpanded
+                            ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                            : "bg-[var(--background-elevated)] text-foreground-muted"
+                        )}>
+                          {isExpanded ? (
+                            <MinusIcon className="h-3 w-3" />
+                          ) : (
+                            <PlusIcon className="h-3 w-3" />
+                          )}
+                        </div>
+                      </div>
                       <div
                         className={cn(
                           "grid transition-all duration-300 ease-in-out",
-                          index === activeIndex ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
                         )}
                       >
                         <div className="overflow-hidden">
-                          <p className="mt-2 text-base leading-relaxed text-foreground-secondary">
+                          <p className="mt-2 text-sm leading-relaxed text-foreground-secondary pr-6">
                             {benefit.description}
                           </p>
                         </div>
@@ -219,7 +323,7 @@ export function NoiseToKnowledgeSection() {
             </div>
           </div>
 
-          {/* Right Column - Visualization */}
+          {/* Right Column - Visualization (Improved Layout) */}
           <div
             className="relative"
             style={{
@@ -229,7 +333,7 @@ export function NoiseToKnowledgeSection() {
               transitionDelay: "400ms",
             }}
           >
-            <ToolsVisualization />
+            <ImprovedToolsVisualization />
           </div>
         </div>
       </div>
@@ -292,6 +396,30 @@ function ArrowRightIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ArrowDownIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v10.638l3.96-4.158a.75.75 0 1 1 1.08 1.04l-5.25 5.5a.75.75 0 0 1-1.08 0l-5.25-5.5a.75.75 0 1 1 1.08-1.04l3.96 4.158V3.75A.75.75 0 0 1 10 3Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+    </svg>
+  );
+}
+
+function MinusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clipRule="evenodd" />
     </svg>
   );
 }

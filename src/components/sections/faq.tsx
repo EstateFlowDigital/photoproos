@@ -75,15 +75,18 @@ function FAQItemComponent({ question, answer, isOpen, onToggle, index }: FAQItem
         <span className="pr-4 text-lg font-medium text-foreground group-hover:text-foreground/90 transition-colors">{question}</span>
         <span
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background-elevated)] transition-all duration-[var(--duration-base)] group-hover:bg-[var(--background-hover)] motion-reduce:transition-none",
-            isOpen && "rotate-180 bg-[var(--background-hover)]"
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-[var(--duration-base)] motion-reduce:transition-none",
+            isOpen
+              ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+              : "bg-[var(--background-elevated)] text-foreground-secondary group-hover:bg-[var(--background-hover)] group-hover:text-foreground"
           )}
           aria-hidden="true"
         >
-          <ChevronDownIcon className={cn(
-            "h-4 w-4 transition-colors",
-            isOpen ? "text-foreground" : "text-foreground-secondary"
-          )} />
+          {isOpen ? (
+            <MinusIcon className="h-4 w-4" />
+          ) : (
+            <PlusIcon className="h-4 w-4" />
+          )}
         </span>
       </button>
       <div
@@ -113,19 +116,19 @@ export function FAQSection() {
         <div className="grid gap-12 lg:grid-cols-[1fr_2fr] lg:gap-24">
           {/* Left Column - Header */}
           <div>
-            <p
-              className="mb-4 font-mono text-sm uppercase tracking-wider text-[var(--primary)]"
+            <div
+              className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(20px)",
                 transition: "opacity 600ms ease-out, transform 600ms ease-out",
               }}
             >
-              FAQ
-            </p>
+              <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">FAQ</span>
+            </div>
             <h2
               id="faq-heading"
-              className="mb-6 text-4xl font-medium leading-tight tracking-[-1px] text-foreground lg:text-5xl lg:leading-tight"
+              className="mb-6 text-4xl font-medium leading-tight tracking-[-1px] lg:text-5xl lg:leading-tight"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(30px)",
@@ -133,7 +136,8 @@ export function FAQSection() {
                 transitionDelay: "100ms",
               }}
             >
-              Questions? We've got answers.
+              <span className="text-foreground-secondary">Questions?</span>{" "}
+              <span className="text-foreground">We've got answers.</span>
             </h2>
             <p
               className="text-lg leading-relaxed text-foreground-secondary"
@@ -214,7 +218,7 @@ export function FAQSection() {
   );
 }
 
-function ChevronDownIcon({ className }: { className?: string }) {
+function PlusIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -223,11 +227,21 @@ function ChevronDownIcon({ className }: { className?: string }) {
       className={className}
       aria-hidden="true"
     >
-      <path
-        fillRule="evenodd"
-        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-        clipRule="evenodd"
-      />
+      <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+    </svg>
+  );
+}
+
+function MinusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path fillRule="evenodd" d="M4 10a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H4.75A.75.75 0 014 10z" clipRule="evenodd" />
     </svg>
   );
 }
