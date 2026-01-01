@@ -180,7 +180,7 @@ export function TestimonialsSection() {
             }}
           >
             <span className="text-foreground-secondary">Real photographers.</span>{" "}
-            <span className="text-foreground">Real results.</span>
+            <span className="text-[var(--primary)]">Real results.</span>
           </h2>
         </div>
 

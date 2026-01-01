@@ -114,7 +114,7 @@ export function IntegrationsSection() {
             }}
           >
             <span className="text-foreground-secondary">Plays nice with</span>{" "}
-            <span className="text-foreground">your favorite tools</span>
+            <span className="text-[var(--primary)]">your favorite tools</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"

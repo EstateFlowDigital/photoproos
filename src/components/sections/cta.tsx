@@ -43,7 +43,7 @@ export function CTASection() {
         <div className="mx-auto max-w-3xl text-center">
           {/* Badge */}
           <div
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/10 px-4 py-2"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(20px)",
@@ -51,10 +51,12 @@ export function CTASection() {
             }}
           >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]"></span>
             </span>
-            <span className="text-sm font-medium text-[var(--primary)]">Free plan available</span>
+            <span className="text-sm text-foreground-secondary">
+              <span className="font-medium text-[var(--primary)]">Free plan</span> available
+            </span>
           </div>
 
           <h2
@@ -67,7 +69,7 @@ export function CTASection() {
             }}
           >
             <span className="text-foreground-secondary">Ready to run your photography</span>{" "}
-            <span className="text-foreground">business like a pro?</span>
+            <span className="text-[var(--primary)]">business like a pro?</span>
           </h2>
 
           <p

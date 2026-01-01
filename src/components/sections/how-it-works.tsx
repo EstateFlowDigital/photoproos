@@ -101,7 +101,7 @@ export function HowItWorksSection() {
             }}
           >
             <span className="text-foreground-secondary">From shoot to</span>{" "}
-            <span className="text-foreground">payment in minutes</span>
+            <span className="text-[var(--primary)]">payment in minutes</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"

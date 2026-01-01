@@ -185,14 +185,20 @@ export function UseCasesSection() {
         {/* Section Header */}
         <div className="mb-12 text-center lg:mb-16">
           <div
-            className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(20px)",
               transition: "opacity 600ms ease-out, transform 600ms ease-out",
             }}
           >
-            <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">For Every Specialty</span>
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
+            </span>
+            <span className="text-sm text-foreground-secondary">
+              For <span className="font-medium text-[var(--primary)]">every specialty</span>
+            </span>
           </div>
           <h2
             className="mx-auto max-w-3xl text-3xl font-medium leading-tight tracking-[-1px] lg:text-4xl lg:leading-tight"
@@ -204,7 +210,7 @@ export function UseCasesSection() {
             }}
           >
             <span className="text-foreground-secondary">Built for</span>{" "}
-            <span className="text-foreground">your photography vertical</span>
+            <span className="text-[var(--primary)]">your photography vertical</span>
           </h2>
           <p
             className="mx-auto mt-4 max-w-2xl text-base text-foreground-secondary lg:text-lg"

@@ -143,7 +143,7 @@ export function FAQSection() {
               }}
             >
               <span className="text-foreground-secondary">Questions?</span>{" "}
-              <span className="text-foreground">We've got answers.</span>
+              <span className="text-[var(--primary)]">We've got answers.</span>
             </h2>
             <p
               className="text-lg leading-relaxed text-foreground-secondary"

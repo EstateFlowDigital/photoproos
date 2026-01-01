@@ -185,7 +185,7 @@ export function PricingSection() {
             }}
           >
             <span className="text-foreground-secondary">Simple,</span>{" "}
-            <span className="text-foreground">transparent pricing</span>
+            <span className="text-[var(--primary)]">transparent pricing</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"

@@ -103,7 +103,7 @@ export function SecuritySection() {
               }}
             >
               <span className="text-foreground-secondary">Your photos are</span>{" "}
-              <span className="text-foreground">safe with us</span>
+              <span className="text-[var(--primary)]">safe with us</span>
             </h2>
             <p
               className="mb-8 text-lg text-foreground-secondary"

@@ -183,7 +183,7 @@ export function RoadmapSection() {
             }}
           >
             <span className="text-foreground-secondary">What's</span>{" "}
-            <span className="text-foreground">coming next</span>
+            <span className="text-[var(--primary)]">coming next</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"
