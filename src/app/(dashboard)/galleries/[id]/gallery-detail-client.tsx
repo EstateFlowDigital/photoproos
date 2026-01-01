@@ -91,6 +91,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [settings, setSettings] = useState<GallerySettings>(gallery.settings || defaultSettings);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [photos, setPhotos] = useState<Photo[]>(gallery.photos);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
+  const [coverPhotoId, setCoverPhotoId] = useState<string | null>(photos[0]?.id || null);
   const activity = gallery.activity || demoActivity;
 
   const statusStyles = {
@@ -168,6 +171,59 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
   const handlePhotoDownload = (photo: Photo) => {
     showToast(`Downloading ${photo.filename}...`, "info");
+  };
+
+  // Selection mode handlers
+  const toggleSelectMode = () => {
+    if (isSelectMode) {
+      setSelectedPhotos(new Set());
+    }
+    setIsSelectMode(!isSelectMode);
+  };
+
+  const togglePhotoSelection = (photoId: string) => {
+    setSelectedPhotos((prev) => {
+      const next = new Set(prev);
+      if (next.has(photoId)) {
+        next.delete(photoId);
+      } else {
+        next.add(photoId);
+      }
+      return next;
+    });
+  };
+
+  const selectAllPhotos = () => {
+    setSelectedPhotos(new Set(photos.map((p) => p.id)));
+  };
+
+  const deselectAllPhotos = () => {
+    setSelectedPhotos(new Set());
+  };
+
+  const handleBatchDelete = () => {
+    const count = selectedPhotos.size;
+    setPhotos((prev) => prev.filter((p) => !selectedPhotos.has(p.id)));
+    setSelectedPhotos(new Set());
+    setIsSelectMode(false);
+    showToast(`${count} photo${count !== 1 ? "s" : ""} deleted`, "success");
+  };
+
+  const handleBatchDownload = () => {
+    const count = selectedPhotos.size;
+    showToast(`Preparing download of ${count} photo${count !== 1 ? "s" : ""}...`, "info");
+  };
+
+  const handleSetCover = () => {
+    const selectedArray = Array.from(selectedPhotos);
+    if (selectedArray.length === 1) {
+      setCoverPhotoId(selectedArray[0]);
+      setSelectedPhotos(new Set());
+      setIsSelectMode(false);
+      showToast("Cover photo updated", "success");
+    } else {
+      showToast("Please select exactly one photo to set as cover", "warning");
+    }
   };
 
   const handleSaveNotes = () => {
@@ -364,54 +420,155 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           {/* Photo Grid */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground">
-                Photos <span className="text-foreground-muted font-normal">({photos.length})</span>
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Photos <span className="text-foreground-muted font-normal">({photos.length})</span>
+                </h2>
+                {isSelectMode && (
+                  <span className="text-sm text-foreground-muted">
+                    {selectedPhotos.size} selected
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
-                {hasMorePhotos && !showAllPhotos && (
+                {photos.length > 0 && (
                   <button
-                    onClick={() => setShowAllPhotos(true)}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    onClick={toggleSelectMode}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+                      isSelectMode
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+                        : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
+                    )}
                   >
-                    <GridIcon className="h-4 w-4" />
-                    View All
+                    <CheckboxIcon className="h-4 w-4" />
+                    {isSelectMode ? "Cancel" : "Select"}
                   </button>
                 )}
-                <button
-                  onClick={handleAddPhotos}
-                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-                >
-                  <UploadIcon className="h-4 w-4" />
-                  Add Photos
-                </button>
+                {isSelectMode && photos.length > 0 && (
+                  <button
+                    onClick={selectedPhotos.size === photos.length ? deselectAllPhotos : selectAllPhotos}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                  >
+                    {selectedPhotos.size === photos.length ? "Deselect All" : "Select All"}
+                  </button>
+                )}
+                {!isSelectMode && (
+                  <>
+                    {hasMorePhotos && !showAllPhotos && (
+                      <button
+                        onClick={() => setShowAllPhotos(true)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                      >
+                        <GridIcon className="h-4 w-4" />
+                        View All
+                      </button>
+                    )}
+                    <button
+                      onClick={handleAddPhotos}
+                      className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    >
+                      <UploadIcon className="h-4 w-4" />
+                      Add Photos
+                    </button>
+                  </>
+                )}
               </div>
             </div>
+
+            {/* Batch Action Bar */}
+            {isSelectMode && selectedPhotos.size > 0 && (
+              <div className="mb-4 flex items-center justify-between rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3">
+                <span className="text-sm font-medium text-foreground">
+                  {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? "s" : ""} selected
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleSetCover}
+                    disabled={selectedPhotos.size !== 1}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <StarIcon className="h-4 w-4" />
+                    Set as Cover
+                  </button>
+                  <button
+                    onClick={handleBatchDownload}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                  >
+                    <DownloadIcon className="h-4 w-4" />
+                    Download
+                  </button>
+                  <button
+                    onClick={handleBatchDelete}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
 
             {photos.length > 0 ? (
               <>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {displayedPhotos.map((photo, index) => (
-                    <button
+                    <div
                       key={photo.id}
-                      onClick={() => handlePhotoClick(index)}
-                      className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-[var(--background)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--card)]"
+                      onClick={() => isSelectMode ? togglePhotoSelection(photo.id) : handlePhotoClick(index)}
+                      className={cn(
+                        "group relative aspect-[4/3] overflow-hidden rounded-lg bg-[var(--background)] cursor-pointer focus:outline-none",
+                        isSelectMode && selectedPhotos.has(photo.id) && "ring-2 ring-[var(--primary)] ring-offset-2 ring-offset-[var(--card)]"
+                      )}
                     >
                       <img
                         src={photo.url}
                         alt={photo.filename}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        className={cn(
+                          "h-full w-full object-cover transition-transform",
+                          !isSelectMode && "group-hover:scale-105"
+                        )}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <p className="text-sm font-medium text-white truncate">{photo.filename}</p>
+                      {/* Cover badge */}
+                      {coverPhotoId === photo.id && (
+                        <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-[var(--primary)] px-2 py-1 text-xs font-medium text-white">
+                          <StarIcon className="h-3 w-3" />
+                          Cover
                         </div>
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="rounded-full bg-black/50 p-3">
-                          <ZoomIcon className="h-5 w-5 text-white" />
+                      )}
+                      {/* Selection checkbox */}
+                      {isSelectMode && (
+                        <div className="absolute top-2 right-2">
+                          <div
+                            className={cn(
+                              "flex h-6 w-6 items-center justify-center rounded-md border-2 transition-colors",
+                              selectedPhotos.has(photo.id)
+                                ? "border-[var(--primary)] bg-[var(--primary)]"
+                                : "border-white/80 bg-black/30"
+                            )}
+                          >
+                            {selectedPhotos.has(photo.id) && (
+                              <CheckIcon className="h-4 w-4 text-white" />
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </button>
+                      )}
+                      {/* Hover overlay - only when not in select mode */}
+                      {!isSelectMode && (
+                        <>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
+                              <p className="text-sm font-medium text-white truncate">{photo.filename}</p>
+                            </div>
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="rounded-full bg-black/50 p-3">
+                              <ZoomIcon className="h-5 w-5 text-white" />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   ))}
                 </div>
 
@@ -1086,6 +1243,30 @@ function AlertIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CheckboxIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h9.5A2.25 2.25 0 0 1 17 4.25v11.5A2.25 2.25 0 0 1 14.75 18h-9.5A2.25 2.25 0 0 1 3 15.75V4.25Zm2.25-.75a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h9.5a.75.75 0 0 0 .75-.75V4.25a.75.75 0 0 0-.75-.75h-9.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function StarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
     </svg>
   );
 }

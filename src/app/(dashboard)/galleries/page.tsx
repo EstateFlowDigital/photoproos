@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
-import { GalleryCard } from "@/components/dashboard/gallery-card";
+import { GalleryListClient } from "./gallery-list-client";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -9,14 +9,14 @@ const DEMO_MODE = true;
 
 // Demo data for galleries
 const demoGalleries = [
-  { id: "1", name: "Downtown Luxury Listing", client: "Premier Realty", photos: 48, status: "delivered" as const, revenue: "$4,250", thumbnailUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop" },
-  { id: "2", name: "Oceanfront Estate", client: "Berkshire Properties", photos: 64, status: "delivered" as const, revenue: "$5,800", thumbnailUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop" },
-  { id: "3", name: "Corporate Headshots Q4", client: "Tech Solutions Inc", photos: 24, status: "pending" as const, revenue: "$2,180", thumbnailUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=300&fit=crop" },
-  { id: "4", name: "Restaurant Grand Opening", client: "Bella Cucina", photos: 86, status: "delivered" as const, revenue: "$1,890", thumbnailUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop" },
-  { id: "5", name: "Modern Office Space", client: "Design Studio Pro", photos: 32, status: "draft" as const, revenue: undefined, thumbnailUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
-  { id: "6", name: "Wedding - Sarah & Michael", client: "Sarah M.", photos: 156, status: "delivered" as const, revenue: "$3,500", thumbnailUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop" },
-  { id: "7", name: "Product Launch Event", client: "Innovate Tech", photos: 42, status: "pending" as const, revenue: "$1,200", thumbnailUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop" },
-  { id: "8", name: "Penthouse Suite Tour", client: "Luxury Living Realty", photos: 38, status: "draft" as const, revenue: undefined, thumbnailUrl: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400&h=300&fit=crop" },
+  { id: "1", name: "Downtown Luxury Listing", client: "Premier Realty", photos: 48, status: "delivered" as const, revenue: "$4,250", thumbnailUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop", createdAt: "2024-12-20T10:00:00Z" },
+  { id: "2", name: "Oceanfront Estate", client: "Berkshire Properties", photos: 64, status: "delivered" as const, revenue: "$5,800", thumbnailUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop", createdAt: "2024-12-18T14:30:00Z" },
+  { id: "3", name: "Corporate Headshots Q4", client: "Tech Solutions Inc", photos: 24, status: "pending" as const, revenue: "$2,180", thumbnailUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=300&fit=crop", createdAt: "2024-12-22T09:15:00Z" },
+  { id: "4", name: "Restaurant Grand Opening", client: "Bella Cucina", photos: 86, status: "delivered" as const, revenue: "$1,890", thumbnailUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop", createdAt: "2024-12-15T16:00:00Z" },
+  { id: "5", name: "Modern Office Space", client: "Design Studio Pro", photos: 32, status: "draft" as const, revenue: undefined, thumbnailUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop", createdAt: "2024-12-24T11:30:00Z" },
+  { id: "6", name: "Wedding - Sarah & Michael", client: "Sarah M.", photos: 156, status: "delivered" as const, revenue: "$3,500", thumbnailUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop", createdAt: "2024-12-10T13:00:00Z" },
+  { id: "7", name: "Product Launch Event", client: "Innovate Tech", photos: 42, status: "pending" as const, revenue: "$1,200", thumbnailUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop", createdAt: "2024-12-23T08:45:00Z" },
+  { id: "8", name: "Penthouse Suite Tour", client: "Luxury Living Realty", photos: 38, status: "draft" as const, revenue: undefined, thumbnailUrl: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400&h=300&fit=crop", createdAt: "2024-12-25T10:00:00Z" },
 ];
 
 // Helper to format currency
@@ -41,10 +41,6 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
 
   // Demo mode - use static data
   if (DEMO_MODE) {
-    const filteredGalleries = filter === "all"
-      ? demoGalleries
-      : demoGalleries.filter(g => g.status === filter);
-
     const countsMap = {
       delivered: demoGalleries.filter(g => g.status === "delivered").length,
       pending: demoGalleries.filter(g => g.status === "pending").length,
@@ -110,21 +106,8 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
           ))}
         </div>
 
-        {/* Gallery Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredGalleries.map((gallery) => (
-            <GalleryCard
-              key={gallery.id}
-              id={gallery.id}
-              title={gallery.name}
-              client={gallery.client}
-              photos={gallery.photos}
-              status={gallery.status}
-              revenue={gallery.revenue}
-              thumbnailUrl={gallery.thumbnailUrl}
-            />
-          ))}
-        </div>
+        {/* Gallery List with Search, Sort, View Toggle */}
+        <GalleryListClient galleries={demoGalleries} filter={filter} />
       </div>
     );
   }
@@ -228,40 +211,20 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
         ))}
       </div>
 
-      {/* Gallery Grid */}
-      {galleries.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {galleries.map((gallery) => (
-            <GalleryCard
-              key={gallery.id}
-              id={gallery.id}
-              title={gallery.name}
-              client={gallery.client?.company || gallery.client?.fullName || "No client"}
-              photos={gallery.assets.length}
-              status={gallery.status as "delivered" | "pending" | "draft"}
-              revenue={gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : undefined}
-              thumbnailUrl={gallery.coverImageUrl || undefined}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
-          <GalleryPlaceholderIcon className="mx-auto h-12 w-12 text-foreground-muted" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">No galleries found</h3>
-          <p className="mt-2 text-sm text-foreground-muted">
-            {filter === "all"
-              ? "Create your first gallery to get started."
-              : `No ${filter} galleries found.`}
-          </p>
-          <Link
-            href="/galleries/new"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Create Gallery
-          </Link>
-        </div>
-      )}
+      {/* Gallery List with Search, Sort, View Toggle */}
+      <GalleryListClient
+        galleries={galleries.map((gallery) => ({
+          id: gallery.id,
+          name: gallery.name,
+          client: gallery.client?.company || gallery.client?.fullName || "No client",
+          photos: gallery.assets.length,
+          status: gallery.status as "delivered" | "pending" | "draft",
+          revenue: gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : undefined,
+          thumbnailUrl: gallery.coverImageUrl || undefined,
+          createdAt: gallery.createdAt.toISOString(),
+        }))}
+        filter={filter}
+      />
     </div>
   );
 }
@@ -270,14 +233,6 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-    </svg>
-  );
-}
-
-function GalleryPlaceholderIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 8.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clipRule="evenodd" />
     </svg>
   );
 }

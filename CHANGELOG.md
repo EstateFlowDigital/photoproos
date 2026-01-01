@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Gallery List Enhancements)
+- Created `GalleryListClient` component (`src/app/(dashboard)/galleries/gallery-list-client.tsx`)
+  - Search input with debounced filtering by gallery name or client
+  - Sort dropdown with 6 options: Newest, Oldest, Name (A-Z), Name (Z-A), Revenue (High), Revenue (Low)
+  - Grid/List view toggle with smooth switching
+  - List view displays as a table with thumbnail, client, photos, status, and revenue columns
+  - Empty state handling with helpful messages
+  - Results count when search is active
+- Updated galleries page to use the new client component for both demo and database modes
+
+### Added (Photo Multi-Select Mode)
+- Added selection mode to gallery detail page (`/galleries/[id]`)
+  - "Select" button toggles selection mode on photo grid
+  - "Select All" / "Deselect All" for bulk selection
+  - Checkboxes appear on photos in selection mode
+  - Selected photos show ring highlight
+  - Selection count displayed in header
+- Added BatchActionBar component (inline in gallery detail)
+  - Appears when photos are selected
+  - "Set as Cover" button (requires exactly 1 photo selected)
+  - "Download" button for batch download
+  - "Delete" button with destructive styling
+- Added cover photo indicator
+  - Star badge on cover photo in grid
+  - Set cover action updates the cover photo state
+
 ### Added (Photo Upload Modal)
 - Created `PhotoUploadModal` component (`src/components/upload/photo-upload-modal.tsx`)
   - Drag-and-drop upload zone with visual feedback
