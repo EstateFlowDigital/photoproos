@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Public Gallery View)
+- Created `/g/[slug]` customer-facing gallery page
+- Branded header with photographer name/logo
+- Photo grid with hover effects and favorites
+- Pay-to-unlock flow with blurred unpaid photos
+- Download buttons for paid galleries
+- Demo galleries: abc123 (paid), def456 (unpaid)
+- Dark/light theme support based on photographer settings
+- Gallery not found error state
+
+### Added (Creation Forms)
+- Created `/clients/new` page with comprehensive client form
+  - Contact info: first/last name, email, phone
+  - Business info: company, industry dropdown, website
+  - Address fields: street, suite, city, state, zip
+  - Internal notes section
+  - Option to create gallery for new client
+- Created `/scheduling/new` page with booking form
+  - Session details: title, type, client dropdown
+  - Date/time pickers with 30-min time slots
+  - Location with address and access notes
+  - Pricing: session fee and deposit fields
+  - Notifications: confirmation email, reminder, calendar sync
+
+### Added (Additional Settings Pages)
+- Created `/settings/notifications` page
+  - Email notification toggles for all event types
+  - Push notification settings with browser enable button
+  - Quiet hours configuration
+- Created `/settings/integrations` page
+  - Connected integrations section (Stripe, Google Calendar)
+  - Available integrations grid (QuickBooks, Zapier, Mailchimp, etc.)
+  - API access with key management
+  - Webhooks configuration section
+
 ### Added (Settings Pages)
 - Created `/settings/profile` page with personal and business information forms
   - Avatar upload, full name, email, phone fields
