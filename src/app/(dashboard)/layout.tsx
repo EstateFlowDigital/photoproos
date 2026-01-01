@@ -48,18 +48,16 @@ export default async function DashboardLayout({
       data: {
         name: clerkUser.firstName ? `${clerkUser.firstName}'s Studio` : "My Studio",
         slug: `studio-${user.id.slice(0, 8)}`,
-        memberships: {
-          create: {
-            userId: user.id,
-            role: "owner",
-          },
-        },
       },
     });
 
-    // Refresh user with new membership
-    await prisma.membership.findFirst({
-      where: { userId: user.id, organizationId: org.id },
+    // Create membership linking user to organization
+    await prisma.organizationMember.create({
+      data: {
+        organizationId: org.id,
+        userId: user.id,
+        role: "owner",
+      },
     });
   }
 

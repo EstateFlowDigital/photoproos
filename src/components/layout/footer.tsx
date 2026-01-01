@@ -124,7 +124,7 @@ export function Footer() {
             <FooterLink href="/webinars">Webinars</FooterLink>
             <FooterLink href="/changelog">Changelog</FooterLink>
             <FooterLink href="/roadmap">Product Roadmap</FooterLink>
-            <FooterLink href="/api-docs" external>API Documentation</FooterLink>
+            <FooterLink href="/help" badge="Soon">API Documentation</FooterLink>
           </FooterColumn>
 
           {/* Company Column */}

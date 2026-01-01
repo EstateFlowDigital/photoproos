@@ -207,11 +207,14 @@ export function IntegrationsSection() {
               <ArrowIcon className="h-4 w-4" />
             </a>
             <a
-              href="/api-docs"
+              href="/help"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-secondary transition-colors hover:border-[var(--border-hover)] hover:text-foreground"
             >
               <CodeIcon className="h-4 w-4" />
               Build with our API
+              <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">
+                Soon
+              </span>
             </a>
           </div>
         </div>

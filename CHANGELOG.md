@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Marketing Server Actions** (`/lib/actions/marketing.ts`):
+  - `subscribeToNewsletter` - Subscribe users to newsletter with Resend welcome email
+  - `submitContactForm` - Process contact form submissions with team notification and user confirmation emails
+- **SEO Files**:
+  - `sitemap.ts` - Dynamic sitemap generation for all marketing pages with proper priorities
+  - `robots.ts` - Robots.txt configuration to allow crawlers while protecting dashboard/API routes
+- **404 Error Page** (`not-found.tsx`):
+  - Custom photography-themed 404 page with "Looks like this shot didn't make the final cut" messaging
+  - Links to home page and help center
+  - Suggestions for popular pages (features, pricing, galleries)
+- **Contact Form Component** (`/app/(marketing)/contact/contact-form.tsx`):
+  - Client component extracted from contact page
+  - Integrated with `submitContactForm` server action
+  - Success/error state handling with visual feedback
+
+### Fixed
+- **Newsletter Signup**: Now properly sends welcome emails via Resend instead of mock setTimeout
+- **Contact Form**: Now sends emails to team and confirmation to user via Resend instead of mock submission
+- **Broken /api-docs Links**: Updated to point to `/help` with "Soon" badge (footer.tsx, integrations.tsx)
+
 ### Fixed
 - **Public Gallery Payment Flow**: Connected pay-to-unlock buttons to Stripe checkout
   - Created `PayButton` client component for interactive payment functionality
