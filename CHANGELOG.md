@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Gallery Detail Page)
+- Created `/galleries/[id]` page with comprehensive gallery view
+- Stats row showing status, revenue, views, and downloads
+- Photo grid with hover effects showing filename and delete button
+- Sidebar with client info, delivery link management, and quick actions
+- Quick actions: Download all, email client, duplicate, delete
+- Delivery link section with copy and open buttons
+- Demo data for galleries 1, 2, 3, and 5 with sample photos
+
 ### Added (Gallery Creation Form)
 - Created `/galleries/new` page with comprehensive gallery creation form
 - Form sections include:
