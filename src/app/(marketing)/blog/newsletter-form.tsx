@@ -1,21 +1,29 @@
 "use client";
 
 import * as React from "react";
+import { subscribeToNewsletter } from "@/lib/actions/marketing";
 
 export function NewsletterForm() {
   const [email, setEmail] = React.useState("");
   const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = React.useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setStatus("loading");
-    // TODO: Implement actual newsletter signup
-    // For now, just simulate success
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setStatus("success");
-    setEmail("");
+    setErrorMessage("");
+
+    const result = await subscribeToNewsletter(email);
+
+    if (result.success) {
+      setStatus("success");
+      setEmail("");
+    } else {
+      setStatus("error");
+      setErrorMessage(result.error);
+    }
   };
 
   return (
@@ -44,6 +52,9 @@ export function NewsletterForm() {
             {status === "loading" ? "..." : "Subscribe"}
           </button>
         </form>
+      )}
+      {status === "error" && (
+        <p className="mt-2 text-center text-sm text-[var(--error)]">{errorMessage}</p>
       )}
       <p className="mt-4 text-xs text-foreground-muted">
         No spam. Unsubscribe anytime.

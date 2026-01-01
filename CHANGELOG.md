@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed blog page SSR error - extracted newsletter form into client component to handle onSubmit event
   - Added `force-dynamic` export to dashboard pages missing it (prevents Clerk static generation errors)
   - Wrapped root layout with `ClerkProvider` to enable authentication across entire app
+  - Fixed redirect loop after sign-in by syncing user to database in dashboard layout before pages check auth
+  - Dashboard layout now automatically creates a default organization for new users
 
 ### Added (Booking Details & Property Features)
 - **Booking Detail Enhancements** (`/scheduling/[id]/page.tsx`):
