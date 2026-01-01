@@ -1,25 +1,20 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { GalleryEditForm } from "./gallery-edit-form";
 import { getGallery } from "@/lib/actions/galleries";
 import { prisma } from "@/lib/db";
+import { getAuthContext } from "@/lib/auth/clerk";
 
 interface EditGalleryPageProps {
   params: Promise<{ id: string }>;
 }
 
-async function getClients() {
+async function getClients(organizationId: string) {
   try {
-    const org = await prisma.organization.findFirst({
-      orderBy: { createdAt: "asc" },
-    });
-
-    if (!org) return [];
-
     const clients = await prisma.client.findMany({
-      where: { organizationId: org.id },
+      where: { organizationId },
       select: {
         id: true,
         fullName: true,
@@ -42,11 +37,17 @@ async function getClients() {
 }
 
 export default async function EditGalleryPage({ params }: EditGalleryPageProps) {
+  // Get authenticated user and organization
+  const auth = await getAuthContext();
+  if (!auth) {
+    redirect("/sign-in");
+  }
+
   const { id } = await params;
 
   const [gallery, clients] = await Promise.all([
     getGallery(id),
-    getClients(),
+    getClients(auth.organizationId),
   ]);
 
   if (!gallery) {

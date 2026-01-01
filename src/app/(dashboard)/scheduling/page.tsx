@@ -69,16 +69,21 @@ const statusDotColors: Record<string, string> = {
 };
 
 export default async function SchedulingPage() {
-  // Get organization (later from auth)
-  const organization = await prisma.organization.findFirst({
-    orderBy: { createdAt: "asc" },
+  // Get authenticated user and organization
+  const auth = await getAuthContext();
+  if (!auth) {
+    redirect("/sign-in");
+  }
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: auth.organizationId },
   });
 
   if (!organization) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <h2 className="text-xl font-semibold text-foreground">No organization found</h2>
-        <p className="mt-2 text-foreground-muted">Please run the seed script to populate demo data.</p>
+        <p className="mt-2 text-foreground-muted">Please create an organization to get started.</p>
       </div>
     );
   }

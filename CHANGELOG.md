@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Public Gallery Payment Flow**: Connected pay-to-unlock buttons to Stripe checkout
+  - Created `PayButton` client component for interactive payment functionality
+  - Header "Unlock for $X" button now triggers Stripe Checkout
+  - Banner "Pay $X" button now triggers Stripe Checkout
+  - Added loading states and error handling for payment flow
+  - Payment success redirects back to gallery with access unlocked
+
+- **Dashboard Auth Integration**: Fixed all dashboard pages to use proper authentication
+  - `/dashboard` - Now uses `getAuthContext()` instead of bypassing auth
+  - `/galleries` - Fixed to get organization from authenticated user
+  - `/galleries/new` - Refactored helper functions to accept organizationId from auth
+  - `/galleries/[id]/edit` - Fixed client fetching to use auth context
+  - `/clients` - Now properly authenticates before fetching data
+  - `/clients/new` - Fixed to use auth organizationId
+  - `/scheduling` - Now uses authenticated organization
+  - `/payments` - Fixed to use auth context for data fetching
+  - All pages now redirect to `/sign-in` if user is not authenticated
+
 - **Build Errors**: Fixed Railway deployment failures
   - Fixed `getGoldenHourTimes` import error - now correctly uses `calculateGoldenHourLocal` in weather actions
   - Fixed `booking.projectId` type error - removed unused projectId from BookingActions component
@@ -16,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated invoice system to work with client-based invoicing instead of non-existent project relation
   - Fixed blog page SSR error - extracted newsletter form into client component to handle onSubmit event
   - Added `force-dynamic` export to dashboard pages missing it (prevents Clerk static generation errors)
+  - Wrapped root layout with `ClerkProvider` to enable authentication across entire app
 
 ### Added (Booking Details & Property Features)
 - **Booking Detail Enhancements** (`/scheduling/[id]/page.tsx`):

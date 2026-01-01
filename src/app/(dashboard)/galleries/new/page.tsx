@@ -2,18 +2,14 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { GalleryNewForm } from "./gallery-new-form";
 import { prisma } from "@/lib/db";
+import { getAuthContext } from "@/lib/auth/clerk";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
-async function getClients() {
+async function getClients(organizationId: string) {
   try {
-    const org = await prisma.organization.findFirst({
-      orderBy: { createdAt: "asc" },
-    });
-
-    if (!org) return [];
-
     const clients = await prisma.client.findMany({
-      where: { organizationId: org.id },
+      where: { organizationId },
       select: {
         id: true,
         fullName: true,
@@ -35,29 +31,23 @@ async function getClients() {
   }
 }
 
-async function getStats() {
+async function getStats(organizationId: string) {
   try {
-    const org = await prisma.organization.findFirst({
-      orderBy: { createdAt: "asc" },
-    });
-
-    if (!org) return { totalGalleries: 0, deliveredThisMonth: 0, revenueThisMonth: 0 };
-
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const [totalGalleries, deliveredThisMonth, revenueThisMonth] = await Promise.all([
-      prisma.project.count({ where: { organizationId: org.id } }),
+      prisma.project.count({ where: { organizationId } }),
       prisma.project.count({
         where: {
-          organizationId: org.id,
+          organizationId,
           status: "delivered",
           deliveredAt: { gte: startOfMonth },
         },
       }),
       prisma.payment.aggregate({
         where: {
-          organizationId: org.id,
+          organizationId,
           status: "paid",
           paidAt: { gte: startOfMonth },
         },
@@ -77,7 +67,16 @@ async function getStats() {
 }
 
 export default async function NewGalleryPage() {
-  const [clients, stats] = await Promise.all([getClients(), getStats()]);
+  // Get authenticated user and organization
+  const auth = await getAuthContext();
+  if (!auth) {
+    redirect("/sign-in");
+  }
+
+  const [clients, stats] = await Promise.all([
+    getClients(auth.organizationId),
+    getStats(auth.organizationId),
+  ]);
 
   return (
     <div className="space-y-6">

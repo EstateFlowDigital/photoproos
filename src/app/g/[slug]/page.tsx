@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { getPublicGallery, recordGalleryView } from "@/lib/actions/galleries";
+import { PayButton } from "./pay-button";
 
 interface Photo {
   id: string;
@@ -123,13 +124,12 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
                   Download All
                 </button>
               ) : !gallery.isPaid && gallery.price > 0 ? (
-                <button
-                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  <LockIcon className="h-4 w-4" />
-                  Unlock for {formatCurrency(gallery.price)}
-                </button>
+                <PayButton
+                  galleryId={gallery.id}
+                  price={gallery.price}
+                  primaryColor={primaryColor}
+                  variant="header"
+                />
               ) : null}
             </div>
           </div>
@@ -185,12 +185,12 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
                   One-time payment of {formatCurrency(gallery.price)} for full access
                 </p>
               </div>
-              <button
-                className="flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-colors"
-                style={{ backgroundColor: primaryColor }}
-              >
-                Pay {formatCurrency(gallery.price)}
-              </button>
+              <PayButton
+                galleryId={gallery.id}
+                price={gallery.price}
+                primaryColor={primaryColor}
+                variant="banner"
+              />
             </div>
           </div>
         </div>

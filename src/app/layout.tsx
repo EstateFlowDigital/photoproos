@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -102,14 +103,16 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body>
-        {/* Skip to main content link for accessibility */}
-        <a
-          href="#main-content"
-          className="skip-to-main-content"
-        >
-          Skip to main content
-        </a>
-        {children}
+        <ClerkProvider>
+          {/* Skip to main content link for accessibility */}
+          <a
+            href="#main-content"
+            className="skip-to-main-content"
+          >
+            Skip to main content
+          </a>
+          {children}
+        </ClerkProvider>
       </body>
     </html>
   );

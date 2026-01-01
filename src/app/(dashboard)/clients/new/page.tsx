@@ -3,14 +3,17 @@ import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { ClientNewForm } from "./client-new-form";
 import { prisma } from "@/lib/db";
+import { getAuthContext } from "@/lib/auth/clerk";
+import { redirect } from "next/navigation";
 
 export default async function NewClientPage() {
-  // Fetch real stats for the sidebar
-  const org = await prisma.organization.findFirst({
-    orderBy: { createdAt: "asc" },
-  });
+  // Get authenticated user and organization
+  const auth = await getAuthContext();
+  if (!auth) {
+    redirect("/sign-in");
+  }
 
-  const organizationId = org?.id;
+  const organizationId = auth.organizationId;
 
   // Get client stats
   const [totalClients, industryStats, totalRevenue] = await Promise.all([
