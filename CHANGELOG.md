@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Gallery Creation Form)
+- Created `/galleries/new` page with comprehensive gallery creation form
+- Form sections include:
+  - Gallery Details: Name, description, client selection dropdown
+  - Pricing: Gallery price input with dollar formatting, access type (public/password protected)
+  - Cover Image: Drag-and-drop upload zone (UI only in demo mode)
+  - Settings: Toggle switches for downloads, favorites, watermarks, and email notifications
+- Client dropdown populated with demo clients for testing
+- Form follows design system with proper input styling, focus states, and spacing
+- Added demo mode banner explaining form submissions are disabled
+
 ### Added (Demo Mode for Production Review)
 - Added DEMO_MODE flag to all dashboard pages to allow UI review without database connection
 - Dashboard page: Shows sample metrics ($12,475 revenue, 24 galleries, 156 clients), activity feed, and gallery cards
