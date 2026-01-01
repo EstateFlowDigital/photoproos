@@ -78,14 +78,20 @@ export function SecuritySection() {
           {/* Left: Content */}
           <div>
             <div
-              className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--success)]/20 bg-[var(--success)]/5 px-3 py-1"
+              className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(20px)",
                 transition: "opacity 600ms ease-out, transform 600ms ease-out",
               }}
             >
-              <span className="text-xs font-medium uppercase tracking-wider text-[var(--success)]">Enterprise-Grade Security</span>
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
+              </span>
+              <span className="text-sm text-foreground-secondary">
+                <span className="font-medium text-[var(--primary)]">SOC 2</span> certified security
+              </span>
             </div>
             <h2
               className="mb-6 text-4xl font-medium leading-tight tracking-[-1px] lg:text-5xl lg:leading-tight"

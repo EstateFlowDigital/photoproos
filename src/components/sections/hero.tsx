@@ -620,7 +620,7 @@ export function HeroSection() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              Now serving <span className="font-medium text-foreground">2,500+</span> photographers
+              Now serving <span className="font-medium text-[var(--primary)]">2,500+</span> photographers
             </span>
           </div>
 

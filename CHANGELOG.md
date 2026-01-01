@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Portal Application - Sprint 2)
+- Created complete dashboard layout system:
+  - `DashboardSidebar` component (`src/components/layout/dashboard-sidebar.tsx`) with navigation, user info, and active state detection
+  - `DashboardTopbar` component (`src/components/layout/dashboard-topbar.tsx`) with search, quick actions, and notifications
+  - Dashboard layout wrapper (`src/app/(dashboard)/layout.tsx`) combining sidebar + topbar
+- Created reusable dashboard components (`src/components/dashboard/`):
+  - `StatCard` - Metric display with label, value, and change indicator
+  - `ActivityItem` - Activity feed item with icon, text, and timestamp
+  - `GalleryCard` - Gallery preview with thumbnail, status, and revenue
+  - `PageHeader` - Page title with subtitle and action buttons
+- Created dashboard pages with real Prisma data:
+  - `/dashboard` - Overview with stats grid, recent galleries, activity feed
+  - `/galleries` - Gallery list with filter tabs (All, Delivered, Pending, Draft)
+  - `/clients` - Client table with industry badges and revenue
+  - `/payments` - Payment history with status filters and summary cards
+  - `/scheduling` - Calendar week view with upcoming bookings
+  - `/settings` - Settings hub with navigation to profile, billing, team, branding, notifications, integrations
+- Added `force-dynamic` export to all database-querying pages for proper SSR
+- Updated Prisma client configuration for Accelerate support
+
 ### Changed (Landing Page Polish)
 - Updated all section eyebrow text from `font-mono` to styled badge design with border and background for visual consistency across:
   - Testimonials section

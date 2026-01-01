@@ -117,14 +117,20 @@ export function FAQSection() {
           {/* Left Column - Header */}
           <div>
             <div
-              className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
+              className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(20px)",
                 transition: "opacity 600ms ease-out, transform 600ms ease-out",
               }}
             >
-              <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">FAQ</span>
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
+              </span>
+              <span className="text-sm text-foreground-secondary">
+                <span className="font-medium text-[var(--primary)]">24/7</span> support available
+              </span>
             </div>
             <h2
               id="faq-heading"

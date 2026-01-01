@@ -76,14 +76,20 @@ export function HowItWorksSection() {
         {/* Section Header */}
         <div className="mb-12 text-center lg:mb-16">
           <div
-            className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-3 py-1"
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(20px)",
               transition: "opacity 600ms ease-out, transform 600ms ease-out",
             }}
           >
-            <span className="text-xs font-medium uppercase tracking-wider text-[var(--primary)]">Simple as 1-2-3</span>
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
+            </span>
+            <span className="text-sm text-foreground-secondary">
+              Simple as <span className="font-medium text-[var(--primary)]">1-2-3</span>
+            </span>
           </div>
           <h2
             className="mx-auto max-w-3xl text-4xl font-medium leading-tight tracking-[-1px] lg:text-5xl lg:leading-tight"

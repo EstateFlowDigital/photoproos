@@ -1,0 +1,151 @@
+import { PageHeader } from "@/components/dashboard";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+interface SettingCardProps {
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+function SettingCard({ title, description, href, icon }: SettingCardProps) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/5"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-foreground-muted transition-colors group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)]">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-medium text-foreground">{title}</h3>
+        <p className="mt-1 text-sm text-foreground-muted">{description}</p>
+      </div>
+      <ChevronRightIcon className="h-5 w-5 shrink-0 text-foreground-muted transition-transform group-hover:translate-x-1" />
+    </Link>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Settings"
+        subtitle="Manage your account and preferences"
+      />
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <SettingCard
+          title="Profile"
+          description="Update your personal information and avatar"
+          href="/settings/profile"
+          icon={<UserIcon className="h-5 w-5" />}
+        />
+        <SettingCard
+          title="Billing"
+          description="Manage your subscription and payment methods"
+          href="/settings/billing"
+          icon={<CreditCardIcon className="h-5 w-5" />}
+        />
+        <SettingCard
+          title="Team"
+          description="Invite team members and manage permissions"
+          href="/settings/team"
+          icon={<UsersIcon className="h-5 w-5" />}
+        />
+        <SettingCard
+          title="Branding"
+          description="Customize your galleries with your logo and colors"
+          href="/settings/branding"
+          icon={<PaletteIcon className="h-5 w-5" />}
+        />
+        <SettingCard
+          title="Notifications"
+          description="Configure email and push notification preferences"
+          href="/settings/notifications"
+          icon={<BellIcon className="h-5 w-5" />}
+        />
+        <SettingCard
+          title="Integrations"
+          description="Connect third-party apps and services"
+          href="/settings/integrations"
+          icon={<PlugIcon className="h-5 w-5" />}
+        />
+      </div>
+
+      {/* Danger Zone */}
+      <div className="mt-8 rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/5 p-6">
+        <h3 className="font-medium text-foreground">Danger Zone</h3>
+        <p className="mt-1 text-sm text-foreground-muted">
+          Irreversible and destructive actions
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button className="rounded-lg border border-[var(--error)]/30 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10">
+            Export All Data
+          </button>
+          <button className="rounded-lg border border-[var(--error)]/30 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10">
+            Delete Account
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UserIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z" />
+    </svg>
+  );
+}
+
+function CreditCardIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M2.5 4A1.5 1.5 0 0 0 1 5.5V6h18v-.5A1.5 1.5 0 0 0 17.5 4h-15ZM19 8.5H1v6A1.5 1.5 0 0 0 2.5 16h15a1.5 1.5 0 0 0 1.5-1.5v-6ZM3 13.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Zm4.75-.75a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5h-3.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z" />
+    </svg>
+  );
+}
+
+function PaletteIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16ZM6.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm0 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM10 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm3.5 2a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm0 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PlugIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M14 6H6v8h8V6Z" />
+      <path fillRule="evenodd" d="M2 4.25A2.25 2.25 0 0 1 4.25 2h11.5A2.25 2.25 0 0 1 18 4.25v11.5A2.25 2.25 0 0 1 15.75 18H4.25A2.25 2.25 0 0 1 2 15.75V4.25ZM4.25 3.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h11.5a.75.75 0 0 0 .75-.75V4.25a.75.75 0 0 0-.75-.75H4.25Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
