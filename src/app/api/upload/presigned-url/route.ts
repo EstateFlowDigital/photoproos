@@ -42,8 +42,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, use a default org ID if not available (demo mode support)
-    const organizationId = orgId || "demo-org";
+    // Require organization ID - no demo mode fallback for security
+    if (!orgId) {
+      return NextResponse.json(
+        { success: false, error: "Organization not found. Please select an organization." },
+        { status: 403 }
+      );
+    }
+
+    const organizationId = orgId;
 
     // Parse request body
     const body: RequestBody = await request.json();
@@ -102,22 +109,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Verify gallery exists (if not demo mode)
-    if (organizationId !== "demo-org") {
-      const gallery = await prisma.project.findFirst({
-        where: {
-          id: galleryId,
-          organizationId,
-        },
-        select: { id: true },
-      });
+    // Verify gallery exists and belongs to this organization
+    const gallery = await prisma.project.findFirst({
+      where: {
+        id: galleryId,
+        organizationId,
+      },
+      select: { id: true },
+    });
 
-      if (!gallery) {
-        return NextResponse.json(
-          { success: false, error: "Gallery not found" },
-          { status: 404 }
-        );
-      }
+    if (!gallery) {
+      return NextResponse.json(
+        { success: false, error: "Gallery not found or access denied" },
+        { status: 404 }
+      );
     }
 
     // Generate keys and presigned URLs for each file

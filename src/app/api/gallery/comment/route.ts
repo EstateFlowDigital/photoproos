@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { commentsRatelimit, checkRateLimit, getClientIP } from "@/lib/ratelimit";
+
+const SESSION_COOKIE_NAME = "gallery_session";
 
 /**
  * POST /api/gallery/comment
@@ -86,7 +89,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create the comment
+    // Get or create session ID for tracking comment ownership
+    const cookieStore = await cookies();
+    let sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+    }
+
+    // Create the comment with session tracking
     const comment = await prisma.galleryComment.create({
       data: {
         projectId: galleryId,
@@ -94,10 +105,11 @@ export async function POST(request: NextRequest) {
         clientName: clientName || null,
         clientEmail: clientEmail || null,
         content,
+        sessionId, // Track who created the comment for secure deletion
       },
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       comment: {
         id: comment.id,
@@ -107,6 +119,19 @@ export async function POST(request: NextRequest) {
         createdAt: comment.createdAt,
       },
     });
+
+    // Set session cookie if it was newly created
+    if (!cookieStore.get(SESSION_COOKIE_NAME)?.value) {
+      response.cookies.set(SESSION_COOKIE_NAME, sessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: "/",
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error("[Comment] Error:", error);
     return NextResponse.json(
@@ -180,26 +205,47 @@ export async function GET(request: NextRequest) {
 /**
  * DELETE /api/gallery/comment
  *
- * Delete a comment (requires matching email).
- * Body: { commentId: string, clientEmail: string }
+ * Delete a comment (requires matching session - secure ownership verification).
+ * Body: { commentId: string }
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { commentId, clientEmail } = body;
-
-    if (!commentId || !clientEmail) {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(commentsRatelimit, clientIP);
+    if (!rateLimitResult.success) {
       return NextResponse.json(
-        { error: "Comment ID and email are required" },
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json();
+    const { commentId } = body;
+
+    if (!commentId) {
+      return NextResponse.json(
+        { error: "Comment ID is required" },
         { status: 400 }
       );
     }
 
-    // Find the comment and verify ownership
+    // Get session ID from cookie - this is the ONLY way to verify ownership
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: "Session not found. You can only delete your own comments." },
+        { status: 401 }
+      );
+    }
+
+    // Find the comment and verify ownership via session (not email!)
     const comment = await prisma.galleryComment.findFirst({
       where: {
         id: commentId,
-        clientEmail: clientEmail,
+        sessionId: sessionId, // Must match the session that created it
       },
     });
 

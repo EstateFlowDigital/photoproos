@@ -611,6 +611,7 @@ model GalleryComment {
   clientEmail String?
   clientName  String?
   content     String
+  sessionId   String? // Session ID for secure comment ownership verification
 
   createdAt DateTime @default(now())
 
@@ -620,6 +621,7 @@ model GalleryComment {
 
   @@index([projectId])
   @@index([assetId])
+  @@index([sessionId])
 }
 
 // ============================================================================

@@ -57,14 +57,14 @@ async function logActivity(
   }
 }
 
-// Helper to generate a unique slug for delivery links
+// Helper to generate a cryptographically secure slug for delivery links
 function generateSlug(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let slug = "";
-  for (let i = 0; i < 8; i++) {
-    slug += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return slug;
+  // Use crypto.randomBytes for security - 16 bytes = 128 bits of entropy
+  // Convert to base36 (alphanumeric) for URL-friendly slug
+  const { randomBytes } = require("crypto");
+  const bytes = randomBytes(16);
+  // Convert to base36 and take first 16 characters for a secure, URL-friendly slug
+  return bytes.toString("hex").slice(0, 16);
 }
 
 /**
@@ -459,31 +459,37 @@ export async function deliverGallery(
       { projectId: id, clientId: existing.clientId || undefined }
     );
 
-    // Send email notification if requested
+    // Send email notification if requested (non-blocking - don't fail delivery if email fails)
     if (sendEmail && existing.client?.email) {
-      // Get organization info for photographer name
-      const organization = await prisma.organization.findUnique({
-        where: { id: organizationId },
-        select: { name: true },
-      });
+      try {
+        // Get organization info for photographer name
+        const organization = await prisma.organization.findUnique({
+          where: { id: organizationId },
+          select: { name: true },
+        });
 
-      const deliverySlug = existing.deliveryLinks[0]?.slug || id;
-      const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliverySlug}`;
+        const deliverySlug = existing.deliveryLinks[0]?.slug || id;
+        const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliverySlug}`;
 
-      // Count photos for the email
-      const photoCount = await prisma.asset.count({
-        where: { projectId: id },
-      });
+        // Count photos for the email
+        const photoCount = await prisma.asset.count({
+          where: { projectId: id },
+        });
 
-      await sendGalleryDeliveredEmail({
-        to: existing.client.email,
-        clientName: existing.client.fullName || existing.client.company || "there",
-        galleryName: existing.name,
-        galleryUrl,
-        photographerName: organization?.name || "Your Photographer",
-        photoCount,
-        expiresAt: existing.expiresAt || undefined,
-      });
+        await sendGalleryDeliveredEmail({
+          to: existing.client.email,
+          clientName: existing.client.fullName || existing.client.company || "there",
+          galleryName: existing.name,
+          galleryUrl,
+          photographerName: organization?.name || "Your Photographer",
+          photoCount,
+          expiresAt: existing.expiresAt || undefined,
+        });
+      } catch (emailError) {
+        // Log email failure but don't fail the delivery operation
+        console.error("[Gallery Delivery] Email notification failed:", emailError);
+        // Continue with delivery - email is a nice-to-have, not critical
+      }
     }
 
     revalidatePath("/galleries");
