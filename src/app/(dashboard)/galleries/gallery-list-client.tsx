@@ -218,8 +218,40 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
   };
 
   const handleBulkExport = () => {
-    const count = selectedGalleries.size;
-    showToast(`Exporting ${count} gallery${count !== 1 ? "ies" : "y"}...`, "info");
+    const selectedGalleryList = galleries.filter((g) => selectedGalleries.has(g.id));
+    const count = selectedGalleryList.length;
+
+    // Generate CSV
+    const csvRows = [
+      ["Name", "Client", "Status", "Photos", "Views", "Downloads", "Revenue", "Created"].join(","),
+      ...selectedGalleryList.map((g) =>
+        [
+          `"${g.name.replace(/"/g, '""')}"`,
+          `"${g.client.replace(/"/g, '""')}"`,
+          g.status,
+          g.photos,
+          g.views || 0,
+          g.downloads || 0,
+          g.revenue || "$0",
+          g.createdAt || "",
+        ].join(",")
+      ),
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `galleries-export-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast(`Exported ${count} gallery${count !== 1 ? "ies" : ""}`, "success");
+    setSelectedGalleries(new Set());
+    setIsSelectMode(false);
   };
 
   const handleBulkShare = () => {

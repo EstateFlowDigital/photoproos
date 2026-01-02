@@ -16,6 +16,7 @@ import {
   deliverGallery,
   recordDownload
 } from "@/lib/actions/galleries";
+import { createInvoice } from "@/lib/actions/invoices";
 import {
   DndContext,
   closestCenter,
@@ -95,7 +96,7 @@ interface Gallery {
   id: string;
   name: string;
   description: string;
-  client: { name: string; email: string; phone?: string };
+  client: { id?: string; name: string; email: string; phone?: string };
   status: "delivered" | "pending" | "draft";
   priceCents: number;
   serviceId?: string;
@@ -205,7 +206,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDelivering, setIsDelivering] = useState(false);
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const activity = gallery.activity || demoActivity;
   const analytics = gallery.analytics || demoAnalytics;
 
@@ -564,7 +567,34 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   };
 
   const handleExportAnalytics = () => {
-    showToast("Exporting analytics report as PDF...", "info");
+    // Generate CSV from analytics data
+    const csvRows = [
+      ["Metric", "Value"],
+      ["Total Views", analytics.totalViews.toString()],
+      ["Unique Visitors", analytics.uniqueVisitors.toString()],
+      ["Total Downloads", analytics.totalDownloads.toString()],
+      ["Avg Time on Page (seconds)", analytics.avgTimeOnPage.toString()],
+      [""],
+      ["Views by Day", ""],
+      ["Date", "Views"],
+      ...analytics.viewsByDay.map(d => [d.date, d.views.toString()]),
+      [""],
+      ["Device Breakdown", ""],
+      ["Device", "Percentage"],
+      ...analytics.deviceBreakdown.map(d => [d.device, `${d.percentage}%`]),
+    ];
+
+    const csvContent = csvRows.map(row => row.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${gallery.name.replace(/[^a-z0-9]/gi, "_")}-analytics.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Analytics exported successfully", "success");
   };
 
   const handlePreviewDelivery = () => {
@@ -582,12 +612,61 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     showToast("Setting updated", "success");
   };
 
-  const handleCreateInvoice = () => {
-    showToast("Creating invoice from gallery...", "info");
+  const handleCreateInvoice = async () => {
+    if (!gallery.client.id) {
+      showToast("No client associated with this gallery", "error");
+      return;
+    }
+
+    if (gallery.priceCents <= 0) {
+      showToast("Gallery has no billable amount", "error");
+      return;
+    }
+
+    setIsCreatingInvoice(true);
+    try {
+      const result = await createInvoice({
+        clientId: gallery.client.id,
+        lineItems: [
+          {
+            itemType: "service" as const,
+            description: `${gallery.name}${gallery.serviceDescription ? ` - ${gallery.serviceDescription}` : ""}`,
+            quantity: 1,
+            unitCents: gallery.priceCents,
+          },
+        ],
+      });
+
+      if (result.success) {
+        showToast("Invoice created successfully", "success");
+        router.push(`/invoices/${result.data.id}`);
+      } else {
+        showToast(result.error || "Failed to create invoice", "error");
+      }
+    } catch {
+      showToast("Failed to create invoice", "error");
+    } finally {
+      setIsCreatingInvoice(false);
+    }
   };
 
   const handleSendReminder = () => {
-    showToast("Payment reminder sent to client", "success");
+    if (!gallery.client.email) {
+      showToast("No client email address on file", "error");
+      return;
+    }
+
+    const subject = encodeURIComponent(`Payment Reminder - ${gallery.name}`);
+    const body = encodeURIComponent(
+      `Hi ${gallery.client.name},\n\n` +
+      `This is a friendly reminder about the outstanding payment for your gallery "${gallery.name}".\n\n` +
+      `Amount: $${(gallery.priceCents / 100).toFixed(2)}\n\n` +
+      `${gallery.deliveryLink ? `You can view your gallery and complete payment at:\n${gallery.deliveryLink}\n\n` : ""}` +
+      `Please let us know if you have any questions.\n\n` +
+      `Thank you for your business!`
+    );
+    window.location.href = `mailto:${gallery.client.email}?subject=${subject}&body=${body}`;
+    showToast("Opening email client with reminder", "success");
   };
 
   const handleCallClient = () => {
@@ -599,7 +678,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   };
 
   const handleGenerateQR = () => {
-    showToast("QR code generated for gallery link", "success");
+    if (!gallery.deliveryLink) {
+      showToast("Gallery must be delivered to generate QR code", "error");
+      return;
+    }
+    setShowQRModal(true);
   };
 
   const formatRelativeTime = (timestamp: string) => {
@@ -1539,10 +1622,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   <h2 className="text-lg font-semibold text-foreground">Invoices</h2>
                   <button
                     onClick={handleCreateInvoice}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                    disabled={isCreatingInvoice}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <PlusIcon className="h-4 w-4" />
-                    Create Invoice
+                    {isCreatingInvoice ? "Creating..." : "Create Invoice"}
                   </button>
                 </div>
 
@@ -1580,10 +1664,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     <p className="mt-1 text-xs text-foreground-muted">Create an invoice to get paid for this gallery</p>
                     <button
                       onClick={handleCreateInvoice}
-                      className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                      disabled={isCreatingInvoice}
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <PlusIcon className="h-4 w-4" />
-                      Create Invoice
+                      {isCreatingInvoice ? "Creating..." : "Create Invoice"}
                     </button>
                   </div>
                 )}
@@ -1805,6 +1890,49 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                 className="rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
               >
                 {isDeleting ? "Deleting..." : "Delete Gallery"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal */}
+      {showQRModal && gallery.deliveryLink && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowQRModal(false)}
+          />
+          <div className="relative z-10 w-full max-w-sm rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-foreground mb-4 text-center">Gallery QR Code</h2>
+            <div className="flex justify-center mb-4">
+              {/* Using Google Charts API for QR code generation */}
+              <img
+                src={`https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(gallery.deliveryLink)}&choe=UTF-8`}
+                alt="QR Code for gallery link"
+                className="rounded-lg bg-white p-2"
+                width={200}
+                height={200}
+              />
+            </div>
+            <p className="text-xs text-foreground-muted text-center mb-4 break-all">
+              {gallery.deliveryLink}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(gallery.deliveryLink!);
+                  showToast("Link copied to clipboard", "success");
+                }}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
+                Copy Link
+              </button>
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              >
+                Close
               </button>
             </div>
           </div>

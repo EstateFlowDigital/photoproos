@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Deliver gallery sends to client
   - Download all photos actually downloads files
   - Email client opens mailto with pre-filled subject
+  - **Export Analytics**: Downloads CSV with views, visitors, downloads, and device breakdown
+  - **Create Invoice**: Creates invoice from gallery with service line item and navigates to invoice page
+  - **Send Reminder**: Opens mailto with payment reminder pre-filled with gallery and amount details
+  - **Generate QR Code**: Shows modal with scannable QR code for gallery delivery link
+- **Gallery List Actions**: Fixed bulk export to generate and download CSV with gallery data
 - **Invoice Actions**: Fixed non-functional buttons:
   - Send via Email now opens mailto with invoice link
   - Download Invoice generates and downloads a text file

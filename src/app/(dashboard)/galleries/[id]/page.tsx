@@ -28,8 +28,10 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
     name: gallery.name,
     description: gallery.description || "",
     client: {
+      id: gallery.client?.id,
       name: gallery.client?.company || gallery.client?.fullName || "No client",
       email: gallery.client?.email || "",
+      phone: gallery.client?.phone || undefined,
     },
     status: gallery.status as "delivered" | "pending" | "draft",
     priceCents: gallery.priceCents,
