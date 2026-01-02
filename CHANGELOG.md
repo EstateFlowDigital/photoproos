@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Property Website Improvements**: Enhanced property website editing and creation flow
+- **Property Website Improvements**: Enhanced property website editing, template system, and media capabilities
   - Comprehensive edit page at `/properties/[id]/edit` with all fields editable
   - Edit address, property details, content (headline, description, features)
   - Configure virtual tour and video URLs
@@ -17,6 +17,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - SEO settings (meta title, meta description)
   - Edit button added to property detail page header
   - "Create Property Website" button added to client actions
+  - **Template Variations**: Each template has unique styling for backgrounds, typography, colors, and layout
+    - Modern: Dark theme with blue accents, clean layout
+    - Classic: Warm cream background with serif fonts and gold accents
+    - Luxury: Ultra-dark with gold typography and minimal borders
+    - Minimal: White background, single hero image, narrow content width
+    - Commercial: Light gray background with blue accents, data-focused
+  - **Video & Tour Embeds**: MediaEmbed component for public property pages
+    - YouTube video embedding (extract video ID)
+    - Vimeo video embedding
+    - Matterport 3D tour embedding
+    - iGuide tour embedding
+    - Zillow 3D Home, CloudPano, and Kuula support
+    - Fallback link cards for unsupported URLs
+  - **Photo Upload Tab**: New "Photos" tab on property detail page
+    - Grid view of all photos
+    - Upload Photos button with full-featured upload modal
+    - Photo count badge on tab
+    - Tips section for photo best practices
 - **Project Management System**: Comprehensive Kanban-based project management with entity linking
   - Database schema: TaskBoard, TaskColumn, Task, TaskSubtask, TaskComment models
   - TaskStatus and TaskPriority enums for task states
@@ -48,6 +66,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `/README-ONBOARDING.md` with complete implementation documentation
   - Created module README files: `README-MODULE-REAL-ESTATE.md`, `README-MODULE-COMMERCIAL.md`,
     `README-MODULE-EVENTS.md`, `README-MODULE-PORTRAITS.md`, `README-MODULE-FOOD.md`, `README-MODULE-PRODUCT.md`
+  - **Restart Onboarding**: Added ability to restart onboarding from Settings page
+    - New `resetOnboarding` server action to clear onboarding status
+    - "Restart Onboarding" button in Settings page for revisiting setup wizard
 - **Module Gating in Navigation**: Dynamic sidebar navigation based on enabled modules
   - Dashboard layout fetches organization's enabledModules from database
   - Sidebar and mobile navigation filter menu items based on enabled modules

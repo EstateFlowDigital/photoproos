@@ -47,6 +47,105 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+// Template configuration for different design styles
+const templateStyles = {
+  modern: {
+    main: "min-h-screen bg-[var(--background)]",
+    heroGrid: "grid h-[70vh] min-h-[500px] grid-cols-4 grid-rows-2 gap-1",
+    heroImage: "bg-[var(--card)]",
+    section: "mx-auto max-w-7xl px-6 py-12",
+    heading: "text-2xl font-semibold text-foreground md:text-3xl",
+    price: "mb-2 text-3xl font-bold text-foreground md:text-4xl",
+    card: "rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6",
+    divider: "border-b border-[var(--card-border)] py-8",
+    accent: "text-[var(--primary)]",
+    accentBg: "bg-[var(--primary)]",
+    accentBgLight: "bg-[var(--primary)]/10",
+    sectionHeading: "mb-6 text-lg font-semibold text-foreground",
+    secondaryText: "text-foreground-secondary",
+    mutedText: "text-foreground-muted",
+    footer: "border-t border-[var(--card-border)] py-8",
+    footerBg: "",
+    successColor: "text-[var(--success)]",
+  },
+  classic: {
+    main: "min-h-screen bg-[#faf8f5]",
+    heroGrid: "grid h-[65vh] min-h-[450px] grid-cols-4 grid-rows-2 gap-2 p-2",
+    heroImage: "bg-[#ebe6de]",
+    section: "mx-auto max-w-6xl px-8 py-16",
+    heading: "text-2xl font-serif text-[#2d2d2d] md:text-3xl",
+    price: "mb-3 text-3xl font-serif font-medium text-[#1a1a1a] md:text-4xl",
+    card: "rounded-lg border border-[#e5e0d8] bg-white p-8 shadow-sm",
+    divider: "border-b border-[#e5e0d8] py-10",
+    accent: "text-[#b8860b]",
+    accentBg: "bg-[#b8860b]",
+    accentBgLight: "bg-[#b8860b]/10",
+    sectionHeading: "mb-8 text-xl font-serif text-[#2d2d2d]",
+    secondaryText: "text-[#5a5a5a]",
+    mutedText: "text-[#8a8a8a]",
+    footer: "border-t border-[#e5e0d8] py-8 bg-white",
+    footerBg: "bg-white",
+    successColor: "text-[#2d8a4e]",
+  },
+  luxury: {
+    main: "min-h-screen bg-[#0a0a0a]",
+    heroGrid: "grid h-[80vh] min-h-[550px] grid-cols-3 grid-rows-2 gap-0.5",
+    heroImage: "bg-[#1a1a1a]",
+    section: "mx-auto max-w-7xl px-8 py-16",
+    heading: "text-2xl font-light tracking-wide text-white uppercase md:text-3xl",
+    price: "mb-4 text-4xl font-extralight tracking-widest text-[#d4af37] md:text-5xl",
+    card: "rounded-none border border-[#2a2a2a] bg-[#111] p-8",
+    divider: "border-b border-[#2a2a2a] py-12",
+    accent: "text-[#d4af37]",
+    accentBg: "bg-[#d4af37]",
+    accentBgLight: "bg-[#d4af37]/10",
+    sectionHeading: "mb-8 text-sm font-light tracking-[0.2em] uppercase text-[#888]",
+    secondaryText: "text-[#aaa]",
+    mutedText: "text-[#666]",
+    footer: "border-t border-[#2a2a2a] py-8",
+    footerBg: "",
+    successColor: "text-[#d4af37]",
+  },
+  minimal: {
+    main: "min-h-screen bg-white",
+    heroGrid: "grid h-[75vh] min-h-[500px] grid-cols-1",
+    heroImage: "bg-[#f5f5f5]",
+    section: "mx-auto max-w-4xl px-6 py-16",
+    heading: "text-xl font-normal text-[#111] md:text-2xl",
+    price: "mb-2 text-2xl font-medium text-[#111] md:text-3xl",
+    card: "border border-[#eee] bg-white p-6",
+    divider: "border-b border-[#eee] py-12",
+    accent: "text-[#111]",
+    accentBg: "bg-[#111]",
+    accentBgLight: "bg-[#111]/5",
+    sectionHeading: "mb-6 text-base font-medium text-[#111]",
+    secondaryText: "text-[#666]",
+    mutedText: "text-[#999]",
+    footer: "border-t border-[#eee] py-8",
+    footerBg: "",
+    successColor: "text-[#111]",
+  },
+  commercial: {
+    main: "min-h-screen bg-[#f5f5f7]",
+    heroGrid: "grid h-[60vh] min-h-[400px] grid-cols-3 gap-4 p-4",
+    heroImage: "bg-white",
+    section: "mx-auto max-w-7xl px-6 py-10",
+    heading: "text-xl font-semibold text-[#1d1d1f] md:text-2xl",
+    price: "mb-2 text-2xl font-bold text-[#1d1d1f] md:text-3xl",
+    card: "rounded-lg border border-[#d2d2d7] bg-white p-6 shadow-sm",
+    divider: "border-b border-[#d2d2d7] py-8",
+    accent: "text-[#0066cc]",
+    accentBg: "bg-[#0066cc]",
+    accentBgLight: "bg-[#0066cc]/10",
+    sectionHeading: "mb-4 text-base font-semibold uppercase tracking-wide text-[#6e6e73]",
+    secondaryText: "text-[#6e6e73]",
+    mutedText: "text-[#86868b]",
+    footer: "border-t border-[#d2d2d7] py-8 bg-white",
+    footerBg: "bg-white",
+    successColor: "text-[#32d74b]",
+  },
+};
+
 export default async function PropertyWebsitePage({ params }: PageProps) {
   const { slug } = await params;
   const website = await getPropertyWebsiteBySlug(slug);
@@ -59,14 +158,17 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
     notFound();
   }
 
+  const template = (website.template as keyof typeof templateStyles) || "modern";
+  const styles = templateStyles[template] || templateStyles.modern;
+
   return (
-    <main className="min-h-screen bg-[var(--background)]">
+    <main className={styles.main}>
       {/* Hero Section */}
       <section className="relative">
         {/* Photo Gallery Hero */}
-        <div className="grid h-[70vh] min-h-[500px] grid-cols-4 grid-rows-2 gap-1">
+        <div className={styles.heroGrid}>
           {/* Main Image */}
-          <div className="relative col-span-2 row-span-2 bg-[var(--card)]">
+          <div className={`relative col-span-2 row-span-2 ${styles.heroImage}`}>
             {website.project.assets[0]?.thumbnailUrl ? (
               <img
                 src={website.project.assets[0].thumbnailUrl}
@@ -75,13 +177,13 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
               />
             ) : (
               <div className="flex h-full items-center justify-center">
-                <ImagePlaceholder size="large" />
+                <ImagePlaceholder size="large" template={template} />
               </div>
             )}
           </div>
-          {/* Secondary Images */}
-          {website.project.assets.slice(1, 5).map((asset) => (
-            <div key={asset.id} className="relative bg-[var(--card)]">
+          {/* Secondary Images - Hide for minimal template */}
+          {template !== "minimal" && website.project.assets.slice(1, 5).map((asset) => (
+            <div key={asset.id} className={`relative ${styles.heroImage}`}>
               {asset.thumbnailUrl ? (
                 <img
                   src={asset.thumbnailUrl}
@@ -90,7 +192,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
                 />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  <ImagePlaceholder />
+                  <ImagePlaceholder template={template} />
                 </div>
               )}
             </div>
@@ -105,18 +207,18 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
       </section>
 
       {/* Property Info */}
-      <section className="mx-auto max-w-7xl px-6 py-12">
+      <section className={styles.section}>
         <div className="grid gap-12 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Header */}
-            <div className="border-b border-[var(--card-border)] pb-8">
+            <div className={`${styles.divider.replace('py-8', 'pb-8').replace('py-10', 'pb-10').replace('py-12', 'pb-12')}`}>
               {website.showPrice && website.price && (
-                <p className="mb-2 text-3xl font-bold text-foreground md:text-4xl">
+                <p className={styles.price}>
                   {formatPrice(website.price)}
                 </p>
               )}
-              <h1 className="text-2xl font-semibold text-foreground md:text-3xl">{website.address}</h1>
+              <h1 className={styles.heading}>{website.address}</h1>
               <p className="mt-1 text-lg text-foreground-secondary">
                 {website.city}, {website.state} {website.zipCode}
               </p>
@@ -161,51 +263,26 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Virtual Tour & Video */}
-            {(website.virtualTourUrl || website.videoUrl) && (
-              <div className="border-b border-[var(--card-border)] py-8">
-                <h2 className="mb-4 text-lg font-semibold text-foreground">Virtual Experience</h2>
-                <div className="flex flex-wrap gap-4">
-                  {website.virtualTourUrl && (
-                    <a
-                      href={website.virtualTourUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-4 transition-colors hover:border-[var(--primary)] hover:bg-[var(--card)]/80"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
-                        <CubeIcon className="h-5 w-5 text-[var(--primary)]" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">3D Virtual Tour</p>
-                        <p className="text-sm text-foreground-muted">Explore the property in 3D</p>
-                      </div>
-                    </a>
-                  )}
-                  {website.videoUrl && (
-                    <a
-                      href={website.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-4 transition-colors hover:border-[var(--error)] hover:bg-[var(--card)]/80"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--error)]/10">
-                        <PlayIcon className="h-5 w-5 text-[var(--error)]" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">Video Tour</p>
-                        <p className="text-sm text-foreground-muted">Watch the property video</p>
-                      </div>
-                    </a>
-                  )}
-                </div>
+            {/* Virtual Tour Embed */}
+            {website.virtualTourUrl && (
+              <div className={styles.divider}>
+                <h2 className={styles.sectionHeading}>3D Virtual Tour</h2>
+                <MediaEmbed url={website.virtualTourUrl} type="tour" />
+              </div>
+            )}
+
+            {/* Video Embed */}
+            {website.videoUrl && (
+              <div className={styles.divider}>
+                <h2 className={styles.sectionHeading}>Property Video</h2>
+                <MediaEmbed url={website.videoUrl} type="video" />
               </div>
             )}
 
             {/* Description */}
-            <div className="border-b border-[var(--card-border)] py-8">
+            <div className={styles.divider}>
               {website.headline && (
-                <h2 className="mb-4 text-xl font-semibold text-foreground">{website.headline}</h2>
+                <h2 className={styles.sectionHeading}>{website.headline}</h2>
               )}
               <div className="prose prose-invert max-w-none">
                 {website.description?.split("\n\n").map((paragraph, i) => (
@@ -218,13 +295,13 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
 
             {/* Features */}
             {website.features && website.features.length > 0 && (
-              <div className="border-b border-[var(--card-border)] py-8">
-                <h2 className="mb-6 text-lg font-semibold text-foreground">Features & Amenities</h2>
+              <div className={styles.divider}>
+                <h2 className={styles.sectionHeading}>Features & Amenities</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {website.features.map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <CheckIcon className="h-5 w-5 flex-shrink-0 text-[var(--success)]" />
-                      <span className="text-foreground-secondary">{feature}</span>
+                      <CheckIcon className={`h-5 w-5 flex-shrink-0 ${styles.successColor}`} />
+                      <span className={styles.secondaryText}>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -233,12 +310,12 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
 
             {/* Photo Gallery Grid */}
             <div className="py-8">
-              <h2 className="mb-6 text-lg font-semibold text-foreground">Photo Gallery</h2>
+              <h2 className={styles.sectionHeading}>Photo Gallery</h2>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                 {website.project.assets.map((asset) => (
                   <div
                     key={asset.id}
-                    className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-[var(--card)]"
+                    className={`group relative aspect-square cursor-pointer overflow-hidden rounded-lg ${styles.heroImage}`}
                   >
                     {asset.thumbnailUrl ? (
                       <img
@@ -248,7 +325,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center transition-transform group-hover:scale-105">
-                        <ImagePlaceholder />
+                        <ImagePlaceholder template={template} />
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
@@ -263,22 +340,22 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
             <div className="sticky top-6 space-y-6">
               {/* Contact Agent Card */}
               {website.showAgent && website.project.client && (
-                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                  <h3 className="mb-4 text-lg font-semibold text-foreground">Contact Agent</h3>
+                <div className={styles.card}>
+                  <h3 className={styles.sectionHeading.replace('mb-6', 'mb-4').replace('mb-8', 'mb-4')}>Contact Agent</h3>
                   <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xl font-semibold text-[var(--primary)]">
+                    <div className={`flex h-14 w-14 items-center justify-center rounded-full ${styles.accentBgLight} text-xl font-semibold ${styles.accent}`}>
                       {website.project.client.fullName?.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">{website.project.client.fullName}</p>
-                      <p className="text-sm text-foreground-muted">{website.project.client.company}</p>
+                      <p className={template === "luxury" ? "font-medium text-white" : template === "modern" ? "font-medium text-foreground" : "font-medium text-[#1d1d1f]"}>{website.project.client.fullName}</p>
+                      <p className={`text-sm ${styles.mutedText}`}>{website.project.client.company}</p>
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
                     {website.project.client.phone && (
                       <a
                         href={`tel:${website.project.client.phone}`}
-                        className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground"
+                        className={`flex items-center gap-2 text-sm ${styles.secondaryText} hover:${styles.accent}`}
                       >
                         <PhoneIcon className="h-4 w-4" />
                         {website.project.client.phone}
@@ -286,7 +363,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
                     )}
                     <a
                       href={`mailto:${website.project.client.email}`}
-                      className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground"
+                      className={`flex items-center gap-2 text-sm ${styles.secondaryText} hover:${styles.accent}`}
                     >
                       <MailIcon className="h-4 w-4" />
                       {website.project.client.email}
@@ -314,23 +391,23 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
 
       {/* Footer */}
       {website.isBranded && website.project.organization && (
-        <footer className="border-t border-[var(--card-border)] py-8">
+        <footer className={`${styles.footer} ${styles.footerBg}`}>
           <div className="mx-auto max-w-7xl px-6">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
-                  <CameraIcon className="h-5 w-5 text-[var(--primary)]" />
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${styles.accentBgLight}`}>
+                  <CameraIcon className={`h-5 w-5 ${styles.accent}`} />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">
+                  <p className={template === "luxury" ? "font-medium text-white" : template === "modern" ? "font-medium text-foreground" : "font-medium text-[#1d1d1f]"}>
                     Photography by {website.project.organization.name}
                   </p>
-                  <p className="text-sm text-foreground-muted">Professional Real Estate Photography</p>
+                  <p className={`text-sm ${styles.mutedText}`}>Professional Photography</p>
                 </div>
               </div>
-              <p className="text-sm text-foreground-muted">
+              <p className={`text-sm ${styles.mutedText}`}>
                 Powered by{" "}
-                <Link href="/" className="text-[var(--primary)] hover:underline">
+                <Link href="/" className={`${styles.accent} hover:underline`}>
                   PhotoProOS
                 </Link>
               </p>
@@ -342,14 +419,150 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
   );
 }
 
+// Media Embed Component for Videos and Tours
+function MediaEmbed({ url, type }: { url: string; type: "video" | "tour" }) {
+  // Helper to extract video/embed information
+  const getEmbedInfo = (url: string) => {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+
+      // YouTube
+      if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
+        let videoId = "";
+        if (hostname.includes("youtu.be")) {
+          videoId = urlObj.pathname.slice(1);
+        } else {
+          videoId = urlObj.searchParams.get("v") || "";
+        }
+        if (videoId) {
+          return {
+            type: "youtube",
+            embedUrl: `https://www.youtube.com/embed/${videoId}?rel=0`,
+          };
+        }
+      }
+
+      // Vimeo
+      if (hostname.includes("vimeo.com")) {
+        const videoId = urlObj.pathname.split("/").filter(Boolean).pop();
+        if (videoId) {
+          return {
+            type: "vimeo",
+            embedUrl: `https://player.vimeo.com/video/${videoId}`,
+          };
+        }
+      }
+
+      // Matterport
+      if (hostname.includes("matterport.com") || hostname.includes("my.matterport.com")) {
+        const modelId = urlObj.searchParams.get("m") || urlObj.pathname.split("/").filter(Boolean).pop();
+        if (modelId) {
+          return {
+            type: "matterport",
+            embedUrl: `https://my.matterport.com/show/?m=${modelId}&play=1`,
+          };
+        }
+      }
+
+      // iGuide
+      if (hostname.includes("iguide") || hostname.includes("youriguide.com")) {
+        return {
+          type: "iguide",
+          embedUrl: url,
+        };
+      }
+
+      // Zillow 3D Home
+      if (hostname.includes("zillow.com") && url.includes("3d-home")) {
+        return {
+          type: "zillow",
+          embedUrl: url,
+        };
+      }
+
+      // CloudPano
+      if (hostname.includes("cloudpano.com")) {
+        return {
+          type: "cloudpano",
+          embedUrl: url,
+        };
+      }
+
+      // Kuula
+      if (hostname.includes("kuula.co")) {
+        return {
+          type: "kuula",
+          embedUrl: url.replace("/share/", "/post/"),
+        };
+      }
+
+      // Default - return as embeddable URL
+      return {
+        type: "unknown",
+        embedUrl: url,
+      };
+    } catch {
+      return {
+        type: "unknown",
+        embedUrl: url,
+      };
+    }
+  };
+
+  const embedInfo = getEmbedInfo(url);
+
+  // For known embeddable sources, show iframe
+  if (embedInfo.type !== "unknown") {
+    return (
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-[var(--card)]">
+        <iframe
+          src={embedInfo.embedUrl}
+          className="absolute inset-0 h-full w-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; xr-spatial-tracking"
+          allowFullScreen
+          loading="lazy"
+          title={type === "video" ? "Property Video" : "Virtual Tour"}
+        />
+      </div>
+    );
+  }
+
+  // For unknown URLs, show a clickable card with link
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-6 transition-colors hover:border-[var(--primary)]"
+    >
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+        {type === "video" ? (
+          <PlayIcon className="h-6 w-6 text-[var(--primary)]" />
+        ) : (
+          <CubeIcon className="h-6 w-6 text-[var(--primary)]" />
+        )}
+      </div>
+      <div>
+        <p className="font-medium text-foreground">
+          {type === "video" ? "Watch Property Video" : "Explore 3D Virtual Tour"}
+        </p>
+        <p className="text-sm text-foreground-muted">Opens in a new tab</p>
+      </div>
+      <ExternalLinkIcon className="ml-auto h-5 w-5 text-foreground-muted" />
+    </a>
+  );
+}
+
 // Components
-function ImagePlaceholder({ size = "default" }: { size?: "default" | "large" }) {
+function ImagePlaceholder({ size = "default", template = "modern" }: { size?: "default" | "large"; template?: string }) {
+  const iconColor = template === "luxury" || template === "modern" ? "#888" : "#aaa";
   return (
     <svg
       className={size === "large" ? "h-16 w-16" : "h-10 w-10"}
       fill="none"
       viewBox="0 0 24 24"
-      stroke="currentColor"
+      stroke={iconColor}
       strokeOpacity={0.5}
     >
       <path
@@ -458,6 +671,14 @@ function PlayIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
       <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function ExternalLinkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
     </svg>
   );
 }

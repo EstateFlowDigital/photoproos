@@ -34,11 +34,13 @@ function SettingCard({ title, description, href, icon }: SettingCardProps) {
 import { SettingsPageClient } from "./settings-page-client";
 
 export default async function SettingsPage() {
-  // Fetch organization name for the danger zone component
+  // Fetch organization info for the client components
   const auth = await getAuthContext();
   let organizationName = "your organization";
+  let organizationId: string | undefined;
 
   if (auth) {
+    organizationId = auth.organizationId;
     const organization = await prisma.organization.findUnique({
       where: { id: auth.organizationId },
       select: { name: true },
@@ -118,8 +120,11 @@ export default async function SettingsPage() {
         />
       </div>
 
-      {/* Danger Zone */}
-      <SettingsPageClient organizationName={organizationName} />
+      {/* Onboarding & Danger Zone */}
+      <SettingsPageClient
+        organizationName={organizationName}
+        organizationId={organizationId}
+      />
     </div>
   );
 }

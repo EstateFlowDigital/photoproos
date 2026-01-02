@@ -26,6 +26,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { PhotoUploadModal } from "@/components/upload/photo-upload-modal";
 
 interface PropertyDetailClientProps {
   website: PropertyWebsiteWithRelations;
@@ -72,10 +73,11 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const [activeTab, setActiveTab] = useState<"overview" | "leads" | "analytics" | "marketing" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "photos" | "leads" | "analytics" | "marketing" | "settings">("overview");
   const [isPublished, setIsPublished] = useState(website.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Settings state
   const [isBranded, setIsBranded] = useState(website.isBranded);
@@ -194,6 +196,11 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
     }
   };
 
+  const handleUploadComplete = (files: Array<{ id: string; url: string; filename: string }>) => {
+    showToast(`Successfully uploaded ${files.length} photo${files.length === 1 ? "" : "s"}`, "success");
+    router.refresh();
+  };
+
   const handleGenerateSocial = async () => {
     setIsGeneratingSocial(true);
     try {
@@ -308,7 +315,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
 
           {/* Tabs */}
           <div className="mt-6 flex items-center gap-1 border-t border-[var(--card-border)] pt-4">
-            {(["overview", "leads", "analytics", "marketing", "settings"] as const).map((tab) => (
+            {(["overview", "photos", "leads", "analytics", "marketing", "settings"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -319,6 +326,11 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab === "photos" && website.project.assets.length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-foreground/10 px-1.5 py-0.5 text-xs text-foreground-secondary">
+                    {website.project.assets.length}
+                  </span>
+                )}
                 {tab === "leads" && leads.length > 0 && (
                   <span className="ml-1.5 rounded-full bg-[var(--primary)]/20 px-1.5 py-0.5 text-xs text-[var(--primary)]">
                     {leads.length}
@@ -540,6 +552,80 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                   >
                     <CopyIcon className="h-4 w-4" />
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Photos Tab */}
+        {activeTab === "photos" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Photos</h2>
+                <p className="mt-1 text-foreground-secondary">
+                  {website.project.assets.length} photos from {website.project.name}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              >
+                <UploadIcon className="h-4 w-4" />
+                Upload Photos
+              </button>
+            </div>
+
+            {website.project.assets.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
+                <ImageIcon className="mx-auto h-12 w-12 text-foreground-muted" />
+                <h3 className="mt-4 text-lg font-medium text-foreground">No photos yet</h3>
+                <p className="mt-2 text-foreground-secondary">
+                  Upload photos to display on your property website.
+                </p>
+                <button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                >
+                  <UploadIcon className="h-4 w-4" />
+                  Upload Photos
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {website.project.assets.map((asset, i) => (
+                  <div
+                    key={asset.id}
+                    className="group relative aspect-square overflow-hidden rounded-lg bg-[var(--background-tertiary)]"
+                  >
+                    {asset.thumbnailUrl || asset.originalUrl ? (
+                      <img
+                        src={asset.thumbnailUrl || asset.originalUrl}
+                        alt={`Photo ${i + 1}`}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <ImageIcon className="h-8 w-8 text-foreground-muted" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Quick tip */}
+            <div className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
+              <div className="flex gap-3">
+                <LightbulbIcon className="h-5 w-5 flex-shrink-0 text-[var(--primary)]" />
+                <div>
+                  <h4 className="font-medium text-[var(--primary)]">Photo Tips</h4>
+                  <p className="mt-1 text-sm text-foreground-secondary">
+                    Photos are displayed in the order they appear. The first photo becomes the hero image on your property website.
+                    For best results, use high-quality photos with a 3:2 or 4:3 aspect ratio.
+                  </p>
                 </div>
               </div>
             </div>
@@ -929,6 +1015,15 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         )}
       </div>
 
+      {/* Photo Upload Modal */}
+      <PhotoUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadComplete={handleUploadComplete}
+        galleryId={website.project.id}
+        galleryName={website.project.name}
+      />
+
       {/* Delete Confirmation Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent size="sm">
@@ -1097,6 +1192,14 @@ function LightbulbIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    </svg>
+  );
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
     </svg>
   );
 }
