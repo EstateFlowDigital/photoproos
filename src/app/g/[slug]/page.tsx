@@ -261,7 +261,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
             <p className="text-sm" style={{ color: mutedColor }}>
               Powered by{" "}
               <Link href="/" className="hover:underline" style={{ color: primaryColor }}>
-                Dovetail
+                PhotoProOS
               </Link>
             </p>
           </div>

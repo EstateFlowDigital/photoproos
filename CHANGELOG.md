@@ -198,6 +198,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `aria-label` to icon-only edit/delete buttons
 
 ### Fixed
+- **Branding Consistency**: Updated all "Dovetail" references to "PhotoProOS"
+  - Onboarding steps: Welcome, Business, Payment, Complete step text
+  - Onboarding layout metadata (title and description)
+  - Public gallery footer powered by text
+  - Code comments in modules, industries, tours, clerk-theme, globals.css
+  - README files (README-ONBOARDING.md, README-MODULE-REAL-ESTATE.md, docs/SERVICES_IMPLEMENTATION_PLAN.md)
 - **Detail Page Loading States**: Added skeleton loading states for all detail pages
   - GalleryDetailSkeleton with photo grid, client info, stats, and activity sections
   - ClientDetailSkeleton with client info card, stats grid, galleries, and activity

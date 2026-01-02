@@ -1,5 +1,5 @@
 /**
- * Industry definitions for Dovetail onboarding
+ * Industry definitions for PhotoProOS onboarding
  *
  * Each industry has associated modules and default settings.
  * Users can select multiple industries during onboarding.

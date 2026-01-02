@@ -46,7 +46,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
           <Sparkles className="w-10 h-10 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-[var(--foreground)]">
-          Welcome to Dovetail
+          Welcome to PhotoProOS
         </h1>
         <p className="text-lg text-[var(--foreground-secondary)] max-w-md mx-auto">
           The business OS for professional photographers. Let&apos;s get you set up in just a few minutes.

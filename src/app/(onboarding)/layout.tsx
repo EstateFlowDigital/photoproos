@@ -1,8 +1,8 @@
 import "@/app/globals.css";
 
 export const metadata = {
-  title: "Get Started | Dovetail",
-  description: "Set up your Dovetail account",
+  title: "Get Started | PhotoProOS",
+  description: "Set up your PhotoProOS account",
 };
 
 export default function OnboardingLayout({

@@ -90,7 +90,7 @@ export function BusinessStep({
           About your business
         </h2>
         <p className="text-[var(--foreground-secondary)]">
-          Help us tailor Dovetail to your needs
+          Help us tailor PhotoProOS to your needs
         </p>
       </div>
 

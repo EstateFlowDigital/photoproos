@@ -120,7 +120,7 @@ export function CompleteStep({
           You&apos;re all set!
         </h2>
         <p className="text-lg text-[var(--foreground-secondary)]">
-          Welcome to Dovetail, {formData.firstName}
+          Welcome to PhotoProOS, {formData.firstName}
         </p>
       </motion.div>
 

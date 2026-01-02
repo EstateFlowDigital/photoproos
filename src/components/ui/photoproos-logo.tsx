@@ -12,7 +12,7 @@ interface PhotoProOSLogoProps {
 
 /**
  * PhotoProOS Logo - Dynamic camera aperture-inspired logo
- * Matches Dovetail's sophisticated dark-first design aesthetic
+ * Sophisticated dark-first design aesthetic
  */
 export function PhotoProOSLogo({
   className,

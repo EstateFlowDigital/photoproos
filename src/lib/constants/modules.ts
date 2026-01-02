@@ -1,5 +1,5 @@
 /**
- * Module definitions for Dovetail feature gating
+ * Module definitions for PhotoProOS feature gating
  *
  * Modules are features that can be enabled/disabled based on:
  * - Industry selection during onboarding

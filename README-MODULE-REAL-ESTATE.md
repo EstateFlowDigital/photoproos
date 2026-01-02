@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Real Estate module is the default and most comprehensive industry option in Dovetail. It includes specialized features for property photography including MLS integration, property details auto-population, and real estate-specific gallery templates.
+The Real Estate module is the default and most comprehensive industry option in PhotoProOS. It includes specialized features for property photography including MLS integration, property details auto-population, and real estate-specific gallery templates.
 
 ---
 

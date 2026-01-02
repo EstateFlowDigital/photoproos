@@ -1,8 +1,8 @@
-# Dovetail Onboarding System
+# PhotoProOS Onboarding System
 
 ## Overview
 
-A comprehensive multi-step onboarding wizard that personalizes the Dovetail experience based on industry selection, collects essential business information, and gates features/modules based on user preferences.
+A comprehensive multi-step onboarding wizard that personalizes the PhotoProOS experience based on industry selection, collects essential business information, and gates features/modules based on user preferences.
 
 ---
 
@@ -178,7 +178,7 @@ export const INDUSTRIES = {
 
 #### Step 0: Welcome
 - Animated logo/illustration
-- "Welcome to Dovetail" headline
+- "Welcome to PhotoProOS" headline
 - 3 value propositions with icons
 - "Get Started" CTA
 

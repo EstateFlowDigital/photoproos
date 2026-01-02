@@ -1,5 +1,5 @@
 /**
- * Tour definitions for Dovetail
+ * Tour definitions for PhotoProOS
  *
  * Each tour guides users through a specific feature or workflow.
  */

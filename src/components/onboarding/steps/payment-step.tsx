@@ -50,7 +50,7 @@ export function PaymentStep({
           Start your free trial
         </h2>
         <p className="text-[var(--foreground-secondary)]">
-          Try Dovetail free. No credit card required.
+          Try PhotoProOS free. No credit card required.
         </p>
       </div>
 

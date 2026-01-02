@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the implementation plan for a comprehensive Services Management System in PhotoProOS (Dovetail). Services are the pricing packages photographers offer to clients, and this feature will allow full CRUD operations, database persistence, and integration with galleries and bookings.
+This document outlines the implementation plan for a comprehensive Services Management System in PhotoProOS. Services are the pricing packages photographers offer to clients, and this feature will allow full CRUD operations, database persistence, and integration with galleries and bookings.
 
 ## Current State
 

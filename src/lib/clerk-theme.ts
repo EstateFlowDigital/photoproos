@@ -1,7 +1,7 @@
 import type { Appearance } from "@clerk/types";
 
 /**
- * Clerk theme configuration matching the Dovetail/Lumos dark design system
+ * Clerk theme configuration matching the Lumos dark design system
  *
  * Color Reference (from globals.css):
  * --background: #0A0A0A (page background)
