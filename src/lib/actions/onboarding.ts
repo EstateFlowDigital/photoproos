@@ -318,3 +318,62 @@ export async function updateModules(
     return { success: false, error: "Failed to update modules" };
   }
 }
+
+/**
+ * Reset onboarding to allow viewing it again
+ */
+export async function resetOnboarding(
+  organizationId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Reset the organization's onboarding status
+    await prisma.$transaction([
+      prisma.organization.update({
+        where: { id: organizationId },
+        data: {
+          onboardingCompleted: false,
+          onboardingCompletedAt: null,
+        },
+      }),
+      // Reset the onboarding progress to start from beginning
+      prisma.onboardingProgress.upsert({
+        where: { organizationId },
+        create: {
+          organizationId,
+          currentStep: 0,
+          personalComplete: false,
+          businessComplete: false,
+          brandingStepDone: false,
+          industriesSet: false,
+          featuresSelected: false,
+          goalsSet: false,
+          paymentStepDone: false,
+          completedAt: null,
+        },
+        update: {
+          currentStep: 0,
+          personalComplete: false,
+          businessComplete: false,
+          brandingStepDone: false,
+          industriesSet: false,
+          featuresSelected: false,
+          goalsSet: false,
+          paymentStepDone: false,
+          completedAt: null,
+        },
+      }),
+    ]);
+
+    revalidatePath("/onboarding");
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error) {
+    console.error("Error resetting onboarding:", error);
+    return { success: false, error: "Failed to reset onboarding" };
+  }
+}

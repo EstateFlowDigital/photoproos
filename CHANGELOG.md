@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Property Website Improvements**: Enhanced property website editing and creation flow
+  - Comprehensive edit page at `/properties/[id]/edit` with all fields editable
+  - Edit address, property details, content (headline, description, features)
+  - Configure virtual tour and video URLs
+  - Template selection with 5 design options (Modern, Classic, Luxury, Minimal, Commercial)
+  - Display settings (branding, price, agent info)
+  - SEO settings (meta title, meta description)
+  - Edit button added to property detail page header
+  - "Create Property Website" button added to client actions
 - **Project Management System**: Comprehensive Kanban-based project management with entity linking
   - Database schema: TaskBoard, TaskColumn, Task, TaskSubtask, TaskComment models
   - TaskStatus and TaskPriority enums for task states
