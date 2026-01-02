@@ -68,6 +68,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
     category: "core",
     sortOrder: 99,
   },
+  projects: {
+    id: "projects",
+    name: "Projects",
+    description: "Kanban boards and task management",
+    icon: ClipboardList,
+    href: "/projects",
+    isCore: true,
+    industries: ["*"],
+    category: "core",
+    sortOrder: 1.5,
+  },
 
   // ============================================================================
   // OPERATIONS MODULES

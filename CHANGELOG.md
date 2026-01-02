@@ -104,6 +104,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Generate flyers with one-click download
     - Generate social graphics with variant selection
     - View and manage saved marketing assets
+- **Project Management System**: Comprehensive Kanban-based task management
+  - New Prisma models: `TaskBoard`, `TaskColumn`, `Task`, `TaskSubtask`, `TaskComment`
+  - New enums: `TaskStatus` (todo, in_progress, in_review, blocked, completed, archived), `TaskPriority` (urgent, high, medium, low)
+  - Tasks can link to: clients, galleries (projects), bookings, invoices, property websites
+  - Created `/lib/actions/projects.ts` - Complete CRUD operations:
+    - Board management: create, update, archive, get default board
+    - Column management: create, update, delete, reorder
+    - Task management: create, update, move, delete with drag-and-drop support
+    - Subtask management: add, toggle, delete
+    - Comments: add, delete
+    - Quick create from entities: `createTaskFromGallery`, `createTaskFromBooking`, `createTaskFromClient`
+  - Created `/app/(dashboard)/projects/page.tsx` - Main projects page
+  - Created `/app/(dashboard)/projects/projects-client.tsx` - Interactive Kanban board
+    - Drag-and-drop task movement between columns
+    - Board, List, and Calendar view modes
+    - Priority filtering
+    - Task detail modal with subtasks, links, and priority selector
+    - Inline task creation
+    - Visual priority badges and linked entity indicators
+  - Added "Projects" to sidebar navigation as core module
+  - Added Projects module to `/lib/constants/modules.ts`
 
 ### Changed
 - **Error Boundaries**: Added error.tsx files for graceful error handling
