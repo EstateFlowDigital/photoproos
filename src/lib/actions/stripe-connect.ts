@@ -1,6 +1,6 @@
 "use server";
 
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
@@ -31,7 +31,7 @@ export async function createConnectAccount(): Promise<
     // Check if already has a Connect account
     if (organization.stripeConnectAccountId) {
       // Return existing account with a new onboarding link
-      const accountLink = await stripe.accountLinks.create({
+      const accountLink = await getStripe().accountLinks.create({
         account: organization.stripeConnectAccountId,
         refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/payments?refresh=true`,
         return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/payments?success=true`,
@@ -48,7 +48,7 @@ export async function createConnectAccount(): Promise<
     }
 
     // Create a new Connect account
-    const account = await stripe.accounts.create({
+    const account = await getStripe().accounts.create({
       type: "express",
       country: "US",
       email: organization.name, // Use org name as placeholder, user will update
@@ -73,7 +73,7 @@ export async function createConnectAccount(): Promise<
     });
 
     // Create the onboarding link
-    const accountLink = await stripe.accountLinks.create({
+    const accountLink = await getStripe().accountLinks.create({
       account: account.id,
       refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/payments?refresh=true`,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/payments?success=true`,
@@ -140,7 +140,7 @@ export async function getConnectAccountStatus(): Promise<
     }
 
     // Get the account from Stripe
-    const account = await stripe.accounts.retrieve(
+    const account = await getStripe().accounts.retrieve(
       organization.stripeConnectAccountId
     );
 
@@ -197,7 +197,7 @@ export async function createAccountLink(): Promise<
       return { success: false, error: "No Connect account found" };
     }
 
-    const accountLink = await stripe.accountLinks.create({
+    const accountLink = await getStripe().accountLinks.create({
       account: organization.stripeConnectAccountId,
       refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/payments?refresh=true`,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/payments?success=true`,
@@ -232,7 +232,7 @@ export async function createDashboardLink(): Promise<
       return { success: false, error: "No Connect account found" };
     }
 
-    const loginLink = await stripe.accounts.createLoginLink(
+    const loginLink = await getStripe().accounts.createLoginLink(
       organization.stripeConnectAccountId
     );
 

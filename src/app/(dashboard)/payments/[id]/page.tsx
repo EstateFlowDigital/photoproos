@@ -4,6 +4,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import { getPayment } from "@/lib/actions/payments";
+import { PaymentHeaderActions, PaymentSidebarActions } from "./payment-actions";
 
 interface PaymentDetailPageProps {
   params: Promise<{ id: string }>;
@@ -82,26 +83,11 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
               <ArrowLeftIcon className="h-4 w-4" />
               Back
             </Link>
-            {payment.status === "paid" && (
-              <button
-                disabled
-                title="Coming soon: Download payment receipts"
-                className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground-muted cursor-not-allowed opacity-60"
-              >
-                <ReceiptIcon className="h-4 w-4" />
-                Download Receipt
-              </button>
-            )}
-            {(payment.status === "pending" || payment.status === "overdue") && (
-              <button
-                disabled
-                title="Coming soon: Send payment reminders"
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white opacity-60 cursor-not-allowed"
-              >
-                <EmailIcon className="h-4 w-4" />
-                Send Reminder
-              </button>
-            )}
+            <PaymentHeaderActions
+              paymentId={payment.id}
+              status={payment.status}
+              clientEmail={clientEmail}
+            />
           </div>
         }
       />
@@ -258,79 +244,15 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
             </div>
           )}
 
-          {/* Quick Actions */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Actions</h2>
-            <div className="space-y-2">
-              {payment.status === "paid" && (
-                <>
-                  <button
-                    disabled
-                    title="Coming soon"
-                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
-                  >
-                    <ReceiptIcon className="h-4 w-4 text-foreground-muted" />
-                    Resend Receipt
-                  </button>
-                  <button
-                    disabled
-                    title="Coming soon"
-                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
-                  >
-                    <DownloadIcon className="h-4 w-4 text-foreground-muted" />
-                    Download Invoice
-                  </button>
-                </>
-              )}
-              {(payment.status === "pending" || payment.status === "overdue") && (
-                <>
-                  <button
-                    disabled
-                    title="Coming soon"
-                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
-                  >
-                    <EmailIcon className="h-4 w-4 text-foreground-muted" />
-                    Send Reminder
-                  </button>
-                  <button
-                    disabled
-                    title="Coming soon"
-                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
-                  >
-                    <LinkIcon className="h-4 w-4 text-foreground-muted" />
-                    Copy Payment Link
-                  </button>
-                </>
-              )}
-              <button
-                disabled
-                title="Coming soon"
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
-              >
-                <ExportIcon className="h-4 w-4 text-foreground-muted" />
-                Export to CSV
-              </button>
-            </div>
-          </div>
-
-          {/* Refund Section */}
-          {payment.status === "paid" && (
-            <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
-              <h2 className="text-lg font-semibold text-[var(--error)] mb-4">Refund</h2>
-              <p className="text-sm text-foreground-secondary mb-4">
-                Issue a full or partial refund for this payment. This action cannot be undone.
-              </p>
-              <button
-                type="button"
-                disabled
-                title="Coming soon: Stripe refund integration"
-                className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/40 px-4 py-2 text-sm font-medium text-[var(--error)]/60 cursor-not-allowed"
-              >
-                <RefundIcon className="h-4 w-4" />
-                Issue Refund
-              </button>
-            </div>
-          )}
+          {/* Quick Actions & Refund - Client Component */}
+          <PaymentSidebarActions
+            paymentId={payment.id}
+            status={payment.status}
+            clientEmail={clientEmail}
+            amountCents={payment.amountCents}
+            description={payment.description || payment.project?.name || "Payment"}
+            hasStripeId={!!payment.stripePaymentIntentId}
+          />
         </div>
       </div>
     </div>

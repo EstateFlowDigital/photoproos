@@ -1,6 +1,6 @@
 "use server";
 
-import { stripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
+import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 
 type ActionResult<T = void> =
@@ -61,7 +61,7 @@ export async function createGalleryCheckoutSession(
     const deliverySlug = gallery.deliveryLinks[0]?.slug || galleryId;
 
     // Create the checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       line_items: [
@@ -132,7 +132,7 @@ export async function verifyPayment(
   sessionId: string
 ): Promise<ActionResult<{ paid: boolean; galleryId: string }>> {
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await getStripe().checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status !== "paid") {
       return {

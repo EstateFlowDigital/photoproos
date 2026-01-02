@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Services Page**: Corrected property names (`durationMinutes` → `duration`, `includedItems` → `deliverables`) to match Prisma schema
+- **Stripe Integration**: Made Stripe client initialization lazy to avoid build-time errors when environment variables are not set
+- **Resend Email**: Made Resend client initialization lazy for same reason, updated `getResend()` function in all marketing actions
+- **Payments Actions**: Removed non-existent `paymentLinkUrl` field from Payment select query
+
 ### Added
 - **Services Dashboard** (`/services`):
   - Top-level Services route with list, detail, and create pages

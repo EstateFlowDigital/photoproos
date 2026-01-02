@@ -124,18 +124,18 @@ export default async function ServicesPage() {
                         <span className="text-xl font-semibold text-foreground">
                           {formatCurrency(service.priceCents)}
                         </span>
-                        {service.durationMinutes && (
+                        {service.duration && (
                           <span className="text-sm text-foreground-muted">
-                            {service.durationMinutes} min
+                            {service.duration}
                           </span>
                         )}
                       </div>
 
-                      {service.includedItems && service.includedItems.length > 0 && (
+                      {service.deliverables && service.deliverables.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
                           <p className="text-xs text-foreground-muted">
-                            Includes: {service.includedItems.slice(0, 3).join(", ")}
-                            {service.includedItems.length > 3 && ` +${service.includedItems.length - 3} more`}
+                            Includes: {service.deliverables.slice(0, 3).join(", ")}
+                            {service.deliverables.length > 3 && ` +${service.deliverables.length - 3} more`}
                           </p>
                         </div>
                       )}

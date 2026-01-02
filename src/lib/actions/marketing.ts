@@ -1,6 +1,6 @@
 "use server";
 
-import { resend, DEFAULT_FROM_EMAIL } from "@/lib/email/resend";
+import { getResend, DEFAULT_FROM_EMAIL } from "@/lib/email/resend";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -20,7 +20,7 @@ export async function subscribeToNewsletter(
 
     // Add to Resend audience (if you have an audience set up)
     // For now, we'll send a welcome email as confirmation
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: DEFAULT_FROM_EMAIL,
       to: email,
       subject: "Welcome to PhotoProOS!",
@@ -96,7 +96,7 @@ export async function submitContactForm(input: {
     };
 
     // Send notification to team
-    const { error: teamError } = await resend.emails.send({
+    const { error: teamError } = await getResend().emails.send({
       from: DEFAULT_FROM_EMAIL,
       to: process.env.CONTACT_EMAIL || "hello@photoproos.com",
       replyTo: email,
@@ -146,7 +146,7 @@ export async function submitContactForm(input: {
     }
 
     // Send confirmation to user
-    await resend.emails.send({
+    await getResend().emails.send({
       from: DEFAULT_FROM_EMAIL,
       to: email,
       subject: "We received your message - PhotoProOS",
