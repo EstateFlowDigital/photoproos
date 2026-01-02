@@ -13,6 +13,13 @@ const isPublicRoute = createRouteMatcher([
   "/g/(.*)",
   "/api/gallery/(.*)",
 
+  // Public property websites
+  "/p/(.*)",
+
+  // Client portal (uses its own session system, not Clerk)
+  "/portal(.*)",
+  "/api/auth/client(.*)",
+
   // Webhooks (Stripe, Clerk, etc.)
   "/api/webhooks/(.*)",
 

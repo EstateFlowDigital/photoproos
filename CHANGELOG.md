@@ -50,7 +50,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Tax Settings section in Payment Settings page (`/settings/payments`)
     - Configurable tax rate (0-100%) and custom tax label (Sales Tax, VAT, GST, etc.)
     - Tax settings automatically applied to new invoices
+  - **Print Size Recommendations**: Photo-quality print guidance in photo modal
+    - Shows recommended print sizes based on image resolution
+    - Quality indicators (Excellent/Good/Fair) based on effective DPI
+    - Standard print sizes: 4×6", 5×7", 8×10", 11×14", 16×20", 20×24"
+    - Based on professional 300 DPI standard for photo-quality prints
   - Added `file_downloaded` to ActivityType enum for download logging
+- **Property Lead Email Notifications**: Photographers receive email alerts when leads are submitted
+  - New email template `property-lead.tsx` with professional styling
+  - Sends to organization's public email when inquiry form is submitted
+  - Includes lead's contact info, message, and quick reply button
+  - Reply-to set to lead's email for easy response
+  - Non-blocking: lead creation succeeds even if email fails
+- **Client Portal Middleware Update**: Added portal routes to public routes in Clerk middleware
+  - `/portal(.*)` and `/api/auth/client(.*)` now bypass Clerk auth
+  - Client portal uses its own session system for authentication
+  - Also added `/p/(.*)` for public property websites
 
 ### Fixed
 - **Onboarding Completion Navigation**: Fixed buttons on final onboarding step that were incorrectly navigating to landing page

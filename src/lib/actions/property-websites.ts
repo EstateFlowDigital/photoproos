@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { PropertyWebsiteTemplate, PropertyType, LeadStatus } from "@prisma/client";
+import { sendPropertyLeadEmail } from "@/lib/email/send";
 
 // Types
 export interface PropertyWebsiteInput {
@@ -461,6 +462,28 @@ export async function submitPropertyLead(data: {
   source?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
+    // Get property website with organization info for email
+    const propertyWebsite = await prisma.propertyWebsite.findUnique({
+      where: { id: data.propertyWebsiteId },
+      include: {
+        project: {
+          include: {
+            organization: {
+              select: {
+                name: true,
+                publicEmail: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!propertyWebsite) {
+      return { success: false, error: "Property website not found" };
+    }
+
+    // Create the lead
     await prisma.propertyLead.create({
       data: {
         propertyWebsiteId: data.propertyWebsiteId,
@@ -471,6 +494,28 @@ export async function submitPropertyLead(data: {
         source: data.source || "website",
       },
     });
+
+    // Send email notification to photographer
+    const organizationEmail = propertyWebsite.project.organization?.publicEmail;
+    if (organizationEmail) {
+      const propertyUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://photoproos.com"}/p/${propertyWebsite.slug}`;
+
+      try {
+        await sendPropertyLeadEmail({
+          to: organizationEmail,
+          photographerName: propertyWebsite.project.organization?.name || "Photographer",
+          propertyAddress: propertyWebsite.address,
+          propertyUrl,
+          leadName: data.name,
+          leadEmail: data.email,
+          leadPhone: data.phone,
+          leadMessage: data.message,
+        });
+      } catch (emailError) {
+        // Log email error but don't fail the lead submission
+        console.error("Error sending lead notification email:", emailError);
+      }
+    }
 
     revalidatePath("/properties");
 

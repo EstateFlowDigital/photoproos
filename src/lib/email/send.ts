@@ -3,6 +3,7 @@ import { GalleryDeliveredEmail } from "@/emails/gallery-delivered";
 import { PaymentReceiptEmail } from "@/emails/payment-receipt";
 import { BookingConfirmationEmail } from "@/emails/booking-confirmation";
 import { WelcomeEmail } from "@/emails/welcome";
+import { PropertyLeadEmail } from "@/emails/property-lead";
 
 /**
  * Send gallery delivered notification to client
@@ -147,5 +148,45 @@ export async function sendWelcomeEmail(params: {
       userName,
       organizationName,
     }),
+  });
+}
+
+/**
+ * Send property lead notification to photographer
+ */
+export async function sendPropertyLeadEmail(params: {
+  to: string;
+  photographerName: string;
+  propertyAddress: string;
+  propertyUrl: string;
+  leadName: string;
+  leadEmail: string;
+  leadPhone?: string;
+  leadMessage?: string;
+}) {
+  const {
+    to,
+    photographerName,
+    propertyAddress,
+    propertyUrl,
+    leadName,
+    leadEmail,
+    leadPhone,
+    leadMessage,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `New inquiry for ${propertyAddress}`,
+    react: PropertyLeadEmail({
+      photographerName,
+      propertyAddress,
+      propertyUrl,
+      leadName,
+      leadEmail,
+      leadPhone,
+      leadMessage,
+    }),
+    replyTo: leadEmail,
   });
 }
