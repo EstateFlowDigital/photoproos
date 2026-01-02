@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Modal-Based Create Flows**: Converted all "Create New" navigation to modal dialogs for better UX
+  - **Base Dialog Component** (`/components/ui/dialog.tsx`): Reusable dialog component using Radix UI with size variants (sm, md, lg, xl, full)
+  - **CreateClientModal** (`/components/modals/create-client-modal.tsx`): Simplified client creation modal with name, email, phone, company, industry fields
+  - **CreateGalleryModal** (`/components/modals/create-gallery-modal.tsx`): Quick gallery creation with name, description, client selection, and price
+  - **CreateBookingModal** (`/components/modals/create-booking-modal.tsx`): Booking modal with title, client, date/time, duration, and location
+  - **ClientsPageClient** wrapper: Manages modal state and renders client list with modal trigger
+  - **GalleriesPageClient** wrapper: Manages modal state with client dropdown for gallery creation
+  - **SchedulingPageClient** wrapper: Manages modal state with calendar view and booking list
 - **Gallery-Property Integration**: Added "Create Property Website" and "View Property Website" buttons on real estate gallery detail pages
 - **Property Creation Flow**: Pre-select gallery when creating property website via `?galleryId=` URL parameter
 - **Auto-Link Auth**: Clerk users are now automatically linked to database users by email on first login, enabling seamless development with seeded data
