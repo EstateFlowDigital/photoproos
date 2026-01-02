@@ -257,6 +257,10 @@ model Organization {
   timezone String @default("America/New_York")
   currency String @default("USD")
 
+  // Tax settings
+  defaultTaxRate   Float?  @default(0) // Default tax rate as percentage (e.g., 8.25 for 8.25%)
+  taxLabel         String? @default("Sales Tax") // Label shown on invoices (e.g., "Sales Tax", "VAT", "GST")
+
   // Travel fee settings
   homeBaseLocationId String?
   travelFeePerMile   Int?    @default(0) // in cents (e.g., 65 = $0.65/mile)
@@ -553,6 +557,7 @@ model Asset {
   // Relations
   project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   favorites GalleryFavorite[]
+  comments  GalleryComment[]
 
   @@index([projectId])
   @@index([sortOrder])
@@ -602,6 +607,7 @@ model GalleryFavorite {
 model GalleryComment {
   id          String  @id @default(cuid())
   projectId   String
+  assetId     String? // Optional - if set, this is a per-photo comment; if null, it's a gallery-level comment
   clientEmail String?
   clientName  String?
   content     String
@@ -610,8 +616,10 @@ model GalleryComment {
 
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  asset   Asset?  @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
+  @@index([assetId])
 }
 
 // ============================================================================

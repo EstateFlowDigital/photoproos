@@ -19,7 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated master plan with full implementation details at `/Users/cameronameigh/.claude/plans/photoproos-master-plan.md`
 - **Core Gallery Delivery Improvements**: Phase 1 implementation for gallery delivery features
   - **Photo Downloads**: Download API route at `/api/download/[assetId]` with payment verification and tracking
-  - **Download All**: Sequential batch download with progress indicator in gallery header
+  - **Batch ZIP Download**: Download all photos or favorites as a single ZIP file
+    - New API endpoint at `/api/download/batch` for generating ZIP archives
+    - "Download All" button creates ZIP of entire gallery
+    - "Download Favorites" button appears when favorites are selected (downloads ZIP of favorites only)
+    - ZIP files named with gallery name for easy organization
+    - Uses archiver library for efficient compression
   - **Individual Downloads**: Click-to-download on each photo with hover action buttons
   - **Download Tracking**: Automatic increment of download counts with activity logging
   - **Favorites System**: Full favorites functionality for public galleries
@@ -32,6 +37,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Public gallery returns 404 for expired galleries
     - Download API returns 403 for expired galleries
     - Favorites API returns 403 for expired galleries
+  - **Per-Photo Comments**: Full commenting system for gallery photos
+    - New API endpoint at `/api/gallery/comment` (GET, POST, DELETE)
+    - Photo detail modal with comment viewing and posting
+    - Comment count badges on photos
+    - Optional name field for comments (anonymous allowed)
+    - Comments panel in photo modal with real-time updates
+    - Click on any photo to view details and add comments
+    - Updated schema with `assetId` field on `GalleryComment` for per-photo linking
+  - **Tax Rate Settings**: Organization-level tax configuration for invoices
+    - Added `defaultTaxRate` and `taxLabel` fields to Organization model
+    - Tax Settings section in Payment Settings page (`/settings/payments`)
+    - Configurable tax rate (0-100%) and custom tax label (Sales Tax, VAT, GST, etc.)
+    - Tax settings automatically applied to new invoices
   - Added `file_downloaded` to ActivityType enum for download logging
 
 ### Fixed
@@ -49,6 +67,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added "Portfolio Websites" module for commercial, events, portraits, food, and product industries
   - Portfolio Websites enabled by default for all non-real estate industries
   - Provides public-facing showcase pages for photography work (similar to property websites but for general portfolios)
+- **Onboarding Checklist on Dashboard**: Post-onboarding setup guidance for new users
+  - Displays after completing onboarding (for 30 days or until dismissed)
+  - Tracks completion of: first client, service package, gallery, branding, payment setup
+  - Property-specific task shown for real estate industry users
+  - Progress bar with percentage completion
+  - Dismissible with localStorage persistence
+  - Items link directly to creation pages for quick action
 - **Comprehensive Branding Customization**: Full portal theming and white-label capabilities
   - **Logo Management**: Upload logos for dark and light backgrounds, favicon, and invoice-specific logos
   - **Color Customization**: Primary, secondary, and accent colors with quick preset options (8 color schemes)

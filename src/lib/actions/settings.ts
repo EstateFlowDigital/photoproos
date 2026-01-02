@@ -168,6 +168,62 @@ export async function updateTravelSettings(input: {
   }
 }
 
+/**
+ * Update organization tax settings
+ */
+export async function updateTaxSettings(input: {
+  defaultTaxRate?: number;
+  taxLabel?: string;
+}) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    await prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        defaultTaxRate: input.defaultTaxRate ?? 0,
+        taxLabel: input.taxLabel ?? "Sales Tax",
+      },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/settings/payments");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating tax settings:", error);
+    return { success: false, error: "Failed to update tax settings" };
+  }
+}
+
+/**
+ * Get tax settings for the organization
+ */
+export async function getTaxSettings() {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        defaultTaxRate: true,
+        taxLabel: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        defaultTaxRate: org?.defaultTaxRate ?? 0,
+        taxLabel: org?.taxLabel ?? "Sales Tax",
+      },
+    };
+  } catch (error) {
+    console.error("Error getting tax settings:", error);
+    return { success: false, error: "Failed to get tax settings" };
+  }
+}
+
 // ============================================================================
 // TEAM MANAGEMENT
 // ============================================================================

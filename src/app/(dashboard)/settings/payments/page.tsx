@@ -4,10 +4,15 @@ import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getConnectAccountStatus } from "@/lib/actions/stripe-connect";
+import { getTaxSettings } from "@/lib/actions/settings";
 import { ConnectButton } from "./connect-button";
+import { TaxSettingsForm } from "./tax-settings-form";
 
 export default async function PaymentsSettingsPage() {
-  const connectStatus = await getConnectAccountStatus();
+  const [connectStatus, taxSettings] = await Promise.all([
+    getConnectAccountStatus(),
+    getTaxSettings(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -128,6 +133,25 @@ export default async function PaymentsSettingsPage() {
               Note: Stripe also charges their standard processing fees (2.9% + $0.30 per transaction).
             </p>
           </div>
+        </div>
+
+        {/* Tax Settings */}
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+              <ReceiptIcon className="h-6 w-6 text-[var(--primary)]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Tax Settings</h2>
+              <p className="text-sm text-foreground-muted">
+                Configure default tax rates for your invoices
+              </p>
+            </div>
+          </div>
+          <TaxSettingsForm
+            initialTaxRate={taxSettings.success && taxSettings.data ? taxSettings.data.defaultTaxRate : 0}
+            initialTaxLabel={taxSettings.success && taxSettings.data ? taxSettings.data.taxLabel : "Sales Tax"}
+          />
         </div>
 
         {/* Payout Settings */}
@@ -255,6 +279,14 @@ function XCircleIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ReceiptIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M2.5 4A1.5 1.5 0 0 1 4 2.5h12A1.5 1.5 0 0 1 17.5 4v12.5a.75.75 0 0 1-1.224.583l-2.276-1.82-2.276 1.82a.75.75 0 0 1-.948 0L8.5 15.263l-2.276 1.82a.75.75 0 0 1-1.224-.583V4Zm4.97 2.28a.75.75 0 0 1 1.06 0L10 7.75l1.47-1.47a.75.75 0 1 1 1.06 1.06L11.06 8.81l1.47 1.47a.75.75 0 0 1-1.06 1.06L10 9.87l-1.47 1.47a.75.75 0 0 1-1.06-1.06l1.47-1.47-1.47-1.47a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
     </svg>
   );
 }

@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
-import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries } from "@/components/dashboard";
+import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist, getChecklistItems } from "@/components/dashboard";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { TourStarter } from "@/components/tour";
 import { prisma } from "@/lib/db";
@@ -149,6 +149,8 @@ export default async function DashboardPage() {
     recentActivity,
     recentGalleries,
     upcomingBookings,
+    servicesCount,
+    propertiesCount,
   ] = await Promise.all([
     // This month's revenue
     prisma.payment.aggregate({
@@ -241,6 +243,18 @@ export default async function DashboardPage() {
       orderBy: { startTime: "asc" },
       take: 3,
     }),
+
+    // Services count (for onboarding checklist)
+    prisma.service.count({
+      where: { organizationId: organization.id },
+    }),
+
+    // Properties count (for onboarding checklist)
+    prisma.propertyWebsite.count({
+      where: {
+        project: { organizationId: organization.id },
+      },
+    }),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.amountCents || 0;
@@ -251,6 +265,25 @@ export default async function DashboardPage() {
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
   const galleriesChange = calculateCountChange(activeGalleries, lastMonthActiveGalleries);
   const clientsChange = calculateCountChange(totalClients, lastMonthTotalClients);
+
+  // Prepare onboarding checklist data
+  const isRealEstate = organization.primaryIndustry === "real_estate" ||
+    (organization.industries && organization.industries.includes("real_estate"));
+
+  const checklistItems = getChecklistItems({
+    hasClients: totalClients > 0,
+    hasServices: servicesCount > 0,
+    hasGalleries: activeGalleries > 0 || recentGalleries.length > 0,
+    hasPaymentMethod: organization.paymentMethodAdded || !!organization.stripeConnectAccountId,
+    hasBranding: !!organization.logoUrl,
+    hasProperties: propertiesCount > 0,
+    isRealEstate,
+  });
+
+  // Only show checklist if onboarding was recently completed (within 30 days)
+  const showChecklist = organization.onboardingCompleted &&
+    organization.onboardingCompletedAt &&
+    (now.getTime() - organization.onboardingCompletedAt.getTime()) < 30 * 24 * 60 * 60 * 1000;
 
   // Transform bookings to match UpcomingBookings component format
   const formattedBookings = upcomingBookings.map((booking) => ({
@@ -273,6 +306,14 @@ export default async function DashboardPage() {
         title="Dashboard"
         subtitle={`Welcome back! Here's what's happening with ${organization.name}.`}
       />
+
+      {/* Onboarding Checklist */}
+      {showChecklist && (
+        <OnboardingChecklist
+          items={checklistItems}
+          organizationName={organization.name}
+        />
+      )}
 
       {/* Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
