@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New environment variables: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
 
 ### Fixed
+- **Dashboard Error: getChecklistItems Server/Client Boundary**: Fixed "Attempted to call getChecklistItems() from the server" error
+  - Previous: Function defined in `"use client"` file, but called from server component
+  - Fix: Moved pure function to `/src/lib/utils/checklist-items.tsx` (no client directive)
 - **Security: Magic Link One-Time Use**: Magic link tokens are now properly deleted after use
   - Previous: Tokens were updated, allowing potential reuse if intercepted
   - Fix: Transaction-based delete/create for proper one-time use
