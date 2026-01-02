@@ -21,7 +21,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
   }
 
   // Get user from database
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { clerkUserId },
     include: {
       memberships: {
@@ -31,6 +31,55 @@ export async function getAuthContext(): Promise<AuthContext | null> {
       },
     },
   });
+
+  // If user not found by Clerk ID, try to find and link by email
+  if (!user) {
+    const clerkUser = await currentUser();
+    if (clerkUser?.emailAddresses?.[0]?.emailAddress) {
+      const email = clerkUser.emailAddresses[0].emailAddress;
+
+      // Find user by email and update their Clerk ID
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (existingUser) {
+        // Link the existing user to this Clerk account
+        user = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            clerkUserId,
+            fullName: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || existingUser.fullName,
+            avatarUrl: clerkUser.imageUrl || existingUser.avatarUrl,
+          },
+          include: {
+            memberships: {
+              include: {
+                organization: true,
+              },
+            },
+          },
+        });
+      } else {
+        // Create a new user with default organization
+        user = await prisma.user.create({
+          data: {
+            clerkUserId,
+            email,
+            fullName: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || null,
+            avatarUrl: clerkUser.imageUrl || null,
+          },
+          include: {
+            memberships: {
+              include: {
+                organization: true,
+              },
+            },
+          },
+        });
+      }
+    }
+  }
 
   if (!user) {
     return null;

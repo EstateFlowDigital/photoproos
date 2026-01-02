@@ -79,8 +79,8 @@ async function main() {
   const orgs = await Promise.all([
     prisma.organization.create({
       data: {
-        name: "Premier Photography Studio",
-        slug: "premier-photography",
+        name: "House & Home Photo",
+        slug: "house-and-home-photo",
         plan: PlanName.studio,
         primaryColor: "#3b82f6",
         secondaryColor: "#8b5cf6",
@@ -118,8 +118,8 @@ async function main() {
     prisma.user.create({
       data: {
         clerkUserId: "user_demo_001",
-        email: "alex@premierphotography.com",
-        fullName: "Alex Thompson",
+        email: "cameron@houseandhomephoto.com",
+        fullName: "Cameron Ameigh",
         phone: "+1 (555) 123-4567",
       },
     }),
