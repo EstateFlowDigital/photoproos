@@ -8,6 +8,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 2: Property Websites Feature** - Complete single-property marketing website system:
+  - **Database Schema Updates** (`prisma/schema.prisma`):
+    - `PropertyWebsite` model for property marketing pages with address, price, beds/baths/sqft, features, virtual tour URLs
+    - `PropertyAnalytics` model for tracking page views, unique visitors, tour clicks, social shares by day
+    - `PropertyLead` model for capturing buyer inquiries with status tracking (new, contacted, qualified, closed)
+    - `MarketingAsset` model for generated flyers, social graphics, and other marketing materials
+    - New enums: `LeadStatus`, `MarketingAssetType`, `PropertyWebsiteTemplate`
+  - **Server Actions** (`/lib/actions/property-websites.ts`):
+    - Full CRUD for property websites (create, update, delete, toggle publish)
+    - Lead capture and status management
+    - Analytics tracking and aggregation
+    - Helper functions for available projects without websites
+  - **Properties Dashboard** (`/properties/page.tsx`):
+    - Grid view of all property websites with status, views, leads, and photos count
+    - Filter by published/draft status
+    - Search by address, city, or agent
+    - Stats overview (total websites, published, views, leads)
+  - **Create Property Website Wizard** (`/properties/new/page.tsx`):
+    - 3-step wizard: Select Gallery → Property Details → Template & Settings
+    - Auto-fill location data from gallery's associated location
+    - Property details form (address, price, beds/baths/sqft, lot size, year built, type)
+    - Content section for headline, description, and features list
+    - Virtual tour and video URL support (Matterport, iGuide, YouTube, Vimeo)
+    - 5 template options: Modern, Luxury, Classic, Minimal, Commercial
+    - Display settings toggles (branding, price, agent contact)
+  - **Property Website Detail Page** (`/properties/[id]/page.tsx`):
+    - Overview tab with photo gallery preview, description, features, virtual tour links
+    - Leads tab with lead list, status badges, and status management
+    - Analytics tab with stats grid and 7-day views chart
+    - Settings tab with display toggles and delete option
+    - Publish/unpublish toggle with live site link
+  - **Public Property Website** (`/p/[slug]/page.tsx`):
+    - Beautiful dark-mode property marketing page
+    - Hero photo gallery with grid layout and "View all photos" button
+    - Property quick stats (beds, baths, sqft, lot size, year built)
+    - Virtual tour and video tour links
+    - Full description and features list
+    - Contact agent card with phone and email
+    - Lead capture inquiry form
+    - Social sharing buttons (Facebook, Twitter, LinkedIn, copy link)
+    - Photographer branding footer (optional)
+  - **Navigation Updates**:
+    - Added "Properties" link with home icon to sidebar (desktop and mobile)
+
+- **Client Portal** - Dedicated area for clients to access their content:
+  - **Portal Layout** (`/(client-portal)/layout.tsx`):
+    - Separate layout for client-facing pages with dark theme
+  - **Portal Login** (`/portal/login/page.tsx`):
+    - Magic link authentication flow
+    - Email input with loading and success states
+    - "Check your email" confirmation message
+  - **Portal Dashboard** (`/portal/page.tsx`):
+    - Welcome message with client name
+    - Stats overview (properties, views, leads, photos)
+    - Tabbed interface with 4 sections:
+      - **Properties**: Grid of property websites with view counts, leads, and "View Website" links
+      - **Galleries**: List of photo galleries with download status and download buttons
+      - **Downloads**: Organized download options (All Photos ZIP, Web Size, High-Res, Marketing Kit)
+      - **Invoices**: Invoice history with status badges and amounts
+
 - **Invoices Dashboard Page** (`/invoices/page.tsx`):
   - Full invoices list with status filtering (draft, sent, paid, overdue)
   - Summary metrics: total outstanding, paid this month, pending count, overdue count
