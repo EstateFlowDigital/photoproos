@@ -19,9 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - 5 invoices with line items
     - 4 contracts with signers
     - Client communications (emails, calls, notes)
+    - 10 activity log entries (for dashboard activity feed)
+    - 8 notifications (for notification panel)
   - "Clear All Data" button removes all organization data
   - Quick links to explore seeded data
   - Server actions in `/src/lib/actions/seed.ts`
+- **Live Notification Panel**
+  - Topbar notification panel now displays real notifications from the database
+  - Notifications are created during database seeding for testing
+  - Mark as read functionality persists to database
+  - Loading and empty states for better UX
+  - Server actions in `/src/lib/actions/notifications.ts`
 
 ### Changed
 - **Feature Organization Refactor**: Restructured module system for cleaner hierarchy

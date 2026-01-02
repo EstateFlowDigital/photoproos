@@ -363,6 +363,101 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
     }
     counts.contracts = contracts;
 
+    // 10. Create Activity Log entries
+    const activityTypes = [
+      { type: "gallery_created", description: (name: string) => `Created gallery "${name}"` },
+      { type: "gallery_delivered", description: (name: string) => `Delivered gallery "${name}" to client` },
+      { type: "client_added", description: (name: string) => `Added new client: ${name}` },
+      { type: "booking_created", description: (name: string) => `New booking created: ${name}` },
+      { type: "booking_confirmed", description: (name: string) => `Booking confirmed: ${name}` },
+      { type: "payment_received", description: (name: string) => `Payment received: ${name}` },
+      { type: "invoice_sent", description: (name: string) => `Invoice sent: ${name}` },
+      { type: "contract_signed", description: (name: string) => `Contract signed: ${name}` },
+    ] as const;
+
+    let activityLogs = 0;
+    for (let i = 0; i < 10; i++) {
+      const activityType = activityTypes[i % activityTypes.length];
+      const client = createdClients[i % createdClients.length];
+      const project = PROJECT_NAMES[i % PROJECT_NAMES.length];
+
+      let descriptionArg: string;
+      const clientName = client.fullName || "Unknown Client";
+      if (activityType.type.includes("client")) {
+        descriptionArg = clientName;
+      } else if (activityType.type.includes("gallery")) {
+        descriptionArg = project;
+      } else {
+        descriptionArg = clientName;
+      }
+
+      await prisma.activityLog.create({
+        data: {
+          organizationId,
+          userId,
+          type: activityType.type as any,
+          description: activityType.description(descriptionArg),
+          createdAt: new Date(Date.now() - i * 4 * 60 * 60 * 1000), // Spread over 40 hours
+        },
+      });
+      activityLogs++;
+    }
+    counts.activityLogs = activityLogs;
+
+    // 11. Create Notifications
+    const notificationTypes = [
+      { type: "payment_received", title: "Payment received", message: (client: string, amount: string) => `${client} paid ${amount}` },
+      { type: "gallery_viewed", title: "Gallery viewed", message: (client: string, gallery: string) => `${client} viewed "${gallery}"` },
+      { type: "contract_signed", title: "Contract signed", message: (client: string) => `${client} signed the photography agreement` },
+      { type: "booking_confirmed", title: "Booking confirmed", message: (client: string, service: string) => `${service} confirmed for ${client}` },
+      { type: "invoice_overdue", title: "Invoice overdue", message: (client: string, invoice: string) => `Invoice ${invoice} for ${client} is overdue` },
+    ] as const;
+
+    let notifications = 0;
+    for (let i = 0; i < 8; i++) {
+      const notifType = notificationTypes[i % notificationTypes.length];
+      const client = createdClients[i % createdClients.length];
+      const service = createdServices[i % createdServices.length];
+      const project = PROJECT_NAMES[i % PROJECT_NAMES.length];
+      const isUnread = i < 3; // First 3 notifications are unread
+      const clientName = client.fullName || "Unknown Client";
+
+      let message: string;
+      switch (notifType.type) {
+        case "payment_received":
+          message = notifType.message(clientName, `$${(service.priceCents / 100).toFixed(0)}`);
+          break;
+        case "gallery_viewed":
+          message = notifType.message(clientName, project);
+          break;
+        case "contract_signed":
+          message = notifType.message(clientName);
+          break;
+        case "booking_confirmed":
+          message = notifType.message(clientName, service.name);
+          break;
+        case "invoice_overdue":
+          message = notifType.message(clientName, `INV-${1000 + i}`);
+          break;
+        default:
+          message = `Notification for ${clientName}`;
+      }
+
+      await prisma.notification.create({
+        data: {
+          organizationId,
+          type: notifType.type as any,
+          title: notifType.title,
+          message,
+          read: !isUnread,
+          readAt: isUnread ? null : new Date(Date.now() - i * 2 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - i * 3 * 60 * 60 * 1000), // Spread over 24 hours
+        },
+      });
+      notifications++;
+    }
+    counts.notifications = notifications;
+
     // Revalidate all paths
     revalidatePath("/dashboard");
     revalidatePath("/clients");
@@ -393,6 +488,8 @@ export async function clearSeededData(): Promise<ActionResult> {
     const organizationId = await requireOrganizationId();
 
     // Delete in reverse order of dependencies
+    await prisma.notification.deleteMany({ where: { organizationId } });
+    await prisma.activityLog.deleteMany({ where: { organizationId } });
     await prisma.contractSigner.deleteMany({
       where: { contract: { organizationId } },
     });

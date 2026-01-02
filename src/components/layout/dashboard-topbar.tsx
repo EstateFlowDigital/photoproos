@@ -6,19 +6,55 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  type NotificationData,
+} from "@/lib/actions/notifications";
 
 interface DashboardTopbarProps {
   className?: string;
 }
 
-// Demo notifications data
-const demoNotifications = [
-  { id: "n1", type: "payment", title: "Payment received", message: "Sarah M. paid $450 for Luxury Property Package", time: "2 hours ago", unread: true },
-  { id: "n2", type: "view", title: "Gallery viewed", message: "Downtown Condo gallery was viewed by client", time: "4 hours ago", unread: true },
-  { id: "n3", type: "download", title: "Photos downloaded", message: "Client downloaded 5 photos from Sunset Estate", time: "Yesterday", unread: false },
-  { id: "n4", type: "comment", title: "New comment", message: "Client commented on photo in Modern Apartment gallery", time: "Yesterday", unread: false },
-  { id: "n5", type: "expiring", title: "Gallery expiring soon", message: "Beachfront Villa gallery expires in 3 days", time: "2 days ago", unread: false },
-];
+// Notification type for UI display
+interface DisplayNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  time: string;
+  unread: boolean;
+}
+
+// Helper to format relative time
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - new Date(date).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return new Date(date).toLocaleDateString();
+}
+
+// Map database notification types to UI types
+function mapNotificationType(dbType: string): string {
+  switch (dbType) {
+    case "payment_received": return "payment";
+    case "gallery_viewed": return "view";
+    case "contract_signed": return "contract";
+    case "booking_confirmed": return "booking";
+    case "invoice_overdue": return "expiring";
+    case "system": return "system";
+    default: return "system";
+  }
+}
 
 // Demo search results
 interface SearchResult {
@@ -45,16 +81,42 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(demoNotifications);
+  const [notifications, setNotifications] = useState<DisplayNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const helpRef = useRef<HTMLDivElement>(null);
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  // Fetch notifications on mount
+  useEffect(() => {
+    async function fetchNotifications() {
+      try {
+        const result = await getNotifications(10);
+        if (result.success) {
+          const displayNotifications: DisplayNotification[] = result.data.notifications.map((n) => ({
+            id: n.id,
+            type: mapNotificationType(n.type),
+            title: n.title,
+            message: n.message,
+            time: formatRelativeTime(n.createdAt),
+            unread: !n.read,
+          }));
+          setNotifications(displayNotifications);
+          setUnreadCount(result.data.unreadCount);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      } finally {
+        setIsLoadingNotifications(false);
+      }
+    }
+    fetchNotifications();
+  }, []);
 
   // Search functionality
   const handleSearch = useCallback((query: string) => {
@@ -125,12 +187,28 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    // Optimistically update UI
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    setUnreadCount(0);
+    // Persist to database
+    try {
+      await markAllNotificationsAsRead();
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+    }
   };
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
+    // Optimistically update UI
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+    // Persist to database
+    try {
+      await markNotificationAsRead(id);
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
   };
 
   const getNotificationIcon = (type: string) => {
@@ -140,6 +218,8 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
       case "download": return <DownloadIcon className="h-4 w-4 text-[var(--primary)]" />;
       case "comment": return <CommentIcon className="h-4 w-4 text-[var(--warning)]" />;
       case "expiring": return <ClockIcon className="h-4 w-4 text-[var(--error)]" />;
+      case "contract": return <ContractIcon className="h-4 w-4 text-[var(--primary)]" />;
+      case "booking": return <CalendarIcon className="h-4 w-4 text-[var(--primary)]" />;
       default: return <BellIcon className="h-4 w-4" />;
     }
   };
@@ -256,30 +336,43 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
                 )}
               </div>
               <div className="max-h-80 overflow-y-auto">
-                {notifications.map((notification) => (
-                  <button
-                    key={notification.id}
-                    onClick={() => markAsRead(notification.id)}
-                    className={cn(
-                      "w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[var(--background-hover)] transition-colors",
-                      notification.unread && "bg-[var(--primary)]/5"
-                    )}
-                  >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background)]">
-                      {getNotificationIcon(notification.type)}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-foreground truncate">{notification.title}</p>
-                        {notification.unread && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-[var(--primary)]" />
-                        )}
+                {isLoadingNotifications ? (
+                  <div className="px-4 py-8 text-center">
+                    <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
+                    <p className="mt-2 text-xs text-foreground-muted">Loading notifications...</p>
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="px-4 py-8 text-center">
+                    <BellIcon className="h-8 w-8 text-foreground-muted mx-auto mb-2" />
+                    <p className="text-sm text-foreground-muted">No notifications yet</p>
+                    <p className="text-xs text-foreground-muted mt-1">You&apos;ll see notifications here when there&apos;s activity</p>
+                  </div>
+                ) : (
+                  notifications.map((notification) => (
+                    <button
+                      key={notification.id}
+                      onClick={() => markAsRead(notification.id)}
+                      className={cn(
+                        "w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-[var(--background-hover)] transition-colors",
+                        notification.unread && "bg-[var(--primary)]/5"
+                      )}
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background)]">
+                        {getNotificationIcon(notification.type)}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-foreground truncate">{notification.title}</p>
+                          {notification.unread && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-[var(--primary)]" />
+                          )}
+                        </div>
+                        <p className="text-xs text-foreground-muted truncate">{notification.message}</p>
+                        <p className="text-xs text-foreground-muted mt-1">{notification.time}</p>
                       </div>
-                      <p className="text-xs text-foreground-muted truncate">{notification.message}</p>
-                      <p className="text-xs text-foreground-muted mt-1">{notification.time}</p>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))
+                )}
               </div>
               <div className="border-t border-[var(--card-border)] px-4 py-2">
                 <Link
@@ -478,6 +571,22 @@ function FeedbackIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.155.75.75 0 0 0 0-1.114A28.897 28.897 0 0 0 3.105 2.288Z" />
+    </svg>
+  );
+}
+
+function ContractIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
     </svg>
   );
 }
