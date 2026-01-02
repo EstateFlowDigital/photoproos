@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { DashboardLayoutClient } from "@/components/layout/dashboard-layout-client";
 import { ToastProvider } from "@/components/ui/toast";
 import { prisma } from "@/lib/db";
+import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 
 export default async function DashboardLayout({
   children,
@@ -37,33 +38,51 @@ export default async function DashboardLayout({
       avatarUrl: clerkUser.imageUrl || null,
     },
     include: {
-      memberships: true,
+      memberships: {
+        include: {
+          organization: true,
+        },
+      },
     },
   });
 
   // Check if user has an organization
+  let organization;
   if (user.memberships.length === 0) {
     // Create a default organization for new users
-    const org = await prisma.organization.create({
+    const defaultModules = getDefaultModulesForIndustries(["real_estate"]);
+    organization = await prisma.organization.create({
       data: {
         name: clerkUser.firstName ? `${clerkUser.firstName}'s Studio` : "My Studio",
         slug: `studio-${user.id.slice(0, 8)}`,
+        industries: ["real_estate"],
+        primaryIndustry: "real_estate",
+        enabledModules: defaultModules,
       },
     });
 
     // Create membership linking user to organization
     await prisma.organizationMember.create({
       data: {
-        organizationId: org.id,
+        organizationId: organization.id,
         userId: user.id,
         role: "owner",
       },
     });
+  } else {
+    // Get the first organization for the user
+    organization = user.memberships[0].organization;
   }
+
+  // Get enabled modules (default to all if not set)
+  const enabledModules = (organization.enabledModules as string[]) ||
+    getDefaultModulesForIndustries(["real_estate"]);
 
   return (
     <ToastProvider>
-      <DashboardLayoutClient>{children}</DashboardLayoutClient>
+      <DashboardLayoutClient enabledModules={enabledModules}>
+        {children}
+      </DashboardLayoutClient>
     </ToastProvider>
   );
 }

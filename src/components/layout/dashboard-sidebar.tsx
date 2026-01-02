@@ -5,35 +5,46 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { CORE_MODULES } from "@/lib/constants/modules";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.FC<{ className?: string }>;
   badge?: number;
+  moduleId: string; // Module ID for gating
 }
 
-const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: DashboardIcon },
-  { label: "Galleries", href: "/galleries", icon: GalleryIcon },
-  { label: "Properties", href: "/properties", icon: PropertyIcon },
-  { label: "Services", href: "/services", icon: ServicesIcon },
-  { label: "Clients", href: "/clients", icon: ClientsIcon },
-  { label: "Invoices", href: "/invoices", icon: InvoiceIcon },
-  { label: "Payments", href: "/payments", icon: PaymentsIcon },
-  { label: "Scheduling", href: "/scheduling", icon: CalendarIcon },
+const allNavItems: NavItem[] = [
+  { label: "Dashboard", href: "/dashboard", icon: DashboardIcon, moduleId: "dashboard" },
+  { label: "Galleries", href: "/galleries", icon: GalleryIcon, moduleId: "galleries" },
+  { label: "Properties", href: "/properties", icon: PropertyIcon, moduleId: "properties" },
+  { label: "Services", href: "/services", icon: ServicesIcon, moduleId: "services" },
+  { label: "Clients", href: "/clients", icon: ClientsIcon, moduleId: "clients" },
+  { label: "Invoices", href: "/invoices", icon: InvoiceIcon, moduleId: "invoices" },
+  { label: "Payments", href: "/payments", icon: PaymentsIcon, moduleId: "invoices" }, // Payments is part of invoices module
+  { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
 ];
 
 const bottomNavItems: NavItem[] = [
-  { label: "Settings", href: "/settings", icon: SettingsIcon },
+  { label: "Settings", href: "/settings", icon: SettingsIcon, moduleId: "settings" },
 ];
 
 interface DashboardSidebarProps {
   className?: string;
+  enabledModules: string[];
 }
 
-export function DashboardSidebar({ className }: DashboardSidebarProps) {
+export function DashboardSidebar({ className, enabledModules }: DashboardSidebarProps) {
   const pathname = usePathname();
+
+  // Filter nav items based on enabled modules
+  const navItems = allNavItems.filter((item) => {
+    // Core modules are always shown
+    if (CORE_MODULES.includes(item.moduleId)) return true;
+    // Check if module is enabled
+    return enabledModules.includes(item.moduleId);
+  });
 
   return (
     <aside

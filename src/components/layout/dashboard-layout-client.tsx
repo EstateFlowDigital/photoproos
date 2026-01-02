@@ -7,9 +7,10 @@ import { MobileNav, MobileMenuButton } from "./mobile-nav";
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode;
+  enabledModules: string[];
 }
 
-export function DashboardLayoutClient({ children }: DashboardLayoutClientProps) {
+export function DashboardLayoutClient({ children, enabledModules }: DashboardLayoutClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleOpenMenu = useCallback(() => {
@@ -24,11 +25,11 @@ export function DashboardLayoutClient({ children }: DashboardLayoutClientProps) 
     <div className="flex h-screen bg-[var(--background)]">
       {/* Desktop Sidebar - hidden on mobile */}
       <div className="hidden lg:block">
-        <DashboardSidebar />
+        <DashboardSidebar enabledModules={enabledModules} />
       </div>
 
       {/* Mobile Navigation */}
-      <MobileNav isOpen={mobileMenuOpen} onClose={handleCloseMenu} />
+      <MobileNav isOpen={mobileMenuOpen} onClose={handleCloseMenu} enabledModules={enabledModules} />
 
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">

@@ -5,32 +5,43 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { CORE_MODULES } from "@/lib/constants/modules";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.FC<{ className?: string }>;
+  moduleId: string;
 }
 
-const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: DashboardIcon },
-  { label: "Galleries", href: "/galleries", icon: GalleryIcon },
-  { label: "Properties", href: "/properties", icon: PropertyIcon },
-  { label: "Services", href: "/services", icon: ServicesIcon },
-  { label: "Clients", href: "/clients", icon: ClientsIcon },
-  { label: "Invoices", href: "/invoices", icon: InvoiceIcon },
-  { label: "Payments", href: "/payments", icon: PaymentsIcon },
-  { label: "Scheduling", href: "/scheduling", icon: CalendarIcon },
-  { label: "Settings", href: "/settings", icon: SettingsIcon },
+const allNavItems: NavItem[] = [
+  { label: "Dashboard", href: "/dashboard", icon: DashboardIcon, moduleId: "dashboard" },
+  { label: "Galleries", href: "/galleries", icon: GalleryIcon, moduleId: "galleries" },
+  { label: "Properties", href: "/properties", icon: PropertyIcon, moduleId: "properties" },
+  { label: "Services", href: "/services", icon: ServicesIcon, moduleId: "services" },
+  { label: "Clients", href: "/clients", icon: ClientsIcon, moduleId: "clients" },
+  { label: "Invoices", href: "/invoices", icon: InvoiceIcon, moduleId: "invoices" },
+  { label: "Payments", href: "/payments", icon: PaymentsIcon, moduleId: "invoices" },
+  { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
+  { label: "Settings", href: "/settings", icon: SettingsIcon, moduleId: "settings" },
 ];
 
 interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
+  enabledModules: string[];
 }
 
-export function MobileNav({ isOpen, onClose }: MobileNavProps) {
+export function MobileNav({ isOpen, onClose, enabledModules }: MobileNavProps) {
   const pathname = usePathname();
+
+  // Filter nav items based on enabled modules
+  const navItems = allNavItems.filter((item) => {
+    // Core modules are always shown
+    if (CORE_MODULES.includes(item.moduleId)) return true;
+    // Check if module is enabled
+    return enabledModules.includes(item.moduleId);
+  });
 
   // Close menu on route change
   useEffect(() => {

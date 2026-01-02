@@ -23,6 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `/README-ONBOARDING.md` with complete implementation documentation
   - Created module README files: `README-MODULE-REAL-ESTATE.md`, `README-MODULE-COMMERCIAL.md`,
     `README-MODULE-EVENTS.md`, `README-MODULE-PORTRAITS.md`, `README-MODULE-FOOD.md`, `README-MODULE-PRODUCT.md`
+- **Module Gating in Navigation**: Dynamic sidebar navigation based on enabled modules
+  - Dashboard layout fetches organization's enabledModules from database
+  - Sidebar and mobile navigation filter menu items based on enabled modules
+  - Core modules (Dashboard, Settings) are always visible
+  - Non-core modules only appear if enabled for the organization
+  - Supports industry-based module defaults for new organizations
+- **Industries & Features Settings Page**: New settings page for managing industries and modules
+  - Created `/settings/features/page.tsx` with form for industry and module selection
+  - Visual industry selection cards with icons and primary industry designation
+  - Module toggles grouped by category (Operations, Client Management, Industry-Specific)
+  - Available modules dynamically filter based on selected industries
+  - Uses existing onboarding server actions for saving changes
 - **Gallery Delete Action**: Added delete button with confirmation dialog to gallery detail page
   - Created `/galleries/[id]/gallery-actions.tsx` client component
   - Uses existing `deleteGallery` server action
