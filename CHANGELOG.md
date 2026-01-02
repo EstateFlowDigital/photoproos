@@ -8,6 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Services Dashboard** (`/services`):
+  - Top-level Services route with list, detail, and create pages
+  - Services grouped by category with active/inactive badges
+  - Cards showing pricing, duration, and included items
+  - Added Services to sidebar navigation (desktop and mobile)
+
+- **Invoice Management Pages**:
+  - **Invoice Detail Page** (`/invoices/[id]/page.tsx`):
+    - Full invoice view with line items, totals, client info
+    - Status badges and timeline tracking
+    - Action buttons: Send, Mark as Paid, Cancel, Delete
+    - Payment details sidebar with due date and payment link
+  - **Invoice Creation Page** (`/invoices/new/page.tsx`):
+    - Client selection dropdown
+    - Dynamic line items with quantity and price
+    - Quick-add from existing services
+    - Due date, notes, and terms fields
+  - **Invoice Actions Component** (`invoice-actions.tsx`):
+    - Status transitions (draft → sent → paid)
+    - Download PDF, copy link, send reminder
+    - Delete draft invoices
+
 - **Phase 2: Property Websites Feature** - Complete single-property marketing website system:
   - **Database Schema Updates** (`prisma/schema.prisma`):
     - `PropertyWebsite` model for property marketing pages with address, price, beds/baths/sqft, features, virtual tour URLs
