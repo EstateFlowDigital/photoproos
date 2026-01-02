@@ -8,12 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Properties Page**: Converted from client component with demo data to server component fetching real property websites from database
+- **Public Gallery Page** (`/p/[slug]`):
+  - Now fetches data from database using `getPropertyWebsiteBySlug()` instead of demo data
+  - Replaced 80+ hardcoded hex colors with CSS custom properties for proper dark mode theming
 - **Services Page**: Corrected property names (`durationMinutes` → `duration`, `includedItems` → `deliverables`) to match Prisma schema
 - **Stripe Integration**: Made Stripe client initialization lazy to avoid build-time errors when environment variables are not set
 - **Resend Email**: Made Resend client initialization lazy for same reason, updated `getResend()` function in all marketing actions
 - **Payments Actions**: Removed non-existent `paymentLinkUrl` field from Payment select query
 
 ### Added
+- **Payment Detail Actions** (`/payments/[id]`):
+  - Implemented all 7 previously disabled "Coming soon" buttons:
+    - Download Receipt: Generates and downloads a text receipt for paid payments
+    - Send Reminder: Sends payment reminder to client email
+    - Resend Receipt: Re-sends receipt to client
+    - Download Invoice: Downloads invoice data as text file
+    - Copy Payment Link: Copies payment URL to clipboard
+    - Export to CSV: Exports payment data to CSV format
+    - Issue Refund: Opens refund modal with Stripe integration (or marks as refunded)
+  - Created `payment-actions.tsx` client component with PaymentHeaderActions and PaymentSidebarActions
+  - Added new server actions: `updatePaymentStatus`, `getPaymentLinkUrl`, `sendPaymentReminder`, `getPaymentReceiptData`, `exportPaymentsToCSV`, `issueRefund`
+
 - **Services Dashboard** (`/services`):
   - Top-level Services route with list, detail, and create pages
   - Services grouped by category with active/inactive badges
