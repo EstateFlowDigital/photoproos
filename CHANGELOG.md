@@ -29,6 +29,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Client component extracted from contact page
   - Integrated with `submitContactForm` server action
   - Success/error state handling with visual feedback
+- **Blog System** (`/lib/blog/posts.ts`, `/app/(marketing)/blog/[slug]/page.tsx`):
+  - Full blog post content for 7 photography business articles
+  - Dynamic blog post pages with markdown rendering
+  - Related posts section based on category
+  - Author attribution and article metadata
+  - CTA sections for PhotoProOS signup
+- **Help Center System** (`/lib/help/articles.ts`, `/app/(marketing)/help/[category]/[article]/page.tsx`):
+  - Comprehensive help articles for 20+ topics across 6 categories
+  - Getting Started, Galleries, Clients, Payments, Bookings, Account sections
+  - Dynamic article pages with table and list rendering
+  - Related articles sidebar and category navigation
+  - Article feedback widget and contact support CTA
 
 ### Fixed
 - **Newsletter Signup**: Now properly sends welcome emails via Resend instead of mock setTimeout
