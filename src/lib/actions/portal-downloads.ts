@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/db";
 import { getClientSession } from "./client-auth";
-import archiver from "archiver";
 
 /**
  * Get a download URL for all photos in a gallery as a ZIP file
