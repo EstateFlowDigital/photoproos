@@ -43,4 +43,5 @@ export {
 export { InvoiceBuilder, InvoiceSummary, type LineItem, type PricingType } from "./invoice-builder";
 export { ServiceSelector, ServiceDisplay } from "./service-selector";
 export { ServiceForm } from "./service-form";
-export { OnboardingChecklist, getChecklistItems } from "./onboarding-checklist";
+export { OnboardingChecklist } from "./onboarding-checklist";
+export { getChecklistItems } from "@/lib/utils/checklist-items";

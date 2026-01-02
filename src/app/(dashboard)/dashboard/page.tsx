@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
-import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist, getChecklistItems } from "@/components/dashboard";
+import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist } from "@/components/dashboard";
+import { getChecklistItems } from "@/lib/utils/checklist-items";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { TourStarter } from "@/components/tour";
 import { prisma } from "@/lib/db";
