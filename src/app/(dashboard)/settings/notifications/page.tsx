@@ -1,10 +1,38 @@
-export const dynamic = "force-dynamic";
+"use client";
+
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
-// Default notification preferences (stored in local state until notification preferences are added to DB)
-const defaultPreferences = {
+interface NotificationPreferences {
+  email: {
+    galleryDelivered: boolean;
+    paymentReceived: boolean;
+    newBooking: boolean;
+    bookingReminder: boolean;
+    invoiceOverdue: boolean;
+    weeklyDigest: boolean;
+    marketingUpdates: boolean;
+  };
+  push: {
+    galleryDelivered: boolean;
+    paymentReceived: boolean;
+    newBooking: boolean;
+    bookingReminder: boolean;
+    invoiceOverdue: boolean;
+    weeklyDigest: boolean;
+    marketingUpdates: boolean;
+  };
+  quietHours: {
+    enabled: boolean;
+    from: string;
+    to: string;
+  };
+}
+
+const defaultPreferences: NotificationPreferences = {
   email: {
     galleryDelivered: true,
     paymentReceived: true,
@@ -22,6 +50,11 @@ const defaultPreferences = {
     invoiceOverdue: true,
     weeklyDigest: false,
     marketingUpdates: false,
+  },
+  quietHours: {
+    enabled: false,
+    from: "22:00",
+    to: "07:00",
   },
 };
 
@@ -63,7 +96,81 @@ const notificationTypes = [
   },
 ];
 
+const STORAGE_KEY = "photoproos_notification_preferences";
+
 export default function NotificationsSettingsPage() {
+  const { showToast } = useToast();
+  const [preferences, setPreferences] = useState<NotificationPreferences>(defaultPreferences);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setPreferences(JSON.parse(saved));
+      } catch {
+        // Use defaults if parsing fails
+      }
+    }
+  }, []);
+
+  const updateEmailPreference = (key: string, value: boolean) => {
+    setPreferences((prev) => ({
+      ...prev,
+      email: { ...prev.email, [key]: value },
+    }));
+    setHasChanges(true);
+  };
+
+  const updatePushPreference = (key: string, value: boolean) => {
+    setPreferences((prev) => ({
+      ...prev,
+      push: { ...prev.push, [key]: value },
+    }));
+    setHasChanges(true);
+  };
+
+  const updateQuietHours = (updates: Partial<NotificationPreferences["quietHours"]>) => {
+    setPreferences((prev) => ({
+      ...prev,
+      quietHours: { ...prev.quietHours, ...updates },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleEnablePush = async () => {
+    if ("Notification" in window) {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        setPushEnabled(true);
+        showToast("Push notifications enabled", "success");
+      } else {
+        showToast("Push notifications were denied. Please enable them in your browser settings.", "error");
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // Save to localStorage (simulating DB persistence)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      showToast("Notification preferences saved", "success");
+      setHasChanges(false);
+    } catch {
+      showToast("Failed to save preferences", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -99,7 +206,8 @@ export default function NotificationsSettingsPage() {
                 key={`email-${type.id}`}
                 label={type.label}
                 description={type.description}
-                defaultChecked={defaultPreferences.email[type.id as keyof typeof defaultPreferences.email]}
+                checked={preferences.email[type.id as keyof typeof preferences.email]}
+                onChange={(checked) => updateEmailPreference(type.id, checked)}
               />
             ))}
           </div>
@@ -117,25 +225,38 @@ export default function NotificationsSettingsPage() {
             </div>
           </div>
 
-          <div className="mb-4 p-4 rounded-lg bg-[var(--background)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Enable Push Notifications</p>
-                <p className="text-xs text-foreground-muted">Allow notifications in your browser</p>
+          {!pushEnabled ? (
+            <div className="mb-4 p-4 rounded-lg bg-[var(--background)]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Enable Push Notifications</p>
+                  <p className="text-xs text-foreground-muted">Allow notifications in your browser</p>
+                </div>
+                <button
+                  onClick={handleEnablePush}
+                  className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                >
+                  Enable
+                </button>
               </div>
-              <button className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">
-                Enable
-              </button>
             </div>
-          </div>
+          ) : (
+            <div className="mb-4 p-4 rounded-lg bg-[var(--success)]/10 border border-[var(--success)]/20">
+              <div className="flex items-center gap-2 text-sm text-[var(--success)]">
+                <CheckIcon className="h-4 w-4" />
+                Push notifications are enabled
+              </div>
+            </div>
+          )}
 
-          <div className="space-y-4 opacity-50 pointer-events-none">
+          <div className={cn("space-y-4", !pushEnabled && "opacity-50 pointer-events-none")}>
             {notificationTypes.slice(0, -1).map((type) => (
               <NotificationToggle
                 key={`push-${type.id}`}
                 label={type.label}
                 description={type.description}
-                defaultChecked={defaultPreferences.push[type.id as keyof typeof defaultPreferences.push]}
+                checked={preferences.push[type.id as keyof typeof preferences.push]}
+                onChange={(checked) => updatePushPreference(type.id, checked)}
               />
             ))}
           </div>
@@ -159,20 +280,39 @@ export default function NotificationsSettingsPage() {
                 <p className="text-sm font-medium text-foreground">Enable Quiet Hours</p>
                 <p className="text-xs text-foreground-muted">Notifications will be silenced during this period</p>
               </div>
-              <ToggleSwitch defaultChecked={false} />
+              <ToggleSwitch
+                checked={preferences.quietHours.enabled}
+                onChange={(checked) => updateQuietHours({ enabled: checked })}
+              />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 opacity-50">
+            <div className={cn("grid gap-4 sm:grid-cols-2", !preferences.quietHours.enabled && "opacity-50 pointer-events-none")}>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">From</label>
-                <select className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground">
-                  <option>10:00 PM</option>
+                <select
+                  value={preferences.quietHours.from}
+                  onChange={(e) => updateQuietHours({ from: e.target.value })}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground"
+                >
+                  {generateTimeOptions().map((time) => (
+                    <option key={`from-${time.value}`} value={time.value}>
+                      {time.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">To</label>
-                <select className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground">
-                  <option>7:00 AM</option>
+                <select
+                  value={preferences.quietHours.to}
+                  onChange={(e) => updateQuietHours({ to: e.target.value })}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground"
+                >
+                  {generateTimeOptions().map((time) => (
+                    <option key={`to-${time.value}`} value={time.value}>
+                      {time.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -180,12 +320,19 @@ export default function NotificationsSettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
+          {hasChanges && (
+            <span className="flex items-center text-sm text-foreground-muted">
+              <span className="mr-2 h-2 w-2 rounded-full bg-[var(--warning)]" />
+              Unsaved changes
+            </span>
+          )}
           <button
-            disabled
+            onClick={handleSave}
+            disabled={isSaving || !hasChanges}
             className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Save Preferences
+            {isSaving ? "Saving..." : "Save Preferences"}
           </button>
         </div>
       </div>
@@ -193,14 +340,30 @@ export default function NotificationsSettingsPage() {
   );
 }
 
+function generateTimeOptions() {
+  const options = [];
+  for (let hour = 0; hour < 24; hour++) {
+    const h = hour.toString().padStart(2, "0");
+    const ampm = hour < 12 ? "AM" : "PM";
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    options.push({
+      value: `${h}:00`,
+      label: `${displayHour}:00 ${ampm}`,
+    });
+  }
+  return options;
+}
+
 function NotificationToggle({
   label,
   description,
-  defaultChecked,
+  checked,
+  onChange,
 }: {
   label: string;
   description: string;
-  defaultChecked: boolean;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
 }) {
   return (
     <div className="flex items-center justify-between py-2">
@@ -208,25 +371,33 @@ function NotificationToggle({
         <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="text-xs text-foreground-muted">{description}</p>
       </div>
-      <ToggleSwitch defaultChecked={defaultChecked} />
+      <ToggleSwitch checked={checked} onChange={onChange} />
     </div>
   );
 }
 
-function ToggleSwitch({ defaultChecked }: { defaultChecked: boolean }) {
+function ToggleSwitch({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
   return (
     <button
+      type="button"
       role="switch"
-      aria-checked={defaultChecked}
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
       className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-        defaultChecked ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
+        "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors cursor-pointer",
+        checked ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
       )}
     >
       <span
         className={cn(
           "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-          defaultChecked ? "translate-x-5" : "translate-x-0"
+          checked ? "translate-x-5" : "translate-x-0"
         )}
       />
     </button>
@@ -262,6 +433,14 @@ function MoonIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M7.455 2.004a.75.75 0 0 1 .26.77 7 7 0 0 0 9.958 7.967.75.75 0 0 1 1.067.853A8.5 8.5 0 1 1 6.647 1.921a.75.75 0 0 1 .808.083Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
     </svg>
   );
 }

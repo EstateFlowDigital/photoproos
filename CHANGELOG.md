@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Invoices Dashboard Page** (`/invoices/page.tsx`):
+  - Full invoices list with status filtering (draft, sent, paid, overdue)
+  - Summary metrics: total outstanding, paid this month, pending count, overdue count
+  - Status badges with color coding for each invoice state
+  - Client info display with avatar and email
+  - Date display with issue date and due date
+  - Overdue detection for invoices past due date
+  - Empty state with call-to-action to create first invoice
+  - Added Invoices to sidebar navigation in both desktop and mobile nav
+
 - **Clerk Theme Configuration** (`/lib/clerk-theme.ts`):
   - Comprehensive dark theme matching Dovetail/Lumos design system
   - Styles all Clerk components: SignIn, SignUp, UserButton, OrganizationSwitcher
@@ -43,6 +53,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Article feedback widget and contact support CTA
 
 ### Fixed
+- **Notifications Settings Page** (`/settings/notifications/page.tsx`):
+  - Converted from static non-functional page to fully interactive client component
+  - Working toggle switches for all notification categories (email, push, in-app)
+  - Save button with loading state and unsaved changes indicator
+  - localStorage persistence for notification preferences
+  - Push notification permission handling for browser notifications
+  - Quiet hours configuration for limiting notification times
 - **Newsletter Signup**: Now properly sends welcome emails via Resend instead of mock setTimeout
 - **Contact Form**: Now sends emails to team and confirmation to user via Resend instead of mock submission
 - **Broken /api-docs Links**: Updated to point to `/help` with "Soon" badge (footer.tsx, integrations.tsx)

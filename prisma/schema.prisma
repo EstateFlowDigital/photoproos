@@ -142,6 +142,31 @@ enum CapabilityLevel {
   expert
 }
 
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  closed
+}
+
+enum MarketingAssetType {
+  flyer_portrait
+  flyer_landscape
+  social_square
+  social_story
+  postcard
+  email_banner
+  video_slideshow
+}
+
+enum PropertyWebsiteTemplate {
+  modern
+  classic
+  luxury
+  minimal
+  commercial
+}
+
 enum LineItemType {
   service
   travel
@@ -374,15 +399,16 @@ model Project {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization  Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client        Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  service       Service?          @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  location      Location?         @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  assets        Asset[]
-  deliveryLinks DeliveryLink[]
-  payments      Payment[]
-  favorites     GalleryFavorite[]
-  comments      GalleryComment[]
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client          Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  service         Service?          @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  location        Location?         @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  assets          Asset[]
+  deliveryLinks   DeliveryLink[]
+  payments        Payment[]
+  favorites       GalleryFavorite[]
+  comments        GalleryComment[]
+  propertyWebsite PropertyWebsite?
 
   @@index([organizationId])
   @@index([clientId])
@@ -499,9 +525,9 @@ model Payment {
   status      PaymentStatus @default(pending)
 
   // Stripe
-  stripePaymentIntentId    String? @unique
-  stripeCheckoutSessionId  String? @unique
-  stripeChargeId           String?
+  stripePaymentIntentId   String? @unique
+  stripeCheckoutSessionId String? @unique
+  stripeChargeId          String?
 
   // Client info
   clientEmail String?
@@ -1051,4 +1077,145 @@ model ServiceEquipmentRequirement {
   @@unique([serviceId, equipmentId])
   @@index([serviceId])
   @@index([equipmentId])
+}
+
+// ============================================================================
+// PROPERTY WEBSITES (Phase 2)
+// ============================================================================
+
+model PropertyWebsite {
+  id        String @id @default(cuid())
+  projectId String @unique
+
+  // Property Info
+  address      String
+  city         String
+  state        String
+  zipCode      String
+  price        Int? // in cents
+  beds         Int?
+  baths        Float?
+  sqft         Int?
+  lotSize      String?
+  yearBuilt    Int?
+  propertyType PropertyType?
+
+  // Content
+  headline       String?
+  description    String?  @db.Text
+  features       String[] // Array of feature highlights
+  virtualTourUrl String? // Matterport, iGuide, etc.
+  videoUrl       String?
+
+  // Settings
+  template     PropertyWebsiteTemplate @default(modern)
+  isPublished  Boolean                 @default(false)
+  isBranded    Boolean                 @default(true) // Show photographer branding
+  showPrice    Boolean                 @default(true)
+  showAgent    Boolean                 @default(true)
+  customDomain String?                 @unique
+
+  // SEO
+  slug            String  @unique
+  metaTitle       String?
+  metaDescription String?
+
+  // Analytics (denormalized for quick access)
+  viewCount Int @default(0)
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  // Relations
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  analytics       PropertyAnalytics[]
+  marketingAssets MarketingAsset[]
+  leads           PropertyLead[]
+
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model PropertyAnalytics {
+  id                String   @id @default(cuid())
+  propertyWebsiteId String
+  date              DateTime @default(now()) @db.Date
+
+  // Traffic
+  pageViews      Int  @default(0)
+  uniqueVisitors Int  @default(0)
+  avgTimeOnPage  Int? // seconds
+
+  // Engagement
+  tourClicks   Int @default(0)
+  photoViews   Int @default(0)
+  socialShares Int @default(0)
+
+  // Traffic sources
+  directTraffic Int @default(0)
+  socialTraffic Int @default(0)
+  emailTraffic  Int @default(0)
+  searchTraffic Int @default(0)
+
+  // Device breakdown
+  mobileViews  Int @default(0)
+  desktopViews Int @default(0)
+  tabletViews  Int @default(0)
+
+  // Relations
+  propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyWebsiteId, date])
+  @@index([propertyWebsiteId])
+  @@index([date])
+}
+
+model PropertyLead {
+  id                String @id @default(cuid())
+  propertyWebsiteId String
+
+  // Lead info
+  name    String
+  email   String
+  phone   String?
+  message String? @db.Text
+  source  String? // website, social, email, etc.
+
+  // Status
+  status LeadStatus @default(new)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+
+  @@index([propertyWebsiteId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model MarketingAsset {
+  id                String @id @default(cuid())
+  propertyWebsiteId String
+
+  // Asset info
+  type         MarketingAssetType
+  name         String
+  fileUrl      String
+  thumbnailUrl String?
+
+  // Generation metadata
+  templateUsed String?
+  settings     Json? // Custom settings used to generate
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+
+  @@index([propertyWebsiteId])
+  @@index([type])
 }
