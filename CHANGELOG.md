@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Contextual Quick Actions Navigation (PageContextNav)**
+  - New `PageContextNav` component for contextual navigation below page headers
+  - Horizontal pill-style links showing related pages and integration shortcuts
+  - Integration status indicators (green dot when connected)
+  - Added to all main module pages:
+    - **Scheduling**: Calendar, Availability + Google Calendar integration status
+    - **Clients**: All Clients, Tags
+    - **Invoices**: All Invoices, Payments + Stripe integration
+    - **Contracts**: All Contracts, Templates
+    - **Galleries**: Galleries, Services + Dropbox integration
+    - **Properties**: Properties, Leads, Analytics
+  - Configuration in `/src/lib/constants/page-context.ts`
+  - Makes related features accessible "within arm's reach" from any page
+
 - **Comprehensive Database Seeding for Testing**
   - Developer Tools page at `/settings/developer`
   - "Seed Database" button creates comprehensive sample data:

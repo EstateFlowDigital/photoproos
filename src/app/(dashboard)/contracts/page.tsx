@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { PageHeader } from "@/components/dashboard";
+import { PageHeader, PageContextNav, DocumentIcon } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
@@ -135,6 +135,14 @@ export default async function ContractsPage({ searchParams }: PageProps) {
             Create Contract
           </Link>
         }
+      />
+
+      {/* Context Navigation */}
+      <PageContextNav
+        items={[
+          { label: "All Contracts", href: "/contracts", icon: <DocumentIcon className="h-4 w-4" /> },
+          { label: "Templates", href: "/contracts/templates", icon: <DocumentIcon className="h-4 w-4" /> },
+        ]}
       />
 
       {/* Summary Cards */}

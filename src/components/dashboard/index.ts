@@ -2,6 +2,25 @@ export { StatCard } from "./stat-card";
 export { ActivityItem } from "./activity-item";
 export { GalleryCard } from "./gallery-card";
 export { PageHeader } from "./page-header";
+export {
+  PageContextNav,
+  GoogleIcon,
+  StripeIcon,
+  QuickBooksIcon,
+  DropboxIcon,
+  DocuSignIcon,
+  CalendarIcon as ContextCalendarIcon,
+  ClockIcon as ContextClockIcon,
+  TagIcon,
+  ChatIcon,
+  UsersIcon,
+  DocumentIcon,
+  CurrencyIcon,
+  PhotoIcon,
+  HomeIcon,
+  ChartIcon,
+  TaskIcon,
+} from "./page-context-nav";
 export { QuickActions } from "./quick-actions";
 export { UpcomingBookings } from "./upcoming-bookings";
 export { RevenueChart, RevenueSparkline } from "./revenue-chart";

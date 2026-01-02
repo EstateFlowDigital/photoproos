@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { CreateClientModal } from "@/components/modals/create-client-modal";
 import { ClientSearch } from "./client-search";
+import { PageHeader, PageContextNav, UsersIcon, TagIcon } from "@/components/dashboard";
 
 // Industry display names
 const industryLabels: Record<string, string> = {
@@ -56,20 +57,28 @@ export function ClientsPageClient({ clients, searchQuery }: ClientsPageClientPro
 
   return (
     <>
-      {/* Header Actions */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Clients</h1>
-          <p className="text-sm text-foreground-muted">{clients.length} clients in your database</p>
-        </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Add Client
-        </button>
-      </div>
+      {/* Header */}
+      <PageHeader
+        title="Clients"
+        subtitle={`${clients.length} clients in your database`}
+        actions={
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Add Client
+          </button>
+        }
+      />
+
+      {/* Context Navigation */}
+      <PageContextNav
+        items={[
+          { label: "All Clients", href: "/clients", icon: <UsersIcon className="h-4 w-4" /> },
+          { label: "Tags", href: "/clients?view=tags", icon: <TagIcon className="h-4 w-4" /> },
+        ]}
+      />
 
       {/* Search bar */}
       <ClientSearch initialQuery={searchQuery || ""} />

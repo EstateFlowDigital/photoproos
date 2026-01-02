@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { CreateBookingModal } from "@/components/modals/create-booking-modal";
+import {
+  PageHeader,
+  PageContextNav,
+  GoogleIcon,
+  ContextCalendarIcon,
+  ContextClockIcon,
+} from "@/components/dashboard";
 
 interface Client {
   id: string;
@@ -39,6 +46,7 @@ interface SchedulingPageClientProps {
   clients: Client[];
   bookings: Booking[];
   calendarDays: CalendarDay[];
+  isGoogleCalendarConnected?: boolean;
 }
 
 // Helper to format time
@@ -149,6 +157,7 @@ export function SchedulingPageClient({
   clients,
   bookings,
   calendarDays: initialCalendarDays,
+  isGoogleCalendarConnected = false,
 }: SchedulingPageClientProps) {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -182,19 +191,35 @@ export function SchedulingPageClient({
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Scheduling</h1>
-          <p className="text-sm text-foreground-muted">Manage your upcoming shoots and bookings</p>
-        </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-        >
-          <PlusIcon className="h-4 w-4" />
-          New Booking
-        </button>
-      </div>
+      <PageHeader
+        title="Scheduling"
+        subtitle="Manage your upcoming shoots and bookings"
+        actions={
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+          >
+            <PlusIcon className="h-4 w-4" />
+            New Booking
+          </button>
+        }
+      />
+
+      {/* Context Navigation */}
+      <PageContextNav
+        items={[
+          { label: "Calendar", href: "/scheduling", icon: <ContextCalendarIcon className="h-4 w-4" /> },
+          { label: "Availability", href: "/scheduling/availability", icon: <ContextClockIcon className="h-4 w-4" /> },
+        ]}
+        integrations={[
+          {
+            label: "Google Calendar",
+            href: "/settings/integrations",
+            icon: <GoogleIcon className="h-4 w-4" />,
+            isConnected: isGoogleCalendarConnected,
+          },
+        ]}
+      />
 
       {/* Week View */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">

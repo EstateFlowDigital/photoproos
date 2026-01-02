@@ -35,9 +35,9 @@ export default async function SchedulingPage() {
     );
   }
 
-  // Fetch upcoming bookings and clients in parallel
+  // Fetch upcoming bookings, clients, and check for calendar integrations
   const now = new Date();
-  const [bookings, clients] = await Promise.all([
+  const [bookings, clients, calendarIntegration] = await Promise.all([
     prisma.booking.findMany({
       where: {
         organizationId: organization.id,
@@ -60,6 +60,14 @@ export default async function SchedulingPage() {
       },
       orderBy: { fullName: "asc" },
       take: 50,
+    }),
+    prisma.calendarIntegration.findFirst({
+      where: {
+        organizationId: organization.id,
+        provider: "google",
+        syncEnabled: true,
+      },
+      select: { id: true },
     }),
   ]);
 
@@ -89,6 +97,7 @@ export default async function SchedulingPage() {
         clients={clients}
         bookings={bookings}
         calendarDays={calendarDays}
+        isGoogleCalendarConnected={!!calendarIntegration}
       />
     </div>
   );

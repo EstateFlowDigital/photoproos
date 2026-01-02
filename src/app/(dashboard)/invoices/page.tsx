@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { PageHeader } from "@/components/dashboard";
+import { PageHeader, PageContextNav, DocumentIcon, CurrencyIcon, StripeIcon } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
@@ -134,6 +134,22 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
             Create Invoice
           </Link>
         }
+      />
+
+      {/* Context Navigation */}
+      <PageContextNav
+        items={[
+          { label: "All Invoices", href: "/invoices", icon: <DocumentIcon className="h-4 w-4" /> },
+          { label: "Payments", href: "/payments", icon: <CurrencyIcon className="h-4 w-4" /> },
+        ]}
+        integrations={[
+          {
+            label: "Stripe",
+            href: "/settings/payments",
+            icon: <StripeIcon className="h-4 w-4" />,
+            isConnected: false,
+          },
+        ]}
       />
 
       {/* Summary Cards */}
