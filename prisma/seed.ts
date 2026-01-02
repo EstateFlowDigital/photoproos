@@ -3,13 +3,34 @@ import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, ClientIndustry, ProjectStatus, PaymentStatus, BookingStatus, InvoiceStatus, ContractStatus, ActivityType, PlanName, MemberRole } from "@prisma/client";
 
-// Create PostgreSQL connection pool
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is not set");
+// Parse the Prisma Postgres URL to get the actual database connection string
+function getDatabaseUrl(): string {
+  const prismaUrl = process.env.DATABASE_URL;
+  if (!prismaUrl) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+
+  // Check if it's a Prisma Postgres URL (contains api_key)
+  if (prismaUrl.startsWith("prisma+postgres://")) {
+    const url = new URL(prismaUrl);
+    const apiKey = url.searchParams.get("api_key");
+    if (apiKey) {
+      try {
+        const decoded = JSON.parse(Buffer.from(apiKey, "base64").toString("utf-8"));
+        return decoded.databaseUrl;
+      } catch (e) {
+        // If decoding fails, try direct TCP connection
+        console.warn("Could not decode Prisma Postgres API key, using TCP URL");
+      }
+    }
+  }
+
+  return prismaUrl;
 }
 
-const pool = new Pool({ connectionString });
+// Create PostgreSQL connection pool using the decoded TCP URL
+const connectionString = getDatabaseUrl();
+const pool = new Pool({ connectionString, max: 1 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 

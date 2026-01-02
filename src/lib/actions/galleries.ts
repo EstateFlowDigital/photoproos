@@ -688,6 +688,7 @@ export async function getGallery(id: string) {
         client: true,
         service: true,
         location: true,
+        propertyWebsite: true,
         assets: {
           orderBy: { sortOrder: "asc" },
         },
@@ -780,6 +781,8 @@ export async function getGallery(id: string) {
         createdAt: log.createdAt,
         user: log.user,
       })),
+      // Property Website
+      propertyWebsite: gallery.propertyWebsite,
     };
   } catch (error) {
     console.error("Error fetching gallery:", error);

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 // Demo galleries without property websites
@@ -100,6 +100,9 @@ const propertyTypes = [
 
 export default function NewPropertyWebsitePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const galleryIdFromUrl = searchParams.get("galleryId");
+
   const [step, setStep] = useState(1);
   const [selectedGallery, setSelectedGallery] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
@@ -145,6 +148,19 @@ export default function NewPropertyWebsitePage() {
       }));
     }
   };
+
+  // Auto-select gallery if galleryId is provided in URL
+  useEffect(() => {
+    if (galleryIdFromUrl && !selectedGallery) {
+      const gallery = demoGalleries.find((g) => g.id === galleryIdFromUrl);
+      if (gallery) {
+        handleGallerySelect(galleryIdFromUrl);
+        // Skip to step 2 if gallery is pre-selected
+        setStep(2);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [galleryIdFromUrl]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);

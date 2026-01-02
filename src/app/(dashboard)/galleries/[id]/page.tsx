@@ -18,6 +18,10 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
     notFound();
   }
 
+  // Check if this is a real estate gallery
+  const isRealEstateGallery = gallery.service?.category === "real_estate";
+  const hasPropertyWebsite = !!gallery.propertyWebsite;
+
   // Map to the format expected by GalleryDetailClient
   const mappedGallery = {
     id: gallery.id,
@@ -30,6 +34,7 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
     status: gallery.status as "delivered" | "pending" | "draft",
     priceCents: gallery.priceCents,
     serviceId: gallery.service?.id,
+    serviceCategory: gallery.service?.category,
     serviceDescription: gallery.service?.description || undefined,
     photos: gallery.photos.map((photo) => ({
       id: photo.id,
@@ -59,6 +64,7 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
       allowFavorites: true, // Default to true, can be configured via schema update later
       allowComments: true,
     },
+    propertyWebsite: gallery.propertyWebsite,
   };
 
   return (
@@ -82,6 +88,26 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
               <EditIcon className="h-4 w-4" />
               Edit
             </Link>
+            {/* Property Website Button - Only for Real Estate Galleries */}
+            {isRealEstateGallery && (
+              hasPropertyWebsite ? (
+                <Link
+                  href={`/properties/${gallery.propertyWebsite?.id}`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--success)]/30 bg-[var(--success)]/10 px-4 py-2.5 text-sm font-medium text-[var(--success)] transition-colors hover:bg-[var(--success)]/20"
+                >
+                  <HomeIcon className="h-4 w-4" />
+                  View Property Website
+                </Link>
+              ) : (
+                <Link
+                  href={`/properties/new?galleryId=${id}`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-2.5 text-sm font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/20"
+                >
+                  <HomeIcon className="h-4 w-4" />
+                  Create Property Website
+                </Link>
+              )
+            )}
             {gallery.status !== "delivered" && (
               <form
                 action={async () => {
@@ -147,6 +173,14 @@ function SendIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.155.75.75 0 0 0 0-1.114A28.897 28.897 0 0 0 3.105 2.288Z" />
+    </svg>
+  );
+}
+
+function HomeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clipRule="evenodd" />
     </svg>
   );
 }
