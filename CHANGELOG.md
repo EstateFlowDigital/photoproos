@@ -35,6 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Module toggles grouped by category (Operations, Client Management, Industry-Specific)
   - Available modules dynamically filter based on selected industries
   - Uses existing onboarding server actions for saving changes
+- **Guided Tour System**: Interactive onboarding tour with spotlight highlighting
+  - Created `TourProvider` context for managing tour state across the app
+  - `TourSpotlight` component with animated spotlight cutout and tooltips
+  - Keyboard navigation support (Arrow keys, Enter, Escape)
+  - Pre-defined tours: Welcome, Galleries, Clients, Invoices, Scheduling
+  - Server actions for tracking tour progress in database
+  - `TourTrigger` component for starting tours from anywhere in the app
 - **Gallery Delete Action**: Added delete button with confirmation dialog to gallery detail page
   - Created `/galleries/[id]/gallery-actions.tsx` client component
   - Uses existing `deleteGallery` server action
