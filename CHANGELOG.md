@@ -8,6 +8,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 1 Foundation Features**: Comprehensive scheduling, CRM, and contract features
+  - **Availability & Time Blocking System**
+    - New `AvailabilityBlock` model for time off, holidays, and personal blocks
+    - Recurring availability blocks using RRULE format
+    - Booking buffer settings (before/after buffer times, min/max advance booking)
+    - Conflict detection with existing bookings and availability blocks
+    - New availability management page at `/scheduling/availability`
+    - New server actions in `/src/lib/actions/availability.ts`
+  - **Client CRM Enhancements**
+    - Communication logging system (emails, calls, meetings, notes)
+    - Client tagging and segmentation system
+    - New `ClientCommunication`, `ClientTag`, and `ClientTagAssignment` models
+    - Track client source, preferences, VIP status, and last activity
+    - Bulk tag operations and filtering by tags
+    - New server actions in `/src/lib/actions/client-communications.ts` and `/src/lib/actions/client-tags.ts`
+  - **E-Signature System**
+    - Complete contract signing workflow
+    - Native signature capture with signature_pad library
+    - Support for drawn and typed signatures
+    - Signing verification with IP address and user agent tracking
+    - Multi-signer support with sequential signing
+    - Public signing page at `/sign/[token]`
+    - Signing completion confirmation page
+    - New `ContractSignature` model
+    - New server actions in `/src/lib/actions/contract-signing.ts`
+  - **Google Calendar Integration**
+    - Two-way calendar sync with Google Calendar
+    - OAuth 2.0 authentication flow
+    - Import external events to PhotoProOS calendar view
+    - Export bookings to Google Calendar
+    - Configurable sync direction (import only, export only, both)
+    - New `CalendarIntegration` and `CalendarEvent` models
+    - New integration module in `/src/lib/integrations/google-calendar.ts`
+    - OAuth callback API route at `/api/integrations/google/callback`
+  - **Dependencies Added**: googleapis, rrule, signature_pad, @types/signature_pad
+  - **New README.md**: Comprehensive project documentation including features, tech stack, and setup instructions
 - **Client Portal Downloads**: Full download functionality for client portal
   - New download actions in `/src/lib/actions/portal-downloads.ts`
   - ZIP download for all gallery photos

@@ -250,6 +250,47 @@ enum Industry {
   product
 }
 
+// Phase 1: New Enums
+enum AvailabilityBlockType {
+  time_off
+  holiday
+  personal
+  maintenance
+  other
+}
+
+enum CommunicationType {
+  email
+  call
+  meeting
+  note
+  sms
+}
+
+enum CommunicationDirection {
+  inbound
+  outbound
+  internal
+}
+
+enum SignatureType {
+  drawn
+  typed
+  uploaded
+}
+
+enum CalendarProvider {
+  google
+  outlook
+  apple
+}
+
+enum SyncDirection {
+  import_only
+  export_only
+  both
+}
+
 // ============================================================================
 // CORE MODELS
 // ============================================================================
@@ -454,15 +495,23 @@ model Client {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // CRM Enhancements (Phase 1)
+  source         String?   // How client found you: REFERRAL, ORGANIC, AD, REPEAT
+  preferences    Json?     // Client style/delivery preferences
+  isVIP          Boolean   @default(false)
+  lastActivityAt DateTime?
+
   // Relations
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  projects       Project[]
-  bookings       Booking[]
-  invoices       Invoice[]
-  contracts      Contract[]
-  payments       Payment[]
-  clientSessions ClientSession[]
-  tasks          Task[]
+  organization    Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projects        Project[]
+  bookings        Booking[]
+  invoices        Invoice[]
+  contracts       Contract[]
+  payments        Payment[]
+  clientSessions  ClientSession[]
+  tasks           Task[]
+  communications  ClientCommunication[]
+  tags            ClientTagAssignment[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -942,11 +991,12 @@ model Contract {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client       Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  template     ContractTemplate?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client?              @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  template     ContractTemplate?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
   signers      ContractSigner[]
   auditLogs    ContractAuditLog[]
+  signatures   ContractSignature[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -1802,4 +1852,228 @@ model PortalActivity {
   @@index([clientId])
   @@index([isRead])
   @@index([createdAt])
+}
+
+// ============================================================================
+// PHASE 1: SCHEDULING & AVAILABILITY
+// ============================================================================
+
+model AvailabilityBlock {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?  // null = org-wide block
+
+  // Block details
+  title          String
+  description    String?
+  blockType      AvailabilityBlockType @default(time_off)
+
+  // Time range
+  startDate      DateTime
+  endDate        DateTime
+  allDay         Boolean  @default(true)
+
+  // Recurrence (RRULE format)
+  isRecurring    Boolean  @default(false)
+  recurrenceRule String?  // e.g., "FREQ=WEEKLY;BYDAY=SU"
+  recurrenceEnd  DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model BookingBuffer {
+  id             String  @id @default(cuid())
+  organizationId String
+  serviceId      String? // null = org-wide default
+
+  // Buffer times in minutes
+  bufferBefore   Int     @default(0)  // Setup time before booking
+  bufferAfter    Int     @default(0)  // Teardown time after booking
+
+  // Minimum booking window
+  minAdvanceHours Int?   // Minimum hours in advance to book
+  maxAdvanceDays  Int?   // Maximum days in advance to book
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, serviceId])
+  @@index([organizationId])
+  @@index([serviceId])
+}
+
+// ============================================================================
+// PHASE 1: CLIENT CRM ENHANCEMENTS
+// ============================================================================
+
+model ClientCommunication {
+  id        String   @id @default(cuid())
+  clientId  String
+
+  // Communication details
+  type      CommunicationType
+  direction CommunicationDirection
+  subject   String?
+  content   String   @db.Text
+
+  // Metadata
+  sentAt    DateTime?
+  readAt    DateTime?
+
+  // Who logged this
+  createdById String?
+
+  // Related entities
+  bookingId  String?
+  projectId  String?
+  invoiceId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ClientTag {
+  id             String   @id @default(cuid())
+  organizationId String
+
+  name           String
+  color          String   @default("#6366f1")
+  description    String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  clients        ClientTagAssignment[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model ClientTagAssignment {
+  id        String   @id @default(cuid())
+  clientId  String
+  tagId     String
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tag       ClientTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, tagId])
+  @@index([clientId])
+  @@index([tagId])
+}
+
+// ============================================================================
+// PHASE 1: CONTRACT E-SIGNATURE ENHANCEMENTS
+// ============================================================================
+
+model ContractSignature {
+  id          String   @id @default(cuid())
+  contractId  String
+  signerId    String   // ContractSigner id
+
+  // Signature data
+  signatureData  String   @db.Text  // Base64 encoded signature image
+  signatureType  SignatureType @default(drawn)
+
+  // Verification
+  signedAt       DateTime @default(now())
+  ipAddress      String?
+  userAgent      String?
+
+  // Legal compliance
+  consentGiven   Boolean  @default(true)
+  consentText    String?  @db.Text
+
+  createdAt      DateTime @default(now())
+
+  // Relations
+  contract       Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([signerId])
+}
+
+// ============================================================================
+// PHASE 1: CALENDAR INTEGRATIONS
+// ============================================================================
+
+model CalendarIntegration {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?  // User-specific or org-wide
+
+  // Provider details
+  provider       CalendarProvider
+  externalId     String   // Calendar ID from provider
+  name           String   // Display name
+
+  // OAuth tokens
+  accessToken    String   @db.Text
+  refreshToken   String?  @db.Text
+  tokenExpiresAt DateTime?
+
+  // Sync settings
+  syncEnabled    Boolean  @default(true)
+  syncDirection  SyncDirection @default(both)
+  lastSyncAt     DateTime?
+  lastSyncError  String?
+
+  // Color mapping
+  color          String   @default("#3b82f6")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, provider, externalId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([provider])
+}
+
+model CalendarEvent {
+  id                    String   @id @default(cuid())
+  calendarIntegrationId String
+
+  // External reference
+  externalEventId       String
+
+  // Event details (cached from provider)
+  title                 String
+  description           String?  @db.Text
+  startTime             DateTime
+  endTime               DateTime
+  allDay                Boolean  @default(false)
+  location              String?
+
+  // Link to internal booking (if synced)
+  bookingId             String?  @unique
+
+  // Sync metadata
+  lastSyncedAt          DateTime @default(now())
+  etag                  String?  // For change detection
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@unique([calendarIntegrationId, externalEventId])
+  @@index([calendarIntegrationId])
+  @@index([bookingId])
+  @@index([startTime])
 }

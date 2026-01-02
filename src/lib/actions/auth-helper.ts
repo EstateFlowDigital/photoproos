@@ -26,6 +26,15 @@ export async function requireOrganizationId(): Promise<string> {
 }
 
 /**
+ * Require authentication and return just the user ID.
+ * Throws an error if the user is not authenticated.
+ */
+export async function requireUserId(): Promise<string> {
+  const auth = await requireAuth();
+  return auth.userId;
+}
+
+/**
  * Require admin or owner role.
  * Throws an error if the user doesn't have sufficient permissions.
  */
