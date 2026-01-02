@@ -1,26 +1,43 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { sendClientMagicLink } from "@/lib/actions/client-auth";
 
-export default function ClientPortalLoginPage() {
-  const router = useRouter();
+function ClientPortalLoginContent() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [error, setError] = useState("");
+
+  // Handle error from redirect
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "expired") {
+      setError("Your login link has expired. Please request a new one.");
+    } else if (errorParam === "invalid") {
+      setError("Invalid login link. Please request a new one.");
+    } else if (errorParam === "missing_token") {
+      setError("Invalid login link. Please request a new one.");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    // Simulate sending magic link
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const result = await sendClientMagicLink(email);
 
     setIsLoading(false);
-    setEmailSent(true);
+
+    if (result.success) {
+      setEmailSent(true);
+    } else {
+      setError(result.error || "Failed to send login link. Please try again.");
+    }
   };
 
   return (
@@ -126,6 +143,31 @@ export default function ClientPortalLoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+function LoginPageLoading() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl border border-[#262626] bg-[#141414] p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="mx-auto h-10 w-10 rounded-xl bg-[#262626]" />
+            <div className="mx-auto h-6 w-32 rounded bg-[#262626]" />
+            <div className="h-11 w-full rounded-lg bg-[#262626]" />
+            <div className="h-11 w-full rounded-lg bg-[#262626]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ClientPortalLoginPage() {
+  return (
+    <Suspense fallback={<LoginPageLoading />}>
+      <ClientPortalLoginContent />
+    </Suspense>
   );
 }
 

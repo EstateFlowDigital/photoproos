@@ -8,6 +8,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Onboarding System**: Comprehensive multi-step onboarding wizard for new users
+  - Created 6 industry module README files with detailed implementation plans
+  - Database schema updates for onboarding state, industry selection, and module gating
+  - Multi-step wizard with 9 steps: Welcome, Profile, Business, Branding, Industries, Features, Goals, Payment, Complete
+  - Industry constants with module mappings (Real Estate, Commercial, Events, Portraits, Food, Product)
+  - Module constants with feature definitions and category groupings
+  - Module gating utilities for feature access control
+  - Server actions for saving onboarding progress and completing onboarding
+  - Animated transitions between steps using framer-motion
+  - Progress indicator showing completed steps
+  - Industry-based module selection with primary industry designation
+  - Trial period options (14-day or 30-day based on payment method)
+  - Created `/README-ONBOARDING.md` with complete implementation documentation
+  - Created module README files: `README-MODULE-REAL-ESTATE.md`, `README-MODULE-COMMERCIAL.md`,
+    `README-MODULE-EVENTS.md`, `README-MODULE-PORTRAITS.md`, `README-MODULE-FOOD.md`, `README-MODULE-PRODUCT.md`
+- **Gallery Delete Action**: Added delete button with confirmation dialog to gallery detail page
+  - Created `/galleries/[id]/gallery-actions.tsx` client component
+  - Uses existing `deleteGallery` server action
+  - Shows photo count in confirmation message
+- **Service Delete Action**: Added delete button to ServiceQuickActions sidebar
+  - Only shown for non-default (custom) services
+  - Shows usage count warning in confirmation dialog
+  - Uses existing `deleteService` server action
+- **Property Inquiry Form**: Wired public property page inquiry form to backend
+  - Created `/p/[slug]/property-inquiry-form.tsx` client component
+  - Form validation with error states
+  - Success state with "send another" option
+  - Calls existing `submitPropertyLead` server action
+- **Property Share Buttons**: Added functional social sharing to property pages
+  - Created `/p/[slug]/property-share-buttons.tsx` client component
+  - Facebook, Twitter, LinkedIn share links
+  - Copy-to-clipboard with success feedback
+  - Platform-specific hover colors
+- **Client Portal Authentication**: Complete magic link authentication system
+  - Created `/emails/client-magic-link.tsx` - Styled email template
+  - Created `/lib/actions/client-auth.ts` - Server actions for auth flow
+    - `sendClientMagicLink()` - Generate and send magic link
+    - `validateMagicLinkToken()` - Validate token and create session
+    - `getClientSession()` - Get current session from cookies
+    - `logoutClient()` - Logout and clear session
+    - `requireClientAuth()` - Require auth or throw error
+  - Created `/api/auth/client/route.ts` - Handle magic link clicks
+  - Updated portal login page to use real auth system
+  - Session stored in secure httpOnly cookies (7-day expiry)
+  - Magic links expire in 15 minutes
+- **Client Portal Real Data**: Wired client portal to real database
+  - Created `/lib/actions/client-portal.ts` - Server actions for portal data
+    - `getClientPortalData()` - Fetches client, properties, galleries, invoices
+    - `getClientPropertyDetails()` - Property details with assets and leads
+    - `getClientGalleryDownload()` - Gallery download information
+  - Converted portal page to server component with real data fetching
+  - Created `/portal/portal-client.tsx` - Interactive UI component
+  - Displays real stats: properties count, total views, leads, photos
+  - Shows property websites with thumbnails, view counts, lead counts
+  - Shows galleries with photo previews and download buttons
+  - Shows invoices with status badges
+  - Added logout functionality with session clearing
+
+### Changed
 - **Error Boundaries**: Added error.tsx files for graceful error handling
   - Root dashboard error boundary with retry and navigation options
   - Route-specific error boundaries for invoices, galleries, scheduling, payments, services, clients

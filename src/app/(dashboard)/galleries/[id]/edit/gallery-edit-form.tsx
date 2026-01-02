@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { getServiceById, type ServiceType } from "@/lib/services";
 import { updateGallery, deleteGallery } from "@/lib/actions/galleries";
@@ -10,6 +11,10 @@ import { useToast } from "@/components/ui/toast";
 
 // Union type for selected service (can be static or database service)
 type SelectedService = ServiceType | DatabaseServiceType | null;
+
+interface FieldErrors {
+  name?: string;
+}
 
 interface Client {
   id: string;
@@ -57,10 +62,34 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
   const [accessType, setAccessType] = useState<"public" | "password">(gallery.accessType);
   const [settings, setSettings] = useState(gallery.settings);
 
+  // Validation state
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleBlur = (field: string, value: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    if (field === "name" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, name: "Gallery name is required" }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const getInputClassName = (fieldName: keyof FieldErrors) => {
+    const hasError = touched[fieldName] && fieldErrors[fieldName];
+    return cn(
+      "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+      hasError
+        ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+        : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+    );
+  };
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -69,8 +98,13 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) {
-      showToast("Gallery name is required", "error");
+    // Validate all fields
+    const errors: FieldErrors = {};
+    if (!name.trim()) errors.name = "Gallery name is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setTouched({ name: true });
       return;
     }
 
@@ -144,8 +178,12 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
               name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              onBlur={(e) => handleBlur("name", e.target.value)}
+              className={getInputClassName("name")}
             />
+            {touched.name && fieldErrors.name && (
+              <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.name}</p>
+            )}
           </div>
 
           {/* Description */}

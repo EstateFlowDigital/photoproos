@@ -87,7 +87,12 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
           {/* Quick Actions */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h3 className="font-semibold text-foreground mb-4">Quick Actions</h3>
-            <ServiceQuickActions serviceId={service.id} serviceName={service.name} />
+            <ServiceQuickActions
+              serviceId={service.id}
+              serviceName={service.name}
+              isDefault={service.isDefault}
+              usageCount={service.usageCount}
+            />
           </div>
 
           {service.isDefault && (

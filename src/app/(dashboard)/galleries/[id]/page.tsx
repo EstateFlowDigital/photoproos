@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GalleryDetailClient } from "./gallery-detail-client";
+import { GalleryActions } from "./gallery-actions";
 import { getGallery, deliverGallery } from "@/lib/actions/galleries";
 import { getClientInvoices } from "@/lib/actions/invoices";
 
@@ -113,6 +114,11 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
               <EditIcon className="h-4 w-4" />
               Edit
             </Link>
+            <GalleryActions
+              galleryId={id}
+              galleryName={gallery.name}
+              photoCount={gallery.photos.length}
+            />
             {/* Property Website Button - Only for Real Estate Galleries */}
             {isRealEstateGallery && (
               hasPropertyWebsite ? (

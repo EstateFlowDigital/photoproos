@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPropertyWebsiteBySlug } from "@/lib/actions/property-websites";
+import { PropertyInquiryForm } from "./property-inquiry-form";
+import { PropertyShareButtons } from "./property-share-buttons";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -294,64 +296,17 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
               )}
 
               {/* Inquiry Form */}
-              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <h3 className="mb-4 text-lg font-semibold text-foreground">Request Information</h3>
-                <form className="space-y-4">
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Your name"
-                      className="h-11 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="Email address"
-                      className="h-11 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="tel"
-                      placeholder="Phone (optional)"
-                      className="h-11 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <div>
-                    <textarea
-                      placeholder="I'm interested in this property..."
-                      rows={3}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="h-11 w-full rounded-lg bg-[var(--primary)] font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-                  >
-                    Send Inquiry
-                  </button>
-                </form>
-              </div>
+              <PropertyInquiryForm
+                propertyWebsiteId={website.id}
+                propertyAddress={website.address}
+              />
 
               {/* Share */}
-              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <h3 className="mb-4 text-lg font-semibold text-foreground">Share This Property</h3>
-                <div className="flex gap-2">
-                  <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
-                    <FacebookIcon className="h-5 w-5" />
-                  </button>
-                  <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
-                    <TwitterIcon className="h-5 w-5" />
-                  </button>
-                  <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
-                    <LinkedInIcon className="h-5 w-5" />
-                  </button>
-                  <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
-                    <LinkIcon className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
+              <PropertyShareButtons
+                url={`${process.env.NEXT_PUBLIC_APP_URL || "https://photoproos.com"}/p/${website.slug}`}
+                title={`${website.address}, ${website.city}, ${website.state}`}
+                description={website.headline || undefined}
+              />
             </div>
           </div>
         </div>

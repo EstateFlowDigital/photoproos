@@ -90,6 +90,21 @@ export function ClientEditForm({ client }: ClientEditFormProps) {
     setError(null);
     setSuccess(false);
 
+    // Validate all fields
+    const errors: FieldErrors = {};
+    if (!formData.fullName.trim()) errors.fullName = "Full name is required";
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Please enter a valid email";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setTouched({ fullName: true, email: true });
+      return;
+    }
+
     startTransition(async () => {
       const result = await updateClient({
         id: client.id,
@@ -98,11 +113,13 @@ export function ClientEditForm({ client }: ClientEditFormProps) {
 
       if (result.success) {
         setSuccess(true);
+        showToast("Client updated successfully", "success");
         setTimeout(() => {
           router.push(`/clients/${client.id}`);
         }, 1000);
       } else {
         setError(result.error);
+        showToast(result.error, "error");
       }
     });
   };
@@ -137,10 +154,13 @@ export function ClientEditForm({ client }: ClientEditFormProps) {
                 name="fullName"
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                onBlur={(e) => handleBlur("fullName", e.target.value)}
                 placeholder="John Smith"
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className={getInputClassName("fullName")}
               />
+              {touched.fullName && fieldErrors.fullName && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.fullName}</p>
+              )}
             </div>
             <div>
               <label htmlFor="company" className="block text-sm font-medium text-foreground mb-1.5">
@@ -195,10 +215,13 @@ export function ClientEditForm({ client }: ClientEditFormProps) {
                 name="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onBlur={(e) => handleBlur("email", e.target.value)}
                 placeholder="client@example.com"
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className={getInputClassName("email")}
               />
+              {touched.email && fieldErrors.email && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.email}</p>
+              )}
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-1.5">

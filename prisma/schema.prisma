@@ -175,6 +175,26 @@ enum LineItemType {
   tax
 }
 
+enum BusinessType {
+  solo
+  team
+  agency
+}
+
+enum DisplayMode {
+  personal
+  company
+}
+
+enum Industry {
+  real_estate
+  commercial
+  events
+  portraits
+  food
+  product
+}
+
 // ============================================================================
 // CORE MODELS
 // ============================================================================
@@ -206,6 +226,43 @@ model Organization {
   homeBaseLocationId String?
   travelFeePerMile   Int?    @default(0) // in cents (e.g., 65 = $0.65/mile)
   travelFeeThreshold Float?  @default(0) // free miles before charging
+
+  // ============================================================================
+  // ONBOARDING & INDUSTRY SETTINGS
+  // ============================================================================
+
+  // Onboarding State
+  onboardingCompleted   Boolean   @default(false)
+  onboardingStep        Int       @default(0)
+  onboardingCompletedAt DateTime?
+
+  // Industry Selection (array of industry IDs)
+  industries      Industry[] @default([real_estate])
+  primaryIndustry Industry   @default(real_estate)
+
+  // Enabled Modules/Features (array of module IDs like "galleries", "scheduling", etc.)
+  enabledModules String[] @default([])
+
+  // Business Profile (collected during onboarding)
+  businessType    BusinessType?
+  teamSize        String? // "1", "2-5", "6-10", "11-25", "25+"
+  yearsInBusiness String? // "<1", "1-3", "3-5", "5-10", "10+"
+  annualRevenue   String? // "<50k", "50-100k", "100-250k", "250k+"
+
+  // Display Preferences (personal vs company branding)
+  displayMode  DisplayMode @default(company)
+  publicName   String? // What clients see (company or personal name)
+  publicEmail  String? // Public-facing email
+  publicPhone  String? // Public-facing phone
+  website      String? // Company website
+
+  // Stripe Trial/Payment
+  trialStartedAt     DateTime?
+  trialEndsAt        DateTime?
+  paymentMethodAdded Boolean   @default(false)
+
+  // Guided Tour Progress (JSON: { "dashboard": true, "galleries": false, ... })
+  tourProgress Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -240,6 +297,14 @@ model User {
   fullName    String?
   avatarUrl   String?
   phone       String?
+
+  // Personal info (collected during onboarding)
+  firstName String?
+  lastName  String?
+
+  // Onboarding preferences
+  hasSeenWelcome       Boolean  @default(false)
+  tourCompletedModules String[] @default([])
 
   // Home base location (overrides org default for travel calculations)
   homeBaseLocationId String?
@@ -918,11 +983,29 @@ model OnboardingProgress {
   id             String @id @default(cuid())
   organizationId String @unique
 
-  // Steps
+  // Legacy steps (kept for backwards compatibility)
   profileComplete     Boolean @default(false)
   brandingComplete    Boolean @default(false)
   firstGalleryCreated Boolean @default(false)
   stripeConnected     Boolean @default(false)
+
+  // New Onboarding Wizard Steps
+  welcomeViewed     Boolean @default(false) // Step 0
+  personalComplete  Boolean @default(false) // Step 1: First/last name
+  businessComplete  Boolean @default(false) // Step 2: Company, type, size
+  brandingStepDone  Boolean @default(false) // Step 3: Display mode, public info
+  industriesSet     Boolean @default(false) // Step 4: Industry selection
+  featuresSelected  Boolean @default(false) // Step 5: Module selection
+  goalsSet          Boolean @default(false) // Step 6: Business goals
+  paymentStepDone   Boolean @default(false) // Step 7: Payment/trial setup
+  tourStarted       Boolean @default(false) // Step 8: Guided tour
+
+  // Wizard state
+  currentStep Int     @default(0)
+  skippedSteps String[] @default([]) // Steps user skipped
+
+  // Goals selected during onboarding
+  selectedGoals String[] @default([])
 
   completedAt DateTime?
 

@@ -3,12 +3,22 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { updateBooking } from "@/lib/actions/bookings";
 import { getServiceById, type ServiceType } from "@/lib/services";
 
 // Union type for selected service (can be static or database service)
 type SelectedService = ServiceType | DatabaseServiceType | null;
+
+interface FieldErrors {
+  title?: string;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  address?: string;
+}
 
 interface BookingEditFormProps {
   booking: {
@@ -33,9 +43,12 @@ interface BookingEditFormProps {
 
 export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   // Get initial service if serviceId exists
   const initialService = booking.serviceId ? getServiceById(booking.serviceId) : null;
@@ -43,6 +56,34 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
   const [selectedService, setSelectedService] = useState<SelectedService>(initialService || null);
   const [price, setPrice] = useState(booking.price);
   const [description, setDescription] = useState(booking.serviceDescription || "");
+
+  const handleBlur = (field: string, value: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    if (field === "title" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, title: "Session title is required" }));
+    } else if (field === "date" && !value) {
+      setFieldErrors((prev) => ({ ...prev, date: "Date is required" }));
+    } else if (field === "startTime" && !value) {
+      setFieldErrors((prev) => ({ ...prev, startTime: "Start time is required" }));
+    } else if (field === "endTime" && !value) {
+      setFieldErrors((prev) => ({ ...prev, endTime: "End time is required" }));
+    } else if (field === "address" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, address: "Address is required" }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const getInputClassName = (fieldName: keyof FieldErrors) => {
+    const hasError = touched[fieldName] && fieldErrors[fieldName];
+    return cn(
+      "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+      hasError
+        ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+        : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -60,12 +101,27 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
     const locationNotes = formData.get("locationNotes") as string;
     const notes = formData.get("notes") as string;
 
+    // Validate all fields
+    const errors: FieldErrors = {};
+    if (!title.trim()) errors.title = "Session title is required";
+    if (!date) errors.date = "Date is required";
+    if (!startTime) errors.startTime = "Start time is required";
+    if (!endTime) errors.endTime = "End time is required";
+    if (!address.trim()) errors.address = "Address is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setTouched({ title: true, date: true, startTime: true, endTime: true, address: true });
+      return;
+    }
+
     // Create Date objects from date and time
     const startDateTime = new Date(`${date}T${startTime}:00`);
     const endDateTime = new Date(`${date}T${endTime}:00`);
 
     if (endDateTime <= startDateTime) {
       setError("End time must be after start time");
+      setFieldErrors((prev) => ({ ...prev, endTime: "End time must be after start time" }));
       return;
     }
 
@@ -84,11 +140,13 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
 
       if (result.success) {
         setSuccess(true);
+        showToast("Booking updated successfully", "success");
         setTimeout(() => {
           router.push(`/scheduling/${booking.id}`);
         }, 1000);
       } else {
         setError(result.error);
+        showToast(result.error, "error");
       }
     });
   };
@@ -122,9 +180,12 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
               name="title"
               defaultValue={booking.title}
               placeholder="e.g., Downtown Luxury Listing"
-              required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              onBlur={(e) => handleBlur("title", e.target.value)}
+              className={getInputClassName("title")}
             />
+            {touched.title && fieldErrors.title && (
+              <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.title}</p>
+            )}
           </div>
 
           <div>
@@ -162,9 +223,12 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
               id="date"
               name="date"
               defaultValue={booking.date}
-              required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              onBlur={(e) => handleBlur("date", e.target.value)}
+              className={getInputClassName("date")}
             />
+            {touched.date && fieldErrors.date && (
+              <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.date}</p>
+            )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -177,9 +241,12 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
                 id="startTime"
                 name="startTime"
                 defaultValue={booking.startTime}
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                onBlur={(e) => handleBlur("startTime", e.target.value)}
+                className={getInputClassName("startTime")}
               />
+              {touched.startTime && fieldErrors.startTime && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.startTime}</p>
+              )}
             </div>
             <div>
               <label htmlFor="endTime" className="block text-sm font-medium text-foreground mb-1.5">
@@ -190,9 +257,12 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
                 id="endTime"
                 name="endTime"
                 defaultValue={booking.endTime}
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                onBlur={(e) => handleBlur("endTime", e.target.value)}
+                className={getInputClassName("endTime")}
               />
+              {touched.endTime && fieldErrors.endTime && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.endTime}</p>
+              )}
             </div>
           </div>
         </div>
@@ -213,9 +283,12 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
               rows={3}
               defaultValue={booking.location.address}
               placeholder="Enter the full address..."
-              required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
+              onBlur={(e) => handleBlur("address", e.target.value)}
+              className={cn(getInputClassName("address"), "resize-none")}
             />
+            {touched.address && fieldErrors.address && (
+              <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.address}</p>
+            )}
           </div>
 
           <div>
