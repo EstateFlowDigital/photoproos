@@ -22,9 +22,11 @@ const allNavItems: NavItem[] = [
   { label: "Properties", href: "/properties", icon: PropertyIcon, moduleId: "properties" },
   { label: "Services", href: "/services", icon: ServicesIcon, moduleId: "services" },
   { label: "Clients", href: "/clients", icon: ClientsIcon, moduleId: "clients" },
+  { label: "Contracts", href: "/contracts", icon: ContractsIcon, moduleId: "contracts" },
   { label: "Invoices", href: "/invoices", icon: InvoiceIcon, moduleId: "invoices" },
   { label: "Payments", href: "/payments", icon: PaymentsIcon, moduleId: "invoices" }, // Payments is part of invoices module
   { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
+  { label: "Availability", href: "/scheduling/availability", icon: AvailabilityIcon, moduleId: "availability" },
 ];
 
 const bottomNavItems: NavItem[] = [
@@ -251,6 +253,22 @@ function ProjectsIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M2 4.25A2.25 2.25 0 0 1 4.25 2h6.5A2.25 2.25 0 0 1 13 4.25V5.5H9.25A3.75 3.75 0 0 0 5.5 9.25V13H4.25A2.25 2.25 0 0 1 2 10.75v-6.5Z" />
       <path d="M9.25 7A2.25 2.25 0 0 0 7 9.25v6.5A2.25 2.25 0 0 0 9.25 18h6.5A2.25 2.25 0 0 0 18 15.75v-6.5A2.25 2.25 0 0 0 15.75 7h-6.5Z" />
+    </svg>
+  );
+}
+
+function ContractsIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3 3.5A1.5 1.5 0 0 1 4.5 2h6.879a1.5 1.5 0 0 1 1.06.44l4.122 4.12A1.5 1.5 0 0 1 17 7.622V16.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 16.5v-13Zm10.857 5.691a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function AvailabilityIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clipRule="evenodd" />
     </svg>
   );
 }

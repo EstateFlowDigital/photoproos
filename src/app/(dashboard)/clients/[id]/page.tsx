@@ -40,6 +40,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         orderBy: { startTime: "desc" },
         take: 5,
       },
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   });
 
@@ -47,18 +52,25 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     notFound();
   }
 
-  // Fetch payments for this client's projects
-  const payments = await prisma.payment.findMany({
-    where: {
-      project: {
-        clientId: id,
+  // Fetch payments and communications for this client
+  const [payments, communications] = await Promise.all([
+    prisma.payment.findMany({
+      where: {
+        project: {
+          clientId: id,
+        },
       },
-    },
-    include: {
-      project: { select: { name: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      include: {
+        project: { select: { name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.clientCommunication.findMany({
+      where: { clientId: id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+  ]);
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -291,6 +303,33 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             </div>
           </div>
 
+          {/* Client Tags */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Tags</h2>
+            {client.tags.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {client.tags.map(({ tag }) => (
+                  <span
+                    key={tag.id}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+                    style={{ backgroundColor: `${tag.color}20`, color: tag.color }}
+                  >
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: tag.color }}
+                    />
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-foreground-muted italic">No tags assigned</p>
+            )}
+            <Link href={`/clients/${id}/edit`} className="mt-4 inline-block text-sm font-medium text-[var(--primary)] hover:underline">
+              Manage Tags
+            </Link>
+          </div>
+
           {/* Notes */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
@@ -302,6 +341,49 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             <Link href={`/clients/${id}/edit`} className="mt-4 inline-block text-sm font-medium text-[var(--primary)] hover:underline">
               {client.notes ? "Edit Notes" : "Add Notes"}
             </Link>
+          </div>
+
+          {/* Communication Timeline */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h2>
+            {communications.length > 0 ? (
+              <div className="space-y-3">
+                {communications.slice(0, 5).map((comm) => (
+                  <div key={comm.id} className="flex items-start gap-3">
+                    <div className={cn(
+                      "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                      comm.type === "email" ? "bg-blue-500/10 text-blue-400" :
+                      comm.type === "call" ? "bg-green-500/10 text-green-400" :
+                      comm.type === "meeting" ? "bg-purple-500/10 text-purple-400" :
+                      "bg-gray-500/10 text-gray-400"
+                    )}>
+                      {comm.type === "email" ? <EmailIcon className="h-4 w-4" /> :
+                       comm.type === "call" ? <PhoneIcon className="h-4 w-4" /> :
+                       comm.type === "meeting" ? <CalendarIcon className="h-4 w-4" /> :
+                       <NoteIcon className="h-4 w-4" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {comm.subject || (comm.type === "note" ? "Note" : comm.type.charAt(0).toUpperCase() + comm.type.slice(1))}
+                      </p>
+                      <p className="text-xs text-foreground-muted">
+                        {new Date(comm.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {comm.direction && comm.direction !== "internal" && (
+                          <span className="ml-1">• {comm.direction === "inbound" ? "Received" : "Sent"}</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {communications.length > 5 && (
+                  <p className="text-xs text-foreground-muted text-center">
+                    +{communications.length - 5} more
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-foreground-muted italic">No communication history yet</p>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -395,6 +477,23 @@ function CalendarIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PhoneIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function NoteIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M3.505 2.365A41.369 41.369 0 0 1 9 2c1.863 0 3.697.124 5.495.365 1.247.167 2.18 1.108 2.435 2.268a4.45 4.45 0 0 0-.577-.069 43.141 43.141 0 0 0-4.706 0C9.229 4.696 7.5 6.727 7.5 8.998v2.24c0 1.413.67 2.735 1.76 3.562l-2.98 2.98A.75.75 0 0 1 5 17.25v-3.443c-.501-.048-1-.106-1.495-.172C2.033 13.438 1 12.162 1 10.72V5.28c0-1.441 1.033-2.717 2.505-2.914Z" />
+      <path d="M14 6c.762 0 1.52.02 2.272.06 1.207.065 2.228.97 2.228 2.281v2.377c0 1.312-1.021 2.216-2.228 2.281a39.42 39.42 0 0 1-1.772.05v2.199a.75.75 0 0 1-1.278.529L11.5 13.53l-.53.53a.75.75 0 0 1-1.065-.003L8.138 12.26a.75.75 0 0 1 .25-1.205A2.992 2.992 0 0 0 9.5 8.998v-.69A2.497 2.497 0 0 1 12 5.809c.662-.006 1.328-.004 1.998.002L14 6Z" />
     </svg>
   );
 }

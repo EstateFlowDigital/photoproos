@@ -7,6 +7,15 @@ import { getOrganizationSettings } from "@/lib/actions/settings";
 // Available integrations catalog
 const availableIntegrations = [
     {
+      id: "google-calendar",
+      name: "Google Calendar",
+      description: "Two-way sync bookings with your Google Calendar",
+      icon: "📅",
+      category: "Scheduling",
+      connectUrl: "/api/integrations/google/authorize",
+      featured: true,
+    },
+    {
       id: "quickbooks",
       name: "QuickBooks",
       description: "Sync invoices and payments for accounting",
@@ -106,7 +115,12 @@ export default function IntegrationsSettingsPage() {
             {availableIntegrations.map((integration) => (
               <div
                 key={integration.id}
-                className="flex items-start gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:border-[var(--border-hover)]"
+                className={cn(
+                  "flex items-start gap-4 rounded-lg border bg-[var(--background)] p-4 transition-colors hover:border-[var(--border-hover)]",
+                  integration.featured
+                    ? "border-[var(--primary)]/30"
+                    : "border-[var(--card-border)]"
+                )}
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-2xl">
                   {integration.icon}
@@ -117,11 +131,28 @@ export default function IntegrationsSettingsPage() {
                     <span className="rounded-full bg-[var(--background-secondary)] px-2 py-0.5 text-xs text-foreground-muted">
                       {integration.category}
                     </span>
+                    {integration.featured && (
+                      <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">
+                        New
+                      </span>
+                    )}
                   </div>
                   <p className="mt-1 text-sm text-foreground-muted">{integration.description}</p>
-                  <button className="mt-3 rounded-lg bg-[var(--primary)] px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">
-                    Connect
-                  </button>
+                  {integration.connectUrl ? (
+                    <Link
+                      href={integration.connectUrl}
+                      className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                    >
+                      Connect
+                    </Link>
+                  ) : (
+                    <button
+                      disabled
+                      className="mt-3 rounded-lg bg-[var(--background-secondary)] px-4 py-1.5 text-sm font-medium text-foreground-muted cursor-not-allowed"
+                    >
+                      Coming Soon
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

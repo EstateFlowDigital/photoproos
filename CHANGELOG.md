@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 1 UI Integration**: Connected all Phase 1 features to the application module system
+  - **New Module Registry Entries**
+    - Added `availability` module for time off and booking window management
+    - Added `calendar_sync` module for Google Calendar integration
+    - Updated all industry mappings to include new modules
+    - New modules available in Settings > Features for per-organization customization
+  - **Sidebar Navigation**
+    - Added "Contracts" link to sidebar (shows when contracts module enabled)
+    - Added "Availability" link to sidebar (shows when availability module enabled)
+    - New sidebar icons for contracts and availability
+  - **Contracts Dashboard** (`/contracts`)
+    - Full contracts list with status filtering (draft, sent, signed, expired)
+    - Summary cards showing awaiting signature, signed, drafts, and template counts
+    - Signer progress tracking with visual progress bars
+    - Links to contract templates management
+  - **Client CRM UI Enhancements**
+    - Tags display on client detail page with colored badges
+    - Communication timeline showing recent emails, calls, meetings, and notes
+    - Activity feed with icons for different communication types
+  - **Settings > Integrations Enhancement**
+    - Google Calendar integration card moved to top with "New" badge
+    - Working Connect button linking to OAuth flow
+    - Other integrations marked as "Coming Soon"
 - **Phase 1 Foundation Features**: Comprehensive scheduling, CRM, and contract features
   - **Availability & Time Blocking System**
     - New `AvailabilityBlock` model for time off, holidays, and personal blocks

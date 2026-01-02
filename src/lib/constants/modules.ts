@@ -22,6 +22,8 @@ import {
   Scale,
   Layers,
   Settings,
+  Clock,
+  CalendarCog,
   type LucideIcon,
 } from "lucide-react";
 
@@ -104,6 +106,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
     industries: ["real_estate", "commercial", "events", "portraits", "food", "product"],
     category: "operations",
     sortOrder: 3,
+  },
+  availability: {
+    id: "availability",
+    name: "Availability",
+    description: "Manage time off, booking windows, and buffer times",
+    icon: Clock,
+    href: "/scheduling/availability",
+    isCore: false,
+    industries: ["real_estate", "commercial", "events", "portraits", "food", "product"],
+    category: "operations",
+    sortOrder: 3.5,
   },
   invoices: {
     id: "invoices",
@@ -233,6 +246,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
     industries: ["product"],
     category: "advanced",
     sortOrder: 14,
+  },
+  calendar_sync: {
+    id: "calendar_sync",
+    name: "Calendar Sync",
+    description: "Two-way sync with Google Calendar",
+    icon: CalendarCog,
+    href: "/settings/integrations",
+    isCore: false,
+    industries: ["real_estate", "commercial", "events", "portraits", "food", "product"],
+    category: "advanced",
+    sortOrder: 15,
   },
 } as const;
 
