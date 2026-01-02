@@ -8,7 +8,14 @@ import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { useToast } from "@/components/ui/toast";
 import { PhotoUploadModal } from "@/components/upload/photo-upload-modal";
-import { reorderPhotos } from "@/lib/actions/galleries";
+import {
+  reorderPhotos,
+  deleteGallery,
+  duplicateGallery,
+  archiveGallery,
+  deliverGallery,
+  recordDownload
+} from "@/lib/actions/galleries";
 import {
   DndContext,
   closestCenter,
@@ -194,6 +201,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [comments, setComments] = useState<PhotoComment[]>(demoComments);
   const [photoFilter, setPhotoFilter] = useState<"all" | "favorites" | "commented">("all");
   const [isReorderMode, setIsReorderMode] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isDelivering, setIsDelivering] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const activity = gallery.activity || demoActivity;
   const analytics = gallery.analytics || demoAnalytics;
 
@@ -286,8 +298,21 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     }
   };
 
-  const handleDeliverGallery = () => {
-    showToast("Gallery delivery initiated - this would send to the client", "info");
+  const handleDeliverGallery = async () => {
+    setIsDelivering(true);
+    try {
+      const result = await deliverGallery(gallery.id);
+      if (result.success) {
+        showToast("Gallery delivered successfully!", "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to deliver gallery", "error");
+      }
+    } catch {
+      showToast("Failed to deliver gallery", "error");
+    } finally {
+      setIsDelivering(false);
+    }
   };
 
   const handleAddPhotos = () => {
@@ -305,20 +330,77 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     showToast(`${uploadedFiles.length} photo${uploadedFiles.length !== 1 ? "s" : ""} uploaded successfully`, "success");
   };
 
-  const handleDownloadAll = () => {
+  const handleDownloadAll = async () => {
     showToast("Preparing download of all photos...", "info");
+    // Download photos one by one (in production, you'd zip them server-side)
+    for (const photo of photos) {
+      try {
+        const response = await fetch(photo.url);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = photo.filename || `photo-${photo.id}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch {
+        // Continue with other photos if one fails
+      }
+    }
+    // Record the download
+    await recordDownload(gallery.id);
+    showToast(`Downloaded ${photos.length} photos`, "success");
   };
 
   const handleEmailClient = () => {
-    showToast("Opening email composer...", "info");
+    if (gallery.client.email) {
+      const subject = encodeURIComponent(`About your gallery: ${gallery.name}`);
+      const body = encodeURIComponent(`Hi ${gallery.client.name},\n\n`);
+      window.location.href = `mailto:${gallery.client.email}?subject=${subject}&body=${body}`;
+    } else {
+      showToast("No email address on file", "warning");
+    }
   };
 
-  const handleDuplicate = () => {
-    showToast("Gallery duplicated successfully", "success");
+  const handleDuplicate = async () => {
+    setIsDuplicating(true);
+    try {
+      const result = await duplicateGallery(gallery.id);
+      if (result.success && result.data) {
+        showToast("Gallery duplicated successfully", "success");
+        router.push(`/galleries/${result.data.id}`);
+      } else if (!result.success) {
+        showToast(result.error || "Failed to duplicate gallery", "error");
+      }
+    } catch {
+      showToast("Failed to duplicate gallery", "error");
+    } finally {
+      setIsDuplicating(false);
+    }
   };
 
   const handleDeleteGallery = () => {
-    showToast("This would show a confirmation dialog", "warning");
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteGallery = async () => {
+    setIsDeleting(true);
+    try {
+      const result = await deleteGallery(gallery.id);
+      if (result.success) {
+        showToast("Gallery deleted successfully", "success");
+        router.push("/galleries");
+      } else {
+        showToast(result.error || "Failed to delete gallery", "error");
+      }
+    } catch {
+      showToast("Failed to delete gallery", "error");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   const handleGenerateLink = () => {
@@ -335,8 +417,24 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     setLightboxOpen(false);
   };
 
-  const handlePhotoDownload = (photo: Photo) => {
+  const handlePhotoDownload = async (photo: Photo) => {
     showToast(`Downloading ${photo.filename}...`, "info");
+    try {
+      const response = await fetch(photo.url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = photo.filename || `photo-${photo.id}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      await recordDownload(gallery.id, photo.id);
+      showToast("Download complete", "success");
+    } catch {
+      showToast("Failed to download photo", "error");
+    }
   };
 
   // Selection mode handlers
@@ -379,9 +477,30 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     showToast(`${count} photo${count !== 1 ? "s" : ""} deleted`, "success");
   };
 
-  const handleBatchDownload = () => {
+  const handleBatchDownload = async () => {
     const count = selectedPhotos.size;
     showToast(`Preparing download of ${count} photo${count !== 1 ? "s" : ""}...`, "info");
+    const selectedPhotosList = photos.filter(p => selectedPhotos.has(p.id));
+    for (const photo of selectedPhotosList) {
+      try {
+        const response = await fetch(photo.url);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = photo.filename || `photo-${photo.id}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch {
+        // Continue with other photos
+      }
+    }
+    await recordDownload(gallery.id);
+    setSelectedPhotos(new Set());
+    setIsSelectMode(false);
+    showToast(`Downloaded ${count} photo${count !== 1 ? "s" : ""}`, "success");
   };
 
   const handleSetCover = () => {
@@ -422,12 +541,26 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     showToast(`${count} photo${count !== 1 ? "s" : ""} added to favorites`, "success");
   };
 
-  const handleArchiveGallery = () => {
-    showToast("Gallery archived successfully", "success");
+  const handleArchiveGallery = async () => {
+    setIsArchiving(true);
+    try {
+      const result = await archiveGallery(gallery.id);
+      if (result.success) {
+        showToast("Gallery archived successfully", "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to archive gallery", "error");
+      }
+    } catch {
+      showToast("Failed to archive gallery", "error");
+    } finally {
+      setIsArchiving(false);
+    }
   };
 
-  const handleDuplicateGallery = () => {
-    showToast("Gallery duplicated - opening copy...", "success");
+  const handleDuplicateGallery = async () => {
+    // This is an alias for handleDuplicate
+    await handleDuplicate();
   };
 
   const handleExportAnalytics = () => {
@@ -1644,6 +1777,39 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         galleryId={gallery.id}
         galleryName={gallery.name}
       />
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowDeleteConfirm(false)}
+          />
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-foreground mb-2">Delete Gallery</h2>
+            <p className="text-sm text-foreground-muted mb-6">
+              Are you sure you want to delete &quot;{gallery.name}&quot;? This action cannot be undone.
+              All photos and data will be permanently removed.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteGallery}
+                disabled={isDeleting}
+                className="rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Delete Gallery"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Comments Panel Slide-over */}
       {showCommentsPanel && (

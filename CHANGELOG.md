@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Prisma Config**: Added seed command configuration to `prisma.config.ts`
 
 ### Fixed
+- **Gallery Detail Actions**: Connected stub handlers to actual server actions:
+  - Delete gallery now shows confirmation dialog and deletes from database
+  - Duplicate gallery creates copy and navigates to it
+  - Archive gallery updates status in database
+  - Deliver gallery sends to client
+  - Download all photos actually downloads files
+  - Email client opens mailto with pre-filled subject
+- **Invoice Actions**: Fixed non-functional buttons:
+  - Send via Email now opens mailto with invoice link
+  - Download Invoice generates and downloads a text file
+  - Removed "Edit Invoice" button (edit page not yet available)
 - **Services**: Removed template restrictions - all services can now be edited, deleted, and toggled (previously blocked with "Cannot edit template services")
 - **Service Form UI**: Removed disabled state from name and category fields for template services, restored status toggle and delete button visibility
 - **Payments Export**: Enabled the CSV export button on payments page (was previously disabled with "Coming soon" despite functionality being implemented)

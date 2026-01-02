@@ -61,10 +61,32 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
 
   const handleSendEmail = () => {
     if (clientEmail) {
-      showToast("Email functionality coming soon", "info");
+      const subject = encodeURIComponent(`Invoice ${invoiceId.slice(0, 8).toUpperCase()}`);
+      const body = encodeURIComponent(
+        `Hi,\n\nPlease find attached your invoice.\n\nYou can view and pay your invoice at:\n${window.location.href}\n\nThank you for your business!`
+      );
+      window.location.href = `mailto:${clientEmail}?subject=${subject}&body=${body}`;
     } else {
       showToast("No client email address", "error");
     }
+    setShowMenu(false);
+  };
+
+  const handleDownload = () => {
+    // Generate a simple text invoice for download
+    const invoiceText = `INVOICE\n${"=".repeat(40)}\n\nInvoice ID: ${invoiceId}\nStatus: ${currentStatus}\n\nView full invoice at:\n${window.location.href}\n`;
+
+    const blob = new Blob([invoiceText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoice-${invoiceId.slice(0, 8)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast("Invoice downloaded", "success");
     setShowMenu(false);
   };
 
@@ -130,16 +152,7 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
                     <MailIcon className="h-4 w-4" />
                     Send via Email
                   </button>
-                  <button
-                    onClick={() => {
-                      showToast("Edit functionality coming soon", "info");
-                      setShowMenu(false);
-                    }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
-                  >
-                    <EditIcon className="h-4 w-4" />
-                    Edit Invoice
-                  </button>
+                  {/* Edit page coming in future update */}
                 </>
               )}
 
@@ -154,14 +167,11 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
               )}
 
               <button
-                onClick={() => {
-                  showToast("Download functionality coming soon", "info");
-                  setShowMenu(false);
-                }}
+                onClick={handleDownload}
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
               >
                 <DownloadIcon className="h-4 w-4" />
-                Download PDF
+                Download Invoice
               </button>
 
               <button
