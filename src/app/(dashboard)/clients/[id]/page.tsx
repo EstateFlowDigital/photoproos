@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ClientActions } from "./client-actions";
 
 const industryLabels: Record<string, { label: string; color: string }> = {
   real_estate: { label: "Real Estate", color: "bg-blue-500/10 text-blue-400" },
@@ -304,32 +305,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
 
           {/* Quick Actions */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Actions</h2>
-            <div className="space-y-2">
-              <a
-                href={`mailto:${client.email}`}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
-              >
-                <EmailIcon className="h-4 w-4 text-foreground-muted" />
-                Send Email
-              </a>
-              <Link
-                href={`/galleries/new?client=${id}`}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
-              >
-                <PhotoIcon className="h-4 w-4 text-foreground-muted" />
-                Create Gallery
-              </Link>
-              <Link
-                href={`/scheduling/new?client=${id}`}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
-              >
-                <CalendarIcon className="h-4 w-4 text-foreground-muted" />
-                Schedule Shoot
-              </Link>
-            </div>
-          </div>
+          <ClientActions
+            clientId={id}
+            clientName={client.fullName || client.company || client.email}
+            clientEmail={client.email}
+          />
         </div>
       </div>
     </div>

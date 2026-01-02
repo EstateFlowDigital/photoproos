@@ -8,6 +8,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Error Boundaries**: Added error.tsx files for graceful error handling
+  - Root dashboard error boundary with retry and navigation options
+  - Route-specific error boundaries for invoices, galleries, scheduling, payments, services, clients
+  - Each with contextual icons and messaging
+- **Loading Skeletons**: Added loading.tsx files for routes missing them
+  - Invoices page skeleton with stats cards, filters, and table rows
+  - Payments page skeleton with stats cards and payment card placeholders
+  - Services page skeleton with category tabs and service card grid
+- **Pagination Constants**: Created `/lib/constants/pagination.ts` with centralized limits
+  - Activity feed, recent galleries, upcoming bookings limits
+  - Default page sizes and dropdown limits
+  - Travel and invoice default values
+- **Timezone Options**: Expanded timezone support with 60+ international options
+  - Created `/lib/constants/timezones.ts` with grouped timezone options
+  - Organized by region: North America, Canada, Europe, Asia Pacific, Australia, South America, Middle East & Africa
+  - Updated profile settings to use optgroup-based timezone selector
+
+### Changed
+- **Equipment Modal Accessibility**: Improved modal for screen readers
+  - Added `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
+  - Added keyboard handling for Escape key
+  - Added proper `htmlFor` and `id` associations on form inputs
+  - Added `aria-label` to icon-only edit/delete buttons
+
+### Fixed
+- **Detail Page Loading States**: Added skeleton loading states for all detail pages
+  - GalleryDetailSkeleton with photo grid, client info, stats, and activity sections
+  - ClientDetailSkeleton with client info card, stats grid, galleries, and activity
+  - PropertyDetailSkeleton with hero image, property details, agent card, and analytics
+  - BookingDetailSkeleton with date/time card, notes, client card, and service card
+  - Created loading.tsx files for `/galleries/[id]`, `/clients/[id]`, `/properties/[id]`, `/scheduling/[id]`
+- **Skeleton Loading States**: Added loading.tsx files for all main dashboard pages
+  - Dashboard page skeleton (already existed)
+  - Galleries page skeleton with filter tabs and gallery card placeholders
+  - Clients page skeleton with search bar and client card placeholders
+  - Properties page skeleton with stats grid and property card placeholders
+  - Scheduling page skeleton with calendar and booking item placeholders
+  - Settings page skeleton with settings card grid and danger zone placeholders
+  - Added 11 new reusable skeleton components: PageHeaderSkeleton, FilterTabsSkeleton, ClientCardSkeleton, PropertyCardSkeleton, CalendarDaySkeleton, BookingItemSkeleton, SettingsCardSkeleton, and 5 page-level skeleton compositions
 - **Modal-Based Create Flows**: Converted all "Create New" navigation to modal dialogs for better UX
   - **Base Dialog Component** (`/components/ui/dialog.tsx`): Reusable dialog component using Radix UI with size variants (sm, md, lg, xl, full)
   - **CreateClientModal** (`/components/modals/create-client-modal.tsx`): Simplified client creation modal with name, email, phone, company, industry fields
@@ -21,6 +60,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Auto-Link Auth**: Clerk users are now automatically linked to database users by email on first login, enabling seamless development with seeded data
 
 ### Changed
+- **Form Validation Consistency**: Applied field-level validation pattern to all create modals
+  - CreateGalleryModal: Added onBlur validation for gallery name with error styling
+  - CreateBookingModal: Added onBlur validation for title, date, and start time fields
+  - CreatePropertyModal: Added onBlur validation for gallery selection and all address fields
+  - All modals now show inline error messages under invalid fields with red border styling
+  - Validation triggers on blur and on submit for better user experience
+- **Toast Notifications**: Added success/error toast notifications to all create modals
+  - CreateClientModal, CreateGalleryModal, CreateBookingModal, CreatePropertyModal now show toast messages on success/error
+  - Consistent toast pattern using existing ToastProvider
 - **Seed Data**: Updated primary organization to "House & Home Photo" with cameron@houseandhomephoto.com as owner
 - **Database URL Parsing**: Added `getDatabaseUrl()` to parse Prisma Postgres URLs for local development with pg Pool adapter
 - **Prisma Config**: Added seed command configuration to `prisma.config.ts`

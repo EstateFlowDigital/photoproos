@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +22,12 @@ interface Client {
   email: string;
 }
 
+interface FieldErrors {
+  title?: string;
+  date?: string;
+  startTime?: string;
+}
+
 interface CreateBookingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -36,6 +44,7 @@ export function CreateBookingModal({
   defaultClientId,
 }: CreateBookingModalProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   // Form state
@@ -46,18 +55,46 @@ export function CreateBookingModal({
   const [duration, setDuration] = useState("1"); // hours
   const [location, setLocation] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const handleBlur = (field: string, value: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    if (field === "title" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, title: "Title is required" }));
+    } else if (field === "date" && !value) {
+      setFieldErrors((prev) => ({ ...prev, date: "Date is required" }));
+    } else if (field === "startTime" && !value) {
+      setFieldErrors((prev) => ({ ...prev, startTime: "Start time is required" }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const getInputClassName = (fieldName: keyof FieldErrors) => {
+    const hasError = touched[fieldName] && fieldErrors[fieldName];
+    return cn(
+      "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+      hasError
+        ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+        : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!title.trim()) {
-      setError("Booking title is required");
-      return;
-    }
+    // Validate all fields
+    const errors: FieldErrors = {};
+    if (!title.trim()) errors.title = "Title is required";
+    if (!date) errors.date = "Date is required";
+    if (!startTime) errors.startTime = "Start time is required";
 
-    if (!date || !startTime) {
-      setError("Date and time are required");
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setTouched({ title: true, date: true, startTime: true });
       return;
     }
 
@@ -91,6 +128,8 @@ export function CreateBookingModal({
           setLocation("");
           onOpenChange(false);
 
+          showToast("Booking created successfully", "success");
+
           // Call success callback
           onSuccess?.({ id: result.data.id });
 
@@ -98,9 +137,11 @@ export function CreateBookingModal({
           router.refresh();
         } else {
           setError(result.error);
+          showToast(result.error, "error");
         }
       } catch (err) {
         setError("An unexpected error occurred");
+        showToast("An unexpected error occurred", "error");
       }
     });
   };
@@ -115,6 +156,8 @@ export function CreateBookingModal({
       setDuration("1");
       setLocation("");
       setError(null);
+      setFieldErrors({});
+      setTouched({});
     }
     onOpenChange(newOpen);
   };
@@ -150,10 +193,14 @@ export function CreateBookingModal({
                 id="booking-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                onBlur={(e) => handleBlur("title", e.target.value)}
                 placeholder="e.g., Real Estate Photo Shoot - 123 Main St"
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className={getInputClassName("title")}
                 autoFocus
               />
+              {touched.title && fieldErrors.title && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.title}</p>
+              )}
             </div>
 
             {/* Client Selection */}
@@ -187,9 +234,13 @@ export function CreateBookingModal({
                   id="booking-date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
+                  onBlur={(e) => handleBlur("date", e.target.value)}
                   min={today}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className={getInputClassName("date")}
                 />
+                {touched.date && fieldErrors.date && (
+                  <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.date}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="booking-time" className="block text-sm font-medium text-foreground mb-1.5">
@@ -200,8 +251,12 @@ export function CreateBookingModal({
                   id="booking-time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  onBlur={(e) => handleBlur("startTime", e.target.value)}
+                  className={getInputClassName("startTime")}
                 />
+                {touched.startTime && fieldErrors.startTime && (
+                  <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.startTime}</p>
+                )}
               </div>
             </div>
 

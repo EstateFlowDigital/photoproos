@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import { updateClient } from "@/lib/actions/clients";
 import type { ClientIndustry } from "@prisma/client";
 
@@ -16,6 +18,11 @@ interface ClientEditFormProps {
     address: string;
     notes: string;
   };
+}
+
+interface FieldErrors {
+  fullName?: string;
+  email?: string;
 }
 
 const industries: { value: ClientIndustry; label: string }[] = [
@@ -33,9 +40,12 @@ const industries: { value: ClientIndustry; label: string }[] = [
 
 export function ClientEditForm({ client }: ClientEditFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState({
     fullName: client.fullName,
@@ -46,6 +56,34 @@ export function ClientEditForm({ client }: ClientEditFormProps) {
     address: client.address,
     notes: client.notes,
   });
+
+  const handleBlur = (field: string, value: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    if (field === "fullName" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, fullName: "Full name is required" }));
+    } else if (field === "email") {
+      if (!value.trim()) {
+        setFieldErrors((prev) => ({ ...prev, email: "Email is required" }));
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        setFieldErrors((prev) => ({ ...prev, email: "Please enter a valid email" }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, email: undefined }));
+      }
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const getInputClassName = (fieldName: keyof FieldErrors) => {
+    const hasError = touched[fieldName] && fieldErrors[fieldName];
+    return cn(
+      "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+      hasError
+        ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+        : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

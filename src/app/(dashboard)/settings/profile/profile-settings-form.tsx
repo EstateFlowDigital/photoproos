@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { updateUserProfile, updateOrganizationProfile } from "@/lib/actions/settings";
 import { useToast } from "@/components/ui/toast";
+import { TIMEZONE_GROUPS } from "@/lib/constants/timezones";
 
 interface ProfileSettingsFormProps {
   user: {
@@ -179,10 +180,15 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
               onChange={(e) => setTimezone(e.target.value)}
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             >
-              <option value="America/Los_Angeles">Pacific Time (PT)</option>
-              <option value="America/Denver">Mountain Time (MT)</option>
-              <option value="America/Chicago">Central Time (CT)</option>
-              <option value="America/New_York">Eastern Time (ET)</option>
+              {Object.entries(TIMEZONE_GROUPS).map(([region, timezones]) => (
+                <optgroup key={region} label={region}>
+                  {timezones.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </div>
         </div>

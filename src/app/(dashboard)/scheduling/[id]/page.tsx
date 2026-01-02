@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { getBooking, updateBookingStatus } from "@/lib/actions/bookings";
 import { redirect } from "next/navigation";
 import { BookingActions, BookingWeather } from "./booking-actions";
+import { BookingDeleteAction } from "./booking-delete-action";
 
 interface BookingDetailPageProps {
   params: Promise<{ id: string }>;
@@ -380,6 +381,15 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
                     Mark as Completed
                   </button>
                 </form>
+              )}
+              {(booking.status === "cancelled" || booking.status === "completed") && (
+                <>
+                  <hr className="border-[var(--card-border)]" />
+                  <BookingDeleteAction
+                    bookingId={booking.id}
+                    bookingTitle={booking.title}
+                  />
+                </>
               )}
             </div>
           </div>

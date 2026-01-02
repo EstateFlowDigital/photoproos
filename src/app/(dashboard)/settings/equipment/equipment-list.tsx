@@ -237,6 +237,7 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
                       <div className="flex items-center gap-2 ml-4">
                         <button
                           onClick={() => openEditModal(equipment)}
+                          aria-label={`Edit ${equipment.name}`}
                           className="p-2 rounded-lg text-foreground-muted hover:text-foreground hover:bg-[var(--background-hover)] transition-colors"
                         >
                           <EditIcon className="h-4 w-4" />
@@ -244,6 +245,7 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
                         <button
                           onClick={() => handleDelete(equipment.id)}
                           disabled={isPending}
+                          aria-label={`Delete ${equipment.name}`}
                           className="p-2 rounded-lg text-foreground-muted hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors disabled:opacity-50"
                         >
                           <TrashIcon className="h-4 w-4" />
@@ -260,10 +262,22 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setIsModalOpen(false)} />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="equipment-modal-title"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setIsModalOpen(false);
+          }}
+        >
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsModalOpen(false)}
+            aria-hidden="true"
+          />
           <div className="relative z-10 w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+            <h2 id="equipment-modal-title" className="text-lg font-semibold text-foreground mb-4">
               {editingEquipment ? "Edit Equipment" : "Add Equipment"}
             </h2>
 
@@ -275,11 +289,12 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
+                <label htmlFor="equipment-name" className="block text-sm font-medium text-foreground mb-1.5">
                   Name <span className="text-[var(--error)]">*</span>
                 </label>
                 <input
                   type="text"
+                  id="equipment-name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Sony A7R V"
@@ -288,8 +303,9 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Category</label>
+                <label htmlFor="equipment-category" className="block text-sm font-medium text-foreground mb-1.5">Category</label>
                 <select
+                  id="equipment-category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value as EquipmentCategory })}
                   className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
@@ -303,9 +319,10 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Serial Number</label>
+                <label htmlFor="equipment-serial" className="block text-sm font-medium text-foreground mb-1.5">Serial Number</label>
                 <input
                   type="text"
+                  id="equipment-serial"
                   value={formData.serialNumber}
                   onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
                   placeholder="Optional"
@@ -314,9 +331,10 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Value ($)</label>
+                <label htmlFor="equipment-value" className="block text-sm font-medium text-foreground mb-1.5">Value ($)</label>
                 <input
                   type="number"
+                  id="equipment-value"
                   step="0.01"
                   min="0"
                   value={formData.valueCents}
@@ -327,8 +345,9 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Description</label>
+                <label htmlFor="equipment-description" className="block text-sm font-medium text-foreground mb-1.5">Description</label>
                 <textarea
+                  id="equipment-description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={2}

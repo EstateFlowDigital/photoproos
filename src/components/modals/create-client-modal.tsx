@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,7 @@ export function CreateClientModal({
   onSuccess,
   defaultIndustry,
 }: CreateClientModalProps) {
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -114,6 +116,7 @@ export function CreateClientModal({
 
       if (result.success) {
         handleOpenChange(false);
+        showToast(`Client "${fullName}" created successfully`, "success");
         onSuccess?.({
           id: result.data.id,
           fullName: fullName,
@@ -121,6 +124,7 @@ export function CreateClientModal({
         });
       } else {
         setError(result.error);
+        showToast(result.error, "error");
       }
     });
   };

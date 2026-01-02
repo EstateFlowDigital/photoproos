@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +19,10 @@ interface Client {
   id: string;
   name: string;
   email: string;
+}
+
+interface FieldErrors {
+  name?: string;
 }
 
 interface CreateGalleryModalProps {
@@ -35,6 +41,7 @@ export function CreateGalleryModal({
   defaultClientId,
 }: CreateGalleryModalProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   // Form state
@@ -43,13 +50,40 @@ export function CreateGalleryModal({
   const [clientId, setClientId] = useState(defaultClientId || "");
   const [priceCents, setPriceCents] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const handleBlur = (field: string, value: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    if (field === "name" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, name: "Gallery name is required" }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const getInputClassName = (fieldName: keyof FieldErrors) => {
+    const hasError = touched[fieldName] && fieldErrors[fieldName];
+    return cn(
+      "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+      hasError
+        ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+        : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!name.trim()) {
-      setError("Gallery name is required");
+    // Validate all fields
+    const errors: FieldErrors = {};
+    if (!name.trim()) errors.name = "Gallery name is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setTouched({ name: true });
       return;
     }
 
@@ -81,6 +115,8 @@ export function CreateGalleryModal({
           setPriceCents(0);
           onOpenChange(false);
 
+          showToast(`Gallery "${name.trim()}" created successfully`, "success");
+
           // Call success callback
           onSuccess?.({ id: result.data.id, name: name.trim() });
 
@@ -88,9 +124,11 @@ export function CreateGalleryModal({
           router.push(`/galleries/${result.data.id}`);
         } else {
           setError(result.error);
+          showToast(result.error, "error");
         }
       } catch (err) {
         setError("An unexpected error occurred");
+        showToast("An unexpected error occurred", "error");
       }
     });
   };
@@ -103,6 +141,8 @@ export function CreateGalleryModal({
       setClientId(defaultClientId || "");
       setPriceCents(0);
       setError(null);
+      setFieldErrors({});
+      setTouched({});
     }
     onOpenChange(newOpen);
   };
@@ -135,10 +175,14 @@ export function CreateGalleryModal({
                 id="gallery-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onBlur={(e) => handleBlur("name", e.target.value)}
                 placeholder="e.g., Downtown Luxury Listing"
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className={getInputClassName("name")}
                 autoFocus
               />
+              {touched.name && fieldErrors.name && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.name}</p>
+              )}
             </div>
 
             {/* Description */}

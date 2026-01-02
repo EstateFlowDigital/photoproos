@@ -2,6 +2,8 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +33,14 @@ interface Project {
   } | null;
 }
 
+interface FieldErrors {
+  projectId?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+}
+
 interface CreatePropertyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,6 +57,7 @@ export function CreatePropertyModal({
   defaultProjectId,
 }: CreatePropertyModalProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   // Form state
@@ -63,6 +74,36 @@ export function CreatePropertyModal({
   const [propertyType, setPropertyType] = useState<PropertyType>("single_family");
   const [template, setTemplate] = useState<PropertyWebsiteTemplate>("modern");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const handleBlur = (field: string, value: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    if (field === "projectId" && !value) {
+      setFieldErrors((prev) => ({ ...prev, projectId: "Please select a gallery" }));
+    } else if (field === "address" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, address: "Street address is required" }));
+    } else if (field === "city" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, city: "City is required" }));
+    } else if (field === "state" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, state: "State is required" }));
+    } else if (field === "zipCode" && !value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, zipCode: "ZIP is required" }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const getInputClassName = (fieldName: keyof FieldErrors) => {
+    const hasError = touched[fieldName] && fieldErrors[fieldName];
+    return cn(
+      "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+      hasError
+        ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+        : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+    );
+  };
 
   // Update form when project is selected
   const handleProjectChange = (id: string) => {
@@ -87,12 +128,17 @@ export function CreatePropertyModal({
     e.preventDefault();
     setError(null);
 
-    if (!projectId) {
-      setError("Please select a gallery");
-      return;
-    }
-    if (!address || !city || !state || !zipCode) {
-      setError("Please fill in the property address");
+    // Validate all fields
+    const errors: FieldErrors = {};
+    if (!projectId) errors.projectId = "Please select a gallery";
+    if (!address.trim()) errors.address = "Street address is required";
+    if (!city.trim()) errors.city = "City is required";
+    if (!state.trim()) errors.state = "State is required";
+    if (!zipCode.trim()) errors.zipCode = "ZIP is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setTouched({ projectId: true, address: true, city: true, state: true, zipCode: true });
       return;
     }
 
@@ -118,6 +164,8 @@ export function CreatePropertyModal({
           resetForm();
           onOpenChange(false);
 
+          showToast("Property website created successfully", "success");
+
           // Call success callback
           onSuccess?.({ id: result.id! });
 
@@ -125,9 +173,11 @@ export function CreatePropertyModal({
           router.push(`/properties/${result.id}`);
         } else {
           setError(result.error || "Failed to create property website");
+          showToast(result.error || "Failed to create property website", "error");
         }
       } catch {
         setError("An unexpected error occurred");
+        showToast("An unexpected error occurred", "error");
       }
     });
   };
@@ -146,6 +196,8 @@ export function CreatePropertyModal({
     setPropertyType("single_family");
     setTemplate("modern");
     setError(null);
+    setFieldErrors({});
+    setTouched({});
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -179,19 +231,25 @@ export function CreatePropertyModal({
                 Gallery <span className="text-[var(--error)]">*</span>
               </label>
               {projects.length > 0 ? (
-                <select
-                  id="property-gallery"
-                  value={projectId}
-                  onChange={(e) => handleProjectChange(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                >
-                  <option value="">Select a gallery...</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name} {project.client?.company ? `(${project.client.company})` : ""}
-                    </option>
-                  ))}
-                </select>
+                <>
+                  <select
+                    id="property-gallery"
+                    value={projectId}
+                    onChange={(e) => handleProjectChange(e.target.value)}
+                    onBlur={(e) => handleBlur("projectId", e.target.value)}
+                    className={getInputClassName("projectId")}
+                  >
+                    <option value="">Select a gallery...</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name} {project.client?.company ? `(${project.client.company})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  {touched.projectId && fieldErrors.projectId && (
+                    <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.projectId}</p>
+                  )}
+                </>
               ) : (
                 <div className="rounded-lg border border-dashed border-[var(--card-border)] p-4 text-center">
                   <p className="text-sm text-foreground-muted">No available galleries without property websites.</p>
@@ -211,9 +269,13 @@ export function CreatePropertyModal({
                   id="property-address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
+                  onBlur={(e) => handleBlur("address", e.target.value)}
                   placeholder="123 Main Street"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className={getInputClassName("address")}
                 />
+                {touched.address && fieldErrors.address && (
+                  <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.address}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-3">
@@ -226,9 +288,13 @@ export function CreatePropertyModal({
                     id="property-city"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
+                    onBlur={(e) => handleBlur("city", e.target.value)}
                     placeholder="Los Angeles"
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    className={getInputClassName("city")}
                   />
+                  {touched.city && fieldErrors.city && (
+                    <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.city}</p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="property-state" className="block text-sm text-foreground-muted mb-1.5">
@@ -239,10 +305,14 @@ export function CreatePropertyModal({
                     id="property-state"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
+                    onBlur={(e) => handleBlur("state", e.target.value)}
                     placeholder="CA"
                     maxLength={2}
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    className={getInputClassName("state")}
                   />
+                  {touched.state && fieldErrors.state && (
+                    <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.state}</p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="property-zip" className="block text-sm text-foreground-muted mb-1.5">
@@ -253,9 +323,13 @@ export function CreatePropertyModal({
                     id="property-zip"
                     value={zipCode}
                     onChange={(e) => setZipCode(e.target.value)}
+                    onBlur={(e) => handleBlur("zipCode", e.target.value)}
                     placeholder="90001"
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    className={getInputClassName("zipCode")}
                   />
+                  {touched.zipCode && fieldErrors.zipCode && (
+                    <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.zipCode}</p>
+                  )}
                 </div>
               </div>
             </div>
