@@ -131,12 +131,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               appearance={{
                 elements: {
                   rootBox: "w-full",
-                  organizationSwitcherTrigger:
-                    "w-full rounded-lg p-2 hover:bg-[var(--background-hover)] [&>span]:text-foreground",
-                  organizationPreviewMainIdentifier: "text-sm font-medium text-foreground",
-                  organizationPreviewSecondaryIdentifier: "text-xs text-foreground-muted",
-                  organizationSwitcherPopoverCard:
-                    "bg-[var(--card)] border border-[var(--card-border)]",
+                  organizationSwitcherTrigger: "w-full",
                 },
               }}
               afterSelectOrganizationUrl="/dashboard"
@@ -149,14 +144,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <UserButton
               appearance={{
                 elements: {
-                  rootBox: "flex-shrink-0",
                   avatarBox: "h-9 w-9",
-                  userButtonPopoverCard:
-                    "bg-[var(--card)] border border-[var(--card-border)]",
-                  userButtonPopoverActionButton:
-                    "text-foreground hover:bg-[var(--background-hover)]",
-                  userButtonPopoverActionButtonText: "text-foreground",
-                  userButtonPopoverFooter: "hidden",
                 },
               }}
               afterSignOutUrl="/"

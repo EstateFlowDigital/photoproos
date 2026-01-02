@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Clerk Theme Configuration** (`/lib/clerk-theme.ts`):
+  - Comprehensive dark theme matching Dovetail/Lumos design system
+  - Styles all Clerk components: SignIn, SignUp, UserButton, OrganizationSwitcher
+  - Covers modals, profile pages, member management, and organization settings
+  - Global theme applied via ClerkProvider - individual components simplified
+  - Consistent typography, colors, borders, and spacing across all auth UI
+
 - **Marketing Server Actions** (`/lib/actions/marketing.ts`):
   - `subscribeToNewsletter` - Subscribe users to newsletter with Resend welcome email
   - `submitContactForm` - Process contact form submissions with team notification and user confirmation emails
