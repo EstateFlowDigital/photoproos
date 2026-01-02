@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GalleryDetailClient } from "./gallery-detail-client";
 import { getGallery, deliverGallery } from "@/lib/actions/galleries";
+import { getClientInvoices } from "@/lib/actions/invoices";
 
 interface GalleryDetailPageProps {
   params: Promise<{ id: string }>;
@@ -21,6 +22,11 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
   // Check if this is a real estate gallery
   const isRealEstateGallery = gallery.service?.category === "real_estate";
   const hasPropertyWebsite = !!gallery.propertyWebsite;
+
+  // Fetch invoices for this client (if client exists)
+  const invoices = gallery.client?.id
+    ? await getClientInvoices(gallery.client.id)
+    : [];
 
   // Map to the format expected by GalleryDetailClient
   const mappedGallery = {
@@ -67,6 +73,23 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
       allowComments: true,
     },
     propertyWebsite: gallery.propertyWebsite,
+    // Comments from the database
+    comments: gallery.comments.map((comment) => ({
+      id: comment.id,
+      author: comment.clientName || "Client",
+      text: comment.content,
+      timestamp: comment.createdAt.toISOString(),
+      isClient: true,
+    })),
+    // Invoices for this client
+    invoices: invoices.map((invoice) => ({
+      id: invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      status: invoice.status,
+      amount: invoice.totalCents / 100,
+      dueDate: invoice.dueDate?.toISOString() || null,
+      createdAt: invoice.createdAt.toISOString(),
+    })),
   };
 
   return (

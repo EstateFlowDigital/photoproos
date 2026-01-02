@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { updateOrganizationBranding } from "@/lib/actions/settings";
+import { useToast } from "@/components/ui/toast";
 
 interface BrandingSettingsFormProps {
   settings: {
@@ -17,6 +18,7 @@ interface BrandingSettingsFormProps {
 }
 
 export function BrandingSettingsForm({ settings, colorPresets }: BrandingSettingsFormProps) {
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +28,10 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
   const [galleryTheme, setGalleryTheme] = useState<"dark" | "light">("dark");
   const [showWatermark, setShowWatermark] = useState(true);
   const [watermarkPosition, setWatermarkPosition] = useState("bottom-right");
+
+  const handleUploadLogo = () => {
+    showToast("Logo upload is coming soon. This feature will allow you to upload a custom logo.", "info");
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +84,7 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
               <div className="space-y-3">
                 <button
                   type="button"
+                  onClick={handleUploadLogo}
                   className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
                 >
                   Upload Logo

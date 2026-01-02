@@ -102,17 +102,70 @@ const statusDotColors: Record<string, string> = {
   cancelled: "bg-[var(--error)]",
 };
 
+// Helper to generate calendar days for a given week offset
+function generateCalendarDays(weekOffset: number, bookings: Booking[]): CalendarDay[] {
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay() + (weekOffset * 7));
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(startOfWeek);
+    date.setDate(startOfWeek.getDate() + i);
+    return {
+      date,
+      dayName: weekDays[i],
+      dayNumber: date.getDate(),
+      isToday: date.toDateString() === today.toDateString(),
+      hasBooking: bookings.some(
+        (b) => new Date(b.startTime).toDateString() === date.toDateString()
+      ),
+    };
+  });
+}
+
+// Helper to get week label
+function getWeekLabel(weekOffset: number): string {
+  if (weekOffset === 0) return "This Week";
+  if (weekOffset === 1) return "Next Week";
+  if (weekOffset === -1) return "Last Week";
+
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay() + (weekOffset * 7));
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+  const formatMonth = (date: Date) => new Intl.DateTimeFormat("en-US", { month: "short" }).format(date);
+  const formatDay = (date: Date) => date.getDate();
+
+  if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
+    return `${formatMonth(startOfWeek)} ${formatDay(startOfWeek)} - ${formatDay(endOfWeek)}`;
+  }
+  return `${formatMonth(startOfWeek)} ${formatDay(startOfWeek)} - ${formatMonth(endOfWeek)} ${formatDay(endOfWeek)}`;
+}
+
 export function SchedulingPageClient({
   clients,
   bookings,
-  calendarDays,
+  calendarDays: initialCalendarDays,
 }: SchedulingPageClientProps) {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  // Generate calendar days based on week offset
+  const calendarDays = weekOffset === 0
+    ? initialCalendarDays
+    : generateCalendarDays(weekOffset, bookings);
 
   const handleBookingCreated = (booking: { id: string }) => {
     router.refresh();
   };
+
+  const goToPreviousWeek = () => setWeekOffset((prev) => prev - 1);
+  const goToNextWeek = () => setWeekOffset((prev) => prev + 1);
+  const goToCurrentWeek = () => setWeekOffset(0);
 
   // Group bookings by day
   const bookingsByDay = bookings.reduce((acc, booking) => {
@@ -146,20 +199,38 @@ export function SchedulingPageClient({
       {/* Week View */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">This Week</h3>
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-foreground">{getWeekLabel(weekOffset)}</h3>
+            {weekOffset !== 0 && (
+              <button
+                onClick={goToCurrentWeek}
+                className="rounded-md px-2 py-1 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+              >
+                Today
+              </button>
+            )}
+          </div>
           <div className="flex gap-1">
-            <button className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
+            <button
+              onClick={goToPreviousWeek}
+              className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              title="Previous week"
+            >
               <ChevronLeftIcon className="h-4 w-4" />
             </button>
-            <button className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
+            <button
+              onClick={goToNextWeek}
+              className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              title="Next week"
+            >
               <ChevronRightIcon className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-7 gap-2">
-          {calendarDays.map((day) => (
-            <div key={day.dayNumber} className="text-center">
+          {calendarDays.map((day, index) => (
+            <div key={`${weekOffset}-${index}`} className="text-center">
               <p className="mb-2 text-xs font-medium text-foreground-muted">
                 {day.dayName}
               </p>

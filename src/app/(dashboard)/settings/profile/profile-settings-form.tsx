@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateUserProfile, updateOrganizationProfile } from "@/lib/actions/settings";
+import { useToast } from "@/components/ui/toast";
 
 interface ProfileSettingsFormProps {
   user: {
@@ -19,6 +20,7 @@ interface ProfileSettingsFormProps {
 }
 
 export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormProps) {
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +29,15 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
   const [phone, setPhone] = useState(user.phone);
   const [businessName, setBusinessName] = useState(organization.name);
   const [timezone, setTimezone] = useState(organization.timezone);
+
+  const handleUploadPhoto = () => {
+    showToast("Photo upload is coming soon. This feature will allow you to upload a profile photo.", "info");
+  };
+
+  const handleChangePassword = () => {
+    // Redirect to Clerk's password change flow
+    window.open("https://accounts.clerk.dev/user", "_blank");
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -78,6 +89,7 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
           <div className="space-y-2">
             <button
               type="button"
+              onClick={handleUploadPhoto}
               className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
             >
               Upload Photo
@@ -184,6 +196,7 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
         </p>
         <button
           type="button"
+          onClick={handleChangePassword}
           className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
         >
           Change Password

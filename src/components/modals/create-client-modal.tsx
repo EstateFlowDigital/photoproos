@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,13 @@ const industries: { value: ClientIndustry; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+interface FieldErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  industry?: string;
+}
+
 interface CreateClientModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -41,6 +49,29 @@ export function CreateClientModal({
 }: CreateClientModalProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validateEmail = (email: string): string | undefined => {
+    if (!email) return "Email is required";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return "Please enter a valid email address";
+    return undefined;
+  };
+
+  const handleBlur = (field: string, value: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    if (field === "email") {
+      setFieldErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+    } else if (field === "firstName" && !value) {
+      setFieldErrors((prev) => ({ ...prev, firstName: "First name is required" }));
+    } else if (field === "lastName" && !value) {
+      setFieldErrors((prev) => ({ ...prev, lastName: "Last name is required" }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,9 +86,17 @@ export function CreateClientModal({
     const company = formData.get("company") as string;
     const industry = formData.get("industry") as ClientIndustry;
 
-    // Validate required fields
-    if (!firstName || !lastName || !email || !industry) {
-      setError("Please fill in all required fields");
+    // Validate all fields
+    const errors: FieldErrors = {};
+    if (!firstName) errors.firstName = "First name is required";
+    if (!lastName) errors.lastName = "Last name is required";
+    const emailError = validateEmail(email);
+    if (emailError) errors.email = emailError;
+    if (!industry) errors.industry = "Please select an industry";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setTouched({ firstName: true, lastName: true, email: true, industry: true });
       return;
     }
 
@@ -74,7 +113,7 @@ export function CreateClientModal({
       });
 
       if (result.success) {
-        onOpenChange(false);
+        handleOpenChange(false);
         onSuccess?.({
           id: result.data.id,
           fullName: fullName,
@@ -86,8 +125,27 @@ export function CreateClientModal({
     });
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setError(null);
+      setFieldErrors({});
+      setTouched({});
+    }
+    onOpenChange(newOpen);
+  };
+
+  const getInputClassName = (fieldName: keyof FieldErrors) => {
+    const hasError = touched[fieldName] && fieldErrors[fieldName];
+    return cn(
+      "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+      hasError
+        ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+        : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+    );
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>Add New Client</DialogTitle>
@@ -115,9 +173,12 @@ export function CreateClientModal({
                   id="modal-firstName"
                   name="firstName"
                   placeholder="John"
-                  required
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  onBlur={(e) => handleBlur("firstName", e.target.value)}
+                  className={getInputClassName("firstName")}
                 />
+                {touched.firstName && fieldErrors.firstName && (
+                  <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.firstName}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="modal-lastName" className="block text-sm font-medium text-foreground mb-1.5">
@@ -128,9 +189,12 @@ export function CreateClientModal({
                   id="modal-lastName"
                   name="lastName"
                   placeholder="Peterson"
-                  required
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  onBlur={(e) => handleBlur("lastName", e.target.value)}
+                  className={getInputClassName("lastName")}
                 />
+                {touched.lastName && fieldErrors.lastName && (
+                  <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -144,9 +208,12 @@ export function CreateClientModal({
                 id="modal-email"
                 name="email"
                 placeholder="john@example.com"
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                onBlur={(e) => handleBlur("email", e.target.value)}
+                className={getInputClassName("email")}
               />
+              {touched.email && fieldErrors.email && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.email}</p>
+              )}
             </div>
 
             {/* Phone */}
@@ -185,9 +252,14 @@ export function CreateClientModal({
               <select
                 id="modal-industry"
                 name="industry"
-                required
                 defaultValue={defaultIndustry || ""}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                onBlur={(e) => handleBlur("industry", e.target.value)}
+                className={cn(
+                  "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1",
+                  touched.industry && fieldErrors.industry
+                    ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+                    : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+                )}
               >
                 <option value="">Select an industry...</option>
                 {industries.map((industry) => (
@@ -196,13 +268,16 @@ export function CreateClientModal({
                   </option>
                 ))}
               </select>
+              {touched.industry && fieldErrors.industry && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.industry}</p>
+              )}
             </div>
           </DialogBody>
 
           <DialogFooter>
             <button
               type="button"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               Cancel

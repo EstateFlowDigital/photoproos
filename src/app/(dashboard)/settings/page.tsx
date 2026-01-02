@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { prisma } from "@/lib/db";
+import { getAuthContext } from "@/lib/auth/clerk";
 
 interface SettingCardProps {
   title: string;
@@ -29,7 +31,23 @@ function SettingCard({ title, description, href, icon }: SettingCardProps) {
   );
 }
 
-export default function SettingsPage() {
+import { SettingsPageClient } from "./settings-page-client";
+
+export default async function SettingsPage() {
+  // Fetch organization name for the danger zone component
+  const auth = await getAuthContext();
+  let organizationName = "your organization";
+
+  if (auth) {
+    const organization = await prisma.organization.findUnique({
+      where: { id: auth.organizationId },
+      select: { name: true },
+    });
+    if (organization?.name) {
+      organizationName = organization.name;
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -95,20 +113,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="mt-8 rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/5 p-6">
-        <h3 className="font-medium text-foreground">Danger Zone</h3>
-        <p className="mt-1 text-sm text-foreground-muted">
-          Irreversible and destructive actions
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <button className="rounded-lg border border-[var(--error)]/30 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10">
-            Export All Data
-          </button>
-          <button className="rounded-lg border border-[var(--error)]/30 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10">
-            Delete Account
-          </button>
-        </div>
-      </div>
+      <SettingsPageClient organizationName={organizationName} />
     </div>
   );
 }

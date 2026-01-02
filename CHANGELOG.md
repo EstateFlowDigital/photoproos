@@ -26,6 +26,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Prisma Config**: Added seed command configuration to `prisma.config.ts`
 
 ### Fixed
+- **Settings Danger Zone**: Replaced "Coming Soon" stubs with fully functional modals
+  - Export Data modal downloads complete organization data as JSON (clients, galleries, assets, bookings, payments, invoices, services)
+  - Delete Account modal with confirmation text input, cascading delete of all organization data
+- **Gallery Detail View**: Removed hardcoded demo data (activity, analytics, comments) and replaced with real database data
+  - Invoice display now uses real invoices from the client's account
+  - Activity and analytics sections show actual data with graceful fallbacks
+- **Property Cards**: Added delete confirmation with modal dialog
+  - Delete button appears on hover over property cards
+  - Confirmation modal shows property address and warns about permanent deletion
+  - Successfully deletes property website and associated leads
+- **Scheduling Week Navigation**: Made week navigation buttons functional
+  - Previous/next week buttons now properly navigate between weeks
+  - Dynamic week label shows "This Week", "Next Week", "Last Week", or date range
+  - "Today" button appears when not viewing current week to quickly return
+- **Property Website Modal**: Added CreatePropertyModal for consistency with other pages
+  - Properties page now uses modal dialog instead of separate page for quick creation
+  - Modal auto-populates address fields when gallery with location is selected
+  - Matches pattern used by Clients, Galleries, and Scheduling pages
+- **Form Validation**: Improved validation feedback in CreateClientModal
+  - Field-level validation with inline error messages below each field
+  - Visual feedback with red border on invalid fields
+  - Email format validation with helpful error messages
+  - Validation on blur for immediate feedback as user fills form
+- **Properties Detail Page** (`/properties/[id]`): Converted from client component with demo data to server component fetching real PropertyWebsite, leads, and analytics from database
+- **Properties New Page** (`/properties/new`): Converted from client component with demo data to server component fetching projects without property websites
+- **Gallery Analytics Badge**: Fixed TypeScript error with optional chaining for `analytics?.totalViews` in tab badge display
+- **Settings Page Stub Buttons**: Added toast feedback to non-functional buttons:
+  - **Danger Zone**: "Export All Data" and "Delete Account" now show "Coming Soon" toast instead of doing nothing
+  - **Profile Settings**: "Upload Photo" shows toast, "Change Password" opens Clerk account management
+  - **Branding Settings**: "Upload Logo" button now shows toast indicating feature is coming soon
 - **Gallery Detail Actions**: Connected stub handlers to actual server actions:
   - Delete gallery now shows confirmation dialog and deletes from database
   - Duplicate gallery creates copy and navigates to it

@@ -327,6 +327,276 @@ export async function updateUserProfile(input: {
 // ============================================================================
 
 /**
+ * Export all organization data as JSON
+ */
+export async function exportAllData() {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Fetch all organization data
+    const [
+      organization,
+      clients,
+      projects,
+      bookings,
+      payments,
+      invoices,
+      services,
+      propertyWebsites,
+    ] = await Promise.all([
+      prisma.organization.findUnique({
+        where: { id: organizationId },
+        include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  fullName: true,
+                  createdAt: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      prisma.client.findMany({
+        where: { organizationId },
+        include: {
+          _count: { select: { projects: true, bookings: true } },
+        },
+      }),
+      prisma.project.findMany({
+        where: { organizationId },
+        include: {
+          client: { select: { fullName: true, company: true, email: true } },
+          _count: { select: { assets: true, payments: true } },
+        },
+      }),
+      prisma.booking.findMany({
+        where: { organizationId },
+        include: {
+          client: { select: { fullName: true, company: true, email: true } },
+        },
+      }),
+      prisma.payment.findMany({
+        where: { organizationId },
+        include: {
+          project: { select: { name: true } },
+        },
+      }),
+      prisma.invoice.findMany({
+        where: { organizationId },
+        include: {
+          client: { select: { fullName: true, company: true, email: true } },
+          lineItems: true,
+        },
+      }),
+      prisma.service.findMany({
+        where: { organizationId },
+      }),
+      prisma.propertyWebsite.findMany({
+        where: { project: { organizationId } },
+      }),
+    ]);
+
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      organization: {
+        id: organization?.id,
+        name: organization?.name,
+        plan: organization?.plan,
+        createdAt: organization?.createdAt,
+        members: organization?.members.map((m) => ({
+          role: m.role,
+          user: m.user,
+          joinedAt: m.createdAt,
+        })),
+      },
+      clients: clients.map((c) => ({
+        id: c.id,
+        fullName: c.fullName,
+        company: c.company,
+        email: c.email,
+        phone: c.phone,
+        industry: c.industry,
+        lifetimeRevenue: c.lifetimeRevenueCents / 100,
+        projectCount: c._count.projects,
+        bookingCount: c._count.bookings,
+        createdAt: c.createdAt,
+      })),
+      galleries: projects.map((p) => ({
+        id: p.id,
+        name: p.name,
+        status: p.status,
+        client: p.client,
+        price: p.priceCents / 100,
+        photoCount: p._count.assets,
+        paymentCount: p._count.payments,
+        viewCount: p.viewCount,
+        downloadCount: p.downloadCount,
+        createdAt: p.createdAt,
+        deliveredAt: p.deliveredAt,
+      })),
+      bookings: bookings.map((b) => ({
+        id: b.id,
+        title: b.title,
+        status: b.status,
+        client: b.client,
+        startTime: b.startTime,
+        endTime: b.endTime,
+        location: b.location,
+        createdAt: b.createdAt,
+      })),
+      payments: payments.map((p) => ({
+        id: p.id,
+        amount: p.amountCents / 100,
+        currency: p.currency,
+        status: p.status,
+        gallery: p.project?.name,
+        description: p.description,
+        paidAt: p.paidAt,
+        createdAt: p.createdAt,
+      })),
+      invoices: invoices.map((i) => ({
+        id: i.id,
+        invoiceNumber: i.invoiceNumber,
+        status: i.status,
+        client: i.client,
+        subtotal: i.subtotalCents / 100,
+        tax: i.taxCents / 100,
+        total: i.totalCents / 100,
+        lineItems: i.lineItems.map((li) => ({
+          description: li.description,
+          quantity: li.quantity,
+          unitPrice: li.unitCents / 100,
+          total: li.totalCents / 100,
+        })),
+        createdAt: i.createdAt,
+        dueDate: i.dueDate,
+      })),
+      services: services.map((s) => ({
+        id: s.id,
+        name: s.name,
+        category: s.category,
+        price: s.priceCents / 100,
+        duration: s.duration,
+        isActive: s.isActive,
+      })),
+      propertyWebsites: propertyWebsites.map((pw) => ({
+        id: pw.id,
+        address: pw.address,
+        city: pw.city,
+        state: pw.state,
+        isPublished: pw.isPublished,
+        viewCount: pw.viewCount,
+        createdAt: pw.createdAt,
+      })),
+    };
+
+    return { success: true, data: exportData };
+  } catch (error) {
+    console.error("Error exporting data:", error);
+    return { success: false, error: "Failed to export data" };
+  }
+}
+
+/**
+ * Delete organization account and all associated data
+ * This is a destructive action that cannot be undone
+ */
+export async function deleteAccount(confirmationText: string) {
+  try {
+    const organizationId = await getOrganizationId();
+    const auth = await requireAuth();
+
+    // Verify the user is the owner
+    const membership = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId,
+        userId: auth.userId,
+        role: "owner",
+      },
+    });
+
+    if (!membership) {
+      return { success: false, error: "Only the owner can delete the account" };
+    }
+
+    // Verify confirmation text
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { name: true },
+    });
+
+    if (confirmationText !== `delete ${org?.name}`) {
+      return { success: false, error: "Confirmation text does not match" };
+    }
+
+    // Delete all related data in order (respecting foreign key constraints)
+    // Note: In production, you'd also need to:
+    // 1. Cancel Stripe subscriptions
+    // 2. Delete files from R2/S3
+    // 3. Remove from Clerk organization
+
+    await prisma.$transaction(async (tx) => {
+      // Delete property-related data
+      await tx.propertyLead.deleteMany({ where: { propertyWebsite: { project: { organizationId } } } });
+      await tx.propertyAnalytics.deleteMany({ where: { propertyWebsite: { project: { organizationId } } } });
+      await tx.marketingAsset.deleteMany({ where: { propertyWebsite: { project: { organizationId } } } });
+      await tx.propertyWebsite.deleteMany({ where: { project: { organizationId } } });
+
+      // Delete gallery-related data
+      await tx.galleryFavorite.deleteMany({ where: { project: { organizationId } } });
+      await tx.galleryComment.deleteMany({ where: { project: { organizationId } } });
+      await tx.deliveryLink.deleteMany({ where: { project: { organizationId } } });
+      await tx.asset.deleteMany({ where: { project: { organizationId } } });
+
+      // Delete invoice line items
+      await tx.invoiceLineItem.deleteMany({ where: { invoice: { organizationId } } });
+      await tx.invoice.deleteMany({ where: { organizationId } });
+
+      // Delete payments
+      await tx.payment.deleteMany({ where: { organizationId } });
+
+      // Delete booking-related data
+      await tx.bookingReminder.deleteMany({ where: { booking: { organizationId } } });
+      await tx.booking.deleteMany({ where: { organizationId } });
+
+      // Delete projects
+      await tx.project.deleteMany({ where: { organizationId } });
+
+      // Delete clients
+      await tx.client.deleteMany({ where: { organizationId } });
+
+      // Delete services
+      await tx.service.deleteMany({ where: { organizationId } });
+
+      // Delete activity logs
+      await tx.activityLog.deleteMany({ where: { organizationId } });
+
+      // Delete locations
+      await tx.location.deleteMany({ where: { organizationId } });
+
+      // Delete equipment
+      await tx.equipment.deleteMany({ where: { organizationId } });
+
+      // Delete organization members
+      await tx.organizationMember.deleteMany({ where: { organizationId } });
+
+      // Finally, delete the organization
+      await tx.organization.delete({ where: { id: organizationId } });
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    return { success: false, error: "Failed to delete account" };
+  }
+}
+
+/**
  * Get billing and usage stats
  */
 export async function getBillingStats() {

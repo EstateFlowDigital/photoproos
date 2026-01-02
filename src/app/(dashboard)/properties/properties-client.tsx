@@ -1,7 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { deletePropertyWebsite } from "@/lib/actions/property-websites";
 import type { PropertyWebsiteWithRelations } from "@/lib/actions/property-websites";
 
 interface PropertiesClientProps {
@@ -26,8 +38,12 @@ function formatDate(date: Date): string {
 }
 
 export function PropertiesClient({ websites }: PropertiesClientProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
+  const [isPending, startTransition] = useTransition();
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<PropertyWebsiteWithRelations | null>(null);
 
   const filteredWebsites = websites.filter((website) => {
     // Filter by status
@@ -47,6 +63,25 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
 
     return true;
   });
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+
+    startTransition(async () => {
+      try {
+        const result = await deletePropertyWebsite(deleteTarget.id);
+        if (result.success) {
+          showToast("Property website deleted", "success");
+          setDeleteTarget(null);
+          router.refresh();
+        } else {
+          showToast(result.error || "Failed to delete property website", "error");
+        }
+      } catch {
+        showToast("An error occurred", "error");
+      }
+    });
+  };
 
   return (
     <>
@@ -119,56 +154,127 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredWebsites.map((website) => (
-            <PropertyCard key={website.id} website={website} />
+            <PropertyCard key={website.id} website={website} onDelete={setDeleteTarget} />
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle className="text-[var(--error)]">Delete Property Website</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            <div className="space-y-4">
+              <div className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-4">
+                <div className="flex items-start gap-3">
+                  <WarningIcon className="h-5 w-5 text-[var(--error)] shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-[var(--error)]">
+                      You are about to delete this property website:
+                    </p>
+                    {deleteTarget && (
+                      <div className="mt-2 text-foreground">
+                        <p className="font-medium">{deleteTarget.address}</p>
+                        <p className="text-foreground-muted">
+                          {deleteTarget.city}, {deleteTarget.state} {deleteTarget.zipCode}
+                        </p>
+                      </div>
+                    )}
+                    <p className="mt-3 text-foreground-muted">
+                      This will permanently delete the property website and all associated leads. The original gallery will not be affected.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setDeleteTarget(null)}
+              className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isPending}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPending ? (
+                <>
+                  <LoadingSpinner className="h-4 w-4" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Property Website"
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
 
-function PropertyCard({ website }: { website: PropertyWebsiteWithRelations }) {
+function PropertyCard({ website, onDelete }: { website: PropertyWebsiteWithRelations; onDelete: (website: PropertyWebsiteWithRelations) => void }) {
   const coverImage = website.project.coverImageUrl || website.project.assets[0]?.thumbnailUrl;
 
   return (
-    <Link
-      href={`/properties/${website.id}`}
-      className="group overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--border-hover)]"
-    >
-      {/* Image Preview */}
-      <div className="relative aspect-[16/10] bg-[var(--background-tertiary)]">
-        {coverImage ? (
-          <img
-            src={coverImage}
-            alt={website.address}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <HomeIcon className="h-12 w-12 text-foreground-muted" />
+    <div className="group relative overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--border-hover)]">
+      {/* Delete Button - appears on hover */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDelete(website);
+        }}
+        className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-foreground-muted opacity-0 backdrop-blur-sm transition-all hover:bg-[var(--error)]/20 hover:text-[var(--error)] group-hover:opacity-100"
+        title="Delete property website"
+      >
+        <TrashIcon className="h-4 w-4" />
+      </button>
+
+      <Link href={`/properties/${website.id}`} className="block">
+        {/* Image Preview */}
+        <div className="relative aspect-[16/10] bg-[var(--background-tertiary)]">
+          {coverImage ? (
+            <img
+              src={coverImage}
+              alt={website.address}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <HomeIcon className="h-12 w-12 text-foreground-muted" />
+            </div>
+          )}
+
+          {/* Status Badge */}
+          <div className="absolute left-3 top-3">
+            <span
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                website.isPublished
+                  ? "bg-[var(--success)]/20 text-[var(--success)]"
+                  : "bg-foreground/10 text-foreground-secondary"
+              }`}
+            >
+              {website.isPublished ? "Published" : "Draft"}
+            </span>
           </div>
-        )}
 
-        {/* Status Badge */}
-        <div className="absolute left-3 top-3">
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-              website.isPublished
-                ? "bg-[var(--success)]/20 text-[var(--success)]"
-                : "bg-foreground/10 text-foreground-secondary"
-            }`}
-          >
-            {website.isPublished ? "Published" : "Draft"}
-          </span>
+          {/* Template Badge */}
+          <div className="absolute right-12 top-3">
+            <span className="rounded-full bg-background/80 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
+              {website.template.charAt(0).toUpperCase() + website.template.slice(1)}
+            </span>
+          </div>
         </div>
-
-        {/* Template Badge */}
-        <div className="absolute right-3 top-3">
-          <span className="rounded-full bg-background/80 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
-            {website.template.charAt(0).toUpperCase() + website.template.slice(1)}
-          </span>
-        </div>
-      </div>
 
       {/* Content */}
       <div className="p-4">
@@ -242,7 +348,8 @@ function PropertyCard({ website }: { website: PropertyWebsiteWithRelations }) {
           </span>
         </div>
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
@@ -361,6 +468,36 @@ function CalendarIcon({ className }: { className?: string }) {
         strokeWidth={2}
         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
       />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+      />
+    </svg>
+  );
+}
+
+function WarningIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function LoadingSpinner({ className }: { className?: string }) {
+  return (
+    <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
     </svg>
   );
 }

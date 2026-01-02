@@ -93,6 +93,15 @@ interface GallerySettings {
   allowComments: boolean;
 }
 
+interface InvoiceItem {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  amount: number;
+  dueDate: string | null;
+  createdAt: string;
+}
+
 interface Gallery {
   id: string;
   name: string;
@@ -115,22 +124,13 @@ interface Gallery {
   expiresAt?: string | null;
   isArchived?: boolean;
   teamMembers?: { id: string; name: string; role: string; avatarUrl?: string }[];
+  comments?: PhotoComment[];
+  invoices?: InvoiceItem[];
 }
 
 interface GalleryDetailClientProps {
   gallery: Gallery;
 }
-
-// Demo activity data
-const demoActivity: ActivityItem[] = [
-  { id: "a1", type: "created", description: "Gallery created", timestamp: "2024-12-15T10:30:00Z", user: "You" },
-  { id: "a2", type: "photos_added", description: "8 photos uploaded", timestamp: "2024-12-15T11:00:00Z", user: "You" },
-  { id: "a3", type: "edited", description: "Description updated", timestamp: "2024-12-16T09:15:00Z", user: "You" },
-  { id: "a4", type: "delivered", description: "Gallery delivered to client", timestamp: "2024-12-18T14:30:00Z", user: "You" },
-  { id: "a5", type: "viewed", description: "Client viewed gallery", timestamp: "2024-12-18T15:00:00Z" },
-  { id: "a6", type: "downloaded", description: "Client downloaded 3 photos", timestamp: "2024-12-18T15:10:00Z" },
-  { id: "a7", type: "payment", description: "Payment received ($450)", timestamp: "2024-12-18T15:12:00Z" },
-];
 
 // Default settings
 const defaultSettings: GallerySettings = {
@@ -142,43 +142,6 @@ const defaultSettings: GallerySettings = {
   allowFavorites: true,
   allowComments: false,
 };
-
-// Demo analytics data
-const demoAnalytics: GalleryAnalytics = {
-  totalViews: 127,
-  uniqueVisitors: 42,
-  totalDownloads: 38,
-  photoDownloads: [
-    { photoId: "1", count: 12 },
-    { photoId: "2", count: 8 },
-    { photoId: "3", count: 6 },
-  ],
-  viewsByDay: [
-    { date: "2024-12-18", views: 45 },
-    { date: "2024-12-19", views: 32 },
-    { date: "2024-12-20", views: 28 },
-    { date: "2024-12-21", views: 15 },
-    { date: "2024-12-22", views: 7 },
-  ],
-  avgTimeOnPage: 185, // seconds
-  deviceBreakdown: [
-    { device: "Desktop", percentage: 58 },
-    { device: "Mobile", percentage: 35 },
-    { device: "Tablet", percentage: 7 },
-  ],
-  topPhotos: [
-    { photoId: "1", views: 89, downloads: 12 },
-    { photoId: "2", views: 67, downloads: 8 },
-    { photoId: "3", views: 54, downloads: 6 },
-  ],
-};
-
-// Demo comments data
-const demoComments: PhotoComment[] = [
-  { id: "c1", author: "Sarah M.", text: "Love this shot! Can we get a larger print of this one?", timestamp: "2024-12-18T16:30:00Z", isClient: true },
-  { id: "c2", author: "You", text: "Absolutely! I'll add print options to your gallery.", timestamp: "2024-12-18T17:00:00Z", isClient: false },
-  { id: "c3", author: "Sarah M.", text: "The lighting here is perfect!", timestamp: "2024-12-19T10:15:00Z", isClient: true },
-];
 
 type TabType = "photos" | "activity" | "analytics" | "settings" | "invoices";
 
@@ -200,7 +163,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [favoritePhotos, setFavoritePhotos] = useState<Set<string>>(new Set());
   const [showCommentsPanel, setShowCommentsPanel] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState<PhotoComment[]>(demoComments);
+  const [comments, setComments] = useState<PhotoComment[]>(gallery.comments || []);
   const [photoFilter, setPhotoFilter] = useState<"all" | "favorites" | "commented">("all");
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -210,8 +173,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
-  const activity = gallery.activity || demoActivity;
-  const analytics = gallery.analytics || demoAnalytics;
+  const activity = gallery.activity || [];
+  const analytics = gallery.analytics;
+  const invoices = gallery.invoices || [];
 
   // Handle submitting a new comment
   const handleSubmitComment = () => {
@@ -604,6 +568,10 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   };
 
   const handleExportAnalytics = () => {
+    if (!analytics) {
+      showToast("No analytics data available", "error");
+      return;
+    }
     // Generate CSV from analytics data
     const csvRows = [
       ["Metric", "Value"],
@@ -774,11 +742,6 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const isExpiringSoon = daysUntilExpiration !== null && daysUntilExpiration <= 7 && daysUntilExpiration > 0;
   const isExpired = daysUntilExpiration !== null && daysUntilExpiration <= 0;
 
-  // Demo invoice data
-  const demoInvoices = gallery.status === "delivered" ? [
-    { id: "inv-001", number: "INV-2024-001", amount: gallery.priceCents, status: "paid", dueDate: "2024-12-25", paidDate: "2024-12-18" },
-  ] : [];
-
   return (
     <>
       {/* Expiration Warning Banner */}
@@ -894,9 +857,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                       {activity.length}
                     </span>
                   )}
-                  {tab === "analytics" && gallery.status === "delivered" && (
+                  {tab === "analytics" && gallery.status === "delivered" && analytics && (
                     <span className="ml-1.5 rounded-full bg-[var(--success)]/10 px-1.5 py-0.5 text-xs text-[var(--success)]">
-                      {analytics.totalViews}
+                      {analytics?.totalViews ?? 0}
                     </span>
                   )}
                 </button>
@@ -1030,9 +993,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     >
                       <CommentBubbleIcon className="h-4 w-4" />
                       Comments
-                      {demoComments.length > 0 && (
+                      {comments.length > 0 && (
                         <span className="rounded-full bg-[var(--primary)] px-1.5 py-0.5 text-xs text-white">
-                          {demoComments.length}
+                          {comments.length}
                         </span>
                       )}
                     </button>
@@ -1362,7 +1325,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
             <div className="space-y-6">
-              {gallery.status === "delivered" ? (
+              {gallery.status === "delivered" && analytics ? (
                 <>
                   {/* Analytics Header */}
                   <div className="flex items-center justify-between">
@@ -1667,31 +1630,45 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   </button>
                 </div>
 
-                {demoInvoices.length > 0 ? (
+                {invoices.length > 0 ? (
                   <div className="space-y-3">
-                    {demoInvoices.map((invoice) => (
-                      <div
+                    {invoices.map((invoice) => (
+                      <Link
                         key={invoice.id}
-                        className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
+                        href={`/invoices/${invoice.id}`}
+                        className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)]"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success)]/10">
-                            <InvoiceIcon className="h-5 w-5 text-[var(--success)]" />
+                          <div className={cn(
+                            "flex h-10 w-10 items-center justify-center rounded-lg",
+                            invoice.status === "paid" ? "bg-[var(--success)]/10" : "bg-[var(--warning)]/10"
+                          )}>
+                            <InvoiceIcon className={cn(
+                              "h-5 w-5",
+                              invoice.status === "paid" ? "text-[var(--success)]" : "text-[var(--warning)]"
+                            )} />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-foreground">{invoice.number}</p>
+                            <p className="text-sm font-medium text-foreground">{invoice.invoiceNumber}</p>
                             <p className="text-xs text-foreground-muted">
-                              Paid on {new Date(invoice.paidDate!).toLocaleDateString()}
+                              {invoice.dueDate ? `Due ${new Date(invoice.dueDate).toLocaleDateString()}` : `Created ${new Date(invoice.createdAt).toLocaleDateString()}`}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-foreground">{formatCurrency(invoice.amount)}</p>
-                          <span className="inline-flex items-center rounded-full bg-[var(--success)]/10 px-2 py-0.5 text-xs font-medium text-[var(--success)]">
-                            Paid
+                          <p className="text-sm font-bold text-foreground">{formatCurrency(invoice.amount * 100)}</p>
+                          <span className={cn(
+                            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize",
+                            invoice.status === "paid"
+                              ? "bg-[var(--success)]/10 text-[var(--success)]"
+                              : invoice.status === "overdue"
+                              ? "bg-[var(--error)]/10 text-[var(--error)]"
+                              : "bg-[var(--warning)]/10 text-[var(--warning)]"
+                          )}>
+                            {invoice.status}
                           </span>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
