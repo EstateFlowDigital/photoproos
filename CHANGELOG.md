@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Gallery-Property Integration**: Added "Create Property Website" and "View Property Website" buttons on real estate gallery detail pages
 - **Property Creation Flow**: Pre-select gallery when creating property website via `?galleryId=` URL parameter
+- **Auto-Link Auth**: Clerk users are now automatically linked to database users by email on first login, enabling seamless development with seeded data
+
+### Changed
+- **Seed Data**: Updated primary organization to "House & Home Photo" with cameron@houseandhomephoto.com as owner
+- **Database URL Parsing**: Added `getDatabaseUrl()` to parse Prisma Postgres URLs for local development with pg Pool adapter
+- **Prisma Config**: Added seed command configuration to `prisma.config.ts`
 
 ### Fixed
 - **Services**: Removed template restrictions - all services can now be edited, deleted, and toggled (previously blocked with "Cannot edit template services")
