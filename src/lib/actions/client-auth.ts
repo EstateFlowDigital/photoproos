@@ -45,13 +45,11 @@ export async function sendClientMagicLink(email: string): Promise<{
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + MAGIC_LINK_EXPIRY_MINUTES);
 
-    // Delete any existing sessions for this client to prevent token accumulation
+    // SECURITY FIX: Delete ALL existing sessions for this client
+    // This ensures single-session model and prevents token accumulation
     await prisma.clientSession.deleteMany({
       where: {
         clientId: client.id,
-        expiresAt: {
-          lt: new Date(), // Only delete expired ones
-        },
       },
     });
 
@@ -122,14 +120,22 @@ export async function validateMagicLinkToken(token: string): Promise<{
     const sessionExpiry = new Date();
     sessionExpiry.setDate(sessionExpiry.getDate() + SESSION_EXPIRY_DAYS);
 
-    // Update the session with the new token and longer expiry
-    await prisma.clientSession.update({
-      where: { id: session.id },
-      data: {
-        token: sessionToken,
-        expiresAt: sessionExpiry,
-      },
-    });
+    // SECURITY FIX: Delete the magic link token (one-time use) and create a new session
+    // This prevents token reuse if intercepted
+    await prisma.$transaction([
+      // Delete the magic link session (one-time use)
+      prisma.clientSession.delete({
+        where: { id: session.id },
+      }),
+      // Create a new long-lived session
+      prisma.clientSession.create({
+        data: {
+          clientId: session.clientId,
+          token: sessionToken,
+          expiresAt: sessionExpiry,
+        },
+      }),
+    ]);
 
     // Set the session cookie
     const cookieStore = await cookies();

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { favoritesRatelimit, checkRateLimit, getClientIP } from "@/lib/ratelimit";
 
 const SESSION_COOKIE_NAME = "gallery_session";
 
@@ -28,6 +29,22 @@ async function getSessionId(): Promise<string> {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(favoritesRatelimit, clientIP);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Remaining": String(rateLimitResult.remaining || 0),
+            "X-RateLimit-Reset": String(rateLimitResult.reset || 0),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { assetId, galleryId, email } = body;
 
@@ -73,15 +90,11 @@ export async function POST(request: NextRequest) {
     const sessionId = await getSessionId();
 
     // Check if already favorited
+    // Use email-based lookup if email provided, otherwise session-based
     const existingFavorite = await prisma.galleryFavorite.findFirst({
-      where: {
-        projectId: galleryId,
-        assetId,
-        OR: [
-          { clientEmail: email || null },
-          { sessionId: email ? undefined : sessionId },
-        ],
-      },
+      where: email
+        ? { projectId: galleryId, assetId, clientEmail: email }
+        : { projectId: galleryId, assetId, sessionId },
     });
 
     let isFavorited: boolean;
@@ -108,13 +121,9 @@ export async function POST(request: NextRequest) {
 
     // Get updated favorite count for this gallery + session/email
     const favorites = await prisma.galleryFavorite.findMany({
-      where: {
-        projectId: galleryId,
-        OR: [
-          { clientEmail: email || null },
-          { sessionId: email ? undefined : sessionId },
-        ],
-      },
+      where: email
+        ? { projectId: galleryId, clientEmail: email }
+        : { projectId: galleryId, sessionId },
       select: { assetId: true },
     });
 
@@ -153,6 +162,22 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(favoritesRatelimit, clientIP);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Remaining": String(rateLimitResult.remaining || 0),
+            "X-RateLimit-Reset": String(rateLimitResult.reset || 0),
+          },
+        }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const galleryId = searchParams.get("galleryId");
     const email = searchParams.get("email");
@@ -166,14 +191,11 @@ export async function GET(request: NextRequest) {
 
     const sessionId = await getSessionId();
 
+    // Use email-based lookup if email provided, otherwise session-based
     const favorites = await prisma.galleryFavorite.findMany({
-      where: {
-        projectId: galleryId,
-        OR: [
-          { clientEmail: email || null },
-          { sessionId: email ? undefined : sessionId },
-        ],
-      },
+      where: email
+        ? { projectId: galleryId, clientEmail: email }
+        : { projectId: galleryId, sessionId },
       select: { assetId: true },
     });
 

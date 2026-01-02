@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import archiver from "archiver";
-import { Readable } from "stream";
+import { batchDownloadRatelimit, checkRateLimit, getClientIP } from "@/lib/ratelimit";
 
 /**
  * POST /api/download/batch
@@ -11,6 +11,22 @@ import { Readable } from "stream";
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(batchDownloadRatelimit, clientIP);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many download requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Remaining": String(rateLimitResult.remaining || 0),
+            "X-RateLimit-Reset": String(rateLimitResult.reset || 0),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { galleryId, assetIds } = body;
 
@@ -132,29 +148,30 @@ export async function POST(request: NextRequest) {
     // Combine all chunks into a single buffer
     const zipBuffer = Buffer.concat(chunks);
 
-    // Record the downloads (fire and forget)
-    prisma.project.update({
-      where: { id: gallery.id },
-      data: { downloadCount: { increment: gallery.assets.length } },
-    }).catch((err) => {
-      console.error("Failed to record downloads:", err);
-    });
-
-    // Log activity
-    prisma.activityLog.create({
-      data: {
-        organizationId: gallery.organizationId,
-        type: "file_downloaded",
-        description: `Batch download: ${gallery.assets.length} photos`,
-        projectId: gallery.id,
-        metadata: {
-          assetCount: gallery.assets.length,
-          assetIds: assetIds,
-        },
-      },
-    }).catch((err) => {
-      console.error("Failed to log download activity:", err);
-    });
+    // Record the downloads and log activity (awaited for reliability)
+    try {
+      await Promise.all([
+        prisma.project.update({
+          where: { id: gallery.id },
+          data: { downloadCount: { increment: gallery.assets.length } },
+        }),
+        prisma.activityLog.create({
+          data: {
+            organizationId: gallery.organizationId,
+            type: "file_downloaded",
+            description: `Batch download: ${gallery.assets.length} photos`,
+            projectId: gallery.id,
+            metadata: {
+              assetCount: gallery.assets.length,
+              assetIds: assetIds,
+            },
+          },
+        }),
+      ]);
+    } catch (err) {
+      // Log but don't fail the download
+      console.error("Failed to record download analytics:", err);
+    }
 
     // Create the response with the ZIP file
     const response = new NextResponse(zipBuffer, {

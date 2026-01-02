@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { commentsRatelimit, checkRateLimit, getClientIP } from "@/lib/ratelimit";
 
 /**
  * POST /api/gallery/comment
@@ -9,6 +10,22 @@ import { prisma } from "@/lib/db";
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(commentsRatelimit, clientIP);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Remaining": String(rateLimitResult.remaining || 0),
+            "X-RateLimit-Reset": String(rateLimitResult.reset || 0),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { galleryId, assetId, clientName, clientEmail, content } = body;
 

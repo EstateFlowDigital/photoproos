@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { PaymentStatus } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
+import { sendEmail } from "@/lib/email/resend";
+import { PaymentReminderEmail } from "@/emails/payment-reminder";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -278,16 +280,57 @@ export async function sendPaymentReminder(id: string): Promise<{ success: boolea
       return { success: false, error: "Payment has already been paid" };
     }
 
-    // TODO: Implement actual email sending via Resend, SendGrid, etc.
-    // For now, we'll just log and return success
-    console.log(`[Payment Reminder] Would send reminder to ${clientEmail} for payment ${id}`);
-    console.log(`Amount: $${(payment.amountCents / 100).toFixed(2)}`);
-    console.log(`Description: ${payment.description || payment.project?.name}`);
+    // Get organization name for the email
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { name: true },
+    });
 
-    // In production, you would:
-    // 1. Send email via email service (Resend, SendGrid, etc.)
-    // 2. Track the reminder in an activity log
-    // 3. Update lastReminderSentAt field
+    // Generate payment URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
+    const paymentUrl = `${baseUrl}/pay/${id}`;
+
+    // Check if payment is overdue
+    const isOverdue = payment.status === "overdue";
+
+    // Send the payment reminder email
+    const emailResult = await sendEmail({
+      to: clientEmail,
+      subject: isOverdue
+        ? `Payment Overdue: ${payment.project?.name || "Your Gallery"}`
+        : `Payment Reminder: ${payment.project?.name || "Your Gallery"}`,
+      react: PaymentReminderEmail({
+        clientName: payment.project?.client?.fullName || "there",
+        galleryName: payment.project?.name || "Your Gallery",
+        paymentUrl,
+        amountCents: payment.amountCents,
+        currency: "USD",
+        photographerName: organization?.name || "Your Photographer",
+        isOverdue,
+      }),
+    });
+
+    if (!emailResult.success) {
+      console.error("Failed to send payment reminder email:", emailResult.error);
+      return { success: false, error: "Failed to send reminder email" };
+    }
+
+    // Log the activity
+    await prisma.activityLog.create({
+      data: {
+        organizationId,
+        type: "email_sent",
+        description: `Payment reminder sent to ${clientEmail}`,
+        projectId: payment.projectId,
+        metadata: {
+          emailType: "payment_reminder",
+          paymentId: id,
+          amountCents: payment.amountCents,
+          clientEmail,
+          isOverdue,
+        },
+      },
+    });
 
     return { success: true };
   } catch (error) {

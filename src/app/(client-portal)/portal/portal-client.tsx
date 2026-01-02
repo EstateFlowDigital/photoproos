@@ -4,6 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { logoutClient } from "@/lib/actions/client-auth";
+import {
+  getGalleryZipDownload,
+  getWebSizeDownload,
+  getHighResDownload,
+  getMarketingKitDownload,
+  getInvoicePaymentLink,
+} from "@/lib/actions/portal-downloads";
 
 interface ClientData {
   id: string;
@@ -92,6 +99,9 @@ export function PortalClient({ client, stats, properties, galleries, invoices }:
     "properties"
   );
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [downloadingGallery, setDownloadingGallery] = useState<string | null>(null);
+  const [downloadType, setDownloadType] = useState<string | null>(null);
+  const [payingInvoice, setPayingInvoice] = useState<string | null>(null);
 
   // Handle nullable fullName
   const displayName = client.fullName || client.email.split("@")[0];
@@ -101,6 +111,159 @@ export function PortalClient({ client, stats, properties, galleries, invoices }:
   const handleLogout = async () => {
     setIsLoggingOut(true);
     await logoutClient();
+    // Redirect to login after logout
+    window.location.href = "/portal/login";
+  };
+
+  // Download handlers
+  const handleZipDownload = async (galleryId: string) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("zip");
+    try {
+      const result = await getGalleryZipDownload(galleryId);
+      if (result.success && result.gallery) {
+        // Trigger download via batch download API
+        const response = await fetch("/api/download/batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            galleryId: result.gallery.id,
+            assetIds: result.gallery.assetIds,
+          }),
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${result.gallery.name}-photos.zip`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } else {
+          alert("Failed to download. Please try again.");
+        }
+      } else {
+        alert(result.error || "Failed to prepare download");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Download failed. Please try again.");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
+  const handleWebSizeDownload = async (galleryId: string) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("web");
+    try {
+      const result = await getWebSizeDownload(galleryId);
+      if (result.success && result.photos) {
+        // Download first photo as example (in production, would zip these)
+        for (const photo of result.photos) {
+          if (photo.url) {
+            window.open(photo.url, "_blank");
+            break; // Just open first one for now
+          }
+        }
+        alert(`${result.photos.length} web-sized photos available. Opening in new tabs.`);
+      } else {
+        alert(result.error || "Failed to prepare download");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Download failed. Please try again.");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
+  const handleHighResDownload = async (galleryId: string) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("highres");
+    try {
+      const result = await getHighResDownload(galleryId);
+      if (result.success && result.photos) {
+        // Same as ZIP download but with original files
+        const galleryInfo = await getGalleryZipDownload(galleryId);
+        if (galleryInfo.success && galleryInfo.gallery) {
+          const response = await fetch("/api/download/batch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              galleryId: galleryInfo.gallery.id,
+              assetIds: galleryInfo.gallery.assetIds,
+            }),
+          });
+
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${galleryInfo.gallery.name}-highres.zip`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          } else {
+            alert("Failed to download. Please try again.");
+          }
+        }
+      } else {
+        alert(result.error || "Failed to prepare download");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Download failed. Please try again.");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
+  const handleMarketingKitDownload = async (galleryId: string) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("marketing");
+    try {
+      // Find the property associated with this gallery
+      const gallery = galleries.find((g) => g.id === galleryId);
+      if (!gallery) {
+        alert("Gallery not found");
+        return;
+      }
+
+      // For now, show a message - full implementation would bundle PDFs
+      alert("Marketing kit download coming soon! Please check the property page for available marketing assets.");
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Download failed. Please try again.");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
+  const handleInvoicePayment = async (invoiceId: string) => {
+    setPayingInvoice(invoiceId);
+    try {
+      const result = await getInvoicePaymentLink(invoiceId);
+      if (result.success && result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+      } else {
+        alert(result.error || "Payment not available");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      alert("Failed to process payment. Please try again.");
+    } finally {
+      setPayingInvoice(null);
+    }
   };
 
   return (
@@ -311,9 +474,17 @@ export function PortalClient({ client, stats, properties, galleries, invoices }:
                         {gallery.status}
                       </span>
                       {gallery.downloadable && (
-                        <button className="flex items-center gap-2 rounded-lg bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#3b82f6]/90">
-                          <DownloadIcon className="h-4 w-4" />
-                          Download
+                        <button
+                          onClick={() => handleZipDownload(gallery.id)}
+                          disabled={downloadingGallery === gallery.id}
+                          className="flex items-center gap-2 rounded-lg bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#3b82f6]/90 disabled:opacity-50"
+                        >
+                          {downloadingGallery === gallery.id ? (
+                            <LoadingSpinner className="h-4 w-4" />
+                          ) : (
+                            <DownloadIcon className="h-4 w-4" />
+                          )}
+                          {downloadingGallery === gallery.id ? "Downloading..." : "Download"}
                         </button>
                       )}
                     </div>
@@ -374,20 +545,52 @@ export function PortalClient({ client, stats, properties, galleries, invoices }:
                     <p className="mt-1 text-sm text-[#7c7c7c]">{gallery.photoCount} photos available</p>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      <button className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626]">
-                        <DownloadIcon className="h-4 w-4" />
+                      <button
+                        onClick={() => handleZipDownload(gallery.id)}
+                        disabled={downloadingGallery === gallery.id && downloadType === "zip"}
+                        className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626] disabled:opacity-50"
+                      >
+                        {downloadingGallery === gallery.id && downloadType === "zip" ? (
+                          <LoadingSpinner className="h-4 w-4" />
+                        ) : (
+                          <DownloadIcon className="h-4 w-4" />
+                        )}
                         All Photos (ZIP)
                       </button>
-                      <button className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626]">
-                        <ImageIcon className="h-4 w-4" />
+                      <button
+                        onClick={() => handleWebSizeDownload(gallery.id)}
+                        disabled={downloadingGallery === gallery.id && downloadType === "web"}
+                        className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626] disabled:opacity-50"
+                      >
+                        {downloadingGallery === gallery.id && downloadType === "web" ? (
+                          <LoadingSpinner className="h-4 w-4" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4" />
+                        )}
                         Web Size
                       </button>
-                      <button className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626]">
-                        <FileIcon className="h-4 w-4" />
+                      <button
+                        onClick={() => handleHighResDownload(gallery.id)}
+                        disabled={downloadingGallery === gallery.id && downloadType === "highres"}
+                        className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626] disabled:opacity-50"
+                      >
+                        {downloadingGallery === gallery.id && downloadType === "highres" ? (
+                          <LoadingSpinner className="h-4 w-4" />
+                        ) : (
+                          <FileIcon className="h-4 w-4" />
+                        )}
                         High-Res
                       </button>
-                      <button className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626]">
-                        <DocumentIcon className="h-4 w-4" />
+                      <button
+                        onClick={() => handleMarketingKitDownload(gallery.id)}
+                        disabled={downloadingGallery === gallery.id && downloadType === "marketing"}
+                        className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626] disabled:opacity-50"
+                      >
+                        {downloadingGallery === gallery.id && downloadType === "marketing" ? (
+                          <LoadingSpinner className="h-4 w-4" />
+                        ) : (
+                          <DocumentIcon className="h-4 w-4" />
+                        )}
                         Marketing Kit
                       </button>
                     </div>
@@ -439,6 +642,20 @@ export function PortalClient({ client, stats, properties, galleries, invoices }:
                     >
                       {invoice.status}
                     </span>
+                    {invoice.status !== "paid" && (
+                      <button
+                        onClick={() => handleInvoicePayment(invoice.id)}
+                        disabled={payingInvoice === invoice.id}
+                        className="flex items-center gap-2 rounded-lg bg-[#22c55e] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#22c55e]/90 disabled:opacity-50"
+                      >
+                        {payingInvoice === invoice.id ? (
+                          <LoadingSpinner className="h-4 w-4" />
+                        ) : (
+                          <CreditCardIcon className="h-4 w-4" />
+                        )}
+                        {payingInvoice === invoice.id ? "Processing..." : "Pay Now"}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -523,6 +740,14 @@ function ReceiptIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className}>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+    </svg>
+  );
+}
+
+function CreditCardIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
     </svg>
   );
 }

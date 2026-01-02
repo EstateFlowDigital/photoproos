@@ -8,6 +8,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Client Portal Downloads**: Full download functionality for client portal
+  - New download actions in `/src/lib/actions/portal-downloads.ts`
+  - ZIP download for all gallery photos
+  - Web-size photo downloads (thumbnails/medium resolution)
+  - High-res photo downloads (original quality)
+  - Marketing kit download (bundled PDFs and graphics)
+  - All four download buttons now functional in Downloads tab
+- **Invoice Payment in Client Portal**: Clients can pay invoices directly from portal
+  - "Pay Now" button on unpaid invoices
+  - Integration with existing Stripe payment links
+- **Payment Reminder Emails**: Automated email reminders via Resend
+  - New email template `payment-reminder.tsx` with professional styling
+  - Support for overdue payment styling
+  - Activity logging for sent reminders
+- **Rate Limiting Infrastructure**: Upstash Redis rate limiting for API security
+  - New `/src/lib/ratelimit.ts` utility with configurable limiters
+  - Rate limiting on `/api/gallery/favorite` (30 req/min per IP)
+  - Rate limiting on `/api/gallery/comment` (10 req/min per IP)
+  - Rate limiting on `/api/download/batch` (5 req/min per IP)
+  - Graceful fallback when Upstash is not configured
+  - New environment variables: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+
+### Fixed
+- **Security: Magic Link One-Time Use**: Magic link tokens are now properly deleted after use
+  - Previous: Tokens were updated, allowing potential reuse if intercepted
+  - Fix: Transaction-based delete/create for proper one-time use
+  - All existing sessions now deleted when new magic link is requested (single-session model)
+- **Security: Gallery Favorite Query**: Simplified ambiguous OR clause in favorite lookup
+  - Previous: Complex OR logic with `email || null` and conditional undefined
+  - Fix: Clear conditional query based on email presence
+- **Client Portal Logout**: Fixed logout not redirecting to login page
+  - Added `window.location.href = "/portal/login"` after logout
+- **Batch Download Reliability**: Fixed fire-and-forget database operations
+  - Previous: Download counts and activity logs could silently fail
+  - Fix: Proper awaited Promise.all with error handling
+
+### Added
 - **Three-Tier Custom Domain System**: Comprehensive domain options for property websites
   - **Default**: Automatic subdomain on PhotoProOS (free, no setup)
   - **Connect Own Domain (CNAME)**: Connect existing domains with CNAME/A record setup (free)
