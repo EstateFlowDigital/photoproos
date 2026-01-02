@@ -13,6 +13,11 @@ import {
   updateLeadStatus,
 } from "@/lib/actions/property-websites";
 import {
+  generatePropertyFlyer,
+  generateSocialSquare,
+  type SocialVariant,
+} from "@/lib/actions/marketing-assets";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -67,7 +72,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const [activeTab, setActiveTab] = useState<"overview" | "leads" | "analytics" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "leads" | "analytics" | "marketing" | "settings">("overview");
   const [isPublished, setIsPublished] = useState(website.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -77,6 +82,11 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
   const [showPrice, setShowPrice] = useState(website.showPrice);
   const [showAgent, setShowAgent] = useState(website.showAgent);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  // Marketing state
+  const [isGeneratingFlyer, setIsGeneratingFlyer] = useState(false);
+  const [isGeneratingSocial, setIsGeneratingSocial] = useState(false);
+  const [selectedSocialVariant, setSelectedSocialVariant] = useState<SocialVariant>("listing");
 
   const handleTogglePublish = async () => {
     setIsPublishing(true);
@@ -142,6 +152,84 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
       }
     } catch {
       showToast("Failed to update lead status", "error");
+    }
+  };
+
+  const handleGenerateFlyer = async () => {
+    setIsGeneratingFlyer(true);
+    try {
+      const result = await generatePropertyFlyer({
+        propertyWebsiteId: website.id,
+        branded: isBranded,
+      });
+
+      if (result.success && result.pdfBuffer) {
+        // Convert base64 to blob and download
+        const byteCharacters = atob(result.pdfBuffer);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${website.address.replace(/\s+/g, "-")}-flyer.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast("Flyer generated successfully!", "success");
+      } else {
+        showToast(result.error || "Failed to generate flyer", "error");
+      }
+    } catch (error) {
+      showToast("Failed to generate flyer", "error");
+    } finally {
+      setIsGeneratingFlyer(false);
+    }
+  };
+
+  const handleGenerateSocial = async () => {
+    setIsGeneratingSocial(true);
+    try {
+      const result = await generateSocialSquare({
+        propertyWebsiteId: website.id,
+        variant: selectedSocialVariant,
+      });
+
+      if (result.success && result.pdfBuffer) {
+        // Convert base64 to blob and download
+        const byteCharacters = atob(result.pdfBuffer);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${website.address.replace(/\s+/g, "-")}-${selectedSocialVariant}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast("Social graphic generated successfully!", "success");
+      } else {
+        showToast(result.error || "Failed to generate social graphic", "error");
+      }
+    } catch (error) {
+      showToast("Failed to generate social graphic", "error");
+    } finally {
+      setIsGeneratingSocial(false);
     }
   };
 
@@ -213,7 +301,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
 
           {/* Tabs */}
           <div className="mt-6 flex items-center gap-1 border-t border-[var(--card-border)] pt-4">
-            {(["overview", "leads", "analytics", "settings"] as const).map((tab) => (
+            {(["overview", "leads", "analytics", "marketing", "settings"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -596,6 +684,142 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
           </div>
         )}
 
+        {/* Marketing Tab */}
+        {activeTab === "marketing" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Marketing Kit</h2>
+                <p className="mt-1 text-foreground-secondary">
+                  Generate print-ready flyers and social media graphics for this property
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Property Flyer */}
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--primary)]/10">
+                    <DocumentIcon className="h-6 w-6 text-[var(--primary)]" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">Property Flyer</h3>
+                    <p className="mt-1 text-sm text-foreground-secondary">
+                      Print-ready 8.5x11 flyer with property photos, details, and agent info
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center justify-between rounded-lg bg-[var(--background-tertiary)] p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-16 w-12 rounded bg-[var(--background-hover)]" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Portrait Layout</p>
+                        <p className="text-xs text-foreground-muted">8.5" x 11" PDF</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleGenerateFlyer}
+                      disabled={isGeneratingFlyer}
+                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                    >
+                      {isGeneratingFlyer ? (
+                        <>
+                          <LoadingSpinner className="h-4 w-4" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <DownloadIcon className="h-4 w-4" />
+                          Download
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Media Graphics */}
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--ai)]/10">
+                    <ShareIcon className="h-6 w-6 text-[var(--ai)]" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">Social Media Graphics</h3>
+                    <p className="mt-1 text-sm text-foreground-secondary">
+                      Square graphics optimized for Instagram and Facebook
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-foreground">
+                      Style
+                    </label>
+                    <select
+                      value={selectedSocialVariant}
+                      onChange={(e) => setSelectedSocialVariant(e.target.value as SocialVariant)}
+                      className="h-10 w-full rounded-lg border border-[var(--card-border)] bg-background px-3 text-foreground"
+                    >
+                      <option value="listing">For Sale</option>
+                      <option value="just_listed">Just Listed</option>
+                      <option value="just_sold">Just Sold</option>
+                      <option value="open_house">Open House</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg bg-[var(--background-tertiary)] p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded bg-[var(--background-hover)]" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Square (1080x1080)</p>
+                        <p className="text-xs text-foreground-muted">Instagram, Facebook</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleGenerateSocial}
+                      disabled={isGeneratingSocial}
+                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--ai)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--ai)]/90 disabled:opacity-50"
+                    >
+                      {isGeneratingSocial ? (
+                        <>
+                          <LoadingSpinner className="h-4 w-4" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <DownloadIcon className="h-4 w-4" />
+                          Download
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Tips */}
+            <div className="rounded-xl border border-[var(--warning)]/30 bg-[var(--warning)]/5 p-6">
+              <div className="flex gap-3">
+                <LightbulbIcon className="h-5 w-5 flex-shrink-0 text-[var(--warning)]" />
+                <div>
+                  <h4 className="font-medium text-[var(--warning)]">Tips for Marketing Materials</h4>
+                  <ul className="mt-2 space-y-1 text-sm text-foreground-secondary">
+                    <li>• Use "Just Listed" graphics when a property first hits the market</li>
+                    <li>• "Just Sold" graphics build social proof and attract new clients</li>
+                    <li>• Print flyers for open houses and client meetings</li>
+                    <li>• Share social graphics within 24 hours of listing for maximum engagement</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Settings Tab */}
         {activeTab === "settings" && (
           <div className="max-w-2xl space-y-6">
@@ -826,6 +1050,38 @@ function LoadingSpinner({ className }: { className?: string }) {
     <svg className={`animate-spin ${className}`} fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function DocumentIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
+function ShareIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+    </svg>
+  );
+}
+
+function LightbulbIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
     </svg>
   );
 }

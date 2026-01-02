@@ -65,6 +65,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Shows galleries with photo previews and download buttons
   - Shows invoices with status badges
   - Added logout functionality with session clearing
+- **Marketing Kit Generation**: PDF generation for property marketing materials
+  - Installed `@react-pdf/renderer` for server-side PDF generation
+  - Created `/lib/marketing/templates/flyer-portrait.tsx` - Portrait flyer PDF template
+    - 8.5x11 letter size with hero image section
+    - Property details, stats, features, and agent info
+    - Branded/unbranded options
+  - Created `/lib/marketing/templates/social-square.tsx` - Social media graphic template
+    - 1080x1080 square format for Instagram/Facebook
+    - Variants: listing, just_listed, just_sold, open_house
+    - Property overlay with price, address, and stats
+  - Created `/lib/actions/marketing-assets.ts` - Server actions
+    - `generatePropertyFlyer()` - Generate portrait flyer PDF
+    - `generateSocialSquare()` - Generate social media graphic
+    - `saveMarketingAsset()` - Save generated assets to database
+    - `getPropertyMarketingAssets()` - Fetch saved assets
+    - `deleteMarketingAsset()` - Remove saved assets
+  - Added Marketing tab to property detail page
+    - Generate flyers with one-click download
+    - Generate social graphics with variant selection
+    - View and manage saved marketing assets
 
 ### Changed
 - **Error Boundaries**: Added error.tsx files for graceful error handling
