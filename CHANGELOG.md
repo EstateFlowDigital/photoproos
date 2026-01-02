@@ -8,19 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Developer Tools for Database Seeding**
-  - New Developer Tools page at `/settings/developer`
-  - "Seed Database" button creates sample data for testing:
-    - 8 sample clients with contact info
+- **Comprehensive Database Seeding for Testing**
+  - Developer Tools page at `/settings/developer`
+  - "Seed Database" button creates comprehensive sample data:
+    - 8 sample clients with contact info and tags
     - 7 client tags (VIP, Repeat Client, etc.)
     - 6 photography services with pricing
-    - 8 projects with various statuses
-    - 6 calendar bookings
-    - 5 invoices with line items
+    - 8 projects/galleries with various statuses
+    - Sample photos (4-8 per gallery) using real property images
+    - 6 calendar bookings with various statuses
+    - 5 invoices with line items and payments
     - 4 contracts with signers
+    - 4 property websites with leads and 7-day analytics
+    - 6 equipment items (cameras, lenses, drones, lighting)
+    - 4 availability blocks (holidays, time off, maintenance)
+    - Task board with 8 sample tasks across columns
     - Client communications (emails, calls, notes)
-    - 10 activity log entries (for dashboard activity feed)
-    - 8 notifications (for notification panel)
+    - Activity log entries and notifications
   - "Clear All Data" button removes all organization data
   - Quick links to explore seeded data
   - Server actions in `/src/lib/actions/seed.ts`

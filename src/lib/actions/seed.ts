@@ -458,6 +458,352 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
     }
     counts.notifications = notifications;
 
+    // 12. Create Property Websites with Leads and Analytics
+    const allProjects = await prisma.project.findMany({
+      where: { organizationId },
+      take: 4,
+      select: { id: true, name: true },
+    });
+
+    let propertyWebsites = 0;
+    let propertyLeads = 0;
+    let propertyAnalyticsCount = 0;
+
+    for (let i = 0; i < Math.min(allProjects.length, 4); i++) {
+      const project = allProjects[i];
+      const address = PROPERTY_ADDRESSES[i % PROPERTY_ADDRESSES.length];
+      const slug = `${address.city.toLowerCase().replace(/\s/g, "-")}-${address.address.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-")}-${Date.now()}-${i}`;
+
+      // Check if website already exists for this project
+      const existingWebsite = await prisma.propertyWebsite.findUnique({
+        where: { projectId: project.id },
+      });
+
+      if (!existingWebsite) {
+        const propertyWebsite = await prisma.propertyWebsite.create({
+          data: {
+            projectId: project.id,
+            address: address.address,
+            city: address.city,
+            state: address.state,
+            zipCode: address.zip,
+            price: (500000 + Math.floor(Math.random() * 2000000)) * 100, // $500k-$2.5M in cents
+            beds: Math.floor(Math.random() * 4) + 2,
+            baths: Math.floor(Math.random() * 3) + 1.5,
+            sqft: Math.floor(Math.random() * 3000) + 1500,
+            yearBuilt: Math.floor(Math.random() * 30) + 1990,
+            propertyType: "single_family",
+            headline: `Stunning ${project.name}`,
+            description: `Beautiful property featuring modern amenities and breathtaking views. This ${address.address} home offers the perfect blend of luxury and comfort.`,
+            features: ["Hardwood Floors", "Gourmet Kitchen", "Private Pool", "Mountain Views", "Smart Home"],
+            template: "modern",
+            isPublished: i < 3, // First 3 are published
+            slug,
+            viewCount: Math.floor(Math.random() * 500) + 50,
+          },
+        });
+        propertyWebsites++;
+
+        // Create leads for this property
+        const leadNames = [
+          { name: "John Buyer", email: "john.buyer@email.com", phone: "(555) 111-2222" },
+          { name: "Lisa Home", email: "lisa.home@email.com", phone: "(555) 333-4444" },
+          { name: "Mike Investor", email: "mike.investor@email.com", phone: "(555) 555-6666" },
+        ];
+
+        const temperatures = ["hot", "warm", "cold"] as const;
+        const leadStatuses = ["new", "contacted", "qualified", "closed"] as const;
+
+        for (let j = 0; j < leadNames.length; j++) {
+          const lead = leadNames[j];
+          await prisma.propertyLead.create({
+            data: {
+              propertyWebsiteId: propertyWebsite.id,
+              name: lead.name,
+              email: lead.email,
+              phone: lead.phone,
+              message: `I'm interested in the property at ${address.address}. Please contact me with more information.`,
+              source: ["website", "social", "email"][j % 3],
+              status: leadStatuses[j % leadStatuses.length],
+              score: Math.floor(Math.random() * 60) + 40,
+              temperature: temperatures[j % temperatures.length],
+              pageViews: Math.floor(Math.random() * 20) + 5,
+              photoViews: Math.floor(Math.random() * 50) + 10,
+              tourClicks: Math.floor(Math.random() * 5),
+              totalTimeSeconds: Math.floor(Math.random() * 600) + 60,
+              lastActivityAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+            },
+          });
+          propertyLeads++;
+        }
+
+        // Create analytics for last 7 days
+        for (let day = 0; day < 7; day++) {
+          const date = new Date();
+          date.setDate(date.getDate() - day);
+          date.setHours(0, 0, 0, 0);
+
+          await prisma.propertyAnalytics.create({
+            data: {
+              propertyWebsiteId: propertyWebsite.id,
+              date,
+              pageViews: Math.floor(Math.random() * 100) + 10,
+              uniqueVisitors: Math.floor(Math.random() * 50) + 5,
+              avgTimeOnPage: Math.floor(Math.random() * 180) + 30,
+              tourClicks: Math.floor(Math.random() * 10),
+              photoViews: Math.floor(Math.random() * 200) + 20,
+              socialShares: Math.floor(Math.random() * 5),
+              directTraffic: Math.floor(Math.random() * 30) + 5,
+              socialTraffic: Math.floor(Math.random() * 20) + 2,
+              emailTraffic: Math.floor(Math.random() * 15) + 1,
+              searchTraffic: Math.floor(Math.random() * 25) + 3,
+              mobileViews: Math.floor(Math.random() * 40) + 10,
+              desktopViews: Math.floor(Math.random() * 50) + 15,
+              tabletViews: Math.floor(Math.random() * 10) + 2,
+            },
+          });
+          propertyAnalyticsCount++;
+        }
+      }
+    }
+    counts.propertyWebsites = propertyWebsites;
+    counts.propertyLeads = propertyLeads;
+    counts.propertyAnalytics = propertyAnalyticsCount;
+
+    // 13. Create Assets (sample photos for galleries)
+    const SAMPLE_PHOTO_URLS = [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1200",
+      "https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=1200",
+      "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1200",
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200",
+      "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200",
+    ];
+
+    let assets = 0;
+    for (const project of allProjects) {
+      const existingAssets = await prisma.asset.count({
+        where: { projectId: project.id },
+      });
+
+      if (existingAssets === 0) {
+        const numPhotos = Math.floor(Math.random() * 5) + 4; // 4-8 photos per gallery
+        for (let i = 0; i < numPhotos; i++) {
+          await prisma.asset.create({
+            data: {
+              projectId: project.id,
+              filename: `photo_${i + 1}.jpg`,
+              originalUrl: SAMPLE_PHOTO_URLS[i % SAMPLE_PHOTO_URLS.length],
+              thumbnailUrl: SAMPLE_PHOTO_URLS[i % SAMPLE_PHOTO_URLS.length].replace("w=1200", "w=300"),
+              mediumUrl: SAMPLE_PHOTO_URLS[i % SAMPLE_PHOTO_URLS.length].replace("w=1200", "w=600"),
+              mimeType: "image/jpeg",
+              sizeBytes: Math.floor(Math.random() * 5000000) + 1000000, // 1-6MB
+              width: 1200,
+              height: 800,
+              sortOrder: i,
+            },
+          });
+          assets++;
+        }
+      }
+    }
+    counts.assets = assets;
+
+    // 14. Create Payments for invoices
+    const paidInvoices = await prisma.invoice.findMany({
+      where: { organizationId, status: "paid" },
+      include: { client: true },
+      take: 3,
+    });
+
+    let payments = 0;
+    for (const invoice of paidInvoices) {
+      const existingPayment = await prisma.payment.findFirst({
+        where: { invoiceId: invoice.id },
+      });
+
+      if (!existingPayment) {
+        await prisma.payment.create({
+          data: {
+            organizationId,
+            invoiceId: invoice.id,
+            clientId: invoice.clientId,
+            amountCents: invoice.totalCents,
+            currency: "USD",
+            status: "paid",
+            clientEmail: invoice.clientEmail,
+            clientName: invoice.clientName,
+            description: `Payment for Invoice ${invoice.invoiceNumber}`,
+            paidAt: invoice.paidAt || new Date(),
+          },
+        });
+        payments++;
+      }
+    }
+    counts.payments = payments;
+
+    // 15. Create Equipment
+    const SAMPLE_EQUIPMENT = [
+      { name: "Canon EOS R5", category: "camera", description: "45MP Full-Frame Mirrorless Camera", serial: "CN-R5-001", value: 389900 },
+      { name: "Canon RF 24-70mm f/2.8L", category: "lens", description: "Professional zoom lens", serial: "CN-RF-002", value: 229900 },
+      { name: "Canon RF 15-35mm f/2.8L", category: "lens", description: "Wide-angle zoom lens", serial: "CN-RF-003", value: 219900 },
+      { name: "DJI Mavic 3 Pro", category: "drone", description: "Professional drone with Hasselblad camera", serial: "DJI-M3-001", value: 219900 },
+      { name: "Godox AD600 Pro", category: "lighting", description: "600W Outdoor Flash", serial: "GX-AD-001", value: 89900 },
+      { name: "Manfrotto 055 Tripod", category: "tripod", description: "Professional carbon fiber tripod", serial: "MF-055-001", value: 39900 },
+    ];
+
+    let equipmentCount = 0;
+    for (const equip of SAMPLE_EQUIPMENT) {
+      const existing = await prisma.equipment.findFirst({
+        where: { organizationId, name: equip.name },
+      });
+
+      if (!existing) {
+        await prisma.equipment.create({
+          data: {
+            organizationId,
+            name: equip.name,
+            category: equip.category as any,
+            description: equip.description,
+            serialNumber: equip.serial,
+            valueCents: equip.value,
+            purchaseDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
+          },
+        });
+        equipmentCount++;
+      }
+    }
+    counts.equipment = equipmentCount;
+
+    // 16. Create Availability Blocks
+    const AVAILABILITY_BLOCKS = [
+      { title: "Holiday Break", blockType: "holiday", daysAhead: 30, duration: 7 },
+      { title: "Equipment Maintenance", blockType: "maintenance", daysAhead: 14, duration: 1 },
+      { title: "Personal Day", blockType: "personal", daysAhead: 7, duration: 1 },
+      { title: "Vacation", blockType: "time_off", daysAhead: 45, duration: 5 },
+    ];
+
+    let availabilityBlocks = 0;
+    for (const block of AVAILABILITY_BLOCKS) {
+      const startDate = new Date(Date.now() + block.daysAhead * 24 * 60 * 60 * 1000);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(startDate.getTime() + block.duration * 24 * 60 * 60 * 1000);
+
+      const existing = await prisma.availabilityBlock.findFirst({
+        where: { organizationId, title: block.title },
+      });
+
+      if (!existing) {
+        await prisma.availabilityBlock.create({
+          data: {
+            organizationId,
+            userId: null, // Org-wide block
+            title: block.title,
+            blockType: block.blockType as any,
+            startDate,
+            endDate,
+            allDay: true,
+          },
+        });
+        availabilityBlocks++;
+      }
+    }
+    counts.availabilityBlocks = availabilityBlocks;
+
+    // 17. Create Task Board, Columns, and Tasks
+    let taskBoard = await prisma.taskBoard.findFirst({
+      where: { organizationId, name: "Main Board" },
+    });
+
+    if (!taskBoard) {
+      taskBoard = await prisma.taskBoard.create({
+        data: {
+          organizationId,
+          name: "Main Board",
+          description: "Primary task board for managing projects and work",
+          color: "#3b82f6",
+          isDefault: true,
+        },
+      });
+    }
+    counts.taskBoards = 1;
+
+    // Create columns
+    const COLUMNS = [
+      { name: "To Do", color: "#6b7280", position: 0 },
+      { name: "In Progress", color: "#3b82f6", position: 1 },
+      { name: "Review", color: "#f59e0b", position: 2 },
+      { name: "Done", color: "#22c55e", position: 3 },
+    ];
+
+    const createdColumns: { id: string; name: string }[] = [];
+    for (const col of COLUMNS) {
+      let column = await prisma.taskColumn.findFirst({
+        where: { boardId: taskBoard.id, name: col.name },
+      });
+
+      if (!column) {
+        column = await prisma.taskColumn.create({
+          data: {
+            boardId: taskBoard.id,
+            name: col.name,
+            color: col.color,
+            position: col.position,
+          },
+        });
+      }
+      createdColumns.push({ id: column.id, name: column.name });
+    }
+    counts.taskColumns = createdColumns.length;
+
+    // Create tasks
+    const SAMPLE_TASKS = [
+      { title: "Edit photos for Oceanfront Estate", priority: "high", status: "in_progress", column: "In Progress" },
+      { title: "Send invoice to Sarah Mitchell", priority: "urgent", status: "todo", column: "To Do" },
+      { title: "Schedule drone flight for Downtown Penthouse", priority: "medium", status: "todo", column: "To Do" },
+      { title: "Review contract with TechCorp", priority: "high", status: "in_review", column: "Review" },
+      { title: "Upload final gallery for Historic Brownstone", priority: "medium", status: "in_progress", column: "In Progress" },
+      { title: "Follow up with Emily Rodriguez", priority: "low", status: "todo", column: "To Do" },
+      { title: "Order new lighting equipment", priority: "low", status: "completed", column: "Done" },
+      { title: "Update portfolio website", priority: "medium", status: "completed", column: "Done" },
+    ];
+
+    let taskCount = 0;
+    for (const task of SAMPLE_TASKS) {
+      const column = createdColumns.find((c) => c.name === task.column);
+      if (!column) continue;
+
+      const existing = await prisma.task.findFirst({
+        where: { organizationId, title: task.title },
+      });
+
+      if (!existing) {
+        const client = createdClients[Math.floor(Math.random() * createdClients.length)];
+        const project = allProjects[Math.floor(Math.random() * allProjects.length)];
+
+        await prisma.task.create({
+          data: {
+            organizationId,
+            boardId: taskBoard.id,
+            columnId: column.id,
+            title: task.title,
+            description: `Task related to ${project?.name || "general work"}`,
+            status: task.status as any,
+            priority: task.priority as any,
+            position: taskCount,
+            clientId: client?.id,
+            projectId: project?.id,
+            dueDate: new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000),
+            tags: ["photography", "client-work"],
+          },
+        });
+        taskCount++;
+      }
+    }
+    counts.tasks = taskCount;
+
     // Revalidate all paths
     revalidatePath("/dashboard");
     revalidatePath("/clients");
@@ -466,6 +812,8 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
     revalidatePath("/invoices");
     revalidatePath("/contracts");
     revalidatePath("/services");
+    revalidatePath("/properties");
+    revalidatePath("/galleries");
 
     return {
       success: true,
@@ -488,30 +836,110 @@ export async function clearSeededData(): Promise<ActionResult> {
     const organizationId = await requireOrganizationId();
 
     // Delete in reverse order of dependencies
+
+    // Task management
+    await prisma.taskComment.deleteMany({
+      where: { task: { organizationId } },
+    });
+    await prisma.taskSubtask.deleteMany({
+      where: { task: { organizationId } },
+    });
+    await prisma.task.deleteMany({ where: { organizationId } });
+    await prisma.taskColumn.deleteMany({
+      where: { board: { organizationId } },
+    });
+    await prisma.taskBoard.deleteMany({ where: { organizationId } });
+
+    // Availability
+    await prisma.availabilityBlock.deleteMany({ where: { organizationId } });
+
+    // Equipment
+    await prisma.userEquipment.deleteMany({
+      where: { equipment: { organizationId } },
+    });
+    await prisma.serviceEquipmentRequirement.deleteMany({
+      where: { equipment: { organizationId } },
+    });
+    await prisma.equipment.deleteMany({ where: { organizationId } });
+
+    // Payments
+    await prisma.payment.deleteMany({ where: { organizationId } });
+
+    // Property websites and related
+    await prisma.propertyLead.deleteMany({
+      where: { propertyWebsite: { project: { organizationId } } },
+    });
+    await prisma.propertyAnalytics.deleteMany({
+      where: { propertyWebsite: { project: { organizationId } } },
+    });
+    await prisma.marketingAsset.deleteMany({
+      where: { propertyWebsite: { project: { organizationId } } },
+    });
+    await prisma.propertyWebsite.deleteMany({
+      where: { project: { organizationId } },
+    });
+
+    // Notifications and activity
     await prisma.notification.deleteMany({ where: { organizationId } });
     await prisma.activityLog.deleteMany({ where: { organizationId } });
+
+    // Contracts
+    await prisma.contractSignature.deleteMany({
+      where: { contract: { organizationId } },
+    });
+    await prisma.contractAuditLog.deleteMany({
+      where: { contract: { organizationId } },
+    });
     await prisma.contractSigner.deleteMany({
       where: { contract: { organizationId } },
     });
     await prisma.contract.deleteMany({ where: { organizationId } });
     await prisma.contractTemplate.deleteMany({ where: { organizationId } });
+
+    // Invoices
     await prisma.invoiceLineItem.deleteMany({
       where: { invoice: { organizationId } },
     });
     await prisma.invoice.deleteMany({ where: { organizationId } });
+
+    // Bookings
+    await prisma.bookingReminder.deleteMany({
+      where: { booking: { organizationId } },
+    });
     await prisma.booking.deleteMany({ where: { organizationId } });
+
+    // Projects/Galleries and assets
+    await prisma.galleryFavorite.deleteMany({
+      where: { project: { organizationId } },
+    });
+    await prisma.galleryComment.deleteMany({
+      where: { project: { organizationId } },
+    });
+    await prisma.deliveryLink.deleteMany({
+      where: { project: { organizationId } },
+    });
     await prisma.asset.deleteMany({
       where: { project: { organizationId } },
     });
     await prisma.project.deleteMany({ where: { organizationId } });
+
+    // Clients
     await prisma.clientCommunication.deleteMany({
       where: { client: { organizationId } },
     });
     await prisma.clientTagAssignment.deleteMany({
       where: { client: { organizationId } },
     });
+    await prisma.clientSession.deleteMany({
+      where: { client: { organizationId } },
+    });
     await prisma.client.deleteMany({ where: { organizationId } });
     await prisma.clientTag.deleteMany({ where: { organizationId } });
+
+    // Services
+    await prisma.userServiceCapability.deleteMany({
+      where: { service: { organizationId } },
+    });
     await prisma.service.deleteMany({ where: { organizationId } });
 
     revalidatePath("/");

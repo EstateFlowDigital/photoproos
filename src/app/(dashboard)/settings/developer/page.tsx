@@ -43,46 +43,66 @@ export default function DeveloperSettingsPage() {
 
           <div className="space-y-3 mb-6">
             <p className="text-sm text-foreground-secondary">
-              This will create sample data in your organization:
+              This will create comprehensive sample data in your organization:
             </p>
-            <ul className="space-y-1.5 text-sm text-foreground-muted">
-              <li className="flex items-center gap-2">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-foreground-muted">
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                8 sample clients with contact info
-              </li>
-              <li className="flex items-center gap-2">
+                8 sample clients
+              </div>
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                7 client tags (VIP, Repeat Client, etc.)
-              </li>
-              <li className="flex items-center gap-2">
+                7 client tags
+              </div>
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                6 photography services with pricing
-              </li>
-              <li className="flex items-center gap-2">
+                6 photography services
+              </div>
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                8 projects with property details
-              </li>
-              <li className="flex items-center gap-2">
+                8 projects/galleries
+              </div>
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                Photo galleries for delivered projects
-              </li>
-              <li className="flex items-center gap-2">
+                Sample photos per gallery
+              </div>
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
                 6 calendar bookings
-              </li>
-              <li className="flex items-center gap-2">
+              </div>
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                5 invoices with line items
-              </li>
-              <li className="flex items-center gap-2">
+                5 invoices with payments
+              </div>
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
                 4 contracts with signers
-              </li>
-              <li className="flex items-center gap-2">
+              </div>
+              <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                Client communications (emails, calls, notes)
-              </li>
-            </ul>
+                4 property websites
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+                Property leads & analytics
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+                6 equipment items
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+                4 availability blocks
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+                Task board with 8 tasks
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+                Activity logs & notifications
+              </div>
+            </div>
           </div>
 
           <SeedDatabaseButton />
@@ -144,10 +164,12 @@ export default function DeveloperSettingsPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <QuickLink href="/clients" label="Clients" count="8 clients" />
           <QuickLink href="/projects" label="Projects" count="8 projects" />
+          <QuickLink href="/galleries" label="Galleries" count="With photos" />
           <QuickLink href="/scheduling" label="Calendar" count="6 bookings" />
           <QuickLink href="/invoices" label="Invoices" count="5 invoices" />
           <QuickLink href="/contracts" label="Contracts" count="4 contracts" />
           <QuickLink href="/services" label="Services" count="6 services" />
+          <QuickLink href="/properties" label="Properties" count="4 websites" />
           <QuickLink href="/dashboard" label="Dashboard" count="Overview" />
         </div>
       </div>
