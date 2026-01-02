@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { DeleteConfirmationModal } from "@/components/modals/delete-confirmation-modal";
 import { deleteClient } from "@/lib/actions/clients";
+import { createTaskFromClient } from "@/lib/actions/projects";
 
 interface ClientActionsProps {
   clientId: string;
@@ -21,6 +22,24 @@ export function ClientActions({
   const router = useRouter();
   const { showToast } = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isAddingToProject, setIsAddingToProject] = useState(false);
+
+  const handleAddToProject = async () => {
+    setIsAddingToProject(true);
+    try {
+      const result = await createTaskFromClient(clientId);
+      if (result.success && result.taskId) {
+        showToast("Added to project board", "success");
+        router.push(`/projects`);
+      } else if (!result.success) {
+        showToast(result.error || "Failed to add to project", "error");
+      }
+    } catch {
+      showToast("Failed to add to project", "error");
+    } finally {
+      setIsAddingToProject(false);
+    }
+  };
 
   const handleDelete = async () => {
     const result = await deleteClient(clientId);
@@ -61,6 +80,15 @@ export function ClientActions({
             <CalendarIcon className="h-4 w-4 text-foreground-muted" />
             Schedule Shoot
           </Link>
+          <button
+            type="button"
+            onClick={handleAddToProject}
+            disabled={isAddingToProject}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+          >
+            <ProjectIcon className="h-4 w-4 text-foreground-muted" />
+            {isAddingToProject ? "Adding..." : "Add to Project"}
+          </button>
           <hr className="border-[var(--card-border)] my-2" />
           <button
             type="button"
@@ -115,6 +143,14 @@ function TrashIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ProjectIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M6 4.75A.75.75 0 0 1 6.75 4h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 4.75ZM6 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 10Zm0 5.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75a.75.75 0 0 1-.75-.75ZM1.99 4.75a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1v-.01ZM1.99 15.25a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1v-.01ZM1.99 10a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1V10Z" clipRule="evenodd" />
     </svg>
   );
 }

@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Project Management System**: Comprehensive Kanban-based project management with entity linking
+  - Database schema: TaskBoard, TaskColumn, Task, TaskSubtask, TaskComment models
+  - TaskStatus and TaskPriority enums for task states
+  - Full CRUD server actions in `/lib/actions/projects.ts`
+  - Kanban board view with drag-and-drop task movement
+  - Multiple views: Board (Kanban), List, Calendar
+  - Task filtering by priority
+  - Task detail modal with subtasks, priority selection, and descriptions
+  - Inline task creation per column
+  - Loading skeleton for projects page
+  - Entity linking: Tasks can link to clients, galleries, bookings, invoices, property websites
+  - Quick-create helpers: `createTaskFromGallery`, `createTaskFromBooking`, `createTaskFromClient`
+  - "Add to Project" button on Gallery detail page
+  - "Add to Project" button on Client detail page
+  - "Add to Project" button on Booking/Scheduling detail page
+  - Projects added as core module in navigation sidebar
 - **Onboarding System**: Comprehensive multi-step onboarding wizard for new users
   - Created 6 industry module README files with detailed implementation plans
   - Database schema updates for onboarding state, industry selection, and module gating

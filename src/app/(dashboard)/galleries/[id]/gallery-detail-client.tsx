@@ -18,6 +18,7 @@ import {
   deletePhoto
 } from "@/lib/actions/galleries";
 import { createInvoice } from "@/lib/actions/invoices";
+import { createTaskFromGallery } from "@/lib/actions/projects";
 import {
   DndContext,
   closestCenter,
@@ -172,6 +173,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [isDelivering, setIsDelivering] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isAddingToProject, setIsAddingToProject] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const activity = gallery.activity || [];
   const analytics = gallery.analytics;
@@ -346,6 +348,23 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
       showToast("Failed to duplicate gallery", "error");
     } finally {
       setIsDuplicating(false);
+    }
+  };
+
+  const handleAddToProject = async () => {
+    setIsAddingToProject(true);
+    try {
+      const result = await createTaskFromGallery(gallery.id);
+      if (result.success && result.taskId) {
+        showToast("Added to project board", "success");
+        router.push(`/projects`);
+      } else if (!result.success) {
+        showToast(result.error || "Failed to add to project", "error");
+      }
+    } catch {
+      showToast("Failed to add to project", "error");
+    } finally {
+      setIsAddingToProject(false);
     }
   };
 
@@ -1845,6 +1864,14 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                 <DuplicateIcon className="h-4 w-4 text-foreground-muted" />
                 Duplicate Gallery
               </button>
+              <button
+                onClick={handleAddToProject}
+                disabled={isAddingToProject}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              >
+                <ProjectIcon className="h-4 w-4 text-foreground-muted" />
+                {isAddingToProject ? "Adding..." : "Add to Project"}
+              </button>
               <hr className="border-[var(--card-border)]" />
               <button
                 onClick={handleDeleteGallery}
@@ -2263,6 +2290,14 @@ function DuplicateIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z" />
       <path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-5.879a1.5 1.5 0 0 0-.44-1.06L9.44 6.439A1.5 1.5 0 0 0 8.378 6H4.5Z" />
+    </svg>
+  );
+}
+
+function ProjectIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M6 4.75A.75.75 0 0 1 6.75 4h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 4.75ZM6 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 10Zm0 5.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75a.75.75 0 0 1-.75-.75ZM1.99 4.75a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1v-.01ZM1.99 15.25a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1v-.01ZM1.99 10a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1V10Z" clipRule="evenodd" />
     </svg>
   );
 }

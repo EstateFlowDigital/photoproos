@@ -1,11 +1,112 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
+
+/**
+ * Create a checkout session for subscription upgrade
+ */
+export async function createCheckoutSession(params: {
+  organizationId: string;
+  priceId: string;
+  planId: string;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<{ url?: string; error?: string }> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { error: "Unauthorized" };
+    }
+
+    const { organizationId, priceId, planId, successUrl, cancelUrl } = params;
+
+    // Get the organization
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      include: {
+        members: {
+          where: {
+            user: { clerkUserId: userId },
+          },
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!organization) {
+      return { error: "Organization not found" };
+    }
+
+    // Verify user is a member
+    if (organization.members.length === 0) {
+      return { error: "You do not have access to this organization" };
+    }
+
+    const user = organization.members[0].user;
+
+    // Get or create Stripe customer
+    let customerId = organization.stripeCustomerId;
+
+    if (!customerId) {
+      const customer = await getStripe().customers.create({
+        email: user.email,
+        name: organization.name,
+        metadata: {
+          organizationId,
+          userId: user.id,
+        },
+      });
+      customerId = customer.id;
+
+      // Save the customer ID
+      await prisma.organization.update({
+        where: { id: organizationId },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    // Create checkout session
+    const session = await getStripe().checkout.sessions.create({
+      customer: customerId,
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      subscription_data: {
+        metadata: {
+          organizationId,
+          planId,
+        },
+      },
+      metadata: {
+        organizationId,
+        planId,
+      },
+    });
+
+    return { url: session.url || undefined };
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: "Failed to create checkout session" };
+  }
+}
 
 /**
  * Create a checkout session for a gallery (pay-to-unlock)
