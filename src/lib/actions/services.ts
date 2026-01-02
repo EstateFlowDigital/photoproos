@@ -83,11 +83,6 @@ export async function updateService(
       return { success: false, error: "Service not found" };
     }
 
-    // Don't allow editing default/template services (except price overrides on gallery)
-    if (existing.isDefault) {
-      return { success: false, error: "Cannot edit template services. Duplicate to customize." };
-    }
-
     const { id, ...updateData } = validated;
 
     const service = await prisma.service.update({
@@ -146,11 +141,6 @@ export async function deleteService(
 
     if (!existing) {
       return { success: false, error: "Service not found" };
-    }
-
-    // Don't allow deleting default/template services
-    if (existing.isDefault) {
-      return { success: false, error: "Cannot delete template services" };
     }
 
     const usageCount = existing._count.projects + existing._count.bookings;
@@ -255,10 +245,6 @@ export async function toggleServiceStatus(
 
     if (!existing) {
       return { success: false, error: "Service not found" };
-    }
-
-    if (existing.isDefault) {
-      return { success: false, error: "Cannot toggle template service status" };
     }
 
     const updated = await prisma.service.update({

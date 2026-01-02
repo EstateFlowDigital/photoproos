@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Services**: Removed template restrictions - all services can now be edited, deleted, and toggled (previously blocked with "Cannot edit template services")
 - **Properties Page**: Converted from client component with demo data to server component fetching real property websites from database
 - **Public Gallery Page** (`/p/[slug]`):
   - Now fetches data from database using `getPropertyWebsiteBySlug()` instead of demo data
