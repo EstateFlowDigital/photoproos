@@ -18,6 +18,7 @@ export default async function ProfileSettingsPage() {
     free: "Free",
     pro: "Pro",
     studio: "Studio",
+    enterprise: "Enterprise",
   };
 
   const formatDate = (date: Date | null | undefined) => {

@@ -17,6 +17,7 @@ enum PlanName {
   free
   pro
   studio
+  enterprise
 }
 
 enum ProjectStatus {
@@ -86,6 +87,7 @@ enum ActivityType {
   contract_signed
   email_sent
   file_uploaded
+  file_downloaded
   settings_updated
 }
 
@@ -118,6 +120,12 @@ enum MemberRole {
   owner
   admin
   member
+}
+
+enum PortalMode {
+  light
+  dark
+  auto // Follow system preference
 }
 
 enum ServiceCategory {
@@ -230,9 +238,20 @@ model Organization {
 
   // Branding
   logoUrl        String?
+  logoLightUrl   String? // Logo variant for light backgrounds
+  faviconUrl     String?
   primaryColor   String? @default("#3b82f6")
   secondaryColor String? @default("#8b5cf6")
+  accentColor    String? @default("#22c55e")
   customDomain   String? @unique
+
+  // Portal Appearance (free features)
+  portalMode        PortalMode @default(dark) // light or dark mode for client-facing pages
+  invoiceLogoUrl    String? // Separate logo for invoices (optional)
+
+  // White-Label Options (paid plans only)
+  hidePlatformBranding Boolean @default(false) // Hide "Powered by PhotoProOS"
+  customEmailDomain    String? // For white-label email sending
 
   // Settings
   timezone String @default("America/New_York")

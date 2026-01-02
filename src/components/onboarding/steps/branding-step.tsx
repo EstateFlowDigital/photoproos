@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, ArrowRight, ArrowLeft, User, Building2 } from "lucide-react";
+import { Palette, ArrowRight, ArrowLeft, User, Building2, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { OnboardingData } from "../onboarding-wizard";
 import { saveOnboardingStep } from "@/lib/actions/onboarding";
@@ -53,6 +53,30 @@ export function BrandingStep({
       onNext();
     } catch (error) {
       console.error("Error saving branding:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    setIsLoading(true);
+    try {
+      // Use defaults when skipping - use company name or full name
+      const defaultName =
+        formData.companyName ||
+        `${formData.firstName} ${formData.lastName}`.trim() ||
+        "My Business";
+
+      await saveOnboardingStep(organizationId, 3, {
+        displayMode: formData.displayMode || "company",
+        publicName: formData.publicName || defaultName,
+        publicEmail: formData.publicEmail || "",
+        publicPhone: formData.publicPhone || "",
+        website: formData.website || "",
+      });
+      onNext();
+    } catch (error) {
+      console.error("Error skipping branding:", error);
     } finally {
       setIsLoading(false);
     }
@@ -256,23 +280,49 @@ export function BrandingStep({
         </div>
       </div>
 
+      {/* Skip Info */}
+      <div className="p-4 rounded-xl bg-[var(--background-secondary)] border border-[var(--border)]">
+        <div className="flex items-start gap-3">
+          <Settings className="w-5 h-5 text-[var(--foreground-muted)] shrink-0 mt-0.5" />
+          <div className="text-sm text-[var(--foreground-muted)]">
+            <p className="font-medium text-[var(--foreground-secondary)]">
+              Want to customize more later?
+            </p>
+            <p className="mt-1">
+              You can upload your logo, set brand colors, and customize your
+              client portal in <strong>Settings → Branding</strong> at any time.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Navigation */}
       <div className="flex items-center justify-between pt-4">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors"
+          disabled={isLoading}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors disabled:opacity-50"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Saving..." : "Continue"}
-          {!isLoading && <ArrowRight className="w-4 h-4" />}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSkip}
+            disabled={isLoading}
+            className="px-4 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors disabled:opacity-50"
+          >
+            Skip for now
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Saving..." : "Continue"}
+            {!isLoading && <ArrowRight className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
     </div>
   );

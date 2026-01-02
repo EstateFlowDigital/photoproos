@@ -1,36 +1,84 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { updateOrganizationBranding } from "@/lib/actions/settings";
 import { useToast } from "@/components/ui/toast";
+import Link from "next/link";
 
 interface BrandingSettingsFormProps {
   settings: {
     logoUrl: string | null;
+    logoLightUrl: string | null;
+    faviconUrl: string | null;
     businessName: string;
     primaryColor: string;
     secondaryColor: string;
+    accentColor: string;
+    portalMode: "light" | "dark" | "auto";
+    invoiceLogoUrl: string | null;
+    hidePlatformBranding: boolean;
     customDomain: string | null;
     slug: string;
   };
-  colorPresets: { name: string; primary: string; secondary: string }[];
+  colorPresets: { name: string; primary: string; secondary: string; accent: string }[];
+  isPaidPlan: boolean;
+  currentPlan: string;
 }
 
-export function BrandingSettingsForm({ settings, colorPresets }: BrandingSettingsFormProps) {
+export function BrandingSettingsForm({
+  settings,
+  colorPresets,
+  isPaidPlan,
+  currentPlan,
+}: BrandingSettingsFormProps) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Logo states
+  const [logoUrl, setLogoUrl] = useState<string | null>(settings.logoUrl);
+  const [logoLightUrl, setLogoLightUrl] = useState<string | null>(settings.logoLightUrl);
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(settings.faviconUrl);
+  const [invoiceLogoUrl, setInvoiceLogoUrl] = useState<string | null>(settings.invoiceLogoUrl);
+
+  // Color states
   const [primaryColor, setPrimaryColor] = useState(settings.primaryColor);
   const [secondaryColor, setSecondaryColor] = useState(settings.secondaryColor);
-  const [galleryTheme, setGalleryTheme] = useState<"dark" | "light">("dark");
+  const [accentColor, setAccentColor] = useState(settings.accentColor);
+
+  // Portal settings
+  const [portalMode, setPortalMode] = useState<"light" | "dark" | "auto">(settings.portalMode);
+
+  // White-label (paid only)
+  const [hidePlatformBranding, setHidePlatformBranding] = useState(settings.hidePlatformBranding);
+
+  // Watermark settings (local for now)
   const [showWatermark, setShowWatermark] = useState(true);
   const [watermarkPosition, setWatermarkPosition] = useState("bottom-right");
 
-  const handleUploadLogo = () => {
-    showToast("Logo upload is coming soon. This feature will allow you to upload a custom logo.", "info");
+  // File input refs
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const logoLightInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
+  const invoiceLogoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (
+    file: File,
+    setter: (url: string | null) => void,
+    maxSize: number = 2
+  ) => {
+    if (file.size > maxSize * 1024 * 1024) {
+      showToast(`File must be less than ${maxSize}MB`, "error");
+      return;
+    }
+
+    // For now, create a local URL preview
+    // In production, this would upload to cloud storage
+    const url = URL.createObjectURL(file);
+    setter(url);
+    showToast("Logo selected. Click Save Changes to upload.", "info");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,15 +88,25 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
 
     startTransition(async () => {
       const result = await updateOrganizationBranding({
+        logoUrl,
+        logoLightUrl,
+        faviconUrl,
         primaryColor,
         secondaryColor,
+        accentColor,
+        portalMode,
+        invoiceLogoUrl,
+        hidePlatformBranding: isPaidPlan ? hidePlatformBranding : false,
+        customDomain: null, // Custom domain requires separate verification
       });
 
       if (result.success) {
         setSuccess(true);
+        showToast("Branding settings saved successfully!", "success");
         setTimeout(() => setSuccess(false), 3000);
       } else {
         setError(result.error || "Failed to save branding");
+        showToast(result.error || "Failed to save branding", "error");
       }
     });
   };
@@ -70,35 +128,178 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Settings */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Logo */}
+          {/* Logo Section */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Logo</h2>
-            <div className="flex items-start gap-6">
-              <div className="flex h-24 w-24 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background)]">
-                {settings.logoUrl ? (
-                  <img src={settings.logoUrl} alt="Logo" className="h-full w-full object-contain" />
-                ) : (
-                  <ImageIcon className="h-8 w-8 text-foreground-muted" />
-                )}
-              </div>
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={handleUploadLogo}
-                  className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            <h2 className="text-lg font-semibold text-foreground mb-2">Logo</h2>
+            <p className="text-sm text-foreground-muted mb-6">
+              Upload your logo to display on client galleries and invoices
+            </p>
+
+            <div className="space-y-6">
+              {/* Main Logo (Dark backgrounds) */}
+              <div className="flex items-start gap-6">
+                <div
+                  className="flex h-24 w-32 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[#0a0a0a] p-2"
+                  onClick={() => logoInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
                 >
-                  Upload Logo
-                </button>
-                <p className="text-xs text-foreground-muted">
-                  PNG, JPG or SVG. Max 2MB. Recommended: 400x100px
-                </p>
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" />
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-foreground-muted" />
+                  )}
+                </div>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileSelect(file, setLogoUrl);
+                  }}
+                />
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground">Logo (Dark Mode)</h3>
+                    <p className="text-xs text-foreground-muted">
+                      For dark backgrounds. PNG, JPG or SVG. Max 2MB.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                    >
+                      Upload
+                    </button>
+                    {logoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setLogoUrl(null)}
+                        className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)]"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Light Mode Logo */}
+              <div className="flex items-start gap-6 pt-4 border-t border-[var(--card-border)]">
+                <div
+                  className="flex h-24 w-32 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-2"
+                  onClick={() => logoLightInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {logoLightUrl ? (
+                    <img src={logoLightUrl} alt="Light Logo" className="h-full w-full object-contain" />
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-gray-400" />
+                  )}
+                </div>
+                <input
+                  ref={logoLightInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileSelect(file, setLogoLightUrl);
+                  }}
+                />
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground">Logo (Light Mode)</h3>
+                    <p className="text-xs text-foreground-muted">
+                      For light backgrounds. Optional - will use dark mode logo if not set.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => logoLightInputRef.current?.click()}
+                      className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    >
+                      Upload
+                    </button>
+                    {logoLightUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setLogoLightUrl(null)}
+                        className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)]"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Favicon */}
+              <div className="flex items-start gap-6 pt-4 border-t border-[var(--card-border)]">
+                <div
+                  className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background)]"
+                  onClick={() => faviconInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {faviconUrl ? (
+                    <img src={faviconUrl} alt="Favicon" className="h-8 w-8 object-contain" />
+                  ) : (
+                    <ImageIcon className="h-6 w-6 text-foreground-muted" />
+                  )}
+                </div>
+                <input
+                  ref={faviconInputRef}
+                  type="file"
+                  accept="image/png,image/x-icon,image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileSelect(file, setFaviconUrl, 1);
+                  }}
+                />
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground">Favicon</h3>
+                    <p className="text-xs text-foreground-muted">
+                      Browser tab icon. PNG, ICO or SVG. 32x32px recommended.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => faviconInputRef.current?.click()}
+                      className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    >
+                      Upload
+                    </button>
+                    {faviconUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setFaviconUrl(null)}
+                        className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)]"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Colors */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Brand Colors</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-2">Brand Colors</h2>
+            <p className="text-sm text-foreground-muted mb-6">
+              Customize colors used throughout your client portal
+            </p>
 
             <div className="space-y-6">
               {/* Color Presets */}
@@ -112,6 +313,7 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
                       onClick={() => {
                         setPrimaryColor(preset.primary);
                         setSecondaryColor(preset.secondary);
+                        setAccentColor(preset.accent);
                       }}
                       className={cn(
                         "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
@@ -131,11 +333,12 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
               </div>
 
               {/* Custom Colors */}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     Primary Color
                   </label>
+                  <p className="text-xs text-foreground-muted mb-2">Buttons, links, highlights</p>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -155,6 +358,7 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
                   <label className="block text-sm font-medium text-foreground mb-2">
                     Secondary Color
                   </label>
+                  <p className="text-xs text-foreground-muted mb-2">Headers, accents</p>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -170,40 +374,154 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
                     />
                   </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Accent Color
+                  </label>
+                  <p className="text-xs text-foreground-muted mb-2">Success states, CTAs</p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="h-10 w-14 cursor-pointer rounded-lg border border-[var(--card-border)] bg-[var(--background)]"
+                    />
+                    <input
+                      type="text"
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Gallery Theme */}
+          {/* Portal Theme */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Theme</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-semibold text-foreground">Client Portal Theme</h2>
+              <span className="inline-flex items-center rounded-full bg-[var(--success)]/10 px-2 py-1 text-xs font-medium text-[var(--success)]">
+                Free
+              </span>
+            </div>
+            <p className="text-sm text-foreground-muted mb-6">
+              Choose how your client portal appears to visitors
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-3">
               <button
                 type="button"
-                onClick={() => setGalleryTheme("dark")}
+                onClick={() => setPortalMode("dark")}
                 className={cn(
                   "flex flex-col items-center gap-3 rounded-xl border p-4 transition-all",
-                  galleryTheme === "dark"
+                  portalMode === "dark"
                     ? "border-[var(--primary)] bg-[var(--primary)]/10"
                     : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
                 )}
               >
-                <div className="h-20 w-full rounded-lg bg-[#0a0a0a] border border-[var(--card-border)]" />
-                <span className="text-sm font-medium text-foreground">Dark Theme</span>
+                <div className="h-16 w-full rounded-lg bg-[#0a0a0a] border border-[var(--card-border)] flex items-center justify-center">
+                  <MoonIcon className="h-6 w-6 text-white/60" />
+                </div>
+                <span className="text-sm font-medium text-foreground">Dark</span>
               </button>
               <button
                 type="button"
-                onClick={() => setGalleryTheme("light")}
+                onClick={() => setPortalMode("light")}
                 className={cn(
                   "flex flex-col items-center gap-3 rounded-xl border p-4 transition-all",
-                  galleryTheme === "light"
+                  portalMode === "light"
                     ? "border-[var(--primary)] bg-[var(--primary)]/10"
                     : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
                 )}
               >
-                <div className="h-20 w-full rounded-lg bg-white border border-gray-200" />
-                <span className="text-sm font-medium text-foreground">Light Theme</span>
+                <div className="h-16 w-full rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+                  <SunIcon className="h-6 w-6 text-gray-400" />
+                </div>
+                <span className="text-sm font-medium text-foreground">Light</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setPortalMode("auto")}
+                className={cn(
+                  "flex flex-col items-center gap-3 rounded-xl border p-4 transition-all",
+                  portalMode === "auto"
+                    ? "border-[var(--primary)] bg-[var(--primary)]/10"
+                    : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+                )}
+              >
+                <div className="h-16 w-full rounded-lg bg-gradient-to-r from-[#0a0a0a] to-white border border-[var(--card-border)] flex items-center justify-center">
+                  <MonitorIcon className="h-6 w-6 text-gray-500" />
+                </div>
+                <span className="text-sm font-medium text-foreground">Auto</span>
+              </button>
+            </div>
+            <p className="mt-3 text-xs text-foreground-muted">
+              Auto mode follows your client&apos;s system preferences
+            </p>
+          </div>
+
+          {/* Invoice Branding */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-2">Invoice Branding</h2>
+            <p className="text-sm text-foreground-muted mb-6">
+              Customize how your invoices appear to clients
+            </p>
+
+            <div className="flex items-start gap-6">
+              <div
+                className="flex h-20 w-32 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-white p-2"
+                onClick={() => invoiceLogoInputRef.current?.click()}
+                role="button"
+                tabIndex={0}
+              >
+                {invoiceLogoUrl ? (
+                  <img src={invoiceLogoUrl} alt="Invoice Logo" className="h-full w-full object-contain" />
+                ) : logoLightUrl ? (
+                  <img src={logoLightUrl} alt="Logo" className="h-full w-full object-contain opacity-50" />
+                ) : logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="h-full w-full object-contain opacity-50" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-gray-400" />
+                )}
+              </div>
+              <input
+                ref={invoiceLogoInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(file, setInvoiceLogoUrl);
+                }}
+              />
+              <div className="flex-1 space-y-3">
+                <div>
+                  <h3 className="text-sm font-medium text-foreground">Invoice Logo</h3>
+                  <p className="text-xs text-foreground-muted">
+                    Optional. Uses your light mode logo by default.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => invoiceLogoInputRef.current?.click()}
+                    className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                  >
+                    Upload Custom
+                  </button>
+                  {invoiceLogoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setInvoiceLogoUrl(null)}
+                      className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)]"
+                    >
+                      Use Default
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -251,6 +569,84 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
             )}
           </div>
 
+          {/* White-Label Branding */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-semibold text-foreground">White-Label Branding</h2>
+              {isPaidPlan ? (
+                <span className="inline-flex items-center rounded-full bg-[var(--primary)]/10 px-2 py-1 text-xs font-medium text-[var(--primary)]">
+                  {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} Plan
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-[var(--foreground-muted)]/10 px-2 py-1 text-xs font-medium text-foreground-muted">
+                  Pro Plan Required
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-foreground-muted mb-6">
+              Remove PhotoProOS branding and use your own logo throughout
+            </p>
+
+            {isPaidPlan ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground">Hide &quot;Powered by PhotoProOS&quot;</h3>
+                    <p className="text-xs text-foreground-muted">
+                      Remove the PhotoProOS branding from your client galleries
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={hidePlatformBranding}
+                    onClick={() => setHidePlatformBranding(!hidePlatformBranding)}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
+                      hidePlatformBranding ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+                        hidePlatformBranding ? "translate-x-5" : "translate-x-0"
+                      )}
+                    />
+                  </button>
+                </div>
+
+                {hidePlatformBranding && (
+                  <div className="rounded-lg border border-[var(--success)]/30 bg-[var(--success)]/5 p-4">
+                    <div className="flex gap-3">
+                      <CheckCircleIcon className="h-5 w-5 text-[var(--success)] shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">White-label mode enabled</p>
+                        <p className="text-xs text-foreground-muted mt-1">
+                          Your clients will only see your brand. PhotoProOS branding will be hidden from all client-facing pages.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-6 text-center">
+                <LockIcon className="h-10 w-10 text-foreground-muted mx-auto mb-3" />
+                <h3 className="text-sm font-medium text-foreground mb-1">Upgrade to unlock white-label</h3>
+                <p className="text-xs text-foreground-muted mb-4">
+                  Remove all PhotoProOS branding with Pro, Studio, or Enterprise plans
+                </p>
+                <Link
+                  href="/settings/billing"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                >
+                  Upgrade Plan
+                  <ArrowRightIcon className="h-4 w-4" />
+                </Link>
+              </div>
+            )}
+          </div>
+
           {/* Custom Domain */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-2">Custom Domain</h2>
@@ -268,23 +664,33 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
                     disabled
                     className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
                   />
-                  <span className="text-sm text-foreground-muted">.listinglens.app</span>
+                  <span className="text-sm text-foreground-muted">.photoproos.app</span>
                 </div>
                 <p className="mt-1.5 text-xs text-foreground-muted">
-                  Your galleries will be accessible at {settings.slug}.listinglens.app
+                  Your galleries are accessible at {settings.slug}.photoproos.app
                 </p>
               </div>
 
               <div className="pt-4 border-t border-[var(--card-border)]">
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Custom Domain <span className="text-foreground-muted">(Pro plan required)</span>
+                  Custom Domain{" "}
+                  {!isPaidPlan && <span className="text-foreground-muted">(Pro plan required)</span>}
                 </label>
                 <input
                   type="text"
                   placeholder="gallery.yourdomain.com"
                   defaultValue={settings.customDomain || ""}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground"
+                  disabled={!isPaidPlan}
+                  className={cn(
+                    "w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground",
+                    !isPaidPlan && "opacity-50 cursor-not-allowed"
+                  )}
                 />
+                {isPaidPlan && (
+                  <p className="mt-1.5 text-xs text-foreground-muted">
+                    Contact support to configure your custom domain
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -313,9 +719,9 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Preview</h2>
             <div
-              className="rounded-xl overflow-hidden"
+              className="rounded-xl overflow-hidden border border-[var(--card-border)]"
               style={{
-                backgroundColor: galleryTheme === "dark" ? "#0a0a0a" : "#ffffff",
+                backgroundColor: portalMode === "light" ? "#ffffff" : "#0a0a0a",
               }}
             >
               {/* Mock Gallery Header */}
@@ -324,8 +730,10 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
                 style={{ backgroundColor: primaryColor }}
               >
                 <div className="flex items-center justify-center gap-2">
-                  {settings.logoUrl ? (
-                    <img src={settings.logoUrl} alt="Logo" className="h-6" />
+                  {portalMode === "light" && logoLightUrl ? (
+                    <img src={logoLightUrl} alt="Logo" className="h-6" />
+                  ) : logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="h-6" />
                   ) : (
                     <span className="text-white font-semibold">{settings.businessName}</span>
                   )}
@@ -338,20 +746,67 @@ export function BrandingSettingsForm({ settings, colorPresets }: BrandingSetting
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className={cn(
-                        "aspect-square rounded-lg",
-                        galleryTheme === "dark" ? "bg-[#1a1a1a]" : "bg-gray-100"
-                      )}
+                      className="aspect-square rounded-lg"
+                      style={{
+                        backgroundColor: portalMode === "light" ? "#f3f4f6" : "#1a1a1a",
+                      }}
                     />
                   ))}
                 </div>
                 <button
                   type="button"
                   className="mt-4 w-full rounded-lg py-2 text-sm font-medium text-white"
-                  style={{ backgroundColor: primaryColor }}
+                  style={{ backgroundColor: accentColor }}
                 >
                   Download Gallery
                 </button>
+              </div>
+
+              {/* Footer */}
+              {!hidePlatformBranding && (
+                <div
+                  className="px-4 py-3 text-center border-t"
+                  style={{
+                    borderColor: portalMode === "light" ? "#e5e7eb" : "#262626",
+                  }}
+                >
+                  <span
+                    className="text-xs"
+                    style={{
+                      color: portalMode === "light" ? "#9ca3af" : "#6b7280",
+                    }}
+                  >
+                    Powered by PhotoProOS
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Color Swatches */}
+            <div className="mt-4 pt-4 border-t border-[var(--card-border)]">
+              <p className="text-xs font-medium text-foreground-muted mb-2">Your Brand Colors</p>
+              <div className="flex gap-2">
+                <div className="flex-1 text-center">
+                  <div
+                    className="h-8 rounded-lg mb-1"
+                    style={{ backgroundColor: primaryColor }}
+                  />
+                  <span className="text-xs text-foreground-muted">Primary</span>
+                </div>
+                <div className="flex-1 text-center">
+                  <div
+                    className="h-8 rounded-lg mb-1"
+                    style={{ backgroundColor: secondaryColor }}
+                  />
+                  <span className="text-xs text-foreground-muted">Secondary</span>
+                </div>
+                <div className="flex-1 text-center">
+                  <div
+                    className="h-8 rounded-lg mb-1"
+                    style={{ backgroundColor: accentColor }}
+                  />
+                  <span className="text-xs text-foreground-muted">Accent</span>
+                </div>
               </div>
             </div>
           </div>
@@ -374,6 +829,55 @@ function LoadingSpinner({ className }: { className?: string }) {
     <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function MoonIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M7.455 2.004a.75.75 0 0 1 .26.77 7 7 0 0 0 9.958 7.967.75.75 0 0 1 1.067.853A8.5 8.5 0 1 1 6.647 1.921a.75.75 0 0 1 .808.083Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function SunIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 2a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 2ZM10 15a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 15ZM10 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM15.657 5.404a.75.75 0 1 0-1.06-1.06l-1.061 1.06a.75.75 0 0 0 1.06 1.06l1.06-1.06ZM6.464 14.596a.75.75 0 1 0-1.06-1.06l-1.06 1.06a.75.75 0 0 0 1.06 1.06l1.06-1.06ZM18 10a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 18 10ZM5 10a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 5 10ZM14.596 15.657a.75.75 0 0 0 1.06-1.06l-1.06-1.061a.75.75 0 1 0-1.06 1.06l1.06 1.06ZM5.404 6.464a.75.75 0 0 0 1.06-1.06l-1.06-1.06a.75.75 0 1 0-1.06 1.06l1.06 1.06Z" />
+    </svg>
+  );
+}
+
+function MonitorIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M14 6H6v6h8V6Z" />
+      <path fillRule="evenodd" d="M2 4.25A2.25 2.25 0 0 1 4.25 2h11.5A2.25 2.25 0 0 1 18 4.25v8.5A2.25 2.25 0 0 1 15.75 15h-4v1.5h2.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5h2.5V15h-4A2.25 2.25 0 0 1 2 12.75v-8.5Zm2.25-.75a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h11.5a.75.75 0 0 0 .75-.75v-8.5a.75.75 0 0 0-.75-.75H4.25Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clipRule="evenodd" />
     </svg>
   );
 }

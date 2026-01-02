@@ -60,8 +60,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "clients",
       "services",
       "contracts",
+      "portfolio_websites",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "contracts"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "contracts", "portfolio_websites"],
     color: "#8b5cf6", // purple
     sortOrder: 2,
   },
@@ -77,6 +78,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "clients",
       "contracts",
       "questionnaires",
+      "portfolio_websites",
     ],
     defaultModules: [
       "galleries",
@@ -84,6 +86,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "invoices",
       "clients",
       "contracts",
+      "portfolio_websites",
     ],
     color: "#ec4899", // pink
     sortOrder: 3,
@@ -101,8 +104,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "services",
       "mini_sessions",
       "online_booking",
+      "portfolio_websites",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites"],
     color: "#f97316", // orange
     sortOrder: 4,
   },
@@ -118,8 +122,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "clients",
       "services",
       "licensing",
+      "portfolio_websites",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites"],
     color: "#22c55e", // green
     sortOrder: 5,
   },
@@ -136,8 +141,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "services",
       "licensing",
       "batch_processing",
+      "portfolio_websites",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites"],
     color: "#06b6d4", // cyan
     sortOrder: 6,
   },

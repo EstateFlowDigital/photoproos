@@ -84,26 +84,52 @@ export async function updateOrganizationProfile(input: {
  * Update organization branding settings
  */
 export async function updateOrganizationBranding(input: {
-  logoUrl?: string;
+  logoUrl?: string | null;
+  logoLightUrl?: string | null;
+  faviconUrl?: string | null;
   primaryColor?: string;
   secondaryColor?: string;
-  customDomain?: string;
+  accentColor?: string;
+  portalMode?: "light" | "dark" | "auto";
+  invoiceLogoUrl?: string | null;
+  hidePlatformBranding?: boolean;
+  customDomain?: string | null;
 }) {
   try {
     const organizationId = await getOrganizationId();
+
+    // Get organization to check plan for white-label features
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { plan: true },
+    });
+
+    // Only allow hidePlatformBranding on paid plans
+    const canHideBranding =
+      org?.plan === "pro" || org?.plan === "studio" || org?.plan === "enterprise";
 
     await prisma.organization.update({
       where: { id: organizationId },
       data: {
         logoUrl: input.logoUrl,
+        logoLightUrl: input.logoLightUrl,
+        faviconUrl: input.faviconUrl,
         primaryColor: input.primaryColor,
         secondaryColor: input.secondaryColor,
+        accentColor: input.accentColor,
+        portalMode: input.portalMode,
+        invoiceLogoUrl: input.invoiceLogoUrl,
+        // Only update hidePlatformBranding if user is on a paid plan
+        ...(canHideBranding && input.hidePlatformBranding !== undefined
+          ? { hidePlatformBranding: input.hidePlatformBranding }
+          : {}),
         customDomain: input.customDomain,
       },
     });
 
     revalidatePath("/settings");
     revalidatePath("/settings/branding");
+    revalidatePath("/g"); // Revalidate gallery pages
 
     return { success: true };
   } catch (error) {
@@ -629,6 +655,7 @@ export async function getBillingStats() {
       free: { storage: 2, galleries: 5, clients: 25, members: 1 },
       pro: { storage: 50, galleries: -1, clients: -1, members: 3 },
       studio: { storage: 500, galleries: -1, clients: -1, members: -1 },
+      enterprise: { storage: -1, galleries: -1, clients: -1, members: -1 },
     };
 
     const limits = planLimits[org.plan] || planLimits.free;

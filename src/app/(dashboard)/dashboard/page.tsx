@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
+import { Suspense } from "react";
 import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries } from "@/components/dashboard";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
+import { TourStarter } from "@/components/tour";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
@@ -264,6 +266,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <Suspense fallback={null}>
+        <TourStarter />
+      </Suspense>
       <PageHeader
         title="Dashboard"
         subtitle={`Welcome back! Here's what's happening with ${organization.name}.`}

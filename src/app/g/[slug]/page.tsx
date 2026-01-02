@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { getPublicGallery, recordGalleryView } from "@/lib/actions/galleries";
 import { PayButton } from "./pay-button";
+import { GalleryClient } from "./gallery-client";
 
 interface Photo {
   id: string;
@@ -41,24 +42,46 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
   // Default theme settings
   const theme = gallery?.theme || "dark";
   const primaryColor = gallery?.primaryColor || "#3b82f6";
-  const bgColor = theme === "dark" ? "#0a0a0a" : "#ffffff";
-  const textColor = theme === "dark" ? "#ffffff" : "#0a0a0a";
-  const mutedColor = theme === "dark" ? "#a7a7a7" : "#6b7280";
-  const cardBg = theme === "dark" ? "#141414" : "#f3f4f6";
+  const accentColor = gallery?.accentColor || "#22c55e";
+  const hidePlatformBranding = gallery?.hidePlatformBranding || false;
+
+  // For "auto" theme, we render client component that detects system preference
+  // For explicit dark/light, we render appropriate colors
+  const getInitialThemeColors = () => {
+    if (theme === "light") {
+      return {
+        bgColor: "#ffffff",
+        textColor: "#0a0a0a",
+        mutedColor: "#6b7280",
+        cardBg: "#f3f4f6",
+        borderColor: "rgba(0,0,0,0.1)",
+      };
+    }
+    // Default to dark theme
+    return {
+      bgColor: "#0a0a0a",
+      textColor: "#ffffff",
+      mutedColor: "#a7a7a7",
+      cardBg: "#141414",
+      borderColor: "rgba(255,255,255,0.1)",
+    };
+  };
+
+  const colors = getInitialThemeColors();
 
   // Gallery not found or not available
   if (!gallery || gallery.photos.length === 0) {
     return (
       <div
         className="min-h-screen flex flex-col items-center justify-center p-8"
-        style={{ backgroundColor: bgColor, color: textColor }}
+        style={{ backgroundColor: colors.bgColor, color: colors.textColor }}
       >
         <div className="text-center max-w-md">
           <div className="mx-auto h-16 w-16 rounded-full bg-[var(--error)]/10 flex items-center justify-center mb-6">
             <ExclamationIcon className="h-8 w-8 text-[var(--error)]" />
           </div>
           <h1 className="text-2xl font-bold mb-2">Gallery Not Found</h1>
-          <p style={{ color: mutedColor }}>
+          <p style={{ color: colors.mutedColor }}>
             This gallery does not exist, has not been delivered yet, or the link has expired. Please contact your photographer for assistance.
           </p>
           <Link
@@ -73,8 +96,27 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
     );
   }
 
+  // For auto theme, use client component
+  if (theme === "auto") {
+    return (
+      <GalleryClient
+        gallery={gallery}
+        isPreview={isPreview}
+        formatCurrency={formatCurrency}
+      />
+    );
+  }
+
+  // Get the appropriate logo based on theme
+  const getLogo = () => {
+    if (theme === "light" && gallery.photographer.logoLightUrl) {
+      return gallery.photographer.logoLightUrl;
+    }
+    return gallery.photographer.logoUrl;
+  };
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: bgColor, color: textColor }}>
+    <div className="min-h-screen" style={{ backgroundColor: colors.bgColor, color: colors.textColor }}>
       {/* Preview Mode Banner */}
       {isPreview && (
         <div className="sticky top-0 z-[60] bg-amber-500 text-black px-4 py-2 text-center text-sm font-medium">
@@ -88,14 +130,14 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
       {/* Header */}
       <header
         className={cn("sticky z-50 border-b", isPreview ? "top-[36px]" : "top-0")}
-        style={{ backgroundColor: bgColor, borderColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
+        style={{ backgroundColor: colors.bgColor, borderColor: colors.borderColor }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo / Photographer */}
             <div className="flex items-center gap-3">
-              {gallery.photographer.logoUrl ? (
-                <img src={gallery.photographer.logoUrl} alt={gallery.photographer.name} className="h-8" />
+              {getLogo() ? (
+                <img src={getLogo()!} alt={gallery.photographer.name} className="h-8" />
               ) : (
                 <span className="text-lg font-semibold">{gallery.photographer.name}</span>
               )}
@@ -106,7 +148,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
               {gallery.allowFavorites && (
                 <button
                   className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                  style={{ backgroundColor: cardBg }}
+                  style={{ backgroundColor: colors.cardBg }}
                 >
                   <HeartIcon className="h-4 w-4" />
                   <span className="hidden sm:inline">Favorites</span>
@@ -118,7 +160,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
               {gallery.isPaid && gallery.allowDownload ? (
                 <button
                   className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: primaryColor }}
+                  style={{ backgroundColor: accentColor }}
                 >
                   <DownloadIcon className="h-4 w-4" />
                   Download All
@@ -127,7 +169,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
                 <PayButton
                   galleryId={gallery.id}
                   price={gallery.price}
-                  primaryColor={primaryColor}
+                  primaryColor={accentColor}
                   variant="header"
                 />
               ) : null}
@@ -137,17 +179,17 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
       </header>
 
       {/* Gallery Info */}
-      <div className="border-b" style={{ borderColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}>
+      <div className="border-b" style={{ borderColor: colors.borderColor }}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-3xl font-bold mb-2">{gallery.name}</h1>
-          {gallery.description && <p style={{ color: mutedColor }}>{gallery.description}</p>}
-          <div className="mt-4 flex items-center gap-4 text-sm" style={{ color: mutedColor }}>
+          {gallery.description && <p style={{ color: colors.mutedColor }}>{gallery.description}</p>}
+          <div className="mt-4 flex items-center gap-4 text-sm" style={{ color: colors.mutedColor }}>
             <span className="flex items-center gap-1">
               <PhotoIcon className="h-4 w-4" />
               {gallery.photos.length} photos
             </span>
             {gallery.isPaid ? (
-              <span className="flex items-center gap-1 text-green-500">
+              <span className="flex items-center gap-1" style={{ color: accentColor }}>
                 <CheckIcon className="h-4 w-4" />
                 Paid - Downloads enabled
               </span>
@@ -157,7 +199,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
                 {formatCurrency(gallery.price)} to unlock downloads
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-green-500">
+              <span className="flex items-center gap-1" style={{ color: accentColor }}>
                 <CheckIcon className="h-4 w-4" />
                 Free - Downloads enabled
               </span>
@@ -181,14 +223,14 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
                 <p className="font-medium" style={{ color: primaryColor }}>
                   Unlock this gallery to download your photos
                 </p>
-                <p className="text-sm" style={{ color: mutedColor }}>
+                <p className="text-sm" style={{ color: colors.mutedColor }}>
                   One-time payment of {formatCurrency(gallery.price)} for full access
                 </p>
               </div>
               <PayButton
                 galleryId={gallery.id}
                 price={gallery.price}
-                primaryColor={primaryColor}
+                primaryColor={accentColor}
                 variant="banner"
               />
             </div>
@@ -203,7 +245,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
             <div
               key={photo.id}
               className="group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer"
-              style={{ backgroundColor: cardBg }}
+              style={{ backgroundColor: colors.cardBg }}
             >
               <img
                 src={photo.url}
@@ -251,19 +293,21 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
       {/* Footer */}
       <footer
         className="border-t py-8"
-        style={{ borderColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
+        style={{ borderColor: colors.borderColor }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <p className="text-sm" style={{ color: mutedColor }}>
+            <p className="text-sm" style={{ color: colors.mutedColor }}>
               Photos by {gallery.photographer.name}
             </p>
-            <p className="text-sm" style={{ color: mutedColor }}>
-              Powered by{" "}
-              <Link href="/" className="hover:underline" style={{ color: primaryColor }}>
-                PhotoProOS
-              </Link>
-            </p>
+            {!hidePlatformBranding && (
+              <p className="text-sm" style={{ color: colors.mutedColor }}>
+                Powered by{" "}
+                <Link href="/" className="hover:underline" style={{ color: primaryColor }}>
+                  PhotoProOS
+                </Link>
+              </p>
+            )}
           </div>
         </div>
       </footer>

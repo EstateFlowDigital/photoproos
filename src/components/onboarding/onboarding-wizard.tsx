@@ -127,8 +127,12 @@ export function OnboardingWizard({
     }
   }, [currentStep]);
 
-  const handleComplete = useCallback(() => {
-    router.push("/");
+  const handleComplete = useCallback((startTour: boolean = false) => {
+    if (startTour) {
+      router.push("/dashboard?tour=welcome");
+    } else {
+      router.push("/dashboard");
+    }
     router.refresh();
   }, [router]);
 

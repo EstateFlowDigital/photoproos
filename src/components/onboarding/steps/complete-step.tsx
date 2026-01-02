@@ -22,7 +22,7 @@ interface CompleteStepProps {
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   organizationId: string;
-  onComplete: () => void;
+  onComplete: (startTour?: boolean) => void;
 }
 
 export function CompleteStep({
@@ -44,8 +44,7 @@ export function CompleteStep({
     setIsLoading(true);
     try {
       await completeOnboarding(organizationId);
-      // TODO: If startTour is true, set flag to show guided tour
-      onComplete();
+      onComplete(startTour);
     } catch (error) {
       console.error("Error completing onboarding:", error);
     } finally {

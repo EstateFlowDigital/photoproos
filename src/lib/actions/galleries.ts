@@ -906,7 +906,13 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
             select: {
               name: true,
               logoUrl: true,
+              logoLightUrl: true,
               primaryColor: true,
+              secondaryColor: true,
+              accentColor: true,
+              portalMode: true,
+              hidePlatformBranding: true,
+              plan: true,
             },
           },
           assets: {
@@ -950,7 +956,13 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
                 select: {
                   name: true,
                   logoUrl: true,
+                  logoLightUrl: true,
                   primaryColor: true,
+                  secondaryColor: true,
+                  accentColor: true,
+                  portalMode: true,
+                  hidePlatformBranding: true,
+                  plan: true,
                 },
               },
               assets: {
@@ -991,14 +1003,20 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
     }
 
     const isPaid = project.payments.length > 0 || project.priceCents === 0;
+    const org = project.organization;
+
+    // Determine theme based on portalMode - only paid plans can hide platform branding
+    const isPaidPlan = org.plan === "pro" || org.plan === "studio" || org.plan === "enterprise";
+    const canHideBranding = isPaidPlan && org.hidePlatformBranding;
 
     return {
       id: project.id,
       name: project.name,
       description: project.description || "",
       photographer: {
-        name: project.organization.name,
-        logoUrl: project.organization.logoUrl,
+        name: org.name,
+        logoUrl: org.logoUrl,
+        logoLightUrl: org.logoLightUrl,
       },
       status: project.status,
       price: project.priceCents,
@@ -1006,8 +1024,13 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       allowDownload: project.allowDownloads,
       allowFavorites: true, // Default true for now
       showWatermark: project.showWatermark,
-      primaryColor: project.organization.primaryColor || "#3b82f6",
-      theme: "dark" as const, // Could make this configurable
+      // Branding colors
+      primaryColor: org.primaryColor || "#3b82f6",
+      secondaryColor: org.secondaryColor || "#8b5cf6",
+      accentColor: org.accentColor || "#22c55e",
+      // Portal appearance
+      theme: (org.portalMode || "dark") as "light" | "dark" | "auto",
+      hidePlatformBranding: canHideBranding,
       isPreview, // Let the UI know this is a preview
       photos: project.assets.map((asset) => ({
         id: asset.id,

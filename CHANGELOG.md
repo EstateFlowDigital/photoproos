@@ -8,6 +8,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Three-Tier Custom Domain System**: Comprehensive domain options for property websites
+  - **Default**: Automatic subdomain on PhotoProOS (free, no setup)
+  - **Connect Own Domain (CNAME)**: Connect existing domains with CNAME/A record setup (free)
+  - **Purchase New Domain**: In-app domain purchasing via Cloudflare Registrar (~$14.99/year)
+  - Support for apex domains (A record) and subdomains (CNAME)
+  - Auto-renewal handling with payment reminders
+  - SSL provisioning via Vercel Domains API
+  - Domain status tracking and management UI
+  - Updated master plan with full implementation details at `/Users/cameronameigh/.claude/plans/photoproos-master-plan.md`
+- **Core Gallery Delivery Improvements**: Phase 1 implementation for gallery delivery features
+  - **Photo Downloads**: Download API route at `/api/download/[assetId]` with payment verification and tracking
+  - **Download All**: Sequential batch download with progress indicator in gallery header
+  - **Individual Downloads**: Click-to-download on each photo with hover action buttons
+  - **Download Tracking**: Automatic increment of download counts with activity logging
+  - **Favorites System**: Full favorites functionality for public galleries
+    - Toggle favorites on individual photos with visual feedback
+    - Favorites count displayed in header button
+    - Filter view to show only favorited photos
+    - Session-based tracking for anonymous visitors
+    - API endpoints at `/api/gallery/favorite` (GET and POST)
+  - **Gallery Expiration**: Consistent expiration enforcement across all endpoints
+    - Public gallery returns 404 for expired galleries
+    - Download API returns 403 for expired galleries
+    - Favorites API returns 403 for expired galleries
+  - Added `file_downloaded` to ActivityType enum for download logging
+
+### Fixed
+- **Onboarding Completion Navigation**: Fixed buttons on final onboarding step that were incorrectly navigating to landing page
+  - "Go to Dashboard" now correctly navigates to `/dashboard`
+  - "Take a Quick Tour" now navigates to `/dashboard?tour=welcome` and auto-starts the welcome tour
+- **Tour Auto-Start from Onboarding**: Added TourStarter component to detect URL query params and start tours
+  - New `TourStarter` client component that reads `?tour=` query parameter
+  - Dashboard now includes TourStarter wrapped in Suspense for URL-based tour triggering
+  - Cleans up URL after starting tour for clean browser history
+
+### Added
+- **Portfolio Websites Module**: New feature for non-real estate industries to create public showcase pages
+  - Renamed "Properties" to "Property Websites" for clarity (real estate only)
+  - Added "Portfolio Websites" module for commercial, events, portraits, food, and product industries
+  - Portfolio Websites enabled by default for all non-real estate industries
+  - Provides public-facing showcase pages for photography work (similar to property websites but for general portfolios)
+- **Comprehensive Branding Customization**: Full portal theming and white-label capabilities
+  - **Logo Management**: Upload logos for dark and light backgrounds, favicon, and invoice-specific logos
+  - **Color Customization**: Primary, secondary, and accent colors with quick preset options (8 color schemes)
+  - **Portal Theme Selection**: Dark mode, light mode, or auto (system preference) for client galleries
+  - **Invoice Branding**: Separate logo option for invoices with fallback to main logo
+  - **White-Label Mode** (Pro/Studio/Enterprise plans): Hide "Powered by PhotoProOS" branding from all client-facing pages
+  - **Custom Domain Support**: UI for custom domain configuration (Pro plans and above)
+  - **Preview Panel**: Live preview of branding changes showing gallery appearance
+  - **Public Gallery Updates**: Galleries now respect organization branding settings
+    - Theme-aware logo selection (uses light logo on light backgrounds)
+    - Accent color for CTAs and download buttons
+    - Platform branding visibility based on plan and settings
+    - Auto theme support with system preference detection
+- **Optional Onboarding Steps**: Branding step in onboarding is now skippable with "Find in Settings" info
 - **Property Website Improvements**: Enhanced property website editing, template system, and media capabilities
   - Comprehensive edit page at `/properties/[id]/edit` with all fields editable
   - Edit address, property details, content (headline, description, features)
