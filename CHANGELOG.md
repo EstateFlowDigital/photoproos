@@ -44,6 +44,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Security: Gallery Favorite Query**: Simplified ambiguous OR clause in favorite lookup
   - Previous: Complex OR logic with `email || null` and conditional undefined
   - Fix: Clear conditional query based on email presence
+- **Security: Cryptographic Slug Generation**: Gallery delivery links now use secure random generation
+  - Previous: Used `Math.random().toString(36)` which is cryptographically weak
+  - Fix: Use `crypto.randomBytes(16)` for unpredictable 16-character slugs
+- **Security: Comment Deletion Auth Bypass**: Session-based verification for comment deletion
+  - Previous: Anyone could delete any comment via API without ownership verification
+  - Fix: Added sessionId tracking on comment creation, require matching session for deletion
+  - Schema updated with `sessionId` field on GalleryComment model
+- **Security: Demo Org Fallback Removed**: Presigned URL route no longer falls back to "demo-org"
+  - Previous: Missing org allowed uploads to bypass gallery verification
+  - Fix: Return 403 error when organization is not found
+- **Email Reliability**: Wrapped email operations in try-catch to prevent action failures
+  - Gallery delivery email failure no longer fails the delivery action
+  - Stripe webhook email failure no longer fails payment recording
 - **Client Portal Logout**: Fixed logout not redirecting to login page
   - Added `window.location.href = "/portal/login"` after logout
 - **Batch Download Reliability**: Fixed fire-and-forget database operations
