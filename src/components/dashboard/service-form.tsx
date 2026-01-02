@@ -52,7 +52,6 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const isDefault = initialData?.isDefault || false;
   const usageCount = initialData?.usageCount || 0;
 
   const handleAddDeliverable = useCallback(() => {
@@ -173,14 +172,8 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
               }
               placeholder="e.g., Luxury Property Package"
               required
-              disabled={isDefault}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
-            {isDefault && (
-              <p className="mt-1.5 text-xs text-foreground-muted">
-                Template services cannot be renamed. Duplicate to customize.
-              </p>
-            )}
           </div>
 
           {/* Category and Price */}
@@ -201,8 +194,7 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
                     category: e.target.value as ServiceCategory,
                   }))
                 }
-                disabled={isDefault}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
               >
                 {Object.entries(serviceCategories).map(([key, { label }]) => (
                   <option key={key} value={key}>
@@ -415,7 +407,7 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
       )}
 
       {/* Status Toggle - only for edit mode */}
-      {mode === "edit" && !isDefault && (
+      {mode === "edit" && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Status</h2>
 
@@ -503,7 +495,7 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
       {/* Form Actions */}
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          {mode === "edit" && !isDefault && (
+          {mode === "edit" && (
             <button
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
