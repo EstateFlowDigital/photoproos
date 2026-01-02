@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Developer Tools for Database Seeding**
+  - New Developer Tools page at `/settings/developer`
+  - "Seed Database" button creates sample data for testing:
+    - 8 sample clients with contact info
+    - 7 client tags (VIP, Repeat Client, etc.)
+    - 6 photography services with pricing
+    - 8 projects with various statuses
+    - 6 calendar bookings
+    - 5 invoices with line items
+    - 4 contracts with signers
+    - Client communications (emails, calls, notes)
+  - "Clear All Data" button removes all organization data
+  - Quick links to explore seeded data
+  - Server actions in `/src/lib/actions/seed.ts`
+
 ### Changed
 - **Feature Organization Refactor**: Restructured module system for cleaner hierarchy
   - **Availability is now part of Scheduling** - not a standalone toggleable module
