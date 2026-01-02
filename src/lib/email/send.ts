@@ -4,6 +4,7 @@ import { PaymentReceiptEmail } from "@/emails/payment-receipt";
 import { BookingConfirmationEmail } from "@/emails/booking-confirmation";
 import { WelcomeEmail } from "@/emails/welcome";
 import { PropertyLeadEmail } from "@/emails/property-lead";
+import { GalleryExpirationEmail } from "@/emails/gallery-expiration";
 
 /**
  * Send gallery delivered notification to client
@@ -188,5 +189,49 @@ export async function sendPropertyLeadEmail(params: {
       leadMessage,
     }),
     replyTo: leadEmail,
+  });
+}
+
+/**
+ * Send gallery expiration warning to client
+ */
+export async function sendGalleryExpirationEmail(params: {
+  to: string;
+  clientName: string;
+  galleryName: string;
+  galleryUrl: string;
+  daysRemaining: number;
+  photographerName: string;
+  photographerEmail?: string;
+}) {
+  const {
+    to,
+    clientName,
+    galleryName,
+    galleryUrl,
+    daysRemaining,
+    photographerName,
+    photographerEmail,
+  } = params;
+
+  const urgency = daysRemaining <= 1 ? "urgent" : daysRemaining <= 3 ? "warning" : "reminder";
+  const subject = daysRemaining <= 1
+    ? `⚠️ Last chance: "${galleryName}" expires tomorrow!`
+    : daysRemaining <= 3
+    ? `Reminder: "${galleryName}" expires in ${daysRemaining} days`
+    : `Your gallery "${galleryName}" expires in ${daysRemaining} days`;
+
+  return sendEmail({
+    to,
+    subject,
+    react: GalleryExpirationEmail({
+      clientName,
+      galleryName,
+      galleryUrl,
+      daysRemaining,
+      photographerName,
+      urgency,
+    }),
+    replyTo: photographerEmail,
   });
 }

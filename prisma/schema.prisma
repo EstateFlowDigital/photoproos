@@ -183,6 +183,37 @@ enum MarketingAssetType {
   video_slideshow
 }
 
+enum WatermarkPosition {
+  top_left
+  top_center
+  top_right
+  center
+  bottom_left
+  bottom_center
+  bottom_right
+  tiled
+  diagonal
+}
+
+enum DiscountType {
+  percentage
+  fixed_amount
+}
+
+enum PaymentPlanStatus {
+  active
+  completed
+  cancelled
+  overdue
+}
+
+enum DownloadFormat {
+  original
+  web_size
+  high_res
+  zip_all
+}
+
 enum PropertyWebsiteTemplate {
   modern
   classic
@@ -252,6 +283,15 @@ model Organization {
   // White-Label Options (paid plans only)
   hidePlatformBranding Boolean @default(false) // Hide "Powered by PhotoProOS"
   customEmailDomain    String? // For white-label email sending
+
+  // Watermark Configuration
+  watermarkEnabled     Boolean           @default(true)
+  watermarkType        String?           @default("text") // "text" or "image"
+  watermarkText        String? // Custom text (e.g., "© Studio Name")
+  watermarkImageUrl    String? // URL to watermark image
+  watermarkPosition    WatermarkPosition @default(bottom_right)
+  watermarkOpacity     Float             @default(0.5) // 0-1
+  watermarkScale       Float             @default(0.15) // Size relative to image (0-1)
 
   // Settings
   timezone String @default("America/New_York")
@@ -326,6 +366,9 @@ model Organization {
   homeBaseLocation   Location?            @relation("OrgHomeBase", fields: [homeBaseLocationId], references: [id])
   taskBoards         TaskBoard[]
   tasks              Task[]
+  discountCodes      DiscountCode[]
+  paymentPlans       PaymentPlan[]
+  invoiceTemplates   InvoiceTemplate[]
 
   @@index([slug])
   @@index([plan])
@@ -1323,6 +1366,23 @@ model PropertyLead {
   // Status
   status LeadStatus @default(new)
 
+  // Lead Scoring
+  score           Int     @default(0) // 0-100 score
+  scoreBreakdown  Json?   // { "pageViews": 10, "timeOnSite": 15, "photoViews": 20, ... }
+  temperature     String  @default("cold") // "hot", "warm", "cold"
+
+  // Engagement tracking
+  pageViews       Int     @default(0)
+  photoViews      Int     @default(0)
+  tourClicks      Int     @default(0)
+  totalTimeSeconds Int    @default(0)
+  lastActivityAt  DateTime?
+
+  // Contact history
+  contactedAt     DateTime?
+  followUpDate    DateTime?
+  notes           String?   @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1331,6 +1391,8 @@ model PropertyLead {
 
   @@index([propertyWebsiteId])
   @@index([status])
+  @@index([score])
+  @@index([temperature])
   @@index([createdAt])
 }
 
@@ -1498,4 +1560,246 @@ model TaskComment {
 
   @@index([taskId])
   @@index([authorId])
+}
+
+// ============================================================================
+// DISCOUNT CODES
+// ============================================================================
+
+model DiscountCode {
+  id             String       @id @default(cuid())
+  organizationId String
+  code           String // The actual code (e.g., "SUMMER20")
+  description    String? // Internal description
+  discountType   DiscountType @default(percentage)
+  discountValue  Int // Percentage (0-100) or cents for fixed_amount
+
+  // Limits
+  maxUses        Int?      @default(0) // 0 = unlimited
+  usedCount      Int       @default(0)
+  minPurchase    Int?      @default(0) // Minimum purchase in cents
+  maxDiscount    Int?      // Maximum discount in cents (for percentage discounts)
+
+  // Validity
+  validFrom      DateTime  @default(now())
+  validUntil     DateTime?
+  isActive       Boolean   @default(true)
+
+  // Scope - which things this code applies to
+  applicableServices String[] @default([]) // Empty = all services
+  applicableClients  String[] @default([]) // Empty = all clients
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  usages       DiscountCodeUsage[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@index([code])
+  @@index([isActive])
+}
+
+model DiscountCodeUsage {
+  id             String @id @default(cuid())
+  discountCodeId String
+  invoiceId      String?
+  paymentId      String?
+  clientEmail    String?
+
+  discountAmount Int // Amount discounted in cents
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  discountCode DiscountCode @relation(fields: [discountCodeId], references: [id], onDelete: Cascade)
+
+  @@index([discountCodeId])
+  @@index([invoiceId])
+}
+
+// ============================================================================
+// PAYMENT PLANS
+// ============================================================================
+
+model PaymentPlan {
+  id             String            @id @default(cuid())
+  organizationId String
+  invoiceId      String?
+  projectId      String?
+  clientId       String?
+
+  // Plan details
+  totalAmount    Int // Total amount in cents
+  installments   Int // Number of installments (e.g., 3, 6, 12)
+  paidAmount     Int    @default(0) // Amount paid so far
+
+  status         PaymentPlanStatus @default(active)
+
+  // Schedule
+  startDate      DateTime
+  frequency      String   @default("monthly") // "weekly", "biweekly", "monthly"
+  nextDueDate    DateTime?
+
+  // Stripe
+  stripeSubscriptionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization      Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  scheduledPayments PaymentPlanInstallment[]
+
+  @@index([organizationId])
+  @@index([invoiceId])
+  @@index([clientId])
+  @@index([status])
+}
+
+model PaymentPlanInstallment {
+  id            String  @id @default(cuid())
+  paymentPlanId String
+
+  amount        Int // Amount in cents
+  dueDate       DateTime
+  paidAt        DateTime?
+  isPaid        Boolean @default(false)
+
+  // Stripe
+  stripePaymentIntentId String? @unique
+
+  // Reminders
+  reminderSentAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  paymentPlan PaymentPlan @relation(fields: [paymentPlanId], references: [id], onDelete: Cascade)
+
+  @@index([paymentPlanId])
+  @@index([dueDate])
+  @@index([isPaid])
+}
+
+// ============================================================================
+// DOWNLOAD TRACKING
+// ============================================================================
+
+model DownloadLog {
+  id             String         @id @default(cuid())
+  organizationId String
+  projectId      String
+  assetId        String? // Null for batch/zip downloads
+
+  // Download details
+  format         DownloadFormat @default(original)
+  fileCount      Int            @default(1) // For batch downloads
+  totalBytes     BigInt?
+
+  // Who downloaded
+  clientEmail    String?
+  sessionId      String?
+  ipAddress      String?
+  userAgent      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([assetId])
+  @@index([clientEmail])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// GALLERY EXPIRATION NOTIFICATIONS
+// ============================================================================
+
+model ExpirationNotification {
+  id        String   @id @default(cuid())
+  projectId String
+
+  // Notification schedule
+  daysBeforeExpiry Int // 7, 3, 1, etc.
+  sentAt           DateTime?
+
+  // Email details
+  recipientEmail String
+  emailType      String @default("expiry_warning") // "expiry_warning", "expired", "extended"
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, daysBeforeExpiry])
+  @@index([projectId])
+  @@index([sentAt])
+}
+
+// ============================================================================
+// INVOICE TEMPLATES
+// ============================================================================
+
+model InvoiceTemplate {
+  id             String @id @default(cuid())
+  organizationId String
+
+  name           String
+  isDefault      Boolean @default(false)
+
+  // Branding
+  logoPosition   String  @default("left") // "left", "center", "right"
+  primaryColor   String  @default("#3b82f6")
+  accentColor    String  @default("#8b5cf6")
+
+  // Content
+  headerText     String?
+  footerText     String?
+  paymentTerms   String? // e.g., "Net 30", "Due on Receipt"
+  notes          String?
+
+  // Styling
+  fontFamily     String  @default("Inter")
+  showLogo       Boolean @default(true)
+  showPaymentLink Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+// ============================================================================
+// CLIENT PORTAL ACTIVITY
+// ============================================================================
+
+model PortalActivity {
+  id             String @id @default(cuid())
+  organizationId String
+  clientId       String
+
+  // Activity details
+  activityType   String // "gallery_delivered", "invoice_sent", "payment_received", "comment_posted", etc.
+  title          String
+  description    String?
+
+  // Related entities
+  projectId      String?
+  invoiceId      String?
+  paymentId      String?
+
+  // Read status
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([isRead])
+  @@index([createdAt])
 }

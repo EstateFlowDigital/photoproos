@@ -29,6 +29,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Rate limiting on `/api/download/batch` (5 req/min per IP)
   - Graceful fallback when Upstash is not configured
   - New environment variables: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+- **Watermark Customization System**: Full watermark configuration for gallery protection
+  - Text or image watermarks with custom positioning (9 positions + tiled/diagonal)
+  - Configurable opacity and scale settings
+  - Upload custom watermark images (PNG/SVG)
+  - Default text watermarks with organization name and year
+  - Schema updated with watermark fields on Organization model
+- **Discount Code System**: Full promo code management for payments
+  - Create discount codes with percentage or fixed amount discounts
+  - Usage limits, validity periods, and minimum purchase requirements
+  - Scope to specific services or clients
+  - Validation API and usage tracking
+  - New `DiscountCode` and `DiscountCodeUsage` models
+- **Payment Plans/Installments**: Flexible payment options for clients
+  - Split payments into 3, 6, or 12 monthly installments
+  - Weekly, biweekly, or monthly payment frequencies
+  - Automatic installment tracking and overdue detection
+  - Stripe subscription integration support
+  - New `PaymentPlan` and `PaymentPlanInstallment` models
+- **Download Analytics & Tracking**: Comprehensive download insights
+  - Track who downloaded which photos and when
+  - Download format tracking (original, web-size, high-res, ZIP)
+  - Per-gallery analytics with top photos and unique clients
+  - CSV export of download history
+  - Organization-wide download statistics
+- **Client Portal Activity Timeline**: Keep clients informed
+  - Activity feed showing gallery deliveries, invoices, payments
+  - Unread notification tracking with badge counts
+  - Mark as read functionality
+  - Automatic activity logging from other actions
+- **Gallery Expiration Warnings**: Automated expiration notifications
+  - Schedule notifications 7, 3, and 1 day before expiry
+  - Urgency-based email styling (reminder, warning, urgent)
+  - Gallery extension functionality with notification rescheduling
+  - New `ExpirationNotification` model
+- **Invoice Customization & Templates**: Branded invoice experience
+  - Create custom invoice templates with branding
+  - Configurable logo position, colors, and fonts
+  - Custom header text, footer text, and payment terms
+  - Default template system with organization fallback
+  - New `InvoiceTemplate` model
+- **Revenue Forecasting & Analytics**: Business intelligence for photographers
+  - Revenue forecast based on pending invoices and payment patterns
+  - Monthly revenue trends with growth rate calculation
+  - 3-month projections based on historical data
+  - Client LTV metrics with repeat rate and segmentation
+  - At-risk client identification (6+ months inactive)
+  - Custom revenue reports with date range filtering and CSV export
+- **Lead Scoring System**: Property website lead qualification
+  - Automatic scoring based on engagement (page views, photos, tour clicks, time)
+  - Temperature classification (hot/warm/cold)
+  - Lead status management (new, contacted, qualified, closed)
+  - Follow-up date scheduling with daily reminders
+  - Lead analytics with temperature and status breakdowns
 
 ### Fixed
 - **Dashboard Error: Missing TourProvider**: Fixed "useTour must be used within a TourProvider" error
