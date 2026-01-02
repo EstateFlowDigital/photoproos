@@ -26,7 +26,7 @@ const allNavItems: NavItem[] = [
   { label: "Invoices", href: "/invoices", icon: InvoiceIcon, moduleId: "invoices" },
   { label: "Payments", href: "/payments", icon: PaymentsIcon, moduleId: "invoices" }, // Payments is part of invoices module
   { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
-  { label: "Availability", href: "/scheduling/availability", icon: AvailabilityIcon, moduleId: "availability" },
+  { label: "Availability", href: "/scheduling/availability", icon: AvailabilityIcon, moduleId: "scheduling" }, // Part of scheduling module
 ];
 
 const bottomNavItems: NavItem[] = [

@@ -7,16 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Feature Organization Refactor**: Restructured module system for cleaner hierarchy
+  - **Availability is now part of Scheduling** - not a standalone toggleable module
+    - When Scheduling is enabled, Availability link appears automatically
+    - Removed `availability` as standalone module from registry
+    - This follows the principle: sub-features belong to parent modules
+  - **Google Calendar stays in Settings > Integrations** - not a module
+    - Integrations enhance existing features, they're not separate modules
+    - Removed `calendar_sync` as standalone module from registry
+  - **Updated industry mappings** to remove standalone availability/calendar_sync entries
+
 ### Added
 - **Phase 1 UI Integration**: Connected all Phase 1 features to the application module system
-  - **New Module Registry Entries**
-    - Added `availability` module for time off and booking window management
-    - Added `calendar_sync` module for Google Calendar integration
-    - Updated all industry mappings to include new modules
-    - New modules available in Settings > Features for per-organization customization
   - **Sidebar Navigation**
     - Added "Contracts" link to sidebar (shows when contracts module enabled)
-    - Added "Availability" link to sidebar (shows when availability module enabled)
+    - Added "Availability" link under Scheduling (shows when scheduling module enabled)
     - New sidebar icons for contracts and availability
   - **Contracts Dashboard** (`/contracts`)
     - Full contracts list with status filtering (draft, sent, signed, expired)
