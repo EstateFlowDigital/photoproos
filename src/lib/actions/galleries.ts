@@ -836,6 +836,55 @@ export async function reorderPhotos(
 }
 
 /**
+ * Delete a photo from a gallery
+ */
+export async function deletePhoto(
+  projectId: string,
+  assetId: string
+): Promise<ActionResult> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify gallery belongs to organization and asset belongs to gallery
+    const asset = await prisma.asset.findFirst({
+      where: {
+        id: assetId,
+        projectId,
+        project: {
+          organizationId,
+        },
+      },
+      select: {
+        id: true,
+        originalUrl: true,
+        thumbnailUrl: true,
+        mediumUrl: true,
+        watermarkedUrl: true,
+      },
+    });
+
+    if (!asset) {
+      return { success: false, error: "Photo not found" };
+    }
+
+    // Delete the asset from database (R2 cleanup can be done async or via cron)
+    await prisma.asset.delete({
+      where: { id: assetId },
+    });
+
+    revalidatePath(`/galleries/${projectId}`);
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error deleting photo:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete photo" };
+  }
+}
+
+/**
  * Get public gallery data by delivery link slug or project ID (for public viewing)
  * @param slugOrId - Either a delivery link slug (8 chars) or a project CUID
  * @param isPreview - If true, bypasses delivery status check (for authenticated admin preview)

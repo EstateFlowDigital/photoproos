@@ -14,7 +14,8 @@ import {
   duplicateGallery,
   archiveGallery,
   deliverGallery,
-  recordDownload
+  recordDownload,
+  deletePhoto
 } from "@/lib/actions/galleries";
 import { createInvoice } from "@/lib/actions/invoices";
 import {
@@ -406,8 +407,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     }
   };
 
-  const handleGenerateLink = () => {
-    showToast("Delivery link generated successfully", "success");
+  const handleGenerateLink = async () => {
+    // This is the same as delivering the gallery - it generates the delivery link
+    await handleDeliverGallery();
   };
 
   const handlePhotoClick = (index: number) => {
@@ -415,9 +417,21 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     setLightboxOpen(true);
   };
 
-  const handlePhotoDelete = (photo: Photo) => {
-    showToast(`Photo "${photo.filename}" deleted`, "success");
-    setLightboxOpen(false);
+  const handlePhotoDelete = async (photo: Photo) => {
+    try {
+      const result = await deletePhoto(gallery.id, photo.id);
+      if (result.success) {
+        // Remove photo from local state
+        setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+        showToast(`Photo "${photo.filename}" deleted`, "success");
+        setLightboxOpen(false);
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to delete photo", "error");
+      }
+    } catch {
+      showToast("Failed to delete photo", "error");
+    }
   };
 
   const handlePhotoDownload = async (photo: Photo) => {
@@ -472,12 +486,35 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     setSelectedPhotos(new Set());
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = async () => {
     const count = selectedPhotos.size;
-    setPhotos((prev) => prev.filter((p) => !selectedPhotos.has(p.id)));
-    setSelectedPhotos(new Set());
-    setIsSelectMode(false);
-    showToast(`${count} photo${count !== 1 ? "s" : ""} deleted`, "success");
+    const photoIds = Array.from(selectedPhotos);
+
+    try {
+      // Delete all selected photos
+      let deleted = 0;
+      for (const photoId of photoIds) {
+        const result = await deletePhoto(gallery.id, photoId);
+        if (result.success) {
+          deleted++;
+        }
+      }
+
+      // Update local state
+      setPhotos((prev) => prev.filter((p) => !selectedPhotos.has(p.id)));
+      setSelectedPhotos(new Set());
+      setIsSelectMode(false);
+
+      if (deleted === count) {
+        showToast(`${count} photo${count !== 1 ? "s" : ""} deleted`, "success");
+      } else {
+        showToast(`${deleted} of ${count} photos deleted`, "warning");
+      }
+
+      router.refresh();
+    } catch {
+      showToast("Failed to delete some photos", "error");
+    }
   };
 
   const handleBatchDownload = async () => {

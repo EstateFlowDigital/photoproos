@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Send Reminder**: Opens mailto with payment reminder pre-filled with gallery and amount details
   - **Generate QR Code**: Shows modal with scannable QR code for gallery delivery link
 - **Gallery List Actions**: Fixed bulk export to generate and download CSV with gallery data
+  - **Generate Link**: Now properly delivers gallery using the same action as "Deliver Gallery"
+  - **Delete Photo**: Now deletes from database (single photo from lightbox)
+  - **Batch Delete Photos**: Now deletes all selected photos from database
+- **Photo Management**: Added `deletePhoto` server action for removing individual photos from galleries
 - **Invoice Actions**: Fixed non-functional buttons:
   - Send via Email now opens mailto with invoice link
   - Download Invoice generates and downloads a text file
