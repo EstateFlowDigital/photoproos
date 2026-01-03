@@ -161,7 +161,7 @@ export default function DeveloperSettingsPage() {
         <p className="text-sm text-foreground-muted mb-4">
           After seeding, explore these areas to see the sample data:
         </p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="auto-grid grid-min-200 grid-gap-3">
           <QuickLink href="/clients" label="Clients" count="8 clients" />
           <QuickLink href="/projects" label="Projects" count="8 projects" />
           <QuickLink href="/galleries" label="Galleries" count="With photos" />
