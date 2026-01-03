@@ -410,7 +410,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
                       });
 
                       const content = (
-                        <div className="flex items-start gap-3 px-4 py-3">
+                        <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-start sm:gap-3">
                           <span
                             className={cn(
                               "mt-1 h-2 w-2 rounded-full",
@@ -423,7 +423,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
                               <div className="text-xs text-foreground-muted">{event.subtitle}</div>
                             )}
                           </div>
-                          <div className="text-xs text-foreground-muted">{timeLabel}</div>
+                          <div className="text-xs text-foreground-muted sm:ml-auto">{timeLabel}</div>
                         </div>
                       );
 
