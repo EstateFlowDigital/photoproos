@@ -119,7 +119,7 @@ export function SettingsPageClient({
     <>
       {/* Restart Onboarding Section */}
       <div className="mt-8 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="font-medium text-foreground">Restart Onboarding</h3>
             <p className="mt-1 text-sm text-foreground-muted">
@@ -129,7 +129,7 @@ export function SettingsPageClient({
           <button
             onClick={handleRestartOnboarding}
             disabled={isResettingOnboarding}
-            className="inline-flex items-center gap-2 shrink-0 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
           >
             {isResettingOnboarding ? (
               <>
