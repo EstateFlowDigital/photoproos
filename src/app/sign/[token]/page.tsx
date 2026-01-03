@@ -41,7 +41,8 @@ type SignatureMode = "draw" | "type";
 export default function ContractSigningPage() {
   const params = useParams();
   const router = useRouter();
-  const token = params.token as string;
+  const token =
+    (Array.isArray(params?.token) ? params?.token[0] : (params?.token as string | undefined)) ?? "";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -314,6 +314,25 @@ enum SyncDirection {
   both
 }
 
+// Phase 2: Client Questionnaire System
+enum ClientQuestionnaireStatus {
+  pending // Assigned but not started
+  in_progress // Client started but not completed
+  completed // Client submitted
+  approved // Photographer reviewed
+  expired // Past deadline
+}
+
+enum LegalAgreementType {
+  terms_of_service
+  licensing_agreement
+  model_release
+  property_release
+  liability_waiver
+  shoot_checklist
+  custom
+}
+
 // ============================================================================
 // CORE MODELS
 // ============================================================================
@@ -477,6 +496,10 @@ model Organization {
   territories     ServiceTerritory[]
   referralProgram ReferralProgram?
 
+  // Phase 2: Client Questionnaire System
+  questionnaireTemplates QuestionnaireTemplate[]
+  clientQuestionnaires   ClientQuestionnaire[]
+
   @@index([slug])
   @@index([plan])
 }
@@ -628,6 +651,9 @@ model Client {
   referrer  Referrer?  @relation("ClientReferrer")
   referrals Referral[] @relation("ReferralClient")
 
+  // Phase 2: Client Questionnaire System
+  questionnaires ClientQuestionnaire[]
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([email])
@@ -741,6 +767,9 @@ model Project {
   comments        GalleryComment[]
   propertyWebsite PropertyWebsite?
   tasks           Task[]
+
+  // Phase 2: Client Questionnaire System
+  questionnaires ClientQuestionnaire[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -1041,6 +1070,9 @@ model Booking {
 
   // Phase 4: Referral Program back-reference
   referrals Referral[] @relation("ReferralBooking")
+
+  // Phase 2: Client Questionnaire System
+  questionnaires ClientQuestionnaire[]
 
   @@index([organizationId])
   @@index([multiDayParentId])
@@ -3636,21 +3668,21 @@ model ServiceTerritory {
   description    String? @db.Text
 
   // Geographic bounds (ZIP codes or coordinates)
-  zipCodes       String[] // Array of ZIP codes in this territory
-  centerLat      Decimal? @db.Decimal(10, 7) // Center point latitude
-  centerLng      Decimal? @db.Decimal(10, 7) // Center point longitude
-  radiusMiles    Float?   // Radius in miles from center (alternative to ZIP codes)
+  zipCodes    String[] // Array of ZIP codes in this territory
+  centerLat   Decimal? @db.Decimal(10, 7) // Center point latitude
+  centerLng   Decimal? @db.Decimal(10, 7) // Center point longitude
+  radiusMiles Float? // Radius in miles from center (alternative to ZIP codes)
 
   // Pricing
-  pricingModifier Float   @default(1.0) // 1.0 = normal, 1.2 = 20% more, 0.9 = 10% discount
-  flatFeeOverride Int?    // Flat fee override in cents (instead of modifier)
-  travelFee       Int?    // Additional travel fee in cents
+  pricingModifier Float @default(1.0) // 1.0 = normal, 1.2 = 20% more, 0.9 = 10% discount
+  flatFeeOverride Int? // Flat fee override in cents (instead of modifier)
+  travelFee       Int? // Additional travel fee in cents
 
   // Availability
   isActive            Boolean @default(true)
-  minLeadTimeHours    Int?    // Minimum hours notice for bookings
-  maxLeadTimeDays     Int?    // Maximum days in advance for bookings
-  availableDaysOfWeek Int[]   // 0=Sun, 1=Mon, etc. Empty = all days
+  minLeadTimeHours    Int? // Minimum hours notice for bookings
+  maxLeadTimeDays     Int? // Maximum days in advance for bookings
+  availableDaysOfWeek Int[] // 0=Sun, 1=Mon, etc. Empty = all days
 
   // Visual
   color String? // Hex color for map display
@@ -3659,7 +3691,7 @@ model ServiceTerritory {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   services     TerritoryServiceOverride[]
 
   @@index([organizationId])
@@ -3673,7 +3705,7 @@ model TerritoryServiceOverride {
 
   // Override pricing for this service in this territory
   pricingModifier Float? // Override territory default
-  flatPrice       Int?   // Fixed price in cents (overrides modifier)
+  flatPrice       Int? // Fixed price in cents (overrides modifier)
   isAvailable     Boolean @default(true) // Service available in this territory?
 
   createdAt DateTime @default(now())
@@ -3693,18 +3725,18 @@ model TerritoryServiceOverride {
 // ============================================================================
 
 enum ReferralStatus {
-  pending    // Referral submitted, not yet converted
-  qualified  // Lead qualified/booking made
-  completed  // Service delivered
-  rewarded   // Reward issued
-  expired    // Referral expired without conversion
+  pending // Referral submitted, not yet converted
+  qualified // Lead qualified/booking made
+  completed // Service delivered
+  rewarded // Reward issued
+  expired // Referral expired without conversion
 }
 
 enum ReferralRewardType {
-  percentage  // Percentage of invoice
-  fixed       // Fixed amount
-  credit      // Account credit
-  gift_card   // Gift card
+  percentage // Percentage of invoice
+  fixed // Fixed amount
+  credit // Account credit
+  gift_card // Gift card
 }
 
 model ReferralProgram {
@@ -3718,16 +3750,16 @@ model ReferralProgram {
   requiresApproval Boolean @default(true) // Manual approval before reward
 
   // Reward configuration
-  rewardType   ReferralRewardType @default(percentage)
-  rewardValue  Float              @default(10) // 10% or $10 depending on type
-  maxRewardCents Int?             // Cap on reward amount
+  rewardType     ReferralRewardType @default(percentage)
+  rewardValue    Float              @default(10) // 10% or $10 depending on type
+  maxRewardCents Int? // Cap on reward amount
 
   // Referred client discount
-  referredDiscount     Float?  // Discount for referred client (e.g., 5%)
-  referredDiscountCents Int?   // Fixed discount in cents
+  referredDiscount      Float? // Discount for referred client (e.g., 5%)
+  referredDiscountCents Int? // Fixed discount in cents
 
   // Expiration
-  referralValidDays   Int @default(90) // How long referral link is valid
+  referralValidDays    Int  @default(90) // How long referral link is valid
   rewardExpirationDays Int? // How long until reward expires after issue
 
   // Tracking
@@ -3756,9 +3788,9 @@ model Referrer {
   referralCode String @unique
 
   // Stats
-  totalReferrals    Int @default(0)
+  totalReferrals      Int @default(0)
   successfulReferrals Int @default(0)
-  totalEarned       Int @default(0) // Total rewards in cents
+  totalEarned         Int @default(0) // Total rewards in cents
 
   // Status
   isActive Boolean @default(true)
@@ -3767,8 +3799,8 @@ model Referrer {
   updatedAt DateTime @updatedAt
 
   // Relations
-  program   ReferralProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
-  client    Client?         @relation("ClientReferrer", fields: [clientId], references: [id], onDelete: SetNull)
+  program   ReferralProgram  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  client    Client?          @relation("ClientReferrer", fields: [clientId], references: [id], onDelete: SetNull)
   referrals Referral[]
   rewards   ReferralReward[]
 
@@ -3788,22 +3820,22 @@ model Referral {
   referredPhone String?
 
   // Conversion tracking
-  status        ReferralStatus @default(pending)
-  clientId      String?        // Created client (after conversion)
-  bookingId     String?        // First booking
-  invoiceId     String?        // First invoice
+  status    ReferralStatus @default(pending)
+  clientId  String? // Created client (after conversion)
+  bookingId String? // First booking
+  invoiceId String? // First invoice
 
   // Metadata
-  source       String? // Where referral came from (link, form, etc.)
-  landingPage  String? // URL they landed on
-  utmCampaign  String?
-  utmSource    String?
+  source      String? // Where referral came from (link, form, etc.)
+  landingPage String? // URL they landed on
+  utmCampaign String?
+  utmSource   String?
 
   // Timestamps
-  submittedAt  DateTime  @default(now())
-  qualifiedAt  DateTime?
-  completedAt  DateTime?
-  expiresAt    DateTime
+  submittedAt DateTime  @default(now())
+  qualifiedAt DateTime?
+  completedAt DateTime?
+  expiresAt   DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3833,11 +3865,11 @@ model ReferralReward {
   description String?
 
   // Status
-  isIssued   Boolean   @default(false)
-  issuedAt   DateTime?
-  isClaimed  Boolean   @default(false)
-  claimedAt  DateTime?
-  expiresAt  DateTime?
+  isIssued  Boolean   @default(false)
+  issuedAt  DateTime?
+  isClaimed Boolean   @default(false)
+  claimedAt DateTime?
+  expiresAt DateTime?
 
   // Payment tracking
   paymentMethod String? // How reward was paid (check, paypal, credit, etc.)
@@ -3853,4 +3885,196 @@ model ReferralReward {
   @@index([referrerId])
   @@index([referralId])
   @@index([isIssued])
+}
+
+// ============================================================================
+// PHASE 2: CLIENT QUESTIONNAIRE TEMPLATES SYSTEM
+// ============================================================================
+
+// System-provided and custom questionnaire templates
+model QuestionnaireTemplate {
+  id             String  @id @default(cuid())
+  organizationId String? // Null = system template
+
+  // Template identity
+  name        String
+  slug        String
+  description String?  @db.Text
+  industry    Industry
+
+  // Template settings
+  isSystemTemplate Boolean @default(false)
+  isActive         Boolean @default(true)
+  usageCount       Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization    Organization?                    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fields          QuestionnaireField[]
+  legalAgreements QuestionnaireTemplateAgreement[]
+  questionnaires  ClientQuestionnaire[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([industry])
+  @@index([isSystemTemplate])
+  @@index([isActive])
+}
+
+// Fields within a questionnaire template
+model QuestionnaireField {
+  id         String @id @default(cuid())
+  templateId String
+
+  // Field configuration
+  label       String
+  type        FormFieldType
+  placeholder String?
+  helpText    String?
+  isRequired  Boolean       @default(false)
+  sortOrder   Int           @default(0)
+
+  // Section grouping
+  section      String? // e.g., "Property Details", "Agent Information"
+  sectionOrder Int     @default(0)
+
+  // Validation rules (JSON: { minLength, maxLength, pattern, min, max, options })
+  validation Json?
+
+  // Conditional visibility
+  conditionalOn    String? // Field ID this depends on
+  conditionalValue String? // Value that triggers display
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  template QuestionnaireTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([sortOrder])
+}
+
+// Legal agreements attached to questionnaire templates
+model QuestionnaireTemplateAgreement {
+  id         String @id @default(cuid())
+  templateId String
+
+  // Agreement details
+  agreementType     LegalAgreementType
+  title             String
+  content           String             @db.Text
+  isRequired        Boolean            @default(true)
+  requiresSignature Boolean            @default(false)
+  sortOrder         Int                @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  template QuestionnaireTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([agreementType])
+}
+
+// Questionnaire assigned to a specific client
+model ClientQuestionnaire {
+  id             String @id @default(cuid())
+  organizationId String
+  clientId       String
+  templateId     String
+
+  // Optional: link to booking or project
+  bookingId String?
+  projectId String?
+
+  // Assignment settings
+  isRequired  Boolean                   @default(true)
+  dueDate     DateTime?
+  status      ClientQuestionnaireStatus @default(pending)
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  // Reminder settings
+  sendReminders Boolean   @default(true)
+  remindersSent Int       @default(0)
+  lastReminder  DateTime?
+
+  // Internal notes (visible only to photographer)
+  internalNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client                         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  template     QuestionnaireTemplate          @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  booking      Booking?                       @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  project      Project?                       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  responses    ClientQuestionnaireResponse[]
+  agreements   ClientQuestionnaireAgreement[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([templateId])
+  @@index([bookingId])
+  @@index([projectId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+// Client's response to a questionnaire field
+model ClientQuestionnaireResponse {
+  id              String @id @default(cuid())
+  questionnaireId String
+
+  // Response data
+  fieldLabel String // Store label for reference after template changes
+  fieldType  String // Store type for proper rendering
+  value      Json // Actual response value
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  questionnaire ClientQuestionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@index([questionnaireId])
+}
+
+// Legal agreement acceptance record
+model ClientQuestionnaireAgreement {
+  id              String @id @default(cuid())
+  questionnaireId String
+
+  // Agreement details (snapshot from template)
+  agreementType LegalAgreementType
+  title         String
+  content       String             @db.Text
+
+  // Acceptance status
+  accepted   Boolean   @default(false)
+  acceptedAt DateTime?
+
+  // Signature data (if signature required)
+  signatureData String?        @db.Text // Base64 encoded signature image
+  signatureType SignatureType?
+
+  // Audit fields
+  acceptedIp        String?
+  acceptedUserAgent String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  questionnaire ClientQuestionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@index([questionnaireId])
+  @@index([agreementType])
+  @@index([accepted])
 }

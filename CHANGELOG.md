@@ -8,6 +8,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Client Questionnaire Templates System (Phase 2)**
+  - New database models:
+    - `QuestionnaireTemplate` - System and custom questionnaire templates
+    - `QuestionnaireField` - Form fields with validation and conditional logic
+    - `QuestionnaireTemplateAgreement` - Legal agreements attached to templates
+    - `ClientQuestionnaire` - Questionnaires assigned to clients
+    - `ClientQuestionnaireResponse` - Client's field responses
+    - `ClientQuestionnaireAgreement` - Legal agreement acceptances with signatures
+  - New enums: `ClientQuestionnaireStatus`, `LegalAgreementType`
+  - Validation schemas (`src/lib/validations/questionnaires.ts`)
+  - Template management server actions:
+    - `getQuestionnaireTemplates` / `getSystemTemplates` / `getTemplatesByIndustry`
+    - `createQuestionnaireTemplate` / `updateQuestionnaireTemplate` / `deleteQuestionnaireTemplate`
+    - `duplicateQuestionnaireTemplate` - Clone system or custom templates
+    - `updateQuestionnaireFields` / `reorderQuestionnaireFields`
+    - `updateQuestionnaireAgreements`
+  - Client questionnaire server actions:
+    - `getClientQuestionnaires` / `getClientQuestionnairesByClient` / `getQuestionnaireStats`
+    - `assignQuestionnaireToClient` / `updateClientQuestionnaire` / `deleteClientQuestionnaire`
+    - `approveQuestionnaire` / `sendQuestionnaireReminder`
+  - Portal questionnaire actions (client-facing):
+    - `getClientQuestionnairesForPortal` / `getQuestionnaireForCompletion`
+    - `saveQuestionnaireProgress` - Auto-save drafts
+    - `submitQuestionnaireResponses` - Final submission with validation
+    - `acceptAgreement` - Legal agreement acceptance with signature support
+  - Pre-built industry template seed data with 14 templates:
+    - Real Estate: Standard Property, Luxury Property, Commercial Property
+    - Events/Weddings: Basic Wedding Info, Detailed Timeline, Wedding Party & Family
+    - Portraits: Individual Portrait, Corporate Team Headshots
+    - Commercial: Brand Photography Brief, Marketing Campaign Brief
+    - Food/Product: Restaurant Menu Photography, Product Photography Brief
+  - Questionnaires dashboard page (`/questionnaires`)
+    - Template gallery grouped by industry
+    - Assigned questionnaires list with status tracking
+    - Statistics cards (total, pending, completed, overdue)
+    - Search and filter by industry/status
+  - Assign Questionnaire Modal (`src/components/modals/assign-questionnaire-modal.tsx`)
+    - Select template and client
+    - Link to booking or project
+    - Set due date and required status
+    - Enable/disable reminder emails
+    - Internal notes for team
+  - Client Portal Questionnaires Integration
+    - New "Questionnaires" tab in client portal with pending count badge
+    - Auto-switch to questionnaires tab when pending items exist
+    - Pending questionnaires section with "Start"/"Continue" actions
+    - Completed questionnaires history
+    - Questionnaire completion page at `/portal/questionnaires/[id]`
+  - Client Questionnaire Completion Form
+    - Multi-section form layout with progress indicator
+    - Auto-save progress every 2 seconds
+    - Form field types: text, email, phone, textarea, number, date, time, select, checkbox, radio, url, address
+    - Legal agreements section with inline review and checkbox acceptance
+    - Validation before submission
+    - Success confirmation with portal redirect
+
 - **Service Territory System (Phase 4)**
   - New `ServiceTerritory` model for zone-based pricing with ZIP codes or radius
   - New `TerritoryServiceOverride` model for per-service territory pricing

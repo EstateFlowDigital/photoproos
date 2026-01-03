@@ -18,6 +18,7 @@ export default async function ClientPortalPage() {
       properties={data.properties}
       galleries={data.galleries}
       invoices={data.invoices}
+      questionnaires={data.questionnaires ?? []}
     />
   );
 }

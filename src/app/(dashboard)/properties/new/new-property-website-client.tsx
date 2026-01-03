@@ -34,7 +34,7 @@ export function NewPropertyWebsiteClient({ projects }: NewPropertyWebsiteClientP
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const preselectedGalleryId = searchParams.get("galleryId");
+  const preselectedGalleryId = searchParams ? searchParams.get("galleryId") : null;
 
   const [projectId, setProjectId] = useState(preselectedGalleryId || "");
   const [address, setAddress] = useState("");

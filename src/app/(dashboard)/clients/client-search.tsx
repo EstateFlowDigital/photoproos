@@ -17,7 +17,7 @@ export function ClientSearch({ initialQuery }: ClientSearchProps) {
     setQuery(value);
 
     startTransition(() => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || "");
       if (value) {
         params.set("q", value);
       } else {

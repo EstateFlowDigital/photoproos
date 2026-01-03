@@ -44,3 +44,4 @@ export default async function ReferralsPage() {
     />
   );
 }
+export const dynamic = "force-dynamic";

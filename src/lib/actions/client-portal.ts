@@ -20,7 +20,7 @@ export async function getClientPortalData() {
   const clientId = session.clientId;
 
   // Fetch all data in parallel
-  const [client, properties, galleries, invoices] = await Promise.all([
+  const [client, properties, galleries, invoices, questionnaires] = await Promise.all([
     // Get client details
     prisma.client.findUnique({
       where: { id: clientId },
@@ -98,6 +98,41 @@ export async function getClientPortalData() {
         createdAt: "desc",
       },
     }),
+
+    // Get questionnaires assigned to this client
+    prisma.clientQuestionnaire.findMany({
+      where: {
+        clientId: clientId,
+        status: { in: ["pending", "in_progress", "completed", "approved"] },
+      },
+      include: {
+        template: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            industry: true,
+          },
+        },
+        booking: {
+          select: {
+            id: true,
+            title: true,
+            startTime: true,
+          },
+        },
+        _count: {
+          select: {
+            responses: true,
+          },
+        },
+      },
+      orderBy: [
+        { status: "asc" },
+        { dueDate: "asc" },
+        { createdAt: "desc" },
+      ],
+    }),
   ]);
 
   if (!client) {
@@ -154,6 +189,28 @@ export async function getClientPortalData() {
     createdAt: invoice.createdAt,
   }));
 
+  const transformedQuestionnaires = questionnaires.map((q) => ({
+    id: q.id,
+    templateId: q.templateId,
+    templateName: q.template.name,
+    templateDescription: q.template.description,
+    industry: q.template.industry,
+    status: q.status,
+    isRequired: q.isRequired,
+    dueDate: q.dueDate,
+    startedAt: q.startedAt,
+    completedAt: q.completedAt,
+    createdAt: q.createdAt,
+    bookingTitle: q.booking?.title || null,
+    bookingDate: q.booking?.startTime || null,
+    responseCount: q._count.responses,
+  }));
+
+  // Count pending questionnaires for the badge
+  const pendingQuestionnaires = questionnaires.filter(
+    (q) => q.status === "pending" || q.status === "in_progress"
+  ).length;
+
   return {
     client,
     stats: {
@@ -161,10 +218,12 @@ export async function getClientPortalData() {
       totalViews,
       totalLeads,
       totalPhotos,
+      pendingQuestionnaires,
     },
     properties: transformedProperties,
     galleries: transformedGalleries,
     invoices: transformedInvoices,
+    questionnaires: transformedQuestionnaires,
   };
 }
 

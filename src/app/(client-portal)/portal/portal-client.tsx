@@ -63,6 +63,23 @@ interface InvoiceData {
   createdAt: Date;
 }
 
+interface QuestionnaireData {
+  id: string;
+  templateId: string;
+  templateName: string;
+  templateDescription: string | null;
+  industry: string;
+  status: string;
+  isRequired: boolean;
+  dueDate: Date | null;
+  startedAt: Date | null;
+  completedAt: Date | null;
+  createdAt: Date;
+  bookingTitle: string | null;
+  bookingDate: Date | null;
+  responseCount: number;
+}
+
 interface PortalClientProps {
   client: ClientData;
   stats: {
@@ -70,10 +87,12 @@ interface PortalClientProps {
     totalViews: number;
     totalLeads: number;
     totalPhotos: number;
+    pendingQuestionnaires: number;
   };
   properties: PropertyData[];
   galleries: GalleryData[];
   invoices: InvoiceData[];
+  questionnaires: QuestionnaireData[];
 }
 
 function formatPrice(cents: number): string {
@@ -94,9 +113,10 @@ function formatDate(date: Date | string): string {
   }).format(d);
 }
 
-export function PortalClient({ client, stats, properties, galleries, invoices }: PortalClientProps) {
-  const [activeTab, setActiveTab] = useState<"properties" | "galleries" | "downloads" | "invoices">(
-    "properties"
+export function PortalClient({ client, stats, properties, galleries, invoices, questionnaires }: PortalClientProps) {
+  const [activeTab, setActiveTab] = useState<"properties" | "galleries" | "downloads" | "invoices" | "questionnaires">(
+    // Default to questionnaires if there are pending ones
+    stats.pendingQuestionnaires > 0 ? "questionnaires" : "properties"
   );
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [downloadingGallery, setDownloadingGallery] = useState<string | null>(null);
@@ -332,17 +352,22 @@ export function PortalClient({ client, stats, properties, galleries, invoices }:
 
         {/* Tabs */}
         <div className="mb-6 flex items-center gap-2 border-b border-[#262626]">
-          {(["properties", "galleries", "downloads", "invoices"] as const).map((tab) => (
+          {(["properties", "galleries", "downloads", "invoices", "questionnaires"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`relative border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab
                   ? "border-[#3b82f6] text-white"
                   : "border-transparent text-[#7c7c7c] hover:text-white"
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "questionnaires" && stats.pendingQuestionnaires > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#f97316] text-[10px] font-bold text-white">
+                  {stats.pendingQuestionnaires}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -662,6 +687,108 @@ export function PortalClient({ client, stats, properties, galleries, invoices }:
             )}
           </div>
         )}
+
+        {/* Questionnaires Tab */}
+        {activeTab === "questionnaires" && (
+          <div className="space-y-4">
+            {questionnaires.length === 0 ? (
+              <div className="rounded-xl border border-[#262626] bg-[#141414] p-12 text-center">
+                <ClipboardIcon className="mx-auto h-12 w-12 text-[#7c7c7c]" />
+                <p className="mt-4 text-lg font-medium text-white">No questionnaires yet</p>
+                <p className="mt-2 text-sm text-[#7c7c7c]">
+                  Your photographer will send you questionnaires to complete before your shoot
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Pending/In Progress questionnaires first */}
+                {questionnaires.filter((q) => q.status === "pending" || q.status === "in_progress").length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-[#a7a7a7]">Requires your attention</h3>
+                    {questionnaires
+                      .filter((q) => q.status === "pending" || q.status === "in_progress")
+                      .map((q) => (
+                        <div
+                          key={q.id}
+                          className="flex items-center justify-between rounded-xl border border-[#262626] bg-[#141414] p-4"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f97316]/20">
+                              <ClipboardIcon className="h-5 w-5 text-[#f97316]" />
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-white">{q.templateName}</h3>
+                              <p className="text-sm text-[#7c7c7c]">
+                                {q.bookingTitle && `For: ${q.bookingTitle}`}
+                                {q.bookingDate && ` • ${formatDate(q.bookingDate)}`}
+                                {q.isRequired && (
+                                  <span className="ml-2 text-[#f97316]">Required</span>
+                                )}
+                              </p>
+                              {q.dueDate && (
+                                <p className="text-xs text-[#7c7c7c]">
+                                  Due: {formatDate(q.dueDate)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                                q.status === "in_progress"
+                                  ? "bg-[#8b5cf6]/20 text-[#8b5cf6]"
+                                  : "bg-[#f97316]/20 text-[#f97316]"
+                              }`}
+                            >
+                              {q.status === "in_progress" ? "In Progress" : "Pending"}
+                            </span>
+                            <Link
+                              href={`/portal/questionnaires/${q.id}`}
+                              className="flex items-center gap-2 rounded-lg bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#3b82f6]/90"
+                            >
+                              {q.status === "in_progress" ? "Continue" : "Start"}
+                              <ChevronRightIcon className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                {/* Completed questionnaires */}
+                {questionnaires.filter((q) => q.status === "completed" || q.status === "approved").length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-[#a7a7a7]">Completed</h3>
+                    {questionnaires
+                      .filter((q) => q.status === "completed" || q.status === "approved")
+                      .map((q) => (
+                        <div
+                          key={q.id}
+                          className="flex items-center justify-between rounded-xl border border-[#262626] bg-[#141414] p-4"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#22c55e]/20">
+                              <CheckCircleIcon className="h-5 w-5 text-[#22c55e]" />
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-white">{q.templateName}</h3>
+                              <p className="text-sm text-[#7c7c7c]">
+                                {q.bookingTitle && `For: ${q.bookingTitle}`}
+                                {q.completedAt && ` • Completed ${formatDate(q.completedAt)}`}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="rounded-full bg-[#22c55e]/20 px-2.5 py-1 text-xs font-medium text-[#22c55e]">
+                            {q.status === "approved" ? "Approved" : "Submitted"}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer */}
@@ -776,6 +903,30 @@ function LoadingSpinner({ className }: { className?: string }) {
         fill="currentColor"
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
       />
+    </svg>
+  );
+}
+
+function ClipboardIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
     </svg>
   );
 }

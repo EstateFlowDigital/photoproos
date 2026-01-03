@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Metadata } from "next";
 import { TerritoriesClient } from "./territories-client";
 import { getTerritories } from "@/lib/actions/territories";
@@ -15,11 +16,12 @@ export default async function TerritoriesPage() {
   ]);
 
   const territories = territoriesResult.success ? territoriesResult.data : [];
+  const mappedServices = (services || []).map((s) => ({ id: s.id, name: s.name }));
 
   return (
     <TerritoriesClient
       initialTerritories={territories || []}
-      services={services || []}
+      services={mappedServices}
     />
   );
 }

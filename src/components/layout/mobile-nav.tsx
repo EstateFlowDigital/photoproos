@@ -22,7 +22,7 @@ export function MobileNav({
   industries,
   notificationCount = 0,
 }: MobileNavProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
 
   const navItems = getFilteredNavigation({
     enabledModules,
@@ -137,7 +137,7 @@ export function MobileNav({
 
           {/* Notifications Link */}
           {(() => {
-            const isActive = pathname === "/notifications" || pathname.startsWith("/notifications/");
+            const isActive = pathname === "/notifications" || pathname?.startsWith("/notifications/");
             return (
               <Link
                 href="/notifications"

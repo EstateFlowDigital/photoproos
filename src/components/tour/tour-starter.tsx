@@ -15,7 +15,7 @@ export function TourStarter() {
   const { startTour, isActive } = useTour();
 
   useEffect(() => {
-    const tourId = searchParams.get("tour");
+    const tourId = searchParams?.get("tour");
     if (tourId && !isActive) {
       // Get the tour by ID
       const tour = tourId === "welcome" ? welcomeTour : getTourById(tourId);
@@ -25,7 +25,7 @@ export function TourStarter() {
         const timer = setTimeout(() => {
           startTour(tour);
           // Remove the tour param from URL without refresh
-          const newParams = new URLSearchParams(searchParams.toString());
+          const newParams = new URLSearchParams(searchParams?.toString() || "");
           newParams.delete("tour");
           const newUrl = newParams.toString()
             ? `${window.location.pathname}?${newParams.toString()}`

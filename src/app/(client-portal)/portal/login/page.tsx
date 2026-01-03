@@ -14,7 +14,7 @@ function ClientPortalLoginContent() {
 
   // Handle error from redirect
   useEffect(() => {
-    const errorParam = searchParams.get("error");
+    const errorParam = searchParams?.get("error");
     if (errorParam === "expired") {
       setError("Your login link has expired. Please request a new one.");
     } else if (errorParam === "invalid") {

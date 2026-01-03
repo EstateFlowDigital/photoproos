@@ -19,7 +19,7 @@ interface CompletionData {
 
 export default function SigningCompletePage() {
   const params = useParams();
-  const token = params.token as string;
+  const token = (params?.token as string) || "";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

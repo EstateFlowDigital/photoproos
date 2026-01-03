@@ -45,7 +45,7 @@ export function DashboardSidebar({
   industries,
   notificationCount = 0,
 }: DashboardSidebarProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
 
   const navItems = getFilteredNavigation({
     enabledModules,
@@ -96,7 +96,7 @@ export function DashboardSidebar({
       {/* Main Navigation */}
       <nav className="flex-1 space-y-1 px-4 pb-4">
         {sidebarNav.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const isActive = pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
           const IconComponent = item.icon;
 
           return (
@@ -138,7 +138,7 @@ export function DashboardSidebar({
       <div className="border-t border-[var(--card-border)] p-4 space-y-1">
         {/* Notifications Link */}
         {(() => {
-          const isActive = pathname === "/notifications" || pathname.startsWith("/notifications/");
+          const isActive = pathname === "/notifications" || (pathname ? pathname.startsWith("/notifications/") : false);
           return (
             <Link
               href="/notifications"
@@ -173,7 +173,7 @@ export function DashboardSidebar({
         })()}
 
         {bottomNavItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           const IconComponent = item.icon;
 
           return (

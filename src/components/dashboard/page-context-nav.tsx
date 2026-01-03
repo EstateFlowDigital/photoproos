@@ -25,12 +25,13 @@ interface PageContextNavProps {
 }
 
 export function PageContextNav({ items, integrations, className }: PageContextNavProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
 
   const isActive = (href: string) => {
+    if (!pathname) return false;
     if (href === pathname) return true;
     // Check for exact match or if we're on a sub-page
-    return pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
+    return href !== "/" && pathname.startsWith(href + "/");
   };
 
   return (
