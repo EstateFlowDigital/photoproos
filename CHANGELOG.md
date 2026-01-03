@@ -275,6 +275,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed duplicate `FilterIcon` function in notifications page client
   - Fixed testimonials type mismatch in public order page
   - Updated activity type imports across components
+  - Fixed type errors in public booking form (`booking-form-public.tsx`)
+    - Added optional chaining for `form.services` and `form.fields` arrays
+    - Updated `FormService.service.duration` type from `number | null` to `string | null` to match Prisma schema
+  - Fixed `BookingStatus` enum usage in bookings actions (use enum values, not strings)
+  - Created placeholder components for missing features (SMS templates, public booking form)
 
 ### Added
 - **Order Pages Complete Checkout Flow**
