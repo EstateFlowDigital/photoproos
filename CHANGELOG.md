@@ -13,8 +13,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Challenge verification for Dropbox webhook registration
   - HMAC-SHA256 signature verification for webhook security
   - Added `/api/integrations/(.*)` to public routes in middleware
+  - `DropboxIntegration` Prisma model for storing connection and sync settings
+  - Dropbox client library (`src/lib/integrations/dropbox.ts`) with full API support:
+    - Account info and space usage
+    - File/folder listing, creation, upload, download
+    - Search, move, copy, delete operations
+    - Shared link generation
+    - Temporary download links
+  - Server actions (`src/lib/actions/dropbox.ts`):
+    - `getDropboxConfig` / `getDropboxConnectionStatus`
+    - `saveDropboxConfig` / `updateDropboxSettings`
+    - `testDropboxIntegration` / `toggleDropboxIntegration` / `deleteDropboxIntegration`
+    - `listDropboxFolder` / `createDropboxFolder` / `getDropboxDownloadLink`
+    - `ensureDropboxRootFolder` - Creates standard folder structure
+  - Dropbox settings page (`/settings/dropbox`) with:
+    - Access token connection flow
+    - Sync folder configuration
+    - Auto-sync toggle
+    - Connection testing
+    - Folder structure creation
+  - Updated integrations page to link to Dropbox settings
 
 ### Fixed
+- **Onboarding Error**
+  - Fixed `completeOnboarding` action crashing when organization doesn't exist (P2025 error)
+  - Added validation for empty organizationId before attempting database updates
+  - Changed onboardingProgress update to upsert to prevent record-not-found errors
 - **TypeScript Build Errors**
   - Fixed `searchParams` null checks in `client-search.tsx`, `new-property-website-client.tsx`, `tour-starter.tsx`
   - Fixed `pathname` null checks in `page-context-nav.tsx`, `dashboard-sidebar.tsx`, `mobile-nav.tsx`
@@ -92,6 +116,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Legal agreements section with inline review and checkbox acceptance
     - Validation before submission
     - Success confirmation with portal redirect
+  - Questionnaire Response Viewer (`/questionnaires/assigned/[id]`)
+    - View all client responses grouped by section
+    - Status cards: status, client info, due date, response count
+    - Linked booking/project display
+    - Legal agreements with acceptance status and timestamps
+    - Internal notes display
+    - Timeline showing created, started, completed, and reminder dates
+    - Actions: Send Reminder (for pending/in-progress), Approve (for completed)
+    - Clickable rows in assigned questionnaires table for quick navigation
 
 - **Service Territory System (Phase 4)**
   - New `ServiceTerritory` model for zone-based pricing with ZIP codes or radius

@@ -229,7 +229,35 @@ export async function completeOnboarding(
       return { success: false, error: "Unauthorized" };
     }
 
+    // Validate organizationId
+    if (!organizationId || organizationId === "") {
+      console.error("Error completing onboarding: organizationId is empty");
+      return { success: false, error: "Organization not found" };
+    }
+
+    // Verify the organization exists first
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+    });
+
+    if (!organization) {
+      console.error("Error completing onboarding: Organization not found for id:", organizationId);
+      return { success: false, error: "Organization not found" };
+    }
+
     const now = new Date();
+
+    // Ensure onboarding progress exists before updating (use upsert)
+    await prisma.onboardingProgress.upsert({
+      where: { organizationId },
+      create: {
+        organizationId,
+        completedAt: now,
+      },
+      update: {
+        completedAt: now,
+      },
+    });
 
     await prisma.$transaction([
       prisma.organization.update({
@@ -237,12 +265,6 @@ export async function completeOnboarding(
         data: {
           onboardingCompleted: true,
           onboardingCompletedAt: now,
-        },
-      }),
-      prisma.onboardingProgress.update({
-        where: { organizationId },
-        data: {
-          completedAt: now,
         },
       }),
       prisma.user.update({

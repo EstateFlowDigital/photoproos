@@ -42,6 +42,8 @@ const availableIntegrations = [
       description: "Backup photos and sync deliverables",
       icon: "📦",
       category: "Storage",
+      connectUrl: "/settings/dropbox",
+      featured: true,
     },
     {
       id: "google-drive",

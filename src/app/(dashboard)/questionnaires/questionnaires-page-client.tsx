@@ -190,7 +190,11 @@ export function QuestionnairesPageClient({
                 </thead>
                 <tbody className="divide-y divide-[var(--card-border)]">
                   {questionnaires.map((q) => (
-                    <tr key={q.id} className="hover:bg-background/50">
+                    <tr
+                      key={q.id}
+                      className="hover:bg-background/50 cursor-pointer transition-colors"
+                      onClick={() => window.location.href = `/questionnaires/assigned/${q.id}`}
+                    >
                       <td className="px-4 py-3">
                         <p className="font-medium text-foreground">{q.client.fullName || q.client.email}</p>
                         <p className="text-xs text-foreground-muted">{q.client.email}</p>

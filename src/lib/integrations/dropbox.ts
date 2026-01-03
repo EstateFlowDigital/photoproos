@@ -202,9 +202,12 @@ export class DropboxClient {
    */
   async uploadFile(
     path: string,
-    content: Buffer | Uint8Array,
+    content: ArrayBuffer | Uint8Array,
     mode: "add" | "overwrite" = "overwrite"
   ): Promise<DropboxUploadResult> {
+    // Convert to Blob for fetch body compatibility
+    const blob = new Blob([content], { type: "application/octet-stream" });
+
     const response = await fetch(`${DROPBOX_CONTENT_BASE}/files/upload`, {
       method: "POST",
       headers: {
@@ -217,7 +220,7 @@ export class DropboxClient {
           mute: false,
         }),
       },
-      body: content,
+      body: blob,
     });
 
     if (!response.ok) {
