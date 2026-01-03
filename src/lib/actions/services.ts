@@ -416,3 +416,178 @@ export async function seedDefaultServices(): Promise<ActionResult<{ count: numbe
     return { success: false, error: "Failed to seed default services" };
   }
 }
+
+// ============================================================================
+// BULK ACTIONS
+// ============================================================================
+
+/**
+ * Toggle status for multiple services
+ */
+export async function bulkToggleServiceStatus(
+  ids: string[]
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    if (!ids.length) {
+      return { success: false, error: "No services selected" };
+    }
+
+    const organizationId = await getOrganizationId();
+
+    // Get current status of all services
+    const services = await prisma.service.findMany({
+      where: {
+        id: { in: ids },
+        organizationId,
+      },
+      select: { id: true, isActive: true },
+    });
+
+    if (services.length === 0) {
+      return { success: false, error: "No services found" };
+    }
+
+    // Determine action: if ANY are active, deactivate all; otherwise activate all
+    const anyActive = services.some((s) => s.isActive);
+    const newStatus = !anyActive;
+
+    const result = await prisma.service.updateMany({
+      where: {
+        id: { in: ids },
+        organizationId,
+      },
+      data: { isActive: newStatus },
+    });
+
+    revalidatePath("/services");
+    revalidatePath("/galleries/services");
+
+    return { success: true, data: { count: result.count } };
+  } catch (error) {
+    console.error("Error toggling service statuses:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to toggle service statuses" };
+  }
+}
+
+/**
+ * Archive multiple services (set isActive to false)
+ */
+export async function bulkArchiveServices(
+  ids: string[],
+  archive: boolean = true
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    if (!ids.length) {
+      return { success: false, error: "No services selected" };
+    }
+
+    const organizationId = await getOrganizationId();
+
+    const result = await prisma.service.updateMany({
+      where: {
+        id: { in: ids },
+        organizationId,
+      },
+      data: { isActive: !archive },
+    });
+
+    revalidatePath("/services");
+    revalidatePath("/galleries/services");
+
+    return { success: true, data: { count: result.count } };
+  } catch (error) {
+    console.error("Error archiving services:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to archive services" };
+  }
+}
+
+/**
+ * Delete multiple services (archives if in use)
+ */
+export async function bulkDeleteServices(
+  ids: string[]
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    if (!ids.length) {
+      return { success: false, error: "No services selected" };
+    }
+
+    const organizationId = await getOrganizationId();
+
+    // Get usage counts for all services
+    const services = await prisma.service.findMany({
+      where: {
+        id: { in: ids },
+        organizationId,
+      },
+      include: {
+        _count: {
+          select: {
+            projects: true,
+            bookings: true,
+          },
+        },
+      },
+    });
+
+    if (services.length === 0) {
+      return { success: false, error: "No services found" };
+    }
+
+    // Separate into deletable and archivable
+    const toDelete: string[] = [];
+    const toArchive: string[] = [];
+
+    for (const service of services) {
+      const usageCount = service._count.projects + service._count.bookings;
+      if (usageCount > 0) {
+        toArchive.push(service.id);
+      } else {
+        toDelete.push(service.id);
+      }
+    }
+
+    let deletedCount = 0;
+    let archivedCount = 0;
+
+    // Delete services not in use
+    if (toDelete.length > 0) {
+      const deleteResult = await prisma.service.deleteMany({
+        where: {
+          id: { in: toDelete },
+          organizationId,
+        },
+      });
+      deletedCount = deleteResult.count;
+    }
+
+    // Archive services that are in use
+    if (toArchive.length > 0) {
+      const archiveResult = await prisma.service.updateMany({
+        where: {
+          id: { in: toArchive },
+          organizationId,
+        },
+        data: { isActive: false },
+      });
+      archivedCount = archiveResult.count;
+    }
+
+    revalidatePath("/services");
+    revalidatePath("/galleries/services");
+
+    return { success: true, data: { count: deletedCount + archivedCount } };
+  } catch (error) {
+    console.error("Error deleting services:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete services" };
+  }
+}

@@ -16,6 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated activity type imports across components
 
 ### Added
+- **Public Order Page with Cart**
+  - Added shopping cart functionality to public order pages (`/order/[slug]`)
+  - Implemented add/remove bundle with visual feedback ("Added" state)
+  - Implemented add service with quantity controls (+/- buttons)
+  - Added floating cart sidebar with item management
+  - Added cart item list showing bundles and services with quantities
+  - Added quantity adjustment controls for services in cart
+  - Added "Clear cart" functionality
+  - Added subtotal calculation
+  - Added floating cart button for mobile devices
+  - Added "Proceed to Checkout" button (placeholder for Stripe integration)
+
 - **Service Addons & Bundles Enhancements**
   - Added search bar and filter dropdowns to addons list page (status, trigger type)
   - Added search bar and filter dropdowns to bundles list page (status, bundle type)
