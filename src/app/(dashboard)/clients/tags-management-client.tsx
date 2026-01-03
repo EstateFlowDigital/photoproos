@@ -254,7 +254,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="auto-grid grid-min-240 grid-gap-4">
           {tags.map((tag) => (
             <div
               key={tag.id}
