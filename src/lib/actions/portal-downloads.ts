@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { getClientSession } from "./client-auth";
+import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
 
 /**
  * Get a download URL for all photos in a gallery as a ZIP file
@@ -108,11 +109,27 @@ export async function getWebSizeDownload(galleryId: string): Promise<{
     }
 
     // Use medium URL if available, otherwise thumbnail
-    const photos = gallery.assets.map((asset) => ({
-      id: asset.id,
-      url: asset.mediumUrl || asset.thumbnailUrl || "",
-      filename: `web_${asset.filename}`,
-    }));
+    const photos = await Promise.all(
+      gallery.assets.map(async (asset) => {
+        const sourceUrl = asset.mediumUrl || asset.thumbnailUrl || "";
+        const key = extractKeyFromUrl(sourceUrl);
+
+        let signedUrl = sourceUrl;
+        if (key) {
+          try {
+            signedUrl = await generatePresignedDownloadUrl(key, 900);
+          } catch (err) {
+            console.error("[Portal Download] Failed to sign web photo URL", { assetId: asset.id, err });
+          }
+        }
+
+        return {
+          id: asset.id,
+          url: signedUrl,
+          filename: `web_${asset.filename}`,
+        };
+      })
+    );
 
     return {
       success: true,
@@ -167,12 +184,27 @@ export async function getHighResDownload(galleryId: string): Promise<{
       return { success: false, error: "Gallery not found or not available for download" };
     }
 
-    const photos = gallery.assets.map((asset) => ({
-      id: asset.id,
-      url: asset.originalUrl,
-      filename: asset.filename,
-      sizeBytes: asset.sizeBytes || 0,
-    }));
+    const photos = await Promise.all(
+      gallery.assets.map(async (asset) => {
+        const key = extractKeyFromUrl(asset.originalUrl);
+        let signedUrl = "";
+
+        if (key) {
+          try {
+            signedUrl = await generatePresignedDownloadUrl(key, 900);
+          } catch (err) {
+            console.error("[Portal Download] Failed to sign original URL", { assetId: asset.id, err });
+          }
+        }
+
+        return {
+          id: asset.id,
+          url: signedUrl,
+          filename: asset.filename,
+          sizeBytes: asset.sizeBytes || 0,
+        };
+      })
+    );
 
     return {
       success: true,

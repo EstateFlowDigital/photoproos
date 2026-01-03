@@ -103,6 +103,36 @@ export function getPublicUrl(key: string): string {
 }
 
 /**
+ * Extract the object key from a public R2 URL.
+ * Supports custom public URLs, r2.dev, and direct bucket endpoints.
+ */
+export function extractKeyFromUrl(url: string): string | null {
+  if (!url) return null;
+
+  const trimmedPublic = R2_PUBLIC_URL?.replace(/\/+$/, "");
+  if (trimmedPublic && url.startsWith(trimmedPublic)) {
+    return url.slice(trimmedPublic.length + 1);
+  }
+
+  const devMatch = url.match(/https?:\/\/[^/]+\.r2\.dev\/(.+)/);
+  if (devMatch?.[1]) {
+    return devMatch[1];
+  }
+
+  const cfMatch = url.match(/https?:\/\/[^/]+\.cloudflarestorage\.com\/(.+)/);
+  if (cfMatch?.[1]) {
+    return cfMatch[1];
+  }
+
+  try {
+    const parsed = new URL(url);
+    return parsed.pathname.replace(/^\\//, "") || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Validate file type
  */
 export function isAllowedImageType(contentType: string): contentType is AllowedImageType {

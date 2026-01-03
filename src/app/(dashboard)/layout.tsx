@@ -43,7 +43,11 @@ export default async function DashboardLayout({
     include: {
       memberships: {
         include: {
-          organization: true,
+          organization: {
+            include: {
+              onboardingProgress: true,
+            },
+          },
         },
       },
     },
@@ -62,6 +66,9 @@ export default async function DashboardLayout({
         primaryIndustry: "real_estate",
         enabledModules: defaultModules,
       },
+      include: {
+        onboardingProgress: true,
+      },
     });
 
     // Create membership linking user to organization
@@ -72,9 +79,37 @@ export default async function DashboardLayout({
         role: "owner",
       },
     });
+
+    // Initialize onboarding progress for the new organization
+    await prisma.onboardingProgress.create({
+      data: {
+        organizationId: organization.id,
+        currentStep: 1,
+      },
+    });
   } else {
     // Get the first organization for the user
     organization = user.memberships[0].organization;
+  }
+
+  // Ensure onboarding progress record exists
+  if (!organization.onboardingProgress) {
+    organization = await prisma.organization.update({
+      where: { id: organization.id },
+      data: {
+        onboardingProgress: {
+          create: { currentStep: 1 },
+        },
+      },
+      include: {
+        onboardingProgress: true,
+      },
+    });
+  }
+
+  // Redirect users with incomplete onboarding to the onboarding flow
+  if (!organization.onboardingCompleted) {
+    redirect("/onboarding");
   }
 
   // Get enabled modules (default to all if not set)

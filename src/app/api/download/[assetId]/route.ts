@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { generatePresignedDownloadUrl } from "@/lib/storage/r2";
+import { extractKeyFromUrl } from "@/lib/storage";
+import { getClientSession } from "@/lib/actions/client-auth";
 
 /**
  * GET /api/download/[assetId]
@@ -14,6 +16,7 @@ export async function GET(
 ) {
   try {
     const { assetId } = await params;
+    const deliverySlug = request.nextUrl.searchParams.get("deliverySlug");
 
     if (!assetId) {
       return NextResponse.json(
@@ -32,6 +35,10 @@ export async function GET(
               where: { status: "paid" },
               take: 1,
             },
+            deliveryLinks: {
+              where: { isActive: true },
+              select: { slug: true, isActive: true },
+            },
           },
         },
       },
@@ -45,11 +52,30 @@ export async function GET(
     }
 
     const gallery = asset.project;
+    const clientSession = await getClientSession();
+    const hasClientAccess = Boolean(clientSession && gallery.clientId === clientSession.clientId);
+    const hasDeliveryAccess = Boolean(
+      deliverySlug && gallery.deliveryLinks.some((link) => link.slug === deliverySlug && link.isActive)
+    );
+
+    if (!hasClientAccess && !hasDeliveryAccess) {
+      return NextResponse.json(
+        { error: "Unauthorized to download this photo" },
+        { status: 403 }
+      );
+    }
 
     // Check if gallery is expired
     if (gallery.expiresAt && new Date(gallery.expiresAt) < new Date()) {
       return NextResponse.json(
         { error: "This gallery has expired" },
+        { status: 403 }
+      );
+    }
+
+    if (gallery.status !== "delivered") {
+      return NextResponse.json(
+        { error: "This gallery is not ready for download" },
         { status: 403 }
       );
     }
@@ -74,18 +100,12 @@ export async function GET(
     }
 
     // Extract the key from the originalUrl
-    // URL format: https://bucket.r2.dev/key or custom domain/key
-    const originalUrl = asset.originalUrl;
-    let key: string;
-
-    if (originalUrl.includes(".r2.dev/")) {
-      key = originalUrl.split(".r2.dev/")[1];
-    } else if (originalUrl.includes(".r2.cloudflarestorage.com/")) {
-      key = originalUrl.split(".r2.cloudflarestorage.com/")[1];
-    } else {
-      // Assume it's a custom domain URL, extract path after domain
-      const url = new URL(originalUrl);
-      key = url.pathname.slice(1); // Remove leading /
+    const key = extractKeyFromUrl(asset.originalUrl);
+    if (!key) {
+      return NextResponse.json(
+        { error: "Failed to locate photo" },
+        { status: 500 }
+      );
     }
 
     // Generate a presigned download URL (valid for 5 minutes)

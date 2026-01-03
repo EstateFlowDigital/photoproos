@@ -14,6 +14,7 @@ export {
   fileExists,
   getFileMetadata,
   generateBatchPresignedUrls,
+  extractKeyFromUrl,
   ALLOWED_IMAGE_TYPES,
   MAX_FILE_SIZE,
 } from "./r2";

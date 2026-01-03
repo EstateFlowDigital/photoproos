@@ -2,6 +2,10 @@
 
 import { prisma } from "@/lib/db";
 import { getClientSession } from "./client-auth";
+import {
+  extractKeyFromUrl,
+  generatePresignedDownloadUrl,
+} from "@/lib/storage";
 
 /**
  * Get all data for the client portal dashboard
@@ -255,10 +259,34 @@ export async function getClientGalleryDownload(galleryId: string) {
     return null;
   }
 
+  const assetsWithSignedUrls = await Promise.all(
+    gallery.assets.map(async (asset) => {
+      const key = extractKeyFromUrl(asset.originalUrl);
+
+      if (!key) {
+        return asset;
+      }
+
+      try {
+        const signedUrl = await generatePresignedDownloadUrl(key, 900); // 15 minutes
+        return {
+          ...asset,
+          originalUrl: signedUrl,
+        };
+      } catch (error) {
+        console.error("[ClientPortal] Failed to sign download URL", {
+          assetId: asset.id,
+          error,
+        });
+        return asset;
+      }
+    })
+  );
+
   return {
     id: gallery.id,
     name: gallery.name,
-    assets: gallery.assets,
-    totalSize: gallery.assets.reduce((sum, a) => sum + (a.sizeBytes || 0), 0),
+    assets: assetsWithSignedUrls,
+    totalSize: assetsWithSignedUrls.reduce((sum, a) => sum + (a.sizeBytes || 0), 0),
   };
 }

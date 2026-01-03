@@ -12,6 +12,7 @@ import {
   isAllowedImageType,
   isValidFileSize,
   getPublicUrl,
+  extractKeyFromUrl,
   type PresignedUrlResponse,
 } from "@/lib/storage";
 
@@ -362,15 +363,15 @@ export async function deleteAsset(
       asset.watermarkedUrl,
     ].filter(Boolean) as string[];
 
-    // Convert URLs to keys
-    const keysToDelete = urlsToDelete.map((url) => {
-      // Extract key from URL (everything after the bucket domain)
-      const match = url.match(/\.r2\.dev\/(.+)$/) || url.match(/R2_PUBLIC_URL\/(.+)$/);
-      return match ? match[1] : url;
-    });
+    // Convert URLs to keys (handles custom/public endpoints)
+    const keysToDelete = urlsToDelete
+      .map((url) => extractKeyFromUrl(url))
+      .filter((key): key is string => Boolean(key));
 
     // Delete from R2
-    await deleteFiles(keysToDelete);
+    if (keysToDelete.length > 0) {
+      await deleteFiles(keysToDelete);
+    }
 
     // Delete from database
     await prisma.asset.delete({

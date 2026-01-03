@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { PropertyWebsiteTemplate, PropertyType, LeadStatus } from "@prisma/client";
 import { sendPropertyLeadEmail } from "@/lib/email/send";
+import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
 
 // Types
 export interface PropertyWebsiteInput {
@@ -423,7 +424,50 @@ export async function getPropertyWebsiteBySlug(slug: string) {
       },
     });
 
-    return website;
+    if (!website || !website.isPublished) {
+      return null;
+    }
+
+    // Sign image URLs for short-lived public access
+    const signedAssets = await Promise.all(
+      website.project.assets.map(async (asset) => {
+        const thumbKey = asset.thumbnailUrl ? extractKeyFromUrl(asset.thumbnailUrl) : null;
+        const originalKey = asset.originalUrl ? extractKeyFromUrl(asset.originalUrl) : null;
+
+        let signedThumbnailUrl = asset.thumbnailUrl;
+        let signedOriginalUrl = asset.originalUrl;
+
+        try {
+          if (thumbKey) {
+            signedThumbnailUrl = await generatePresignedDownloadUrl(thumbKey, 900);
+          }
+        } catch (err) {
+          console.error("Failed to sign property website thumbnail", { assetId: asset.id, err });
+        }
+
+        try {
+          if (originalKey) {
+            signedOriginalUrl = await generatePresignedDownloadUrl(originalKey, 900);
+          }
+        } catch (err) {
+          console.error("Failed to sign property website original", { assetId: asset.id, err });
+        }
+
+        return {
+          ...asset,
+          thumbnailUrl: signedThumbnailUrl || signedOriginalUrl,
+          originalUrl: signedOriginalUrl || "",
+        };
+      })
+    );
+
+    return {
+      ...website,
+      project: {
+        ...website.project,
+        assets: signedAssets,
+      },
+    };
   } catch (error) {
     console.error("Error fetching property website by slug:", error);
     return null;
@@ -814,11 +858,14 @@ export async function duplicatePropertyWebsite(
         virtualTourUrl: existing.virtualTourUrl,
         videoUrl: existing.videoUrl,
         template: existing.template,
+        accentColor: existing.accentColor,
         isBranded: existing.isBranded,
         showPrice: existing.showPrice,
         showAgent: existing.showAgent,
         metaTitle: existing.metaTitle,
         metaDescription: existing.metaDescription,
+        openHouseDate: existing.openHouseDate,
+        openHouseEndDate: existing.openHouseEndDate,
         slug: uniqueSlug,
         isPublished: false, // Always start unpublished
       },

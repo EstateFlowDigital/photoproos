@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import archiver from "archiver";
 import { batchDownloadRatelimit, checkRateLimit, getClientIP } from "@/lib/ratelimit";
+import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
+import { getClientSession } from "@/lib/actions/client-auth";
 
 /**
  * POST /api/download/batch
@@ -28,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { galleryId, assetIds } = body;
+    const { galleryId, assetIds, deliverySlug } = body;
 
     if (!galleryId || !assetIds || !Array.isArray(assetIds) || assetIds.length === 0) {
       return NextResponse.json(
@@ -58,6 +60,13 @@ export async function POST(request: NextRequest) {
             id: { in: assetIds },
           },
         },
+        deliveryLinks: {
+          where: { isActive: true },
+          select: { slug: true, isActive: true },
+        },
+        client: {
+          select: { id: true },
+        },
       },
     });
 
@@ -72,6 +81,14 @@ export async function POST(request: NextRequest) {
     if (gallery.expiresAt && new Date(gallery.expiresAt) < new Date()) {
       return NextResponse.json(
         { error: "This gallery has expired" },
+        { status: 403 }
+      );
+    }
+
+    // Only delivered galleries can be downloaded
+    if (gallery.status !== "delivered") {
+      return NextResponse.json(
+        { error: "This gallery is not ready for download" },
         { status: 403 }
       );
     }
@@ -92,6 +109,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Payment required to download photos" },
         { status: 402 }
+      );
+    }
+
+    // Authorization: either a logged-in client matching the gallery client, or a valid delivery slug
+    const clientSession = await getClientSession();
+    const hasClientAccess = Boolean(clientSession && gallery.clientId && gallery.clientId === clientSession.clientId);
+    const hasDeliveryAccess = Boolean(
+      deliverySlug && gallery.deliveryLinks.some((link) => link.slug === deliverySlug && link.isActive)
+    );
+
+    if (!hasClientAccess && !hasDeliveryAccess) {
+      return NextResponse.json(
+        { error: "Unauthorized to download this gallery" },
+        { status: 403 }
       );
     }
 
@@ -118,8 +149,14 @@ export async function POST(request: NextRequest) {
     // Fetch and add each photo to the archive
     for (const asset of gallery.assets) {
       try {
-        // Fetch the photo from the original URL
-        const response = await fetch(asset.originalUrl);
+        const key = extractKeyFromUrl(asset.originalUrl);
+        if (!key) {
+          console.error(`Could not extract key for asset ${asset.id}`);
+          continue;
+        }
+
+        const signedUrl = await generatePresignedDownloadUrl(key, 300);
+        const response = await fetch(signedUrl);
         if (!response.ok) {
           console.error(`Failed to fetch asset ${asset.id}: ${response.status}`);
           continue;

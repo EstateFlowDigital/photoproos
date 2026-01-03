@@ -18,6 +18,7 @@ import {
 import type { ProjectStatus } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendGalleryDeliveredEmail } from "@/lib/email/send";
+import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -958,6 +959,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
     const isProjectId = slugOrId.length > 8 && slugOrId.startsWith("c");
 
     let project;
+    let deliverySlug: string | null = null;
 
     if (isProjectId) {
       // Direct lookup by project ID (mainly for preview mode)
@@ -995,6 +997,10 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
           deliveryLinks: {
             where: { isActive: true },
             take: 1,
+            select: {
+              slug: true,
+              isActive: true,
+            },
           },
         },
       });
@@ -1007,6 +1013,8 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       if (!isPreview && project.status !== "delivered") {
         return null;
       }
+
+      deliverySlug = project.deliveryLinks[0]?.slug || null;
     } else {
       // Find by delivery link slug
       const deliveryLink = await prisma.deliveryLink.findUnique({
@@ -1051,6 +1059,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
         return null;
       }
 
+      deliverySlug = deliveryLink.slug;
       project = deliveryLink.project;
     }
 
@@ -1065,16 +1074,55 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
     }
 
     const isPaid = project.payments.length > 0 || project.priceCents === 0;
+    const canDownload = project.allowDownloads && (isPaid || project.priceCents === 0);
     const org = project.organization;
 
     // Determine theme based on portalMode - only paid plans can hide platform branding
     const isPaidPlan = org.plan === "pro" || org.plan === "studio" || org.plan === "enterprise";
     const canHideBranding = isPaidPlan && org.hidePlatformBranding;
 
+    // Sign asset URLs for short-lived access
+    const photos = await Promise.all(
+      project.assets.map(async (asset) => {
+        const thumbKey = asset.thumbnailUrl ? extractKeyFromUrl(asset.thumbnailUrl) : null;
+        const originalKey = asset.originalUrl ? extractKeyFromUrl(asset.originalUrl) : null;
+
+        let signedThumbnailUrl = asset.thumbnailUrl || asset.originalUrl;
+        let signedOriginalUrl = "";
+
+        try {
+          if (thumbKey) {
+            signedThumbnailUrl = await generatePresignedDownloadUrl(thumbKey, 900);
+          }
+        } catch (err) {
+          console.error("Failed to sign thumbnail URL", { assetId: asset.id, err });
+        }
+
+        if (canDownload && originalKey) {
+          try {
+            signedOriginalUrl = await generatePresignedDownloadUrl(originalKey, 900);
+          } catch (err) {
+            console.error("Failed to sign original URL", { assetId: asset.id, err });
+            signedOriginalUrl = "";
+          }
+        }
+
+        return {
+          id: asset.id,
+          url: signedThumbnailUrl || signedOriginalUrl,
+          originalUrl: signedOriginalUrl,
+          filename: asset.filename,
+          width: asset.width || 4,
+          height: asset.height || 3,
+        };
+      })
+    );
+
     return {
       id: project.id,
       name: project.name,
       description: project.description || "",
+      deliverySlug,
       photographer: {
         name: org.name,
         logoUrl: org.logoUrl,
@@ -1083,7 +1131,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       status: project.status,
       price: project.priceCents,
       isPaid,
-      allowDownload: project.allowDownloads,
+      allowDownload: canDownload,
       allowFavorites: true, // Default true for now
       showWatermark: project.showWatermark,
       // Branding colors
@@ -1094,14 +1142,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       theme: (org.portalMode || "dark") as "light" | "dark" | "auto",
       hidePlatformBranding: canHideBranding,
       isPreview, // Let the UI know this is a preview
-      photos: project.assets.map((asset) => ({
-        id: asset.id,
-        url: asset.thumbnailUrl || asset.originalUrl,
-        originalUrl: asset.originalUrl,
-        filename: asset.filename,
-        width: asset.width || 4,
-        height: asset.height || 3,
-      })),
+      photos,
     };
   } catch (error) {
     console.error("Error fetching public gallery:", error);

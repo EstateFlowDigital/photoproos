@@ -26,6 +26,7 @@ interface GalleryData {
   id: string;
   name: string;
   description: string;
+  deliverySlug?: string | null;
   photographer: {
     name: string;
     logoUrl: string | null;
@@ -226,11 +227,14 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const handleDownloadPhoto = useCallback(async (photo: Photo) => {
     try {
       // Use the download API route which handles auth and tracking
-      const downloadUrl = `/api/download/${photo.id}`;
+      const downloadUrl = new URL(`/api/download/${photo.id}`, window.location.origin);
+      if (gallery.deliverySlug) {
+        downloadUrl.searchParams.set("deliverySlug", gallery.deliverySlug);
+      }
 
       // Create a hidden link and click it to trigger download
       const link = document.createElement("a");
-      link.href = downloadUrl;
+      link.href = downloadUrl.toString();
       link.download = photo.filename;
       link.style.display = "none";
       document.body.appendChild(link);
@@ -281,6 +285,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         body: JSON.stringify({
           galleryId: gallery.id,
           assetIds: Array.from(favoriteAssetIds),
+          deliverySlug: gallery.deliverySlug,
         }),
       });
 
@@ -322,6 +327,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         body: JSON.stringify({
           galleryId: gallery.id,
           assetIds: allAssetIds,
+          deliverySlug: gallery.deliverySlug,
         }),
       });
 
