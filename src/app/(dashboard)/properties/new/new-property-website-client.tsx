@@ -152,7 +152,7 @@ export function NewPropertyWebsiteClient({ projects }: NewPropertyWebsiteClientP
               <label className="block text-sm font-medium text-foreground mb-1.5">City *</label>
               <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Los Angeles" className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">State *</label>
                 <input type="text" value={state} onChange={(e) => setState(e.target.value)} placeholder="CA" maxLength={2} className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground" />
