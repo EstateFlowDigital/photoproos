@@ -73,7 +73,7 @@ export function TemplatesListClient({ templates }: TemplatesListClientProps) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="auto-grid grid-min-240 grid-gap-4">
           {filteredTemplates.map((template) => (
             <div
               key={template.id}
