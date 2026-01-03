@@ -71,11 +71,11 @@ export default async function BundleDetailPage({ params }: BundleDetailPageProps
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h3 className="font-semibold text-foreground mb-4">Usage</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm text-foreground-muted">Orders</span>
                 <span className="text-sm font-medium text-foreground">{bundle.usageCount}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm text-foreground-muted">Status</span>
                 {bundle.isActive ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-[var(--success)]/10 px-2 py-0.5 text-xs font-medium text-[var(--success)]">
@@ -89,7 +89,7 @@ export default async function BundleDetailPage({ params }: BundleDetailPageProps
                   </span>
                 )}
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm text-foreground-muted">Visibility</span>
                 <span className="text-sm font-medium text-foreground">
                   {bundle.isPublic ? "Public" : "Private"}
