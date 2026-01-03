@@ -82,11 +82,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added missing relation names to Referrer.client (`ClientReferrer`)
   - Added missing relation names to Referral model (`ReferralClient`, `ReferralBooking`, `ReferralInvoice`)
   - Added TerritoryServiceOverride relation to Service model
+  - Added back-reference relations for Booking.referrals and Invoice.referrals
+  - Added Client.referrer and Client.referrals back-reference fields
 
 - **Build Stability Fixes**
   - Fixed TypeScript compilation errors from incomplete features
   - Added missing `expired` status to BookingFormSubmissionStatus Records
   - Fixed prisma.ts export issue
+  - Created missing `@/lib/actions/types.ts` with shared ActionResult type
+  - Created missing `@/lib/actions/referrals.ts` with full referral program server actions
+  - Fixed import paths from `@/lib/prisma` to `@/lib/db` in territories.ts
+  - Fixed import paths from `@/lib/auth` to `@/lib/auth/clerk` in territories.ts
 
 ### Added
 - **Second Shooter / Crew Assignment System**
