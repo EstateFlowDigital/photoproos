@@ -143,7 +143,7 @@ export function BrandingSettingsForm({
 
             <div className="space-y-6">
               {/* Main Logo (Dark backgrounds) */}
-              <div className="flex items-start gap-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
                 <div
                   className="flex h-24 w-32 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[#0a0a0a] p-2"
                   onClick={() => logoInputRef.current?.click()}
@@ -184,7 +184,7 @@ export function BrandingSettingsForm({
                       For dark backgrounds. PNG, JPG or SVG. Max 2MB.
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => logoInputRef.current?.click()}
@@ -206,7 +206,7 @@ export function BrandingSettingsForm({
               </div>
 
               {/* Light Mode Logo */}
-              <div className="flex items-start gap-6 pt-4 border-t border-[var(--card-border)]">
+              <div className="flex flex-col gap-4 pt-4 border-t border-[var(--card-border)] sm:flex-row sm:items-start sm:gap-6">
                 <div
                   className="flex h-24 w-32 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-2"
                   onClick={() => logoLightInputRef.current?.click()}
@@ -247,7 +247,7 @@ export function BrandingSettingsForm({
                       For light backgrounds. Optional - will use dark mode logo if not set.
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => logoLightInputRef.current?.click()}
@@ -269,7 +269,7 @@ export function BrandingSettingsForm({
               </div>
 
               {/* Favicon */}
-              <div className="flex items-start gap-6 pt-4 border-t border-[var(--card-border)]">
+              <div className="flex flex-col gap-4 pt-4 border-t border-[var(--card-border)] sm:flex-row sm:items-start sm:gap-6">
                 <div
                   className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background)]"
                   onClick={() => faviconInputRef.current?.click()}
@@ -307,7 +307,7 @@ export function BrandingSettingsForm({
                       Browser tab icon. PNG, ICO or SVG. 32x32px recommended.
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => faviconInputRef.current?.click()}
@@ -375,7 +375,7 @@ export function BrandingSettingsForm({
                     Primary Color
                   </label>
                   <p className="text-xs text-foreground-muted mb-2">Buttons, links, highlights</p>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       type="color"
                       value={primaryColor}
@@ -395,7 +395,7 @@ export function BrandingSettingsForm({
                     Secondary Color
                   </label>
                   <p className="text-xs text-foreground-muted mb-2">Headers, accents</p>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       type="color"
                       value={secondaryColor}
@@ -415,7 +415,7 @@ export function BrandingSettingsForm({
                     Accent Color
                   </label>
                   <p className="text-xs text-foreground-muted mb-2">Success states, CTAs</p>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       type="color"
                       value={accentColor}
@@ -436,7 +436,7 @@ export function BrandingSettingsForm({
 
           {/* Portal Theme */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2">
               <h2 className="text-lg font-semibold text-foreground">Client Portal Theme</h2>
               <span className="inline-flex items-center rounded-full bg-[var(--success)]/10 px-2 py-1 text-xs font-medium text-[var(--success)]">
                 Free
@@ -505,7 +505,7 @@ export function BrandingSettingsForm({
               Customize how your invoices appear to clients
             </p>
 
-            <div className="flex items-start gap-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
               <div
                 className="flex h-20 w-32 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-white p-2"
                 onClick={() => invoiceLogoInputRef.current?.click()}
@@ -560,7 +560,7 @@ export function BrandingSettingsForm({
                     Optional. Uses your light mode logo by default.
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => invoiceLogoInputRef.current?.click()}
@@ -584,7 +584,7 @@ export function BrandingSettingsForm({
 
           {/* Watermark */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">Watermark</h2>
                 <p className="text-sm text-foreground-muted">Add your logo to unpurchased photos</p>
@@ -628,7 +628,7 @@ export function BrandingSettingsForm({
 
           {/* White-Label Branding */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2">
               <h2 className="text-lg font-semibold text-foreground">White-Label Branding</h2>
               {isPaidPlan ? (
                 <span className="inline-flex items-center rounded-full bg-[var(--primary)]/10 px-2 py-1 text-xs font-medium text-[var(--primary)]">
@@ -646,7 +646,7 @@ export function BrandingSettingsForm({
 
             {isPaidPlan ? (
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+                <div className="flex flex-col gap-3 p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="text-sm font-medium text-foreground">Hide &quot;Powered by PhotoProOS&quot;</h3>
                     <p className="text-xs text-foreground-muted">
@@ -674,7 +674,7 @@ export function BrandingSettingsForm({
 
                 {hidePlatformBranding && (
                   <div className="rounded-lg border border-[var(--success)]/30 bg-[var(--success)]/5 p-4">
-                    <div className="flex gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                       <CheckCircleIcon className="h-5 w-5 text-[var(--success)] shrink-0" />
                       <div>
                         <p className="text-sm font-medium text-foreground">White-label mode enabled</p>
@@ -714,7 +714,7 @@ export function BrandingSettingsForm({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Subdomain</label>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <input
                     type="text"
                     defaultValue={settings.slug}
@@ -753,11 +753,11 @@ export function BrandingSettingsForm({
           </div>
 
           {/* Save Button */}
-          <div className="flex justify-end">
+          <div className="flex flex-col items-stretch sm:items-end">
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
             >
               {isPending ? (
                 <>
