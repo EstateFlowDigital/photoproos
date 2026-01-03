@@ -4385,6 +4385,184 @@ model ClientQuestionnaireAgreement {
 }
 
 // ============================================================================
+// SUBSCRIPTION PLANS & PRICING (Application-Level SaaS Plans)
+// ============================================================================
+
+// Billing interval for subscription plans
+enum BillingInterval {
+  monthly
+  yearly
+}
+
+// Status of a pricing experiment
+enum ExperimentStatus {
+  draft // Being configured
+  active // Running and collecting data
+  paused // Temporarily stopped
+  completed // Finished, results available
+  archived // No longer relevant
+}
+
+// Subscription plans for the application (Pro, Studio, Enterprise)
+model SubscriptionPlan {
+  id   String   @id @default(cuid())
+  name String   @unique // "Pro", "Studio", "Enterprise"
+  slug String   @unique // "pro", "studio", "enterprise"
+  plan PlanName // Links to the enum
+
+  // Display
+  description    String? @db.Text
+  tagline        String? // Short marketing tagline
+  badgeText      String? // e.g., "Most Popular", "Best Value"
+  displayOrder   Int     @default(0) // For ordering on pricing page
+  isHighlighted  Boolean @default(false) // Highlight this plan (e.g., recommended)
+  highlightColor String? // Custom highlight color
+
+  // Pricing (default pricing, can be overridden by variants)
+  monthlyPriceCents Int // Base monthly price in cents
+  yearlyPriceCents  Int // Base yearly price in cents (usually discounted)
+
+  // Stripe Product & Prices (default)
+  stripeProductId      String?   @unique // Stripe Product ID (prod_xxx)
+  stripeMonthlyPriceId String? // Stripe Price ID for monthly (price_xxx)
+  stripeYearlyPriceId  String? // Stripe Price ID for yearly (price_xxx)
+  stripeSyncedAt       DateTime?
+
+  // Trial configuration
+  trialDays Int @default(14) // Free trial duration
+
+  // Status
+  isActive Boolean @default(true) // Available for new signups
+  isPublic Boolean @default(true) // Visible on public pricing page
+  isLegacy Boolean @default(false) // Old plan, grandfathered users only
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  features        PlanFeature[]
+  pricingVariants PricingVariant[]
+
+  @@index([isActive, isPublic])
+  @@index([plan])
+}
+
+// Features included in each plan
+model PlanFeature {
+  id     String @id @default(cuid())
+  planId String
+
+  // Feature definition
+  name        String // "Unlimited Galleries", "Priority Support"
+  description String? // Detailed description
+  category    String? // "Core", "Support", "Integrations", etc.
+
+  // Value (for limits and quotas)
+  featureKey   String // Unique key like "galleries_limit", "storage_gb", "team_members"
+  featureValue String // Can be "unlimited", a number, or "true"/"false"
+
+  // Display
+  displayOrder  Int     @default(0)
+  isHighlighted Boolean @default(false) // Show with emphasis
+  tooltip       String? // Help text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  plan SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, featureKey])
+  @@index([planId])
+  @@index([featureKey])
+}
+
+// A/B Testing: Pricing experiments for testing different price points
+model PricingExperiment {
+  id   String @id @default(cuid())
+  name String // "Q1 2025 Price Test", "Enterprise Discount Test"
+  slug String @unique
+
+  // Description
+  description String? @db.Text
+  hypothesis  String? @db.Text // What we're testing
+
+  // Experiment configuration
+  status    ExperimentStatus @default(draft)
+  startDate DateTime?
+  endDate   DateTime?
+
+  // Traffic allocation
+  trafficPercent Int @default(50) // Percent of traffic to see experiment (vs control)
+
+  // Landing page targeting
+  landingPagePaths String[] // e.g., ["/pricing", "/enterprise"] - which pages to run on
+
+  // Results tracking
+  controlConversions      Int    @default(0)
+  controlImpressions      Int    @default(0)
+  variantConversions      Int    @default(0)
+  variantImpressions      Int    @default(0)
+  winningVariantId        String?
+  statisticalSignificance Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  variants PricingVariant[]
+
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+// Pricing variants for A/B testing different price points
+model PricingVariant {
+  id           String  @id @default(cuid())
+  experimentId String?
+  planId       String
+
+  // Variant details
+  name        String // "10% Discount", "Premium Pricing", "Control"
+  description String?
+  isControl   Boolean @default(false) // Is this the control variant?
+
+  // Override pricing (null = use plan's default pricing)
+  monthlyPriceCents Int?
+  yearlyPriceCents  Int?
+
+  // Override trial
+  trialDays Int?
+
+  // Stripe Prices for this variant
+  stripeMonthlyPriceId String?
+  stripeYearlyPriceId  String?
+  stripeSyncedAt       DateTime?
+
+  // Display overrides
+  badgeText     String? // Override badge
+  isHighlighted Boolean?
+
+  // Stats
+  impressions Int @default(0)
+  conversions Int @default(0)
+
+  // Status
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  experiment PricingExperiment? @relation(fields: [experimentId], references: [id], onDelete: SetNull)
+  plan       SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([experimentId])
+  @@index([planId])
+  @@index([isActive])
+}
+
+// ============================================================================
 // EMAIL LOGGING SYSTEM
 // ============================================================================
 

@@ -4,12 +4,26 @@ import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { SeedDatabaseButton, ClearDataButton } from "./seed-buttons";
 import { StripeProductsSection } from "./stripe-products";
+import { SubscriptionPlansSection } from "./subscription-plans";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { getProductSyncOverview } from "@/lib/stripe/product-sync";
+import {
+  getSubscriptionPlans,
+  getPricingExperiments,
+} from "@/lib/actions/subscription-plans";
 
 export default async function DeveloperSettingsPage() {
   const organizationId = await requireOrganizationId();
-  const syncOverview = await getProductSyncOverview(organizationId);
+
+  // Fetch all data in parallel
+  const [syncOverview, plansResult, experimentsResult] = await Promise.all([
+    getProductSyncOverview(organizationId),
+    getSubscriptionPlans(),
+    getPricingExperiments(),
+  ]);
+
+  const plans = plansResult.success ? plansResult.data : [];
+  const experiments = experimentsResult.success ? experimentsResult.data : [];
 
   return (
     <div className="space-y-6">
@@ -161,10 +175,16 @@ export default async function DeveloperSettingsPage() {
         </div>
       </div>
 
-      {/* Stripe Products */}
+      {/* Stripe Products (Organization Services & Bundles) */}
       <StripeProductsSection
         organizationId={organizationId}
         initialSyncOverview={syncOverview}
+      />
+
+      {/* Subscription Plans (Application Pricing Tiers) */}
+      <SubscriptionPlansSection
+        initialPlans={plans}
+        initialExperiments={experiments}
       />
 
       {/* Data Overview */}
