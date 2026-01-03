@@ -471,6 +471,7 @@ model Organization {
 
   // Public booking forms
   bookingForms BookingForm[]
+  productCatalogs ProductCatalog[]
 
   @@index([slug])
   @@index([plan])
@@ -785,6 +786,7 @@ model Asset {
   project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   favorites GalleryFavorite[]
   comments  GalleryComment[]
+  productPhotos ProductPhoto[]
 
   @@index([projectId])
   @@index([sortOrder])
