@@ -114,7 +114,7 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
                   Current: {statusStyles[booking.status].label}
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {booking.status === "pending" && (
                   <form
                     action={async () => {
