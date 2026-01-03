@@ -234,7 +234,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Link href={`/properties/${website.id}`} className="text-foreground-muted hover:text-foreground transition-colors">
             <ArrowLeftIcon className="h-5 w-5" />
@@ -492,7 +492,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
         <div className="space-y-6">
           {/* Template Selection */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-foreground">Design Template</h2>
               <a
                 href={`/p/${website.slug}`}
@@ -581,7 +581,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Display Settings</h2>
             <div className="space-y-4">
-              <label className="flex items-center justify-between cursor-pointer">
+              <label className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between cursor-pointer">
                 <span className="text-sm text-foreground">Show photographer branding</span>
                 <input
                   type="checkbox"
@@ -590,7 +590,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
                   className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
                 />
               </label>
-              <label className="flex items-center justify-between cursor-pointer">
+              <label className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between cursor-pointer">
                 <span className="text-sm text-foreground">Show price</span>
                 <input
                   type="checkbox"
@@ -599,7 +599,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
                   className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
                 />
               </label>
-              <label className="flex items-center justify-between cursor-pointer">
+              <label className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between cursor-pointer">
                 <span className="text-sm text-foreground">Show agent contact info</span>
                 <input
                   type="checkbox"
@@ -678,7 +678,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
 
           {/* Open House Scheduling */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-foreground">Open House</h2>
               {openHouseDate && (
                 <span className="text-xs font-medium text-[var(--success)] bg-[var(--success)]/10 px-2 py-1 rounded">
@@ -739,7 +739,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
           {/* Gallery Preview */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Photos</h2>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {website.project.assets.slice(0, 6).map((asset) => (
                 <div key={asset.id} className="aspect-square overflow-hidden rounded-lg bg-[var(--background)]">
                   <img
@@ -804,9 +804,9 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent size="full" className="max-w-6xl h-[90vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <DialogTitle>Website Preview</DialogTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-foreground-muted">
                   Template: {template.charAt(0).toUpperCase() + template.slice(1)}
                 </span>
@@ -830,11 +830,11 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
               title="Property Website Preview"
             />
           </div>
-          <div className="flex-shrink-0 flex items-center justify-between pt-4 border-t border-[var(--card-border)]">
+          <div className="flex-shrink-0 flex flex-col gap-2 pt-4 border-t border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-foreground-muted">
               Save changes to see updates in preview
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => setPreviewKey(prev => prev + 1)}

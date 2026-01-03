@@ -919,7 +919,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="mb-4 font-semibold text-foreground">Display Settings</h2>
               <div className="space-y-4">
-                <label className="flex items-center justify-between">
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-medium text-foreground">Show Photographer Branding</p>
                     <p className="text-sm text-foreground-secondary">
@@ -940,7 +940,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                   </button>
                 </label>
 
-                <label className="flex items-center justify-between">
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-medium text-foreground">Show Price</p>
                     <p className="text-sm text-foreground-secondary">Display the listing price</p>
@@ -959,7 +959,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                   </button>
                 </label>
 
-                <label className="flex items-center justify-between">
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-medium text-foreground">Show Agent Contact</p>
                     <p className="text-sm text-foreground-secondary">
