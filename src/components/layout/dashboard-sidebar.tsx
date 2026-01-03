@@ -134,7 +134,7 @@ export function DashboardSidebar({ className, enabledModules }: DashboardSidebar
         })}
 
         {/* Organization Switcher */}
-        <div className="mt-4 rounded-lg bg-[var(--background-secondary)] p-3">
+        <div className="mt-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
           <OrganizationSwitcher
             appearance={{
               elements: {
@@ -148,7 +148,7 @@ export function DashboardSidebar({ className, enabledModules }: DashboardSidebar
         </div>
 
         {/* User Button */}
-        <div className="mt-3 flex items-center gap-3 rounded-lg bg-[var(--background-secondary)] p-3">
+        <div className="mt-3 flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
           <UserButton
             appearance={{
               elements: {

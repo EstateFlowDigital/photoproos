@@ -140,7 +140,7 @@ export function MobileNav({ isOpen, onClose, enabledModules }: MobileNavProps) {
         {/* Organization & User */}
         <div className="border-t border-[var(--card-border)] p-4 space-y-3">
           {/* Organization Switcher */}
-          <div className="rounded-lg bg-[var(--background-secondary)] p-3">
+          <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
             <OrganizationSwitcher
               appearance={{
                 elements: {
@@ -154,7 +154,7 @@ export function MobileNav({ isOpen, onClose, enabledModules }: MobileNavProps) {
           </div>
 
           {/* User Button */}
-          <div className="flex items-center gap-3 rounded-lg bg-[var(--background-secondary)] p-3">
+          <div className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
             <UserButton
               appearance={{
                 elements: {

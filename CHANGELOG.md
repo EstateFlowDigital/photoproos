@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Icon wrappers now more visible against card backgrounds
   - Consistent with design system subtle-but-visible approach
 
+- **Sidebar Organization/User Button Visibility**
+  - Fixed organization switcher and user button containers blending with sidebar background
+  - Added visible borders and changed background to `--background` for contrast
+  - Applied fix to both desktop sidebar and mobile nav
+
 ### Changed
 - **Standardized Dropdown/Select Styling**
   - Created new `Select` component at `/components/ui/select.tsx` matching design system
