@@ -197,7 +197,7 @@ export function CalendarSettingsClient({
 
       {/* Connection Status */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#4285F4]/10">
             <GoogleCalendarIcon className="h-8 w-8 text-[#4285F4]" />
           </div>
@@ -341,7 +341,7 @@ export function CalendarSettingsClient({
             </div>
 
             {/* Sync Toggle */}
-            <div className="flex items-center justify-between rounded-lg bg-[var(--background)] p-4">
+            <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">Auto Sync</p>
                 <p className="text-xs text-foreground-muted">
