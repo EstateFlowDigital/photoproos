@@ -149,7 +149,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Stats Row */}
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="auto-grid grid-min-200 grid-gap-4">
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Lifetime Revenue</p>
               <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(lifetimeRevenue)}</p>
