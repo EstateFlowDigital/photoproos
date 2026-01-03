@@ -682,6 +682,9 @@ model Service {
   // Public booking forms
   bookingFormServices BookingFormService[]
 
+  // Phase 4: Territory pricing overrides
+  territoryOverrides TerritoryServiceOverride[]
+
   @@index([organizationId])
   @@index([category])
   @@index([isActive])
@@ -3734,7 +3737,7 @@ model Referrer {
   programId String
 
   // Referrer info (can be client, agent, or external)
-  clientId String? // If referrer is an existing client
+  clientId String? @unique // If referrer is an existing client
   name     String
   email    String
   phone    String?
@@ -3755,7 +3758,7 @@ model Referrer {
 
   // Relations
   program   ReferralProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
-  client    Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  client    Client?         @relation("ClientReferrer", fields: [clientId], references: [id], onDelete: SetNull)
   referrals Referral[]
   rewards   ReferralReward[]
 
@@ -3798,9 +3801,9 @@ model Referral {
   // Relations
   program  ReferralProgram  @relation(fields: [programId], references: [id], onDelete: Cascade)
   referrer Referrer         @relation(fields: [referrerId], references: [id], onDelete: Cascade)
-  client   Client?          @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  booking  Booking?         @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  invoice  Invoice?         @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  client   Client?          @relation("ReferralClient", fields: [clientId], references: [id], onDelete: SetNull)
+  booking  Booking?         @relation("ReferralBooking", fields: [bookingId], references: [id], onDelete: SetNull)
+  invoice  Invoice?         @relation("ReferralInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
   rewards  ReferralReward[]
 
   @@index([programId])
