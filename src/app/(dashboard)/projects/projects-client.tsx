@@ -768,6 +768,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
             </table>
           </div>
         </div>
+      </div>
       )}
 
       {/* Calendar View */}

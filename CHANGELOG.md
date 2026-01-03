@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stripe Connect onboarding error "email is invalid" - was incorrectly passing organization name as email field
 - Dropbox OAuth callback foreign key error - was using Clerk org ID instead of internal database organization ID
 - Google Calendar OAuth callback foreign key error - same fix as Dropbox
+- Projects page syntax error - missing closing `</div>` tag in list view causing build failure
+- OAuth callbacks now use correct Prisma field name (`clerkOrganizationId` instead of `clerkId`)
+
+### Added
+- Dashboard calendar component (`dashboard-calendar.tsx`) for unified scheduler view
+  - Displays tasks, bookings, and open houses in a monthly calendar
+  - Interactive date selection with event sidebar
+  - Color-coded event types with legend
 
 ### Added
 - **Dropbox Integration**

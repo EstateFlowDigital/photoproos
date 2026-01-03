@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 
     // Look up the organization by Clerk ID
     const organization = await prisma.organization.findUnique({
-      where: { clerkId: orgId },
+      where: { clerkOrganizationId: orgId },
     });
 
     if (!organization) {
