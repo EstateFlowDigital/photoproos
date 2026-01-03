@@ -1,8 +1,25 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Testimonial } from "@/lib/validations/order-pages";
+
+// Cart item types
+interface CartBundle {
+  type: "bundle";
+  id: string;
+  name: string;
+  priceCents: number;
+}
+
+interface CartService {
+  type: "service";
+  id: string;
+  name: string;
+  priceCents: number;
+  quantity: number;
+}
 
 interface BundleService {
   id: string;
@@ -78,9 +95,124 @@ function formatDuration(minutes: number): string {
   return `${hours} hr${hours > 1 ? "s" : ""} ${mins} min`;
 }
 
+type CartItem = CartBundle | CartService;
+
 export function OrderPageClient({ orderPage }: OrderPageClientProps) {
   const primaryColor = orderPage.primaryColor || "#3b82f6";
   const testimonials = orderPage.testimonials || [];
+
+  // Cart state
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Cart calculations
+  const cartTotals = useMemo(() => {
+    const subtotal = cartItems.reduce((sum, item) => {
+      if (item.type === "service") {
+        return sum + item.priceCents * item.quantity;
+      }
+      return sum + item.priceCents;
+    }, 0);
+
+    const itemCount = cartItems.reduce((count, item) => {
+      if (item.type === "service") {
+        return count + item.quantity;
+      }
+      return count + 1;
+    }, 0);
+
+    return { subtotal, itemCount };
+  }, [cartItems]);
+
+  // Add bundle to cart
+  const addBundle = (bundle: Bundle) => {
+    const exists = cartItems.find(
+      (item) => item.type === "bundle" && item.id === bundle.id
+    );
+    if (exists) return; // Only one of each bundle
+
+    setCartItems((prev) => [
+      ...prev,
+      {
+        type: "bundle",
+        id: bundle.id,
+        name: bundle.name,
+        priceCents: bundle.priceCents,
+      },
+    ]);
+    setIsCartOpen(true);
+  };
+
+  // Remove bundle from cart
+  const removeBundle = (bundleId: string) => {
+    setCartItems((prev) =>
+      prev.filter((item) => !(item.type === "bundle" && item.id === bundleId))
+    );
+  };
+
+  // Check if bundle is in cart
+  const isBundleInCart = (bundleId: string) =>
+    cartItems.some((item) => item.type === "bundle" && item.id === bundleId);
+
+  // Add service to cart
+  const addService = (service: Service) => {
+    setCartItems((prev) => {
+      const existingIndex = prev.findIndex(
+        (item) => item.type === "service" && item.id === service.id
+      );
+
+      if (existingIndex >= 0) {
+        // Increment quantity
+        const updated = [...prev];
+        const existing = updated[existingIndex] as CartService;
+        updated[existingIndex] = { ...existing, quantity: existing.quantity + 1 };
+        return updated;
+      }
+
+      return [
+        ...prev,
+        {
+          type: "service",
+          id: service.id,
+          name: service.name,
+          priceCents: service.priceCents,
+          quantity: 1,
+        },
+      ];
+    });
+    setIsCartOpen(true);
+  };
+
+  // Update service quantity
+  const updateServiceQuantity = (serviceId: string, quantity: number) => {
+    if (quantity <= 0) {
+      setCartItems((prev) =>
+        prev.filter((item) => !(item.type === "service" && item.id === serviceId))
+      );
+      return;
+    }
+
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.type === "service" && item.id === serviceId
+          ? { ...item, quantity }
+          : item
+      )
+    );
+  };
+
+  // Get service quantity in cart
+  const getServiceQuantity = (serviceId: string) => {
+    const item = cartItems.find(
+      (item) => item.type === "service" && item.id === serviceId
+    ) as CartService | undefined;
+    return item?.quantity || 0;
+  };
+
+  // Clear cart
+  const clearCart = () => {
+    setCartItems([]);
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
@@ -120,6 +252,22 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                   <span className="hidden sm:inline">{orderPage.customEmail}</span>
                 </a>
               )}
+              {/* Cart Button */}
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative flex items-center gap-1.5 rounded-lg bg-[#262626] px-3 py-2 text-white transition-colors hover:bg-[#313131]"
+              >
+                <CartIcon className="h-5 w-5" />
+                <span className="hidden sm:inline">Cart</span>
+                {cartTotals.itemCount > 0 && (
+                  <span
+                    className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-medium text-white"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {cartTotals.itemCount}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -181,6 +329,9 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                   key={bundle.id}
                   bundle={bundle}
                   primaryColor={primaryColor}
+                  isInCart={isBundleInCart(bundle.id)}
+                  onAdd={() => addBundle(bundle)}
+                  onRemove={() => removeBundle(bundle.id)}
                 />
               ))}
             </div>
@@ -205,6 +356,9 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                   key={service.id}
                   service={service}
                   primaryColor={primaryColor}
+                  quantity={getServiceQuantity(service.id)}
+                  onAdd={() => addService(service)}
+                  onUpdateQuantity={(qty) => updateServiceQuantity(service.id, qty)}
                 />
               ))}
             </div>
