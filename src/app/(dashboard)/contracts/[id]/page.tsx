@@ -130,7 +130,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
           </span>
         }
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/contracts"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -234,7 +234,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
         <div className="space-y-6">
           {/* Signers Card */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
-            <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4 flex items-center justify-between">
+            <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="font-semibold text-foreground">Signers</h2>
               {totalSigners > 0 && (
                 <span className="text-sm text-foreground-muted">

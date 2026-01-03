@@ -255,7 +255,7 @@ export function ContractFormClient({ clients, templates }: ContractFormClientPro
 
           {/* Content Card */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">Contract Content</h2>
               <span className="text-xs text-foreground-muted">
                 Use variables like {"{{client_name}}"} for dynamic content
