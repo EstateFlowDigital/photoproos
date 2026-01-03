@@ -94,7 +94,7 @@ export function ReferralsClient({
       />
 
       {/* Tab Navigation */}
-      <div className="flex gap-1 rounded-lg bg-[var(--background-tertiary)] p-1 w-fit">
+      <div className="flex flex-wrap gap-1 rounded-lg bg-[var(--background-tertiary)] p-1 w-full sm:w-fit">
         <button
           onClick={() => setActiveTab("settings")}
           className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
@@ -163,7 +163,7 @@ export function ReferralsClient({
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         {activeTab === "settings" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-medium text-foreground">Program Status</h3>
                 <p className="text-sm text-foreground-muted">Enable or disable your referral program</p>
@@ -221,7 +221,7 @@ export function ReferralsClient({
               <button
                 type="submit"
                 disabled={isPending}
-                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50 sm:w-auto"
               >
                 {isPending ? "Saving..." : "Save Settings"}
               </button>
@@ -237,7 +237,7 @@ export function ReferralsClient({
             ) : (
               <div className="space-y-2">
                 {referrers.map((referrer) => (
-                  <div key={referrer.id} className="flex items-center justify-between p-3 rounded-lg bg-[var(--background-tertiary)]">
+                  <div key={referrer.id} className="flex flex-col gap-2 rounded-lg bg-[var(--background-tertiary)] p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-medium text-foreground">{referrer.name}</p>
                       <p className="text-sm text-foreground-muted">{referrer.email}</p>
@@ -260,7 +260,7 @@ export function ReferralsClient({
             ) : (
               <div className="space-y-2">
                 {referrals.map((referral) => (
-                  <div key={referral.id} className="flex items-center justify-between p-3 rounded-lg bg-[var(--background-tertiary)]">
+                  <div key={referral.id} className="flex flex-col gap-2 rounded-lg bg-[var(--background-tertiary)] p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-medium text-foreground">{referral.referredName}</p>
                       <p className="text-sm text-foreground-muted">{referral.referredEmail}</p>
