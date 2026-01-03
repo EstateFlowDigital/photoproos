@@ -146,31 +146,31 @@ export default async function DashboardPage() {
     lastMonthActiveGalleries,
     totalClients,
     lastMonthTotalClients,
-    pendingPayments,
+    pendingInvoices,
     recentActivity,
     recentGalleries,
     upcomingBookings,
     servicesCount,
     propertiesCount,
   ] = await Promise.all([
-    // This month's revenue
-    prisma.payment.aggregate({
+    // This month's revenue - from paid invoices
+    prisma.invoice.aggregate({
       where: {
         organizationId: organization.id,
         status: "paid",
-        createdAt: { gte: thisMonthStart },
+        paidAt: { gte: thisMonthStart },
       },
-      _sum: { amountCents: true },
+      _sum: { totalCents: true },
     }),
 
-    // Last month's revenue (for comparison)
-    prisma.payment.aggregate({
+    // Last month's revenue (for comparison) - from paid invoices
+    prisma.invoice.aggregate({
       where: {
         organizationId: organization.id,
         status: "paid",
-        createdAt: { gte: lastMonthStart, lte: lastMonthEnd },
+        paidAt: { gte: lastMonthStart, lte: lastMonthEnd },
       },
-      _sum: { amountCents: true },
+      _sum: { totalCents: true },
     }),
 
     // Active galleries (delivered or pending) - current
@@ -203,13 +203,13 @@ export default async function DashboardPage() {
       },
     }),
 
-    // Pending payments
-    prisma.payment.aggregate({
+    // Pending/Overdue invoices (unpaid invoices)
+    prisma.invoice.aggregate({
       where: {
         organizationId: organization.id,
-        status: "pending",
+        status: { in: ["sent", "overdue"] },
       },
-      _sum: { amountCents: true },
+      _sum: { totalCents: true },
     }),
 
     // Recent activity
@@ -258,9 +258,9 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const thisMonthRevenueValue = thisMonthRevenue._sum.amountCents || 0;
-  const lastMonthRevenueValue = lastMonthRevenue._sum.amountCents || 0;
-  const pendingPaymentsValue = pendingPayments._sum.amountCents || 0;
+  const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
+  const lastMonthRevenueValue = lastMonthRevenue._sum.totalCents || 0;
+  const pendingInvoicesValue = pendingInvoices._sum.totalCents || 0;
 
   // Calculate changes for stats
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
@@ -340,9 +340,9 @@ export default async function DashboardPage() {
           href="/clients"
         />
         <StatCard
-          label="Pending Payments"
-          value={formatCurrency(pendingPaymentsValue)}
-          href="/payments?status=pending"
+          label="Pending Invoices"
+          value={formatCurrency(pendingInvoicesValue)}
+          href="/invoices?status=sent"
         />
       </div>
 

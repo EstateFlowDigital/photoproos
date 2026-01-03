@@ -12,10 +12,10 @@ interface QuickAction {
 }
 
 const colorClasses: Record<QuickAction["color"], string> = {
-  primary: "bg-[var(--primary)]/10 text-[var(--primary)] group-hover:bg-[var(--primary)]/20",
-  success: "bg-[var(--success)]/10 text-[var(--success)] group-hover:bg-[var(--success)]/20",
-  warning: "bg-[var(--warning)]/10 text-[var(--warning)] group-hover:bg-[var(--warning)]/20",
-  ai: "bg-[var(--ai)]/10 text-[var(--ai)] group-hover:bg-[var(--ai)]/20",
+  primary: "bg-[var(--primary)]/15 text-[var(--primary)] group-hover:bg-[var(--primary)]/25",
+  success: "bg-[var(--success)]/15 text-[var(--success)] group-hover:bg-[var(--success)]/25",
+  warning: "bg-[var(--warning)]/15 text-[var(--warning)] group-hover:bg-[var(--warning)]/25",
+  ai: "bg-[var(--ai)]/15 text-[var(--ai)] group-hover:bg-[var(--ai)]/25",
 };
 
 const defaultActions: QuickAction[] = [

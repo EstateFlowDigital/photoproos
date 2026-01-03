@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Dashboard Metrics Not Updating Correctly**
+  - Changed monthly revenue calculation to use Invoice table instead of Payment table
+  - Revenue now calculated from paid invoices with `paidAt` date in the current month
+  - "Pending Payments" stat renamed to "Pending Invoices" showing unpaid sent/overdue invoices
+  - Fixed comparison calculations for month-over-month changes
+
+- **Quick Actions Icon Visibility**
+  - Increased icon background opacity from 10% to 15% (hover from 20% to 25%)
+  - Icon wrappers now more visible against card backgrounds
+  - Consistent with design system subtle-but-visible approach
+
 ### Changed
 - **Standardized Dropdown/Select Styling**
   - Created new `Select` component at `/components/ui/select.tsx` matching design system
