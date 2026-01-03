@@ -177,23 +177,72 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
       {/* Activity Chart */}
       {analytics.dailyData.length > 0 && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Views Over Time (Last 30 Days)</h3>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <h3 className="text-sm font-semibold text-foreground">Activity Over Time</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Metric Selector */}
+              <div className="flex gap-1">
+                {(["pageViews", "uniqueVisitors", "tourClicks"] as MetricType[]).map((metric) => (
+                  <button
+                    key={metric}
+                    onClick={() => setChartMetric(metric)}
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                      chartMetric === metric
+                        ? "text-white"
+                        : "bg-[var(--background)] text-foreground-muted hover:text-foreground"
+                    )}
+                    style={chartMetric === metric ? { backgroundColor: METRIC_COLORS[metric] } : {}}
+                  >
+                    {METRIC_LABELS[metric]}
+                  </button>
+                ))}
+              </div>
+              <div className="h-4 w-px bg-[var(--card-border)]" />
+              {/* Time Range Selector */}
+              <div className="flex gap-1">
+                {([7, 14, 30] as TimeRange[]).map((days) => (
+                  <button
+                    key={days}
+                    onClick={() => setTimeRange(days)}
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                      timeRange === days
+                        ? "bg-foreground text-background"
+                        : "bg-[var(--background)] text-foreground-muted hover:text-foreground"
+                    )}
+                  >
+                    {days}d
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           <div className="h-48 flex items-end gap-1">
-            {analytics.dailyData.map((day, index) => {
-              const maxDayViews = Math.max(...analytics.dailyData.map((d) => d.pageViews), 1);
-              const height = (day.pageViews / maxDayViews) * 100;
+            {filteredDailyData.map((day) => {
+              const maxDayValue = Math.max(...filteredDailyData.map((d) => d[chartMetric]), 1);
+              const height = (day[chartMetric] / maxDayValue) * 100;
               return (
                 <div
                   key={day.date}
                   className="flex-1 min-w-0 group relative"
                 >
                   <div
-                    className="w-full bg-[var(--primary)]/30 hover:bg-[var(--primary)]/50 rounded-t transition-all"
-                    style={{ height: `${Math.max(height, 2)}%` }}
+                    className="w-full rounded-t transition-all"
+                    style={{
+                      height: `${Math.max(height, 2)}%`,
+                      backgroundColor: `color-mix(in srgb, ${METRIC_COLORS[chartMetric]} 40%, transparent)`,
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.target as HTMLElement).style.backgroundColor = `color-mix(in srgb, ${METRIC_COLORS[chartMetric]} 60%, transparent)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.target as HTMLElement).style.backgroundColor = `color-mix(in srgb, ${METRIC_COLORS[chartMetric]} 40%, transparent)`;
+                    }}
                   />
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
                     <div className="bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-2 py-1 text-xs whitespace-nowrap shadow-lg">
-                      <p className="font-medium text-foreground">{day.pageViews} views</p>
+                      <p className="font-medium text-foreground">{day[chartMetric]} {METRIC_LABELS[chartMetric].toLowerCase()}</p>
                       <p className="text-foreground-muted">{new Date(day.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                     </div>
                   </div>
@@ -202,8 +251,8 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
             })}
           </div>
           <div className="flex justify-between mt-2 text-xs text-foreground-muted">
-            <span>{analytics.dailyData.length > 0 ? new Date(analytics.dailyData[0].date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
-            <span>{analytics.dailyData.length > 0 ? new Date(analytics.dailyData[analytics.dailyData.length - 1].date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+            <span>{filteredDailyData.length > 0 ? new Date(filteredDailyData[0].date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+            <span>{filteredDailyData.length > 0 ? new Date(filteredDailyData[filteredDailyData.length - 1].date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
           </div>
         </div>
       )}
@@ -327,6 +376,22 @@ function ChartIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M15.5 2A1.5 1.5 0 0 0 14 3.5v13a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 16.5 2h-1ZM9.5 6A1.5 1.5 0 0 0 8 7.5v9A1.5 1.5 0 0 0 9.5 18h1a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 10.5 6h-1ZM3.5 10A1.5 1.5 0 0 0 2 11.5v5A1.5 1.5 0 0 0 3.5 18h1A1.5 1.5 0 0 0 6 16.5v-5A1.5 1.5 0 0 0 4.5 10h-1Z" />
+    </svg>
+  );
+}
+
+function TrendUpIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M12.577 4.878a.75.75 0 0 1 .919-.53l4.78 1.281a.75.75 0 0 1 .531.919l-1.281 4.78a.75.75 0 0 1-1.449-.387l.81-3.022a19.407 19.407 0 0 0-5.594 5.203.75.75 0 0 1-1.139.093L7 10.06l-4.72 4.72a.75.75 0 0 1-1.06-1.061l5.25-5.25a.75.75 0 0 1 1.06 0l3.074 3.073a20.923 20.923 0 0 1 5.545-4.931l-3.042-.815a.75.75 0 0 1-.53-.919Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function TrendDownIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M1.22 5.222a.75.75 0 0 1 1.06 0L7 9.942l3.768-3.769a.75.75 0 0 1 1.113.058 20.908 20.908 0 0 1 3.813 7.254l1.574-2.727a.75.75 0 0 1 1.3.75l-2.475 4.286a.75.75 0 0 1-1.025.275l-4.287-2.475a.75.75 0 0 1 .75-1.3l2.71 1.565a19.422 19.422 0 0 0-3.013-6.024L7.53 11.533a.75.75 0 0 1-1.06 0l-5.25-5.25a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
     </svg>
   );
 }

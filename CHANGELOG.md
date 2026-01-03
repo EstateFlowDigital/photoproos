@@ -8,6 +8,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Property Websites - Comprehensive Improvements**
+  - Added Schema.org structured data (RealEstateListing) for SEO optimization
+  - Added honeypot spam protection to property inquiry forms
+  - Added visual template preview cards with mini mockups in property edit form
+  - Added live preview modal with iframe for real-time site preview
+  - Added quick preview button on property cards (eye icon)
+  - Added floating preview button for mobile devices
+  - Added property duplication feature (duplicate button on property cards)
+  - Added batch operations: select all, publish/unpublish multiple, batch delete
+  - Added selection checkbox on each property card
+  - Added floating batch action toolbar with publish/unpublish/delete buttons
+  - Added batch delete confirmation dialog
+
+- **Lead Management Enhancements**
+  - Added quick action buttons to lead cards (call, email, message)
+  - Added expandable message view for each lead
+  - Added phone call link (tel:) for one-click calling
+  - Added email link with pre-filled subject line
+  - Added message toggle button with visual indicator
+
+- **Analytics Dashboard Improvements**
+  - Added trend indicators showing growth/decline percentages
+  - Added time range selector (7 days, 14 days, 30 days)
+  - Added metric selector for chart (Page Views, Unique Visitors, Tour Clicks)
+  - Added dynamic chart colors based on selected metric
+  - Added improved tooltips with metric-specific labels
+
+- **Phase 2: Brokerage & Enterprise Database Models**
+  - `Brokerage` model for parent company with multiple agents
+  - `BrokerageContract` model for pricing terms and discounts per brokerage
+  - `InvoiceSplit` model for split/dual invoice configuration
+  - `PhotographerRate` model for pay rates per photographer per service
+  - `PhotographerEarning` model for earnings log per booking
+  - `PayoutBatch` and `PayoutItem` models for scheduled payouts
+  - Added `brokerageId` to Client model (agents under brokerages)
+  - Added `brokerageId` to OrderPage model (brokerage-specific order pages)
+  - Added Stripe Connect fields to User model for photographer payouts
+  - New enums: `PayoutStatus`, `InvoiceSplitType`, `EarningStatus`
+
 - **Order Stripe Checkout Integration**
   - Full checkout flow for public order pages with Stripe payment
   - `CheckoutModal` component with client info form and payment redirect
@@ -22,6 +61,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Badge shows count of pending time-off requests requiring approval
   - Added `badge` prop support to `PageContextNav` component
   - Added `getPendingTimeOffCount()` server action for efficient badge queries
+
+- **Documentation & Roadmap**
+  - Added comprehensive product roadmap to README with 70+ planned features
+  - Organized features into 8 development phases (Q1 2025 - 2026)
+  - Added "Recently Shipped" section highlighting latest features
 
 - **Services Consolidation & Multi-Select**
   - Consolidated `/services` and `/galleries/services` into single `/services` route

@@ -22,19 +22,117 @@ PhotoProOS is a comprehensive business management platform for professional phot
 - **Watermarking** - Configurable watermark settings
 - **Analytics** - Revenue forecasting and client LTV metrics
 
-### Coming Soon (Phase 1)
-- Availability blocking and time-off management
-- Two-way Google Calendar sync
-- Client communication history and notes
-- E-signature for contracts
-- Client tags and segmentation
+### Recently Shipped
+- **Command Palette** - Global search and navigation with ⌘K/Ctrl+K
+- **Time-Off Management** - Request and approve team time-off with pending badges
+- **Contract Templates** - Reusable contract templates with variables
+- **Multi-Service Galleries** - Attach multiple services to a single gallery
+- **Onboarding Checklist** - Guided setup for new organizations
 
 ### Roadmap
-- **Phase 2:** Client Experience (Gallery collections, Portal V2, Forms)
-- **Phase 3:** Business Operations (Expenses, Workflows, Reporting)
-- **Phase 4:** Marketing & Growth (Email campaigns, Lead pipeline)
-- **Phase 5:** Advanced Features (E-commerce, AI, Mobile app)
-- **Phase 6:** Enterprise (API, White-label, Marketplace)
+
+#### Phase 1: Scheduling & Automation (Q1 2025)
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Recurring Bookings | Create repeating appointments | Planned |
+| Buffer Time | Automatic travel/prep time between bookings | Planned |
+| Booking Reminders | SMS/email reminders (24h, 1h before) | Planned |
+| Multi-Day Events | Support for weddings, conferences | Planned |
+| Equipment Checklists | Per-booking-type equipment lists | Planned |
+| Second Shooter Assignment | Team member scheduling per booking | Planned |
+| Weather Integration | Forecast display on booking details | Planned |
+
+#### Phase 2: Gallery & Delivery (Q1-Q2 2025)
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Bulk Upload | Drag & drop multi-file upload | Planned |
+| AI Photo Culling | Smart selection suggestions | Planned |
+| Watermark Templates | Multiple watermark presets | Planned |
+| Client Favorites | Allow clients to mark favorites | Planned |
+| Download Tracking | Per-photo download analytics | Planned |
+| Gallery Expiration | Auto-expire gallery access | Planned |
+| Password Protection | Optional gallery passwords | Planned |
+| Photo Comments | Client feedback on photos | Planned |
+| Lightroom Plugin | Direct gallery publishing | Planned |
+| Slideshow Mode | Fullscreen client presentations | Planned |
+
+#### Phase 3: Client Experience (Q2 2025)
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Client Portal v2 | Enhanced self-service portal | Planned |
+| Communication Timeline | Full message history | Planned |
+| Client Merge | Combine duplicate records | Planned |
+| CSV Import | Bulk client import | Planned |
+| Referral Tracking | Track client referrals | Planned |
+| Birthday Reminders | Automated anniversary outreach | Planned |
+| Satisfaction Surveys | Post-session feedback | Planned |
+| Custom Fields | Organization-defined fields | Planned |
+| VIP Tiers | Client segmentation levels | Planned |
+| Preference Profiles | Style/location preferences | Planned |
+
+#### Phase 4: Payments & Business (Q2-Q3 2025)
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Recurring Invoices | Subscription billing | Planned |
+| Payment Installments | Multi-payment schedules | Planned |
+| Late Payment Reminders | Automated follow-ups | Planned |
+| PDF Customization | Custom invoice templates | Planned |
+| Multi-Currency | International payments | Planned |
+| Expense Tracking | Business expense logging | Planned |
+| Profit Margins | Per-project profitability | Planned |
+| Promo Codes | Promotional discounts | Planned |
+| Tips/Gratuity | Client tip acceptance | Planned |
+| Revenue Reports | Financial analytics | Planned |
+
+#### Phase 5: Contracts & Legal (Q3 2025)
+| Feature | Description | Status |
+|---------|-------------|--------|
+| E-Signature Drawing | Touch/mouse signature capture | Planned |
+| Contract Versioning | Track document changes | Planned |
+| Model Releases | Built-in release templates | Planned |
+| Venue Agreements | Location contract templates | Planned |
+| Bulk Contract Send | Mass contract distribution | Planned |
+| Open Rate Tracking | Contract view analytics | Planned |
+| Expiration Alerts | Contract deadline notifications | Planned |
+| Counter-Signatures | Multi-party signing | Planned |
+
+#### Phase 6: Properties & Real Estate (Q3-Q4 2025)
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Virtual Tour Embed | 360° tour integration | Planned |
+| Floor Plans | Floorplan upload/display | Planned |
+| Property Comparison | Side-by-side views | Planned |
+| Lead Forms | Custom capture forms | Planned |
+| Social Cards | Auto-generated share images | Planned |
+| SEO Tools | Meta tag optimization | Planned |
+| Custom Domains | Vanity URLs per property | Planned |
+| MLS Integration | Listing data sync | Planned |
+| Agent Branding | Co-branding options | Planned |
+
+#### Phase 7: AI & Automation (Q4 2025)
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Workflow Builder | Visual automation designer | Planned |
+| AI Descriptions | Auto-generate photo captions | Planned |
+| Smart Pricing | Dynamic pricing suggestions | Planned |
+| Auto Gallery Delivery | Trigger-based delivery | Planned |
+| Email Personalization | Dynamic content insertion | Planned |
+| Client Onboarding | Automated sequences | Planned |
+| Task Automation | Rule-based task creation | Planned |
+| Busy Period Predictions | Demand forecasting | Planned |
+| AI Client Matching | Style-based matching | Planned |
+
+#### Phase 8: Enterprise (2026)
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Public API | RESTful API access | Planned |
+| Webhooks | Event notifications | Planned |
+| White-Label | Custom branding | Planned |
+| SSO/SAML | Enterprise authentication | Planned |
+| Audit Logs | Compliance logging | Planned |
+| Custom Roles | Granular permissions | Planned |
+| Multi-Location | Branch management | Planned |
+| Marketplace | Third-party integrations | Planned |
 
 ## Tech Stack
 

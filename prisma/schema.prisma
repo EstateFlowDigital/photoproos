@@ -287,6 +287,14 @@ enum SignatureType {
   uploaded
 }
 
+enum RecurrencePattern {
+  daily
+  weekly
+  biweekly
+  monthly
+  custom
+}
+
 enum CalendarProvider {
   google
   outlook
@@ -326,29 +334,29 @@ model Organization {
   customDomain   String? @unique
 
   // Portal Appearance (free features)
-  portalMode        PortalMode @default(dark) // light or dark mode for client-facing pages
-  invoiceLogoUrl    String? // Separate logo for invoices (optional)
+  portalMode     PortalMode @default(dark) // light or dark mode for client-facing pages
+  invoiceLogoUrl String? // Separate logo for invoices (optional)
 
   // White-Label Options (paid plans only)
   hidePlatformBranding Boolean @default(false) // Hide "Powered by PhotoProOS"
   customEmailDomain    String? // For white-label email sending
 
   // Watermark Configuration
-  watermarkEnabled     Boolean           @default(true)
-  watermarkType        String?           @default("text") // "text" or "image"
-  watermarkText        String? // Custom text (e.g., "© Studio Name")
-  watermarkImageUrl    String? // URL to watermark image
-  watermarkPosition    WatermarkPosition @default(bottom_right)
-  watermarkOpacity     Float             @default(0.5) // 0-1
-  watermarkScale       Float             @default(0.15) // Size relative to image (0-1)
+  watermarkEnabled  Boolean           @default(true)
+  watermarkType     String?           @default("text") // "text" or "image"
+  watermarkText     String? // Custom text (e.g., "© Studio Name")
+  watermarkImageUrl String? // URL to watermark image
+  watermarkPosition WatermarkPosition @default(bottom_right)
+  watermarkOpacity  Float             @default(0.5) // 0-1
+  watermarkScale    Float             @default(0.15) // Size relative to image (0-1)
 
   // Settings
   timezone String @default("America/New_York")
   currency String @default("USD")
 
   // Tax settings
-  defaultTaxRate   Float?  @default(0) // Default tax rate as percentage (e.g., 8.25 for 8.25%)
-  taxLabel         String? @default("Sales Tax") // Label shown on invoices (e.g., "Sales Tax", "VAT", "GST")
+  defaultTaxRate Float?  @default(0) // Default tax rate as percentage (e.g., 8.25 for 8.25%)
+  taxLabel       String? @default("Sales Tax") // Label shown on invoices (e.g., "Sales Tax", "VAT", "GST")
 
   // Travel fee settings
   homeBaseLocationId String?
@@ -378,11 +386,11 @@ model Organization {
   annualRevenue   String? // "<50k", "50-100k", "100-250k", "250k+"
 
   // Display Preferences (personal vs company branding)
-  displayMode  DisplayMode @default(company)
-  publicName   String? // What clients see (company or personal name)
-  publicEmail  String? // Public-facing email
-  publicPhone  String? // Public-facing phone
-  website      String? // Company website
+  displayMode DisplayMode @default(company)
+  publicName  String? // What clients see (company or personal name)
+  publicEmail String? // Public-facing email
+  publicPhone String? // Public-facing phone
+  website     String? // Company website
 
   // Stripe Trial/Payment
   trialStartedAt     DateTime?
@@ -420,10 +428,14 @@ model Organization {
   invoiceTemplates   InvoiceTemplate[]
 
   // Phase 1: Ordering System relations
-  serviceBundles     ServiceBundle[]
-  serviceAddons      ServiceAddon[]
-  orderPages         OrderPage[]
-  orders             Order[]
+  serviceBundles ServiceBundle[]
+  serviceAddons  ServiceAddon[]
+  orderPages     OrderPage[]
+  orders         Order[]
+
+  // Phase 2: Brokerage & Enterprise relations
+  brokerages    Brokerage[]
+  payoutBatches PayoutBatch[]
 
   @@index([slug])
   @@index([plan])
@@ -447,6 +459,10 @@ model User {
 
   // Home base location (overrides org default for travel calculations)
   homeBaseLocationId String?
+
+  // Phase 2: Stripe Connect for photographer payouts
+  stripeConnectAccountId String? @unique
+  stripeConnectOnboarded Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -510,31 +526,36 @@ model Client {
   updatedAt DateTime @updatedAt
 
   // CRM Enhancements (Phase 1)
-  source         String?   // How client found you: REFERRAL, ORGANIC, AD, REPEAT
-  preferences    Json?     // Client style/delivery preferences
+  source         String? // How client found you: REFERRAL, ORGANIC, AD, REPEAT
+  preferences    Json? // Client style/delivery preferences
   isVIP          Boolean   @default(false)
   lastActivityAt DateTime?
 
+  // Phase 2: Brokerage relationship (client is an agent under a brokerage)
+  brokerageId String?
+
   // Relations
-  organization    Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  projects        Project[]
-  bookings        Booking[]
-  invoices        Invoice[]
-  contracts       Contract[]
-  payments        Payment[]
-  clientSessions  ClientSession[]
-  tasks           Task[]
-  communications  ClientCommunication[]
-  tags            ClientTagAssignment[]
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brokerage      Brokerage?            @relation("BrokerageAgents", fields: [brokerageId], references: [id], onDelete: SetNull)
+  projects       Project[]
+  bookings       Booking[]
+  invoices       Invoice[]
+  contracts      Contract[]
+  payments       Payment[]
+  clientSessions ClientSession[]
+  tasks          Task[]
+  communications ClientCommunication[]
+  tags           ClientTagAssignment[]
 
   // Phase 1: Ordering System relations
-  orderPages      OrderPage[]            // Dedicated order pages for this client
-  orders          Order[]                // Orders placed by this client
+  orderPages OrderPage[] // Dedicated order pages for this client
+  orders     Order[] // Orders placed by this client
 
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([email])
   @@index([industry])
+  @@index([brokerageId])
 }
 
 model ClientSession {
@@ -580,10 +601,10 @@ model Service {
   equipmentRequirements ServiceEquipmentRequirement[] // Equipment required for this service
 
   // Phase 1: Ordering System relations
-  bundleItems           ServiceBundleItem[]           // Bundles this service is part of
-  addonCompatibility    ServiceAddonCompat[]          // Addons compatible with this service
-  orderPageServices     OrderPageService[]            // Order pages featuring this service
-  orderItems            OrderItem[]                   // Order items referencing this service
+  bundleItems        ServiceBundleItem[] // Bundles this service is part of
+  addonCompatibility ServiceAddonCompat[] // Addons compatible with this service
+  orderPageServices  OrderPageService[] // Order pages featuring this service
+  orderItems         OrderItem[] // Order items referencing this service
 
   @@index([organizationId])
   @@index([category])
@@ -874,6 +895,16 @@ model Booking {
   notes         String?
   internalNotes String?
 
+  // Recurring booking fields
+  isRecurring         Boolean            @default(false)
+  recurrencePattern   RecurrencePattern?
+  recurrenceInterval  Int?               @default(1) // e.g., every 2 weeks
+  recurrenceEndDate   DateTime?          // Optional end date for the series
+  recurrenceCount     Int?               // Optional max occurrences
+  recurrenceDaysOfWeek Int[]             @default([]) // For weekly: 0=Sun, 1=Mon, etc.
+  seriesId            String?            // Groups all bookings in a series
+  parentBookingId     String?            // Reference to the original booking
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -889,8 +920,12 @@ model Booking {
   tasks            Task[]
 
   // Phase 1: Ordering System relations
-  orderId          String?           @unique
-  order            Order?            @relation("OrderBooking", fields: [orderId], references: [id], onDelete: SetNull)
+  orderId String? @unique
+  order   Order?  @relation("OrderBooking", fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Recurring booking self-reference
+  parentBooking  Booking?  @relation("RecurringBookings", fields: [parentBookingId], references: [id], onDelete: SetNull)
+  childBookings  Booking[] @relation("RecurringBookings")
 
   @@index([organizationId])
   @@index([clientId])
@@ -899,6 +934,8 @@ model Booking {
   @@index([assignedUserId])
   @@index([startTime])
   @@index([status])
+  @@index([seriesId])
+  @@index([parentBookingId])
 }
 
 model BookingReminder {
@@ -966,8 +1003,8 @@ model Invoice {
   tasks        Task[]
 
   // Phase 1: Ordering System relations
-  orderId      String?           @unique
-  order        Order?            @relation("OrderInvoice", fields: [orderId], references: [id], onDelete: SetNull)
+  orderId String? @unique
+  order   Order?  @relation("OrderInvoice", fields: [orderId], references: [id], onDelete: SetNull)
 
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
@@ -1043,9 +1080,9 @@ model Contract {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client       Client?              @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  template     ContractTemplate?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  template     ContractTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)
   signers      ContractSigner[]
   auditLogs    ContractAuditLog[]
   signatures   ContractSignature[]
@@ -1188,18 +1225,18 @@ model OnboardingProgress {
   stripeConnected     Boolean @default(false)
 
   // New Onboarding Wizard Steps
-  welcomeViewed     Boolean @default(false) // Step 0
-  personalComplete  Boolean @default(false) // Step 1: First/last name
-  businessComplete  Boolean @default(false) // Step 2: Company, type, size
-  brandingStepDone  Boolean @default(false) // Step 3: Display mode, public info
-  industriesSet     Boolean @default(false) // Step 4: Industry selection
-  featuresSelected  Boolean @default(false) // Step 5: Module selection
-  goalsSet          Boolean @default(false) // Step 6: Business goals
-  paymentStepDone   Boolean @default(false) // Step 7: Payment/trial setup
-  tourStarted       Boolean @default(false) // Step 8: Guided tour
+  welcomeViewed    Boolean @default(false) // Step 0
+  personalComplete Boolean @default(false) // Step 1: First/last name
+  businessComplete Boolean @default(false) // Step 2: Company, type, size
+  brandingStepDone Boolean @default(false) // Step 3: Display mode, public info
+  industriesSet    Boolean @default(false) // Step 4: Industry selection
+  featuresSelected Boolean @default(false) // Step 5: Module selection
+  goalsSet         Boolean @default(false) // Step 6: Business goals
+  paymentStepDone  Boolean @default(false) // Step 7: Payment/trial setup
+  tourStarted      Boolean @default(false) // Step 8: Guided tour
 
   // Wizard state
-  currentStep Int     @default(0)
+  currentStep  Int      @default(0)
   skippedSteps String[] @default([]) // Steps user skipped
 
   // Goals selected during onboarding
@@ -1250,7 +1287,7 @@ model Location {
   propertyDetails PropertyDetails?
 
   // Phase 1: Ordering System relations
-  orders          Order[]
+  orders Order[]
 
   @@index([organizationId])
   @@index([placeId])
@@ -1472,21 +1509,21 @@ model PropertyLead {
   status LeadStatus @default(new)
 
   // Lead Scoring
-  score           Int     @default(0) // 0-100 score
-  scoreBreakdown  Json?   // { "pageViews": 10, "timeOnSite": 15, "photoViews": 20, ... }
-  temperature     String  @default("cold") // "hot", "warm", "cold"
+  score          Int    @default(0) // 0-100 score
+  scoreBreakdown Json? // { "pageViews": 10, "timeOnSite": 15, "photoViews": 20, ... }
+  temperature    String @default("cold") // "hot", "warm", "cold"
 
   // Engagement tracking
-  pageViews       Int     @default(0)
-  photoViews      Int     @default(0)
-  tourClicks      Int     @default(0)
-  totalTimeSeconds Int    @default(0)
-  lastActivityAt  DateTime?
+  pageViews        Int       @default(0)
+  photoViews       Int       @default(0)
+  tourClicks       Int       @default(0)
+  totalTimeSeconds Int       @default(0)
+  lastActivityAt   DateTime?
 
   // Contact history
-  contactedAt     DateTime?
-  followUpDate    DateTime?
-  notes           String?   @db.Text
+  contactedAt  DateTime?
+  followUpDate DateTime?
+  notes        String?   @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1558,7 +1595,7 @@ model TaskColumn {
   name     String
   color    String? // Column header color
   position Int     @default(0) // Sort order
-  limit    Int?    // WIP limit (optional)
+  limit    Int? // WIP limit (optional)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1572,7 +1609,7 @@ model TaskColumn {
 }
 
 model Task {
-  id             String @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
   boardId        String
   columnId       String
@@ -1586,8 +1623,8 @@ model Task {
   position    Int          @default(0) // Sort order within column
 
   // Dates
-  startDate DateTime?
-  dueDate   DateTime?
+  startDate   DateTime?
+  dueDate     DateTime?
   completedAt DateTime?
 
   // Time tracking (in minutes)
@@ -1680,15 +1717,15 @@ model DiscountCode {
   discountValue  Int // Percentage (0-100) or cents for fixed_amount
 
   // Limits
-  maxUses        Int?      @default(0) // 0 = unlimited
-  usedCount      Int       @default(0)
-  minPurchase    Int?      @default(0) // Minimum purchase in cents
-  maxDiscount    Int?      // Maximum discount in cents (for percentage discounts)
+  maxUses     Int? @default(0) // 0 = unlimited
+  usedCount   Int  @default(0)
+  minPurchase Int? @default(0) // Minimum purchase in cents
+  maxDiscount Int? // Maximum discount in cents (for percentage discounts)
 
   // Validity
-  validFrom      DateTime  @default(now())
-  validUntil     DateTime?
-  isActive       Boolean   @default(true)
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
+  isActive   Boolean   @default(true)
 
   // Scope - which things this code applies to
   applicableServices String[] @default([]) // Empty = all services
@@ -1698,11 +1735,11 @@ model DiscountCode {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   usages       DiscountCodeUsage[]
 
   // Phase 1: Ordering System relations
-  orders       Order[]
+  orders Order[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -1711,7 +1748,7 @@ model DiscountCode {
 }
 
 model DiscountCodeUsage {
-  id             String @id @default(cuid())
+  id             String  @id @default(cuid())
   discountCodeId String
   invoiceId      String?
   paymentId      String?
@@ -1733,23 +1770,23 @@ model DiscountCodeUsage {
 // ============================================================================
 
 model PaymentPlan {
-  id             String            @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
   invoiceId      String?
   projectId      String?
   clientId       String?
 
   // Plan details
-  totalAmount    Int // Total amount in cents
-  installments   Int // Number of installments (e.g., 3, 6, 12)
-  paidAmount     Int    @default(0) // Amount paid so far
+  totalAmount  Int // Total amount in cents
+  installments Int // Number of installments (e.g., 3, 6, 12)
+  paidAmount   Int @default(0) // Amount paid so far
 
-  status         PaymentPlanStatus @default(active)
+  status PaymentPlanStatus @default(active)
 
   // Schedule
-  startDate      DateTime
-  frequency      String   @default("monthly") // "weekly", "biweekly", "monthly"
-  nextDueDate    DateTime?
+  startDate   DateTime
+  frequency   String    @default("monthly") // "weekly", "biweekly", "monthly"
+  nextDueDate DateTime?
 
   // Stripe
   stripeSubscriptionId String? @unique
@@ -1758,7 +1795,7 @@ model PaymentPlan {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization      Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   scheduledPayments PaymentPlanInstallment[]
 
   @@index([organizationId])
@@ -1768,13 +1805,13 @@ model PaymentPlan {
 }
 
 model PaymentPlanInstallment {
-  id            String  @id @default(cuid())
+  id            String @id @default(cuid())
   paymentPlanId String
 
-  amount        Int // Amount in cents
-  dueDate       DateTime
-  paidAt        DateTime?
-  isPaid        Boolean @default(false)
+  amount  Int // Amount in cents
+  dueDate DateTime
+  paidAt  DateTime?
+  isPaid  Boolean   @default(false)
 
   // Stripe
   stripePaymentIntentId String? @unique
@@ -1797,21 +1834,21 @@ model PaymentPlanInstallment {
 // ============================================================================
 
 model DownloadLog {
-  id             String         @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
   projectId      String
   assetId        String? // Null for batch/zip downloads
 
   // Download details
-  format         DownloadFormat @default(original)
-  fileCount      Int            @default(1) // For batch downloads
-  totalBytes     BigInt?
+  format     DownloadFormat @default(original)
+  fileCount  Int            @default(1) // For batch downloads
+  totalBytes BigInt?
 
   // Who downloaded
-  clientEmail    String?
-  sessionId      String?
-  ipAddress      String?
-  userAgent      String?
+  clientEmail String?
+  sessionId   String?
+  ipAddress   String?
+  userAgent   String?
 
   createdAt DateTime @default(now())
 
@@ -1827,7 +1864,7 @@ model DownloadLog {
 // ============================================================================
 
 model ExpirationNotification {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   projectId String
 
   // Notification schedule
@@ -1853,23 +1890,23 @@ model InvoiceTemplate {
   id             String @id @default(cuid())
   organizationId String
 
-  name           String
-  isDefault      Boolean @default(false)
+  name      String
+  isDefault Boolean @default(false)
 
   // Branding
-  logoPosition   String  @default("left") // "left", "center", "right"
-  primaryColor   String  @default("#3b82f6")
-  accentColor    String  @default("#8b5cf6")
+  logoPosition String @default("left") // "left", "center", "right"
+  primaryColor String @default("#3b82f6")
+  accentColor  String @default("#8b5cf6")
 
   // Content
-  headerText     String?
-  footerText     String?
-  paymentTerms   String? // e.g., "Net 30", "Due on Receipt"
-  notes          String?
+  headerText   String?
+  footerText   String?
+  paymentTerms String? // e.g., "Net 30", "Due on Receipt"
+  notes        String?
 
   // Styling
-  fontFamily     String  @default("Inter")
-  showLogo       Boolean @default(true)
+  fontFamily      String  @default("Inter")
+  showLogo        Boolean @default(true)
   showPaymentLink Boolean @default(true)
 
   createdAt DateTime @default(now())
@@ -1891,18 +1928,18 @@ model PortalActivity {
   clientId       String
 
   // Activity details
-  activityType   String // "gallery_delivered", "invoice_sent", "payment_received", "comment_posted", etc.
-  title          String
-  description    String?
+  activityType String // "gallery_delivered", "invoice_sent", "payment_received", "comment_posted", etc.
+  title        String
+  description  String?
 
   // Related entities
-  projectId      String?
-  invoiceId      String?
-  paymentId      String?
+  projectId String?
+  invoiceId String?
+  paymentId String?
 
   // Read status
-  isRead         Boolean   @default(false)
-  readAt         DateTime?
+  isRead Boolean   @default(false)
+  readAt DateTime?
 
   createdAt DateTime @default(now())
 
@@ -1917,33 +1954,33 @@ model PortalActivity {
 // ============================================================================
 
 model AvailabilityBlock {
-  id             String   @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
-  userId         String?  // null = org-wide block
+  userId         String? // null = org-wide block
 
   // Block details
-  title          String
-  description    String?
-  blockType      AvailabilityBlockType @default(time_off)
+  title       String
+  description String?
+  blockType   AvailabilityBlockType @default(time_off)
 
   // Time range
-  startDate      DateTime
-  endDate        DateTime
-  allDay         Boolean  @default(true)
+  startDate DateTime
+  endDate   DateTime
+  allDay    Boolean  @default(true)
 
   // Recurrence (RRULE format)
-  isRecurring    Boolean  @default(false)
-  recurrenceRule String?  // e.g., "FREQ=WEEKLY;BYDAY=SU"
+  isRecurring    Boolean   @default(false)
+  recurrenceRule String? // e.g., "FREQ=WEEKLY;BYDAY=SU"
   recurrenceEnd  DateTime?
 
   // Time-off request approval workflow
-  requestStatus  TimeOffRequestStatus @default(approved)  // Legacy blocks are auto-approved
-  approvedById   String?
-  approvedAt     DateTime?
-  rejectionNote  String?
+  requestStatus TimeOffRequestStatus @default(approved) // Legacy blocks are auto-approved
+  approvedById  String?
+  approvedAt    DateTime?
+  rejectionNote String?
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId])
   @@index([userId])
@@ -1958,15 +1995,15 @@ model BookingBuffer {
   serviceId      String? // null = org-wide default
 
   // Buffer times in minutes
-  bufferBefore   Int     @default(0)  // Setup time before booking
-  bufferAfter    Int     @default(0)  // Teardown time after booking
+  bufferBefore Int @default(0) // Setup time before booking
+  bufferAfter  Int @default(0) // Teardown time after booking
 
   // Minimum booking window
-  minAdvanceHours Int?   // Minimum hours in advance to book
-  maxAdvanceDays  Int?   // Maximum days in advance to book
+  minAdvanceHours Int? // Minimum hours in advance to book
+  maxAdvanceDays  Int? // Maximum days in advance to book
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([organizationId, serviceId])
   @@index([organizationId])
@@ -1978,32 +2015,32 @@ model BookingBuffer {
 // ============================================================================
 
 model ClientCommunication {
-  id        String   @id @default(cuid())
-  clientId  String
+  id       String @id @default(cuid())
+  clientId String
 
   // Communication details
   type      CommunicationType
   direction CommunicationDirection
   subject   String?
-  content   String   @db.Text
+  content   String                 @db.Text
 
   // Metadata
-  sentAt    DateTime?
-  readAt    DateTime?
+  sentAt DateTime?
+  readAt DateTime?
 
   // Who logged this
   createdById String?
 
   // Related entities
-  bookingId  String?
-  projectId  String?
-  invoiceId  String?
+  bookingId String?
+  projectId String?
+  invoiceId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@index([type])
@@ -2011,33 +2048,33 @@ model ClientCommunication {
 }
 
 model ClientTag {
-  id             String   @id @default(cuid())
+  id             String @id @default(cuid())
   organizationId String
 
-  name           String
-  color          String   @default("#6366f1")
-  description    String?
+  name        String
+  color       String  @default("#6366f1")
+  description String?
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  clients        ClientTagAssignment[]
+  clients ClientTagAssignment[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
 }
 
 model ClientTagAssignment {
-  id        String   @id @default(cuid())
-  clientId  String
-  tagId     String
+  id       String @id @default(cuid())
+  clientId String
+  tagId    String
 
   createdAt DateTime @default(now())
 
   // Relations
-  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  tag       ClientTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  client Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tag    ClientTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([clientId, tagId])
   @@index([clientId])
@@ -2049,27 +2086,27 @@ model ClientTagAssignment {
 // ============================================================================
 
 model ContractSignature {
-  id          String   @id @default(cuid())
-  contractId  String
-  signerId    String   // ContractSigner id
+  id         String @id @default(cuid())
+  contractId String
+  signerId   String // ContractSigner id
 
   // Signature data
-  signatureData  String   @db.Text  // Base64 encoded signature image
-  signatureType  SignatureType @default(drawn)
+  signatureData String        @db.Text // Base64 encoded signature image
+  signatureType SignatureType @default(drawn)
 
   // Verification
-  signedAt       DateTime @default(now())
-  ipAddress      String?
-  userAgent      String?
+  signedAt  DateTime @default(now())
+  ipAddress String?
+  userAgent String?
 
   // Legal compliance
-  consentGiven   Boolean  @default(true)
-  consentText    String?  @db.Text
+  consentGiven Boolean @default(true)
+  consentText  String? @db.Text
 
-  createdAt      DateTime @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
-  contract       Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
 
   @@index([contractId])
   @@index([signerId])
@@ -2080,31 +2117,31 @@ model ContractSignature {
 // ============================================================================
 
 model CalendarIntegration {
-  id             String   @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
-  userId         String?  // User-specific or org-wide
+  userId         String? // User-specific or org-wide
 
   // Provider details
-  provider       CalendarProvider
-  externalId     String   // Calendar ID from provider
-  name           String   // Display name
+  provider   CalendarProvider
+  externalId String // Calendar ID from provider
+  name       String // Display name
 
   // OAuth tokens
-  accessToken    String   @db.Text
-  refreshToken   String?  @db.Text
+  accessToken    String    @db.Text
+  refreshToken   String?   @db.Text
   tokenExpiresAt DateTime?
 
   // Sync settings
-  syncEnabled    Boolean  @default(true)
-  syncDirection  SyncDirection @default(both)
-  lastSyncAt     DateTime?
-  lastSyncError  String?
+  syncEnabled   Boolean       @default(true)
+  syncDirection SyncDirection @default(both)
+  lastSyncAt    DateTime?
+  lastSyncError String?
 
   // Color mapping
-  color          String   @default("#3b82f6")
+  color String @default("#3b82f6")
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([organizationId, provider, externalId])
   @@index([organizationId])
@@ -2113,29 +2150,29 @@ model CalendarIntegration {
 }
 
 model CalendarEvent {
-  id                    String   @id @default(cuid())
+  id                    String @id @default(cuid())
   calendarIntegrationId String
 
   // External reference
-  externalEventId       String
+  externalEventId String
 
   // Event details (cached from provider)
-  title                 String
-  description           String?  @db.Text
-  startTime             DateTime
-  endTime               DateTime
-  allDay                Boolean  @default(false)
-  location              String?
+  title       String
+  description String?  @db.Text
+  startTime   DateTime
+  endTime     DateTime
+  allDay      Boolean  @default(false)
+  location    String?
 
   // Link to internal booking (if synced)
-  bookingId             String?  @unique
+  bookingId String? @unique
 
   // Sync metadata
-  lastSyncedAt          DateTime @default(now())
-  etag                  String?  // For change detection
+  lastSyncedAt DateTime @default(now())
+  etag         String? // For change detection
 
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([calendarIntegrationId, externalEventId])
   @@index([calendarIntegrationId])
@@ -2148,24 +2185,24 @@ model CalendarEvent {
 // ============================================================================
 
 enum OrderStatus {
-  cart        // Items added, not submitted
-  pending     // Submitted, awaiting payment
-  paid        // Payment received
-  processing  // Being worked on
-  completed   // Delivered
-  cancelled   // Cancelled by client or admin
+  cart // Items added, not submitted
+  pending // Submitted, awaiting payment
+  paid // Payment received
+  processing // Being worked on
+  completed // Delivered
+  cancelled // Cancelled by client or admin
 }
 
 enum BundleType {
-  fixed       // Fixed set of services
-  tiered      // Pick X services from a group
-  custom      // Build your own
+  fixed // Fixed set of services
+  tiered // Pick X services from a group
+  custom // Build your own
 }
 
 enum AddonTrigger {
-  always            // Always show
-  with_service      // Show when specific service selected
-  cart_threshold    // Show when cart > X amount
+  always // Always show
+  with_service // Show when specific service selected
+  cart_threshold // Show when cart > X amount
 }
 
 // ============================================================================
@@ -2173,37 +2210,37 @@ enum AddonTrigger {
 // ============================================================================
 
 model ServiceBundle {
-  id             String     @id @default(cuid())
+  id             String @id @default(cuid())
   organizationId String
 
   // Bundle info
-  name           String
-  slug           String
-  description    String?    @db.Text
-  priceCents     Int        // Bundle price
-  bundleType     BundleType @default(fixed)
+  name        String
+  slug        String
+  description String?    @db.Text
+  priceCents  Int // Bundle price
+  bundleType  BundleType @default(fixed)
 
   // Display
-  imageUrl       String?
-  badgeText      String?    // "Most Popular", "Best Value"
-  sortOrder      Int        @default(0)
+  imageUrl  String?
+  badgeText String? // "Most Popular", "Best Value"
+  sortOrder Int     @default(0)
 
   // Savings display
-  originalPriceCents Int?   // Sum of individual services (for savings display)
+  originalPriceCents Int? // Sum of individual services (for savings display)
   savingsPercent     Float? // Calculated savings percentage
 
   // Settings
-  isActive       Boolean    @default(true)
-  isPublic       Boolean    @default(true)  // Show on public order pages
+  isActive Boolean @default(true)
+  isPublic Boolean @default(true) // Show on public order pages
 
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  services       ServiceBundleItem[]    // Services included in bundle
-  orderPages     OrderPageBundle[]      // Order pages featuring this bundle
-  orderItems     OrderItem[]
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  services     ServiceBundleItem[] // Services included in bundle
+  orderPages   OrderPageBundle[] // Order pages featuring this bundle
+  orderItems   OrderItem[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -2234,32 +2271,32 @@ model ServiceBundleItem {
 // ============================================================================
 
 model ServiceAddon {
-  id             String       @id @default(cuid())
+  id             String @id @default(cuid())
   organizationId String
 
   // Addon info
-  name           String
-  description    String?
-  priceCents     Int
+  name        String
+  description String?
+  priceCents  Int
 
   // Display
-  imageUrl       String?
-  iconName       String?      // Icon identifier
-  sortOrder      Int          @default(0)
+  imageUrl  String?
+  iconName  String? // Icon identifier
+  sortOrder Int     @default(0)
 
   // Trigger conditions
-  triggerType    AddonTrigger @default(always)
-  triggerValue   String?      // Service ID or amount threshold
+  triggerType  AddonTrigger @default(always)
+  triggerValue String? // Service ID or amount threshold
 
   // Settings
-  isActive       Boolean      @default(true)
-  isOneTime      Boolean      @default(true)  // Can only add once
+  isActive  Boolean @default(true)
+  isOneTime Boolean @default(true) // Can only add once
 
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   compatibleWith ServiceAddonCompat[] // Services this addon works with
   orderItems     OrderItem[]
 
@@ -2285,58 +2322,61 @@ model ServiceAddonCompat {
 // ============================================================================
 
 model OrderPage {
-  id             String @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
-  clientId       String?  // Optional: dedicated page for specific client/brokerage
+  clientId       String? // Optional: dedicated page for specific client
+  brokerageId    String? // Optional: dedicated page for specific brokerage
 
   // Page info
-  name           String
-  slug           String
+  name String
+  slug String
 
   // Branding overrides
-  headline       String?
-  subheadline    String?
-  heroImageUrl   String?
-  logoOverrideUrl String?   // Override org logo for this page
-  primaryColor   String?    // Override org primary color
+  headline        String?
+  subheadline     String?
+  heroImageUrl    String?
+  logoOverrideUrl String? // Override org logo for this page
+  primaryColor    String? // Override org primary color
 
   // Contact info display
-  showPhone      Boolean @default(true)
-  showEmail      Boolean @default(true)
-  customPhone    String?
-  customEmail    String?
+  showPhone   Boolean @default(true)
+  showEmail   Boolean @default(true)
+  customPhone String?
+  customEmail String?
 
   // Template/Layout
-  template       String  @default("default")  // "default", "minimal", "luxury"
+  template String @default("default") // "default", "minimal", "luxury"
 
   // SEO
   metaTitle       String?
   metaDescription String?
 
   // Settings
-  isPublished    Boolean @default(false)
-  requireLogin   Boolean @default(false)  // Require client portal login
+  isPublished  Boolean @default(false)
+  requireLogin Boolean @default(false) // Require client portal login
 
   // Testimonials/social proof
-  testimonials   Json?    // Array of { name, company, quote, photoUrl }
+  testimonials Json? // Array of { name, company, quote, photoUrl }
 
   // Analytics
-  viewCount      Int      @default(0)
-  orderCount     Int      @default(0)
+  viewCount  Int @default(0)
+  orderCount Int @default(0)
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client         Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  bundles        OrderPageBundle[]
-  services       OrderPageService[]
-  orders         Order[]
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  brokerage    Brokerage?         @relation("BrokerageOrderPages", fields: [brokerageId], references: [id], onDelete: SetNull)
+  bundles      OrderPageBundle[]
+  services     OrderPageService[]
+  orders       Order[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
   @@index([clientId])
+  @@index([brokerageId])
   @@index([isPublished])
 }
 
@@ -2345,7 +2385,7 @@ model OrderPageBundle {
   orderPageId String
   bundleId    String
   sortOrder   Int     @default(0)
-  isFeatured  Boolean @default(false)  // Highlight as recommended
+  isFeatured  Boolean @default(false) // Highlight as recommended
 
   orderPage OrderPage     @relation(fields: [orderPageId], references: [id], onDelete: Cascade)
   bundle    ServiceBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
@@ -2355,10 +2395,10 @@ model OrderPageBundle {
 }
 
 model OrderPageService {
-  id          String  @id @default(cuid())
+  id          String @id @default(cuid())
   orderPageId String
   serviceId   String
-  sortOrder   Int     @default(0)
+  sortOrder   Int    @default(0)
 
   orderPage OrderPage @relation(fields: [orderPageId], references: [id], onDelete: Cascade)
   service   Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
@@ -2372,72 +2412,72 @@ model OrderPageService {
 // ============================================================================
 
 model Order {
-  id             String      @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
-  orderPageId    String?     // Which order page it came from
-  clientId       String?     // Linked client (if known)
+  orderPageId    String? // Which order page it came from
+  clientId       String? // Linked client (if known)
 
   // Order reference
-  orderNumber    String      // e.g., "ORD-2025-0001"
-  status         OrderStatus @default(cart)
+  orderNumber String // e.g., "ORD-2025-0001"
+  status      OrderStatus @default(cart)
 
   // Totals (in cents)
-  subtotalCents  Int         @default(0)
-  discountCents  Int         @default(0)
-  taxCents       Int         @default(0)
-  totalCents     Int         @default(0)
+  subtotalCents Int @default(0)
+  discountCents Int @default(0)
+  taxCents      Int @default(0)
+  totalCents    Int @default(0)
 
   // Discount code applied
   discountCodeId String?
 
   // Client info (for guest checkout)
-  clientName     String?
-  clientEmail    String?
-  clientPhone    String?
-  clientCompany  String?
+  clientName    String?
+  clientEmail   String?
+  clientPhone   String?
+  clientCompany String?
 
   // Property/Shoot location
-  locationId     String?
-  locationNotes  String?
+  locationId    String?
+  locationNotes String?
 
   // Scheduling preference
-  preferredDate  DateTime?
-  preferredTime  String?     // "morning", "afternoon", "evening"
-  flexibleDates  Boolean     @default(true)
+  preferredDate DateTime?
+  preferredTime String? // "morning", "afternoon", "evening"
+  flexibleDates Boolean   @default(true)
 
   // Notes
-  clientNotes    String?     @db.Text
-  internalNotes  String?     @db.Text
+  clientNotes   String? @db.Text
+  internalNotes String? @db.Text
 
   // Session token for guest checkout
-  sessionToken   String?     @unique
+  sessionToken String? @unique
 
   // Payment
-  paidAt         DateTime?
-  paymentMethod  String?
+  paidAt        DateTime?
+  paymentMethod String?
 
   // Stripe
   stripeCheckoutSessionId String? @unique
   stripePaymentIntentId   String? @unique
 
   // Conversion tracking
-  source         String?     // utm_source
-  medium         String?     // utm_medium
-  campaign       String?     // utm_campaign
+  source   String? // utm_source
+  medium   String? // utm_medium
+  campaign String? // utm_campaign
 
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  submittedAt    DateTime?   // When cart was submitted
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  submittedAt DateTime? // When cart was submitted
 
   // Relations
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  orderPage      OrderPage?     @relation(fields: [orderPageId], references: [id], onDelete: SetNull)
-  client         Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  location       Location?      @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  discountCode   DiscountCode?  @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
-  items          OrderItem[]
-  invoice        Invoice?       @relation("OrderInvoice")
-  booking        Booking?       @relation("OrderBooking")
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  orderPage    OrderPage?    @relation(fields: [orderPageId], references: [id], onDelete: SetNull)
+  client       Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  location     Location?     @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  discountCode DiscountCode? @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  invoice      Invoice?      @relation("OrderInvoice")
+  booking      Booking?      @relation("OrderBooking")
 
   @@unique([organizationId, orderNumber])
   @@index([organizationId])
@@ -2448,11 +2488,11 @@ model Order {
 }
 
 model OrderItem {
-  id        String @id @default(cuid())
-  orderId   String
+  id      String @id @default(cuid())
+  orderId String
 
   // Item type
-  itemType  String   // "service", "bundle", "addon"
+  itemType  String // "service", "bundle", "addon"
   serviceId String?
   bundleId  String?
   addonId   String?
@@ -2464,9 +2504,9 @@ model OrderItem {
   unitCents   Int
   totalCents  Int
 
-  sortOrder   Int     @default(0)
+  sortOrder Int @default(0)
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
   order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -2477,4 +2517,297 @@ model OrderItem {
   @@index([orderId])
   @@index([serviceId])
   @@index([bundleId])
+}
+
+// ============================================================================
+// SPIRO FEATURE PARITY - PHASE 2: BROKERAGE & ENTERPRISE FEATURES
+// ============================================================================
+
+enum PayoutStatus {
+  pending // Scheduled but not processed
+  processing // Being sent via Stripe
+  completed // Successfully paid
+  failed // Payment failed
+  cancelled // Cancelled before processing
+}
+
+enum InvoiceSplitType {
+  single // Standard single invoice
+  split // One invoice with line items assigned to agent/brokerage
+  dual // Two separate invoices generated
+}
+
+enum EarningStatus {
+  pending // Booking not yet completed
+  approved // Ready for payout
+  paid // Included in a payout
+  disputed // Under review
+}
+
+// ============================================================================
+// BROKERAGES (Parent company with multiple agents)
+// ============================================================================
+
+model Brokerage {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Brokerage info
+  name    String
+  slug    String
+  email   String?
+  phone   String?
+  website String?
+
+  // Address
+  address String?
+  city    String?
+  state   String?
+  zipCode String?
+
+  // Branding
+  logoUrl      String?
+  primaryColor String?
+
+  // Primary contact
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  // Settings
+  isActive Boolean @default(true)
+
+  // Analytics (denormalized)
+  totalRevenueCents Int @default(0)
+  activeAgentCount  Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agents       Client[]            @relation("BrokerageAgents")
+  contracts    BrokerageContract[]
+  orderPages   OrderPage[]         @relation("BrokerageOrderPages")
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+// ============================================================================
+// BROKERAGE CONTRACTS (Pricing terms and discounts per brokerage)
+// ============================================================================
+
+model BrokerageContract {
+  id          String @id @default(cuid())
+  brokerageId String
+
+  // Contract details
+  name        String
+  description String?
+
+  // Pricing terms
+  discountPercent    Float? @default(0) // Global discount percentage
+  discountFixedCents Int?   @default(0) // Fixed discount amount
+
+  // Per-service pricing overrides (JSON: { serviceId: priceCents })
+  servicePricing Json?
+
+  // Payment terms
+  paymentTermsDays Int     @default(30) // Net 30, etc.
+  autoInvoice      Boolean @default(false) // Auto-create invoices
+
+  // Invoice handling
+  invoiceSplitType    InvoiceSplitType @default(single)
+  brokeragePayPercent Float? // % brokerage pays (for split invoices)
+
+  // Validity
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  isActive  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  brokerage Brokerage @relation(fields: [brokerageId], references: [id], onDelete: Cascade)
+
+  @@index([brokerageId])
+  @@index([isActive])
+}
+
+// ============================================================================
+// INVOICE SPLITS (Track split/dual invoice configuration)
+// ============================================================================
+
+model InvoiceSplit {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Parent invoice
+  primaryInvoiceId   String
+  secondaryInvoiceId String? // For dual invoices
+
+  // Split type
+  splitType InvoiceSplitType
+
+  // Split details
+  agentAmountCents     Int @default(0)
+  brokerageAmountCents Int @default(0)
+
+  // Line item assignments (JSON: { lineItemId: "agent" | "brokerage" })
+  lineItemAssignments Json?
+
+  createdAt DateTime @default(now())
+
+  @@unique([primaryInvoiceId])
+  @@index([organizationId])
+  @@index([primaryInvoiceId])
+  @@index([secondaryInvoiceId])
+}
+
+// ============================================================================
+// PHOTOGRAPHER RATES (Pay rates per photographer per service)
+// ============================================================================
+
+model PhotographerRate {
+  id             String  @id @default(cuid())
+  organizationId String
+  userId         String // Photographer (team member)
+  serviceId      String? // Null = default rate for all services
+
+  // Pay structure
+  rateType  String @default("percentage") // "percentage", "fixed", "hourly"
+  rateValue Int // Percentage (0-100) or cents
+
+  // Minimum/maximum
+  minPayCents Int? // Minimum pay per booking
+  maxPayCents Int? // Maximum pay per booking
+
+  // Override for specific booking types
+  bookingTypeId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, userId, serviceId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([serviceId])
+}
+
+// ============================================================================
+// PHOTOGRAPHER EARNINGS (Earnings log per booking)
+// ============================================================================
+
+model PhotographerEarning {
+  id             String  @id @default(cuid())
+  organizationId String
+  userId         String // Photographer
+  bookingId      String?
+  invoiceId      String?
+
+  // Earning details
+  description String
+  amountCents Int
+  status      EarningStatus @default(pending)
+
+  // Calculation source
+  rateType        String? // How this was calculated
+  rateValue       Int?
+  baseAmountCents Int? // What the earning was calculated from
+
+  // Payout reference
+  payoutItemId String?
+
+  // Dates
+  earnedAt   DateTime  @default(now())
+  approvedAt DateTime?
+  paidAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  payoutItem PayoutItem? @relation(fields: [payoutItemId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([bookingId])
+  @@index([status])
+  @@index([payoutItemId])
+}
+
+// ============================================================================
+// PAYOUT BATCHES (Scheduled payout batches)
+// ============================================================================
+
+model PayoutBatch {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Batch info
+  batchNumber String // e.g., "PAY-2025-0001"
+  status      PayoutStatus @default(pending)
+
+  // Period covered
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Totals
+  totalAmountCents Int @default(0)
+  itemCount        Int @default(0)
+
+  // Processing
+  processedAt  DateTime?
+  failedReason String?
+
+  // Stripe
+  stripeTransferId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        PayoutItem[]
+
+  @@unique([organizationId, batchNumber])
+  @@index([organizationId])
+  @@index([status])
+  @@index([periodStart])
+}
+
+model PayoutItem {
+  id      String @id @default(cuid())
+  batchId String
+  userId  String // Recipient photographer
+
+  // Amount
+  amountCents Int
+  description String?
+
+  // Status
+  status       PayoutStatus @default(pending)
+  failedReason String?
+
+  // Stripe Connect
+  stripeTransferId String?
+  stripePayoutId   String?
+
+  // Dates
+  processedAt DateTime?
+  paidAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  batch    PayoutBatch           @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  earnings PhotographerEarning[]
+
+  @@index([batchId])
+  @@index([userId])
+  @@index([status])
 }
