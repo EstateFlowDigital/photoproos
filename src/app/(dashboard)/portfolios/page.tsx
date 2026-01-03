@@ -43,7 +43,7 @@ export default async function PortfolioWebsitesPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="auto-grid grid-min-240 grid-gap-4">
           {websites.map((site) => (
             <Link
               key={site.id}
@@ -76,7 +76,7 @@ export default async function PortfolioWebsitesPage() {
                 </span>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 text-center">
+              <div className="mt-4 auto-grid grid-gap-2 [--grid-min:140px] text-center">
                 <div className="rounded-lg bg-[var(--background)] p-2">
                   <p className="text-lg font-semibold text-foreground">{site._count.projects}</p>
                   <p className="text-xs text-foreground-muted">Projects</p>
