@@ -1401,3 +1401,64 @@ html[data-scroll-theme="light"] {
     animation: none;
   }
 }
+
+@layer utilities {
+  .auto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--grid-min, 240px)), 1fr));
+    gap: var(--grid-gap, 1rem);
+  }
+
+  .grid-min-200 {
+    --grid-min: 200px;
+  }
+
+  .grid-min-220 {
+    --grid-min: 220px;
+  }
+
+  .grid-min-240 {
+    --grid-min: 240px;
+  }
+
+  .grid-min-260 {
+    --grid-min: 260px;
+  }
+
+  .grid-min-280 {
+    --grid-min: 280px;
+  }
+
+  .grid-gap-3 {
+    --grid-gap: 0.75rem;
+  }
+
+  .grid-gap-4 {
+    --grid-gap: 1rem;
+  }
+
+  .grid-gap-6 {
+    --grid-gap: 1.5rem;
+  }
+
+  .stack-header {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .stack-actions {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .stack-filters {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .table-scroll {
+    @apply overflow-x-auto;
+  }
+
+  .table-scroll > table {
+    width: 100%;
+    min-width: var(--table-min, 700px);
+  }
+}

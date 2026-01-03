@@ -9,7 +9,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, actions, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between", className)}>
+    <div className={cn("stack-header", className)}>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">{title}</h1>
         {subtitle && (
@@ -17,7 +17,7 @@ export function PageHeader({ title, subtitle, actions, className }: PageHeaderPr
         )}
       </div>
       {actions && (
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="stack-actions w-full sm:w-auto">
           {actions}
         </div>
       )}

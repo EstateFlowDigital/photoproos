@@ -102,7 +102,7 @@ export function LeadsViewClient({ leads }: LeadsViewClientProps) {
   return (
     <div className="space-y-6">
       {/* Stats Summary */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="auto-grid grid-min-200 grid-gap-4">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <p className="text-sm text-foreground-muted">Total Leads</p>
           <p className="mt-1 text-2xl font-bold text-foreground">{leads.length}</p>

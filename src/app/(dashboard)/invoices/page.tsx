@@ -153,7 +153,7 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
       />
 
       {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="auto-grid grid-min-220 grid-gap-4">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">Total Outstanding</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">

@@ -390,7 +390,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="auto-grid grid-min-220 grid-gap-4">
         <StatCard
           label="Monthly Revenue"
           value={formatCurrency(thisMonthRevenueValue)}

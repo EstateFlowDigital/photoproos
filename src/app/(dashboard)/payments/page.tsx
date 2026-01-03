@@ -154,7 +154,7 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
       />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="auto-grid grid-min-220 grid-gap-4">
         <StatCard
           label="This Month"
           value={formatCurrency(monthlyTotal._sum.amountCents || 0)}
