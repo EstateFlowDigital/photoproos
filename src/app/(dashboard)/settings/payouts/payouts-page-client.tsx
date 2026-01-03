@@ -235,7 +235,7 @@ export function PayoutsPageClient({
               </div>
             ))}
 
-            <div className="flex items-center justify-between pt-4 border-t border-[var(--card-border)]">
+            <div className="flex flex-col gap-2 border-t border-[var(--card-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-foreground-muted">
                 {selectedPhotographers.length > 0
                   ? `${selectedPhotographers.length} selected`
@@ -269,7 +269,7 @@ export function PayoutsPageClient({
 
         {batches.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[720px]">
               <thead className="border-b border-[var(--card-border)]">
                 <tr>
                   <th className="py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">

@@ -106,9 +106,9 @@ export function SubmissionsPageClient({ bookingForm, submissions }: SubmissionsP
       </div>
 
       {/* Filter */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-foreground-muted">Filter:</span>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {(["all", "pending", "approved", "converted", "rejected", "expired"] as const).map((status) => (
             <button
               key={status}
@@ -130,7 +130,7 @@ export function SubmissionsPageClient({ bookingForm, submissions }: SubmissionsP
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
         {filteredSubmissions.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[760px]">
               <thead>
                 <tr className="border-b border-[var(--card-border)] bg-[var(--background)]">
                   <th className="px-4 py-3 text-left text-sm font-medium text-foreground-muted">Client</th>

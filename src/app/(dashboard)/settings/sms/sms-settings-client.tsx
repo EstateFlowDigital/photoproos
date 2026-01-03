@@ -380,7 +380,7 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[720px]">
               <thead>
                 <tr className="border-b border-[var(--card-border)] bg-[var(--background-tertiary)]">
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">

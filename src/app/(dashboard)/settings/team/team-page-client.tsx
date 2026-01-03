@@ -63,12 +63,12 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Team Members</h1>
           <p className="text-sm text-foreground-muted mt-1">Manage your team and permissions</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/settings"
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -89,7 +89,7 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
 
       {/* Team Limit */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-foreground-muted">Team Members</p>
             <p className="text-lg font-semibold text-foreground">
@@ -97,7 +97,7 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
             </p>
           </div>
           {memberLimit !== -1 && (
-            <div className="w-32">
+            <div className="w-full sm:w-32">
               <div className="h-2 rounded-full bg-[var(--background-secondary)]">
                 <div
                   className="h-full rounded-full bg-[var(--primary)]"
@@ -175,7 +175,7 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Role Permissions</h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="border-b border-[var(--card-border)]">
                 <th className="py-3 text-left font-medium text-foreground-muted">Permission</th>
