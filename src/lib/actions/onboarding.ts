@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
+import { getDefaultModulesForIndustries, getModulesForIndustries } from "@/lib/constants/industries";
 
 /**
  * Save progress for a specific onboarding step
@@ -297,11 +297,25 @@ export async function updateIndustries(
       return { success: false, error: "Unauthorized" };
     }
 
+    const existing = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { enabledModules: true },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Organization not found" };
+    }
+
+    const availableModules = getModulesForIndustries(industries);
+    const filteredModules = (existing.enabledModules as string[] | null || [])
+      .filter((m) => availableModules.includes(m));
+
     await prisma.organization.update({
       where: { id: organizationId },
       data: {
         industries: industries as any,
         primaryIndustry: primaryIndustry as any,
+        enabledModules: filteredModules,
       },
     });
 
@@ -326,10 +340,22 @@ export async function updateModules(
       return { success: false, error: "Unauthorized" };
     }
 
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { industries: true },
+    });
+
+    if (!organization) {
+      return { success: false, error: "Organization not found" };
+    }
+
+    const availableModules = getModulesForIndustries(organization.industries as string[]);
+    const filteredModules = modules.filter((m) => availableModules.includes(m));
+
     await prisma.organization.update({
       where: { id: organizationId },
       data: {
-        enabledModules: modules,
+        enabledModules: filteredModules,
       },
     });
 
