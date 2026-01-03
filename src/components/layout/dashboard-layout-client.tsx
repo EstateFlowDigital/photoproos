@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
 import { MobileNav, MobileMenuButton } from "./mobile-nav";
+import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode;
@@ -18,6 +20,8 @@ export function DashboardLayoutClient({
   industries,
   unreadNotificationCount = 0,
 }: DashboardLayoutClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleOpenMenu = useCallback(() => {
@@ -27,6 +31,17 @@ export function DashboardLayoutClient({
   const handleCloseMenu = useCallback(() => {
     setMobileMenuOpen(false);
   }, []);
+
+  useEffect(() => {
+    if (!pathname) return;
+    const redirectPath = getRedirectForDisabledModule(
+      { enabledModules, industries },
+      pathname
+    );
+    if (redirectPath && redirectPath !== pathname) {
+      router.replace(redirectPath);
+    }
+  }, [enabledModules, industries, pathname, router]);
 
   return (
     <div className="flex h-screen bg-[var(--background)]">
