@@ -37,6 +37,7 @@ interface SubscriptionPlan {
   trialDays: number;
   isActive: boolean;
   isPublic: boolean;
+  isLegacy?: boolean;
   stripeProductId: string | null;
   stripeMonthlyPriceId: string | null;
   stripeYearlyPriceId: string | null;
