@@ -43,8 +43,10 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "clients",
       "services",
       "properties",
+      "questionnaires",
+      "portfolio_websites",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "properties"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "properties", "questionnaires", "portfolio_websites"],
     color: "#3b82f6", // blue
     sortOrder: 1,
   },
@@ -61,8 +63,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "services",
       "contracts",
       "portfolio_websites",
+      "questionnaires",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "contracts", "portfolio_websites"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "contracts", "portfolio_websites", "questionnaires"],
     color: "#8b5cf6", // purple
     sortOrder: 2,
   },
@@ -87,6 +90,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "clients",
       "contracts",
       "portfolio_websites",
+      "questionnaires",
     ],
     color: "#ec4899", // pink
     sortOrder: 3,
@@ -105,8 +109,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "mini_sessions",
       "online_booking",
       "portfolio_websites",
+      "questionnaires",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites", "questionnaires"],
     color: "#f97316", // orange
     sortOrder: 4,
   },
@@ -123,8 +128,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "services",
       "licensing",
       "portfolio_websites",
+      "questionnaires",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites", "questionnaires"],
     color: "#22c55e", // green
     sortOrder: 5,
   },
@@ -143,8 +149,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "batch_processing",
       "portfolio_websites",
       "product_catalogs",
+      "questionnaires",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites", "product_catalogs"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites", "product_catalogs", "questionnaires"],
     color: "#06b6d4", // cyan
     sortOrder: 6,
   },

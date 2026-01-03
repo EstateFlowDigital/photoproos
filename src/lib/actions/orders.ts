@@ -14,6 +14,7 @@ import {
 } from "@/lib/validations/orders";
 import { requireOrganizationId } from "./auth-helper";
 import { nanoid } from "nanoid";
+import type Stripe from "stripe";
 
 // =============================================================================
 // Types
@@ -243,18 +244,71 @@ export async function createOrderCheckoutSession(
       (order.totalCents * platformFeePercent) / 100
     );
 
+    // Fetch Stripe IDs for services and bundles in the order
+    const serviceIds = order.items
+      .filter((item) => item.itemType === "service" && item.serviceId)
+      .map((item) => item.serviceId as string);
+    const bundleIds = order.items
+      .filter((item) => item.itemType === "bundle" && item.bundleId)
+      .map((item) => item.bundleId as string);
+
+    const [services, bundles] = await Promise.all([
+      serviceIds.length > 0
+        ? prisma.service.findMany({
+            where: { id: { in: serviceIds } },
+            select: { id: true, stripePriceId: true, priceCents: true },
+          })
+        : [],
+      bundleIds.length > 0
+        ? prisma.serviceBundle.findMany({
+            where: { id: { in: bundleIds } },
+            select: { id: true, stripePriceId: true, priceCents: true },
+          })
+        : [],
+    ]);
+
+    const serviceMap = new Map(services.map((s) => [s.id, s]));
+    const bundleMap = new Map(bundles.map((b) => [b.id, b]));
+
     // Build line items for Stripe
-    const lineItems = order.items.map((item) => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: item.name,
-          description: item.itemType === "bundle" ? "Service Bundle" : undefined,
+    // Use Stripe Price ID when available and price matches, otherwise use inline price_data
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = order.items.map((item) => {
+      // Check if we have a synced Stripe Price ID and the price matches
+      let stripePriceId: string | null = null;
+
+      if (item.itemType === "service" && item.serviceId) {
+        const service = serviceMap.get(item.serviceId);
+        // Only use Stripe Price ID if price matches (order might have different price)
+        if (service?.stripePriceId && service.priceCents === item.unitCents) {
+          stripePriceId = service.stripePriceId;
+        }
+      } else if (item.itemType === "bundle" && item.bundleId) {
+        const bundle = bundleMap.get(item.bundleId);
+        if (bundle?.stripePriceId && bundle.priceCents === item.unitCents) {
+          stripePriceId = bundle.stripePriceId;
+        }
+      }
+
+      // Use Stripe Price ID if available, otherwise use inline price_data
+      if (stripePriceId) {
+        return {
+          price: stripePriceId,
+          quantity: item.quantity,
+        };
+      }
+
+      return {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: item.name,
+            description: item.itemType === "bundle" ? "Service Bundle" : undefined,
+          },
+          unit_amount: item.unitCents,
         },
-        unit_amount: item.unitCents,
-      },
-      quantity: item.quantity,
-    }));
+        quantity: item.quantity,
+      };
+    });
 
     // Add tax as a separate line item if applicable
     if (order.taxCents > 0) {

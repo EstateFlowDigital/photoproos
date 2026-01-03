@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/dashboard";
 import { getPortfolioWebsite } from "@/lib/actions/portfolio-websites";
-import { PortfolioDetailClient } from "./portfolio-detail-client";
+import { PortfolioEditorClient } from "./portfolio-editor-client";
 
 export default async function PortfolioDetailPage({ params }: { params: { id: string } }) {
   const data = await getPortfolioWebsite(params.id);
@@ -10,6 +10,16 @@ export default async function PortfolioDetailPage({ params }: { params: { id: st
   if (!data) {
     redirect("/portfolios");
   }
+
+  // Transform sections to match expected type
+  const website = {
+    ...data.website,
+    sections: data.website.sections.map((section) => ({
+      ...section,
+      config: section.config as Record<string, unknown>,
+    })),
+    socialLinks: data.website.socialLinks as { platform: string; url: string }[] | null,
+  };
 
   return (
     <div className="space-y-6">
@@ -27,7 +37,7 @@ export default async function PortfolioDetailPage({ params }: { params: { id: st
         }
       />
 
-      <PortfolioDetailClient website={data.website} availableProjects={data.availableProjects} />
+      <PortfolioEditorClient website={website} availableProjects={data.availableProjects} />
     </div>
   );
 }

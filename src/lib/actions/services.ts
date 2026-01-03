@@ -13,6 +13,11 @@ import {
 } from "@/lib/validations/services";
 import type { ServiceCategory } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
+import {
+  syncServiceToStripe,
+  archiveStripeProduct,
+  reactivateStripeProduct,
+} from "@/lib/stripe/product-sync";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -46,6 +51,11 @@ export async function createService(
         isActive: validated.isActive,
         isDefault: false,
       },
+    });
+
+    // Sync to Stripe Product Catalog (non-blocking)
+    syncServiceToStripe(service, organizationId).catch((err) => {
+      console.error("Failed to sync service to Stripe:", err);
     });
 
     revalidatePath("/services");
@@ -97,6 +107,31 @@ export async function updateService(
         ...(updateData.isActive !== undefined && { isActive: updateData.isActive }),
       },
     });
+
+    // Sync to Stripe if name, description, or price changed
+    const needsStripeSync =
+      updateData.name !== undefined ||
+      updateData.description !== undefined ||
+      updateData.priceCents !== undefined;
+
+    if (needsStripeSync) {
+      syncServiceToStripe(service, organizationId).catch((err) => {
+        console.error("Failed to sync service to Stripe:", err);
+      });
+    }
+
+    // Handle Stripe product active status change
+    if (updateData.isActive !== undefined && existing.stripeProductId) {
+      if (updateData.isActive) {
+        reactivateStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to reactivate Stripe product:", err)
+        );
+      } else {
+        archiveStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to archive Stripe product:", err)
+        );
+      }
+    }
 
     revalidatePath("/services");
     revalidatePath(`/services/${id}`);
@@ -152,11 +187,25 @@ export async function deleteService(
         data: { isActive: false },
       });
 
+      // Archive in Stripe
+      if (existing.stripeProductId) {
+        archiveStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to archive Stripe product:", err)
+        );
+      }
+
       revalidatePath("/services");
       return {
         success: true,
         data: undefined,
       };
+    }
+
+    // Archive in Stripe before deleting locally
+    if (existing.stripeProductId) {
+      archiveStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+        (err) => console.error("Failed to archive Stripe product:", err)
+      );
     }
 
     // Actually delete if not in use or force is true
@@ -200,7 +249,7 @@ export async function duplicateService(
       return { success: false, error: "Service not found" };
     }
 
-    // Create duplicate
+    // Create duplicate (without Stripe IDs - will get new ones)
     const duplicate = await prisma.service.create({
       data: {
         organizationId,
@@ -213,6 +262,11 @@ export async function duplicateService(
         isActive: true,
         isDefault: false, // Copies are always custom
       },
+    });
+
+    // Sync duplicate to Stripe (non-blocking)
+    syncServiceToStripe(duplicate, organizationId).catch((err) => {
+      console.error("Failed to sync duplicated service to Stripe:", err);
     });
 
     revalidatePath("/services");
@@ -251,6 +305,19 @@ export async function toggleServiceStatus(
       where: { id },
       data: { isActive: !existing.isActive },
     });
+
+    // Update Stripe product active status
+    if (existing.stripeProductId) {
+      if (updated.isActive) {
+        reactivateStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to reactivate Stripe product:", err)
+        );
+      } else {
+        archiveStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to archive Stripe product:", err)
+        );
+      }
+    }
 
     revalidatePath("/services");
     revalidatePath(`/services/${id}`);

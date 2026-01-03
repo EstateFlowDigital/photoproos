@@ -8,6 +8,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Slack Integration Notifications**
+  - Full implementation of Slack webhook notifications for real-time alerts
+  - **New Booking Notifications**: Sends formatted message with title, client, time, location, and service
+  - **Payment Notifications**: Sends payment received alerts with amount, client, and invoice details
+  - **Cancellation Notifications**: Sends alerts when bookings are cancelled with reason
+  - **Gallery Delivery Notifications**: Sends alerts when galleries are delivered with photo count and view link
+  - Test connection now sends actual test message to verify webhook works
+  - Slack Block Kit formatting for rich, readable notifications
+  - Integration with booking creation in `createBooking()`
+  - Integration with booking status changes in `updateBookingStatus()`
+  - Integration with Stripe payment webhook for gallery and order payments
+  - Helper functions: `sendSlackMessage()`, `getWebhookUrl()`, `formatCurrency()`, `formatDateTime()`
+
+- **Booking Form Confirmation Emails**
+  - New `BookingFormSubmittedEmail` React Email template with dark theme styling
+  - Sends confirmation email to clients when booking form submission has `confirmationEmail` enabled
+  - Email includes service name, preferred date/time, photographer contact information
+  - Request details box with all submitted information
+  - "What's Next?" section explaining the follow-up process
+  - New `sendBookingFormSubmittedEmail()` function in email/send.ts
+  - Integrated into `submitBookingForm()` server action
+
+- **Territory Editor** (Full Implementation)
+  - Complete CRUD implementation for territory management
+  - **Create Territory**: Modal form with name, description, color picker, ZIP codes, and active toggle
+  - **Edit Territory**: Update any territory with pre-filled form data
+  - **Delete Territory**: Confirmation modal to prevent accidental deletion
+  - **Toggle Status**: Quick toggle to enable/disable territories
+  - Summary cards showing total territories, active count, and total ZIP codes
+  - Color picker for visual territory distinction on maps and lists
+  - ZIP codes input with comma/space separation support
+  - Empty state with call-to-action for first territory
+  - Search functionality to filter territories
+  - Responsive table layout with all territory details
+
 - **Subscription Plans Management** (Developer Tools)
   - New subscription plan management system for application pricing tiers (Pro, Studio, Enterprise)
   - Complete CRUD operations for subscription plans with Stripe integration

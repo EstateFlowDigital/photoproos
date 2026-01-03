@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import { Resend, CreateEmailOptions } from "resend";
 
 // Lazy initialization to avoid build-time errors when env vars are not set
 let _resend: Resend | null = null;
@@ -20,32 +20,53 @@ export const DEFAULT_FROM_EMAIL = "PhotoProOS <noreply@photoproos.com>";
 export interface SendEmailOptions {
   to: string | string[];
   subject: string;
-  react: React.ReactElement;
+  react?: React.ReactElement;
+  text?: string;
   from?: string;
   replyTo?: string;
 }
 
 /**
  * Send an email using Resend
+ * Returns success status and resendId for tracking
  */
-export async function sendEmail(options: SendEmailOptions) {
-  const { to, subject, react, from = DEFAULT_FROM_EMAIL, replyTo } = options;
+export async function sendEmail(options: SendEmailOptions): Promise<{
+  success: boolean;
+  resendId?: string;
+  error?: string;
+}> {
+  const { to, subject, react, text, from = DEFAULT_FROM_EMAIL, replyTo } = options;
 
   try {
-    const { data, error } = await getResend().emails.send({
+    // Build email options based on what's provided
+    const emailOptions: {
+      from: string;
+      to: string[];
+      subject: string;
+      react?: React.ReactElement;
+      text?: string;
+      replyTo?: string;
+    } = {
       from,
       to: Array.isArray(to) ? to : [to],
       subject,
-      react,
       replyTo,
-    });
+    };
+
+    if (react) {
+      emailOptions.react = react;
+    } else if (text) {
+      emailOptions.text = text;
+    }
+
+    const { data, error } = await getResend().emails.send(emailOptions as CreateEmailOptions);
 
     if (error) {
       console.error("Error sending email:", error);
       return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    return { success: true, resendId: data?.id };
   } catch (err) {
     console.error("Failed to send email:", err);
     return {

@@ -218,6 +218,7 @@ export const assignQuestionnaireSchema = z.object({
   dueDate: z.string().datetime().optional().nullable(),
   sendReminders: z.boolean().optional().default(true),
   internalNotes: z.string().max(1000).optional().nullable(),
+  personalNote: z.string().max(500).optional().nullable(), // Note to include in assignment email
 });
 
 export const updateClientQuestionnaireSchema = z.object({

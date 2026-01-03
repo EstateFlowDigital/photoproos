@@ -3,6 +3,15 @@
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
+import { Prisma, type PortfolioType, type PortfolioTemplate, type PortfolioSectionType } from "@prisma/client";
+import {
+  updatePortfolioSettingsSchema,
+  createSectionSchema,
+  updateSectionSchema,
+  getDefaultConfig,
+  validateSectionConfig,
+} from "@/lib/validations/portfolio-sections";
+import { getDefaultSectionsForType, SECTION_DEFINITIONS } from "@/lib/portfolio-templates";
 
 function slugify(value: string) {
   return value
@@ -95,6 +104,9 @@ export async function getPortfolioWebsite(id: string) {
             },
           },
         },
+      },
+      sections: {
+        orderBy: { position: "asc" },
       },
     },
   });
@@ -286,6 +298,98 @@ export async function deletePortfolioWebsite(
   }
 }
 
+export async function duplicatePortfolioWebsite(
+  id: string
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Get the original portfolio with all related data
+    const original = await prisma.portfolioWebsite.findFirst({
+      where: { id, organizationId },
+      include: {
+        sections: {
+          orderBy: { position: "asc" },
+        },
+        projects: {
+          orderBy: { position: "asc" },
+        },
+      },
+    });
+
+    if (!original) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    // Generate a unique slug for the copy
+    const baseSlug = slugify(`${original.slug}-copy`);
+    const slug = await getUniqueSlug(baseSlug);
+
+    // Create the duplicate portfolio
+    const duplicate = await prisma.portfolioWebsite.create({
+      data: {
+        organizationId,
+        name: `${original.name} (Copy)`,
+        slug,
+        description: original.description,
+        heroTitle: original.heroTitle,
+        heroSubtitle: original.heroSubtitle,
+        logoUrl: original.logoUrl,
+        primaryColor: original.primaryColor,
+        accentColor: original.accentColor,
+        portfolioType: original.portfolioType,
+        template: original.template,
+        fontHeading: original.fontHeading,
+        fontBody: original.fontBody,
+        socialLinks: original.socialLinks as Prisma.InputJsonValue,
+        metaTitle: original.metaTitle,
+        metaDescription: original.metaDescription,
+        showBranding: original.showBranding,
+        isPasswordProtected: false, // Don't copy password protection
+        password: null,
+        expiresAt: null, // Don't copy expiration
+        allowDownloads: original.allowDownloads,
+        downloadWatermark: original.downloadWatermark,
+        customCss: original.customCss,
+        enableAnimations: original.enableAnimations,
+        isPublished: false, // Start as draft
+      },
+    });
+
+    // Duplicate all sections
+    for (const section of original.sections) {
+      await prisma.portfolioWebsiteSection.create({
+        data: {
+          portfolioWebsiteId: duplicate.id,
+          sectionType: section.sectionType,
+          position: section.position,
+          isVisible: section.isVisible,
+          config: section.config as Prisma.InputJsonValue,
+          customTitle: section.customTitle,
+        },
+      });
+    }
+
+    // Duplicate project associations
+    for (const project of original.projects) {
+      await prisma.portfolioWebsiteProject.create({
+        data: {
+          portfolioWebsiteId: duplicate.id,
+          projectId: project.projectId,
+          position: project.position,
+        },
+      });
+    }
+
+    revalidatePath("/portfolios");
+    return { success: true, id: duplicate.id };
+  } catch (error) {
+    console.error("Error duplicating portfolio website:", error);
+    return { success: false, error: "Failed to duplicate portfolio website" };
+  }
+}
+
 export async function getPortfolioWebsiteBySlug(slug: string) {
   const website = await prisma.portfolioWebsite.findUnique({
     where: { slug },
@@ -321,9 +425,848 @@ export async function getPortfolioWebsiteBySlug(slug: string) {
           },
         },
       },
+      sections: {
+        where: { isVisible: true },
+        orderBy: { position: "asc" },
+      },
     },
   });
 
   if (!website || !website.isPublished) return null;
   return website;
+}
+
+// ============================================================================
+// SETTINGS & TEMPLATE ACTIONS
+// ============================================================================
+
+export async function updatePortfolioWebsiteSettings(
+  id: string,
+  data: {
+    portfolioType?: PortfolioType;
+    template?: PortfolioTemplate;
+    fontHeading?: string | null;
+    fontBody?: string | null;
+    socialLinks?: { platform: string; url: string }[] | null;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    showBranding?: boolean;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    const validated = updatePortfolioSettingsSchema.parse(data);
+
+    // Handle JSON null conversion for Prisma
+    const socialLinksValue = validated.socialLinks !== undefined
+      ? (validated.socialLinks === null ? Prisma.JsonNull : validated.socialLinks)
+      : undefined;
+
+    await prisma.portfolioWebsite.update({
+      where: { id },
+      data: {
+        portfolioType: validated.portfolioType ?? website.portfolioType,
+        template: validated.template ?? website.template,
+        fontHeading: validated.fontHeading !== undefined ? validated.fontHeading : website.fontHeading,
+        fontBody: validated.fontBody !== undefined ? validated.fontBody : website.fontBody,
+        socialLinks: socialLinksValue,
+        metaTitle: validated.metaTitle !== undefined ? validated.metaTitle : website.metaTitle,
+        metaDescription: validated.metaDescription !== undefined ? validated.metaDescription : website.metaDescription,
+        showBranding: validated.showBranding ?? website.showBranding,
+      },
+    });
+
+    revalidatePath(`/portfolios/${id}`);
+    revalidatePath(`/portfolio/${website.slug}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating portfolio settings:", error);
+    return { success: false, error: "Failed to update portfolio settings" };
+  }
+}
+
+// ============================================================================
+// SECTION ACTIONS
+// ============================================================================
+
+export async function getPortfolioSections(portfolioWebsiteId: string) {
+  await requireAuth();
+  const organizationId = await requireOrganizationId();
+
+  const website = await prisma.portfolioWebsite.findFirst({
+    where: { id: portfolioWebsiteId, organizationId },
+  });
+
+  if (!website) return [];
+
+  return prisma.portfolioWebsiteSection.findMany({
+    where: { portfolioWebsiteId },
+    orderBy: { position: "asc" },
+  });
+}
+
+export async function createPortfolioSection(
+  portfolioWebsiteId: string,
+  data: {
+    sectionType: PortfolioSectionType;
+    position?: number;
+    config?: Record<string, unknown>;
+    customTitle?: string | null;
+  }
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioWebsiteId, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    // Get the next position if not provided
+    let position = data.position;
+    if (position === undefined) {
+      const lastSection = await prisma.portfolioWebsiteSection.findFirst({
+        where: { portfolioWebsiteId },
+        orderBy: { position: "desc" },
+      });
+      position = (lastSection?.position ?? -1) + 1;
+    }
+
+    // Get default config for section type if not provided
+    const defaultConfig = getDefaultConfig(data.sectionType);
+    const config = { ...defaultConfig, ...(data.config || {}) };
+
+    const section = await prisma.portfolioWebsiteSection.create({
+      data: {
+        portfolioWebsiteId,
+        sectionType: data.sectionType,
+        position,
+        config,
+        customTitle: data.customTitle || null,
+      },
+    });
+
+    revalidatePath(`/portfolios/${portfolioWebsiteId}`);
+    return { success: true, id: section.id };
+  } catch (error) {
+    console.error("Error creating portfolio section:", error);
+    return { success: false, error: "Failed to create section" };
+  }
+}
+
+export async function updatePortfolioSection(
+  id: string,
+  data: {
+    position?: number;
+    isVisible?: boolean;
+    config?: Record<string, unknown>;
+    customTitle?: string | null;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const section = await prisma.portfolioWebsiteSection.findFirst({
+      where: { id },
+      include: {
+        portfolioWebsite: {
+          select: { id: true, organizationId: true, slug: true },
+        },
+      },
+    });
+
+    if (!section || section.portfolioWebsite.organizationId !== organizationId) {
+      return { success: false, error: "Section not found" };
+    }
+
+    // Validate config if provided
+    if (data.config) {
+      const validation = validateSectionConfig(section.sectionType, data.config);
+      if (!validation.success) {
+        return { success: false, error: validation.error };
+      }
+    }
+
+    await prisma.portfolioWebsiteSection.update({
+      where: { id },
+      data: {
+        position: data.position ?? section.position,
+        isVisible: data.isVisible ?? section.isVisible,
+        config: (data.config ?? section.config) as Prisma.InputJsonValue,
+        customTitle: data.customTitle !== undefined ? data.customTitle : section.customTitle,
+      },
+    });
+
+    revalidatePath(`/portfolios/${section.portfolioWebsite.id}`);
+    revalidatePath(`/portfolio/${section.portfolioWebsite.slug}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating portfolio section:", error);
+    return { success: false, error: "Failed to update section" };
+  }
+}
+
+export async function deletePortfolioSection(
+  id: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const section = await prisma.portfolioWebsiteSection.findFirst({
+      where: { id },
+      include: {
+        portfolioWebsite: {
+          select: { id: true, organizationId: true, slug: true },
+        },
+      },
+    });
+
+    if (!section || section.portfolioWebsite.organizationId !== organizationId) {
+      return { success: false, error: "Section not found" };
+    }
+
+    await prisma.portfolioWebsiteSection.delete({ where: { id } });
+
+    // Reorder remaining sections
+    const remainingSections = await prisma.portfolioWebsiteSection.findMany({
+      where: { portfolioWebsiteId: section.portfolioWebsiteId },
+      orderBy: { position: "asc" },
+    });
+
+    for (let i = 0; i < remainingSections.length; i++) {
+      await prisma.portfolioWebsiteSection.update({
+        where: { id: remainingSections[i].id },
+        data: { position: i },
+      });
+    }
+
+    revalidatePath(`/portfolios/${section.portfolioWebsite.id}`);
+    revalidatePath(`/portfolio/${section.portfolioWebsite.slug}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting portfolio section:", error);
+    return { success: false, error: "Failed to delete section" };
+  }
+}
+
+export async function reorderPortfolioSections(
+  portfolioWebsiteId: string,
+  sectionIds: string[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioWebsiteId, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    await prisma.$transaction(
+      sectionIds.map((sectionId, index) =>
+        prisma.portfolioWebsiteSection.update({
+          where: { id: sectionId },
+          data: { position: index },
+        })
+      )
+    );
+
+    revalidatePath(`/portfolios/${portfolioWebsiteId}`);
+    revalidatePath(`/portfolio/${website.slug}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error reordering portfolio sections:", error);
+    return { success: false, error: "Failed to reorder sections" };
+  }
+}
+
+export async function initializePortfolioSections(
+  portfolioWebsiteId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioWebsiteId, organizationId },
+      include: { sections: true },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    // Don't initialize if sections already exist
+    if (website.sections.length > 0) {
+      return { success: true };
+    }
+
+    const defaultSectionTypes = getDefaultSectionsForType(
+      website.portfolioType,
+      website.template
+    );
+
+    // Create default sections
+    for (let i = 0; i < defaultSectionTypes.length; i++) {
+      const sectionType = defaultSectionTypes[i];
+      const definition = SECTION_DEFINITIONS.find((s) => s.type === sectionType);
+      const config = definition?.defaultConfig || {};
+
+      // For hero section, use existing hero title/subtitle if available
+      if (sectionType === "hero") {
+        if (website.heroTitle) {
+          (config as Record<string, unknown>).title = website.heroTitle;
+        }
+        if (website.heroSubtitle) {
+          (config as Record<string, unknown>).subtitle = website.heroSubtitle;
+        }
+      }
+
+      await prisma.portfolioWebsiteSection.create({
+        data: {
+          portfolioWebsiteId,
+          sectionType,
+          position: i,
+          config: config as Prisma.InputJsonValue,
+        },
+      });
+    }
+
+    revalidatePath(`/portfolios/${portfolioWebsiteId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error initializing portfolio sections:", error);
+    return { success: false, error: "Failed to initialize sections" };
+  }
+}
+
+export async function duplicatePortfolioSection(
+  id: string
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const section = await prisma.portfolioWebsiteSection.findFirst({
+      where: { id },
+      include: {
+        portfolioWebsite: {
+          select: { id: true, organizationId: true },
+        },
+      },
+    });
+
+    if (!section || section.portfolioWebsite.organizationId !== organizationId) {
+      return { success: false, error: "Section not found" };
+    }
+
+    // Get the next position after this section
+    const newPosition = section.position + 1;
+
+    // Shift positions of sections after this one
+    await prisma.portfolioWebsiteSection.updateMany({
+      where: {
+        portfolioWebsiteId: section.portfolioWebsiteId,
+        position: { gte: newPosition },
+      },
+      data: {
+        position: { increment: 1 },
+      },
+    });
+
+    // Create the duplicate
+    const duplicate = await prisma.portfolioWebsiteSection.create({
+      data: {
+        portfolioWebsiteId: section.portfolioWebsiteId,
+        sectionType: section.sectionType,
+        position: newPosition,
+        isVisible: section.isVisible,
+        config: section.config as Prisma.InputJsonValue,
+        customTitle: section.customTitle ? `${section.customTitle} (Copy)` : null,
+      },
+    });
+
+    revalidatePath(`/portfolios/${section.portfolioWebsite.id}`);
+    return { success: true, id: duplicate.id };
+  } catch (error) {
+    console.error("Error duplicating portfolio section:", error);
+    return { success: false, error: "Failed to duplicate section" };
+  }
+}
+
+export async function toggleSectionVisibility(
+  id: string
+): Promise<{ success: boolean; isVisible?: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const section = await prisma.portfolioWebsiteSection.findFirst({
+      where: { id },
+      include: {
+        portfolioWebsite: {
+          select: { id: true, organizationId: true, slug: true },
+        },
+      },
+    });
+
+    if (!section || section.portfolioWebsite.organizationId !== organizationId) {
+      return { success: false, error: "Section not found" };
+    }
+
+    const updated = await prisma.portfolioWebsiteSection.update({
+      where: { id },
+      data: { isVisible: !section.isVisible },
+    });
+
+    revalidatePath(`/portfolios/${section.portfolioWebsite.id}`);
+    revalidatePath(`/portfolio/${section.portfolioWebsite.slug}`);
+    return { success: true, isVisible: updated.isVisible };
+  } catch (error) {
+    console.error("Error toggling section visibility:", error);
+    return { success: false, error: "Failed to toggle visibility" };
+  }
+}
+
+// ============================================================================
+// PASSWORD PROTECTION
+// ============================================================================
+
+export async function setPortfolioPassword(
+  portfolioId: string,
+  data: {
+    isPasswordProtected: boolean;
+    password?: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioId, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    // If enabling password protection, password is required
+    if (data.isPasswordProtected && !data.password && !website.password) {
+      return { success: false, error: "Password is required" };
+    }
+
+    // Hash the password if provided (simple hash for demo - in production use bcrypt)
+    let hashedPassword = website.password;
+    if (data.password) {
+      // Simple hash using Web Crypto API
+      const encoder = new TextEncoder();
+      const dataBuffer = encoder.encode(data.password);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    await prisma.portfolioWebsite.update({
+      where: { id: portfolioId },
+      data: {
+        isPasswordProtected: data.isPasswordProtected,
+        password: data.isPasswordProtected ? hashedPassword : null,
+      },
+    });
+
+    revalidatePath(`/portfolios/${portfolioId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error setting portfolio password:", error);
+    return { success: false, error: "Failed to set password" };
+  }
+}
+
+export async function verifyPortfolioPassword(
+  slug: string,
+  password: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const website = await prisma.portfolioWebsite.findUnique({
+      where: { slug },
+      select: { password: true, isPasswordProtected: true },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    if (!website.isPasswordProtected) {
+      return { success: true };
+    }
+
+    // Hash the provided password and compare
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashedInput = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+    if (hashedInput !== website.password) {
+      return { success: false, error: "Incorrect password" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error verifying portfolio password:", error);
+    return { success: false, error: "Failed to verify password" };
+  }
+}
+
+// ============================================================================
+// ADVANCED SETTINGS
+// ============================================================================
+
+export async function updatePortfolioAdvancedSettings(
+  portfolioId: string,
+  data: {
+    expiresAt?: Date | null;
+    allowDownloads?: boolean;
+    downloadWatermark?: boolean;
+    customCss?: string | null;
+    enableAnimations?: boolean;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioId, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    await prisma.portfolioWebsite.update({
+      where: { id: portfolioId },
+      data: {
+        expiresAt: data.expiresAt !== undefined ? data.expiresAt : undefined,
+        allowDownloads: data.allowDownloads !== undefined ? data.allowDownloads : undefined,
+        downloadWatermark: data.downloadWatermark !== undefined ? data.downloadWatermark : undefined,
+        customCss: data.customCss !== undefined ? data.customCss : undefined,
+        enableAnimations: data.enableAnimations !== undefined ? data.enableAnimations : undefined,
+      },
+    });
+
+    revalidatePath(`/portfolios/${portfolioId}`);
+    revalidatePath(`/portfolio/${website.slug}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating advanced settings:", error);
+    return { success: false, error: "Failed to update settings" };
+  }
+}
+
+// ============================================================================
+// ANALYTICS
+// ============================================================================
+
+export async function trackPortfolioView(
+  slug: string,
+  data: {
+    visitorId?: string;
+    sessionId?: string;
+    pagePath?: string;
+    referrer?: string;
+    userAgent?: string;
+  }
+): Promise<{ success: boolean; viewId?: string; error?: string }> {
+  try {
+    const website = await prisma.portfolioWebsite.findUnique({
+      where: { slug },
+      select: { id: true, isPublished: true, expiresAt: true },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    // Check if portfolio is published and not expired
+    if (!website.isPublished) {
+      return { success: false, error: "Portfolio not published" };
+    }
+
+    if (website.expiresAt && website.expiresAt < new Date()) {
+      return { success: false, error: "Portfolio expired" };
+    }
+
+    const view = await prisma.portfolioWebsiteView.create({
+      data: {
+        portfolioWebsiteId: website.id,
+        visitorId: data.visitorId,
+        sessionId: data.sessionId,
+        pagePath: data.pagePath,
+        referrer: data.referrer,
+        userAgent: data.userAgent,
+      },
+    });
+
+    return { success: true, viewId: view.id };
+  } catch (error) {
+    console.error("Error tracking portfolio view:", error);
+    return { success: false, error: "Failed to track view" };
+  }
+}
+
+export async function updatePortfolioViewEngagement(
+  viewId: string,
+  data: {
+    duration?: number;
+    scrollDepth?: number;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await prisma.portfolioWebsiteView.update({
+      where: { id: viewId },
+      data: {
+        duration: data.duration,
+        scrollDepth: data.scrollDepth,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating view engagement:", error);
+    return { success: false, error: "Failed to update engagement" };
+  }
+}
+
+export async function getPortfolioAnalytics(
+  portfolioId: string,
+  timeRange: "7d" | "30d" | "90d" | "all" = "30d"
+): Promise<{
+  success: boolean;
+  data?: {
+    totalViews: number;
+    uniqueVisitors: number;
+    avgDuration: number;
+    avgScrollDepth: number;
+    viewsByDate: { date: string; views: number }[];
+    topReferrers: { referrer: string; count: number }[];
+    recentViews: {
+      id: string;
+      visitorId: string | null;
+      pagePath: string | null;
+      referrer: string | null;
+      duration: number | null;
+      createdAt: Date;
+    }[];
+  };
+  error?: string;
+}> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioId, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    // Calculate date range
+    const now = new Date();
+    let startDate: Date;
+    switch (timeRange) {
+      case "7d":
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "30d":
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "90d":
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(0);
+    }
+
+    const views = await prisma.portfolioWebsiteView.findMany({
+      where: {
+        portfolioWebsiteId: portfolioId,
+        createdAt: { gte: startDate },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Calculate metrics
+    const totalViews = views.length;
+    const uniqueVisitors = new Set(views.map((v) => v.visitorId).filter(Boolean)).size;
+    const durationsWithValue = views.filter((v) => v.duration !== null);
+    const avgDuration =
+      durationsWithValue.length > 0
+        ? durationsWithValue.reduce((sum, v) => sum + (v.duration || 0), 0) / durationsWithValue.length
+        : 0;
+    const scrollDepthsWithValue = views.filter((v) => v.scrollDepth !== null);
+    const avgScrollDepth =
+      scrollDepthsWithValue.length > 0
+        ? scrollDepthsWithValue.reduce((sum, v) => sum + (v.scrollDepth || 0), 0) / scrollDepthsWithValue.length
+        : 0;
+
+    // Group views by date
+    const viewsByDateMap = new Map<string, number>();
+    views.forEach((view) => {
+      const date = view.createdAt.toISOString().split("T")[0];
+      viewsByDateMap.set(date, (viewsByDateMap.get(date) || 0) + 1);
+    });
+    const viewsByDate = Array.from(viewsByDateMap.entries())
+      .map(([date, views]) => ({ date, views }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Top referrers
+    const referrerMap = new Map<string, number>();
+    views.forEach((view) => {
+      const referrer = view.referrer || "Direct";
+      referrerMap.set(referrer, (referrerMap.get(referrer) || 0) + 1);
+    });
+    const topReferrers = Array.from(referrerMap.entries())
+      .map(([referrer, count]) => ({ referrer, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Recent views
+    const recentViews = views.slice(0, 20).map((v) => ({
+      id: v.id,
+      visitorId: v.visitorId,
+      pagePath: v.pagePath,
+      referrer: v.referrer,
+      duration: v.duration,
+      createdAt: v.createdAt,
+    }));
+
+    return {
+      success: true,
+      data: {
+        totalViews,
+        uniqueVisitors,
+        avgDuration: Math.round(avgDuration),
+        avgScrollDepth: Math.round(avgScrollDepth),
+        viewsByDate,
+        topReferrers,
+        recentViews,
+      },
+    };
+  } catch (error) {
+    console.error("Error getting portfolio analytics:", error);
+    return { success: false, error: "Failed to get analytics" };
+  }
+}
+
+// ============================================================================
+// CONTACT FORM
+// ============================================================================
+
+export async function submitPortfolioContactForm(
+  slug: string,
+  data: {
+    name: string;
+    email: string;
+    phone?: string;
+    message: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const website = await prisma.portfolioWebsite.findUnique({
+      where: { slug },
+      include: {
+        organization: {
+          select: {
+            name: true,
+            members: {
+              where: { role: "owner" },
+              include: {
+                user: {
+                  select: { email: true, fullName: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    // Get owner's email
+    const owner = website.organization.members[0]?.user;
+    if (!owner) {
+      return { success: false, error: "No recipient found" };
+    }
+
+    // Build the portfolio URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
+    const portfolioUrl = `${baseUrl}/portfolio/${slug}`;
+
+    // Send email notification to portfolio owner
+    const { sendPortfolioContactEmail } = await import("@/lib/email/send");
+    const emailResult = await sendPortfolioContactEmail({
+      to: owner.email,
+      photographerName: owner.fullName || "there",
+      portfolioName: website.name,
+      portfolioUrl,
+      senderName: data.name,
+      senderEmail: data.email,
+      senderPhone: data.phone,
+      message: data.message,
+    });
+
+    if (!emailResult.success) {
+      console.error("Failed to send portfolio contact email:", emailResult.error);
+      // Still continue to log the activity even if email fails
+    }
+
+    // Create an activity log
+    await prisma.activityLog.create({
+      data: {
+        organizationId: website.organizationId,
+        type: "email_sent",
+        description: `Contact form submitted on portfolio "${website.name}" by ${data.name} (${data.email})`,
+        metadata: {
+          portfolioId: website.id,
+          portfolioName: website.name,
+          senderName: data.name,
+          senderEmail: data.email,
+          senderPhone: data.phone || null,
+          message: data.message,
+          emailSent: emailResult.success,
+        } as Prisma.InputJsonValue,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error submitting contact form:", error);
+    return { success: false, error: "Failed to send message" };
+  }
 }

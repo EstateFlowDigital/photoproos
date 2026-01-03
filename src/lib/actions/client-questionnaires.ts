@@ -14,6 +14,14 @@ import {
 } from "@/lib/validations/questionnaires";
 import { getAuthContext } from "@/lib/auth/clerk";
 import type { ClientQuestionnaireStatus, LegalAgreementType, FormFieldType } from "@prisma/client";
+import {
+  sendQuestionnaireAssignedEmail,
+  sendQuestionnaireReminderEmail,
+} from "@/lib/email/send";
+import {
+  createEmailLog,
+  updateEmailLogStatus,
+} from "@/lib/actions/email-logs";
 
 // ============================================================================
 // TYPES
@@ -388,11 +396,21 @@ export async function assignQuestionnaireToClient(
         id: validated.clientId,
         organizationId,
       },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        emailOptIn: true,
+        questionnaireEmailsOptIn: true,
+      },
     });
 
     if (!client) {
       return { success: false, error: "Client not found" };
     }
+
+    // Check if client has opted out of emails
+    const shouldSendEmail = client.emailOptIn && client.questionnaireEmailsOptIn;
 
     // Verify template exists and is accessible
     const template = await prisma.questionnaireTemplate.findFirst({
@@ -438,6 +456,32 @@ export async function assignQuestionnaireToClient(
       }
     }
 
+    // Get organization info for the email
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        id: true,
+        name: true,
+        members: {
+          where: { role: "owner" },
+          include: { user: { select: { email: true, fullName: true } } },
+          take: 1,
+        },
+      },
+    });
+
+    // Get booking info if linked
+    let bookingInfo: { id: string; title: string; startTime: Date } | null = null;
+    if (validated.bookingId) {
+      const booking = await prisma.booking.findUnique({
+        where: { id: validated.bookingId },
+        select: { id: true, title: true, startTime: true },
+      });
+      if (booking) {
+        bookingInfo = booking;
+      }
+    }
+
     // Create the client questionnaire with agreement records
     const questionnaire = await prisma.clientQuestionnaire.create({
       data: {
@@ -450,6 +494,7 @@ export async function assignQuestionnaireToClient(
         dueDate: validated.dueDate ? new Date(validated.dueDate) : null,
         sendReminders: validated.sendReminders,
         internalNotes: validated.internalNotes,
+        personalNote: validated.personalNote,
         status: "pending",
         // Pre-create agreement records for tracking
         agreements: {
@@ -462,6 +507,66 @@ export async function assignQuestionnaireToClient(
         },
       },
     });
+
+    // Send email notification to client (if opted in)
+    const ownerUser = organization?.members[0]?.user;
+    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/portal/questionnaires/${questionnaire.id}`;
+    const emailSubject = `${ownerUser?.fullName || organization?.name || "Your Photographer"} has sent you a questionnaire to complete`;
+
+    if (shouldSendEmail) {
+      // Create email log entry
+      const logResult = await createEmailLog({
+        organizationId,
+        toEmail: client.email,
+        toName: client.fullName || undefined,
+        clientId: client.id,
+        emailType: "questionnaire_assigned",
+        subject: emailSubject,
+        questionnaireId: questionnaire.id,
+        bookingId: bookingInfo?.id,
+      });
+
+      try {
+        const emailResult = await sendQuestionnaireAssignedEmail({
+          to: client.email,
+          clientId: client.id,
+          clientName: client.fullName || "there",
+          questionnaireName: template.name,
+          questionnaireDescription: template.description || undefined,
+          personalNote: validated.personalNote || undefined,
+          dueDate: validated.dueDate ? new Date(validated.dueDate) : undefined,
+          portalUrl,
+          photographerName: ownerUser?.fullName || organization?.name || "Your Photographer",
+          photographerEmail: ownerUser?.email,
+          organizationName: organization?.name || "PhotoProOS",
+          bookingTitle: bookingInfo?.title,
+          bookingDate: bookingInfo?.startTime,
+        });
+
+        // Update log status
+        if (logResult.success && logResult.logId) {
+          await updateEmailLogStatus(
+            logResult.logId,
+            emailResult.success ? "sent" : "failed",
+            emailResult.resendId,
+            emailResult.error
+          );
+        }
+      } catch (emailError) {
+        // Log email error but don't fail the assignment
+        console.error("Failed to send questionnaire assigned email:", emailError);
+        if (logResult.success && logResult.logId) {
+          await updateEmailLogStatus(
+            logResult.logId,
+            "failed",
+            undefined,
+            emailError instanceof Error ? emailError.message : "Unknown error"
+          );
+        }
+      }
+    } else {
+      console.log(`Skipping questionnaire email for client ${client.id} - opted out`);
+    }
 
     revalidatePath("/questionnaires");
     revalidatePath(`/clients/${validated.clientId}`);
@@ -621,8 +726,19 @@ export async function sendQuestionnaireReminder(
         status: { in: ["pending", "in_progress"] },
       },
       include: {
-        client: true,
+        client: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            emailOptIn: true,
+            questionnaireEmailsOptIn: true,
+          },
+        },
         template: true,
+        booking: {
+          select: { title: true, startTime: true },
+        },
       },
     });
 
@@ -630,9 +746,93 @@ export async function sendQuestionnaireReminder(
       return { success: false, error: "Questionnaire not found or not in remindable status" };
     }
 
-    // TODO: Send email reminder here
-    // For now, just update the reminder count
+    // Check if client has opted out of emails
+    if (!questionnaire.client.emailOptIn || !questionnaire.client.questionnaireEmailsOptIn) {
+      return { success: false, error: "Client has opted out of questionnaire emails" };
+    }
 
+    // Get organization info for the email
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        name: true,
+        members: {
+          where: { role: "owner" },
+          include: { user: { select: { email: true, fullName: true } } },
+          take: 1,
+        },
+      },
+    });
+
+    // Check if overdue
+    const isOverdue = questionnaire.dueDate
+      ? new Date(questionnaire.dueDate) < new Date()
+      : false;
+
+    // Send email reminder
+    const ownerUser = organization?.members[0]?.user;
+    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/portal/questionnaires/${questionnaire.id}`;
+    const photographerName = ownerUser?.fullName || organization?.name || "Your Photographer";
+    const emailSubject = isOverdue
+      ? `Overdue: Please complete your questionnaire for ${photographerName}`
+      : `Reminder: Please complete your questionnaire for ${photographerName}`;
+
+    // Create email log entry
+    const logResult = await createEmailLog({
+      organizationId,
+      toEmail: questionnaire.client.email,
+      toName: questionnaire.client.fullName || undefined,
+      clientId: questionnaire.clientId,
+      emailType: "questionnaire_reminder",
+      subject: emailSubject,
+      questionnaireId: questionnaire.id,
+      bookingId: questionnaire.bookingId || undefined,
+    });
+
+    try {
+      const emailResult = await sendQuestionnaireReminderEmail({
+        to: questionnaire.client.email,
+        clientId: questionnaire.client.id,
+        clientName: questionnaire.client.fullName || "there",
+        questionnaireName: questionnaire.template.name,
+        dueDate: questionnaire.dueDate || undefined,
+        isOverdue,
+        portalUrl,
+        photographerName,
+        photographerEmail: ownerUser?.email,
+        organizationName: organization?.name || "PhotoProOS",
+        bookingTitle: questionnaire.booking?.title,
+        bookingDate: questionnaire.booking?.startTime,
+        reminderCount: questionnaire.remindersSent + 1,
+      });
+
+      // Update log status
+      if (logResult.success && logResult.logId) {
+        await updateEmailLogStatus(
+          logResult.logId,
+          emailResult.success ? "sent" : "failed",
+          emailResult.resendId,
+          emailResult.error
+        );
+      }
+
+      if (!emailResult.success) {
+        return { success: false, error: "Failed to send reminder email" };
+      }
+    } catch (emailError) {
+      console.error("Failed to send questionnaire reminder email:", emailError);
+      if (logResult.success && logResult.logId) {
+        await updateEmailLogStatus(
+          logResult.logId,
+          "failed",
+          undefined,
+          emailError instanceof Error ? emailError.message : "Unknown error"
+        );
+      }
+      return { success: false, error: "Failed to send reminder email" };
+    }
+
+    // Update reminder count after successful email send
     await prisma.clientQuestionnaire.update({
       where: { id },
       data: {
@@ -675,5 +875,205 @@ export async function markExpiredQuestionnaires(): Promise<ActionResult<{ count:
   } catch (error) {
     console.error("Error marking expired questionnaires:", error);
     return { success: false, error: "Failed to mark expired questionnaires" };
+  }
+}
+
+/**
+ * Send batch reminders for all pending/overdue questionnaires
+ * Can optionally filter by status or limit the number of reminders
+ */
+export async function sendBatchReminders(options?: {
+  overdueOnly?: boolean;
+  limit?: number;
+}): Promise<ActionResult<{ sent: number; failed: number; skipped: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    // Find questionnaires that need reminders
+    const whereClause: {
+      organizationId: string;
+      status: { in: ("pending" | "in_progress")[] };
+      sendReminders: boolean;
+      remindersSent: { lt: number };
+      OR: ({ lastReminder: null } | { lastReminder: { lt: Date } })[];
+      dueDate?: { lt: Date };
+    } = {
+      organizationId,
+      status: { in: ["pending", "in_progress"] },
+      sendReminders: true,
+      remindersSent: { lt: 5 }, // Max 5 reminders
+      OR: [{ lastReminder: null }, { lastReminder: { lt: oneDayAgo } }],
+    };
+
+    // If overdueOnly, only get overdue questionnaires
+    if (options?.overdueOnly) {
+      whereClause.dueDate = { lt: now };
+    }
+
+    const questionnaires = await prisma.clientQuestionnaire.findMany({
+      where: whereClause,
+      include: {
+        client: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+          },
+        },
+        template: {
+          select: {
+            name: true,
+          },
+        },
+        booking: {
+          select: {
+            id: true,
+            title: true,
+            startTime: true,
+          },
+        },
+      },
+      take: options?.limit || 50,
+      orderBy: { dueDate: "asc" },
+    });
+
+    // Get organization info
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        id: true,
+        name: true,
+        members: {
+          where: { role: "owner" },
+          include: { user: { select: { email: true, fullName: true } } },
+          take: 1,
+        },
+      },
+    });
+
+    const results = { sent: 0, failed: 0, skipped: 0 };
+
+    for (const questionnaire of questionnaires) {
+      // Check if overdue
+      const isOverdue = questionnaire.dueDate
+        ? questionnaire.dueDate < now
+        : false;
+
+      const ownerUser = organization?.members[0]?.user;
+      const photographerName = ownerUser?.fullName || organization?.name || "Your Photographer";
+      const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/portal/questionnaires/${questionnaire.id}`;
+
+      const emailSubject = isOverdue
+        ? `Overdue: Please complete your questionnaire for ${photographerName}`
+        : `Reminder: Please complete your questionnaire for ${photographerName}`;
+
+      // Create email log
+      const logResult = await createEmailLog({
+        organizationId,
+        toEmail: questionnaire.client.email,
+        toName: questionnaire.client.fullName || undefined,
+        clientId: questionnaire.client.id,
+        emailType: "questionnaire_reminder",
+        subject: emailSubject,
+        questionnaireId: questionnaire.id,
+        bookingId: questionnaire.bookingId || undefined,
+      });
+
+      try {
+        const emailResult = await sendQuestionnaireReminderEmail({
+          to: questionnaire.client.email,
+          clientId: questionnaire.client.id,
+          clientName: questionnaire.client.fullName || "there",
+          questionnaireName: questionnaire.template.name,
+          dueDate: questionnaire.dueDate || undefined,
+          isOverdue,
+          portalUrl,
+          photographerName,
+          photographerEmail: ownerUser?.email,
+          organizationName: organization?.name || "PhotoProOS",
+          bookingTitle: questionnaire.booking?.title,
+          bookingDate: questionnaire.booking?.startTime,
+          reminderCount: questionnaire.remindersSent + 1,
+        });
+
+        if (logResult.success && logResult.logId) {
+          await updateEmailLogStatus(
+            logResult.logId,
+            emailResult.success ? "sent" : "failed",
+            emailResult.resendId,
+            emailResult.error
+          );
+        }
+
+        if (emailResult.success) {
+          // Update reminder count
+          await prisma.clientQuestionnaire.update({
+            where: { id: questionnaire.id },
+            data: {
+              remindersSent: { increment: 1 },
+              lastReminder: now,
+            },
+          });
+          results.sent++;
+        } else {
+          results.failed++;
+        }
+      } catch (error) {
+        results.failed++;
+        if (logResult.success && logResult.logId) {
+          await updateEmailLogStatus(
+            logResult.logId,
+            "failed",
+            undefined,
+            error instanceof Error ? error.message : "Unknown error"
+          );
+        }
+      }
+    }
+
+    revalidatePath("/questionnaires");
+
+    return { success: true, data: results };
+  } catch (error) {
+    console.error("Error sending batch reminders:", error);
+    return { success: false, error: "Failed to send batch reminders" };
+  }
+}
+
+/**
+ * Get count of questionnaires that can receive reminders
+ */
+export async function getRemindableQuestionnairesCount(): Promise<
+  ActionResult<{ total: number; overdue: number; pending: number }>
+> {
+  try {
+    const organizationId = await getOrganizationId();
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const baseWhere = {
+      organizationId,
+      status: { in: ["pending" as const, "in_progress" as const] },
+      sendReminders: true,
+      remindersSent: { lt: 5 },
+      OR: [{ lastReminder: null }, { lastReminder: { lt: oneDayAgo } }],
+    };
+
+    const [total, overdue] = await Promise.all([
+      prisma.clientQuestionnaire.count({ where: baseWhere }),
+      prisma.clientQuestionnaire.count({
+        where: { ...baseWhere, dueDate: { lt: now } },
+      }),
+    ]);
+
+    return {
+      success: true,
+      data: { total, overdue, pending: total - overdue },
+    };
+  } catch (error) {
+    console.error("Error getting remindable questionnaires count:", error);
+    return { success: false, error: "Failed to get count" };
   }
 }

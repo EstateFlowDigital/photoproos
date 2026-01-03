@@ -104,7 +104,6 @@ export function EmptyGalleries({ className }: { className?: string }) {
       title="No galleries yet"
       description="Create your first gallery to start delivering photos to clients and getting paid."
       action={{ label: "Create Gallery", href: "/galleries/new" }}
-      secondaryAction={{ label: "Import Photos", href: "/galleries/import" }}
       className={className}
     />
   );
@@ -153,7 +152,7 @@ export function EmptyPayments({ className }: { className?: string }) {
       icon={<PaymentIcon />}
       title="No payments yet"
       description="Payments will appear here when clients pay for galleries or invoices."
-      action={{ label: "Create Invoice", href: "/payments/new" }}
+      action={{ label: "Create Invoice", href: "/invoices/new" }}
       className={className}
     />
   );

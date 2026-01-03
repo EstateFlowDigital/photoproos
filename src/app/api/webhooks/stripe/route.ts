@@ -16,6 +16,7 @@ import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { sendPaymentReceiptEmail, sendOrderConfirmationEmail } from "@/lib/email/send";
+import { notifySlackPayment } from "@/lib/actions/slack";
 import type Stripe from "stripe";
 
 /**
@@ -162,6 +163,20 @@ async function handleCheckoutSessionCompleted(
   console.log(
     `Payment recorded for gallery ${galleryId}: $${(session.amount_total || 0) / 100}`
   );
+
+  // Send Slack notification (non-blocking)
+  try {
+    await notifySlackPayment({
+      organizationId,
+      paymentId: session.id,
+      amountCents: session.amount_total || 0,
+      clientName: session.customer_details?.name || null,
+      clientEmail: session.customer_email || null,
+      description: `Gallery: ${gallery.name}`,
+    });
+  } catch (slackError) {
+    console.error("[Stripe Webhook] Failed to send Slack notification:", slackError);
+  }
 
   // Log activity
   await prisma.activityLog.create({
@@ -356,6 +371,20 @@ async function handleOrderPaymentCompleted(
   console.log(
     `Order ${order.orderNumber} marked as paid: $${(order.totalCents / 100).toFixed(2)}`
   );
+
+  // Send Slack notification (non-blocking)
+  try {
+    await notifySlackPayment({
+      organizationId: order.organizationId,
+      paymentId: session.id,
+      amountCents: order.totalCents,
+      clientName: order.clientName || null,
+      clientEmail: order.clientEmail || null,
+      description: `Order #${order.orderNumber}`,
+    });
+  } catch (slackError) {
+    console.error("[Order Webhook] Failed to send Slack notification:", slackError);
+  }
 
   // Log activity
   await prisma.activityLog.create({

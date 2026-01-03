@@ -34,6 +34,12 @@ import { GalleryExpirationEmail } from "@/emails/gallery-expiration";
 import { OrderConfirmationEmail } from "@/emails/order-confirmation";
 import { ContractSigningEmail } from "@/emails/contract-signing";
 import { TeamInvitationEmail } from "@/emails/team-invitation";
+import { QuestionnaireAssignedEmail } from "@/emails/questionnaire-assigned";
+import { QuestionnaireReminderEmail } from "@/emails/questionnaire-reminder";
+import { QuestionnaireCompletedEmail } from "@/emails/questionnaire-completed";
+import { PhotographerDigestEmail } from "@/emails/photographer-digest";
+import { PortfolioContactEmail } from "@/emails/portfolio-contact";
+import { BookingFormSubmittedEmail } from "@/emails/booking-form-submitted";
 
 /**
  * Send gallery delivered notification to client
@@ -218,6 +224,49 @@ export async function sendPropertyLeadEmail(params: {
       leadMessage,
     }),
     replyTo: leadEmail,
+  });
+}
+
+/**
+ * Send portfolio contact form notification to photographer
+ *
+ * Triggered by: submitPortfolioContactForm() action
+ * Location: src/lib/actions/portfolio-websites.ts
+ */
+export async function sendPortfolioContactEmail(params: {
+  to: string;
+  photographerName: string;
+  portfolioName: string;
+  portfolioUrl: string;
+  senderName: string;
+  senderEmail: string;
+  senderPhone?: string;
+  message: string;
+}) {
+  const {
+    to,
+    photographerName,
+    portfolioName,
+    portfolioUrl,
+    senderName,
+    senderEmail,
+    senderPhone,
+    message,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `New inquiry from ${senderName} via ${portfolioName}`,
+    react: PortfolioContactEmail({
+      photographerName,
+      portfolioName,
+      portfolioUrl,
+      senderName,
+      senderEmail,
+      senderPhone,
+      message,
+    }),
+    replyTo: senderEmail,
   });
 }
 
@@ -459,5 +508,318 @@ export async function sendTeamInvitationEmail(params: {
       inviteUrl,
       expiresInDays,
     }),
+  });
+}
+
+// =============================================================================
+// Questionnaire Emails
+// =============================================================================
+
+/**
+ * Send questionnaire assigned notification to client
+ *
+ * Triggered by: assignQuestionnaireToClient() action
+ * Location: src/lib/actions/client-questionnaires.ts
+ */
+export async function sendQuestionnaireAssignedEmail(params: {
+  to: string;
+  clientId?: string;
+  clientName: string;
+  questionnaireName: string;
+  questionnaireDescription?: string;
+  personalNote?: string;
+  dueDate?: Date;
+  portalUrl: string;
+  photographerName: string;
+  photographerEmail?: string;
+  organizationName: string;
+  bookingTitle?: string;
+  bookingDate?: Date;
+}) {
+  const {
+    to,
+    clientId,
+    clientName,
+    questionnaireName,
+    questionnaireDescription,
+    personalNote,
+    dueDate,
+    portalUrl,
+    photographerName,
+    photographerEmail,
+    organizationName,
+    bookingTitle,
+    bookingDate,
+  } = params;
+
+  // Generate unsubscribe URL if clientId is provided
+  let unsubscribeUrl: string | undefined;
+  if (clientId) {
+    const { generateUnsubscribeUrl } = await import("@/lib/email/unsubscribe");
+    unsubscribeUrl = generateUnsubscribeUrl(clientId);
+  }
+
+  return sendEmail({
+    to,
+    subject: `${photographerName} has sent you a questionnaire to complete`,
+    react: QuestionnaireAssignedEmail({
+      clientName,
+      questionnaireName,
+      questionnaireDescription,
+      personalNote,
+      dueDate: dueDate?.toISOString(),
+      portalUrl,
+      photographerName,
+      organizationName,
+      bookingTitle,
+      bookingDate: bookingDate?.toISOString(),
+      unsubscribeUrl,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+/**
+ * Send questionnaire reminder to client
+ *
+ * Triggered by: sendQuestionnaireReminder() action
+ * Location: src/lib/actions/client-questionnaires.ts
+ */
+export async function sendQuestionnaireReminderEmail(params: {
+  to: string;
+  clientId?: string;
+  clientName: string;
+  questionnaireName: string;
+  dueDate?: Date;
+  isOverdue: boolean;
+  portalUrl: string;
+  photographerName: string;
+  photographerEmail?: string;
+  organizationName: string;
+  bookingTitle?: string;
+  bookingDate?: Date;
+  reminderCount: number;
+}) {
+  const {
+    to,
+    clientId,
+    clientName,
+    questionnaireName,
+    dueDate,
+    isOverdue,
+    portalUrl,
+    photographerName,
+    photographerEmail,
+    organizationName,
+    bookingTitle,
+    bookingDate,
+    reminderCount,
+  } = params;
+
+  // Generate unsubscribe URL if clientId is provided
+  let unsubscribeUrl: string | undefined;
+  if (clientId) {
+    const { generateUnsubscribeUrl } = await import("@/lib/email/unsubscribe");
+    unsubscribeUrl = generateUnsubscribeUrl(clientId);
+  }
+
+  const subject = isOverdue
+    ? `Overdue: Please complete your questionnaire for ${photographerName}`
+    : `Reminder: Please complete your questionnaire for ${photographerName}`;
+
+  return sendEmail({
+    to,
+    subject,
+    react: QuestionnaireReminderEmail({
+      clientName,
+      questionnaireName,
+      dueDate: dueDate?.toISOString(),
+      isOverdue,
+      portalUrl,
+      photographerName,
+      organizationName,
+      bookingTitle,
+      bookingDate: bookingDate?.toISOString(),
+      reminderCount,
+      unsubscribeUrl,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+/**
+ * Send questionnaire completed notification to photographer
+ *
+ * Triggered by: submitQuestionnaireResponses() action
+ * Location: src/lib/actions/questionnaire-portal.ts
+ */
+export async function sendQuestionnaireCompletedEmail(params: {
+  to: string;
+  photographerName: string;
+  clientName: string;
+  clientEmail: string;
+  questionnaireName: string;
+  responseCount: number;
+  agreementCount: number;
+  viewResponsesUrl: string;
+  organizationName: string;
+  bookingTitle?: string;
+  bookingDate?: Date;
+  completedAt: Date;
+}) {
+  const {
+    to,
+    photographerName,
+    clientName,
+    clientEmail,
+    questionnaireName,
+    responseCount,
+    agreementCount,
+    viewResponsesUrl,
+    organizationName,
+    bookingTitle,
+    bookingDate,
+    completedAt,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `${clientName} completed the ${questionnaireName} questionnaire`,
+    react: QuestionnaireCompletedEmail({
+      photographerName,
+      clientName,
+      clientEmail,
+      questionnaireName,
+      responseCount,
+      agreementCount,
+      viewResponsesUrl,
+      organizationName,
+      bookingTitle,
+      bookingDate: bookingDate?.toISOString(),
+      completedAt: completedAt.toISOString(),
+    }),
+    replyTo: clientEmail,
+  });
+}
+
+// =============================================================================
+// Photographer Digest Email
+// =============================================================================
+
+interface QuestionnaireDigestItem {
+  id: string;
+  clientName: string;
+  questionnaireName: string;
+  dueDate?: Date;
+  status: "pending" | "in_progress" | "overdue";
+  bookingTitle?: string;
+}
+
+/**
+ * Send daily digest email to photographer
+ *
+ * Triggered by: Cron job (daily)
+ * Location: src/app/api/cron/photographer-digest/route.ts
+ */
+export async function sendPhotographerDigestEmail(params: {
+  to: string;
+  photographerName: string;
+  organizationName: string;
+  dashboardUrl: string;
+  pendingCount: number;
+  inProgressCount: number;
+  overdueCount: number;
+  completedTodayCount: number;
+  questionnaires: QuestionnaireDigestItem[];
+}) {
+  const {
+    to,
+    photographerName,
+    organizationName,
+    dashboardUrl,
+    pendingCount,
+    inProgressCount,
+    overdueCount,
+    completedTodayCount,
+    questionnaires,
+  } = params;
+
+  const date = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  return sendEmail({
+    to,
+    subject: `Daily Digest: ${overdueCount > 0 ? `${overdueCount} overdue, ` : ""}${pendingCount} pending questionnaires`,
+    react: PhotographerDigestEmail({
+      photographerName,
+      organizationName,
+      dashboardUrl,
+      date,
+      pendingCount,
+      inProgressCount,
+      overdueCount,
+      completedTodayCount,
+      questionnaires: questionnaires.map((q) => ({
+        ...q,
+        dueDate: q.dueDate?.toISOString(),
+      })),
+    }),
+  });
+}
+
+// =============================================================================
+// Booking Form Submission Confirmation
+// =============================================================================
+
+/**
+ * Send booking form submission confirmation to client
+ *
+ * Triggered by: submitBookingForm() when confirmationEmail is enabled
+ * Location: src/lib/actions/booking-forms.ts
+ */
+export async function sendBookingFormSubmittedEmail(params: {
+  to: string;
+  clientName: string;
+  serviceName?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  photographerName: string;
+  photographerEmail?: string;
+  photographerPhone?: string;
+  formName?: string;
+  notes?: string;
+}) {
+  const {
+    to,
+    clientName,
+    serviceName,
+    preferredDate,
+    preferredTime,
+    photographerName,
+    photographerEmail,
+    photographerPhone,
+    formName,
+    notes,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `Your booking request has been received - ${photographerName}`,
+    react: BookingFormSubmittedEmail({
+      clientName,
+      serviceName,
+      preferredDate,
+      preferredTime,
+      photographerName,
+      photographerEmail,
+      photographerPhone,
+      formName,
+      notes,
+    }),
+    replyTo: photographerEmail,
   });
 }

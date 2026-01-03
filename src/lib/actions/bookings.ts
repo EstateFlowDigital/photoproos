@@ -26,6 +26,7 @@ import { nanoid } from "nanoid";
 import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import { logActivity } from "@/lib/utils/activity";
 import { sendSMSToClient } from "@/lib/sms/send";
+import { notifySlackNewBooking, notifySlackCancellation } from "@/lib/actions/slack";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -216,6 +217,22 @@ export async function createBooking(
       },
     });
 
+    // Send Slack notification (non-blocking)
+    try {
+      await notifySlackNewBooking({
+        organizationId,
+        bookingId: booking.id,
+        title: input.title,
+        clientName: input.clientName || null,
+        clientEmail: input.clientEmail || null,
+        startTime: input.startTime,
+        endTime: input.endTime,
+        location: input.location,
+      });
+    } catch (slackError) {
+      console.error("[Booking] Failed to send Slack notification:", slackError);
+    }
+
     revalidatePath("/scheduling");
     revalidatePath("/dashboard");
 
@@ -379,6 +396,42 @@ export async function updateBookingStatus(
           organizationId,
           type: "booking_confirmed",
           description: `Booking "${existing.title}" confirmed for ${clientName || clientEmail || "client"}`,
+          bookingId: id,
+          clientId: existing.clientId,
+          metadata: {
+            bookingTitle: existing.title,
+            clientEmail,
+            clientName,
+            startTime: existing.startTime.toISOString(),
+          },
+        },
+      });
+    }
+
+    // Send Slack cancellation notification when booking is cancelled
+    if (status === "cancelled") {
+      const clientEmail = existing.client?.email || existing.clientEmail;
+      const clientName = existing.client?.fullName || existing.clientName;
+
+      try {
+        await notifySlackCancellation({
+          organizationId,
+          bookingId: id,
+          title: existing.title,
+          clientName: clientName || null,
+          clientEmail: clientEmail || null,
+          startTime: existing.startTime,
+        });
+      } catch (slackError) {
+        console.error("[Booking] Failed to send Slack cancellation notification:", slackError);
+      }
+
+      // Log activity
+      await prisma.activityLog.create({
+        data: {
+          organizationId,
+          type: "booking_cancelled",
+          description: `Booking "${existing.title}" was cancelled`,
           bookingId: id,
           clientId: existing.clientId,
           metadata: {

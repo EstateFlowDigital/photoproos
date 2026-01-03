@@ -7,6 +7,7 @@ import { getBrokerageContracts } from "@/lib/actions/brokerage-contracts";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { BrokerageContractsSection } from "./brokerage-contracts-section";
 
 interface BrokerageDetailPageProps {
   params: Promise<{ id: string }>;
@@ -165,63 +166,7 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
           </div>
 
           {/* Contracts List */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground">Contracts</h2>
-              <Link
-                href={`/brokerages/${id}/contracts/new`}
-                className="text-sm font-medium text-[var(--primary)] hover:underline"
-              >
-                Add Contract
-              </Link>
-            </div>
-
-            {contracts.length > 0 ? (
-              <div className="space-y-3">
-                {contracts.map((contract) => (
-                  <div
-                    key={contract.id}
-                    className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-lg",
-                        contract.isActive ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--foreground-muted)]/10 text-foreground-muted"
-                      )}>
-                        <DocumentIcon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{contract.name}</p>
-                        <p className="text-xs text-foreground-muted">
-                          {contract.discountPercent
-                            ? `${contract.discountPercent}% discount`
-                            : contract.discountFixedCents
-                            ? `${formatCurrency(contract.discountFixedCents)} off`
-                            : "No discount"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className={cn(
-                        "rounded-full px-2.5 py-1 text-xs font-medium",
-                        contract.isActive
-                          ? "bg-[var(--success)]/10 text-[var(--success)]"
-                          : "bg-[var(--foreground-muted)]/10 text-foreground-muted"
-                      )}>
-                        {contract.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="border-2 border-dashed border-[var(--card-border)] rounded-lg p-8 text-center">
-                <DocumentIcon className="mx-auto h-10 w-10 text-foreground-muted" />
-                <p className="mt-3 text-sm text-foreground">No contracts yet</p>
-                <p className="mt-1 text-xs text-foreground-muted">Create contracts to set up special pricing for this brokerage.</p>
-              </div>
-            )}
-          </div>
+          <BrokerageContractsSection brokerageId={id} contracts={contracts} />
         </div>
 
         {/* Sidebar */}

@@ -16,6 +16,11 @@ import {
 } from "@/lib/validations/bundles";
 import type { BundleType } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
+import {
+  syncBundleToStripe,
+  archiveStripeProduct,
+  reactivateStripeProduct,
+} from "@/lib/stripe/product-sync";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -74,6 +79,11 @@ export async function createBundle(
         isActive: validated.isActive,
         isPublic: validated.isPublic,
       },
+    });
+
+    // Sync to Stripe Product Catalog (non-blocking)
+    syncBundleToStripe(bundle, organizationId).catch((err) => {
+      console.error("Failed to sync bundle to Stripe:", err);
     });
 
     revalidatePath("/services/bundles");
@@ -143,6 +153,31 @@ export async function updateBundle(
       },
     });
 
+    // Sync to Stripe if name, description, or price changed
+    const needsStripeSync =
+      updateData.name !== undefined ||
+      updateData.description !== undefined ||
+      updateData.priceCents !== undefined;
+
+    if (needsStripeSync) {
+      syncBundleToStripe(bundle, organizationId).catch((err) => {
+        console.error("Failed to sync bundle to Stripe:", err);
+      });
+    }
+
+    // Handle Stripe product active status change
+    if (updateData.isActive !== undefined && existing.stripeProductId) {
+      if (updateData.isActive) {
+        reactivateStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to reactivate Stripe product:", err)
+        );
+      } else {
+        archiveStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to archive Stripe product:", err)
+        );
+      }
+    }
+
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${id}`);
     revalidatePath("/order-pages");
@@ -197,8 +232,22 @@ export async function deleteBundle(
         data: { isActive: false },
       });
 
+      // Archive in Stripe
+      if (existing.stripeProductId) {
+        archiveStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to archive Stripe product:", err)
+        );
+      }
+
       revalidatePath("/services/bundles");
       return { success: true, data: undefined };
+    }
+
+    // Archive in Stripe before deleting locally
+    if (existing.stripeProductId) {
+      archiveStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+        (err) => console.error("Failed to archive Stripe product:", err)
+      );
     }
 
     // Actually delete if not in use or force is true
@@ -261,7 +310,7 @@ export async function duplicateBundle(
       return { success: false, error: "A bundle with this slug already exists" };
     }
 
-    // Create duplicate with services
+    // Create duplicate with services (without Stripe IDs - will get new ones)
     const duplicate = await prisma.serviceBundle.create({
       data: {
         organizationId,
@@ -285,6 +334,11 @@ export async function duplicateBundle(
           })),
         },
       },
+    });
+
+    // Sync duplicate to Stripe (non-blocking)
+    syncBundleToStripe(duplicate, organizationId).catch((err) => {
+      console.error("Failed to sync duplicated bundle to Stripe:", err);
     });
 
     revalidatePath("/services/bundles");
@@ -323,6 +377,19 @@ export async function toggleBundleStatus(
       where: { id },
       data: { isActive: !existing.isActive },
     });
+
+    // Update Stripe product active status
+    if (existing.stripeProductId) {
+      if (updated.isActive) {
+        reactivateStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to reactivate Stripe product:", err)
+        );
+      } else {
+        archiveStripeProduct(existing.stripeProductId, existing.stripePriceId).catch(
+          (err) => console.error("Failed to archive Stripe product:", err)
+        );
+      }
+    }
 
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${id}`);
