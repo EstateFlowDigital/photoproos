@@ -102,7 +102,7 @@ export function BrokerageContractsSection({
   return (
     <>
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-foreground">Pricing Contracts</h2>
           <button
             type="button"
@@ -118,9 +118,9 @@ export function BrokerageContractsSection({
             {contracts.map((contract) => (
               <div
                 key={contract.id}
-                className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
+                className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 min-w-0">
                   <div
                     className={cn(
                       "flex h-10 w-10 items-center justify-center rounded-lg",
@@ -131,8 +131,8 @@ export function BrokerageContractsSection({
                   >
                     <DocumentIcon className="h-5 w-5" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{contract.name}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{contract.name}</p>
                     <p className="text-xs text-foreground-muted">
                       {contract.discountPercent
                         ? `${contract.discountPercent}% discount`
@@ -143,7 +143,7 @@ export function BrokerageContractsSection({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 sm:justify-end">
                   <span
                     className={cn(
                       "rounded-full px-2.5 py-1 text-xs font-medium",
@@ -185,7 +185,7 @@ export function BrokerageContractsSection({
             onClick={() => setShowModal(false)}
           />
           <div className="relative z-10 w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-lg font-semibold text-foreground">Add Pricing Contract</h3>
               <button
                 type="button"

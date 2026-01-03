@@ -107,7 +107,7 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
 
           {/* Agents List */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-foreground">Agents</h2>
               <Link
                 href={`/clients/new?brokerage=${id}`}
@@ -123,20 +123,20 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
                   <Link
                     key={agent.id}
                     href={`/clients/${agent.id}`}
-                    className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)]"
+                    className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)] sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-medium text-white">
                         {(agent.fullName || agent.email).substring(0, 2).toUpperCase()}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{agent.fullName || agent.email}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{agent.fullName || agent.email}</p>
                         {agent.company && (
                           <p className="text-xs text-foreground-muted">{agent.company}</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                       <span className="text-sm text-foreground-muted">{agent.totalProjects} projects</span>
                       <span className={cn(
                         "font-medium",
