@@ -627,7 +627,7 @@ export function SchedulingPageClient({
         title="Scheduling"
         subtitle="Manage your upcoming shoots and bookings"
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/scheduling/booking-forms"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -715,7 +715,7 @@ export function SchedulingPageClient({
       {/* Today's Agenda (only when not viewing a specific day) */}
       {!selectedDate && todaysBookings.length > 0 && (
         <div className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
                 <TodayIcon className="h-3.5 w-3.5" />
@@ -755,7 +755,7 @@ export function SchedulingPageClient({
 
       {/* Search and Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative max-w-xs flex-1">
+        <div className="relative w-full max-w-sm sm:flex-1">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
@@ -792,8 +792,8 @@ export function SchedulingPageClient({
       {/* Calendar Container */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
         {/* Calendar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 border-b border-[var(--card-border)] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
             <h3 className="text-lg font-semibold text-foreground">
               {calendarView === "month"
                 ? getMonthLabel(new Date(currentMonth.year, currentMonth.month))
@@ -810,7 +810,7 @@ export function SchedulingPageClient({
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* View Toggle */}
             <div className="flex rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-0.5">
               {(["week", "month", "list"] as CalendarViewMode[]).map((view) => (
@@ -852,7 +852,8 @@ export function SchedulingPageClient({
         {/* Calendar Content */}
         <div className="p-4">
           {calendarView === "month" && !selectedDate && (
-            <>
+            <div className="overflow-x-auto">
+              <div className="min-w-[720px]">
               {/* Day Headers */}
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -915,54 +916,61 @@ export function SchedulingPageClient({
                   );
                 })}
               </div>
-            </>
+              </div>
+            </div>
           )}
 
           {calendarView === "week" && !selectedDate && (
-            <div className="grid grid-cols-7 gap-2">
-              {weekDays.map((day, index) => {
-                const dayBookings = getBookingsForDate(day.date);
-                const dayTimeOff = getTimeOffForDate(day.date);
-                const hasTimeOffToday = dayTimeOff.length > 0;
+            <div className="overflow-x-auto">
+              <div className="min-w-[860px]">
+                <div className="grid grid-cols-7 gap-2">
+                  {weekDays.map((day, index) => {
+                    const dayBookings = getBookingsForDate(day.date);
+                    const dayTimeOff = getTimeOffForDate(day.date);
+                    const hasTimeOffToday = dayTimeOff.length > 0;
 
-                return (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedDate(day.date)}
-                    className={cn(
-                      "min-h-[200px] p-2 rounded-xl border text-left transition-all flex flex-col",
-                      "bg-[var(--background)] border-[var(--card-border)] hover:border-[var(--primary)]/50",
-                      day.isToday && "ring-2 ring-[var(--primary)] ring-offset-1 ring-offset-[var(--card)]",
-                      hasTimeOffToday && "bg-[var(--foreground-muted)]/5"
-                    )}
-                  >
-                    <div className="text-center mb-2">
-                      <span className="text-xs text-foreground-muted">{day.dayName}</span>
-                      <span className={cn(
-                        "block text-lg font-semibold",
-                        day.isToday ? "text-[var(--primary)]" : "text-foreground"
-                      )}>
-                        {day.dayNumber}
-                      </span>
-                    </div>
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedDate(day.date)}
+                        className={cn(
+                          "min-h-[200px] p-2 rounded-xl border text-left transition-all flex flex-col",
+                          "bg-[var(--background)] border-[var(--card-border)] hover:border-[var(--primary)]/50",
+                          day.isToday && "ring-2 ring-[var(--primary)] ring-offset-1 ring-offset-[var(--card)]",
+                          hasTimeOffToday && "bg-[var(--foreground-muted)]/5"
+                        )}
+                      >
+                        <div className="text-center mb-2">
+                          <span className="text-xs text-foreground-muted">{day.dayName}</span>
+                          <span
+                            className={cn(
+                              "block text-lg font-semibold",
+                              day.isToday ? "text-[var(--primary)]" : "text-foreground"
+                            )}
+                          >
+                            {day.dayNumber}
+                          </span>
+                        </div>
 
-                    {/* Time-off blocks */}
-                    {hasTimeOffToday && (
-                      <div className="space-y-1 mb-1">
-                        {dayTimeOff.map((block) => (
-                          <TimeOffBlockDisplay key={block.id} block={block} />
-                        ))}
-                      </div>
-                    )}
+                        {/* Time-off blocks */}
+                        {hasTimeOffToday && (
+                          <div className="space-y-1 mb-1">
+                            {dayTimeOff.map((block) => (
+                              <TimeOffBlockDisplay key={block.id} block={block} />
+                            ))}
+                          </div>
+                        )}
 
-                    <div className="flex-1 space-y-1 overflow-hidden">
-                      {dayBookings.map((booking) => (
-                        <EventBlock key={booking.id} booking={booking} />
-                      ))}
-                    </div>
-                  </button>
-                );
-              })}
+                        <div className="flex-1 space-y-1 overflow-hidden">
+                          {dayBookings.map((booking) => (
+                            <EventBlock key={booking.id} booking={booking} />
+                          ))}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 
@@ -996,7 +1004,7 @@ export function SchedulingPageClient({
           {/* Day Detail View */}
           {selectedDate && (
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">{formatLongDate(selectedDate)}</h2>
                   <p className="text-sm text-foreground-muted">
