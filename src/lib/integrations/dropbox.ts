@@ -206,7 +206,7 @@ export class DropboxClient {
     mode: "add" | "overwrite" = "overwrite"
   ): Promise<DropboxUploadResult> {
     // Convert to Blob for fetch body compatibility
-    const blob = new Blob([content], { type: "application/octet-stream" });
+    const blob = new Blob([content as BlobPart], { type: "application/octet-stream" });
 
     const response = await fetch(`${DROPBOX_CONTENT_BASE}/files/upload`, {
       method: "POST",
