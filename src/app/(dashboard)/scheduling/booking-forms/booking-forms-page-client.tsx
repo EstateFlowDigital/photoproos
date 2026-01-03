@@ -225,7 +225,7 @@ export function BookingFormsPageClient({
       />
 
       {/* Stats Summary */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="auto-grid grid-min-200 grid-gap-3">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
@@ -304,7 +304,7 @@ export function BookingFormsPageClient({
 
       {/* Forms Grid */}
       {filteredForms.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="auto-grid grid-min-240 grid-gap-4">
           {filteredForms.map((form) => (
             <div
               key={form.id}
