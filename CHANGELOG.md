@@ -66,6 +66,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added web app manifest (`public/manifest.json`) for Field App PWA experience
   - Enables mobile install and standalone app mode for photographers in the field
 
+- **Complete Navigation System**
+  - Contract Templates page at `/contracts/templates` with full CRUD operations
+  - Client Tags Management view at `/clients?view=tags` with color-coded tags
+  - Property Leads aggregate view at `/properties?view=leads` with status filtering
+  - Property Analytics dashboard at `/properties?view=analytics` with trend charts
+  - PageContextNav added to Services page (Services, Bundles, Add-ons)
+  - Activity logging for bookings, invoices, and payments actions
+
 ### Changed
 - **Temporarily Excluded Features** (build stability)
   - Excluded incomplete Dropbox-synced features from build via .gitignore:
