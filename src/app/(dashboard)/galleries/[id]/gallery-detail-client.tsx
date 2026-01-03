@@ -919,32 +919,6 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
             </div>
           )}
 
-          {/* Contracts Section - Coming Soon */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold text-foreground">Contracts</h2>
-                <span className="rounded-full bg-[var(--primary)]/10 px-2.5 py-1 text-xs font-medium text-[var(--primary)]">
-                  Coming Soon
-                </span>
-              </div>
-            </div>
-            <div className="border-2 border-dashed border-[var(--card-border)] rounded-lg p-8 text-center">
-              <ContractIcon className="mx-auto h-12 w-12 text-foreground-muted" />
-              <p className="mt-3 text-sm font-medium text-foreground">Contracts & E-Signatures</p>
-              <p className="mt-1 text-xs text-foreground-muted max-w-sm mx-auto">
-                Soon you'll be able to create and send contracts for client approval directly from this gallery.
-              </p>
-              <button
-                disabled
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)]/50 px-4 py-2 text-sm font-medium text-white cursor-not-allowed"
-              >
-                <PlusIcon className="h-4 w-4" />
-                Create Contract
-              </button>
-            </div>
-          </div>
-
           {/* Photo Grid */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
@@ -2178,14 +2152,6 @@ function EditIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
       <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
-    </svg>
-  );
-}
-
-function ContractIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M3 3.5A1.5 1.5 0 0 1 4.5 2h6.879a1.5 1.5 0 0 1 1.06.44l4.122 4.12A1.5 1.5 0 0 1 17 7.622V16.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 16.5v-13ZM13.25 9a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75Zm-6.5 4a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-1.5 0v-.5a.75.75 0 0 1 .75-.75Zm4-1.25a.75.75 0 0 0-1.5 0v2.5a.75.75 0 0 0 1.5 0v-2.5Z" clipRule="evenodd" />
     </svg>
   );
 }

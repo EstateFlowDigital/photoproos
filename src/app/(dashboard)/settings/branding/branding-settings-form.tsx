@@ -158,7 +158,10 @@ export function BrandingSettingsForm({
                       onError={() => setLogoError(true)}
                     />
                   ) : (
-                    <ImageIcon className="h-8 w-8 text-foreground-muted" />
+                    <div className="flex flex-col items-center gap-1 text-foreground-muted">
+                      <ImageIcon className="h-8 w-8" />
+                      <span className="text-[10px] font-medium">Upload logo</span>
+                    </div>
                   )}
                 </div>
                 <input
@@ -218,7 +221,10 @@ export function BrandingSettingsForm({
                       onError={() => setLogoLightError(true)}
                     />
                   ) : (
-                    <ImageIcon className="h-8 w-8 text-gray-400" />
+                    <div className="flex flex-col items-center gap-1 text-gray-400">
+                      <ImageIcon className="h-8 w-8" />
+                      <span className="text-[10px] font-medium">Upload logo</span>
+                    </div>
                   )}
                 </div>
                 <input
@@ -528,7 +534,10 @@ export function BrandingSettingsForm({
                     onError={() => setLogoError(true)}
                   />
                 ) : (
-                  <ImageIcon className="h-6 w-6 text-gray-400" />
+                  <div className="flex flex-col items-center gap-1 text-gray-400">
+                    <ImageIcon className="h-6 w-6" />
+                    <span className="text-[10px] font-medium">Upload logo</span>
+                  </div>
                 )}
               </div>
               <input
