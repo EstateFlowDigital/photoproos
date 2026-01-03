@@ -603,7 +603,7 @@ export function PaymentsSettingsClient({
         <h2 className="text-lg font-semibold text-foreground mb-4">
           How Payments Work
         </h2>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="auto-grid grid-min-240 grid-gap-4">
           <StepCard
             number={1}
             title="Connect Stripe"
