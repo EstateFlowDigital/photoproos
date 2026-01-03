@@ -448,7 +448,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
               {/* Quick Stats */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <h2 className="mb-4 font-semibold text-foreground">Performance</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="auto-grid grid-gap-4 [--grid-min:160px]">
                   <div>
                     <p className="text-2xl font-bold text-foreground">{website.viewCount}</p>
                     <p className="text-sm text-foreground-muted">Page Views</p>
