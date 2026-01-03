@@ -1751,7 +1751,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                 )}
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="mt-4 auto-grid grid-gap-2 [--grid-min:160px]">
               <button
                 onClick={handleEmailClient}
                 className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
