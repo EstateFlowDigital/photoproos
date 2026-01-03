@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { getContract, deleteContract, sendContract } from "@/lib/actions/contracts";
 import { cancelContract } from "@/lib/actions/contract-signing";
 import { cn } from "@/lib/utils";
+import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { ContractStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -33,29 +34,7 @@ function formatDateShort(date: Date): string {
   }).format(date);
 }
 
-// Status badge colors
-const statusConfig: Record<ContractStatus, { label: string; className: string }> = {
-  draft: {
-    label: "Draft",
-    className: "bg-[var(--background-secondary)] text-foreground-muted",
-  },
-  sent: {
-    label: "Awaiting Signature",
-    className: "bg-blue-500/10 text-blue-400",
-  },
-  signed: {
-    label: "Signed",
-    className: "bg-green-500/10 text-green-400",
-  },
-  expired: {
-    label: "Expired",
-    className: "bg-orange-500/10 text-orange-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className: "bg-[var(--background-secondary)] text-foreground-muted line-through",
-  },
-};
+// Status badge classes are centralized in lib/status-badges.ts
 
 export default async function ContractDetailPage({ params }: ContractDetailPageProps) {
   const { id } = await params;
@@ -66,7 +45,13 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
     notFound();
   }
 
-  const status = statusConfig[contract.status];
+  const statusLabel = contract.status === "sent"
+    ? "Awaiting Signature"
+    : formatStatusLabel(contract.status);
+  const statusClasses = cn(
+    getStatusBadgeClasses(contract.status),
+    contract.status === "cancelled" && "line-through"
+  );
   const clientName = contract.client?.fullName || contract.client?.company || "No client";
   const signedCount = contract.signers.filter(s => s.signedAt).length;
   const totalSigners = contract.signers.length;
@@ -125,9 +110,9 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
           <span className="flex items-center gap-3 flex-wrap">
             <span className={cn(
               "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-              status.className
+              statusClasses
             )}>
-              {status.label}
+              {statusLabel}
             </span>
             <span className="text-foreground-muted">•</span>
             <span>Created {formatDateShort(contract.createdAt)}</span>

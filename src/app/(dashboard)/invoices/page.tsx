@@ -5,6 +5,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { InvoiceStatus } from "@prisma/client";
 
 // Helper to format currency
@@ -26,29 +27,7 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-// Status badge colors
-const statusConfig: Record<InvoiceStatus, { label: string; className: string }> = {
-  draft: {
-    label: "Draft",
-    className: "bg-[var(--background-secondary)] text-foreground-muted",
-  },
-  sent: {
-    label: "Sent",
-    className: "bg-blue-500/10 text-blue-400",
-  },
-  paid: {
-    label: "Paid",
-    className: "bg-green-500/10 text-green-400",
-  },
-  overdue: {
-    label: "Overdue",
-    className: "bg-red-500/10 text-red-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className: "bg-[var(--background-secondary)] text-foreground-muted line-through",
-  },
-};
+// Status badge classes are centralized in lib/status-badges.ts
 
 interface PageProps {
   searchParams: Promise<{ status?: InvoiceStatus }>;
@@ -294,9 +273,12 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
             </thead>
             <tbody className="divide-y divide-[var(--card-border)]">
               {invoices.map((invoice) => {
-                const status = statusConfig[invoice.status];
                 const clientName = invoice.client?.fullName || invoice.client?.company || invoice.clientName || "Unknown";
                 const isOverdue = invoice.status === "sent" && new Date(invoice.dueDate) < new Date();
+                const displayStatus = isOverdue && invoice.status !== "overdue" ? "overdue" : invoice.status;
+                const statusLabel = isOverdue && invoice.status !== "overdue"
+                  ? "Overdue"
+                  : formatStatusLabel(invoice.status);
 
                 return (
                   <tr
@@ -338,11 +320,10 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
                     <td className="px-6 py-4">
                       <span className={cn(
                         "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-                        isOverdue && invoice.status !== "overdue"
-                          ? statusConfig.overdue.className
-                          : status.className
+                        getStatusBadgeClasses(displayStatus),
+                        invoice.status === "cancelled" && "line-through"
                       )}>
-                        {isOverdue && invoice.status !== "overdue" ? "Overdue" : status.label}
+                        {statusLabel}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

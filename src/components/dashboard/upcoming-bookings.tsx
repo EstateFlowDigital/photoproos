@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 
 type BookingStatus = "confirmed" | "pending" | "cancelled";
 
@@ -20,18 +21,6 @@ interface UpcomingBookingsProps {
   bookings: Booking[];
   className?: string;
 }
-
-const statusColors: Record<BookingStatus, string> = {
-  confirmed: "bg-[var(--success)]/10 text-[var(--success)]",
-  pending: "bg-[var(--warning)]/10 text-[var(--warning)]",
-  cancelled: "bg-[var(--error)]/10 text-[var(--error)]",
-};
-
-const statusLabels: Record<BookingStatus, string> = {
-  confirmed: "Confirmed",
-  pending: "Pending",
-  cancelled: "Cancelled",
-};
 
 function formatDate(date: Date): string {
   const now = new Date();
@@ -105,17 +94,23 @@ export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps)
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h4 className="line-clamp-2 text-sm font-semibold text-foreground sm:line-clamp-1">
+                <h4
+                  className="line-clamp-2 text-sm font-semibold text-foreground sm:line-clamp-1"
+                  title={booking.title}
+                >
                   {booking.title}
                 </h4>
                 <span className={cn(
                   "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",
-                  statusColors[booking.status]
+                  getStatusBadgeClasses(booking.status)
                 )}>
-                  {statusLabels[booking.status]}
+                  {formatStatusLabel(booking.status)}
                 </span>
               </div>
-              <p className="mt-0.5 line-clamp-2 text-xs text-foreground-muted sm:line-clamp-1">
+              <p
+                className="mt-0.5 line-clamp-2 text-xs text-foreground-muted sm:line-clamp-1"
+                title={booking.client}
+              >
                 {booking.client}
               </p>
 
@@ -131,7 +126,7 @@ export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps)
                 {booking.location && (
                   <div className="flex items-center gap-1 text-xs text-foreground-muted">
                     <LocationIcon className="h-3.5 w-3.5" />
-                    <span className="line-clamp-1 max-w-[160px] sm:max-w-none">
+                    <span className="line-clamp-1 max-w-[160px] sm:max-w-none" title={booking.location}>
                       {booking.location}
                     </span>
                   </div>

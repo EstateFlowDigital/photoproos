@@ -5,6 +5,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import { ExportButton } from "./export-button";
 
 // Helper to format currency
@@ -32,13 +33,7 @@ interface PaymentsPageProps {
   searchParams: Promise<{ filter?: string }>;
 }
 
-const statusColors: Record<string, string> = {
-  paid: "bg-[var(--success)]/10 text-[var(--success)]",
-  pending: "bg-[var(--warning)]/10 text-[var(--warning)]",
-  overdue: "bg-[var(--error)]/10 text-[var(--error)]",
-  failed: "bg-[var(--error)]/10 text-[var(--error)]",
-  refunded: "bg-[var(--background-secondary)] text-foreground-muted",
-};
+// Status badge classes are centralized in lib/status-badges.ts
 
 export default async function PaymentsPage({ searchParams }: PaymentsPageProps) {
   const params = await searchParams;
@@ -242,10 +237,11 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
                     <span
                       className={cn(
                         "inline-flex rounded-full px-2.5 py-1 text-xs font-medium uppercase",
-                        statusColors[payment.status]
+                        getStatusBadgeClasses(payment.status),
+                        payment.status === "refunded" && "line-through"
                       )}
                     >
-                      {payment.status}
+                      {formatStatusLabel(payment.status)}
                     </span>
                   </td>
                 </tr>

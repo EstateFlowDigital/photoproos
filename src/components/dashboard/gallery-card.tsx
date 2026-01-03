@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import Link from "next/link";
 
 type GalleryStatus = "delivered" | "pending" | "draft" | "archived";
@@ -18,20 +19,6 @@ interface GalleryCardProps {
   thumbnailUrl?: string;
   onQuickAction?: (action: QuickAction, galleryId: string) => void;
 }
-
-const statusColors: Record<GalleryStatus, string> = {
-  delivered: "bg-[var(--success)]/10 text-[var(--success)]",
-  pending: "bg-[var(--warning)]/10 text-[var(--warning)]",
-  draft: "bg-[var(--background-secondary)] text-foreground-muted",
-  archived: "bg-[var(--background-secondary)] text-foreground-muted",
-};
-
-const statusLabels: Record<GalleryStatus, string> = {
-  delivered: "Delivered",
-  pending: "Pending",
-  draft: "Draft",
-  archived: "Archived",
-};
 
 export function GalleryCard({ id, title, client, photos, status, revenue, thumbnailUrl, onQuickAction }: GalleryCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -132,17 +119,27 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
         </div>
 
         {/* Content */}
-        <h4 className="line-clamp-2 text-sm font-semibold text-foreground sm:line-clamp-1">{title}</h4>
-        <p className="mt-0.5 line-clamp-2 text-xs text-foreground-muted sm:line-clamp-1">{client}</p>
+        <h4
+          className="line-clamp-2 text-sm font-semibold text-foreground sm:line-clamp-1"
+          title={title}
+        >
+          {title}
+        </h4>
+        <p
+          className="mt-0.5 line-clamp-2 text-xs text-foreground-muted sm:line-clamp-1"
+          title={client}
+        >
+          {client}
+        </p>
 
         {/* Footer */}
         <div className="mt-3 flex items-center justify-between">
           <span className="text-xs text-foreground-muted">{photos} photos</span>
           <span className={cn(
             "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",
-            statusColors[status]
+            getStatusBadgeClasses(status)
           )}>
-            {statusLabels[status]}
+            {formatStatusLabel(status)}
           </span>
         </div>
 

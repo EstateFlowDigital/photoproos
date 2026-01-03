@@ -5,6 +5,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { InvoiceStatus, LineItemType } from "@prisma/client";
 import { InvoiceActions } from "./invoice-actions";
 
@@ -24,29 +25,6 @@ function formatDate(date: Date): string {
     year: "numeric",
   }).format(date);
 }
-
-const statusConfig: Record<InvoiceStatus, { label: string; className: string }> = {
-  draft: {
-    label: "Draft",
-    className: "bg-[var(--background-secondary)] text-foreground-muted",
-  },
-  sent: {
-    label: "Sent",
-    className: "bg-blue-500/10 text-blue-400",
-  },
-  paid: {
-    label: "Paid",
-    className: "bg-green-500/10 text-green-400",
-  },
-  overdue: {
-    label: "Overdue",
-    className: "bg-red-500/10 text-red-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className: "bg-[var(--background-secondary)] text-foreground-muted",
-  },
-};
 
 const lineItemTypeLabels: Record<LineItemType, string> = {
   service: "Service",
@@ -94,8 +72,11 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
     notFound();
   }
 
-  const status = statusConfig[invoice.status];
   const isOverdue = invoice.status === "sent" && new Date(invoice.dueDate) < new Date();
+  const displayStatus = isOverdue && invoice.status !== "overdue" ? "overdue" : invoice.status;
+  const statusLabel = isOverdue && invoice.status !== "overdue"
+    ? "Overdue"
+    : formatStatusLabel(invoice.status);
 
   return (
     <div className="space-y-6">
@@ -134,11 +115,10 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
               </div>
               <span className={cn(
                 "inline-flex rounded-full px-3 py-1 text-sm font-medium",
-                isOverdue && invoice.status !== "overdue"
-                  ? statusConfig.overdue.className
-                  : status.className
+                getStatusBadgeClasses(displayStatus),
+                invoice.status === "cancelled" && "line-through"
               )}>
-                {isOverdue && invoice.status !== "overdue" ? "Overdue" : status.label}
+                {statusLabel}
               </span>
             </div>
 

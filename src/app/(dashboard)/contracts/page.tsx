@@ -6,6 +6,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { ContractStatus } from "@prisma/client";
 
 // Helper to format date
@@ -17,29 +18,7 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-// Status badge colors
-const statusConfig: Record<ContractStatus, { label: string; className: string }> = {
-  draft: {
-    label: "Draft",
-    className: "bg-[var(--background-secondary)] text-foreground-muted",
-  },
-  sent: {
-    label: "Sent",
-    className: "bg-blue-500/10 text-blue-400",
-  },
-  signed: {
-    label: "Signed",
-    className: "bg-green-500/10 text-green-400",
-  },
-  expired: {
-    label: "Expired",
-    className: "bg-orange-500/10 text-orange-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className: "bg-[var(--background-secondary)] text-foreground-muted line-through",
-  },
-};
+// Status badge classes are centralized in lib/status-badges.ts
 
 interface PageProps {
   searchParams: Promise<{ status?: ContractStatus }>;
@@ -294,7 +273,11 @@ export default async function ContractsPage({ searchParams }: PageProps) {
             </thead>
             <tbody className="divide-y divide-[var(--card-border)]">
               {contracts.map((contract) => {
-                const status = statusConfig[contract.status];
+                const statusLabel = formatStatusLabel(contract.status);
+                const statusClasses = cn(
+                  getStatusBadgeClasses(contract.status),
+                  contract.status === "cancelled" && "line-through"
+                );
                 const clientName = contract.client?.fullName || contract.client?.company || "No client";
                 const signedCount = contract.signers.filter(s => s.signedAt).length;
                 const totalSigners = contract.signers.length;
@@ -351,9 +334,9 @@ export default async function ContractsPage({ searchParams }: PageProps) {
                     <td className="px-6 py-4">
                       <span className={cn(
                         "relative z-10 pointer-events-none inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-                        status.className
+                        statusClasses
                       )}>
-                        {status.label}
+                        {statusLabel}
                       </span>
                     </td>
                     <td className="hidden px-6 py-4 sm:table-cell">

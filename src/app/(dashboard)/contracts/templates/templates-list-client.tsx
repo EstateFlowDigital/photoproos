@@ -93,7 +93,10 @@ export function TemplatesListClient({ templates }: TemplatesListClientProps) {
                     <TemplateIcon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-foreground line-clamp-2 sm:line-clamp-1">
+                    <h3
+                      className="font-medium text-foreground line-clamp-2 sm:line-clamp-1"
+                      title={template.name}
+                    >
                       {template.name}
                     </h3>
                     {template.description && (

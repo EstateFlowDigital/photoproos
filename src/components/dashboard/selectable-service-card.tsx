@@ -90,7 +90,10 @@ export function SelectableServiceCard({
               </span>
             )}
           </div>
-          <h3 className="font-semibold text-foreground group-hover:text-[var(--primary)] transition-colors line-clamp-2 sm:line-clamp-1">
+          <h3
+            className="font-semibold text-foreground group-hover:text-[var(--primary)] transition-colors line-clamp-2 sm:line-clamp-1"
+            title={service.name}
+          >
             {service.name}
           </h3>
         </div>
