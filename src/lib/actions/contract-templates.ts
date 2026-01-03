@@ -34,15 +34,34 @@ export interface ContractTemplateWithCount {
 // =============================================================================
 
 async function getOrganizationId(): Promise<string | null> {
-  const { orgId } = await auth();
-  if (!orgId) return null;
+  const { orgId, userId: clerkUserId } = await auth();
 
-  const org = await prisma.organization.findFirst({
-    where: { clerkOrganizationId: orgId },
-    select: { id: true },
-  });
+  // If Clerk organization is selected, use that
+  if (orgId) {
+    const org = await prisma.organization.findFirst({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+    if (org) return org.id;
+  }
 
-  return org?.id || null;
+  // Fallback: use the first organization the user belongs to
+  if (clerkUserId) {
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId },
+      include: {
+        memberships: {
+          take: 1,
+          select: { organizationId: true },
+        },
+      },
+    });
+    if (user?.memberships[0]) {
+      return user.memberships[0].organizationId;
+    }
+  }
+
+  return null;
 }
 
 // =============================================================================

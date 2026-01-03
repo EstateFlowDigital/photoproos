@@ -13,6 +13,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 import { createBooking } from "@/lib/actions/bookings";
 
 interface Client {
@@ -204,24 +205,17 @@ export function CreateBookingModal({
             </div>
 
             {/* Client Selection */}
-            <div>
-              <label htmlFor="booking-client" className="block text-sm font-medium text-foreground mb-1.5">
-                Client
-              </label>
-              <select
-                id="booking-client"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                <option value="">Select a client...</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.company || client.fullName || client.email}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              name="client"
+              label="Client"
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              placeholder="Select a client..."
+              options={clients.map((client) => ({
+                value: client.id,
+                label: client.company || client.fullName || client.email,
+              }))}
+            />
 
             {/* Date and Time */}
             <div className="grid grid-cols-2 gap-4">
@@ -261,26 +255,22 @@ export function CreateBookingModal({
             </div>
 
             {/* Duration */}
-            <div>
-              <label htmlFor="booking-duration" className="block text-sm font-medium text-foreground mb-1.5">
-                Duration
-              </label>
-              <select
-                id="booking-duration"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                <option value="0.5">30 minutes</option>
-                <option value="1">1 hour</option>
-                <option value="1.5">1.5 hours</option>
-                <option value="2">2 hours</option>
-                <option value="3">3 hours</option>
-                <option value="4">4 hours</option>
-                <option value="6">6 hours</option>
-                <option value="8">8 hours (Full Day)</option>
-              </select>
-            </div>
+            <Select
+              name="duration"
+              label="Duration"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              options={[
+                { value: "0.5", label: "30 minutes" },
+                { value: "1", label: "1 hour" },
+                { value: "1.5", label: "1.5 hours" },
+                { value: "2", label: "2 hours" },
+                { value: "3", label: "3 hours" },
+                { value: "4", label: "4 hours" },
+                { value: "6", label: "6 hours" },
+                { value: "8", label: "8 hours (Full Day)" },
+              ]}
+            />
 
             {/* Location */}
             <div>

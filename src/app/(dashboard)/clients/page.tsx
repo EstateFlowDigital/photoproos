@@ -89,25 +89,39 @@ export default async function ClientsPage({ searchParams }: PageProps) {
           tag: true,
         },
       },
+      invoices: {
+        where: { status: "paid" },
+        select: { totalCents: true },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  // Transform clients to include tags array
-  const clientsWithTags = clients.map((client) => ({
-    id: client.id,
-    fullName: client.fullName,
-    email: client.email,
-    company: client.company,
-    industry: client.industry,
-    lifetimeRevenueCents: client.lifetimeRevenueCents,
-    _count: client._count,
-    tags: client.tags.map((t) => ({
-      id: t.tag.id,
-      name: t.tag.name,
-      color: t.tag.color,
-    })),
-  }));
+  // Transform clients to include tags array and calculated revenue
+  const clientsWithTags = clients.map((client) => {
+    // Calculate revenue from paid invoices
+    const calculatedRevenue = client.invoices.reduce(
+      (sum, invoice) => sum + invoice.totalCents,
+      0
+    );
+    // Use calculated revenue if available, otherwise fall back to stored value
+    const lifetimeRevenue = calculatedRevenue > 0 ? calculatedRevenue : client.lifetimeRevenueCents;
+
+    return {
+      id: client.id,
+      fullName: client.fullName,
+      email: client.email,
+      company: client.company,
+      industry: client.industry,
+      lifetimeRevenueCents: lifetimeRevenue,
+      _count: client._count,
+      tags: client.tags.map((t) => ({
+        id: t.tag.id,
+        name: t.tag.name,
+        color: t.tag.color,
+      })),
+    };
+  });
 
   // Fetch all tags for filter pills
   const tagsResult = await getClientTags();

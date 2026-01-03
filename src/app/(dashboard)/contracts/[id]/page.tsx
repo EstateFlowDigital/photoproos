@@ -358,12 +358,9 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
                   <p className="text-xs font-medium uppercase tracking-wider text-foreground-muted mb-1">
                     Template
                   </p>
-                  <Link
-                    href={`/contracts/templates/${contract.template.id}`}
-                    className="text-sm text-foreground hover:text-[var(--primary)]"
-                  >
+                  <p className="text-sm text-foreground">
                     {contract.template.name}
-                  </Link>
+                  </p>
                 </div>
               )}
 

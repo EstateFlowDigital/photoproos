@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
+import { Select } from "@/components/ui/select";
 import { getServiceById, type ServiceType } from "@/lib/services";
 import { updateGallery, deleteGallery } from "@/lib/actions/galleries";
 import { useToast } from "@/components/ui/toast";
@@ -203,23 +204,18 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
 
           {/* Client Selection */}
           <div>
-            <label htmlFor="client" className="block text-sm font-medium text-foreground mb-1.5">
-              Client <span className="text-[var(--error)]">*</span>
-            </label>
-            <select
-              id="client"
+            <Select
               name="clientId"
+              label="Client"
+              required
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            >
-              <option value="">Select a client...</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name} ({client.email})
-                </option>
-              ))}
-            </select>
+              placeholder="Select a client..."
+              options={clients.map((client) => ({
+                value: client.id,
+                label: `${client.name} (${client.email})`,
+              }))}
+            />
             <p className="mt-1.5 text-xs text-foreground-muted">
               Or{" "}
               <Link href="/clients/new" className="text-[var(--primary)] hover:underline">

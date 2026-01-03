@@ -227,7 +227,7 @@ export function LeadsViewClient({ leads }: LeadsViewClientProps) {
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`/properties/${lead.propertyWebsite.id}`}
-                      className="inline-flex items-center justify-center rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
+                      className="inline-flex items-center justify-center rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
                     >
                       <ChevronRightIcon className="h-4 w-4" />
                     </Link>

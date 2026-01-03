@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/actions/clients";
+import { Select } from "@/components/ui/select";
+import { Input, Textarea } from "@/components/ui/input";
 import type { ClientIndustry } from "@prisma/client";
 
 const industries: { value: ClientIndustry; label: string }[] = [
@@ -168,24 +170,13 @@ export function ClientNewForm() {
             />
           </div>
 
-          <div>
-            <label htmlFor="industry" className="block text-sm font-medium text-foreground mb-1.5">
-              Industry <span className="text-[var(--error)]">*</span>
-            </label>
-            <select
-              id="industry"
-              name="industry"
-              required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            >
-              <option value="">Select an industry...</option>
-              {industries.map((industry) => (
-                <option key={industry.value} value={industry.value}>
-                  {industry.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            name="industry"
+            label="Industry"
+            required
+            placeholder="Select an industry..."
+            options={industries}
+          />
         </div>
       </div>
 

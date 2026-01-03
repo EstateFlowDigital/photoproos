@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
+import { Select } from "@/components/ui/select";
 import { updateBooking } from "@/lib/actions/bookings";
 import { getServiceById, type ServiceType } from "@/lib/services";
 
@@ -188,24 +189,16 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
             )}
           </div>
 
-          <div>
-            <label htmlFor="client" className="block text-sm font-medium text-foreground mb-1.5">
-              Client
-            </label>
-            <select
-              id="client"
-              name="client"
-              defaultValue={booking.client.id}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            >
-              <option value="">No client selected</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            name="client"
+            label="Client"
+            defaultValue={booking.client.id}
+            placeholder="No client selected"
+            options={clients.map((client) => ({
+              value: client.id,
+              label: client.name,
+            }))}
+          />
         </div>
       </div>
 

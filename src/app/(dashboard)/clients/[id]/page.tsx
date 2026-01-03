@@ -67,7 +67,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     }),
     prisma.invoice.findMany({
       where: { clientId: id },
-      select: { id: true },
+      select: { id: true, status: true, totalCents: true },
     }),
     prisma.clientCommunication.findMany({
       where: { clientId: id },
@@ -99,6 +99,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const totalGalleryRevenue = client.projects.reduce((sum, p) => sum + p.priceCents, 0);
   const paidPayments = payments.filter((p) => p.status === "paid");
   const pendingPayments = payments.filter((p) => p.status === "pending");
+
+  // Calculate lifetime revenue from paid invoices
+  const invoiceRevenue = invoices
+    .filter((inv) => inv.status === "paid")
+    .reduce((sum, inv) => sum + inv.totalCents, 0);
+  // Use calculated invoice revenue if available, otherwise fall back to stored value
+  const lifetimeRevenue = invoiceRevenue > 0 ? invoiceRevenue : client.lifetimeRevenueCents;
 
   return (
     <div className="space-y-6">
@@ -145,7 +152,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Lifetime Revenue</p>
-              <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(client.lifetimeRevenueCents)}</p>
+              <p className="mt-2 text-2xl font-bold text-foreground">{formatCurrency(lifetimeRevenue)}</p>
             </div>
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Total Galleries</p>

@@ -13,6 +13,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 import { createPropertyWebsite } from "@/lib/actions/property-websites";
 import type { PropertyType, PropertyWebsiteTemplate } from "@prisma/client";
 
@@ -226,36 +227,31 @@ export function CreatePropertyModal({
             )}
 
             {/* Gallery Selection */}
-            <div>
-              <label htmlFor="property-gallery" className="block text-sm font-medium text-foreground mb-1.5">
-                Gallery <span className="text-[var(--error)]">*</span>
-              </label>
-              {projects.length > 0 ? (
-                <>
-                  <select
-                    id="property-gallery"
-                    value={projectId}
-                    onChange={(e) => handleProjectChange(e.target.value)}
-                    onBlur={(e) => handleBlur("projectId", e.target.value)}
-                    className={getInputClassName("projectId")}
-                  >
-                    <option value="">Select a gallery...</option>
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.name} {project.client?.company ? `(${project.client.company})` : ""}
-                      </option>
-                    ))}
-                  </select>
-                  {touched.projectId && fieldErrors.projectId && (
-                    <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.projectId}</p>
-                  )}
-                </>
-              ) : (
+            {projects.length > 0 ? (
+              <Select
+                name="gallery"
+                label="Gallery"
+                required
+                value={projectId}
+                onChange={(e) => handleProjectChange(e.target.value)}
+                onBlur={(e) => handleBlur("projectId", e.target.value)}
+                placeholder="Select a gallery..."
+                options={projects.map((project) => ({
+                  value: project.id,
+                  label: `${project.name}${project.client?.company ? ` (${project.client.company})` : ""}`,
+                }))}
+                error={touched.projectId ? fieldErrors.projectId : undefined}
+              />
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Gallery <span className="text-[var(--error)]">*</span>
+                </label>
                 <div className="rounded-lg border border-dashed border-[var(--card-border)] p-4 text-center">
                   <p className="text-sm text-foreground-muted">No available galleries without property websites.</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Property Address */}
             <div className="space-y-3">
@@ -410,45 +406,37 @@ export function CreatePropertyModal({
                     className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
                 </div>
-                <div>
-                  <label htmlFor="property-type" className="block text-sm text-foreground-muted mb-1.5">
-                    Type
-                  </label>
-                  <select
-                    id="property-type"
-                    value={propertyType}
-                    onChange={(e) => setPropertyType(e.target.value as PropertyType)}
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  >
-                    <option value="single_family">Single Family</option>
-                    <option value="condo">Condo</option>
-                    <option value="townhouse">Townhouse</option>
-                    <option value="multi_family">Multi Family</option>
-                    <option value="land">Land</option>
-                    <option value="commercial">Commercial</option>
-                  </select>
-                </div>
+                <Select
+                  name="propertyType"
+                  label="Type"
+                  value={propertyType}
+                  onChange={(e) => setPropertyType(e.target.value as PropertyType)}
+                  options={[
+                    { value: "single_family", label: "Single Family" },
+                    { value: "condo", label: "Condo" },
+                    { value: "townhouse", label: "Townhouse" },
+                    { value: "multi_family", label: "Multi Family" },
+                    { value: "land", label: "Land" },
+                    { value: "commercial", label: "Commercial" },
+                  ]}
+                />
               </div>
             </div>
 
             {/* Template Selection */}
-            <div>
-              <label htmlFor="property-template" className="block text-sm font-medium text-foreground mb-1.5">
-                Template
-              </label>
-              <select
-                id="property-template"
-                value={template}
-                onChange={(e) => setTemplate(e.target.value as PropertyWebsiteTemplate)}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                <option value="modern">Modern</option>
-                <option value="classic">Classic</option>
-                <option value="luxury">Luxury</option>
-                <option value="minimal">Minimal</option>
-                <option value="bold">Bold</option>
-              </select>
-            </div>
+            <Select
+              name="template"
+              label="Template"
+              value={template}
+              onChange={(e) => setTemplate(e.target.value as PropertyWebsiteTemplate)}
+              options={[
+                { value: "modern", label: "Modern" },
+                { value: "classic", label: "Classic" },
+                { value: "luxury", label: "Luxury" },
+                { value: "minimal", label: "Minimal" },
+                { value: "bold", label: "Bold" },
+              ]}
+            />
           </DialogBody>
 
           <DialogFooter>

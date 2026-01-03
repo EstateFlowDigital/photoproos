@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { updateClient } from "@/lib/actions/clients";
+import { Select } from "@/components/ui/select";
 import type { ClientIndustry } from "@prisma/client";
 
 interface ClientEditFormProps {
@@ -178,24 +179,13 @@ export function ClientEditForm({ client }: ClientEditFormProps) {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="industry" className="block text-sm font-medium text-foreground mb-1.5">
-              Industry
-            </label>
-            <select
-              id="industry"
-              name="industry"
-              value={formData.industry}
-              onChange={(e) => setFormData({ ...formData, industry: e.target.value as ClientIndustry })}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            >
-              {industries.map((industry) => (
-                <option key={industry.value} value={industry.value}>
-                  {industry.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            name="industry"
+            label="Industry"
+            value={formData.industry}
+            onChange={(e) => setFormData({ ...formData, industry: e.target.value as ClientIndustry })}
+            options={industries}
+          />
         </div>
       </div>
 

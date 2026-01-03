@@ -12,6 +12,7 @@ import {
   markAllNotificationsAsRead,
   type NotificationData,
 } from "@/lib/actions/notifications";
+import { globalSearch, type SearchResult as GlobalSearchResult } from "@/lib/actions/search";
 
 interface DashboardTopbarProps {
   className?: string;
@@ -56,30 +57,22 @@ function mapNotificationType(dbType: string): string {
   }
 }
 
-// Demo search results
+// Search result interface for display
 interface SearchResult {
   id: string;
-  type: "gallery" | "client" | "payment";
+  type: "gallery" | "client" | "payment" | "property" | "service" | "invoice" | "booking";
   title: string;
   subtitle: string;
   url: string;
 }
-
-const demoSearchData: SearchResult[] = [
-  { id: "g1", type: "gallery", title: "Luxury Property Package", subtitle: "Sarah M. • Delivered", url: "/galleries/1" },
-  { id: "g2", type: "gallery", title: "Downtown Condo", subtitle: "John D. • Pending", url: "/galleries/2" },
-  { id: "g3", type: "gallery", title: "Modern Apartment", subtitle: "Emily R. • Draft", url: "/galleries/3" },
-  { id: "c1", type: "client", title: "Sarah Mitchell", subtitle: "sarah@example.com", url: "/clients/1" },
-  { id: "c2", type: "client", title: "John Davis", subtitle: "john@example.com", url: "/clients/2" },
-  { id: "p1", type: "payment", title: "$450 Payment", subtitle: "Sarah M. • Dec 18, 2024", url: "/payments" },
-  { id: "p2", type: "payment", title: "$350 Payment", subtitle: "Emily R. • Dec 15, 2024", url: "/payments" },
-];
 
 export function DashboardTopbar({ className }: DashboardTopbarProps) {
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<DisplayNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -118,19 +111,88 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
     fetchNotifications();
   }, []);
 
-  // Search functionality
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Perform actual search when debounced query changes
+  useEffect(() => {
+    if (!debouncedQuery.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    const performSearch = async () => {
+      setIsSearching(true);
+      try {
+        const results = await globalSearch(debouncedQuery);
+        const allResults: SearchResult[] = [
+          ...results.clients.map((c) => ({
+            id: c.id,
+            type: "client" as const,
+            title: c.title,
+            subtitle: c.subtitle || "",
+            url: c.href,
+          })),
+          ...results.galleries.map((g) => ({
+            id: g.id,
+            type: "gallery" as const,
+            title: g.title,
+            subtitle: g.subtitle || "",
+            url: g.href,
+          })),
+          ...results.properties.map((p) => ({
+            id: p.id,
+            type: "property" as const,
+            title: p.title,
+            subtitle: p.subtitle || "",
+            url: p.href,
+          })),
+          ...results.services.map((s) => ({
+            id: s.id,
+            type: "service" as const,
+            title: s.title,
+            subtitle: s.subtitle || "",
+            url: s.href,
+          })),
+          ...results.invoices.map((i) => ({
+            id: i.id,
+            type: "invoice" as const,
+            title: i.title,
+            subtitle: i.subtitle || "",
+            url: i.href,
+          })),
+          ...results.bookings.map((b) => ({
+            id: b.id,
+            type: "booking" as const,
+            title: b.title,
+            subtitle: b.subtitle || "",
+            url: b.href,
+          })),
+        ];
+        setSearchResults(allResults);
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    performSearch();
+  }, [debouncedQuery]);
+
+  // Search query update handler
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     if (query.trim() === "") {
       setSearchResults([]);
-      return;
     }
-    const filtered = demoSearchData.filter(
-      item =>
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.subtitle.toLowerCase().includes(query.toLowerCase())
-    );
-    setSearchResults(filtered);
   }, []);
 
   const handleSearchSelect = (result: SearchResult) => {
@@ -229,6 +291,11 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
       case "gallery": return <GalleryIcon className="h-4 w-4" />;
       case "client": return <UserIcon className="h-4 w-4" />;
       case "payment": return <PaymentIcon className="h-4 w-4" />;
+      case "property": return <PropertyIcon className="h-4 w-4" />;
+      case "service": return <ServiceIcon className="h-4 w-4" />;
+      case "invoice": return <InvoiceIcon className="h-4 w-4" />;
+      case "booking": return <CalendarIcon className="h-4 w-4" />;
+      default: return <SearchIcon className="h-4 w-4" />;
     }
   };
 
@@ -263,9 +330,14 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
           </kbd>
 
           {/* Search results dropdown */}
-          {searchOpen && (searchQuery.trim() !== "" || searchResults.length > 0) && (
+          {searchOpen && (searchQuery.trim() !== "" || searchResults.length > 0 || isSearching) && (
             <div className="absolute top-full left-0 right-0 mt-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
-              {searchResults.length > 0 ? (
+              {isSearching ? (
+                <div className="px-4 py-8 text-center">
+                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
+                  <p className="mt-2 text-xs text-foreground-muted">Searching...</p>
+                </div>
+              ) : searchResults.length > 0 ? (
                 <div className="max-h-80 overflow-y-auto">
                   {searchResults.map((result) => (
                     <button
@@ -587,6 +659,30 @@ function CalendarIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PropertyIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ServiceIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M6 3.75A2.75 2.75 0 0 1 8.75 1h2.5A2.75 2.75 0 0 1 14 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.54-1.952.599-4.024.921-6.17.921s-4.219-.322-6.17-.921C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 0 1 6 4.193V3.75Zm6.5 0v.325a41.622 41.622 0 0 0-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25ZM10 10a1 1 0 0 0-1 1v.01a1 1 0 0 0 1 1h.01a1 1 0 0 0 1-1V11a1 1 0 0 0-1-1H10Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function InvoiceIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
     </svg>
   );
 }

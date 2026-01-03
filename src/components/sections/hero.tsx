@@ -96,7 +96,7 @@ function InteractiveDemo({ activeSection, onSectionChange }: { activeSection: st
           </div>
           {/* User avatar */}
           <div className="ml-auto flex items-center gap-3">
-            <button className="relative rounded-lg p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors">
+            <button className="relative rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground transition-colors">
               <BellIcon className="h-4 w-4" />
               <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[var(--primary)]" />
             </button>

@@ -82,7 +82,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
     name: gallery.name,
     client: gallery.client?.company || gallery.client?.fullName || "No client",
     photos: gallery._count.assets,
-    status: gallery.status as "delivered" | "pending" | "draft",
+    status: gallery.status as "delivered" | "pending" | "draft" | "archived",
     revenue: gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : undefined,
     thumbnailUrl: gallery.coverImageUrl || undefined,
     createdAt: gallery.createdAt.toISOString(),

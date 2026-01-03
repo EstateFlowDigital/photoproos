@@ -12,6 +12,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 import { createClient } from "@/lib/actions/clients";
 import type { ClientIndustry } from "@prisma/client";
 
@@ -249,33 +250,16 @@ export function CreateClientModal({
             </div>
 
             {/* Industry */}
-            <div>
-              <label htmlFor="modal-industry" className="block text-sm font-medium text-foreground mb-1.5">
-                Industry <span className="text-[var(--error)]">*</span>
-              </label>
-              <select
-                id="modal-industry"
-                name="industry"
-                defaultValue={defaultIndustry || ""}
-                onBlur={(e) => handleBlur("industry", e.target.value)}
-                className={cn(
-                  "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1",
-                  touched.industry && fieldErrors.industry
-                    ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
-                    : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
-                )}
-              >
-                <option value="">Select an industry...</option>
-                {industries.map((industry) => (
-                  <option key={industry.value} value={industry.value}>
-                    {industry.label}
-                  </option>
-                ))}
-              </select>
-              {touched.industry && fieldErrors.industry && (
-                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.industry}</p>
-              )}
-            </div>
+            <Select
+              name="industry"
+              label="Industry"
+              required
+              defaultValue={defaultIndustry || ""}
+              placeholder="Select an industry..."
+              options={industries}
+              onBlur={(e) => handleBlur("industry", e.target.value)}
+              error={touched.industry ? fieldErrors.industry : undefined}
+            />
           </DialogBody>
 
           <DialogFooter>

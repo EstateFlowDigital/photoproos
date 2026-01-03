@@ -220,7 +220,7 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
                   </div>
                   <Link
                     href={`/properties/${property.id}`}
-                    className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground transition-colors"
+                    className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground transition-colors"
                   >
                     <ChevronRightIcon className="h-4 w-4" />
                   </Link>

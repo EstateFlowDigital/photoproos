@@ -13,6 +13,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 import { createGallery } from "@/lib/actions/galleries";
 
 interface Client {
@@ -201,24 +202,17 @@ export function CreateGalleryModal({
             </div>
 
             {/* Client Selection */}
-            <div>
-              <label htmlFor="gallery-client" className="block text-sm font-medium text-foreground mb-1.5">
-                Client
-              </label>
-              <select
-                id="gallery-client"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                <option value="">Select a client...</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name} ({client.email})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              name="client"
+              label="Client"
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              placeholder="Select a client..."
+              options={clients.map((client) => ({
+                value: client.id,
+                label: `${client.name} (${client.email})`,
+              }))}
+            />
 
             {/* Price */}
             <div>

@@ -19,7 +19,7 @@ interface Gallery {
   name: string;
   client: string;
   photos: number;
-  status: "delivered" | "pending" | "draft";
+  status: "delivered" | "pending" | "draft" | "archived";
   revenue?: string;
   thumbnailUrl?: string;
   createdAt: string;

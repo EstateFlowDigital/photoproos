@@ -58,6 +58,12 @@ export function BrandingSettingsForm({
   const [showWatermark, setShowWatermark] = useState(true);
   const [watermarkPosition, setWatermarkPosition] = useState("bottom-right");
 
+  // Track image load errors to show fallback
+  const [logoError, setLogoError] = useState(false);
+  const [logoLightError, setLogoLightError] = useState(false);
+  const [faviconError, setFaviconError] = useState(false);
+  const [invoiceLogoError, setInvoiceLogoError] = useState(false);
+
   // File input refs
   const logoInputRef = useRef<HTMLInputElement>(null);
   const logoLightInputRef = useRef<HTMLInputElement>(null);
@@ -144,8 +150,13 @@ export function BrandingSettingsForm({
                   role="button"
                   tabIndex={0}
                 >
-                  {logoUrl ? (
-                    <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" />
+                  {logoUrl && !logoError ? (
+                    <img
+                      src={logoUrl}
+                      alt="Logo"
+                      className="h-full w-full object-contain"
+                      onError={() => setLogoError(true)}
+                    />
                   ) : (
                     <ImageIcon className="h-8 w-8 text-foreground-muted" />
                   )}
@@ -157,7 +168,10 @@ export function BrandingSettingsForm({
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) handleFileSelect(file, setLogoUrl);
+                    if (file) {
+                      setLogoError(false);
+                      handleFileSelect(file, setLogoUrl);
+                    }
                   }}
                 />
                 <div className="flex-1 space-y-3">
@@ -196,8 +210,13 @@ export function BrandingSettingsForm({
                   role="button"
                   tabIndex={0}
                 >
-                  {logoLightUrl ? (
-                    <img src={logoLightUrl} alt="Light Logo" className="h-full w-full object-contain" />
+                  {logoLightUrl && !logoLightError ? (
+                    <img
+                      src={logoLightUrl}
+                      alt="Light Logo"
+                      className="h-full w-full object-contain"
+                      onError={() => setLogoLightError(true)}
+                    />
                   ) : (
                     <ImageIcon className="h-8 w-8 text-gray-400" />
                   )}
@@ -209,7 +228,10 @@ export function BrandingSettingsForm({
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) handleFileSelect(file, setLogoLightUrl);
+                    if (file) {
+                      setLogoLightError(false);
+                      handleFileSelect(file, setLogoLightUrl);
+                    }
                   }}
                 />
                 <div className="flex-1 space-y-3">
@@ -248,8 +270,13 @@ export function BrandingSettingsForm({
                   role="button"
                   tabIndex={0}
                 >
-                  {faviconUrl ? (
-                    <img src={faviconUrl} alt="Favicon" className="h-8 w-8 object-contain" />
+                  {faviconUrl && !faviconError ? (
+                    <img
+                      src={faviconUrl}
+                      alt="Favicon"
+                      className="h-8 w-8 object-contain"
+                      onError={() => setFaviconError(true)}
+                    />
                   ) : (
                     <ImageIcon className="h-6 w-6 text-foreground-muted" />
                   )}
@@ -261,7 +288,10 @@ export function BrandingSettingsForm({
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) handleFileSelect(file, setFaviconUrl, 1);
+                    if (file) {
+                      setFaviconError(false);
+                      handleFileSelect(file, setFaviconUrl, 1);
+                    }
                   }}
                 />
                 <div className="flex-1 space-y-3">
@@ -476,12 +506,27 @@ export function BrandingSettingsForm({
                 role="button"
                 tabIndex={0}
               >
-                {invoiceLogoUrl ? (
-                  <img src={invoiceLogoUrl} alt="Invoice Logo" className="h-full w-full object-contain" />
-                ) : logoLightUrl ? (
-                  <img src={logoLightUrl} alt="Logo" className="h-full w-full object-contain opacity-50" />
-                ) : logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="h-full w-full object-contain opacity-50" />
+                {invoiceLogoUrl && !invoiceLogoError ? (
+                  <img
+                    src={invoiceLogoUrl}
+                    alt="Invoice Logo"
+                    className="h-full w-full object-contain"
+                    onError={() => setInvoiceLogoError(true)}
+                  />
+                ) : logoLightUrl && !logoLightError ? (
+                  <img
+                    src={logoLightUrl}
+                    alt="Logo"
+                    className="h-full w-full object-contain opacity-50"
+                    onError={() => setLogoLightError(true)}
+                  />
+                ) : logoUrl && !logoError ? (
+                  <img
+                    src={logoUrl}
+                    alt="Logo"
+                    className="h-full w-full object-contain opacity-50"
+                    onError={() => setLogoError(true)}
+                  />
                 ) : (
                   <ImageIcon className="h-6 w-6 text-gray-400" />
                 )}
@@ -493,7 +538,10 @@ export function BrandingSettingsForm({
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) handleFileSelect(file, setInvoiceLogoUrl);
+                  if (file) {
+                    setInvoiceLogoError(false);
+                    handleFileSelect(file, setInvoiceLogoUrl);
+                  }
                 }}
               />
               <div className="flex-1 space-y-3">
@@ -730,10 +778,20 @@ export function BrandingSettingsForm({
                 style={{ backgroundColor: primaryColor }}
               >
                 <div className="flex items-center justify-center gap-2">
-                  {portalMode === "light" && logoLightUrl ? (
-                    <img src={logoLightUrl} alt="Logo" className="h-6" />
-                  ) : logoUrl ? (
-                    <img src={logoUrl} alt="Logo" className="h-6" />
+                  {portalMode === "light" && logoLightUrl && !logoLightError ? (
+                    <img
+                      src={logoLightUrl}
+                      alt="Logo"
+                      className="h-6"
+                      onError={() => setLogoLightError(true)}
+                    />
+                  ) : logoUrl && !logoError ? (
+                    <img
+                      src={logoUrl}
+                      alt="Logo"
+                      className="h-6"
+                      onError={() => setLogoError(true)}
+                    />
                   ) : (
                     <span className="text-white font-semibold">{settings.businessName}</span>
                   )}

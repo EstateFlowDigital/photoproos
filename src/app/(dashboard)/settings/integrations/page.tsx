@@ -181,19 +181,22 @@ export default function IntegrationsSettingsPage() {
                 <code className="rounded-lg bg-[var(--background-secondary)] px-3 py-1.5 text-sm text-foreground-muted">
                   sk_live_••••••••••••••••
                 </code>
-                <button className="rounded-lg border border-[var(--card-border)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
+                <button className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
                   <CopyIcon className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="#"
-                className="text-sm font-medium text-[var(--primary)] hover:underline"
+              <span
+                className="text-sm font-medium text-foreground-muted cursor-not-allowed"
+                title="API Documentation coming soon"
               >
-                View API Documentation →
-              </Link>
+                View API Documentation
+                <span className="ml-1 inline-flex items-center rounded-full bg-[var(--background-secondary)] px-1.5 py-0.5 text-[10px] font-medium text-foreground-muted">
+                  Soon
+                </span>
+              </span>
               <span className="text-foreground-muted">•</span>
               <button className="text-sm font-medium text-foreground-muted hover:text-foreground">
                 Regenerate Key

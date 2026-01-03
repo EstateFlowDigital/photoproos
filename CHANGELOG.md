@@ -7,7 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Standardized Dropdown/Select Styling**
+  - Created new `Select` component at `/components/ui/select.tsx` matching design system
+  - Created new `DropdownMenu` component at `/components/ui/dropdown-menu.tsx` for action menus
+  - Updated all forms to use consistent select styling:
+    - Client forms (new, edit)
+    - Create modals (client, gallery, booking, property)
+    - Gallery forms (new, edit)
+    - Scheduling forms (new, edit)
+    - Invoice forms
+  - All selects now use semantic design tokens (--input-radius, --input-border, etc.)
+  - Consistent focus states, error states, and placeholder styling
+  - Full keyboard navigation and accessibility support
+
 ### Fixed
+- **View Client Profile 404 on Gallery Detail**
+  - Fixed hardcoded `/clients/1` link in gallery detail page
+  - Now correctly links to `/clients/${gallery.client.id}`
+
+- **Global Search Not Working**
+  - Header search bar was using hardcoded demo data instead of actual database search
+  - Integrated real `globalSearch` action with debounced search
+  - Added loading indicator and support for all entity types (clients, galleries, properties, services, invoices, bookings)
+  - Added missing icon components (PropertyIcon, ServiceIcon, InvoiceIcon)
+
+- **Contract Templates Count Mismatch**
+  - Fixed organization ID lookup in contract-templates.ts actions
+  - Added fallback to user's first organization when Clerk orgId is not set
+  - Templates page now correctly shows templates matching the contracts page count
+
+- **Broken Logo Preview on Branding Page**
+  - Added error handling for images with invalid/expired URLs (e.g., blob URLs after page refresh)
+  - Logo images now show placeholder icon when they fail to load
+  - Reset error state when new file is selected
+
+- **API Documentation Placeholder Link**
+  - Changed broken `#` link to "Coming Soon" badge
+  - Added tooltip explaining documentation is forthcoming
+
 - **Contract Detail Page 404**
   - Created missing contract detail page at `/contracts/[id]`
   - Full contract view with signers, activity log, and status management
@@ -29,6 +67,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Made entire table rows clickable on Clients list page
   - Uses stretched link pattern with proper accessibility labels
   - Chevron icon animates on hover for visual feedback
+
+- **Contract Template Link 404**
+  - Removed clickable template link on contract detail page that led to 404
+  - Template name now displays as plain text instead of broken link
+
+- **Client Revenue Always Showing $0**
+  - Fixed lifetime revenue calculation on clients list and detail pages
+  - Revenue now calculated from paid invoices instead of stale stored value
+  - Both pages updated to fetch invoice totals and sum them dynamically
+
+- **Service Duration Display Guidance**
+  - Added helper text to service form duration field
+  - Explains expected format: "2-3 hours", "90 minutes", or "Half day"
+  - Prevents users from entering time-range format like "02:00 - 03:00"
+
+- **Missing Gallery Status Badges for Archived Galleries**
+  - Added "archived" status support to gallery card and list components
+  - Gallery status badges now properly display Archived status with muted styling
+  - Updated type definitions to include all ProjectStatus enum values
+
+- **Icon Button Styling Consistency**
+  - Added base background colors to icon buttons that were blending with page backgrounds
+  - Fixed icon buttons across the app: onboarding dismiss, API key copy, team member actions, scheduling nav arrows, booking detail links, tag management edit/delete, booking types edit/delete, invoices chevron links, properties leads/analytics links, projects add task and close buttons, hero notification bell
+  - Icon buttons now have visible `bg-[var(--background-hover)]` or `bg-[var(--card)]` backgrounds at rest for better discoverability and proper visual alignment
 
 ### Added
 - **Global Command Palette (⌘K)**

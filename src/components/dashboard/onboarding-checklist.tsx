@@ -72,7 +72,7 @@ export function OnboardingChecklist({
         </div>
         <button
           onClick={handleDismiss}
-          className="shrink-0 rounded-lg p-1.5 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground transition-colors"
+          className="shrink-0 rounded-lg p-1.5 bg-[var(--background-hover)] text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground transition-colors"
           aria-label="Dismiss checklist"
         >
           <X className="h-4 w-4" />

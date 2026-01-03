@@ -285,7 +285,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
                   </div>
                   <button
                     onClick={() => setShowAddTask(showAddTask === column.id ? null : column.id)}
-                    className="rounded-lg p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+                    className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
                   >
                     <PlusIcon className="h-4 w-4" />
                   </button>
@@ -609,7 +609,7 @@ function TaskDetailModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
           >
             <XIcon className="h-5 w-5" />
           </button>

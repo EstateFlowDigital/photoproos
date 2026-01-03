@@ -1768,7 +1768,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               </button>
             </div>
             <Link
-              href={`/clients/1`}
+              href={`/clients/${gallery.client.id}`}
               className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               View Client Profile

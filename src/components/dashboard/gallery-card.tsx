@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-type GalleryStatus = "delivered" | "pending" | "draft";
+type GalleryStatus = "delivered" | "pending" | "draft" | "archived";
 
 export type QuickAction = "duplicate" | "archive" | "delete" | "share";
 
@@ -23,12 +23,14 @@ const statusColors: Record<GalleryStatus, string> = {
   delivered: "bg-[var(--success)]/10 text-[var(--success)]",
   pending: "bg-[var(--warning)]/10 text-[var(--warning)]",
   draft: "bg-[var(--background-secondary)] text-foreground-muted",
+  archived: "bg-[var(--background-secondary)] text-foreground-muted",
 };
 
 const statusLabels: Record<GalleryStatus, string> = {
   delivered: "Delivered",
   pending: "Pending",
   draft: "Draft",
+  archived: "Archived",
 };
 
 export function GalleryCard({ id, title, client, photos, status, revenue, thumbnailUrl, onQuickAction }: GalleryCardProps) {

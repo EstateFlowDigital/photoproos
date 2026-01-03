@@ -100,7 +100,7 @@ export default async function TeamSettingsPage() {
                       Skills & Equipment
                     </Link>
                     {member.role !== "owner" && (
-                      <button className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
+                      <button className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground">
                         <MoreIcon className="h-4 w-4" />
                       </button>
                     )}

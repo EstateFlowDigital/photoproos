@@ -240,14 +240,14 @@ export function SchedulingPageClient({
           <div className="flex gap-1">
             <button
               onClick={goToPreviousWeek}
-              className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              className="rounded-lg bg-[var(--card)] border border-[var(--card-border)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
               title="Previous week"
             >
               <ChevronLeftIcon className="h-4 w-4" />
             </button>
             <button
               onClick={goToNextWeek}
-              className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              className="rounded-lg bg-[var(--card)] border border-[var(--card-border)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
               title="Next week"
             >
               <ChevronRightIcon className="h-4 w-4" />
@@ -343,7 +343,7 @@ export function SchedulingPageClient({
                       {/* Actions */}
                       <Link
                         href={`/scheduling/${booking.id}`}
-                        className="shrink-0 rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                        className="shrink-0 rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
                       >
                         <ChevronRightIcon className="h-4 w-4" />
                       </Link>

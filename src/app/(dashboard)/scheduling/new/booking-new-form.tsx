@@ -7,6 +7,7 @@ import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboar
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { TravelInfoCard } from "@/components/dashboard/travel-info-card";
 import { TeamMemberSelector } from "@/components/dashboard/team-member-selector";
+import { Select } from "@/components/ui/select";
 import { createBooking } from "@/lib/actions/bookings";
 import { calculateTravelPreview } from "@/lib/actions/locations";
 import type { ServiceType } from "@/lib/services";
@@ -192,21 +193,15 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
           </div>
 
           <div>
-            <label htmlFor="client" className="block text-sm font-medium text-foreground mb-1.5">
-              Client
-            </label>
-            <select
-              id="client"
+            <Select
               name="clientId"
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            >
-              <option value="">Select a client (optional)...</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name} ({client.contact})
-                </option>
-              ))}
-            </select>
+              label="Client"
+              placeholder="Select a client (optional)..."
+              options={clients.map((client) => ({
+                value: client.id,
+                label: `${client.name} (${client.contact})`,
+              }))}
+            />
             <p className="mt-1.5 text-xs text-foreground-muted">
               Or{" "}
               <Link href="/clients/new" className="text-[var(--primary)] hover:underline">
@@ -236,42 +231,20 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="startTime" className="block text-sm font-medium text-foreground mb-1.5">
-                Start Time <span className="text-[var(--error)]">*</span>
-              </label>
-              <select
-                id="startTime"
-                name="startTime"
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                <option value="">Select start time...</option>
-                {timeSlots.map((slot) => (
-                  <option key={slot.value} value={slot.value}>
-                    {slot.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="endTime" className="block text-sm font-medium text-foreground mb-1.5">
-                End Time <span className="text-[var(--error)]">*</span>
-              </label>
-              <select
-                id="endTime"
-                name="endTime"
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                <option value="">Select end time...</option>
-                {timeSlots.map((slot) => (
-                  <option key={slot.value} value={slot.value}>
-                    {slot.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              name="startTime"
+              label="Start Time"
+              required
+              placeholder="Select start time..."
+              options={timeSlots}
+            />
+            <Select
+              name="endTime"
+              label="End Time"
+              required
+              placeholder="Select end time..."
+              options={timeSlots}
+            />
           </div>
         </div>
       </div>

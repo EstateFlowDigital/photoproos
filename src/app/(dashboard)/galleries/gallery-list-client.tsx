@@ -13,7 +13,7 @@ interface Gallery {
   name: string;
   client: string;
   photos: number;
-  status: "delivered" | "pending" | "draft";
+  status: "delivered" | "pending" | "draft" | "archived";
   revenue?: string;
   thumbnailUrl?: string;
   createdAt?: string;
@@ -606,7 +606,8 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
                           "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
                           gallery.status === "delivered" && "bg-[var(--success)]/10 text-[var(--success)]",
                           gallery.status === "pending" && "bg-[var(--warning)]/10 text-[var(--warning)]",
-                          gallery.status === "draft" && "bg-[var(--foreground-muted)]/10 text-foreground-muted"
+                          gallery.status === "draft" && "bg-[var(--foreground-muted)]/10 text-foreground-muted",
+                          gallery.status === "archived" && "bg-[var(--foreground-muted)]/10 text-foreground-muted"
                         )}
                       >
                         {gallery.status.charAt(0).toUpperCase() + gallery.status.slice(1)}

@@ -255,6 +255,9 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
               placeholder="e.g., 2-3 hours"
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
+            <p className="mt-1.5 text-xs text-foreground-muted">
+              Enter a human-readable duration like &quot;2-3 hours&quot;, &quot;90 minutes&quot;, or &quot;Half day&quot;.
+            </p>
           </div>
 
           {/* Description */}

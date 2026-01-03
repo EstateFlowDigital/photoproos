@@ -282,14 +282,14 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleStartEdit(tag)}
-                    className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                    className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
                     title="Edit"
                   >
                     <EditIcon className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(tag.id, tag.clientCount)}
-                    className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+                    className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
                     title="Delete"
                   >
                     <TrashIcon className="h-4 w-4" />
