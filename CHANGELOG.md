@@ -8,6 +8,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Subscription Plans Management** (Developer Tools)
+  - New subscription plan management system for application pricing tiers (Pro, Studio, Enterprise)
+  - Complete CRUD operations for subscription plans with Stripe integration
+  - Plan features management with categories (Core, Storage, Team, Support, Integrations, Branding, Analytics)
+  - Stripe sync for creating/updating products and prices (monthly/yearly recurring)
+  - **Seed Default Plans**: One-click button to create Pro ($49/mo), Studio ($99/mo), and Enterprise ($249/mo) plans with predefined features
+  - **Clone Plan**: Duplicate any plan with all its features for quick customization
+  - **A/B Testing**: Create pricing experiments with traffic allocation and landing page targeting
+  - **Pricing Variants**: Add test variants to experiments with custom pricing, trial days, and badges
+  - **Environment Status Checker**: View configuration status of all integrations (Stripe, Clerk, Database, Storage, Email, SMS)
+  - Variant tracking for impressions and conversions with conversion rate display
+  - Public pricing API with experiment variant overrides for A/B testing
+
+- **Portfolio Websites Enhancements**
+  - **Portfolio Cloning**: Duplicate entire portfolios including all sections, projects, and settings
+    - New `duplicatePortfolioWebsite()` server action
+    - Duplicate button in portfolio editor header
+    - Copies all sections with configurations, project associations, and design settings
+    - Creates new slug with "-copy" suffix, starts as unpublished draft
+    - Password protection and expiration dates not copied for security
+  - **Contact Form Email Notifications**: Portfolio contact form now sends actual emails
+    - New `PortfolioContactEmail` React Email template with dark theme styling
+    - New `sendPortfolioContactEmail()` email function
+    - Email sent to portfolio owner with sender details and message
+    - Reply-to set to sender's email for easy response
+    - Activity log records email success status
+  - **Copy Link Button**: One-click copy of portfolio URL to clipboard
+    - Copies full public URL (e.g., `https://app.photoproos.com/portfolio/my-portfolio`)
+    - Toast notification confirms copy success
+  - **Gallery Lightbox**: Full-screen image viewer for portfolio galleries
+    - Keyboard navigation (Escape to close, Arrow keys to navigate)
+    - Optional download button when downloads are enabled
+    - Image counter showing current position
+    - Portal-based rendering for proper z-index handling
+  - **Live Preview Panel**: Split-screen preview within portfolio editor
+    - Viewport selector: Desktop (1280px), Tablet (768px), Mobile (375px)
+    - Device frame visualization with size labels
+    - Manual refresh button and auto-refresh on save
+    - Open in new tab option
+  - **Drag-and-Drop Section Reordering**: Reorder sections with drag and drop
+    - Grip handle icon for drag initiation
+    - Visual feedback with drag ghost and drop target highlighting
+    - Automatic position updates saved to database
+  - **Auto-Refresh Preview**: Preview panel updates automatically when changes are saved
+    - All tabs (Design, Sections, Projects, Settings) trigger preview refresh
+    - Timestamp-based cache busting ensures fresh content
+
 - **Contract Creation Page** (`/contracts/new`)
   - Create new contracts from scratch or from templates
   - Client selection dropdown to assign contracts
@@ -21,6 +68,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Support for percentage discounts, fixed discounts, or no discount
   - Configurable payment terms (Net 7, 15, 30, 45, 60)
   - Contract status display (Active/Inactive)
+
+- **Brokerages List Page** (`/brokerages`)
+  - Full list view of all brokerages with search and status filtering
+  - Summary cards: Active Brokerages, Total Agents, Brokerage Revenue
+  - Table view with logo, contact info, agent count, revenue, and status
+  - Status filter tabs: Active, All, Inactive
+  - Empty state with call-to-action for adding first brokerage
 
 - **Email System Improvements**
   - **Client Email History**: Client detail page now shows last 10 emails sent with delivery status
@@ -403,6 +457,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `/payments/new` in EmptyPayments component - Changed to `/invoices/new`
   - `/galleries/import` in EmptyGalleries component - Removed (feature not implemented)
   - `/brokerages/[id]/contracts/new` - Replaced with inline modal for brokerage pricing contracts
+  - `/brokerages` list page - Was missing, now properly implemented with full listing and filtering
 - TypeScript build errors in email system:
   - Fixed `remindersSent` field reference in email-logs.ts (was incorrectly `reminderCount`)
   - Fixed ZodError message access in email-settings.ts (use `.issues[0].message` instead of `.errors[0].message`)

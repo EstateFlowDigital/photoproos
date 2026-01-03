@@ -847,7 +847,48 @@ export async function submitBookingForm(
       data: { bookingCount: { increment: 1 } },
     });
 
-    // TODO: Send confirmation email if bookingForm.confirmationEmail is true
+    // Send confirmation email if enabled on the booking form
+    if (bookingForm.confirmationEmail && validated.clientEmail) {
+      try {
+        // Get organization info for the email
+        const organization = await prisma.organization.findUnique({
+          where: { id: bookingForm.organizationId },
+          select: {
+            name: true,
+            publicEmail: true,
+            publicPhone: true,
+          },
+        });
+
+        // Get service name if a service was selected
+        let serviceName: string | undefined;
+        if (validated.serviceId) {
+          const service = await prisma.service.findUnique({
+            where: { id: validated.serviceId },
+            select: { name: true },
+          });
+          serviceName = service?.name;
+        }
+
+        const { sendBookingFormSubmittedEmail } = await import("@/lib/email/send");
+        await sendBookingFormSubmittedEmail({
+          to: validated.clientEmail,
+          clientName: validated.clientName || "there",
+          serviceName,
+          preferredDate: validated.preferredDate ?? undefined,
+          preferredTime: validated.preferredTime ?? undefined,
+          photographerName: organization?.name || "Your Photographer",
+          photographerEmail: organization?.publicEmail ?? undefined,
+          photographerPhone: organization?.publicPhone ?? undefined,
+          formName: bookingForm.name,
+        });
+
+        console.log(`[BookingForms] Confirmation email sent to ${validated.clientEmail}`);
+      } catch (emailError) {
+        // Log error but don't fail the submission
+        console.error("[BookingForms] Failed to send confirmation email:", emailError);
+      }
+    }
 
     return { success: true, data: { submissionId: submission.id } };
   } catch (error) {

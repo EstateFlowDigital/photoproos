@@ -50,6 +50,7 @@ export function getActivityIcon(type: ActivityType): string {
     client_added: "user",
     booking_created: "calendar",
     booking_confirmed: "check",
+    booking_cancelled: "x",
     invoice_sent: "document",
     invoice_paid: "check",
     contract_sent: "document",

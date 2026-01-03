@@ -795,3 +795,328 @@ export async function getPublicPricingPlans(experimentSlug?: string) {
     };
   }
 }
+
+// =============================================================================
+// Seed Default Plans
+// =============================================================================
+
+const DEFAULT_PLANS = [
+  {
+    name: "Pro",
+    slug: "pro",
+    plan: "pro" as PlanName,
+    description: "Everything you need to run a professional photography business",
+    tagline: "For growing photographers",
+    badgeText: null,
+    displayOrder: 1,
+    isHighlighted: false,
+    monthlyPriceCents: 4900, // $49/mo
+    yearlyPriceCents: 47000, // $470/yr (save ~$118)
+    trialDays: 14,
+    features: [
+      { name: "Unlimited Galleries", featureKey: "galleries_limit", featureValue: "unlimited", category: "Core" },
+      { name: "50GB Storage", featureKey: "storage_gb", featureValue: "50", category: "Storage" },
+      { name: "Custom Branding", featureKey: "custom_branding", featureValue: "true", category: "Branding" },
+      { name: "Client Portal", featureKey: "client_portal", featureValue: "true", category: "Core" },
+      { name: "Online Booking", featureKey: "online_booking", featureValue: "true", category: "Core" },
+      { name: "Invoicing & Payments", featureKey: "invoicing", featureValue: "true", category: "Core" },
+      { name: "Email Support", featureKey: "support_level", featureValue: "email", category: "Support" },
+      { name: "2 Team Members", featureKey: "team_members", featureValue: "2", category: "Team" },
+    ],
+  },
+  {
+    name: "Studio",
+    slug: "studio",
+    plan: "studio" as PlanName,
+    description: "Advanced features for established studios with teams",
+    tagline: "For professional studios",
+    badgeText: "Most Popular",
+    displayOrder: 2,
+    isHighlighted: true,
+    monthlyPriceCents: 9900, // $99/mo
+    yearlyPriceCents: 95000, // $950/yr (save ~$238)
+    trialDays: 14,
+    features: [
+      { name: "Unlimited Galleries", featureKey: "galleries_limit", featureValue: "unlimited", category: "Core" },
+      { name: "200GB Storage", featureKey: "storage_gb", featureValue: "200", category: "Storage" },
+      { name: "Custom Branding", featureKey: "custom_branding", featureValue: "true", category: "Branding" },
+      { name: "White-Label Option", featureKey: "white_label", featureValue: "true", category: "Branding" },
+      { name: "Client Portal", featureKey: "client_portal", featureValue: "true", category: "Core" },
+      { name: "Online Booking", featureKey: "online_booking", featureValue: "true", category: "Core" },
+      { name: "Invoicing & Payments", featureKey: "invoicing", featureValue: "true", category: "Core" },
+      { name: "Contracts & E-Sign", featureKey: "contracts", featureValue: "true", category: "Core" },
+      { name: "Priority Support", featureKey: "support_level", featureValue: "priority", category: "Support" },
+      { name: "10 Team Members", featureKey: "team_members", featureValue: "10", category: "Team" },
+      { name: "Advanced Analytics", featureKey: "analytics", featureValue: "advanced", category: "Analytics" },
+      { name: "API Access", featureKey: "api_access", featureValue: "true", category: "Integrations" },
+    ],
+  },
+  {
+    name: "Enterprise",
+    slug: "enterprise",
+    plan: "enterprise" as PlanName,
+    description: "Custom solutions for large teams and agencies",
+    tagline: "For agencies & large teams",
+    badgeText: null,
+    displayOrder: 3,
+    isHighlighted: false,
+    monthlyPriceCents: 24900, // $249/mo
+    yearlyPriceCents: 239000, // $2390/yr (save ~$598)
+    trialDays: 30,
+    features: [
+      { name: "Unlimited Galleries", featureKey: "galleries_limit", featureValue: "unlimited", category: "Core" },
+      { name: "Unlimited Storage", featureKey: "storage_gb", featureValue: "unlimited", category: "Storage" },
+      { name: "Custom Branding", featureKey: "custom_branding", featureValue: "true", category: "Branding" },
+      { name: "Full White-Label", featureKey: "white_label", featureValue: "full", category: "Branding" },
+      { name: "Custom Domain", featureKey: "custom_domain", featureValue: "true", category: "Branding" },
+      { name: "Client Portal", featureKey: "client_portal", featureValue: "true", category: "Core" },
+      { name: "Online Booking", featureKey: "online_booking", featureValue: "true", category: "Core" },
+      { name: "Invoicing & Payments", featureKey: "invoicing", featureValue: "true", category: "Core" },
+      { name: "Contracts & E-Sign", featureKey: "contracts", featureValue: "true", category: "Core" },
+      { name: "Dedicated Support", featureKey: "support_level", featureValue: "dedicated", category: "Support" },
+      { name: "Unlimited Team Members", featureKey: "team_members", featureValue: "unlimited", category: "Team" },
+      { name: "Advanced Analytics", featureKey: "analytics", featureValue: "advanced", category: "Analytics" },
+      { name: "Full API Access", featureKey: "api_access", featureValue: "full", category: "Integrations" },
+      { name: "SSO/SAML", featureKey: "sso", featureValue: "true", category: "Integrations" },
+      { name: "Custom Integrations", featureKey: "custom_integrations", featureValue: "true", category: "Integrations" },
+      { name: "SLA Guarantee", featureKey: "sla", featureValue: "99.9", category: "Support" },
+    ],
+  },
+];
+
+/**
+ * Seed default subscription plans (Pro, Studio, Enterprise)
+ */
+export async function seedDefaultPlans(): Promise<
+  ActionResult<{ created: number; skipped: number }>
+> {
+  try {
+    let created = 0;
+    let skipped = 0;
+
+    for (const planData of DEFAULT_PLANS) {
+      // Check if plan already exists
+      const existing = await prisma.subscriptionPlan.findUnique({
+        where: { slug: planData.slug },
+      });
+
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      // Create the plan
+      const plan = await prisma.subscriptionPlan.create({
+        data: {
+          name: planData.name,
+          slug: planData.slug,
+          plan: planData.plan,
+          description: planData.description,
+          tagline: planData.tagline,
+          badgeText: planData.badgeText,
+          displayOrder: planData.displayOrder,
+          isHighlighted: planData.isHighlighted,
+          monthlyPriceCents: planData.monthlyPriceCents,
+          yearlyPriceCents: planData.yearlyPriceCents,
+          trialDays: planData.trialDays,
+        },
+      });
+
+      // Create features for the plan
+      for (let i = 0; i < planData.features.length; i++) {
+        const feature = planData.features[i];
+        await prisma.planFeature.create({
+          data: {
+            planId: plan.id,
+            name: feature.name,
+            featureKey: feature.featureKey,
+            featureValue: feature.featureValue,
+            category: feature.category,
+            displayOrder: i,
+          },
+        });
+      }
+
+      created++;
+    }
+
+    return { success: true, data: { created, skipped } };
+  } catch (error) {
+    console.error("[SubscriptionPlans] Error seeding default plans:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to seed plans",
+    };
+  }
+}
+
+// =============================================================================
+// Clone Plan
+// =============================================================================
+
+/**
+ * Clone an existing subscription plan with all its features
+ */
+export async function cloneSubscriptionPlan(
+  planId: string,
+  newName?: string,
+  newSlug?: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    // Get the source plan with features
+    const sourcePlan = await prisma.subscriptionPlan.findUnique({
+      where: { id: planId },
+      include: { features: true },
+    });
+
+    if (!sourcePlan) {
+      return { success: false, error: "Source plan not found" };
+    }
+
+    // Generate new name and slug if not provided
+    const cloneName = newName || `${sourcePlan.name} (Copy)`;
+    const cloneSlug = newSlug || `${sourcePlan.slug}-copy-${Date.now()}`;
+
+    // Check slug is unique
+    const existing = await prisma.subscriptionPlan.findUnique({
+      where: { slug: cloneSlug },
+    });
+
+    if (existing) {
+      return { success: false, error: "A plan with this slug already exists" };
+    }
+
+    // Create the cloned plan
+    const clonedPlan = await prisma.subscriptionPlan.create({
+      data: {
+        name: cloneName,
+        slug: cloneSlug,
+        plan: sourcePlan.plan,
+        description: sourcePlan.description,
+        tagline: sourcePlan.tagline,
+        badgeText: sourcePlan.badgeText,
+        displayOrder: sourcePlan.displayOrder + 1,
+        isHighlighted: false, // Don't copy highlighted status
+        highlightColor: sourcePlan.highlightColor,
+        monthlyPriceCents: sourcePlan.monthlyPriceCents,
+        yearlyPriceCents: sourcePlan.yearlyPriceCents,
+        trialDays: sourcePlan.trialDays,
+        isActive: false, // Start as inactive
+        isPublic: false, // Start as private
+      },
+    });
+
+    // Clone all features
+    for (const feature of sourcePlan.features) {
+      await prisma.planFeature.create({
+        data: {
+          planId: clonedPlan.id,
+          name: feature.name,
+          description: feature.description,
+          category: feature.category,
+          featureKey: feature.featureKey,
+          featureValue: feature.featureValue,
+          displayOrder: feature.displayOrder,
+          isHighlighted: feature.isHighlighted,
+          tooltip: feature.tooltip,
+        },
+      });
+    }
+
+    return { success: true, data: { id: clonedPlan.id } };
+  } catch (error) {
+    console.error("[SubscriptionPlans] Error cloning plan:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to clone plan",
+    };
+  }
+}
+
+// =============================================================================
+// Delete Pricing Variant
+// =============================================================================
+
+/**
+ * Delete a pricing variant
+ */
+export async function deletePricingVariant(id: string): Promise<ActionResult> {
+  try {
+    await prisma.pricingVariant.delete({
+      where: { id },
+    });
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("[SubscriptionPlans] Error deleting variant:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete variant",
+    };
+  }
+}
+
+// =============================================================================
+// Environment Check
+// =============================================================================
+
+export interface EnvironmentStatus {
+  stripe: { configured: boolean; mode: "live" | "test" | null };
+  twilio: { configured: boolean };
+  resend: { configured: boolean };
+  clerk: { configured: boolean };
+  database: { configured: boolean };
+  storage: { configured: boolean; provider: string | null };
+}
+
+/**
+ * Check which integrations are configured
+ */
+export async function checkEnvironmentStatus(): Promise<EnvironmentStatus> {
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  const stripeMode = stripeKey
+    ? stripeKey.startsWith("sk_live_")
+      ? "live"
+      : "test"
+    : null;
+
+  return {
+    stripe: {
+      configured: !!stripeKey,
+      mode: stripeMode,
+    },
+    twilio: {
+      configured: !!(
+        process.env.TWILIO_ACCOUNT_SID &&
+        process.env.TWILIO_AUTH_TOKEN &&
+        process.env.TWILIO_PHONE_NUMBER
+      ),
+    },
+    resend: {
+      configured: !!process.env.RESEND_API_KEY,
+    },
+    clerk: {
+      configured: !!(
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+        process.env.CLERK_SECRET_KEY
+      ),
+    },
+    database: {
+      configured: !!process.env.DATABASE_URL,
+    },
+    storage: {
+      configured: !!(
+        process.env.AWS_ACCESS_KEY_ID ||
+        process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ||
+        process.env.UPLOADTHING_SECRET
+      ),
+      provider: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
+        ? "Cloudflare R2"
+        : process.env.AWS_ACCESS_KEY_ID
+        ? "AWS S3"
+        : process.env.UPLOADTHING_SECRET
+        ? "UploadThing"
+        : null,
+    },
+  };
+}

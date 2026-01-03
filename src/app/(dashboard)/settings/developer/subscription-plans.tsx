@@ -14,6 +14,11 @@ import {
   createPricingVariant,
   updateExperimentStatus,
   syncVariantToStripe,
+  seedDefaultPlans,
+  cloneSubscriptionPlan,
+  deletePricingVariant,
+  checkEnvironmentStatus,
+  type EnvironmentStatus,
 } from "@/lib/actions/subscription-plans";
 import type { PlanName, ExperimentStatus } from "@prisma/client";
 
@@ -133,10 +138,12 @@ export function SubscriptionPlansSection({
   const [isPending, startTransition] = useTransition();
   const [plans, setPlans] = useState<SubscriptionPlan[]>(initialPlans);
   const [experiments, setExperiments] = useState<PricingExperiment[]>(initialExperiments);
-  const [activeTab, setActiveTab] = useState<"plans" | "features" | "experiments" | "new">("plans");
+  const [activeTab, setActiveTab] = useState<"plans" | "features" | "experiments" | "new" | "environment">("plans");
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [showNewPlanForm, setShowNewPlanForm] = useState(false);
   const [showNewExperimentForm, setShowNewExperimentForm] = useState(false);
+  const [showNewVariantForm, setShowNewVariantForm] = useState<string | null>(null); // experimentId
+  const [envStatus, setEnvStatus] = useState<EnvironmentStatus | null>(null);
 
   // Form state for new plan
   const [newPlan, setNewPlan] = useState({
@@ -169,6 +176,17 @@ export function SubscriptionPlansSection({
     hypothesis: "",
     trafficPercent: "50",
     landingPagePaths: "",
+  });
+
+  // Form state for new variant
+  const [newVariant, setNewVariant] = useState({
+    planId: "",
+    name: "",
+    description: "",
+    isControl: false,
+    monthlyPrice: "",
+    yearlyPrice: "",
+    trialDays: "",
   });
 
   // =============================================================================
@@ -368,6 +386,131 @@ export function SubscriptionPlansSection({
     });
   };
 
+  const handleSeedDefaultPlans = () => {
+    startTransition(async () => {
+      try {
+        const result = await seedDefaultPlans();
+        if (result.success) {
+          const { created, skipped } = result.data;
+          if (created === 0) {
+            showToast(`All default plans already exist (${skipped} skipped)`, "info");
+          } else {
+            showToast(`Created ${created} plans${skipped > 0 ? `, ${skipped} skipped` : ""}`, "success");
+          }
+          window.location.reload();
+        } else {
+          showToast(result.error || "Failed to seed plans", "error");
+        }
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Failed to seed plans", "error");
+      }
+    });
+  };
+
+  const handleClonePlan = (planId: string, planName: string) => {
+    startTransition(async () => {
+      try {
+        const result = await cloneSubscriptionPlan(planId);
+        if (result.success) {
+          showToast(`${planName} cloned successfully`, "success");
+          window.location.reload();
+        } else {
+          showToast(result.error || "Failed to clone plan", "error");
+        }
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Failed to clone plan", "error");
+      }
+    });
+  };
+
+  const handleDeletePlan = (planId: string, planName: string) => {
+    if (!confirm(`Delete plan "${planName}"? This cannot be undone.`)) return;
+
+    startTransition(async () => {
+      try {
+        const result = await deleteSubscriptionPlan(planId);
+        if (result.success) {
+          showToast(`${planName} deleted`, "success");
+          window.location.reload();
+        } else {
+          showToast(result.error || "Failed to delete plan", "error");
+        }
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Failed to delete plan", "error");
+      }
+    });
+  };
+
+  const handleCreateVariant = (experimentId: string) => {
+    if (!newVariant.planId || !newVariant.name) {
+      showToast("Please select a plan and enter a variant name", "error");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const result = await createPricingVariant({
+          experimentId,
+          planId: newVariant.planId,
+          name: newVariant.name,
+          description: newVariant.description || null,
+          isControl: newVariant.isControl,
+          monthlyPriceCents: newVariant.monthlyPrice ? Math.round(parseFloat(newVariant.monthlyPrice) * 100) : null,
+          yearlyPriceCents: newVariant.yearlyPrice ? Math.round(parseFloat(newVariant.yearlyPrice) * 100) : null,
+          trialDays: newVariant.trialDays ? parseInt(newVariant.trialDays) : null,
+        });
+
+        if (result.success) {
+          showToast("Variant created", "success");
+          setShowNewVariantForm(null);
+          setNewVariant({
+            planId: "",
+            name: "",
+            description: "",
+            isControl: false,
+            monthlyPrice: "",
+            yearlyPrice: "",
+            trialDays: "",
+          });
+          window.location.reload();
+        } else {
+          showToast(result.error || "Failed to create variant", "error");
+        }
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Failed to create variant", "error");
+      }
+    });
+  };
+
+  const handleDeleteVariant = (variantId: string, variantName: string) => {
+    if (!confirm(`Delete variant "${variantName}"?`)) return;
+
+    startTransition(async () => {
+      try {
+        const result = await deletePricingVariant(variantId);
+        if (result.success) {
+          showToast("Variant deleted", "success");
+          window.location.reload();
+        } else {
+          showToast(result.error || "Failed to delete variant", "error");
+        }
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Failed to delete variant", "error");
+      }
+    });
+  };
+
+  const handleLoadEnvStatus = () => {
+    startTransition(async () => {
+      try {
+        const status = await checkEnvironmentStatus();
+        setEnvStatus(status);
+      } catch (error) {
+        showToast("Failed to load environment status", "error");
+      }
+    });
+  };
+
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -424,10 +567,15 @@ export function SubscriptionPlansSection({
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 p-1 bg-[var(--background)] rounded-lg overflow-x-auto">
-        {(["plans", "features", "experiments", "new"] as const).map((tab) => (
+        {(["plans", "features", "experiments", "new", "environment"] as const).map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              setActiveTab(tab);
+              if (tab === "environment" && !envStatus) {
+                handleLoadEnvStatus();
+              }
+            }}
             className={`flex-1 min-w-[80px] px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeTab === tab
                 ? "bg-[var(--card)] text-foreground shadow-sm"
@@ -438,6 +586,7 @@ export function SubscriptionPlansSection({
             {tab === "features" && "Features"}
             {tab === "experiments" && "A/B Tests"}
             {tab === "new" && "New Plan"}
+            {tab === "environment" && "Env Status"}
           </button>
         ))}
       </div>
@@ -445,6 +594,22 @@ export function SubscriptionPlansSection({
       {/* Plans Tab */}
       {activeTab === "plans" && (
         <div className="space-y-4">
+          {/* Seed Default Plans Button */}
+          <div className="flex items-center justify-between p-3 rounded-lg border border-dashed border-[var(--card-border)] bg-[var(--background)]">
+            <div>
+              <p className="text-sm font-medium text-foreground">Quick Start</p>
+              <p className="text-xs text-foreground-muted">Seed Pro, Studio, and Enterprise plans with default features</p>
+            </div>
+            <button
+              onClick={handleSeedDefaultPlans}
+              disabled={isPending}
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+            >
+              <SparklesIcon className="h-4 w-4" />
+              Seed Default Plans
+            </button>
+          </div>
+
           {plans.length === 0 ? (
             <div className="text-center py-12 text-foreground-muted">
               <CreditCardIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -546,6 +711,22 @@ export function SubscriptionPlansSection({
                         title="Sync to Stripe"
                       >
                         <SyncIcon className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
+                      </button>
+                      <button
+                        onClick={() => handleClonePlan(plan.id, plan.name)}
+                        disabled={isPending}
+                        className="p-2 rounded-md text-foreground-muted hover:text-foreground hover:bg-[var(--background-hover)] transition-colors disabled:opacity-50"
+                        title="Clone Plan"
+                      >
+                        <CopyIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePlan(plan.id, plan.name)}
+                        disabled={isPending}
+                        className="p-2 rounded-md text-foreground-muted hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors disabled:opacity-50"
+                        title="Delete Plan"
+                      >
+                        <TrashIcon className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
@@ -948,11 +1129,134 @@ export function SubscriptionPlansSection({
                   </div>
 
                   {/* Variants */}
-                  {experiment.variants.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-[var(--card-border)]">
-                      <p className="text-xs font-medium text-foreground-muted mb-2">
-                        Variants
+                  <div className="mt-4 pt-4 border-t border-[var(--card-border)]">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-medium text-foreground-muted">
+                        Variants ({experiment.variants.length})
                       </p>
+                      <button
+                        onClick={() => setShowNewVariantForm(experiment.id)}
+                        className="flex items-center gap-1 text-xs text-[var(--primary)] hover:text-[var(--primary)]/80"
+                      >
+                        <PlusIcon className="h-3 w-3" />
+                        Add Variant
+                      </button>
+                    </div>
+
+                    {/* New Variant Form */}
+                    {showNewVariantForm === experiment.id && (
+                      <div className="mb-4 p-3 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <label className="block text-xs font-medium text-foreground-muted mb-1">
+                              Plan *
+                            </label>
+                            <select
+                              value={newVariant.planId}
+                              onChange={(e) => setNewVariant({ ...newVariant, planId: e.target.value })}
+                              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground"
+                            >
+                              <option value="">Select a plan...</option>
+                              {plans.map((plan) => (
+                                <option key={plan.id} value={plan.id}>
+                                  {plan.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground-muted mb-1">
+                              Variant Name *
+                            </label>
+                            <input
+                              type="text"
+                              value={newVariant.name}
+                              onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
+                              placeholder="Control / Variant A"
+                              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground placeholder:text-foreground-muted"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground-muted mb-1">
+                              Monthly Price ($)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={newVariant.monthlyPrice}
+                              onChange={(e) => setNewVariant({ ...newVariant, monthlyPrice: e.target.value })}
+                              placeholder="Leave blank to use plan price"
+                              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground placeholder:text-foreground-muted"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground-muted mb-1">
+                              Yearly Price ($)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={newVariant.yearlyPrice}
+                              onChange={(e) => setNewVariant({ ...newVariant, yearlyPrice: e.target.value })}
+                              placeholder="Leave blank to use plan price"
+                              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground placeholder:text-foreground-muted"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-foreground-muted mb-1">
+                              Trial Days
+                            </label>
+                            <input
+                              type="number"
+                              value={newVariant.trialDays}
+                              onChange={(e) => setNewVariant({ ...newVariant, trialDays: e.target.value })}
+                              placeholder="Leave blank to use plan trial"
+                              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground placeholder:text-foreground-muted"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 pt-5">
+                            <input
+                              type="checkbox"
+                              id="isControl"
+                              checked={newVariant.isControl}
+                              onChange={(e) => setNewVariant({ ...newVariant, isControl: e.target.checked })}
+                              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+                            />
+                            <label htmlFor="isControl" className="text-sm text-foreground">
+                              Is Control Group
+                            </label>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => handleCreateVariant(experiment.id)}
+                            disabled={isPending}
+                            className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                          >
+                            Add Variant
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowNewVariantForm(null);
+                              setNewVariant({
+                                planId: "",
+                                name: "",
+                                description: "",
+                                isControl: false,
+                                monthlyPrice: "",
+                                yearlyPrice: "",
+                                trialDays: "",
+                              });
+                            }}
+                            className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {experiment.variants.length > 0 ? (
                       <div className="space-y-2">
                         {experiment.variants.map((variant) => (
                           <div
@@ -978,12 +1282,21 @@ export function SubscriptionPlansSection({
                                   {((variant.conversions / variant.impressions) * 100).toFixed(1)}%
                                 </span>
                               )}
+                              <button
+                                onClick={() => handleDeleteVariant(variant.id, variant.name)}
+                                disabled={isPending}
+                                className="p-1 rounded text-foreground-muted hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors disabled:opacity-50"
+                              >
+                                <TrashIcon className="h-3.5 w-3.5" />
+                              </button>
                             </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-xs text-foreground-muted">No variants yet. Add a variant to start testing.</p>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1123,6 +1436,154 @@ export function SubscriptionPlansSection({
           </button>
         </div>
       )}
+
+      {/* Environment Status Tab */}
+      {activeTab === "environment" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-foreground-muted">
+              Check which integrations and services are configured.
+            </p>
+            <button
+              onClick={handleLoadEnvStatus}
+              disabled={isPending}
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+            >
+              <SyncIcon className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
+              Refresh
+            </button>
+          </div>
+
+          {!envStatus ? (
+            <div className="text-center py-12 text-foreground-muted">
+              <SettingsIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Loading environment status...</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Stripe */}
+              <div className={`rounded-lg border p-4 ${envStatus.stripe.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--error)]/30 bg-[var(--error)]/5"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-[#635bff]/10 flex items-center justify-center">
+                      <span className="text-[#635bff] font-bold text-sm">S</span>
+                    </div>
+                    <span className="font-medium text-foreground">Stripe</span>
+                  </div>
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${envStatus.stripe.configured ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--error)]/10 text-[var(--error)]"}`}>
+                    {envStatus.stripe.configured ? "Configured" : "Missing"}
+                  </span>
+                </div>
+                <p className="text-xs text-foreground-muted">
+                  {envStatus.stripe.configured
+                    ? `Mode: ${envStatus.stripe.mode === "live" ? "Live" : "Test"}`
+                    : "STRIPE_SECRET_KEY not set"}
+                </p>
+              </div>
+
+              {/* Clerk */}
+              <div className={`rounded-lg border p-4 ${envStatus.clerk.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--error)]/30 bg-[var(--error)]/5"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-[#6c47ff]/10 flex items-center justify-center">
+                      <span className="text-[#6c47ff] font-bold text-sm">C</span>
+                    </div>
+                    <span className="font-medium text-foreground">Clerk</span>
+                  </div>
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${envStatus.clerk.configured ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--error)]/10 text-[var(--error)]"}`}>
+                    {envStatus.clerk.configured ? "Configured" : "Missing"}
+                  </span>
+                </div>
+                <p className="text-xs text-foreground-muted">
+                  {envStatus.clerk.configured
+                    ? "Authentication ready"
+                    : "CLERK_SECRET_KEY not set"}
+                </p>
+              </div>
+
+              {/* Database */}
+              <div className={`rounded-lg border p-4 ${envStatus.database.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--error)]/30 bg-[var(--error)]/5"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
+                      <DatabaseIcon className="h-4 w-4 text-[var(--primary)]" />
+                    </div>
+                    <span className="font-medium text-foreground">Database</span>
+                  </div>
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${envStatus.database.configured ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--error)]/10 text-[var(--error)]"}`}>
+                    {envStatus.database.configured ? "Configured" : "Missing"}
+                  </span>
+                </div>
+                <p className="text-xs text-foreground-muted">
+                  {envStatus.database.configured
+                    ? "PostgreSQL connected"
+                    : "DATABASE_URL not set"}
+                </p>
+              </div>
+
+              {/* Storage */}
+              <div className={`rounded-lg border p-4 ${envStatus.storage.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--warning)]/30 bg-[var(--warning)]/5"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-[var(--warning)]/10 flex items-center justify-center">
+                      <CloudIcon className="h-4 w-4 text-[var(--warning)]" />
+                    </div>
+                    <span className="font-medium text-foreground">Storage</span>
+                  </div>
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${envStatus.storage.configured ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--warning)]/10 text-[var(--warning)]"}`}>
+                    {envStatus.storage.configured ? "Configured" : "Optional"}
+                  </span>
+                </div>
+                <p className="text-xs text-foreground-muted">
+                  {envStatus.storage.configured
+                    ? `Provider: ${envStatus.storage.provider}`
+                    : "No storage provider configured"}
+                </p>
+              </div>
+
+              {/* Resend (Email) */}
+              <div className={`rounded-lg border p-4 ${envStatus.resend.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--warning)]/30 bg-[var(--warning)]/5"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-[#00d4ff]/10 flex items-center justify-center">
+                      <MailIcon className="h-4 w-4 text-[#00d4ff]" />
+                    </div>
+                    <span className="font-medium text-foreground">Email (Resend)</span>
+                  </div>
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${envStatus.resend.configured ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--warning)]/10 text-[var(--warning)]"}`}>
+                    {envStatus.resend.configured ? "Configured" : "Optional"}
+                  </span>
+                </div>
+                <p className="text-xs text-foreground-muted">
+                  {envStatus.resend.configured
+                    ? "Email notifications ready"
+                    : "RESEND_API_KEY not set"}
+                </p>
+              </div>
+
+              {/* Twilio (SMS) */}
+              <div className={`rounded-lg border p-4 ${envStatus.twilio.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--warning)]/30 bg-[var(--warning)]/5"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-[#f22f46]/10 flex items-center justify-center">
+                      <PhoneIcon className="h-4 w-4 text-[#f22f46]" />
+                    </div>
+                    <span className="font-medium text-foreground">SMS (Twilio)</span>
+                  </div>
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${envStatus.twilio.configured ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--warning)]/10 text-[var(--warning)]"}`}>
+                    {envStatus.twilio.configured ? "Configured" : "Optional"}
+                  </span>
+                </div>
+                <p className="text-xs text-foreground-muted">
+                  {envStatus.twilio.configured
+                    ? "SMS notifications ready"
+                    : "TWILIO_* variables not set"}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1176,6 +1637,64 @@ function BeakerIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.5 3.528v4.644c0 .729-.29 1.428-.805 1.944l-1.217 1.216a8.75 8.75 0 0 1 3.55.621l.502.201a7.25 7.25 0 0 0 4.178.365l-2.403-2.403a2.75 2.75 0 0 1-.805-1.944V3.528a40.205 40.205 0 0 0-3 0Zm4.5.084V7.63c0 .463.18.91.505 1.24l3.428 3.428a.75.75 0 0 1-.375 1.277l-.67.148a8.75 8.75 0 0 1-4.994-.367l-.502-.201a7.25 7.25 0 0 0-3.814-.468l-.6.118a.75.75 0 0 1-.83-1.07l.173-.345a8.75 8.75 0 0 0 .676-5.098l-.09-.516a.75.75 0 0 1 .737-.878h.05c2.384 0 4.769-.133 7.145-.398a.75.75 0 0 1 .161.528ZM5 3.5a.5.5 0 0 0-.5.5v.002a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V4a.5.5 0 0 0-.5-.5H5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" />
+    </svg>
+  );
+}
+
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z" />
+      <path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-5.879a1.5 1.5 0 0 0-.44-1.06L9.44 6.439A1.5 1.5 0 0 0 8.378 6H4.5Z" />
+    </svg>
+  );
+}
+
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M7.84 1.804A1 1 0 0 1 8.82 1h2.36a1 1 0 0 1 .98.804l.331 1.652a6.993 6.993 0 0 1 1.929 1.115l1.598-.54a1 1 0 0 1 1.186.447l1.18 2.044a1 1 0 0 1-.205 1.251l-1.267 1.113a7.047 7.047 0 0 1 0 2.228l1.267 1.113a1 1 0 0 1 .206 1.25l-1.18 2.045a1 1 0 0 1-1.187.447l-1.598-.54a6.993 6.993 0 0 1-1.929 1.115l-.33 1.652a1 1 0 0 1-.98.804H8.82a1 1 0 0 1-.98-.804l-.331-1.652a6.993 6.993 0 0 1-1.929-1.115l-1.598.54a1 1 0 0 1-1.186-.447l-1.18-2.044a1 1 0 0 1 .205-1.251l1.267-1.114a7.05 7.05 0 0 1 0-2.227L1.821 7.773a1 1 0 0 1-.206-1.25l1.18-2.045a1 1 0 0 1 1.187-.447l1.598.54A6.993 6.993 0 0 1 7.51 3.456l.33-1.652ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function DatabaseIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 1c3.866 0 7 1.79 7 4s-3.134 4-7 4-7-1.79-7-4 3.134-4 7-4Zm5.694 8.13c.464-.264.91-.583 1.306-.952V10c0 2.21-3.134 4-7 4s-7-1.79-7-4V8.178c.396.37.842.688 1.306.953C5.838 10.006 7.854 10.5 10 10.5s4.162-.494 5.694-1.37ZM3 13.179V15c0 2.21 3.134 4 7 4s7-1.79 7-4v-1.822c-.396.37-.842.688-1.306.953-1.532.875-3.548 1.369-5.694 1.369s-4.162-.494-5.694-1.37A7.009 7.009 0 0 1 3 13.179Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CloudIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M5.5 16a3.5 3.5 0 0 1-.369-6.98 4 4 0 1 1 7.753-1.977A4.5 4.5 0 1 1 13.5 16h-8Z" />
+    </svg>
+  );
+}
+
+function MailIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M3 4a2 2 0 0 0-2 2v1.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 7.162V6a2 2 0 0 0-2-2H3Z" />
+      <path d="m19 8.839-7.77 3.885a2.75 2.75 0 0 1-2.46 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z" />
+    </svg>
+  );
+}
+
+function PhoneIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clipRule="evenodd" />
     </svg>
   );
 }

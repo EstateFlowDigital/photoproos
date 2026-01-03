@@ -81,6 +81,7 @@ enum ActivityType {
   client_added
   booking_created
   booking_confirmed
+  booking_cancelled
   invoice_sent
   invoice_paid
   contract_sent
