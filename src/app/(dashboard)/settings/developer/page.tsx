@@ -5,9 +5,12 @@ import Link from "next/link";
 import { SeedDatabaseButton, ClearDataButton } from "./seed-buttons";
 import { StripeProductsSection } from "./stripe-products";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
+import { getProductSyncOverview } from "@/lib/stripe/product-sync";
 
 export default async function DeveloperSettingsPage() {
   const organizationId = await requireOrganizationId();
+  const syncOverview = await getProductSyncOverview(organizationId);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -159,7 +162,10 @@ export default async function DeveloperSettingsPage() {
       </div>
 
       {/* Stripe Products */}
-      <StripeProductsSection organizationId={organizationId} />
+      <StripeProductsSection
+        organizationId={organizationId}
+        initialSyncOverview={syncOverview}
+      />
 
       {/* Data Overview */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
