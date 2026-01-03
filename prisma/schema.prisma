@@ -624,6 +624,10 @@ model Client {
   orderPages OrderPage[] // Dedicated order pages for this client
   orders     Order[] // Orders placed by this client
 
+  // Phase 4: Referral Program relations
+  referrer  Referrer?  @relation("ClientReferrer")
+  referrals Referral[] @relation("ReferralClient")
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([email])
@@ -683,7 +687,7 @@ model Service {
   bookingFormServices BookingFormService[]
 
   // Phase 4: Territory pricing overrides
-  territoryOverrides TerritoryServiceOverride[]
+  territoryOverrides TerritoryServiceOverride[] @relation("ServiceTerritoryOverrides")
 
   @@index([organizationId])
   @@index([category])
@@ -1035,6 +1039,9 @@ model Booking {
   // Second shooter / crew assignments
   crew BookingCrew[]
 
+  // Phase 4: Referral Program back-reference
+  referrals Referral[] @relation("ReferralBooking")
+
   @@index([organizationId])
   @@index([multiDayParentId])
   @@index([clientId])
@@ -1185,6 +1192,9 @@ model Invoice {
   // Phase 1: Ordering System relations
   orderId String? @unique
   order   Order?  @relation("OrderInvoice", fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Phase 4: Referral Program back-reference
+  referrals Referral[] @relation("ReferralInvoice")
 
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
@@ -3671,7 +3681,7 @@ model TerritoryServiceOverride {
 
   // Relations
   territory ServiceTerritory @relation(fields: [territoryId], references: [id], onDelete: Cascade)
-  service   Service          @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  service   Service          @relation("ServiceTerritoryOverrides", fields: [serviceId], references: [id], onDelete: Cascade)
 
   @@unique([territoryId, serviceId])
   @@index([territoryId])
