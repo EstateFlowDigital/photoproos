@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **PWA Manifest for Field App**
+  - Added web app manifest (`public/manifest.json`) for Field App PWA experience
+  - Enables mobile install and standalone app mode for photographers in the field
+
+### Fixed
+- **Prisma Schema Relation Fixes**
+  - Added missing relation names to Referrer.client (`ClientReferrer`)
+  - Added missing relation names to Referral model (`ReferralClient`, `ReferralBooking`, `ReferralInvoice`)
+  - Added TerritoryServiceOverride relation to Service model
+
+### Added
 - **Second Shooter / Crew Assignment System**
   - New `BookingCrew` model for assigning multiple team members to bookings
   - New `BookingCrewRole` enum: lead_photographer, second_shooter, assistant, videographer, stylist, makeup_artist, other
