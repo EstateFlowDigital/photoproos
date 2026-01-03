@@ -129,7 +129,7 @@ export function PhotographerPayClient({
 
       {/* Pay Rates Section */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Pay Rates</h2>
             <p className="text-sm text-foreground-muted">Configure how photographers are paid for each service</p>
@@ -232,7 +232,7 @@ export function PhotographerPayClient({
               </div>
             </div>
 
-            <div className="mt-4 flex items-center gap-3">
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -261,7 +261,7 @@ export function PhotographerPayClient({
                   key={member.userId}
                   className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                 >
-                  <div className="flex items-center gap-4 mb-3">
+                  <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-center sm:gap-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                       {(member.user.fullName || member.user.email).charAt(0).toUpperCase()}
                     </div>
@@ -280,9 +280,9 @@ export function PhotographerPayClient({
                         return (
                           <div
                             key={rate.id}
-                            className="flex items-center justify-between rounded-lg bg-[var(--card)] px-4 py-2"
+                            className="flex flex-col gap-2 rounded-lg bg-[var(--card)] px-4 py-2 sm:flex-row sm:items-center sm:justify-between"
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-2">
                               <span className="text-sm text-foreground">
                                 {service ? service.name : "Default Rate"}
                               </span>
