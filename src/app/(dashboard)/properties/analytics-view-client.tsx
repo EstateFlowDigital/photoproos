@@ -119,7 +119,7 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
   return (
     <div className="space-y-6">
       {/* Overview Stats */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="auto-grid grid-min-200 grid-gap-4">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <p className="text-sm text-foreground-muted">Total Views</p>
           <div className="mt-1 flex items-baseline gap-2">
