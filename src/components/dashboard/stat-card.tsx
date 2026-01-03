@@ -8,13 +8,15 @@ interface StatCardProps {
   positive?: boolean;
   className?: string;
   href?: string;
+  icon?: React.ReactNode;
 }
 
-export function StatCard({ label, value, change, positive, className, href }: StatCardProps) {
+export function StatCard({ label, value, change, positive, className, href, icon }: StatCardProps) {
   const content = (
     <>
       <div className="flex items-center justify-between">
         <p className="text-sm text-foreground-muted">{label}</p>
+        {icon}
         {href && (
           <svg
             xmlns="http://www.w3.org/2000/svg"
