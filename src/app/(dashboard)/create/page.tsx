@@ -4,7 +4,7 @@ import { getWizardData } from "@/lib/actions/create-wizard";
 import { CreateWizardClient } from "./create-wizard-client";
 
 export const metadata = {
-  title: "New Project | ListingLens",
+  title: "New Project | PhotoProOS",
   description: "Create a new project with client, services, gallery, and optional booking",
 };
 

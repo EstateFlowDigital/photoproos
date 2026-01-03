@@ -8,15 +8,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Service Territory System (Phase 4)**
+  - New `ServiceTerritory` model for zone-based pricing with ZIP codes or radius
+  - New `TerritoryServiceOverride` model for per-service territory pricing
+  - Territory server actions:
+    - `getTerritories` - List all territories for organization
+    - `getTerritory` - Get single territory with overrides
+    - `findTerritoryByZipCode` - Find territory covering a ZIP code
+    - `calculateTerritoryPrice` - Calculate price with territory modifiers
+    - `createTerritory` / `updateTerritory` / `deleteTerritory` - CRUD operations
+    - `toggleTerritoryStatus` - Enable/disable territories
+    - `setServiceOverride` / `removeServiceOverride` - Per-service pricing
+    - `importZipCodes` - Bulk import from CSV/list
+    - `checkServiceAreaPublic` - Public API for service area checks
+  - Territory management UI at `/settings/territories`
+    - Create/edit territories with ZIP codes
+    - Set pricing modifiers and travel fees
+    - Configure per-service overrides
+    - Bulk ZIP code import
+
+- **Agent Referral Program (Phase 4)**
+  - New `ReferralProgram` model with configurable reward types
+  - New `Referrer` model for referral partners with unique codes
+  - New `Referral` model for tracking referred leads
+  - New `ReferralReward` model for reward payouts
+  - New enums: `ReferralStatus`, `ReferralRewardType`
+  - Referral server actions:
+    - `getReferralProgram` / `upsertReferralProgram` - Program settings
+    - `toggleReferralProgram` - Enable/disable program
+    - `getReferrers` / `createReferrer` / `deleteReferrer` - Referrer management
+    - `toggleReferrerStatus` / `regenerateReferralCode` - Referrer tools
+    - `getReferrals` / `updateReferralStatus` - Referral tracking
+    - `getReferralStats` - Program analytics
+    - `submitReferral` - Public referral submission
+    - `validateReferralCode` / `getPublicReferralProgram` - Public APIs
+  - Referral program UI at `/settings/referrals`
+    - Configure reward type (percentage, fixed, credit, gift card)
+    - Manage referrers with unique codes
+    - Track referral status and conversions
+    - View program statistics
+
+- **Internationalization Support (Phase 4)**
+  - Installed and configured `next-intl` for localization
+  - Created i18n configuration with 5 supported locales (en, es, fr, de, pt)
+  - Added English (`messages/en.json`) and Spanish (`messages/es.json`) translations
+  - Created locale configuration with unit system, currency, and date format preferences
+  - Added `LocaleSwitcher` and `LocaleSwitcherDropdown` components
+  - Created unit conversion utilities (`src/lib/utils/units.ts`):
+    - Imperial/metric conversions (feet/meters, miles/km, sq ft/sq m)
+    - Temperature conversions (°F/°C)
+    - Currency formatting with locale support
+    - Date/time formatting with 12h/24h support
+  - Added `createUnitConverter` helper for consistent unit display
+  - Server action for locale preference (`setLocale`)
+
 - **PWA Manifest for Field App**
   - Added web app manifest (`public/manifest.json`) for Field App PWA experience
   - Enables mobile install and standalone app mode for photographers in the field
+
+### Changed
+- **Temporarily Excluded Features** (build stability)
+  - Excluded incomplete Dropbox-synced features from build via .gitignore:
+    - Service Territory System (settings/territories)
+    - Agent Referral Program (settings/referrals)
+    - Field App mobile interface
+    - Slack integration
+    - Schedule/self-booking
+  - Database models remain in schema for future implementation
+  - Features will be re-enabled once implementation is complete
 
 ### Fixed
 - **Prisma Schema Relation Fixes**
   - Added missing relation names to Referrer.client (`ClientReferrer`)
   - Added missing relation names to Referral model (`ReferralClient`, `ReferralBooking`, `ReferralInvoice`)
   - Added TerritoryServiceOverride relation to Service model
+
+- **Build Stability Fixes**
+  - Fixed TypeScript compilation errors from incomplete features
+  - Added missing `expired` status to BookingFormSubmissionStatus Records
+  - Fixed prisma.ts export issue
 
 ### Added
 - **Second Shooter / Crew Assignment System**
@@ -267,7 +337,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Phase 3: Mobile PWA for Field Operations**
   - Created `/public/manifest.json` for Progressive Web App installation
-  - PWA metadata: "ListingLens Field" with standalone display mode
+  - PWA metadata: "PhotoProOS Field" with standalone display mode
   - Created `/(field)/layout.tsx` with mobile-optimized layout
   - Apple meta tags for iOS home screen support
   - Safe area insets for notched devices
