@@ -291,7 +291,7 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
               Select all
             </button>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="auto-grid grid-min-240 grid-gap-6">
             {filteredWebsites.map((website) => (
               <PropertyCard
                 key={website.id}
