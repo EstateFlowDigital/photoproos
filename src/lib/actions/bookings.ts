@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import type { BookingStatus } from "@prisma/client";
+import type { BookingStatus, RecurrencePattern } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
+import { nanoid } from "nanoid";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -30,6 +31,13 @@ export interface CreateBookingInput {
   clientName?: string;
   clientEmail?: string;
   clientPhone?: string;
+  // Recurrence options
+  isRecurring?: boolean;
+  recurrencePattern?: RecurrencePattern;
+  recurrenceInterval?: number;
+  recurrenceEndDate?: Date;
+  recurrenceCount?: number;
+  recurrenceDaysOfWeek?: number[];
 }
 
 export interface UpdateBookingInput {
