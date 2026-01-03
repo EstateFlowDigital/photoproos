@@ -187,19 +187,21 @@ export function DashboardSidebar({
           })}
         </div>
 
-        <div className="mt-4 space-y-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
-          <OrganizationSwitcher
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                organizationSwitcherTrigger: "w-full",
-              },
-            }}
-            afterSelectOrganizationUrl="/dashboard"
-            afterCreateOrganizationUrl="/dashboard"
-          />
+        <div className="mt-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+          <div className="px-3 py-2.5">
+            <OrganizationSwitcher
+              appearance={{
+                elements: {
+                  rootBox: "w-full",
+                  organizationSwitcherTrigger: "w-full",
+                },
+              }}
+              afterSelectOrganizationUrl="/dashboard"
+              afterCreateOrganizationUrl="/dashboard"
+            />
+          </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 px-3 py-2.5">
             <UserButton
               appearance={{
                 elements: {
@@ -213,24 +215,26 @@ export function DashboardSidebar({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <Link
-              href="/settings"
-              className={cn(
-                "flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-medium transition-colors",
-                pathname.startsWith("/settings")
-                  ? "border-transparent bg-[var(--primary)] text-white"
-                  : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-              )}
-            >
-              Settings
-            </Link>
-            <Link
-              href="/settings/team?invite=1"
-              className="flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-medium text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
-            >
-              Invite Team
-            </Link>
+          <div className="px-3 pb-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/settings"
+                className={cn(
+                  "flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-medium transition-colors",
+                  pathname.startsWith("/settings")
+                    ? "border-transparent bg-[var(--primary)] text-white"
+                    : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                )}
+              >
+                Settings
+              </Link>
+              <Link
+                href="/settings/team?invite=1"
+                className="flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-medium text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              >
+                Invite Team
+              </Link>
+            </div>
           </div>
         </div>
       </div>
