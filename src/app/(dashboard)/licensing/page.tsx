@@ -33,7 +33,7 @@ export default async function LicensingPage() {
         title="Licensing"
         subtitle="Track usage rights and attach licensing terms to contracts"
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/contracts"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
