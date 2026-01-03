@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gallery List Service Display & Filtering**
+  - Added service badges to gallery cards in grid view (shows first 2 + "+N more")
+  - Added "Services" column in list view with service badges
+  - Added service filter dropdown with multi-select
+  - Search now includes service names in results
+  - Primary services highlighted with primary color, others muted
+
 - **Recurring Bookings**
   - Added `RecurrencePattern` enum (daily, weekly, biweekly, monthly, custom)
   - Added recurring booking fields to Booking model (isRecurring, recurrencePattern, recurrenceInterval, recurrenceEndDate, recurrenceCount, recurrenceDaysOfWeek, seriesId, parentBookingId)
