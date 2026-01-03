@@ -72,7 +72,7 @@ export function SubmissionsPageClient({ bookingForm, submissions }: SubmissionsP
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="stack-header">
         <div>
           <div className="flex items-center gap-2 text-sm text-foreground-muted mb-1">
             <Link href="/scheduling/booking-forms" className="hover:text-foreground">
@@ -87,16 +87,18 @@ export function SubmissionsPageClient({ bookingForm, submissions }: SubmissionsP
           </div>
           <h1 className="text-2xl font-semibold text-foreground">Form Submissions</h1>
         </div>
-        <Link
-          href={`/scheduling/booking-forms/${bookingForm.id}`}
-          className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-        >
-          Back to Form
-        </Link>
+        <div className="stack-actions">
+          <Link
+            href={`/scheduling/booking-forms/${bookingForm.id}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+          >
+            Back to Form
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="auto-grid grid-min-200 grid-gap-4">
         <StatCard label="Total" value={stats.total} />
         <StatCard label="Pending" value={stats.pending} color="text-yellow-400" />
         <StatCard label="Approved" value={stats.approved} color="text-green-400" />
