@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { LineItemType, InvoiceStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
+import { getAuthContext } from "@/lib/auth/clerk";
+import { logActivity } from "@/lib/utils/activity";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -108,6 +110,22 @@ export async function createInvoice(
             sortOrder: index,
           })),
         },
+      },
+    });
+
+    // Log activity
+    const auth = await getAuthContext();
+    await logActivity({
+      organizationId,
+      type: "invoice_sent", // Using invoice_sent as closest match
+      description: `Invoice ${invoiceNumber} created for ${client.fullName || client.email}`,
+      userId: auth?.userId,
+      invoiceId: invoice.id,
+      clientId: input.clientId,
+      metadata: {
+        invoiceNumber,
+        totalCents: subtotalCents,
+        clientName: client.fullName,
       },
     });
 

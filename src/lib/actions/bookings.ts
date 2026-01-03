@@ -24,6 +24,7 @@ import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { nanoid } from "nanoid";
 import { sendBookingConfirmationEmail } from "@/lib/email/send";
+import { logActivity } from "@/lib/utils/activity";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -178,6 +179,7 @@ export async function createBooking(
 ): Promise<ActionResult<{ id: string }>> {
   try {
     const organizationId = await getOrganizationId();
+    const auth = await getAuthContext();
 
     const booking = await prisma.booking.create({
       data: {
@@ -196,6 +198,20 @@ export async function createBooking(
         clientEmail: input.clientEmail,
         clientPhone: input.clientPhone,
         status: "pending",
+      },
+    });
+
+    // Log activity
+    await logActivity({
+      organizationId,
+      type: "booking_created",
+      description: `New booking "${input.title}" created`,
+      userId: auth?.userId,
+      bookingId: booking.id,
+      clientId: input.clientId || undefined,
+      metadata: {
+        title: input.title,
+        startTime: input.startTime.toISOString(),
       },
     });
 

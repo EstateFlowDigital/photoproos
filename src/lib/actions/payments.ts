@@ -7,6 +7,8 @@ import type { PaymentStatus } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendEmail } from "@/lib/email/resend";
 import { PaymentReminderEmail } from "@/emails/payment-reminder";
+import { getAuthContext } from "@/lib/auth/clerk";
+import { logActivity } from "@/lib/utils/activity";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -169,6 +171,21 @@ export async function markPaymentAsPaid(id: string) {
       data: {
         status: "paid",
         paidAt: new Date(),
+      },
+    });
+
+    // Log activity
+    const auth = await getAuthContext();
+    await logActivity({
+      organizationId,
+      type: "payment_received",
+      description: `Payment of $${(existing.amountCents / 100).toFixed(2)} marked as paid`,
+      userId: auth?.userId,
+      paymentId: id,
+      clientId: existing.clientId || undefined,
+      metadata: {
+        amountCents: existing.amountCents,
+        currency: existing.currency,
       },
     });
 
