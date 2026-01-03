@@ -53,14 +53,14 @@ export function QuestionnairesPageClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="stack-header">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Questionnaires</h1>
           <p className="text-sm text-foreground-muted">
             Create templates and send questionnaires to clients
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="stack-actions">
           <button
             onClick={() => setShowAssignModal(true)}
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] transition-colors"
@@ -78,7 +78,7 @@ export function QuestionnairesPageClient({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="auto-grid grid-min-220 grid-gap-4">
         {statCards.map((stat) => (
           <div
             key={stat.label}
@@ -97,7 +97,7 @@ export function QuestionnairesPageClient({
         ))}
       </div>
 
-      <div className="flex gap-2 border-b border-[var(--card-border)]">
+      <div className="flex flex-wrap gap-2 border-b border-[var(--card-border)]">
         <button
           onClick={() => setActiveTab("templates")}
           className={"px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px " +
@@ -131,7 +131,7 @@ export function QuestionnairesPageClient({
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="auto-grid grid-min-240 grid-gap-4">
               {templates.map((template) => (
                 <Link
                   key={template.id}
