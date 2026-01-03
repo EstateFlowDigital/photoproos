@@ -70,7 +70,7 @@ export default async function OrderPageDetailPage({ params }: OrderPageDetailPag
           {/* Stats */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h3 className="font-semibold text-foreground mb-4">Statistics</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="auto-grid grid-gap-4 [--grid-min:140px]">
               <div className="text-center">
                 <p className="text-2xl font-bold text-foreground">{orderPage.orderCount}</p>
                 <p className="text-xs text-foreground-muted">Total Orders</p>
