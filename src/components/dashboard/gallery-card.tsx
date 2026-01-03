@@ -132,8 +132,8 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
         </div>
 
         {/* Content */}
-        <h4 className="truncate text-sm font-semibold text-foreground">{title}</h4>
-        <p className="mt-0.5 truncate text-xs text-foreground-muted">{client}</p>
+        <h4 className="line-clamp-2 text-sm font-semibold text-foreground sm:line-clamp-1">{title}</h4>
+        <p className="mt-0.5 line-clamp-2 text-xs text-foreground-muted sm:line-clamp-1">{client}</p>
 
         {/* Footer */}
         <div className="mt-3 flex items-center justify-between">
