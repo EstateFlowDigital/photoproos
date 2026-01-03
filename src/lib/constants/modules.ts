@@ -127,6 +127,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
     category: "operations",
     sortOrder: 5,
   },
+  product_catalogs: {
+    id: "product_catalogs",
+    name: "Product Catalogs",
+    description: "SKU-based product shoots and status tracking",
+    icon: Tag,
+    href: "/products",
+    isCore: false,
+    industries: ["product"],
+    category: "operations",
+    sortOrder: 6,
+  },
 
   // ============================================================================
   // CLIENT MODULES

@@ -124,6 +124,13 @@ enum MemberRole {
   member
 }
 
+enum InvitationStatus {
+  pending
+  accepted
+  expired
+  revoked
+}
+
 enum PortalMode {
   light
   dark
@@ -397,6 +404,24 @@ model Organization {
   trialEndsAt        DateTime?
   paymentMethodAdded Boolean   @default(false)
 
+  // ============================================================================
+  // PHASE 3: SMS & FIELD OPERATIONS SETTINGS
+  // ============================================================================
+
+  // Twilio SMS Settings
+  twilioAccountSid   String?
+  twilioAuthToken    String?
+  twilioPhoneNumber  String?
+  smsEnabled         Boolean @default(false)
+
+  // Self-Booking Portal Settings
+  selfBookingEnabled  Boolean @default(false)
+  selfBookingPageSlug String?
+
+  // Slack Integration Settings
+  slackTeamId      String?
+  slackAccessToken String? @db.Text
+
   // Guided Tour Progress (JSON: { "dashboard": true, "galleries": false, ... })
   tourProgress Json?
 
@@ -405,6 +430,7 @@ model Organization {
 
   // Relations
   members            OrganizationMember[]
+  invitations        Invitation[]
   projects           Project[]
   clients            Client[]
   payments           Payment[]
@@ -436,6 +462,15 @@ model Organization {
   // Phase 2: Brokerage & Enterprise relations
   brokerages    Brokerage[]
   payoutBatches PayoutBatch[]
+
+  // Phase 3: SMS & Field Operations relations
+  smsTemplates      SMSTemplate[]
+  smsLogs           SMSLog[]
+  slackIntegrations SlackIntegration[]
+  bookingSlots      BookingSlot[]
+
+  // Public booking forms
+  bookingForms BookingForm[]
 
   @@index([slug])
   @@index([plan])
@@ -472,10 +507,11 @@ model User {
   activityLogs        ActivityLog[]
   serviceCapabilities UserServiceCapability[]
   equipment           UserEquipment[]
-  assignedBookings    Booking[]               @relation("AssignedBookings")
-  homeBaseLocation    Location?               @relation("UserHomeBase", fields: [homeBaseLocationId], references: [id])
+  assignedBookings    Booking[]                 @relation("AssignedBookings")
+  homeBaseLocation    Location?                 @relation("UserHomeBase", fields: [homeBaseLocationId], references: [id])
   assignedTasks       Task[]
   taskComments        TaskComment[]
+  equipmentChecks     BookingEquipmentCheck[]   @relation("EquipmentChecker")
 
   @@index([email])
   @@index([clerkUserId])
@@ -497,6 +533,37 @@ model OrganizationMember {
   @@unique([organizationId, userId])
   @@index([organizationId])
   @@index([userId])
+}
+
+model Invitation {
+  id             String           @id @default(cuid())
+  organizationId String
+  email          String
+  role           MemberRole       @default(member)
+  status         InvitationStatus @default(pending)
+
+  // Invitation token for secure acceptance
+  token     String   @unique
+  expiresAt DateTime
+
+  // Who sent the invitation
+  invitedById String
+
+  // Tracking
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, email, status]) // Only one pending invitation per email per org
+  @@index([organizationId])
+  @@index([email])
+  @@index([token])
+  @@index([status])
 }
 
 // ============================================================================
@@ -605,6 +672,9 @@ model Service {
   addonCompatibility ServiceAddonCompat[] // Addons compatible with this service
   orderPageServices  OrderPageService[] // Order pages featuring this service
   orderItems         OrderItem[] // Order items referencing this service
+
+  // Public booking forms
+  bookingFormServices BookingFormService[]
 
   @@index([organizationId])
   @@index([category])
@@ -850,8 +920,9 @@ model BookingType {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  bookings     Booking[]
+  organization          Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bookings              Booking[]
+  equipmentRequirements BookingTypeEquipmentRequirement[]
 
   @@index([organizationId])
 }
@@ -903,15 +974,23 @@ model Booking {
   notes         String?
   internalNotes String?
 
+  // Multi-day event fields (for weddings, conferences, etc.)
+  isMultiDay       Boolean @default(false)
+  multiDayName     String? // Overall event name like "Smith Wedding Weekend"
+  multiDayParentId String? // For sessions within a multi-day event
+
   // Recurring booking fields
-  isRecurring         Boolean            @default(false)
-  recurrencePattern   RecurrencePattern?
-  recurrenceInterval  Int?               @default(1) // e.g., every 2 weeks
-  recurrenceEndDate   DateTime?          // Optional end date for the series
-  recurrenceCount     Int?               // Optional max occurrences
-  recurrenceDaysOfWeek Int[]             @default([]) // For weekly: 0=Sun, 1=Mon, etc.
-  seriesId            String?            // Groups all bookings in a series
-  parentBookingId     String?            // Reference to the original booking
+  isRecurring          Boolean            @default(false)
+  recurrencePattern    RecurrencePattern?
+  recurrenceInterval   Int?               @default(1) // e.g., every 2 weeks
+  recurrenceEndDate    DateTime? // Optional end date for the series
+  recurrenceCount      Int? // Optional max occurrences
+  recurrenceDaysOfWeek Int[]              @default([]) // For weekly: 0=Sun, 1=Mon, etc.
+  seriesId             String? // Groups all bookings in a series
+  parentBookingId      String? // Reference to the original booking
+
+  // Industry categorization (for multi-industry orgs)
+  industry Industry?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -923,19 +1002,28 @@ model Booking {
   service          Service?          @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   locationRef      Location?         @relation(fields: [locationId], references: [id], onDelete: SetNull)
   assignedUser     User?             @relation("AssignedBookings", fields: [assignedUserId], references: [id], onDelete: SetNull)
-  reminders        BookingReminder[]
-  invoiceLineItems InvoiceLineItem[]
-  tasks            Task[]
+  reminders          BookingReminder[]
+  invoiceLineItems   InvoiceLineItem[]
+  tasks              Task[]
+  equipmentChecklist BookingEquipmentCheck[]
 
   // Phase 1: Ordering System relations
   orderId String? @unique
   order   Order?  @relation("OrderBooking", fields: [orderId], references: [id], onDelete: SetNull)
 
+  // Public booking form submission (source of this booking)
+  formSubmission BookingFormSubmission?
+
   // Recurring booking self-reference
-  parentBooking  Booking?  @relation("RecurringBookings", fields: [parentBookingId], references: [id], onDelete: SetNull)
-  childBookings  Booking[] @relation("RecurringBookings")
+  parentBooking Booking?  @relation("RecurringBookings", fields: [parentBookingId], references: [id], onDelete: SetNull)
+  childBookings Booking[] @relation("RecurringBookings")
+
+  // Multi-day event self-reference (parent event and sessions)
+  multiDayParent   Booking?  @relation("MultiDaySessions", fields: [multiDayParentId], references: [id], onDelete: SetNull)
+  multiDaySessions Booking[] @relation("MultiDaySessions")
 
   @@index([organizationId])
+  @@index([multiDayParentId])
   @@index([clientId])
   @@index([serviceId])
   @@index([locationId])
@@ -944,6 +1032,7 @@ model Booking {
   @@index([status])
   @@index([seriesId])
   @@index([parentBookingId])
+  @@index([industry])
 }
 
 enum ReminderType {
@@ -977,7 +1066,7 @@ model BookingReminder {
   minutesBefore Int               @default(1440) // 24 hours = 1440 minutes
 
   // Delivery tracking
-  errorMessage  String?
+  errorMessage String?
 
   createdAt DateTime @default(now())
 
@@ -1377,9 +1466,11 @@ model Equipment {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization        Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userAssignments     UserEquipment[]
-  serviceRequirements ServiceEquipmentRequirement[]
+  organization            Organization                      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userAssignments         UserEquipment[]
+  serviceRequirements     ServiceEquipmentRequirement[]
+  bookingTypeRequirements BookingTypeEquipmentRequirement[]
+  bookingChecks           BookingEquipmentCheck[]
 
   @@index([organizationId])
   @@index([category])
@@ -1432,6 +1523,47 @@ model ServiceEquipmentRequirement {
 
   @@unique([serviceId, equipmentId])
   @@index([serviceId])
+  @@index([equipmentId])
+}
+
+// Equipment requirements per booking type (checklist defaults)
+model BookingTypeEquipmentRequirement {
+  id            String  @id @default(cuid())
+  bookingTypeId String
+  equipmentId   String
+  isRequired    Boolean @default(true) // Required vs recommended
+  quantity      Int     @default(1) // How many of this item needed
+  notes         String? // Special instructions for this equipment
+
+  // Relations
+  bookingType BookingType @relation(fields: [bookingTypeId], references: [id], onDelete: Cascade)
+  equipment   Equipment   @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingTypeId, equipmentId])
+  @@index([bookingTypeId])
+  @@index([equipmentId])
+}
+
+// Equipment checklist for a specific booking (actual check-offs)
+model BookingEquipmentCheck {
+  id          String   @id @default(cuid())
+  bookingId   String
+  equipmentId String
+  isChecked   Boolean  @default(false) // Has the item been checked/packed?
+  checkedAt   DateTime? // When it was checked
+  checkedById String? // Who checked it
+  notes       String? // Any notes about this item for this booking
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  checkedBy User?     @relation("EquipmentChecker", fields: [checkedById], references: [id], onDelete: SetNull)
+
+  @@unique([bookingId, equipmentId])
+  @@index([bookingId])
   @@index([equipmentId])
 }
 
@@ -1747,6 +1879,98 @@ model TaskComment {
 }
 
 // ============================================================================
+// PRODUCT PHOTOGRAPHY MODULE
+// ============================================================================
+
+model ProductCatalog {
+  id             String                @id @default(cuid())
+  organizationId String
+
+  name        String
+  description String?
+  status      ProductCatalogStatus @default(planning)
+  tags        String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     ProductItem[]
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model ProductItem {
+  id         String        @id @default(cuid())
+  catalogId  String
+  sku        String
+  name       String
+  category   String?
+  status     ProductStatus @default(pending)
+  angles     String[]      @default([])
+  notes      String?
+  priority   Int? @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  catalog  ProductCatalog  @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+  variants ProductVariant[]
+  photos   ProductPhoto[]
+
+  @@unique([catalogId, sku])
+  @@index([catalogId])
+  @@index([status])
+}
+
+model ProductVariant {
+  id         String @id @default(cuid())
+  productId  String
+  skuSuffix  String?
+  name       String?
+  color      String?
+  size       String?
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product ProductItem   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  photos  ProductPhoto[]
+
+  @@index([productId])
+}
+
+model ProductPhoto {
+  id         String             @id @default(cuid())
+  productId  String
+  variantId  String?
+  assetId    String
+  angle      String
+  isPrimary  Boolean            @default(false)
+  status     ProductPhotoStatus @default(raw)
+  version    Int                @default(1)
+  retouchNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product ProductItem   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  asset   Asset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([variantId])
+  @@index([assetId])
+  @@index([status])
+}
+
+// ============================================================================
 // DISCOUNT CODES
 // ============================================================================
 
@@ -2050,6 +2274,170 @@ model BookingBuffer {
   @@unique([organizationId, serviceId])
   @@index([organizationId])
   @@index([serviceId])
+}
+
+// ============================================================================
+// PHASE 1: PUBLIC BOOKING FORMS
+// ============================================================================
+
+enum FormFieldType {
+  text
+  textarea
+  email
+  phone
+  number
+  date
+  time
+  datetime
+  select
+  multiselect
+  checkbox
+  radio
+  file
+  address
+  url
+}
+
+enum BookingFormSubmissionStatus {
+  pending
+  approved
+  rejected
+  converted
+  expired
+}
+
+model BookingForm {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Form identity
+  name        String
+  slug        String
+  description String?
+
+  // Industry-specific form (optional)
+  industry Industry?
+
+  // Publishing
+  isPublished Boolean @default(false)
+  isDefault   Boolean @default(false) // Default form for the org
+
+  // Branding overrides (like OrderPage)
+  headline        String?
+  subheadline     String?
+  heroImageUrl    String?
+  logoOverrideUrl String?
+  primaryColor    String?
+
+  // Booking settings
+  requireApproval   Boolean @default(true) // Auto-confirm or require admin approval
+  confirmationEmail Boolean @default(true)
+
+  // Analytics
+  viewCount    Int @default(0)
+  bookingCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fields       BookingFormField[]
+  services     BookingFormService[]
+  submissions  BookingFormSubmission[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model BookingFormField {
+  id            String @id @default(cuid())
+  bookingFormId String
+
+  // Field configuration
+  label       String
+  type        FormFieldType
+  placeholder String?
+  helpText    String?
+  isRequired  Boolean       @default(false)
+  sortOrder   Int           @default(0)
+
+  // Industry-specific: only show for certain industries
+  industries Industry[]
+
+  // Validation rules (JSON: { minLength, maxLength, pattern, min, max, options })
+  validation Json?
+
+  // Conditional visibility
+  conditionalOn    String? // Field ID this depends on
+  conditionalValue String? // Value that triggers display
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  bookingForm BookingForm @relation(fields: [bookingFormId], references: [id], onDelete: Cascade)
+
+  @@index([bookingFormId])
+  @@index([sortOrder])
+}
+
+model BookingFormService {
+  id            String  @id @default(cuid())
+  bookingFormId String
+  serviceId     String
+  sortOrder     Int     @default(0)
+  isDefault     Boolean @default(false) // Pre-selected on form
+
+  bookingForm BookingForm @relation(fields: [bookingFormId], references: [id], onDelete: Cascade)
+  service     Service     @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingFormId, serviceId])
+  @@index([bookingFormId])
+  @@index([serviceId])
+}
+
+model BookingFormSubmission {
+  id            String  @id @default(cuid())
+  bookingFormId String
+  bookingId     String? @unique // Linked once converted to booking
+
+  // Submitted data
+  data Json // All field values as key-value pairs
+
+  // Client info (extracted from data for convenience)
+  clientName  String?
+  clientEmail String?
+  clientPhone String?
+
+  // Scheduling preference
+  preferredDate DateTime?
+  preferredTime String?
+
+  // Selected service
+  serviceId String?
+
+  // Status
+  status BookingFormSubmissionStatus @default(pending)
+
+  // Conversion tracking
+  convertedAt   DateTime?
+  convertedBy   String? // User ID who converted
+  rejectedAt    DateTime?
+  rejectionNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  bookingForm BookingForm @relation(fields: [bookingFormId], references: [id], onDelete: Cascade)
+  booking     Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([bookingFormId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 // ============================================================================
@@ -2852,4 +3240,321 @@ model PayoutItem {
   @@index([batchId])
   @@index([userId])
   @@index([status])
+}
+
+// ============================================================================
+// SPIRO FEATURE PARITY - PHASE 3: SMS NOTIFICATIONS & FIELD OPERATIONS
+// ============================================================================
+
+enum SMSDeliveryStatus {
+  queued
+  sent
+  delivered
+  failed
+  undelivered
+}
+
+enum SMSTemplateType {
+  booking_confirmation
+  booking_reminder
+  photographer_en_route
+  photographer_arrived
+  gallery_ready
+  invoice_sent
+  payment_received
+  custom
+}
+
+enum CheckInType {
+  arrival
+  departure
+  manual
+}
+
+enum SlackEventType {
+  booking_created
+  booking_confirmed
+  booking_completed
+  payment_received
+  gallery_delivered
+  new_lead
+  custom
+}
+
+// Product module enums
+enum ProductCatalogStatus {
+  planning
+  shooting
+  editing
+  delivered
+  archived
+}
+
+enum ProductStatus {
+  pending
+  shot
+  edited
+  approved
+  delivered
+  archived
+}
+
+enum ProductPhotoStatus {
+  raw
+  edited
+  approved
+  rejected
+}
+
+// ============================================================================
+// SMS TEMPLATES (Customizable SMS message templates)
+// ============================================================================
+
+model SMSTemplate {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Template info
+  name         String
+  templateType SMSTemplateType
+  content      String          @db.Text // Message with {{variables}}
+
+  // Variables available in this template (for UI)
+  availableVariables String[] @default([])
+
+  // Settings
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false) // System default template
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  smsLogs      SMSLog[]
+
+  @@unique([organizationId, templateType, isDefault])
+  @@index([organizationId])
+  @@index([templateType])
+  @@index([isActive])
+}
+
+// ============================================================================
+// SMS LOG (Track all sent SMS with delivery status)
+// ============================================================================
+
+model SMSLog {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Message details
+  templateId String?
+  toPhone    String
+  fromPhone  String
+  content    String  @db.Text
+
+  // Twilio tracking
+  twilioMessageSid String? @unique
+  deliveryStatus   SMSDeliveryStatus @default(queued)
+  errorCode        String?
+  errorMessage     String?
+
+  // Related entities
+  bookingId String?
+  clientId  String?
+  userId    String? // Photographer (if sent to team)
+
+  // Delivery timestamps
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  failedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  template     SMSTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([templateId])
+  @@index([bookingId])
+  @@index([clientId])
+  @@index([deliveryStatus])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// BOOKING CHECK-IN (Photographer check-in events)
+// ============================================================================
+
+model BookingCheckIn {
+  id        String @id @default(cuid())
+  bookingId String
+  userId    String // Photographer
+
+  // Check-in details
+  checkInType CheckInType
+  latitude    Float
+  longitude   Float
+  accuracy    Float? // GPS accuracy in meters
+
+  // Address (reverse geocoded)
+  address String?
+
+  // Distance from expected location
+  distanceFromLocation Float? // Meters from booking location
+
+  // Photo proof (optional)
+  photoUrl String?
+
+  // Notes
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([userId])
+  @@index([checkInType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// LOCATION PING (GPS pings during active booking)
+// ============================================================================
+
+model LocationPing {
+  id        String @id @default(cuid())
+  bookingId String
+  userId    String // Photographer
+
+  // Location data
+  latitude  Float
+  longitude Float
+  accuracy  Float? // GPS accuracy in meters
+  altitude  Float?
+  speed     Float? // meters/second
+  heading   Float? // Compass heading
+
+  // Battery level (for monitoring)
+  batteryLevel Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// SLACK INTEGRATION (Slack workspace connection)
+// ============================================================================
+
+model SlackIntegration {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Slack workspace info
+  teamId   String
+  teamName String
+
+  // OAuth tokens
+  accessToken  String  @db.Text
+  botUserId    String?
+  botAccessToken String? @db.Text
+
+  // Webhook URL (for incoming messages)
+  incomingWebhookUrl String?
+
+  // Settings
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  channels     SlackChannel[]
+
+  @@unique([organizationId, teamId])
+  @@index([organizationId])
+  @@index([teamId])
+}
+
+// ============================================================================
+// SLACK CHANNEL (Channel routing for events)
+// ============================================================================
+
+model SlackChannel {
+  id            String @id @default(cuid())
+  integrationId String
+
+  // Channel info
+  channelId   String
+  channelName String
+
+  // Event routing
+  eventTypes SlackEventType[]
+
+  // Settings
+  isActive    Boolean @default(true)
+  mentionHere Boolean @default(false) // @here mentions
+  mentionAll  Boolean @default(false) // @channel mentions
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  integration SlackIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, channelId])
+  @@index([integrationId])
+  @@index([channelId])
+}
+
+// ============================================================================
+// BOOKING SLOTS (Self-booking availability slots)
+// ============================================================================
+
+model BookingSlot {
+  id             String  @id @default(cuid())
+  organizationId String
+  userId         String? // Specific photographer (null = any available)
+  serviceId      String? // Specific service (null = any)
+
+  // Time slot
+  startTime DateTime
+  endTime   DateTime
+  timezone  String   @default("America/New_York")
+
+  // Recurrence (for weekly availability patterns)
+  isRecurring    Boolean @default(false)
+  recurrenceRule String? // RRULE format
+  recurrenceEnd  DateTime?
+
+  // Booking capacity
+  maxBookings     Int @default(1) // How many can book this slot
+  currentBookings Int @default(0)
+
+  // Pricing override
+  priceCentsOverride Int? // Override service price for this slot
+
+  // Settings
+  isActive Boolean @default(true)
+
+  // Buffer times (override service defaults)
+  bufferBeforeMinutes Int?
+  bufferAfterMinutes  Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([serviceId])
+  @@index([startTime])
+  @@index([isActive])
 }

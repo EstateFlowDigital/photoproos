@@ -142,8 +142,9 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "licensing",
       "batch_processing",
       "portfolio_websites",
+      "product_catalogs",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites"],
+    defaultModules: ["galleries", "scheduling", "invoices", "clients", "portfolio_websites", "product_catalogs"],
     color: "#06b6d4", // cyan
     sortOrder: 6,
   },
