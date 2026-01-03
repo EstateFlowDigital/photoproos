@@ -163,10 +163,15 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
               {clients.map((client) => (
                 <tr
                   key={client.id}
-                  className="transition-colors hover:bg-[var(--background-hover)]"
+                  className="group relative transition-colors hover:bg-[var(--background-hover)] cursor-pointer"
                 >
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                    <Link
+                      href={`/clients/${client.id}`}
+                      className="absolute inset-0 z-0"
+                      aria-label={`View client: ${client.fullName || client.email}`}
+                    />
+                    <div className="relative z-10 pointer-events-none flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-medium text-white">
                         {(client.fullName || client.email).substring(0, 2).toUpperCase()}
                       </div>
@@ -194,16 +199,16 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                     </div>
                   </td>
                   <td className="hidden px-6 py-4 md:table-cell">
-                    <span className="inline-flex rounded-full bg-[var(--background-secondary)] px-2.5 py-1 text-xs font-medium text-foreground-secondary">
+                    <span className="relative z-10 pointer-events-none inline-flex rounded-full bg-[var(--background-secondary)] px-2.5 py-1 text-xs font-medium text-foreground-secondary">
                       {industryLabels[client.industry] || client.industry}
                     </span>
                   </td>
                   <td className="hidden px-6 py-4 text-sm text-foreground-muted lg:table-cell">
-                    {client._count.projects} projects
+                    <span className="relative z-10 pointer-events-none">{client._count.projects} projects</span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className={cn(
-                      "font-medium",
+                      "relative z-10 pointer-events-none font-medium",
                       client.lifetimeRevenueCents > 0
                         ? "text-[var(--success)]"
                         : "text-foreground-muted"
@@ -212,12 +217,9 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link
-                      href={`/clients/${client.id}`}
-                      className="inline-flex items-center justify-center rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
-                    >
-                      <ChevronRightIcon className="h-4 w-4" />
-                    </Link>
+                    <div className="relative z-10 pointer-events-none">
+                      <ChevronRightIcon className="h-4 w-4 text-foreground-muted group-hover:text-foreground transition-colors" />
+                    </div>
                   </td>
                 </tr>
               ))}

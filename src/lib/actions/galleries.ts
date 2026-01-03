@@ -29,6 +29,16 @@ async function getOrganizationId(): Promise<string> {
   return requireOrganizationId();
 }
 
+// Helper to generate a unique delivery slug
+function generateDeliverySlug(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let slug = "";
+  for (let i = 0; i < 10; i++) {
+    slug += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return slug;
+}
+
 // Helper to log activity
 async function logActivity(
   organizationId: string,
@@ -443,6 +453,36 @@ export async function deliverGallery(
 
     const deliveredAt = new Date();
 
+    // Create a delivery link if one doesn't exist
+    let deliverySlug = existing.deliveryLinks[0]?.slug;
+    if (!deliverySlug) {
+      // Generate unique slug with retry logic
+      let attempts = 0;
+      const maxAttempts = 5;
+      while (attempts < maxAttempts) {
+        const candidateSlug = generateDeliverySlug();
+        try {
+          await prisma.deliveryLink.create({
+            data: {
+              projectId: id,
+              slug: candidateSlug,
+              isActive: true,
+            },
+          });
+          deliverySlug = candidateSlug;
+          break;
+        } catch (slugError) {
+          // If slug already exists (unique constraint), try again
+          attempts++;
+          if (attempts >= maxAttempts) {
+            console.error("[Gallery Delivery] Failed to generate unique slug after max attempts");
+            // Fall back to using the project ID as slug
+            deliverySlug = id;
+          }
+        }
+      }
+    }
+
     const updated = await prisma.project.update({
       where: { id },
       data: {
@@ -468,8 +508,7 @@ export async function deliverGallery(
           select: { name: true },
         });
 
-        const deliverySlug = existing.deliveryLinks[0]?.slug || id;
-        const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliverySlug}`;
+        const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliverySlug || id}`;
 
         // Count photos for the email
         const photoCount = await prisma.asset.count({

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Contract Detail Page 404**
+  - Created missing contract detail page at `/contracts/[id]`
+  - Full contract view with signers, activity log, and status management
+  - Added contract CRUD server actions in `/src/lib/actions/contracts.ts`
+  - Support for send, cancel, delete, and duplicate operations
+
+- **Gallery Delivery Link Generation**
+  - Fixed "Generate Link" button not creating delivery links
+  - `deliverGallery` action now creates `DeliveryLink` records with unique slugs
+  - Gallery detail page properly shows delivery link after generation
+
+- **Global Search Error Handling**
+  - Added try-catch error handling in search action
+  - Added console logging for debugging auth and search issues
+  - Search now returns empty results gracefully on errors
+
+- **Clickable Table Rows**
+  - Made entire table rows clickable on Contracts list page
+  - Made entire table rows clickable on Clients list page
+  - Uses stretched link pattern with proper accessibility labels
+  - Chevron icon animates on hover for visual feedback
+
 ### Added
 - **Global Command Palette (⌘K)**
   - Access via Cmd+K (Mac) or Ctrl+K (Windows/Linux)

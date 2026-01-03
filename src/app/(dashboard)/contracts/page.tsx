@@ -302,10 +302,15 @@ export default async function ContractsPage({ searchParams }: PageProps) {
                 return (
                   <tr
                     key={contract.id}
-                    className="transition-colors hover:bg-[var(--background-hover)]"
+                    className="group relative transition-colors hover:bg-[var(--background-hover)] cursor-pointer"
                   >
                     <td className="px-6 py-4">
-                      <div>
+                      <Link
+                        href={`/contracts/${contract.id}`}
+                        className="absolute inset-0 z-0"
+                        aria-label={`View contract: ${contract.name}`}
+                      />
+                      <div className="relative z-10 pointer-events-none">
                         <p className="font-medium text-foreground">{contract.name}</p>
                         {contract.template && (
                           <p className="text-xs text-foreground-muted">
@@ -318,7 +323,7 @@ export default async function ContractsPage({ searchParams }: PageProps) {
                       </div>
                     </td>
                     <td className="hidden px-6 py-4 md:table-cell">
-                      <div className="flex items-center gap-3">
+                      <div className="relative z-10 pointer-events-none flex items-center gap-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-xs font-medium text-white">
                           {clientName.substring(0, 2).toUpperCase()}
                         </div>
@@ -331,7 +336,7 @@ export default async function ContractsPage({ searchParams }: PageProps) {
                       </div>
                     </td>
                     <td className="hidden px-6 py-4 lg:table-cell">
-                      <div className="text-sm">
+                      <div className="relative z-10 pointer-events-none text-sm">
                         <p className="text-foreground">{formatDate(contract.createdAt)}</p>
                         {contract.expiresAt && (
                           <p className={cn(
@@ -345,36 +350,35 @@ export default async function ContractsPage({ searchParams }: PageProps) {
                     </td>
                     <td className="px-6 py-4">
                       <span className={cn(
-                        "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                        "relative z-10 pointer-events-none inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
                         status.className
                       )}>
                         {status.label}
                       </span>
                     </td>
                     <td className="hidden px-6 py-4 sm:table-cell">
-                      {totalSigners > 0 ? (
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-16 rounded-full bg-[var(--background-tertiary)] overflow-hidden">
-                            <div
-                              className="h-full bg-[var(--success)]"
-                              style={{ width: `${(signedCount / totalSigners) * 100}%` }}
-                            />
+                      <div className="relative z-10 pointer-events-none">
+                        {totalSigners > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-16 rounded-full bg-[var(--background-tertiary)] overflow-hidden">
+                              <div
+                                className="h-full bg-[var(--success)]"
+                                style={{ width: `${(signedCount / totalSigners) * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-foreground-muted">
+                              {signedCount}/{totalSigners}
+                            </span>
                           </div>
-                          <span className="text-xs text-foreground-muted">
-                            {signedCount}/{totalSigners}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-foreground-muted">No signers</span>
-                      )}
+                        ) : (
+                          <span className="text-xs text-foreground-muted">No signers</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/contracts/${contract.id}`}
-                        className="inline-flex items-center justify-center rounded-lg p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
-                      >
-                        <ChevronRightIcon className="h-4 w-4" />
-                      </Link>
+                      <div className="relative z-10 pointer-events-none">
+                        <ChevronRightIcon className="h-4 w-4 text-foreground-muted group-hover:text-foreground transition-colors" />
+                      </div>
                     </td>
                   </tr>
                 );

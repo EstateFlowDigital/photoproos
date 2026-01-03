@@ -20,30 +20,29 @@ export interface SearchResults {
   bookings: SearchResult[];
 }
 
-export async function globalSearch(query: string): Promise<SearchResults> {
-  const auth = await getAuthContext();
-  if (!auth) {
-    return {
-      clients: [],
-      galleries: [],
-      properties: [],
-      services: [],
-      invoices: [],
-      bookings: [],
-    };
-  }
+const emptyResults: SearchResults = {
+  clients: [],
+  galleries: [],
+  properties: [],
+  services: [],
+  invoices: [],
+  bookings: [],
+};
 
-  const searchTerm = query.trim().toLowerCase();
-  if (!searchTerm) {
-    return {
-      clients: [],
-      galleries: [],
-      properties: [],
-      services: [],
-      invoices: [],
-      bookings: [],
-    };
-  }
+export async function globalSearch(query: string): Promise<SearchResults> {
+  try {
+    const auth = await getAuthContext();
+    if (!auth) {
+      console.log("[Search] No auth context found");
+      return emptyResults;
+    }
+
+    const searchTerm = query.trim();
+    if (!searchTerm) {
+      return emptyResults;
+    }
+
+    console.log(`[Search] Searching for "${searchTerm}" in org ${auth.organizationId}`);
 
   const [clients, galleries, properties, services, invoices, bookings] = await Promise.all([
     // Search clients
@@ -164,48 +163,64 @@ export async function globalSearch(query: string): Promise<SearchResults> {
     }),
   ]);
 
-  return {
-    clients: clients.map((c) => ({
-      id: c.id,
-      type: "client" as const,
-      title: c.fullName || c.email,
-      subtitle: c.company || undefined,
-      href: `/clients/${c.id}`,
-    })),
-    galleries: galleries.map((g) => ({
-      id: g.id,
-      type: "gallery" as const,
-      title: g.name,
-      subtitle: g.client?.company || g.client?.fullName || undefined,
-      href: `/galleries/${g.id}`,
-    })),
-    properties: properties.map((p) => ({
-      id: p.id,
-      type: "property" as const,
-      title: p.address || "Property",
-      subtitle: p.city && p.state ? `${p.city}, ${p.state}` : undefined,
-      href: `/properties/${p.id}`,
-    })),
-    services: services.map((s) => ({
-      id: s.id,
-      type: "service" as const,
-      title: s.name,
-      subtitle: s.category || undefined,
-      href: `/services/${s.id}`,
-    })),
-    invoices: invoices.map((i) => ({
-      id: i.id,
-      type: "invoice" as const,
-      title: `Invoice #${i.invoiceNumber}`,
-      subtitle: i.client?.company || i.client?.fullName || undefined,
-      href: `/invoices/${i.id}`,
-    })),
-    bookings: bookings.map((b) => ({
-      id: b.id,
-      type: "booking" as const,
-      title: b.title,
-      subtitle: b.client?.company || b.client?.fullName || b.clientName || undefined,
-      href: `/scheduling/${b.id}`,
-    })),
-  };
+    const results: SearchResults = {
+      clients: clients.map((c) => ({
+        id: c.id,
+        type: "client" as const,
+        title: c.fullName || c.email,
+        subtitle: c.company || undefined,
+        href: `/clients/${c.id}`,
+      })),
+      galleries: galleries.map((g) => ({
+        id: g.id,
+        type: "gallery" as const,
+        title: g.name,
+        subtitle: g.client?.company || g.client?.fullName || undefined,
+        href: `/galleries/${g.id}`,
+      })),
+      properties: properties.map((p) => ({
+        id: p.id,
+        type: "property" as const,
+        title: p.address || "Property",
+        subtitle: p.city && p.state ? `${p.city}, ${p.state}` : undefined,
+        href: `/properties/${p.id}`,
+      })),
+      services: services.map((s) => ({
+        id: s.id,
+        type: "service" as const,
+        title: s.name,
+        subtitle: s.category || undefined,
+        href: `/services/${s.id}`,
+      })),
+      invoices: invoices.map((i) => ({
+        id: i.id,
+        type: "invoice" as const,
+        title: `Invoice #${i.invoiceNumber}`,
+        subtitle: i.client?.company || i.client?.fullName || undefined,
+        href: `/invoices/${i.id}`,
+      })),
+      bookings: bookings.map((b) => ({
+        id: b.id,
+        type: "booking" as const,
+        title: b.title,
+        subtitle: b.client?.company || b.client?.fullName || b.clientName || undefined,
+        href: `/scheduling/${b.id}`,
+      })),
+    };
+
+    const totalResults =
+      results.clients.length +
+      results.galleries.length +
+      results.properties.length +
+      results.services.length +
+      results.invoices.length +
+      results.bookings.length;
+
+    console.log(`[Search] Found ${totalResults} results for "${searchTerm}"`);
+
+    return results;
+  } catch (error) {
+    console.error("[Search] Error during global search:", error);
+    return emptyResults;
+  }
 }
