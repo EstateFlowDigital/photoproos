@@ -572,6 +572,9 @@ model Organization {
   // Email Logging System
   emailLogs EmailLog[]
 
+  // Platform Referral System
+  referredByPlatform PlatformReferral[] @relation("ReferredOrgByPlatform")
+
   @@index([slug])
   @@index([plan])
 }
@@ -613,6 +616,10 @@ model User {
   taskComments        TaskComment[]
   equipmentChecks     BookingEquipmentCheck[] @relation("EquipmentChecker")
   crewAssignments     BookingCrew[]           @relation("BookingCrewAssignments")
+
+  // Platform Referral System
+  platformReferrer    PlatformReferrer?
+  referredByPlatform  PlatformReferral[]      @relation("ReferredByPlatform")
 
   @@index([email])
   @@index([clerkUserId])
@@ -4187,6 +4194,161 @@ model ReferralReward {
   @@index([referrerId])
   @@index([referralId])
   @@index([isIssued])
+}
+
+// ============================================================================
+// PLATFORM REFERRAL SYSTEM (ListingLens user-to-user referrals)
+// ============================================================================
+
+enum PlatformReferralStatus {
+  pending // Referred user hasn't signed up yet
+  signed_up // User signed up but hasn't subscribed
+  subscribed // User subscribed (conversion!)
+  churned // User canceled subscription
+  expired // Referral link expired
+}
+
+enum PlatformRewardType {
+  account_credit // Credit towards subscription
+  extended_trial // Extra trial days
+  percentage_discount // Discount on next billing
+  free_month // Free month of subscription
+}
+
+// Global platform referral program settings (admin-managed)
+model PlatformReferralSettings {
+  id String @id @default("default")
+
+  // Program settings
+  isActive Boolean @default(true)
+  referralLinkValidDays Int @default(30) // How long referral links are valid
+
+  // Referrer rewards (when referred user subscribes)
+  referrerRewardType PlatformRewardType @default(account_credit)
+  referrerRewardValue Int @default(2500) // $25 credit or 25 days, etc.
+  referrerMaxRewardsPerMonth Int? // Cap monthly rewards
+
+  // Referred user benefits
+  referredTrialDays Int @default(21) // Extended trial (vs default 14)
+  referredDiscountPercent Int? // First month discount
+  referredDiscountMonths Int @default(1) // How many months discount applies
+
+  // Reward expiration
+  rewardExpirationDays Int? // How long until reward expires after issue
+
+  // Tracking
+  totalReferrals Int @default(0)
+  totalConversions Int @default(0)
+  totalRewardsIssuedCents Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Each user's referral profile
+model PlatformReferrer {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Referral code (unique, shareable)
+  referralCode String @unique
+  referralUrl String? // Custom vanity URL if allowed
+
+  // Stats
+  totalReferrals Int @default(0)
+  successfulReferrals Int @default(0) // Converted to paid
+  totalEarnedCents Int @default(0)
+  pendingCreditCents Int @default(0) // Credited but not yet applied
+
+  // Status
+  isActive Boolean @default(true)
+  isBanned Boolean @default(false) // For abuse prevention
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referrals PlatformReferral[]
+  rewards PlatformReferralReward[]
+
+  @@index([referralCode])
+  @@index([userId])
+}
+
+// Individual referral tracking
+model PlatformReferral {
+  id String @id @default(cuid())
+  referrerId String
+
+  // Referred person (before they become a user)
+  referredEmail String
+  referredName String?
+
+  // Tracking
+  status PlatformReferralStatus @default(pending)
+  referredUserId String? // Set when they sign up
+  referredOrganizationId String? // Set when org created
+
+  // Attribution
+  source String? // Where link was shared (email, social, etc.)
+  landingPage String? // Which page they landed on
+  utmCampaign String?
+  utmSource String?
+  utmMedium String?
+
+  // Timestamps
+  clickedAt DateTime? // When they clicked the link
+  signedUpAt DateTime? // When they created account
+  subscribedAt DateTime? // When they started paid subscription
+  expiresAt DateTime // When referral link expires
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  referrer PlatformReferrer @relation(fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser User? @relation("ReferredByPlatform", fields: [referredUserId], references: [id], onDelete: SetNull)
+  referredOrganization Organization? @relation("ReferredOrgByPlatform", fields: [referredOrganizationId], references: [id], onDelete: SetNull)
+  rewards PlatformReferralReward[]
+
+  @@index([referrerId])
+  @@index([referredEmail])
+  @@index([referredUserId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+// Rewards issued for platform referrals
+model PlatformReferralReward {
+  id String @id @default(cuid())
+  referrerId String
+  referralId String
+
+  // Reward details
+  rewardType PlatformRewardType
+  valueCents Int // Dollar value or days
+  description String?
+
+  // Status
+  isApplied Boolean @default(false) // Has it been used?
+  appliedAt DateTime?
+  expiresAt DateTime? // Rewards can expire
+
+  // Stripe integration
+  stripePromotionCodeId String? // If using Stripe promo codes
+  stripeCouponId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  referrer PlatformReferrer @relation(fields: [referrerId], references: [id], onDelete: Cascade)
+  referral PlatformReferral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+  @@index([referralId])
+  @@index([isApplied])
 }
 
 // ============================================================================

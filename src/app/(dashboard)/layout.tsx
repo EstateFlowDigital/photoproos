@@ -4,6 +4,7 @@ import { DashboardLayoutClient } from "@/components/layout/dashboard-layout-clie
 import { ToastProvider } from "@/components/ui/toast";
 import { TourProvider } from "@/components/tour";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
+import { ReferralProcessor } from "@/components/dashboard/referral-processor";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
@@ -128,6 +129,7 @@ export default async function DashboardLayout({
     <ToastProvider>
       <TourProvider organizationId={organization.id}>
         <CommandPaletteProvider>
+          <ReferralProcessor />
           <DashboardLayoutClient
             enabledModules={enabledModules}
             industries={organizationIndustries}

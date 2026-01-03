@@ -43,6 +43,9 @@ const isPublicRoute = createRouteMatcher([
   "/roadmap",
   "/help(.*)",
   "/legal(.*)",
+
+  // Referral redirect route
+  "/r/(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

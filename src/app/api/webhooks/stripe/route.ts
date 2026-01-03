@@ -17,6 +17,7 @@ import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { sendPaymentReceiptEmail, sendOrderConfirmationEmail } from "@/lib/email/send";
 import { notifySlackPayment } from "@/lib/actions/slack";
+import { processReferralConversion } from "@/lib/actions/platform-referrals";
 import type Stripe from "stripe";
 
 /**
@@ -78,6 +79,12 @@ export async function POST(request: Request) {
       case "payment_intent.payment_failed":
         await handlePaymentIntentFailed(
           event.data.object as Stripe.PaymentIntent
+        );
+        break;
+
+      case "customer.subscription.created":
+        await handleSubscriptionCreated(
+          event.data.object as Stripe.Subscription
         );
         break;
 
@@ -429,5 +436,49 @@ async function handleOrderPaymentCompleted(
       // Log email failure but don't fail the webhook - order was already processed
       console.error("[Order Email] Failed to send confirmation:", emailError);
     }
+  }
+}
+
+/**
+ * Handle new subscription creation
+ * This triggers referral conversion if the user was referred
+ */
+async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
+  // Get the customer to find the associated user
+  const customerId = typeof subscription.customer === "string"
+    ? subscription.customer
+    : subscription.customer.id;
+
+  // Find organization or user with this Stripe customer ID
+  const organization = await prisma.organization.findFirst({
+    where: {
+      OR: [
+        { stripeCustomerId: customerId },
+        { stripeConnectAccountId: customerId },
+      ],
+    },
+    include: {
+      members: {
+        where: { role: "owner" },
+        include: { user: true },
+      },
+    },
+  });
+
+  if (organization && organization.members[0]?.user) {
+    const userId = organization.members[0].user.id;
+    console.log(`[Stripe Webhook] Processing subscription for user ${userId}`);
+
+    // Process referral conversion (this will check if user was referred)
+    try {
+      const result = await processReferralConversion(userId);
+      if (result.success) {
+        console.log(`[Stripe Webhook] Referral conversion processed for user ${userId}`);
+      }
+    } catch (error) {
+      console.error("[Stripe Webhook] Error processing referral conversion:", error);
+    }
+  } else {
+    console.log(`[Stripe Webhook] No organization found for customer ${customerId}`);
   }
 }

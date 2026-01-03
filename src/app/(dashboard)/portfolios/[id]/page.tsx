@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/dashboard";
-import { getPortfolioWebsite } from "@/lib/actions/portfolio-websites";
+import { getPortfolioWebsite, getPortfolioAnalytics } from "@/lib/actions/portfolio-websites";
 import { PortfolioEditorClient } from "./portfolio-editor-client";
 
 export default async function PortfolioDetailPage({ params }: { params: { id: string } }) {
-  const data = await getPortfolioWebsite(params.id);
+  const [data, analyticsResult] = await Promise.all([
+    getPortfolioWebsite(params.id),
+    getPortfolioAnalytics(params.id, "30d"),
+  ]);
 
   if (!data) {
     redirect("/portfolios");
@@ -20,6 +23,15 @@ export default async function PortfolioDetailPage({ params }: { params: { id: st
     })),
     socialLinks: data.website.socialLinks as { platform: string; url: string }[] | null,
   };
+
+  // Get quick stats for header
+  const quickStats = analyticsResult.success && analyticsResult.data
+    ? {
+        totalViews: analyticsResult.data.totalViews,
+        uniqueVisitors: analyticsResult.data.uniqueVisitors,
+        lastUpdated: data.website.updatedAt,
+      }
+    : null;
 
   return (
     <div className="space-y-6">
@@ -37,7 +49,11 @@ export default async function PortfolioDetailPage({ params }: { params: { id: st
         }
       />
 
-      <PortfolioEditorClient website={website} availableProjects={data.availableProjects} />
+      <PortfolioEditorClient
+        website={website}
+        availableProjects={data.availableProjects}
+        quickStats={quickStats}
+      />
     </div>
   );
 }

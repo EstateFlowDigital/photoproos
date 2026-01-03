@@ -8,6 +8,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Platform Referral System** (ListingLens User Referrals)
+  - Database models for user-to-user referral tracking:
+    - `PlatformReferralSettings` - Global program configuration
+    - `PlatformReferrer` - User referral profiles with unique codes
+    - `PlatformReferral` - Individual referral tracking
+    - `PlatformReferralReward` - Reward issuance and redemption
+  - Referral reward types: Account Credit, Extended Trial, Percentage Discount, Free Month
+  - Referral status tracking: Pending, Signed Up, Subscribed, Churned, Expired
+  - Server actions for referral management:
+    - `getMyReferralProfile()` - Get or create user's referral profile
+    - `getMyReferralStats()` - Get conversion stats
+    - `getMyReferrals()` - List user's referrals
+    - `getMyRewards()` - List user's rewards
+    - `sendReferralInvite()` - Send email invitations
+    - `trackReferralClick()` - Track link clicks
+    - `processReferralSignup()` - Handle new user signups from referrals
+    - `processReferralConversion()` - Issue rewards on subscription
+    - `processReferralFromCode()` - Process referral from stored code on dashboard visit
+    - `applyReward()` - Apply credit to account
+    - `getReferralLeaderboard()` - Top referrers list
+  - New "Refer & Earn" page at `/settings/my-referrals`:
+    - Shareable referral link with copy button
+    - Social sharing buttons (Twitter/X, LinkedIn)
+    - Email invite modal
+    - Stats dashboard (Total, Converted, Pending Credits, Conversion Rate)
+    - Referrals list with status tracking
+    - Rewards management with apply functionality
+    - "How It Works" explanation section
+  - **Signup Flow Integration**:
+    - Sign-up page captures `?ref=CODE` parameter and stores in localStorage
+    - Tracks referral link clicks server-side
+    - `ReferralProcessor` component processes stored referrals on dashboard visit
+    - Clerk webhook handler (`/api/webhooks/clerk`) for user.created events
+    - Short referral URL support: `/r/LENS-XXXXXX` redirects to sign-up with code
+  - **Subscription Conversion**:
+    - Stripe webhook handles `customer.subscription.created` events
+    - Auto-triggers referral conversion when referred user subscribes
+    - Creates reward for referrer on successful conversion
+  - Default rewards: $25 account credit per conversion
+  - Referred users get: 21-day trial + 20% off first month
+  - Note: Separate from Client Referral Program (for photographers' agent referrals)
+
 - **Slack Integration Notifications**
   - Full implementation of Slack webhook notifications for real-time alerts
   - **New Booking Notifications**: Sends formatted message with title, client, time, location, and service
@@ -69,6 +111,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - PDF download links
   - Graceful empty state for users without invoices
   - New `getInvoiceHistory()` server action
+
+- **Booking Form File Uploads**
+  - Full file upload support in public booking forms
+  - New `/api/upload/booking-form` API endpoint for presigned R2 URLs
+  - Support for multiple file types: Images (JPG, PNG, WebP, GIF, HEIC), PDF, DOC, DOCX
+  - 10MB file size limit per file
+  - Multiple file uploads per field
+  - Real-time upload progress indicator
+  - Uploaded files displayed with icons, names, and sizes
+  - Remove individual files before submission
+  - File data stored in submission JSON for review
 
 - **Subscription Plans Management** (Developer Tools)
   - New subscription plan management system for application pricing tiers (Pro, Studio, Enterprise)

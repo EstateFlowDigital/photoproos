@@ -24,6 +24,7 @@ import { TextSection } from "./sections/text-section";
 import { ImageSection } from "./sections/image-section";
 import { VideoSection } from "./sections/video-section";
 import { SpacerSection } from "./sections/spacer-section";
+import { ShareButtons } from "./components/share-buttons";
 
 // ============================================================================
 // TYPES
@@ -363,6 +364,15 @@ export function PortfolioRenderer({ website }: PortfolioRendererProps) {
             </div>
           </div>
         </footer>
+
+        {/* Social Share Buttons */}
+        <ShareButtons
+          url={typeof window !== "undefined" ? window.location.href : `https://example.com/portfolio/${website.slug}`}
+          title={website.metaTitle || website.name}
+          description={website.metaDescription || website.description || ""}
+          imageUrl={website.logoUrl || ""}
+          primaryColor={website.primaryColor || templateConfig.colors.primary}
+        />
       </div>
     </>
   );

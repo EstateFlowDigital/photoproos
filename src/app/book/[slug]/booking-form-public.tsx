@@ -1,10 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { submitBookingForm } from "@/lib/actions/booking-forms";
+
+// File upload types
+interface UploadedFile {
+  filename: string;
+  url: string;
+  key: string;
+  size: number;
+  type: string;
+}
 import type { Industry, FormFieldType } from "@prisma/client";
 
 interface FieldValidation {
@@ -451,6 +460,7 @@ export function BookingFormPublic({ form, organization }: BookingFormPublicProps
                     onChange={(value) => handleFieldChange(field.id, value)}
                     error={errors[field.id]}
                     primaryColor={primaryColor}
+                    bookingFormId={form.id}
                   />
                 ))}
               </div>
@@ -502,12 +512,14 @@ function FormFieldInput({
   onChange,
   error,
   primaryColor,
+  bookingFormId,
 }: {
   field: FormField;
   value: unknown;
   onChange: (value: unknown) => void;
   error?: string;
   primaryColor: string;
+  bookingFormId: string;
 }) {
   const inputStyles = cn(
     "w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2",
@@ -681,9 +693,15 @@ function FormFieldInput({
 
       case "file":
         return (
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            File upload is not yet available. Please describe your files in the notes.
-          </div>
+          <FileUploadField
+            fieldId={field.id}
+            bookingFormId={bookingFormId}
+            value={value as UploadedFile[] | undefined}
+            onChange={onChange}
+            error={error}
+            primaryColor={primaryColor}
+            isRequired={field.isRequired}
+          />
         );
 
       default:
@@ -702,6 +720,216 @@ function FormFieldInput({
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{field.helpText}</p>
       )}
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+    </div>
+  );
+}
+
+// File Upload Field Component
+function FileUploadField({
+  fieldId,
+  bookingFormId,
+  value,
+  onChange,
+  error,
+  primaryColor,
+  isRequired,
+}: {
+  fieldId: string;
+  bookingFormId: string;
+  value: UploadedFile[] | undefined;
+  onChange: (value: unknown) => void;
+  error?: string;
+  primaryColor: string;
+  isRequired: boolean;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const uploadedFiles = value || [];
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    const newFiles: UploadedFile[] = [...uploadedFiles];
+
+    for (const file of Array.from(files)) {
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError(`File "${file.name}" exceeds 10MB limit`);
+        continue;
+      }
+
+      try {
+        // Step 1: Get presigned URL
+        const urlResponse = await fetch("/api/upload/booking-form", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingFormId,
+            filename: file.name,
+            contentType: file.type,
+            size: file.size,
+          }),
+        });
+
+        const urlResult = await urlResponse.json();
+        if (!urlResult.success) {
+          setUploadError(urlResult.error || `Failed to upload ${file.name}`);
+          continue;
+        }
+
+        // Step 2: Upload to R2
+        const uploadResponse = await fetch(urlResult.data.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+
+        if (!uploadResponse.ok) {
+          setUploadError(`Failed to upload ${file.name}`);
+          continue;
+        }
+
+        // Step 3: Add to uploaded files list
+        newFiles.push({
+          filename: file.name,
+          url: urlResult.data.publicUrl,
+          key: urlResult.data.key,
+          size: file.size,
+          type: file.type,
+        });
+      } catch (err) {
+        console.error("Upload error:", err);
+        setUploadError(`Failed to upload ${file.name}`);
+      }
+    }
+
+    setIsUploading(false);
+    onChange(newFiles);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    const newFiles = uploadedFiles.filter((_, i) => i !== index);
+    onChange(newFiles.length > 0 ? newFiles : undefined);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const getFileIcon = (type: string) => {
+    if (type.startsWith("image/")) {
+      return (
+        <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      );
+    }
+    if (type === "application/pdf") {
+      return (
+        <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      );
+    }
+    return (
+      <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    );
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Upload button */}
+      <div className="flex items-center gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*,.pdf,.doc,.docx"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className={cn(
+            "inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-700",
+            isUploading && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          {isUploading ? (
+            <>
+              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Uploading...
+            </>
+          ) : (
+            <>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Choose Files
+            </>
+          )}
+        </button>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Images, PDF, DOC (max 10MB each)
+        </span>
+      </div>
+
+      {/* Upload error */}
+      {uploadError && (
+        <p className="text-red-500 text-sm">{uploadError}</p>
+      )}
+
+      {/* Uploaded files list */}
+      {uploadedFiles.length > 0 && (
+        <ul className="space-y-2">
+          {uploadedFiles.map((file, index) => (
+            <li
+              key={file.key}
+              className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                {getFileIcon(file.type)}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    {file.filename}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatFileSize(file.size)}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleRemoveFile(index)}
+                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

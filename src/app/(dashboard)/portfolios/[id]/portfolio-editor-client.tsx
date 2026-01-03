@@ -23,6 +23,7 @@ import { ProjectsTab } from "./tabs/projects-tab";
 import { AnalyticsTab } from "./tabs/analytics-tab";
 import { SettingsTab } from "./tabs/settings-tab";
 import { PreviewPanel } from "./components/preview-panel";
+import { QRCodeModal } from "./components/qr-code-modal";
 
 // ============================================================================
 // TYPES
@@ -95,9 +96,16 @@ export interface AvailableProject {
   } | null;
 }
 
+export interface QuickStats {
+  totalViews: number;
+  uniqueVisitors: number;
+  lastUpdated: Date;
+}
+
 interface PortfolioEditorClientProps {
   website: PortfolioWebsite;
   availableProjects: AvailableProject[];
+  quickStats?: QuickStats | null;
 }
 
 type TabId = "design" | "sections" | "projects" | "analytics" | "settings";
@@ -137,6 +145,7 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 export function PortfolioEditorClient({
   website,
   availableProjects,
+  quickStats,
 }: PortfolioEditorClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -144,6 +153,7 @@ export function PortfolioEditorClient({
   const [activeTab, setActiveTab] = useState<TabId>("design");
   const [showPreview, setShowPreview] = useState(false);
   const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   const previewUrl = `/portfolio/${website.slug}`;
 
@@ -207,6 +217,37 @@ export function PortfolioEditorClient({
 
   return (
     <div className="space-y-6">
+      {/* Quick Stats Bar */}
+      {quickStats && (
+        <div className="flex flex-wrap items-center gap-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3">
+          <div className="flex items-center gap-2">
+            <ViewsIcon className="h-4 w-4 text-[var(--primary)]" />
+            <div>
+              <p className="text-lg font-semibold text-foreground">{quickStats.totalViews.toLocaleString()}</p>
+              <p className="text-xs text-foreground-muted">Views (30d)</p>
+            </div>
+          </div>
+          <div className="h-8 w-px bg-[var(--card-border)]" />
+          <div className="flex items-center gap-2">
+            <UsersIcon className="h-4 w-4 text-[var(--success)]" />
+            <div>
+              <p className="text-lg font-semibold text-foreground">{quickStats.uniqueVisitors.toLocaleString()}</p>
+              <p className="text-xs text-foreground-muted">Visitors</p>
+            </div>
+          </div>
+          <div className="h-8 w-px bg-[var(--card-border)]" />
+          <div className="flex items-center gap-2">
+            <ClockIcon className="h-4 w-4 text-foreground-muted" />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {formatRelativeTime(new Date(quickStats.lastUpdated))}
+              </p>
+              <p className="text-xs text-foreground-muted">Last updated</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Actions */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
@@ -226,6 +267,14 @@ export function PortfolioEditorClient({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowQRModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            title="Generate QR code"
+          >
+            <QRIcon className="h-4 w-4" />
+            QR Code
+          </button>
           <button
             onClick={handleCopyLink}
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -339,6 +388,14 @@ export function PortfolioEditorClient({
         isVisible={showPreview}
         onClose={() => setShowPreview(false)}
         refreshKey={previewRefreshKey}
+      />
+
+      {/* QR Code Modal */}
+      <QRCodeModal
+        isOpen={showQRModal}
+        onClose={() => setShowQRModal(false)}
+        portfolioUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/portfolio/${website.slug}`}
+        portfolioName={website.name}
       />
     </div>
   );
@@ -515,4 +572,126 @@ function DuplicateIcon({ className }: { className?: string }) {
       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
     </svg>
   );
+}
+
+function QRIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect width="5" height="5" x="3" y="3" rx="1" />
+      <rect width="5" height="5" x="16" y="3" rx="1" />
+      <rect width="5" height="5" x="3" y="16" rx="1" />
+      <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+      <path d="M21 21v.01" />
+      <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+      <path d="M3 12h.01" />
+      <path d="M12 3h.01" />
+      <path d="M12 16v.01" />
+      <path d="M16 12h1" />
+      <path d="M21 12v.01" />
+      <path d="M12 21v-1" />
+    </svg>
+  );
+}
+
+function ViewsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+// Helper function to format relative time
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return "Just now";
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} min ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) {
+    return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+  }
+
+  if (diffInDays < 30) {
+    const weeks = Math.floor(diffInDays / 7);
+    return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return `${diffInMonths} month${diffInMonths > 1 ? "s" : ""} ago`;
+  }
+
+  const diffInYears = Math.floor(diffInMonths / 12);
+  return `${diffInYears} year${diffInYears > 1 ? "s" : ""} ago`;
 }
