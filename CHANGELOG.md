@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Comprehensive Email Notification System**
+  - Created `OrderConfirmationEmail` template for order payment confirmations
+  - Created `ContractSigningEmail` template for contract signing invitations and reminders
+  - Wired up order confirmation emails in Stripe webhook handler (handleOrderPaymentCompleted)
+  - Wired up contract signing emails when contracts are sent (sendContract action)
+  - Wired up contract signing reminder emails (resendSigningInvitation action)
+  - Wired up contract signed confirmation emails (signContract action)
+  - Wired up booking confirmation emails when bookings are confirmed (updateBookingStatus, confirmBooking)
+  - Added `confirmBooking` action with optional email sending
+  - All email functions use non-blocking pattern (don't fail operations if email fails)
+  - Added detailed documentation to all email-related actions
+  - Fixed Resend lazy initialization in cron endpoint to prevent build errors
+
+- **Activity Logging Improvements**
+  - Added activity logs for contract sends with signer count and emails
+  - Added activity logs for contract signatures with all-signed status
+  - Added activity logs for booking confirmations with client info
+
 - **Multi-Service Gallery Support**
   - Galleries can now have multiple services assigned (many-to-many via ProjectService)
   - Added MultiServiceSelector component for service selection with primary service designation
@@ -50,6 +68,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `BookingReminderEmail` template with checklist and urgent sections
   - Added `/api/cron/send-reminders` endpoint for automated reminder delivery
 
+- **Multi-Day Events for Weddings & Conferences**
+  - Added `isMultiDay`, `multiDayName`, and `multiDayParentId` fields to Booking model
+  - Added self-reference relationship for parent event and child sessions
+  - Created `createMultiDayEvent` action to create parent event with multiple sessions
+  - Created `getMultiDayEvent` action to fetch event with all sessions
+  - Created `addSessionToMultiDayEvent` action to add sessions to existing events
+  - Created `updateMultiDaySession` action to update individual sessions
+  - Created `deleteMultiDaySession` action with automatic parent time recalculation
+  - Created `deleteMultiDayEvent` action to delete entire event with all sessions
+  - Created `getMultiDayEvents` action to list all multi-day events with session counts
+  - Session times automatically update parent event's overall start/end times
+
 - **Buffer Time Between Bookings**
   - Added `bufferBeforeMinutes` and `bufferAfterMinutes` fields to BookingType model (default settings)
   - Added per-booking buffer time override fields to Booking model
@@ -73,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added batch delete confirmation dialog
   - Added accent color customization per property (override template default)
   - Added color picker with 8 preset colors and custom hex input with live preview
-  - Added accent color applied to: submit button, agent avatar, footer icon, and links
+  - Added accent color applied to: submit button, agent avatar, footer icon, feature checkmarks, and links
+  - Added accent color and open house dates preserved when duplicating property websites
   - Added open house scheduling with start/end date-time
   - Added automatic 2-hour default duration for open houses
   - Added sticky open house banner on public property pages (uses accent color)
@@ -139,8 +170,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `getPendingPayouts` for photographers with approved earnings
   - `createPayoutBatch` for creating payout batches from approved earnings
   - `processPayoutBatch` for sending money via Stripe Connect transfers
+
   - `cancelPayoutBatch` for canceling pending batches
   - `getPayoutStats` for payout statistics
+
+- **Phase 2: Brokerage Management UI**
+  - `/brokerages` - Brokerages list page with stats cards (total, active, agents, revenue)
+  - `/brokerages/new` - Create new brokerage form with all fields
+  - `/brokerages/[id]` - Brokerage detail page with agents list, contracts, and sidebar info
+  - `/brokerages/[id]/edit` - Edit brokerage form
+  - Search and filter functionality for brokerages list
+  - Active/inactive toggle with status badges
+  - Revenue tracking per brokerage and per agent
+
+- **Phase 2: Photographer Pay & Payouts UI**
+  - `/settings/photographer-pay` - Pay rate configuration for team members
+    - Stats cards showing total earned, pending, approved, and paid amounts
+    - Add/delete pay rates per team member per service
+    - Support for percentage, fixed, and hourly rate types
+    - Optional min/max pay constraints
+    - Rate type explanation cards
+  - `/settings/payouts` - Payout batch management
+    - Stats cards showing total paid out, pending, completed/total batches
+    - Pending payouts list with photographer selection
+    - Select all/individual photographer selection for batch creation
+    - Stripe Connect status indicator for each photographer
+    - Payout history table with batch number, period, recipients, amount, status
+    - Process and cancel batch actions
+    - Stripe Connect information card
 
 - **Order Stripe Checkout Integration**
   - Full checkout flow for public order pages with Stripe payment

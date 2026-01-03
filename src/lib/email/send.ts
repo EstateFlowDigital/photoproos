@@ -33,6 +33,7 @@ import { PropertyLeadEmail } from "@/emails/property-lead";
 import { GalleryExpirationEmail } from "@/emails/gallery-expiration";
 import { OrderConfirmationEmail } from "@/emails/order-confirmation";
 import { ContractSigningEmail } from "@/emails/contract-signing";
+import { TeamInvitationEmail } from "@/emails/team-invitation";
 
 /**
  * Send gallery delivered notification to client
@@ -415,5 +416,48 @@ export async function sendContractSignedConfirmationEmail(params: {
       isReminder: false,
     }),
     replyTo: photographerEmail,
+  });
+}
+
+// =============================================================================
+// Team Invitation Emails
+// =============================================================================
+
+/**
+ * Send team invitation email
+ *
+ * Triggered by: createInvitation() action
+ * Location: src/lib/actions/invitations.ts
+ */
+export async function sendTeamInvitationEmail(params: {
+  to: string;
+  inviteeName?: string;
+  organizationName: string;
+  inviterName: string;
+  role: "admin" | "member";
+  inviteUrl: string;
+  expiresInDays?: number;
+}) {
+  const {
+    to,
+    inviteeName = "there",
+    organizationName,
+    inviterName,
+    role,
+    inviteUrl,
+    expiresInDays = 7,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `${inviterName} invited you to join ${organizationName}`,
+    react: TeamInvitationEmail({
+      inviteeName,
+      organizationName,
+      inviterName,
+      role,
+      inviteUrl,
+      expiresInDays,
+    }),
   });
 }

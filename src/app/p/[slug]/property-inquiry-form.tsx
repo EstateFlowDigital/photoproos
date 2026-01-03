@@ -103,7 +103,8 @@ export function PropertyInquiryForm({
               website: "",
             });
           }}
-          className="mt-4 text-sm text-[var(--primary)] hover:underline"
+          className={`mt-4 text-sm hover:underline ${!accentColor ? "text-[var(--primary)]" : ""}`}
+          style={accentColor ? { color: accentColor } : undefined}
         >
           Send another inquiry
         </button>

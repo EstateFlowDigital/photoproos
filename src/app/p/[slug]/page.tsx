@@ -419,7 +419,10 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
                 <div className="grid gap-3 sm:grid-cols-2">
                   {website.features.map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <CheckIcon className={`h-5 w-5 flex-shrink-0 ${styles.successColor}`} />
+                      <CheckIcon
+                        className={`h-5 w-5 flex-shrink-0 ${!customAccentColor ? styles.successColor : ""}`}
+                        style={customAccentColor ? { color: customAccentColor } : undefined}
+                      />
                       <span className={styles.secondaryText}>{feature}</span>
                     </div>
                   ))}
@@ -819,9 +822,9 @@ function ExternalLinkIcon({ className }: { className?: string }) {
   );
 }
 
-function CheckIcon({ className }: { className?: string }) {
+function CheckIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
     </svg>
   );

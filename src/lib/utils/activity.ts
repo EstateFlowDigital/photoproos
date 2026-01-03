@@ -1,4 +1,5 @@
 import type { ActivityType } from "@prisma/client";
+import { prisma } from "@/lib/db";
 
 export interface ActivityData {
   id: string;
@@ -62,4 +63,45 @@ export function getActivityIcon(type: ActivityType): string {
   };
 
   return iconMap[type] || "info";
+}
+
+/**
+ * Log an activity to the activity log
+ *
+ * This is a shared utility function for logging activities across the app.
+ * Activities are used for audit trails and the notifications center.
+ */
+export async function logActivity(params: {
+  organizationId: string;
+  type: ActivityType;
+  description: string;
+  userId?: string;
+  projectId?: string;
+  clientId?: string;
+  paymentId?: string;
+  bookingId?: string;
+  invoiceId?: string;
+  contractId?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    await prisma.activityLog.create({
+      data: {
+        organizationId: params.organizationId,
+        type: params.type,
+        description: params.description,
+        userId: params.userId,
+        projectId: params.projectId,
+        clientId: params.clientId,
+        paymentId: params.paymentId,
+        bookingId: params.bookingId,
+        invoiceId: params.invoiceId,
+        contractId: params.contractId,
+        metadata: params.metadata,
+      },
+    });
+  } catch (error) {
+    console.error("[Activity] Failed to log activity:", error);
+    // Don't throw - activity logging should never break the main operation
+  }
 }

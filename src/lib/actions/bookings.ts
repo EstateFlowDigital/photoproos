@@ -1471,3 +1471,461 @@ export async function markReminderSent(
     return { success: false, error: "Failed to mark reminder as sent" };
   }
 }
+
+// =============================================================================
+// Multi-Day Event Functions
+// =============================================================================
+
+export interface MultiDaySession {
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  location?: string;
+  locationNotes?: string;
+  notes?: string;
+  assignedUserId?: string;
+}
+
+export interface CreateMultiDayEventInput {
+  eventName: string;
+  clientId?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  serviceId?: string;
+  bookingTypeId?: string;
+  notes?: string;
+  sessions: MultiDaySession[];
+}
+
+/**
+ * Create a multi-day event with multiple sessions
+ * Used for weddings, conferences, and other events spanning multiple days
+ */
+export async function createMultiDayEvent(
+  input: CreateMultiDayEventInput
+): Promise<ActionResult<{ parentId: string; sessionIds: string[] }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    if (!input.sessions || input.sessions.length === 0) {
+      return { success: false, error: "At least one session is required" };
+    }
+
+    // Sort sessions by start time
+    const sortedSessions = [...input.sessions].sort(
+      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+    );
+
+    // Calculate event start and end from sessions
+    const eventStart = sortedSessions[0].startTime;
+    const eventEnd = sortedSessions[sortedSessions.length - 1].endTime;
+
+    // Create the parent event and all sessions in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the parent multi-day event
+      const parentEvent = await tx.booking.create({
+        data: {
+          organizationId,
+          title: input.eventName,
+          isMultiDay: true,
+          multiDayName: input.eventName,
+          clientId: input.clientId || null,
+          clientName: input.clientName || null,
+          clientEmail: input.clientEmail || null,
+          clientPhone: input.clientPhone || null,
+          serviceId: input.serviceId || null,
+          bookingTypeId: input.bookingTypeId || null,
+          notes: input.notes || null,
+          startTime: eventStart,
+          endTime: eventEnd,
+          status: "confirmed",
+        },
+      });
+
+      // Create each session linked to the parent
+      const sessionIds: string[] = [];
+      for (const session of sortedSessions) {
+        const sessionBooking = await tx.booking.create({
+          data: {
+            organizationId,
+            title: session.title,
+            multiDayParentId: parentEvent.id,
+            clientId: input.clientId || null,
+            clientName: input.clientName || null,
+            clientEmail: input.clientEmail || null,
+            clientPhone: input.clientPhone || null,
+            serviceId: input.serviceId || null,
+            bookingTypeId: input.bookingTypeId || null,
+            startTime: session.startTime,
+            endTime: session.endTime,
+            location: session.location || null,
+            locationNotes: session.locationNotes || null,
+            notes: session.notes || null,
+            assignedUserId: session.assignedUserId || null,
+            status: "confirmed",
+          },
+        });
+        sessionIds.push(sessionBooking.id);
+      }
+
+      return { parentId: parentEvent.id, sessionIds };
+    });
+
+    revalidatePath("/scheduling");
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Error creating multi-day event:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create multi-day event" };
+  }
+}
+
+/**
+ * Get a multi-day event with all its sessions
+ */
+export async function getMultiDayEvent(
+  eventId: string
+): Promise<ActionResult<{
+  parent: Awaited<ReturnType<typeof prisma.booking.findUnique>>;
+  sessions: Awaited<ReturnType<typeof prisma.booking.findMany>>;
+}>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const parentEvent = await prisma.booking.findUnique({
+      where: {
+        id: eventId,
+        organizationId,
+        isMultiDay: true,
+      },
+      include: {
+        client: true,
+        service: true,
+        bookingType: true,
+        assignedUser: true,
+      },
+    });
+
+    if (!parentEvent) {
+      return { success: false, error: "Multi-day event not found" };
+    }
+
+    const sessions = await prisma.booking.findMany({
+      where: {
+        multiDayParentId: eventId,
+        organizationId,
+      },
+      include: {
+        assignedUser: true,
+        locationRef: true,
+      },
+      orderBy: { startTime: "asc" },
+    });
+
+    return { success: true, data: { parent: parentEvent, sessions } };
+  } catch (error) {
+    console.error("Error fetching multi-day event:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch multi-day event" };
+  }
+}
+
+/**
+ * Add a new session to an existing multi-day event
+ */
+export async function addSessionToMultiDayEvent(
+  eventId: string,
+  session: MultiDaySession
+): Promise<ActionResult<{ sessionId: string }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify parent event exists
+    const parentEvent = await prisma.booking.findUnique({
+      where: {
+        id: eventId,
+        organizationId,
+        isMultiDay: true,
+      },
+    });
+
+    if (!parentEvent) {
+      return { success: false, error: "Multi-day event not found" };
+    }
+
+    // Create the session
+    const result = await prisma.$transaction(async (tx) => {
+      const sessionBooking = await tx.booking.create({
+        data: {
+          organizationId,
+          title: session.title,
+          multiDayParentId: eventId,
+          clientId: parentEvent.clientId,
+          clientName: parentEvent.clientName,
+          clientEmail: parentEvent.clientEmail,
+          clientPhone: parentEvent.clientPhone,
+          serviceId: parentEvent.serviceId,
+          bookingTypeId: parentEvent.bookingTypeId,
+          startTime: session.startTime,
+          endTime: session.endTime,
+          location: session.location || null,
+          locationNotes: session.locationNotes || null,
+          notes: session.notes || null,
+          assignedUserId: session.assignedUserId || null,
+          status: "confirmed",
+        },
+      });
+
+      // Update parent event start/end times if needed
+      const needsStartUpdate = session.startTime < parentEvent.startTime;
+      const needsEndUpdate = session.endTime > parentEvent.endTime;
+
+      if (needsStartUpdate || needsEndUpdate) {
+        await tx.booking.update({
+          where: { id: eventId },
+          data: {
+            ...(needsStartUpdate && { startTime: session.startTime }),
+            ...(needsEndUpdate && { endTime: session.endTime }),
+          },
+        });
+      }
+
+      return sessionBooking.id;
+    });
+
+    revalidatePath("/scheduling");
+    return { success: true, data: { sessionId: result } };
+  } catch (error) {
+    console.error("Error adding session to multi-day event:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to add session" };
+  }
+}
+
+/**
+ * Update a session within a multi-day event
+ */
+export async function updateMultiDaySession(
+  sessionId: string,
+  updates: Partial<MultiDaySession>
+): Promise<ActionResult> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify session exists and belongs to a multi-day event
+    const session = await prisma.booking.findUnique({
+      where: {
+        id: sessionId,
+        organizationId,
+      },
+      include: {
+        multiDayParent: true,
+      },
+    });
+
+    if (!session || !session.multiDayParentId) {
+      return { success: false, error: "Session not found" };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Update the session
+      await tx.booking.update({
+        where: { id: sessionId },
+        data: {
+          ...(updates.title && { title: updates.title }),
+          ...(updates.startTime && { startTime: updates.startTime }),
+          ...(updates.endTime && { endTime: updates.endTime }),
+          ...(updates.location !== undefined && { location: updates.location || null }),
+          ...(updates.locationNotes !== undefined && { locationNotes: updates.locationNotes || null }),
+          ...(updates.notes !== undefined && { notes: updates.notes || null }),
+          ...(updates.assignedUserId !== undefined && { assignedUserId: updates.assignedUserId || null }),
+        },
+      });
+
+      // Recalculate parent event times
+      const allSessions = await tx.booking.findMany({
+        where: { multiDayParentId: session.multiDayParentId! },
+        orderBy: { startTime: "asc" },
+      });
+
+      if (allSessions.length > 0) {
+        const eventStart = allSessions[0].startTime;
+        const eventEnd = allSessions[allSessions.length - 1].endTime;
+
+        await tx.booking.update({
+          where: { id: session.multiDayParentId! },
+          data: { startTime: eventStart, endTime: eventEnd },
+        });
+      }
+    });
+
+    revalidatePath("/scheduling");
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error updating multi-day session:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update session" };
+  }
+}
+
+/**
+ * Delete a session from a multi-day event
+ */
+export async function deleteMultiDaySession(
+  sessionId: string
+): Promise<ActionResult> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const session = await prisma.booking.findUnique({
+      where: {
+        id: sessionId,
+        organizationId,
+      },
+    });
+
+    if (!session || !session.multiDayParentId) {
+      return { success: false, error: "Session not found" };
+    }
+
+    const parentId = session.multiDayParentId;
+
+    await prisma.$transaction(async (tx) => {
+      // Delete the session
+      await tx.booking.delete({ where: { id: sessionId } });
+
+      // Check remaining sessions
+      const remainingSessions = await tx.booking.findMany({
+        where: { multiDayParentId: parentId },
+        orderBy: { startTime: "asc" },
+      });
+
+      if (remainingSessions.length === 0) {
+        // Delete parent if no sessions remain
+        await tx.booking.delete({ where: { id: parentId } });
+      } else {
+        // Update parent times
+        const eventStart = remainingSessions[0].startTime;
+        const eventEnd = remainingSessions[remainingSessions.length - 1].endTime;
+
+        await tx.booking.update({
+          where: { id: parentId },
+          data: { startTime: eventStart, endTime: eventEnd },
+        });
+      }
+    });
+
+    revalidatePath("/scheduling");
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error deleting multi-day session:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete session" };
+  }
+}
+
+/**
+ * Delete an entire multi-day event and all its sessions
+ */
+export async function deleteMultiDayEvent(
+  eventId: string
+): Promise<ActionResult> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const parentEvent = await prisma.booking.findUnique({
+      where: {
+        id: eventId,
+        organizationId,
+        isMultiDay: true,
+      },
+    });
+
+    if (!parentEvent) {
+      return { success: false, error: "Multi-day event not found" };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Delete all sessions
+      await tx.booking.deleteMany({
+        where: { multiDayParentId: eventId },
+      });
+
+      // Delete the parent event
+      await tx.booking.delete({ where: { id: eventId } });
+    });
+
+    revalidatePath("/scheduling");
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error deleting multi-day event:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete multi-day event" };
+  }
+}
+
+/**
+ * Get all multi-day events for the organization
+ */
+export async function getMultiDayEvents(): Promise<
+  ActionResult<
+    Array<{
+      id: string;
+      multiDayName: string | null;
+      startTime: Date;
+      endTime: Date;
+      sessionCount: number;
+      client: { id: string; fullName: string | null } | null;
+    }>
+  >
+> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const events = await prisma.booking.findMany({
+      where: {
+        organizationId,
+        isMultiDay: true,
+      },
+      include: {
+        client: {
+          select: { id: true, fullName: true },
+        },
+        _count: {
+          select: { multiDaySessions: true },
+        },
+      },
+      orderBy: { startTime: "desc" },
+    });
+
+    const result = events.map((event) => ({
+      id: event.id,
+      multiDayName: event.multiDayName,
+      startTime: event.startTime,
+      endTime: event.endTime,
+      sessionCount: event._count.multiDaySessions,
+      client: event.client,
+    }));
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Error fetching multi-day events:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch multi-day events" };
+  }
+}

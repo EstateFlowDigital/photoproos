@@ -35,6 +35,9 @@ interface Booking {
   } | null;
   clientName: string | null;
   isRecurring?: boolean;
+  isMultiDay?: boolean;
+  multiDayName?: string | null;
+  multiDayParentId?: string | null;
 }
 
 interface CalendarDay {
@@ -624,13 +627,22 @@ export function SchedulingPageClient({
         title="Scheduling"
         subtitle="Manage your upcoming shoots and bookings"
         actions={
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            New Booking
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/scheduling/booking-forms"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              <FormIcon className="h-4 w-4" />
+              Booking Forms
+            </Link>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            >
+              <PlusIcon className="h-4 w-4" />
+              New Booking
+            </button>
+          </div>
         }
       />
 
@@ -639,6 +651,7 @@ export function SchedulingPageClient({
           { label: "Calendar", href: "/scheduling", icon: <ContextCalendarIcon className="h-4 w-4" /> },
           { label: "Availability", href: "/scheduling/availability", icon: <ContextClockIcon className="h-4 w-4" /> },
           { label: "Time Off", href: "/scheduling/time-off", icon: <TimeOffIcon className="h-4 w-4" />, badge: pendingTimeOffCount },
+          { label: "Booking Forms", href: "/scheduling/booking-forms", icon: <FormIcon className="h-4 w-4" /> },
           { label: "Booking Types", href: "/scheduling/types", icon: <TagIcon className="h-4 w-4" /> },
         ]}
         integrations={[
@@ -1152,6 +1165,14 @@ function RepeatIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0v2.43l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389 5.5 5.5 0 0 1 9.2-2.466l.312.311h-2.433a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.22Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function FormIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
     </svg>
   );
 }
