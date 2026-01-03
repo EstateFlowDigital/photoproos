@@ -91,7 +91,7 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
   };
 
   return (
-    <div className="relative flex items-center gap-2">
+    <div className="relative flex flex-wrap items-center gap-2">
       {/* Primary Action based on status */}
       {currentStatus === "draft" && (
         <button

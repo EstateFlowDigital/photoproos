@@ -106,7 +106,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
         <div className="lg:col-span-2 space-y-6">
           {/* Invoice Details Card */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-foreground">{invoice.invoiceNumber}</h2>
                 <p className="text-foreground-muted mt-1">
@@ -154,7 +154,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
                 {invoice.lineItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-start justify-between py-3 border-b border-[var(--card-border)] last:border-0"
+                    className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between py-3 border-b border-[var(--card-border)] last:border-0"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -184,23 +184,23 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
 
               {/* Totals */}
               <div className="mt-6 pt-4 border-t border-[var(--card-border)] space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-foreground-muted">Subtotal</span>
                   <span className="text-foreground">{formatCurrency(invoice.subtotalCents)}</span>
                 </div>
                 {invoice.discountCents > 0 && (
-                  <div className="flex justify-between text-sm">
+                  <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-foreground-muted">Discount</span>
                     <span className="text-green-400">-{formatCurrency(invoice.discountCents)}</span>
                   </div>
                 )}
                 {invoice.taxCents > 0 && (
-                  <div className="flex justify-between text-sm">
+                  <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-foreground-muted">Tax</span>
                     <span className="text-foreground">{formatCurrency(invoice.taxCents)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-lg font-semibold pt-2 border-t border-[var(--card-border)]">
+                <div className="flex flex-col gap-1 text-lg font-semibold pt-2 border-t border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-foreground">Total</span>
                   <span className="text-foreground">{formatCurrency(invoice.totalCents)}</span>
                 </div>
@@ -237,7 +237,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h3 className="font-semibold text-foreground mb-4">Payment Details</h3>
             <div className="space-y-3">
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm text-foreground-muted">Due Date</span>
                 <span className={cn(
                   "text-sm font-medium",
@@ -246,14 +246,14 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
                   {formatDate(invoice.dueDate)}
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm text-foreground-muted">Amount Due</span>
                 <span className="text-sm font-medium text-foreground">
                   {invoice.status === "paid" ? formatCurrency(0) : formatCurrency(invoice.totalCents)}
                 </span>
               </div>
               {invoice.paidAt && (
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm text-foreground-muted">Paid On</span>
                   <span className="text-sm font-medium text-green-400">
                     {formatDate(invoice.paidAt)}

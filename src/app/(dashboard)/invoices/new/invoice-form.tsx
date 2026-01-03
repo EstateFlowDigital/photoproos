@@ -154,7 +154,7 @@ export function InvoiceForm({ clients, services }: InvoiceFormProps) {
 
       {/* Line Items */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
           <h3 className="font-semibold text-foreground">Line Items</h3>
           <button
             type="button"
@@ -168,7 +168,7 @@ export function InvoiceForm({ clients, services }: InvoiceFormProps) {
 
         <div className="space-y-4">
           {lineItems.map((item, index) => (
-            <div key={item.id} className="flex gap-3 items-start">
+            <div key={item.id} className="flex flex-col gap-3 lg:flex-row">
               <div className="flex-1 space-y-2">
                 <input
                   type="text"
@@ -177,8 +177,8 @@ export function InvoiceForm({ clients, services }: InvoiceFormProps) {
                   onChange={(e) => updateLineItem(item.id, { description: e.target.value })}
                   className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                 />
-                <div className="flex gap-2">
-                  <div className="w-24">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="w-full sm:w-24">
                     <input
                       type="number"
                       min="1"
@@ -205,7 +205,7 @@ export function InvoiceForm({ clients, services }: InvoiceFormProps) {
                   <select
                     value={item.itemType}
                     onChange={(e) => updateLineItem(item.id, { itemType: e.target.value as LineItemType })}
-                    className="w-28 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-2 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    className="w-full sm:w-28 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-2 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   >
                     <option value="service">Service</option>
                     <option value="travel">Travel</option>
@@ -213,8 +213,8 @@ export function InvoiceForm({ clients, services }: InvoiceFormProps) {
                   </select>
                 </div>
               </div>
-              <div className="flex items-center gap-2 pt-2">
-                <span className="text-sm font-medium text-foreground w-20 text-right">
+              <div className="flex w-full items-center justify-between gap-2 pt-2 sm:w-auto sm:justify-start">
+                <span className="text-sm font-medium text-foreground w-auto sm:w-20 sm:text-right">
                   {formatCurrency(item.unitCents * item.quantity)}
                 </span>
                 {lineItems.length > 1 && (
@@ -252,7 +252,7 @@ export function InvoiceForm({ clients, services }: InvoiceFormProps) {
         )}
 
         {/* Subtotal */}
-        <div className="mt-4 pt-4 border-t border-[var(--card-border)] flex justify-between">
+        <div className="mt-4 pt-4 border-t border-[var(--card-border)] flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="font-medium text-foreground">Subtotal</span>
           <span className="font-semibold text-foreground">{formatCurrency(subtotal)}</span>
         </div>
@@ -295,7 +295,7 @@ export function InvoiceForm({ clients, services }: InvoiceFormProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
         <button
           type="button"
           onClick={() => router.back()}
