@@ -138,7 +138,7 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="auto-grid grid-min-200 grid-gap-4">
         <StatCard
           label="Total Sent"
           value={stats.totalSent.toLocaleString()}
