@@ -670,6 +670,10 @@ export async function getBookingForm(id: string) {
         servicePriceCents: s.service.priceCents,
         sortOrder: s.sortOrder,
         isDefault: s.isDefault,
+        service: {
+          id: s.service.id,
+          name: s.service.name,
+        },
       })),
       submissionCount: bookingForm._count.submissions,
       viewCount: bookingForm.viewCount,
@@ -742,6 +746,7 @@ export async function getBookingFormBySlug(slug: string) {
       id: bookingForm.id,
       name: bookingForm.name,
       slug: bookingForm.slug,
+      organizationId: bookingForm.organization.id,
       description: bookingForm.description,
       industry: bookingForm.industry,
       headline: bookingForm.headline,
