@@ -351,7 +351,7 @@ export default async function DashboardPage() {
       subtitle: task.project?.name || "Task",
       date: task.dueDate?.toISOString() ?? "",
       href: "/projects",
-      type: "task",
+      type: "task" as const,
     })),
     ...calendarBookings.map((booking) => ({
       id: `booking-${booking.id}`,
@@ -359,7 +359,7 @@ export default async function DashboardPage() {
       subtitle: booking.client?.company || booking.client?.fullName || "Booking",
       date: booking.startTime.toISOString(),
       href: `/scheduling/${booking.id}`,
-      type: "booking",
+      type: "booking" as const,
     })),
     ...calendarOpenHouses.map((site) => ({
       id: `open-house-${site.id}`,
@@ -367,7 +367,7 @@ export default async function DashboardPage() {
       subtitle: site.address,
       date: site.openHouseDate!.toISOString(),
       href: `/properties/${site.projectId}`,
-      type: "open_house",
+      type: "open_house" as const,
     })),
   ];
 
