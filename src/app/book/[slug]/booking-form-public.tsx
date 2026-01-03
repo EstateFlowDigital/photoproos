@@ -8,6 +8,7 @@ import { submitBookingForm } from "@/lib/actions/booking-forms";
 import type { Industry, FormFieldType } from "@prisma/client";
 
 interface FieldValidation {
+  options?: string[];
   minLength?: number;
   maxLength?: number;
   min?: number;
@@ -37,7 +38,7 @@ interface FormService {
     name: string;
     description: string | null;
     price: number | null;
-    duration: number | null;
+    duration: string | number | null;
   };
 }
 
@@ -250,7 +251,7 @@ export function BookingFormPublic({ form, organization }: BookingFormPublicProps
                 What type of photography do you need?
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {organization?.industries.map((ind) => (
+                {organization?.industries?.map((ind) => (
                   <button
                     key={ind}
                     type="button"

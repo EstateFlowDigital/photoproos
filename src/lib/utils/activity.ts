@@ -97,7 +97,7 @@ export async function logActivity(params: {
         bookingId: params.bookingId,
         invoiceId: params.invoiceId,
         contractId: params.contractId,
-        metadata: params.metadata,
+        metadata: params.metadata as object | undefined,
       },
     });
   } catch (error) {

@@ -62,6 +62,7 @@ export function DashboardSidebar({
           label: "Payments",
           href: "/payments",
           icon: PaymentsIcon,
+          badge: undefined as number | undefined,
         },
       ]
     : navItems;

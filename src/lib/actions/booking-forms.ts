@@ -773,19 +773,30 @@ export async function getBookingFormBySlug(slug: string) {
         isRequired: f.isRequired,
         sortOrder: f.sortOrder,
         industries: f.industries,
-        validation: f.validation,
+        validation: f.validation as {
+          options?: string[];
+          minLength?: number;
+          maxLength?: number;
+          min?: number;
+          max?: number;
+          pattern?: string;
+        } | null,
         conditionalOn: f.conditionalOn,
         conditionalValue: f.conditionalValue,
       })),
       services: bookingForm.services
         .filter((s) => s.service.isActive)
         .map((s) => ({
-          id: s.service.id,
-          name: s.service.name,
-          description: s.service.description,
-          priceCents: s.service.priceCents,
-          duration: s.service.duration,
+          serviceId: s.serviceId,
+          sortOrder: s.sortOrder,
           isDefault: s.isDefault,
+          service: {
+            id: s.service.id,
+            name: s.service.name,
+            description: s.service.description,
+            price: s.service.priceCents ? s.service.priceCents / 100 : null,
+            duration: s.service.duration,
+          },
         })),
     };
   } catch (error) {

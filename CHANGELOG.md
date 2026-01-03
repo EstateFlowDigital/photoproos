@@ -33,6 +33,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated gallery new form to pass services to createGallery action
   - createGallery action now uses transaction to atomically create gallery and service associations
 
+- **Unified Creation Wizard** (`/create` route)
+  - New multi-step wizard for creating projects with client, services, gallery, and scheduling
+  - Step 1: Client selection - choose existing client or create new client inline
+  - Step 2: Services selection - multi-select services with primary designation and price totals
+  - Step 3: Gallery creation - set name, description, and password settings
+  - Step 4: Scheduling (optional) - set booking date, time, and location
+  - Step 5: Review - summary of all selections before submission
+  - `createProjectBundle` server action for atomic project creation
+  - `getWizardData` helper for fetching all required data (clients, services, locations, booking types)
+  - Added "New Project" button to dashboard sidebar
+  - Smooth step transitions with Framer Motion animations
+
 - **UI Components Library Expansion**
   - Added Card components (Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter)
   - Added Tabs components (Tabs, TabsList, TabsTrigger, TabsContent) using Radix UI

@@ -96,13 +96,6 @@ export function ServicesStep({
     }).format(cents / 100);
   };
 
-  const formatDuration = (minutes: number) => {
-    if (minutes < 60) return `${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  };
-
   const getTotalPrice = () => {
     return formData.selectedServices.reduce((total, selected) => {
       const service = services.find((s) => s.id === selected.serviceId);
@@ -218,7 +211,7 @@ export function ServicesStep({
                       </span>
                       {service.duration && (
                         <span className="text-foreground-muted">
-                          {formatDuration(service.duration)}
+                          {service.duration}
                         </span>
                       )}
                     </div>

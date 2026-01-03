@@ -150,8 +150,6 @@ export async function createProjectBundle(
           password: input.galleryPassword || null,
           allowDownloads: true,
           showWatermark: false,
-          allowFavorites: true,
-          sendNotifications: true,
         },
       });
 
@@ -182,7 +180,6 @@ export async function createProjectBundle(
         const booking = await tx.booking.create({
           data: {
             organizationId: auth.organizationId,
-            projectId: gallery.id,
             clientId,
             title: input.galleryName.trim(),
             startTime: input.scheduledDate,
@@ -203,7 +200,6 @@ export async function createProjectBundle(
         const invoice = await tx.invoice.create({
           data: {
             organizationId: auth.organizationId,
-            projectId: gallery.id,
             clientId,
             invoiceNumber,
             status: "draft",
@@ -214,14 +210,6 @@ export async function createProjectBundle(
           },
         });
         invoiceId = invoice.id;
-
-        // Update gallery with invoice requirement if needed
-        if (input.requirePaymentFirst) {
-          await tx.project.update({
-            where: { id: gallery.id },
-            data: { requirePayment: true },
-          });
-        }
       }
 
       return {
@@ -288,10 +276,11 @@ export async function getWizardData() {
         where: { organizationId: auth.organizationId },
         select: {
           id: true,
-          name: true,
-          address: true,
+          formattedAddress: true,
+          city: true,
+          state: true,
         },
-        orderBy: { name: "asc" },
+        orderBy: { formattedAddress: "asc" },
       }),
       prisma.bookingType.findMany({
         where: {

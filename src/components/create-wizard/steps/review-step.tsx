@@ -24,8 +24,9 @@ interface Service {
 
 interface Location {
   id: string;
-  name: string;
-  address: string | null;
+  formattedAddress: string;
+  city: string | null;
+  state: string | null;
 }
 
 interface BookingType {
@@ -243,7 +244,7 @@ export function ReviewStep({
                 {formatDate(formData.scheduledDate)} - {formatDate(formData.scheduledEndDate)}
               </p>
               {location && (
-                <p className="text-foreground-muted">{location.name}</p>
+                <p className="text-foreground-muted">{location.formattedAddress}</p>
               )}
               {formData.bookingNotes && (
                 <p className="text-foreground-muted italic">{formData.bookingNotes}</p>

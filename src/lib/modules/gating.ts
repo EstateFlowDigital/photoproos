@@ -152,6 +152,7 @@ export function getFilteredNavigation(context: GatingContext) {
       label: m.name,
       href: m.href,
       icon: m.icon,
+      badge: undefined as number | undefined,
     }));
 }
 
