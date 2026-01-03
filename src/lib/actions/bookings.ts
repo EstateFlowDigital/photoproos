@@ -25,6 +25,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { nanoid } from "nanoid";
 import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import { logActivity } from "@/lib/utils/activity";
+import { sendSMSToClient } from "@/lib/sms/send";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -492,6 +493,47 @@ export async function confirmBooking(
         console.error(
           `[Bookings] Failed to send confirmation to ${clientEmail}:`,
           emailError
+        );
+        // Don't fail the action - booking was confirmed successfully
+      }
+    }
+
+    // Send SMS confirmation if client has a phone and SMS is enabled
+    const clientPhone = booking.client?.phone || booking.clientPhone;
+    if (booking.clientId && clientPhone) {
+      try {
+        const smsResult = await sendSMSToClient({
+          organizationId,
+          clientId: booking.clientId,
+          templateType: "booking_confirmation",
+          bookingId: booking.id,
+          variables: {
+            clientName: clientName || "there",
+            bookingDate: booking.startTime.toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            }),
+            bookingTime: booking.startTime.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            serviceName: booking.title,
+            locationAddress: booking.location || "TBD",
+            photographerName: "Your Photographer",
+          },
+        });
+
+        if (smsResult.success) {
+          console.log(`[Bookings] Confirmation SMS sent to ${clientPhone}`);
+        } else {
+          console.log(`[Bookings] SMS not sent: ${smsResult.error}`);
+        }
+      } catch (smsError) {
+        console.error(
+          `[Bookings] Failed to send SMS to ${clientPhone}:`,
+          smsError
         );
         // Don't fail the action - booking was confirmed successfully
       }

@@ -1,63 +1,33 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { sendSMS, sendTemplatedSMS } from "@/lib/sms/send";
-import { templateVariables, defaultTemplates } from "@/lib/sms/templates";
+import {
+  sendSMSToClient,
+  sendSMSDirect,
+  DEFAULT_TEMPLATES,
+  TEMPLATE_VARIABLES,
+} from "@/lib/sms/send";
 import type { SMSTemplateType, SMSDeliveryStatus } from "@prisma/client";
 
+type ActionResult<T = void> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+
 // ============================================================================
-// TYPES
+// SMS SETTINGS
 // ============================================================================
 
-interface ActionResult<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-interface SMSSettings {
+export interface SMSSettings {
   smsEnabled: boolean;
   twilioAccountSid: string | null;
   twilioAuthToken: string | null;
   twilioPhoneNumber: string | null;
+  hasTwilioCredentials: boolean;
 }
 
-interface SMSTemplateWithStats {
-  id: string;
-  name: string;
-  templateType: SMSTemplateType;
-  content: string;
-  availableVariables: string[];
-  isActive: boolean;
-  isDefault: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  _count: {
-    smsLogs: number;
-  };
-}
-
-interface SMSLogWithRelations {
-  id: string;
-  toPhone: string;
-  fromPhone: string;
-  content: string;
-  deliveryStatus: SMSDeliveryStatus;
-  errorMessage: string | null;
-  sentAt: Date | null;
-  deliveredAt: Date | null;
-  failedAt: Date | null;
-  createdAt: Date;
-  template: {
-    id: string;
-    name: string;
-    templateType: SMSTemplateType;
-  } | null;
-}
-
-interface SMSStats {
+export interface SMSStats {
   totalSent: number;
   delivered: number;
   failed: number;
@@ -65,34 +35,15 @@ interface SMSStats {
   deliveryRate: number;
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-async function getOrganizationId(): Promise<string | null> {
-  const { orgId } = await auth();
-  if (!orgId) return null;
-
-  const org = await prisma.organization.findUnique({
-    where: { clerkOrganizationId: orgId },
-    select: { id: true },
-  });
-
-  return org?.id ?? null;
-}
-
-// ============================================================================
-// SMS SETTINGS
-// ============================================================================
-
+/**
+ * Get SMS settings for the organization
+ */
 export async function getSMSSettings(): Promise<ActionResult<SMSSettings>> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
 
-    const org = await prisma.organization.findUnique({
+    const organization = await prisma.organization.findUnique({
       where: { id: organizationId },
       select: {
         smsEnabled: true,
@@ -102,303 +53,58 @@ export async function getSMSSettings(): Promise<ActionResult<SMSSettings>> {
       },
     });
 
-    if (!org) {
+    if (!organization) {
       return { success: false, error: "Organization not found" };
     }
 
     return {
       success: true,
       data: {
-        smsEnabled: org.smsEnabled,
-        twilioAccountSid: org.twilioAccountSid,
-        twilioAuthToken: org.twilioAuthToken ? "••••••••" : null, // Mask the token
-        twilioPhoneNumber: org.twilioPhoneNumber,
+        smsEnabled: organization.smsEnabled,
+        twilioAccountSid: organization.twilioAccountSid,
+        twilioAuthToken: organization.twilioAuthToken ? "••••••••" : null, // Mask the token
+        twilioPhoneNumber: organization.twilioPhoneNumber,
+        hasTwilioCredentials: !!(
+          organization.twilioAccountSid &&
+          organization.twilioAuthToken &&
+          organization.twilioPhoneNumber
+        ),
       },
     };
-  } catch (err) {
-    console.error("Failed to get SMS settings:", err);
+  } catch (error) {
+    console.error("Error getting SMS settings:", error);
     return { success: false, error: "Failed to get SMS settings" };
   }
 }
 
-export async function updateSMSSettings(data: {
-  smsEnabled?: boolean;
-  twilioAccountSid?: string | null;
-  twilioAuthToken?: string | null;
-  twilioPhoneNumber?: string | null;
-}): Promise<ActionResult<void>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    await prisma.organization.update({
-      where: { id: organizationId },
-      data: {
-        smsEnabled: data.smsEnabled,
-        twilioAccountSid: data.twilioAccountSid,
-        // Only update auth token if provided and not masked
-        ...(data.twilioAuthToken && !data.twilioAuthToken.startsWith("••")
-          ? { twilioAuthToken: data.twilioAuthToken }
-          : {}),
-        twilioPhoneNumber: data.twilioPhoneNumber,
-      },
-    });
-
-    revalidatePath("/settings/sms");
-    return { success: true };
-  } catch (err) {
-    console.error("Failed to update SMS settings:", err);
-    return { success: false, error: "Failed to update SMS settings" };
-  }
-}
-
-// ============================================================================
-// SMS TEMPLATES
-// ============================================================================
-
-export async function getSMSTemplates(): Promise<ActionResult<SMSTemplateWithStats[]>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const templates = await prisma.sMSTemplate.findMany({
-      where: { organizationId },
-      include: {
-        _count: {
-          select: { smsLogs: true },
-        },
-      },
-      orderBy: [{ templateType: "asc" }, { isDefault: "desc" }],
-    });
-
-    return { success: true, data: templates };
-  } catch (err) {
-    console.error("Failed to get SMS templates:", err);
-    return { success: false, error: "Failed to get SMS templates" };
-  }
-}
-
-export async function getSMSTemplate(id: string): Promise<ActionResult<SMSTemplateWithStats>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const template = await prisma.sMSTemplate.findFirst({
-      where: { id, organizationId },
-      include: {
-        _count: {
-          select: { smsLogs: true },
-        },
-      },
-    });
-
-    if (!template) {
-      return { success: false, error: "Template not found" };
-    }
-
-    return { success: true, data: template };
-  } catch (err) {
-    console.error("Failed to get SMS template:", err);
-    return { success: false, error: "Failed to get SMS template" };
-  }
-}
-
-export async function createSMSTemplate(data: {
-  name: string;
-  templateType: SMSTemplateType;
-  content: string;
-  isActive?: boolean;
-}): Promise<ActionResult<{ id: string }>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const template = await prisma.sMSTemplate.create({
-      data: {
-        organizationId,
-        name: data.name,
-        templateType: data.templateType,
-        content: data.content,
-        availableVariables: templateVariables[data.templateType],
-        isActive: data.isActive ?? true,
-        isDefault: false,
-      },
-    });
-
-    revalidatePath("/settings/sms/templates");
-    return { success: true, data: { id: template.id } };
-  } catch (err) {
-    console.error("Failed to create SMS template:", err);
-    return { success: false, error: "Failed to create SMS template" };
-  }
-}
-
-export async function updateSMSTemplate(
-  id: string,
-  data: {
-    name?: string;
-    content?: string;
-    isActive?: boolean;
-  }
-): Promise<ActionResult<void>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    await prisma.sMSTemplate.updateMany({
-      where: { id, organizationId },
-      data,
-    });
-
-    revalidatePath("/settings/sms/templates");
-    return { success: true };
-  } catch (err) {
-    console.error("Failed to update SMS template:", err);
-    return { success: false, error: "Failed to update SMS template" };
-  }
-}
-
-export async function deleteSMSTemplate(id: string): Promise<ActionResult<void>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    await prisma.sMSTemplate.deleteMany({
-      where: { id, organizationId },
-    });
-
-    revalidatePath("/settings/sms/templates");
-    return { success: true };
-  } catch (err) {
-    console.error("Failed to delete SMS template:", err);
-    return { success: false, error: "Failed to delete SMS template" };
-  }
-}
-
-export async function seedDefaultTemplates(): Promise<ActionResult<void>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    // Create default templates for each type
-    const templateTypes = Object.keys(defaultTemplates) as SMSTemplateType[];
-
-    for (const templateType of templateTypes) {
-      if (templateType === "custom") continue; // Skip custom type
-
-      const existing = await prisma.sMSTemplate.findFirst({
-        where: { organizationId, templateType, isDefault: true },
-      });
-
-      if (!existing) {
-        const defaultTemplate = defaultTemplates[templateType];
-        await prisma.sMSTemplate.create({
-          data: {
-            organizationId,
-            name: defaultTemplate.name,
-            templateType,
-            content: defaultTemplate.content,
-            availableVariables: templateVariables[templateType],
-            isActive: true,
-            isDefault: true,
-          },
-        });
-      }
-    }
-
-    revalidatePath("/settings/sms/templates");
-    return { success: true };
-  } catch (err) {
-    console.error("Failed to seed default templates:", err);
-    return { success: false, error: "Failed to seed default templates" };
-  }
-}
-
-// ============================================================================
-// SMS LOGS
-// ============================================================================
-
-export async function getSMSLogs(options?: {
-  limit?: number;
-  offset?: number;
-  status?: SMSDeliveryStatus;
-  bookingId?: string;
-  clientId?: string;
-}): Promise<ActionResult<{ logs: SMSLogWithRelations[]; total: number }>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const { limit = 50, offset = 0, status, bookingId, clientId } = options || {};
-
-    const where = {
-      organizationId,
-      ...(status ? { deliveryStatus: status } : {}),
-      ...(bookingId ? { bookingId } : {}),
-      ...(clientId ? { clientId } : {}),
-    };
-
-    const [logs, total] = await Promise.all([
-      prisma.sMSLog.findMany({
-        where,
-        include: {
-          template: {
-            select: {
-              id: true,
-              name: true,
-              templateType: true,
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.sMSLog.count({ where }),
-    ]);
-
-    return { success: true, data: { logs, total } };
-  } catch (err) {
-    console.error("Failed to get SMS logs:", err);
-    return { success: false, error: "Failed to get SMS logs" };
-  }
-}
-
+/**
+ * Get SMS statistics for the organization
+ */
 export async function getSMSStats(): Promise<ActionResult<SMSStats>> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
 
     const [totalSent, delivered, failed, pending] = await Promise.all([
       prisma.sMSLog.count({ where: { organizationId } }),
-      prisma.sMSLog.count({ where: { organizationId, deliveryStatus: "delivered" } }),
       prisma.sMSLog.count({
-        where: { organizationId, deliveryStatus: { in: ["failed", "undelivered"] } },
+        where: { organizationId, deliveryStatus: "delivered" },
       }),
       prisma.sMSLog.count({
-        where: { organizationId, deliveryStatus: { in: ["queued", "sent"] } },
+        where: {
+          organizationId,
+          deliveryStatus: { in: ["failed", "undelivered"] },
+        },
+      }),
+      prisma.sMSLog.count({
+        where: {
+          organizationId,
+          deliveryStatus: { in: ["queued", "sent"] },
+        },
       }),
     ]);
 
-    const deliveryRate = totalSent > 0 ? (delivered / totalSent) * 100 : 0;
+    const deliveryRate = totalSent > 0 ? Math.round((delivered / totalSent) * 100) : 0;
 
     return {
       success: true,
@@ -407,258 +113,476 @@ export async function getSMSStats(): Promise<ActionResult<SMSStats>> {
         delivered,
         failed,
         pending,
-        deliveryRate: Math.round(deliveryRate * 10) / 10,
+        deliveryRate,
       },
     };
-  } catch (err) {
-    console.error("Failed to get SMS stats:", err);
+  } catch (error) {
+    console.error("Error getting SMS stats:", error);
     return { success: false, error: "Failed to get SMS stats" };
   }
 }
 
-// ============================================================================
-// SEND SMS
-// ============================================================================
-
-export async function sendManualSMS(data: {
-  to: string;
-  message: string;
-  bookingId?: string;
-  clientId?: string;
-}): Promise<ActionResult<{ smsLogId: string }>> {
+/**
+ * Update SMS settings for the organization
+ */
+export async function updateSMSSettings(data: {
+  smsEnabled?: boolean;
+  twilioAccountSid?: string | null;
+  twilioAuthToken?: string | null;
+  twilioPhoneNumber?: string | null;
+}): Promise<ActionResult> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
 
-    const result = await sendSMS({
+    await prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        smsEnabled: data.smsEnabled,
+        twilioAccountSid: data.twilioAccountSid || null,
+        twilioAuthToken: data.twilioAuthToken || null,
+        twilioPhoneNumber: data.twilioPhoneNumber || null,
+      },
+    });
+
+    revalidatePath("/settings/sms");
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error updating SMS settings:", error);
+    return { success: false, error: "Failed to update SMS settings" };
+  }
+}
+
+/**
+ * Test SMS configuration by sending a test message
+ */
+export async function sendTestSMS(toPhone: string): Promise<ActionResult> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const result = await sendSMSDirect({
       organizationId,
-      to: data.to,
-      message: data.message,
-      bookingId: data.bookingId,
-      clientId: data.clientId,
+      toPhone,
+      content:
+        "This is a test message from PhotoProOS to verify your SMS configuration is working correctly.",
     });
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      return { success: false, error: result.error || "Failed to send test SMS" };
+    }
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error sending test SMS:", error);
+    return { success: false, error: "Failed to send test SMS" };
+  }
+}
+
+// ============================================================================
+// SMS TEMPLATES
+// ============================================================================
+
+export interface SMSTemplateData {
+  id: string;
+  name: string;
+  templateType: SMSTemplateType;
+  content: string;
+  availableVariables: string[];
+  isActive: boolean;
+  isDefault: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Get all SMS templates for the organization
+ */
+export async function getSMSTemplates(): Promise<
+  ActionResult<
+    Array<
+      SMSTemplateData & {
+        _count: { smsLogs: number };
+      }
+    >
+  >
+> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const templates = await prisma.sMSTemplate.findMany({
+      where: { organizationId },
+      include: {
+        _count: {
+          select: { smsLogs: true },
+        },
+      },
+      orderBy: [{ templateType: "asc" }, { createdAt: "desc" }],
+    });
+
+    return { success: true, data: templates };
+  } catch (error) {
+    console.error("Error getting SMS templates:", error);
+    return { success: false, error: "Failed to get SMS templates" };
+  }
+}
+
+/**
+ * Seed default SMS templates for the organization
+ */
+export async function seedDefaultTemplates(): Promise<ActionResult> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const templateTypes: SMSTemplateType[] = [
+      "booking_confirmation",
+      "booking_reminder",
+      "photographer_en_route",
+      "photographer_arrived",
+      "gallery_ready",
+      "invoice_sent",
+      "payment_received",
+    ];
+
+    const templateLabels: Record<SMSTemplateType, string> = {
+      booking_confirmation: "Booking Confirmation",
+      booking_reminder: "Booking Reminder",
+      photographer_en_route: "Photographer En Route",
+      photographer_arrived: "Photographer Arrived",
+      gallery_ready: "Gallery Ready",
+      invoice_sent: "Invoice Sent",
+      payment_received: "Payment Received",
+      custom: "Custom Message",
+    };
+
+    // Check existing templates
+    const existingTemplates = await prisma.sMSTemplate.findMany({
+      where: { organizationId },
+      select: { templateType: true },
+    });
+
+    const existingTypes = new Set(existingTemplates.map((t) => t.templateType));
+
+    // Create templates that don't exist yet
+    const templatesToCreate = templateTypes.filter(
+      (type) => !existingTypes.has(type)
+    );
+
+    if (templatesToCreate.length === 0) {
+      return { success: true, data: undefined };
+    }
+
+    await prisma.sMSTemplate.createMany({
+      data: templatesToCreate.map((type) => ({
+        organizationId,
+        name: templateLabels[type],
+        templateType: type,
+        content: DEFAULT_TEMPLATES[type],
+        availableVariables: TEMPLATE_VARIABLES[type],
+        isActive: true,
+        isDefault: true,
+      })),
+    });
+
+    revalidatePath("/settings/sms");
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error seeding default templates:", error);
+    return { success: false, error: "Failed to create default templates" };
+  }
+}
+
+/**
+ * Get available template types with their default content
+ */
+export async function getTemplateTypes(): Promise<
+  ActionResult<
+    Array<{
+      type: SMSTemplateType;
+      label: string;
+      defaultContent: string;
+      variables: string[];
+    }>
+  >
+> {
+  const types: Array<{
+    type: SMSTemplateType;
+    label: string;
+    defaultContent: string;
+    variables: string[];
+  }> = [
+    {
+      type: "booking_confirmation",
+      label: "Booking Confirmation",
+      defaultContent: DEFAULT_TEMPLATES.booking_confirmation,
+      variables: TEMPLATE_VARIABLES.booking_confirmation,
+    },
+    {
+      type: "booking_reminder",
+      label: "Booking Reminder",
+      defaultContent: DEFAULT_TEMPLATES.booking_reminder,
+      variables: TEMPLATE_VARIABLES.booking_reminder,
+    },
+    {
+      type: "photographer_en_route",
+      label: "Photographer En Route",
+      defaultContent: DEFAULT_TEMPLATES.photographer_en_route,
+      variables: TEMPLATE_VARIABLES.photographer_en_route,
+    },
+    {
+      type: "photographer_arrived",
+      label: "Photographer Arrived",
+      defaultContent: DEFAULT_TEMPLATES.photographer_arrived,
+      variables: TEMPLATE_VARIABLES.photographer_arrived,
+    },
+    {
+      type: "gallery_ready",
+      label: "Gallery Ready",
+      defaultContent: DEFAULT_TEMPLATES.gallery_ready,
+      variables: TEMPLATE_VARIABLES.gallery_ready,
+    },
+    {
+      type: "invoice_sent",
+      label: "Invoice Sent",
+      defaultContent: DEFAULT_TEMPLATES.invoice_sent,
+      variables: TEMPLATE_VARIABLES.invoice_sent,
+    },
+    {
+      type: "payment_received",
+      label: "Payment Received",
+      defaultContent: DEFAULT_TEMPLATES.payment_received,
+      variables: TEMPLATE_VARIABLES.payment_received,
+    },
+    {
+      type: "custom",
+      label: "Custom Message",
+      defaultContent: "",
+      variables: [],
+    },
+  ];
+
+  return { success: true, data: types };
+}
+
+/**
+ * Create or update an SMS template
+ */
+export async function upsertSMSTemplate(data: {
+  id?: string;
+  name: string;
+  templateType: SMSTemplateType;
+  content: string;
+  isActive?: boolean;
+}): Promise<ActionResult<SMSTemplateData>> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const variables = TEMPLATE_VARIABLES[data.templateType] || [];
+
+    if (data.id) {
+      // Update existing template
+      const template = await prisma.sMSTemplate.update({
+        where: { id: data.id, organizationId },
+        data: {
+          name: data.name,
+          content: data.content,
+          availableVariables: variables,
+          isActive: data.isActive ?? true,
+        },
+      });
+      revalidatePath("/settings/sms");
+      return { success: true, data: template };
+    } else {
+      // Create new template
+      const template = await prisma.sMSTemplate.create({
+        data: {
+          organizationId,
+          name: data.name,
+          templateType: data.templateType,
+          content: data.content,
+          availableVariables: variables,
+          isActive: data.isActive ?? true,
+          isDefault: false,
+        },
+      });
+      revalidatePath("/settings/sms");
+      return { success: true, data: template };
+    }
+  } catch (error) {
+    console.error("Error upserting SMS template:", error);
+    return { success: false, error: "Failed to save SMS template" };
+  }
+}
+
+/**
+ * Delete an SMS template
+ */
+export async function deleteSMSTemplate(id: string): Promise<ActionResult> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    await prisma.sMSTemplate.delete({
+      where: { id, organizationId },
+    });
+
+    revalidatePath("/settings/sms");
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error deleting SMS template:", error);
+    return { success: false, error: "Failed to delete SMS template" };
+  }
+}
+
+// ============================================================================
+// SMS LOGS
+// ============================================================================
+
+export interface SMSLogData {
+  id: string;
+  toPhone: string;
+  fromPhone: string;
+  content: string;
+  deliveryStatus: SMSDeliveryStatus;
+  errorMessage: string | null;
+  sentAt: Date | null;
+  deliveredAt: Date | null;
+  createdAt: Date;
+  booking: { id: string; title: string } | null;
+  client: { id: string; fullName: string | null; email: string } | null;
+  template: { name: string; templateType: SMSTemplateType } | null;
+}
+
+/**
+ * Get SMS logs for the organization
+ */
+export async function getSMSLogs(params?: {
+  limit?: number;
+  offset?: number;
+  status?: SMSDeliveryStatus;
+}): Promise<ActionResult<{ logs: SMSLogData[]; total: number }>> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const where: {
+      organizationId: string;
+      deliveryStatus?: SMSDeliveryStatus;
+    } = {
+      organizationId,
+    };
+
+    if (params?.status) {
+      where.deliveryStatus = params.status;
+    }
+
+    const [logs, total] = await Promise.all([
+      prisma.sMSLog.findMany({
+        where,
+        include: {
+          booking: { select: { id: true, title: true } },
+          client: { select: { id: true, fullName: true, email: true } },
+          template: { select: { name: true, templateType: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: params?.limit || 50,
+        skip: params?.offset || 0,
+      }),
+      prisma.sMSLog.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        logs: logs.map((log) => ({
+          ...log,
+          deliveryStatus: log.deliveryStatus,
+          booking: log.booking
+            ? { id: log.booking.id, title: log.booking.title }
+            : null,
+          client: log.client,
+          template: log.template,
+        })),
+        total,
+      },
+    };
+  } catch (error) {
+    console.error("Error getting SMS logs:", error);
+    return { success: false, error: "Failed to get SMS logs" };
+  }
+}
+
+// ============================================================================
+// SEND SMS (Manual)
+// ============================================================================
+
+/**
+ * Send an SMS to a client using a template
+ */
+export async function sendSMSToClientAction(data: {
+  clientId: string;
+  templateType: SMSTemplateType;
+  variables: Record<string, string>;
+  bookingId?: string;
+  customContent?: string;
+}): Promise<ActionResult<{ smsLogId: string }>> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const result = await sendSMSToClient({
+      organizationId,
+      clientId: data.clientId,
+      templateType: data.templateType,
+      variables: data.variables,
+      bookingId: data.bookingId,
+      customContent: data.customContent,
+    });
+
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to send SMS" };
     }
 
     revalidatePath("/settings/sms");
     return { success: true, data: { smsLogId: result.smsLogId! } };
-  } catch (err) {
-    console.error("Failed to send SMS:", err);
+  } catch (error) {
+    console.error("Error sending SMS to client:", error);
     return { success: false, error: "Failed to send SMS" };
   }
 }
 
-export async function sendBookingConfirmationSMS(bookingId: string): Promise<ActionResult<void>> {
+/**
+ * Send a custom SMS to a phone number
+ */
+export async function sendCustomSMS(data: {
+  toPhone: string;
+  content: string;
+  clientId?: string;
+  bookingId?: string;
+}): Promise<ActionResult<{ smsLogId: string }>> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
 
-    // Get booking details
-    const booking = await prisma.booking.findFirst({
-      where: { id: bookingId, organizationId },
-      include: {
-        client: true,
-        service: true,
-        locationRef: true,
-        assignedUser: true,
-        organization: {
-          select: { name: true, publicName: true },
-        },
-      },
-    });
-
-    if (!booking) {
-      return { success: false, error: "Booking not found" };
-    }
-
-    const clientPhone = booking.clientPhone || booking.client?.phone;
-    if (!clientPhone) {
-      return { success: false, error: "Client has no phone number" };
-    }
-
-    const variables: Record<string, string> = {
-      clientName: booking.clientName || booking.client?.fullName || "Client",
-      bookingDate: booking.startTime.toLocaleDateString(),
-      bookingTime: booking.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      serviceName: booking.service?.name || booking.title,
-      locationAddress: booking.locationRef?.formattedAddress || booking.location || "",
-      photographerName: booking.assignedUser?.fullName || "Your photographer",
-      photographerPhone: booking.assignedUser?.phone || "",
-      companyName: booking.organization.publicName || booking.organization.name,
-    };
-
-    const result = await sendTemplatedSMS({
+    const result = await sendSMSDirect({
       organizationId,
-      to: clientPhone,
-      templateType: "booking_confirmation",
-      variables,
-      bookingId,
-      clientId: booking.clientId || undefined,
+      toPhone: data.toPhone,
+      content: data.content,
+      clientId: data.clientId,
+      bookingId: data.bookingId,
     });
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      return { success: false, error: result.error || "Failed to send SMS" };
     }
 
-    return { success: true };
-  } catch (err) {
-    console.error("Failed to send booking confirmation SMS:", err);
-    return { success: false, error: "Failed to send booking confirmation SMS" };
-  }
-}
-
-export async function sendPhotographerEnRouteSMS(
-  bookingId: string,
-  etaMinutes: number
-): Promise<ActionResult<void>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    // Get booking details
-    const booking = await prisma.booking.findFirst({
-      where: { id: bookingId, organizationId },
-      include: {
-        client: true,
-        assignedUser: true,
-        organization: {
-          select: { name: true, publicName: true },
-        },
-      },
-    });
-
-    if (!booking) {
-      return { success: false, error: "Booking not found" };
-    }
-
-    const clientPhone = booking.clientPhone || booking.client?.phone;
-    if (!clientPhone) {
-      return { success: false, error: "Client has no phone number" };
-    }
-
-    // Generate tracking link (this would be a public route)
-    const trackingLink = `${process.env.NEXT_PUBLIC_APP_URL}/track/${bookingId}`;
-
-    const variables: Record<string, string> = {
-      clientName: booking.clientName || booking.client?.fullName || "Client",
-      photographerName: booking.assignedUser?.fullName || "Your photographer",
-      etaMinutes: etaMinutes.toString(),
-      trackingLink,
-      companyName: booking.organization.publicName || booking.organization.name,
-    };
-
-    const result = await sendTemplatedSMS({
-      organizationId,
-      to: clientPhone,
-      templateType: "photographer_en_route",
-      variables,
-      bookingId,
-      clientId: booking.clientId || undefined,
-    });
-
-    if (!result.success) {
-      return { success: false, error: result.error };
-    }
-
-    return { success: true };
-  } catch (err) {
-    console.error("Failed to send en route SMS:", err);
-    return { success: false, error: "Failed to send en route SMS" };
-  }
-}
-
-export async function sendGalleryReadySMS(projectId: string): Promise<ActionResult<void>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    // Get project details
-    const project = await prisma.project.findFirst({
-      where: { id: projectId, organizationId },
-      include: {
-        client: true,
-        assets: { select: { id: true } },
-        deliveryLinks: { where: { isActive: true }, take: 1 },
-        organization: {
-          select: { name: true, publicName: true },
-        },
-      },
-    });
-
-    if (!project) {
-      return { success: false, error: "Project not found" };
-    }
-
-    if (!project.client?.phone) {
-      return { success: false, error: "Client has no phone number" };
-    }
-
-    const deliveryLink = project.deliveryLinks[0];
-    const galleryLink = deliveryLink
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliveryLink.slug}`
-      : `${process.env.NEXT_PUBLIC_APP_URL}/galleries/${project.id}`;
-
-    const variables: Record<string, string> = {
-      clientName: project.client.fullName || "Client",
-      galleryName: project.name,
-      galleryLink,
-      photoCount: project.assets.length.toString(),
-      companyName: project.organization.publicName || project.organization.name,
-    };
-
-    const result = await sendTemplatedSMS({
-      organizationId,
-      to: project.client.phone,
-      templateType: "gallery_ready",
-      variables,
-      clientId: project.clientId || undefined,
-    });
-
-    if (!result.success) {
-      return { success: false, error: result.error };
-    }
-
-    return { success: true };
-  } catch (err) {
-    console.error("Failed to send gallery ready SMS:", err);
-    return { success: false, error: "Failed to send gallery ready SMS" };
-  }
-}
-
-// ============================================================================
-// TEST SMS
-// ============================================================================
-
-export async function sendTestSMS(phoneNumber: string): Promise<ActionResult<void>> {
-  try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const result = await sendSMS({
-      organizationId,
-      to: phoneNumber,
-      message: "This is a test message from PhotoProOS. Your SMS integration is working correctly!",
-    });
-
-    if (!result.success) {
-      return { success: false, error: result.error };
-    }
-
-    return { success: true };
-  } catch (err) {
-    console.error("Failed to send test SMS:", err);
-    return { success: false, error: "Failed to send test SMS" };
+    revalidatePath("/settings/sms");
+    return { success: true, data: { smsLogId: result.smsLogId! } };
+  } catch (error) {
+    console.error("Error sending custom SMS:", error);
+    return { success: false, error: "Failed to send SMS" };
   }
 }

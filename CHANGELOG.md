@@ -7,7 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Twilio SMS Integration (Phase 3)**
+  - Twilio client library (`/src/lib/sms/twilio.ts`):
+    - `getTwilio()` - Get global Twilio client for platform-level operations
+    - `getOrgTwilioClient()` - Get organization-specific Twilio client
+    - `formatPhoneNumber()` - Format phone numbers to E.164 format
+    - `sendOrgSMS()` - Send SMS using organization's Twilio credentials
+  - SMS sending functions (`/src/lib/sms/send.ts`):
+    - `sendSMSToClient()` - Send templated SMS to a client
+    - `sendSMSDirect()` - Send custom SMS to a phone number
+    - Template interpolation with `{{variable}}` syntax
+    - Default templates for all notification types
+  - Server actions (`/src/lib/actions/sms.ts`):
+    - `getSMSSettings()` / `updateSMSSettings()` - Manage Twilio credentials
+    - `getSMSStats()` - Get SMS delivery statistics
+    - `getSMSTemplates()` / `upsertSMSTemplate()` / `deleteSMSTemplate()` - Template CRUD
+    - `seedDefaultTemplates()` - Create default SMS templates
+    - `getSMSLogs()` - View SMS delivery logs
+    - `sendTestSMS()` - Test SMS configuration
+  - Twilio webhook (`/api/webhooks/twilio/status/route.ts`):
+    - Receives delivery status updates from Twilio
+    - Updates SMS log with delivery status
+    - Supports logId and messageSid lookup
+  - SMS Settings UI (`/settings/sms`):
+    - Configure Twilio credentials (Account SID, Auth Token, Phone Number)
+    - Toggle SMS notifications on/off
+    - Send test SMS messages
+    - View SMS delivery statistics
+    - Manage SMS templates
+  - Database schema updates:
+    - Added relations: SMSLog → Booking, SMSLog → Client
+    - Added `smsOptIn` field to Client model
+  - Booking workflow integration:
+    - Booking confirmation sends SMS notification to client
+    - Uses templated messages with booking details
+
 ### Fixed
+- Questionnaires module now available for all industries (was previously only available for Events)
+  - Added questionnaires to modules list for real_estate, commercial, portraits, food, and product industries
+  - Added questionnaires to default enabled modules for all industries
+  - New organizations will have questionnaires enabled by default
+  - Existing organizations can enable via Settings > Industries & Features
 - Stripe Connect onboarding error "email is invalid" - was incorrectly passing organization name as email field
 - Dropbox OAuth callback foreign key error - was using Clerk org ID instead of internal database organization ID
 - Google Calendar OAuth callback foreign key error - same fix as Dropbox
@@ -211,6 +252,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Create blank template with name, slug, industry, description
     - Duplicate existing template (system or custom)
     - Automatic redirect to editor after creation
+  - Agreement Signing with Signatures
+    - Reusable `AgreementSignature` component (`src/components/portal/agreement-signature.tsx`)
+    - Draw or type signature modes with real-time preview
+    - Canvas-based signature capture with high-DPI support
+    - Signature data stored as base64 PNG
+    - Agreements with `requiresSignature: true` show signature pad
+    - Validation: must sign before accepting agreement
+    - Stored signatures visible to photographers in Response Viewer
+    - Audit trail: IP address, user agent, timestamp recorded
+  - Template Preview Page (`/questionnaires/templates/[id]/preview`)
+    - Full client-facing questionnaire preview for photographers
+    - Interactive form testing with all field types
+    - Working signature pad for agreements that require signatures
+    - Device preview modes: Desktop, Tablet, Mobile
+    - Browser chrome with simulated URL bar
+    - Progress tracking and completion validation
+    - "Preview Mode" banner with quick navigation
+    - Reset preview to test multiple times
+    - Preview button added to template editor header
 
 - **Service Territory System (Phase 4)**
   - New `ServiceTerritory` model for zone-based pricing with ZIP codes or radius

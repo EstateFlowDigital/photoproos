@@ -231,6 +231,37 @@ enum PropertyWebsiteTemplate {
   commercial
 }
 
+enum PortfolioType {
+  photographer
+  client
+}
+
+enum PortfolioTemplate {
+  modern
+  bold
+  elegant
+  minimal
+  creative
+}
+
+enum PortfolioSectionType {
+  // Preset sections
+  hero
+  about
+  gallery
+  services
+  testimonials
+  awards
+  contact
+  faq
+  // Freeform blocks
+  text
+  image
+  video
+  spacer
+  custom_html
+}
+
 enum LineItemType {
   service
   travel
@@ -629,6 +660,9 @@ model Client {
   isVIP          Boolean   @default(false)
   lastActivityAt DateTime?
 
+  // SMS preferences
+  smsOptIn Boolean @default(true) // Client consent for SMS notifications
+
   // Phase 2: Brokerage relationship (client is an agent under a brokerage)
   brokerageId String?
 
@@ -655,6 +689,9 @@ model Client {
 
   // Phase 2: Client Questionnaire System
   questionnaires ClientQuestionnaire[]
+
+  // Phase 3: SMS Integration
+  smsLogs SMSLog[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -1076,6 +1113,9 @@ model Booking {
 
   // Phase 2: Client Questionnaire System
   questionnaires ClientQuestionnaire[]
+
+  // Phase 3: SMS Integration
+  smsLogs SMSLog[]
 
   @@index([organizationId])
   @@index([multiDayParentId])
@@ -1848,17 +1888,34 @@ model PortfolioWebsite {
   slug        String @unique
   description String? @db.Text
 
-  // Hero content
+  // Hero content (kept for backwards compatibility)
   heroTitle    String?
   heroSubtitle String? @db.Text
+
+  // Portfolio Type & Template
+  portfolioType PortfolioType     @default(photographer)
+  template      PortfolioTemplate @default(modern)
+
+  // Typography
+  fontHeading String?
+  fontBody    String?
 
   // Branding
   logoUrl      String?
   primaryColor String? @default("#3b82f6")
   accentColor  String? @default("#8b5cf6")
 
+  // Social Links (JSON array: [{ platform: string, url: string }])
+  socialLinks Json?
+
+  // SEO
+  metaTitle       String?
+  metaDescription String? @db.Text
+  faviconUrl      String?
+
   // Settings
   isPublished  Boolean @default(false)
+  showBranding Boolean @default(true)
   customDomain String? @unique
 
   createdAt   DateTime  @default(now())
@@ -1868,10 +1925,12 @@ model PortfolioWebsite {
   // Relations
   organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   projects     PortfolioWebsiteProject[]
+  sections     PortfolioWebsiteSection[]
 
   @@index([organizationId])
   @@index([slug])
   @@index([isPublished])
+  @@index([portfolioType])
 }
 
 model PortfolioWebsiteProject {
@@ -1887,6 +1946,44 @@ model PortfolioWebsiteProject {
   @@unique([portfolioWebsiteId, projectId])
   @@index([portfolioWebsiteId])
   @@index([projectId])
+}
+
+model PortfolioWebsiteSection {
+  id                 String @id @default(cuid())
+  portfolioWebsiteId String
+
+  // Section Configuration
+  sectionType PortfolioSectionType
+  position    Int                  @default(0)
+  isVisible   Boolean              @default(true)
+
+  // Section Content (JSON - varies by sectionType)
+  // Hero: { title, subtitle, backgroundImageUrl, backgroundVideoUrl, ctaText, ctaLink, overlay, alignment }
+  // About: { photoUrl, title, content, highlights[] }
+  // Gallery: { projectIds[], layout, columns, showProjectNames }
+  // Services: { items[{name, description, price, icon}], showPricing }
+  // Testimonials: { items[{quote, clientName, clientTitle, photoUrl}], layout }
+  // Awards: { items[{title, issuer, year, logoUrl}] }
+  // Contact: { showForm, showMap, showSocial, customFields[] }
+  // FAQ: { items[{question, answer}] }
+  // Text: { content, alignment }
+  // Image: { url, alt, caption, layout }
+  // Video: { url, autoplay, loop, muted }
+  // Spacer: { height }
+  // CustomHTML: { html }
+  config Json
+
+  // Optional title override for section
+  customTitle String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioWebsiteId])
+  @@index([position])
 }
 
 // ============================================================================
@@ -3529,6 +3626,8 @@ model SMSLog {
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   template     SMSTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  booking      Booking?     @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([templateId])
