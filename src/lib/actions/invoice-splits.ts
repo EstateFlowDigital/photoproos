@@ -19,10 +19,8 @@ export interface InvoiceSplitWithRelations {
   primaryInvoiceId: string;
   secondaryInvoiceId: string | null;
   splitType: InvoiceSplitType;
-  brokeragePayPercent: number | null;
-  agentPayPercent: number | null;
-  brokerageAmountCents: number | null;
-  agentAmountCents: number | null;
+  brokerageAmountCents: number;
+  agentAmountCents: number;
   lineItemAssignments: Record<string, "brokerage" | "agent"> | null;
   createdAt: Date;
   primaryInvoice?: {
@@ -42,8 +40,7 @@ export interface InvoiceSplitWithRelations {
 export interface CreateInvoiceSplitInput {
   primaryInvoiceId: string;
   splitType: InvoiceSplitType;
-  brokeragePayPercent?: number | null;
-  agentPayPercent?: number | null;
+  brokeragePayPercent?: number | null; // For percentage-based splits
   lineItemAssignments?: Record<string, "brokerage" | "agent"> | null;
 }
 
@@ -76,35 +73,33 @@ export async function getInvoiceSplit(
         organizationId,
         primaryInvoiceId: invoiceId,
       },
-      include: {
-        primaryInvoice: {
-          select: {
-            id: true,
-            invoiceNumber: true,
-            totalCents: true,
-            status: true,
-          },
-        },
-        secondaryInvoice: {
-          select: {
-            id: true,
-            invoiceNumber: true,
-            totalCents: true,
-            status: true,
-          },
-        },
-      },
     });
 
     if (!split) {
       return { success: true, data: null };
     }
 
+    // Fetch related invoices separately
+    const [primaryInvoice, secondaryInvoice] = await Promise.all([
+      prisma.invoice.findUnique({
+        where: { id: split.primaryInvoiceId },
+        select: { id: true, invoiceNumber: true, totalCents: true, status: true },
+      }),
+      split.secondaryInvoiceId
+        ? prisma.invoice.findUnique({
+            where: { id: split.secondaryInvoiceId },
+            select: { id: true, invoiceNumber: true, totalCents: true, status: true },
+          })
+        : null,
+    ]);
+
     return {
       success: true,
       data: {
         ...split,
         lineItemAssignments: split.lineItemAssignments as Record<string, "brokerage" | "agent"> | null,
+        primaryInvoice: primaryInvoice ?? undefined,
+        secondaryInvoice: secondaryInvoice ?? undefined,
       },
     };
   } catch (error) {
@@ -127,32 +122,29 @@ export async function getInvoiceSplits(options?: {
         organizationId,
         ...(options?.splitType && { splitType: options.splitType }),
       },
-      include: {
-        primaryInvoice: {
-          select: {
-            id: true,
-            invoiceNumber: true,
-            totalCents: true,
-            status: true,
-          },
-        },
-        secondaryInvoice: {
-          select: {
-            id: true,
-            invoiceNumber: true,
-            totalCents: true,
-            status: true,
-          },
-        },
-      },
       orderBy: { createdAt: "desc" },
     });
+
+    // Fetch related invoices
+    const invoiceIds = [
+      ...splits.map((s) => s.primaryInvoiceId),
+      ...splits.filter((s) => s.secondaryInvoiceId).map((s) => s.secondaryInvoiceId!),
+    ];
+
+    const invoices = await prisma.invoice.findMany({
+      where: { id: { in: invoiceIds } },
+      select: { id: true, invoiceNumber: true, totalCents: true, status: true },
+    });
+
+    const invoiceMap = new Map(invoices.map((i) => [i.id, i]));
 
     return {
       success: true,
       data: splits.map((s) => ({
         ...s,
         lineItemAssignments: s.lineItemAssignments as Record<string, "brokerage" | "agent"> | null,
+        primaryInvoice: invoiceMap.get(s.primaryInvoiceId),
+        secondaryInvoice: s.secondaryInvoiceId ? invoiceMap.get(s.secondaryInvoiceId) : undefined,
       })),
     };
   } catch (error) {
@@ -219,11 +211,10 @@ export async function createInvoiceSplit(
       where: { primaryInvoiceId: input.primaryInvoiceId },
     });
 
-    let split;
-    let secondaryInvoiceId: string | null = null;
+    let secondaryInvoiceId: string | null = existing?.secondaryInvoiceId ?? null;
 
     // For dual invoices, we need to create a second invoice
-    if (input.splitType === "dual" && !existing?.secondaryInvoiceId) {
+    if (input.splitType === "dual" && !secondaryInvoiceId) {
       // Create the secondary invoice for brokerage
       const brokerageLineItems = invoice.lineItems.filter((item) => {
         if (!input.lineItemAssignments) return false;
@@ -244,7 +235,7 @@ export async function createInvoiceSplit(
             create: brokerageLineItems.map((item) => ({
               description: item.description,
               quantity: item.quantity,
-              unitPriceCents: item.unitPriceCents,
+              unitCents: item.unitCents,
               totalCents: item.totalCents,
             })),
           },
@@ -254,38 +245,18 @@ export async function createInvoiceSplit(
       secondaryInvoiceId = secondaryInvoice.id;
     }
 
+    let split;
+
     if (existing) {
       // Update existing split
       split = await prisma.invoiceSplit.update({
         where: { id: existing.id },
         data: {
           splitType: input.splitType,
-          brokeragePayPercent: input.brokeragePayPercent ?? null,
-          agentPayPercent: input.splitType === "split"
-            ? (100 - (input.brokeragePayPercent ?? 0))
-            : null,
           brokerageAmountCents: calculation.brokerageAmountCents,
           agentAmountCents: calculation.agentAmountCents,
           lineItemAssignments: input.lineItemAssignments ?? undefined,
           ...(secondaryInvoiceId && { secondaryInvoiceId }),
-        },
-        include: {
-          primaryInvoice: {
-            select: {
-              id: true,
-              invoiceNumber: true,
-              totalCents: true,
-              status: true,
-            },
-          },
-          secondaryInvoice: {
-            select: {
-              id: true,
-              invoiceNumber: true,
-              totalCents: true,
-              status: true,
-            },
-          },
         },
       });
     } else {
@@ -296,34 +267,25 @@ export async function createInvoiceSplit(
           primaryInvoiceId: input.primaryInvoiceId,
           secondaryInvoiceId,
           splitType: input.splitType,
-          brokeragePayPercent: input.brokeragePayPercent ?? null,
-          agentPayPercent: input.splitType === "split"
-            ? (100 - (input.brokeragePayPercent ?? 0))
-            : null,
           brokerageAmountCents: calculation.brokerageAmountCents,
           agentAmountCents: calculation.agentAmountCents,
           lineItemAssignments: input.lineItemAssignments ?? undefined,
         },
-        include: {
-          primaryInvoice: {
-            select: {
-              id: true,
-              invoiceNumber: true,
-              totalCents: true,
-              status: true,
-            },
-          },
-          secondaryInvoice: {
-            select: {
-              id: true,
-              invoiceNumber: true,
-              totalCents: true,
-              status: true,
-            },
-          },
-        },
       });
     }
+
+    // Fetch invoice info for response
+    const primaryInvoice = await prisma.invoice.findUnique({
+      where: { id: split.primaryInvoiceId },
+      select: { id: true, invoiceNumber: true, totalCents: true, status: true },
+    });
+
+    const secondaryInvoiceData = split.secondaryInvoiceId
+      ? await prisma.invoice.findUnique({
+          where: { id: split.secondaryInvoiceId },
+          select: { id: true, invoiceNumber: true, totalCents: true, status: true },
+        })
+      : null;
 
     revalidatePath(`/invoices/${input.primaryInvoiceId}`);
     return {
@@ -331,6 +293,8 @@ export async function createInvoiceSplit(
       data: {
         ...split,
         lineItemAssignments: split.lineItemAssignments as Record<string, "brokerage" | "agent"> | null,
+        primaryInvoice: primaryInvoice ?? undefined,
+        secondaryInvoice: secondaryInvoiceData ?? undefined,
       },
     };
   } catch (error) {
@@ -411,15 +375,12 @@ function calculateSplitAmounts(
       return {
         brokerageAmountCents: brokerageAmount,
         agentAmountCents: totalCents - brokerageAmount,
-        splitDetails: lineItems.map((item) => {
-          const itemBrokerageAmount = Math.round(item.totalCents * (brokeragePercent / 100));
-          return {
-            lineItemId: item.id,
-            description: item.description,
-            amountCents: item.totalCents,
-            assignedTo: "agent" as const, // Primary invoice shows agent portion
-          };
-        }),
+        splitDetails: lineItems.map((item) => ({
+          lineItemId: item.id,
+          description: item.description,
+          amountCents: item.totalCents,
+          assignedTo: "agent" as const,
+        })),
       };
 
     case "dual":
@@ -538,11 +499,6 @@ export async function getInvoiceSplitSummary(invoiceId: string): Promise<
 
     const split = await prisma.invoiceSplit.findUnique({
       where: { primaryInvoiceId: invoiceId },
-      include: {
-        secondaryInvoice: {
-          select: { invoiceNumber: true },
-        },
-      },
     });
 
     if (!split) {
@@ -560,16 +516,25 @@ export async function getInvoiceSplitSummary(invoiceId: string): Promise<
       };
     }
 
+    let secondaryInvoiceNumber: string | null = null;
+    if (split.secondaryInvoiceId) {
+      const secondaryInvoice = await prisma.invoice.findUnique({
+        where: { id: split.secondaryInvoiceId },
+        select: { invoiceNumber: true },
+      });
+      secondaryInvoiceNumber = secondaryInvoice?.invoiceNumber ?? null;
+    }
+
     return {
       success: true,
       data: {
         hasSplit: true,
         splitType: split.splitType,
         brokerageName: invoice.client?.brokerage?.name ?? null,
-        brokerageAmount: split.brokerageAmountCents ?? 0,
-        agentAmount: split.agentAmountCents ?? 0,
+        brokerageAmount: split.brokerageAmountCents,
+        agentAmount: split.agentAmountCents,
         primaryInvoiceNumber: invoice.invoiceNumber,
-        secondaryInvoiceNumber: split.secondaryInvoice?.invoiceNumber ?? null,
+        secondaryInvoiceNumber,
       },
     };
   } catch (error) {

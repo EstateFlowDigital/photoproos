@@ -87,34 +87,51 @@ export async function createGallery(
     const validated = createGallerySchema.parse(input);
     const organizationId = await getOrganizationId();
 
-    // Create gallery
-    const gallery = await prisma.project.create({
-      data: {
-        organizationId,
-        name: validated.name,
-        description: validated.description,
-        clientId: validated.clientId,
-        serviceId: validated.serviceId,
-        locationId: validated.locationId,
-        status: validated.status as ProjectStatus,
-        priceCents: validated.priceCents,
-        currency: validated.currency,
-        coverImageUrl: validated.coverImageUrl,
-        password: validated.password,
-        expiresAt: validated.expiresAt,
-        allowDownloads: validated.allowDownloads,
-        showWatermark: validated.showWatermark,
-      },
-    });
-
-    // Create a delivery link for the gallery
+    // Create gallery with services using transaction
     const slug = generateSlug();
-    await prisma.deliveryLink.create({
-      data: {
-        projectId: gallery.id,
-        slug,
-        isActive: true,
-      },
+    const gallery = await prisma.$transaction(async (tx) => {
+      // Create the project
+      const project = await tx.project.create({
+        data: {
+          organizationId,
+          name: validated.name,
+          description: validated.description,
+          clientId: validated.clientId,
+          serviceId: validated.serviceId, // Keep for backwards compatibility
+          locationId: validated.locationId,
+          status: validated.status as ProjectStatus,
+          priceCents: validated.priceCents,
+          currency: validated.currency,
+          coverImageUrl: validated.coverImageUrl,
+          password: validated.password,
+          expiresAt: validated.expiresAt,
+          allowDownloads: validated.allowDownloads,
+          showWatermark: validated.showWatermark,
+        },
+      });
+
+      // Create ProjectService records if services are provided
+      if (validated.services && validated.services.length > 0) {
+        await tx.projectService.createMany({
+          data: validated.services.map((service) => ({
+            projectId: project.id,
+            serviceId: service.serviceId,
+            isPrimary: service.isPrimary,
+            priceCentsOverride: service.priceCentsOverride ?? null,
+          })),
+        });
+      }
+
+      // Create delivery link
+      await tx.deliveryLink.create({
+        data: {
+          projectId: project.id,
+          slug,
+          isActive: true,
+        },
+      });
+
+      return project;
     });
 
     // Log activity

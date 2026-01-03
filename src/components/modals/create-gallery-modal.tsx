@@ -15,11 +15,21 @@ import {
 } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { createGallery } from "@/lib/actions/galleries";
+import {
+  MultiServiceSelector,
+  type MultiServiceItem,
+} from "@/components/dashboard/multi-service-selector";
 
 interface Client {
   id: string;
   name: string;
   email: string;
+}
+
+interface SelectedService {
+  serviceId: string;
+  isPrimary: boolean;
+  priceCentsOverride?: number;
 }
 
 interface FieldErrors {
@@ -32,6 +42,7 @@ interface CreateGalleryModalProps {
   onSuccess?: (gallery: { id: string; name: string }) => void;
   clients: Client[];
   defaultClientId?: string;
+  services?: MultiServiceItem[];
 }
 
 export function CreateGalleryModal({
@@ -40,6 +51,7 @@ export function CreateGalleryModal({
   onSuccess,
   clients,
   defaultClientId,
+  services = [],
 }: CreateGalleryModalProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -50,6 +62,7 @@ export function CreateGalleryModal({
   const [description, setDescription] = useState("");
   const [clientId, setClientId] = useState(defaultClientId || "");
   const [priceCents, setPriceCents] = useState(0);
+  const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -94,7 +107,7 @@ export function CreateGalleryModal({
           name: name.trim(),
           description: description.trim() || null,
           clientId: clientId || null,
-          serviceId: null,
+          serviceId: null, // Deprecated, using services array instead
           locationId: null,
           status: "draft",
           priceCents,
@@ -106,6 +119,7 @@ export function CreateGalleryModal({
           showWatermark: false,
           allowFavorites: true,
           sendNotifications: true,
+          services: selectedServices,
         });
 
         if (result.success) {
@@ -114,6 +128,7 @@ export function CreateGalleryModal({
           setDescription("");
           setClientId(defaultClientId || "");
           setPriceCents(0);
+          setSelectedServices([]);
           onOpenChange(false);
 
           showToast(`Gallery "${name.trim()}" created successfully`, "success");
@@ -141,6 +156,7 @@ export function CreateGalleryModal({
       setDescription("");
       setClientId(defaultClientId || "");
       setPriceCents(0);
+      setSelectedServices([]);
       setError(null);
       setFieldErrors({});
       setTouched({});
@@ -213,6 +229,20 @@ export function CreateGalleryModal({
                 label: `${client.name} (${client.email})`,
               }))}
             />
+
+            {/* Services Selection */}
+            {services.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Services
+                </label>
+                <MultiServiceSelector
+                  services={services}
+                  selectedServices={selectedServices}
+                  onSelectionChange={setSelectedServices}
+                />
+              </div>
+            )}
 
             {/* Price */}
             <div>

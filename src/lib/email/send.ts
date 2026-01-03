@@ -1,3 +1,29 @@
+/**
+ * Email Send Functions
+ *
+ * This file contains all the email sending functions for the application.
+ * Each function wraps a specific email template with the appropriate subject
+ * line and sender configuration.
+ *
+ * Email templates are located in: /src/emails/
+ * Email infrastructure (Resend): /src/lib/email/resend.ts
+ *
+ * Usage:
+ * - Import the specific send function you need
+ * - Call it with the required parameters
+ * - Handle the success/error response
+ *
+ * Example:
+ *   const result = await sendGalleryDeliveredEmail({
+ *     to: "client@example.com",
+ *     clientName: "John",
+ *     galleryName: "Wedding Photos",
+ *     galleryUrl: "https://...",
+ *     photographerName: "Jane's Photography"
+ *   });
+ *   if (!result.success) console.error(result.error);
+ */
+
 import { sendEmail } from "./resend";
 import { GalleryDeliveredEmail } from "@/emails/gallery-delivered";
 import { PaymentReceiptEmail } from "@/emails/payment-receipt";
@@ -5,6 +31,8 @@ import { BookingConfirmationEmail } from "@/emails/booking-confirmation";
 import { WelcomeEmail } from "@/emails/welcome";
 import { PropertyLeadEmail } from "@/emails/property-lead";
 import { GalleryExpirationEmail } from "@/emails/gallery-expiration";
+import { OrderConfirmationEmail } from "@/emails/order-confirmation";
+import { ContractSigningEmail } from "@/emails/contract-signing";
 
 /**
  * Send gallery delivered notification to client
@@ -231,6 +259,160 @@ export async function sendGalleryExpirationEmail(params: {
       daysRemaining,
       photographerName,
       urgency,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+// =============================================================================
+// Order Emails
+// =============================================================================
+
+/**
+ * Send order confirmation email to customer
+ *
+ * Triggered by: Stripe webhook when order payment completes
+ * Location: src/app/api/webhooks/stripe/route.ts -> handleOrderPaymentCompleted()
+ */
+export async function sendOrderConfirmationEmail(params: {
+  to: string;
+  clientName: string;
+  orderNumber: string;
+  items: Array<{
+    name: string;
+    itemType: "bundle" | "service";
+    quantity: number;
+    totalCents: number;
+  }>;
+  subtotalCents: number;
+  taxCents: number;
+  totalCents: number;
+  photographerName: string;
+  photographerEmail?: string;
+  photographerPhone?: string;
+  preferredTime?: string | null;
+  clientNotes?: string | null;
+}) {
+  const {
+    to,
+    clientName,
+    orderNumber,
+    items,
+    subtotalCents,
+    taxCents,
+    totalCents,
+    photographerName,
+    photographerEmail,
+    photographerPhone,
+    preferredTime,
+    clientNotes,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `Order Confirmed: ${orderNumber}`,
+    react: OrderConfirmationEmail({
+      clientName,
+      orderNumber,
+      items,
+      subtotalCents,
+      taxCents,
+      totalCents,
+      photographerName,
+      photographerEmail,
+      photographerPhone,
+      preferredTime,
+      clientNotes,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+// =============================================================================
+// Contract Emails
+// =============================================================================
+
+/**
+ * Send contract signing invitation to signer
+ *
+ * Triggered by: sendContractToSigners() or resendSigningInvitation()
+ * Location: src/lib/actions/contracts.ts, src/lib/actions/contract-signing.ts
+ */
+export async function sendContractSigningEmail(params: {
+  to: string;
+  signerName: string;
+  contractName: string;
+  signingUrl: string;
+  photographerName: string;
+  photographerEmail?: string;
+  expiresAt?: Date;
+  isReminder?: boolean;
+}) {
+  const {
+    to,
+    signerName,
+    contractName,
+    signingUrl,
+    photographerName,
+    photographerEmail,
+    expiresAt,
+    isReminder = false,
+  } = params;
+
+  const subject = isReminder
+    ? `Reminder: Please sign "${contractName}"`
+    : `${photographerName} has sent you a contract to sign`;
+
+  return sendEmail({
+    to,
+    subject,
+    react: ContractSigningEmail({
+      signerName,
+      contractName,
+      signingUrl,
+      photographerName,
+      photographerEmail,
+      expiresAt: expiresAt?.toISOString(),
+      isReminder,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+/**
+ * Send contract signed confirmation to signer
+ *
+ * Triggered by: After successful signature submission
+ * Location: src/lib/actions/contract-signing.ts -> submitSignature()
+ */
+export async function sendContractSignedConfirmationEmail(params: {
+  to: string;
+  signerName: string;
+  contractName: string;
+  photographerName: string;
+  photographerEmail?: string;
+  pdfUrl?: string;
+}) {
+  const {
+    to,
+    signerName,
+    contractName,
+    photographerName,
+    photographerEmail,
+  } = params;
+
+  // For now, use the ContractSigningEmail with a modified message
+  // In the future, create a dedicated ContractSignedEmail template
+  return sendEmail({
+    to,
+    subject: `Contract Signed: ${contractName}`,
+    react: ContractSigningEmail({
+      signerName,
+      contractName,
+      signingUrl: "", // Not needed for confirmation
+      photographerName,
+      photographerEmail,
+      isReminder: false,
     }),
     replyTo: photographerEmail,
   });

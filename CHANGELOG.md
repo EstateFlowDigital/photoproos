@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Multi-Service Gallery Support**
+  - Galleries can now have multiple services assigned (many-to-many via ProjectService)
+  - Added MultiServiceSelector component for service selection with primary service designation
+  - Updated gallery creation modal to support selecting multiple services
+  - Updated gallery new form to pass services to createGallery action
+  - createGallery action now uses transaction to atomically create gallery and service associations
+
+- **UI Components Library Expansion**
+  - Added Card components (Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter)
+  - Added Tabs components (Tabs, TabsList, TabsTrigger, TabsContent) using Radix UI
+  - Added Table components (Table, TableHeader, TableBody, TableRow, TableHead, TableCell, etc.)
+  - Added EmptyState component for consistent empty state displays
+
 - **Gallery List Service Display & Filtering**
   - Added service badges to gallery cards in grid view (shows first 2 + "+N more")
   - Added "Services" column in list view with service badges
@@ -25,6 +38,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added recurrence UI to booking form with pattern selection, interval, and end conditions
   - Added recurrence summary display with repeat icon
   - Created `getRecurrenceSummary` utility for human-readable recurrence descriptions
+  - Added recurrence indicator (repeat icon) on calendar, booking cards, booking list, and Today's Agenda
+
+- **Booking Reminders**
+  - Enhanced `BookingReminder` model with type, channel, recipient, and minutesBefore fields
+  - Added `ReminderType` (hours_24, hours_1, custom), `ReminderChannel` (email, sms), `ReminderRecipient` (client, photographer, both) enums
+  - Created server actions: `createBookingReminders`, `getBookingReminders`, `deleteBookingReminder`, `updateBookingReminders`
+  - Added `getPendingReminders` and `markReminderSent` for cron job processing
+  - Enhanced booking form with 24h and 1h reminder toggles
+  - Added recipient selection (client only, team only, or both)
+  - Created `BookingReminderEmail` template with checklist and urgent sections
+  - Added `/api/cron/send-reminders` endpoint for automated reminder delivery
+
+- **Buffer Time Between Bookings**
+  - Added `bufferBeforeMinutes` and `bufferAfterMinutes` fields to BookingType model (default settings)
+  - Added per-booking buffer time override fields to Booking model
+  - Created `getEffectiveBufferTime` action to calculate buffer time (uses booking override or type defaults)
+  - Created `checkBookingConflicts` action to detect overlapping bookings considering buffer zones
+  - Created `getAvailableTimeSlots` action to find open slots on a given date
+  - Created `updateBookingBufferTime` action to update per-booking buffer settings
+  - Buffer time automatically accounts for travel/prep before and wrap-up after sessions
 
 - **Property Websites - Comprehensive Improvements**
   - Added Schema.org structured data (RealEstateListing) for SEO optimization
@@ -38,6 +71,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added selection checkbox on each property card
   - Added floating batch action toolbar with publish/unpublish/delete buttons
   - Added batch delete confirmation dialog
+  - Added accent color customization per property (override template default)
+  - Added color picker with 8 preset colors and custom hex input with live preview
+  - Added accent color applied to: submit button, agent avatar, footer icon, and links
+  - Added open house scheduling with start/end date-time
+  - Added automatic 2-hour default duration for open houses
+  - Added sticky open house banner on public property pages (uses accent color)
+  - Added "Open House in Progress" indicator for active events
+  - Added "Scheduled" badge indicator in property edit form
+  - Added dynamic sidebar offset when open house banner is shown
 
 - **Lead Management Enhancements**
   - Added quick action buttons to lead cards (call, email, message)
@@ -64,6 +106,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `brokerageId` to OrderPage model (brokerage-specific order pages)
   - Added Stripe Connect fields to User model for photographer payouts
   - New enums: `PayoutStatus`, `InvoiceSplitType`, `EarningStatus`
+
+- **Phase 2: Brokerage Management Server Actions**
+  - `getBrokerages`, `getBrokerage`, `getBrokerageBySlug` for querying brokerages
+  - `createBrokerage`, `updateBrokerage`, `deleteBrokerage` for CRUD operations
+  - `assignAgentToBrokerage` for linking clients to brokerages
+  - `getBrokerageAgents` for listing agents under a brokerage
+  - `getBrokerageStats` for brokerage statistics
+
+- **Phase 2: Brokerage Contracts Server Actions**
+  - `getBrokerageContracts`, `getBrokerageContract`, `getActiveBrokerageContract`
+  - `createBrokerageContract`, `updateBrokerageContract`, `deleteBrokerageContract`
+  - `calculateBrokeragePrice` for applying contract discounts to services
+
+- **Phase 2: Photographer Pay Server Actions**
+  - `getPhotographerRates`, `getPhotographerRateForService` for querying rates
+  - `upsertPhotographerRate`, `deletePhotographerRate` for rate management
+  - `getPhotographerEarnings`, `getMyEarnings` for earnings queries
+  - `calculateBookingEarnings`, `recordPhotographerEarning` for earnings recording
+  - `approveEarnings` for payout approval workflow
+  - `getEarningStats`, `getMyEarningStats` for earnings statistics
+
+- **Phase 2: Invoice Split Server Actions**
+  - `getInvoiceSplit`, `getInvoiceSplits` for querying split configurations
+  - `createInvoiceSplit`, `deleteInvoiceSplit` for split management
+  - `previewInvoiceSplit` for calculating split amounts before saving
+  - `getInvoiceSplitSummary` for display-friendly split information
+  - Support for single, split (percentage), and dual (line-item) invoice types
+
+- **Phase 2: Payout Batch Server Actions**
+  - `getPayoutBatches`, `getPayoutBatch` for querying payout batches
+  - `getPendingPayouts` for photographers with approved earnings
+  - `createPayoutBatch` for creating payout batches from approved earnings
+  - `processPayoutBatch` for sending money via Stripe Connect transfers
+  - `cancelPayoutBatch` for canceling pending batches
+  - `getPayoutStats` for payout statistics
 
 - **Order Stripe Checkout Integration**
   - Full checkout flow for public order pages with Stripe payment

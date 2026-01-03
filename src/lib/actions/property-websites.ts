@@ -30,6 +30,11 @@ export interface PropertyWebsiteInput {
   showAgent?: boolean;
   metaTitle?: string | null;
   metaDescription?: string | null;
+  // Template customization
+  accentColor?: string | null;
+  // Open house scheduling
+  openHouseDate?: Date | null;
+  openHouseEndDate?: Date | null;
 }
 
 export interface PropertyWebsiteWithRelations {
@@ -60,6 +65,9 @@ export interface PropertyWebsiteWithRelations {
   slug: string;
   metaTitle: string | null;
   metaDescription: string | null;
+  accentColor: string | null;
+  openHouseDate: Date | null;
+  openHouseEndDate: Date | null;
   viewCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -201,6 +209,9 @@ export async function updatePropertyWebsite(
         showAgent: data.showAgent,
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
+        accentColor: data.accentColor,
+        openHouseDate: data.openHouseDate,
+        openHouseEndDate: data.openHouseEndDate,
       },
     });
 

@@ -23,6 +23,8 @@ PhotoProOS is a comprehensive business management platform for professional phot
 - **Analytics** - Revenue forecasting and client LTV metrics
 
 ### Recently Shipped
+- **Buffer Time** - Automatic travel/prep time between bookings with conflict detection
+- **Booking Reminders** - Automated email reminders 24h and 1h before sessions
 - **Recurring Bookings** - Create repeating appointments (daily, weekly, biweekly, monthly, custom)
 - **Command Palette** - Global search and navigation with ⌘K/Ctrl+K
 - **Time-Off Management** - Request and approve team time-off with pending badges
@@ -36,8 +38,8 @@ PhotoProOS is a comprehensive business management platform for professional phot
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Recurring Bookings | Create repeating appointments | ✅ Shipped |
-| Buffer Time | Automatic travel/prep time between bookings | Planned |
-| Booking Reminders | SMS/email reminders (24h, 1h before) | Planned |
+| Booking Reminders | SMS/email reminders (24h, 1h before) | ✅ Shipped |
+| Buffer Time | Automatic travel/prep time between bookings | ✅ Shipped |
 | Multi-Day Events | Support for weddings, conferences | Planned |
 | Equipment Checklists | Per-booking-type equipment lists | Planned |
 | Second Shooter Assignment | Team member scheduling per booking | Planned |

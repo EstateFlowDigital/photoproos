@@ -83,6 +83,7 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
         showWatermark,
         allowFavorites,
         sendNotifications,
+        services: selectedService ? [{ serviceId: selectedService.id, isPrimary: true }] : [],
       });
 
       if (result.success) {

@@ -1,8 +1,21 @@
+/**
+ * Stripe Webhook Handler
+ *
+ * Handles incoming webhook events from Stripe:
+ * - checkout.session.completed: Gallery payments and order payments
+ * - account.updated: Connect account onboarding status
+ * - payment_intent.succeeded: Backup for checkout completion
+ * - payment_intent.payment_failed: Mark payments as failed
+ *
+ * All webhooks are verified using Stripe's signature verification.
+ * Emails are sent asynchronously to avoid blocking webhook response.
+ */
+
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
-import { sendPaymentReceiptEmail } from "@/lib/email/send";
+import { sendPaymentReceiptEmail, sendOrderConfirmationEmail } from "@/lib/email/send";
 import type Stripe from "stripe";
 
 /**
@@ -361,9 +374,31 @@ async function handleOrderPaymentCompleted(
     },
   });
 
-  // TODO: Send order confirmation email
-  // For now, we'll skip email - can be added later
-  if (session.customer_email) {
-    console.log(`Would send order confirmation to ${session.customer_email}`);
+  // Send order confirmation email (non-blocking - don't fail webhook if email fails)
+  const customerEmail = session.customer_email || order.clientEmail;
+  if (customerEmail) {
+    try {
+      await sendOrderConfirmationEmail({
+        to: customerEmail,
+        clientName: order.clientName || "there",
+        orderNumber: order.orderNumber,
+        items: order.items.map((item) => ({
+          name: item.name,
+          itemType: item.itemType as "bundle" | "service",
+          quantity: item.quantity,
+          totalCents: item.totalCents,
+        })),
+        subtotalCents: order.subtotalCents,
+        taxCents: order.taxCents,
+        totalCents: order.totalCents,
+        photographerName: order.organization.name,
+        preferredTime: order.preferredTime,
+        clientNotes: order.clientNotes,
+      });
+      console.log(`[Order Email] Confirmation sent to ${customerEmail}`);
+    } catch (emailError) {
+      // Log email failure but don't fail the webhook - order was already processed
+      console.error("[Order Email] Failed to send confirmation:", emailError);
+    }
   }
 }

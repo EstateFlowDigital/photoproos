@@ -104,6 +104,28 @@ const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+// Color presets for accent color picker
+const ACCENT_COLOR_PRESETS = [
+  { value: "#3b82f6", label: "Blue" },
+  { value: "#22c55e", label: "Green" },
+  { value: "#f97316", label: "Orange" },
+  { value: "#ef4444", label: "Red" },
+  { value: "#8b5cf6", label: "Purple" },
+  { value: "#ec4899", label: "Pink" },
+  { value: "#d4af37", label: "Gold" },
+  { value: "#0ea5e9", label: "Sky" },
+];
+
+// Helper to format date for datetime-local input
+function formatDateTimeLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export function PropertyEditForm({ website }: PropertyEditFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -136,6 +158,15 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
   const [isBranded, setIsBranded] = useState(website.isBranded);
   const [showPrice, setShowPrice] = useState(website.showPrice);
   const [showAgent, setShowAgent] = useState(website.showAgent);
+  const [accentColor, setAccentColor] = useState(website.accentColor || "");
+
+  // Open House Scheduling
+  const [openHouseDate, setOpenHouseDate] = useState(
+    website.openHouseDate ? formatDateTimeLocal(new Date(website.openHouseDate)) : ""
+  );
+  const [openHouseEndDate, setOpenHouseEndDate] = useState(
+    website.openHouseEndDate ? formatDateTimeLocal(new Date(website.openHouseEndDate)) : ""
+  );
 
   // SEO
   const [metaTitle, setMetaTitle] = useState(website.metaTitle || "");
@@ -183,6 +214,9 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
           showAgent,
           metaTitle: metaTitle || null,
           metaDescription: metaDescription || null,
+          accentColor: accentColor || null,
+          openHouseDate: openHouseDate ? new Date(openHouseDate) : null,
+          openHouseEndDate: openHouseEndDate ? new Date(openHouseEndDate) : null,
         });
 
         if (result.success) {
@@ -574,6 +608,131 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
                   className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
                 />
               </label>
+            </div>
+          </div>
+
+          {/* Accent Color */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Accent Color</h2>
+            <p className="text-xs text-foreground-muted mb-3">
+              Override the template&apos;s default accent color for buttons and highlights
+            </p>
+            <div className="space-y-3">
+              {/* Color Presets */}
+              <div className="flex flex-wrap gap-2">
+                {ACCENT_COLOR_PRESETS.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={() => setAccentColor(preset.value)}
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${
+                      accentColor === preset.value
+                        ? "border-white ring-2 ring-offset-2 ring-offset-[var(--card)] ring-[var(--primary)]"
+                        : "border-transparent hover:border-white/50"
+                    }`}
+                    style={{ backgroundColor: preset.value }}
+                    title={preset.label}
+                  />
+                ))}
+              </div>
+              {/* Custom Color Input */}
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={accentColor || "#3b82f6"}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                    className="w-10 h-10 rounded-lg border border-[var(--card-border)] cursor-pointer"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  placeholder="#3b82f6"
+                  className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                />
+                {accentColor && (
+                  <button
+                    type="button"
+                    onClick={() => setAccentColor("")}
+                    className="text-xs text-foreground-muted hover:text-foreground"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+              {accentColor && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-foreground-muted">Preview:</span>
+                  <span
+                    className="px-3 py-1 rounded text-white text-xs font-medium"
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    Button
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Open House Scheduling */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Open House</h2>
+              {openHouseDate && (
+                <span className="text-xs font-medium text-[var(--success)] bg-[var(--success)]/10 px-2 py-1 rounded">
+                  Scheduled
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-foreground-muted mb-4">
+              Schedule an open house to display on the property website
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Start Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={openHouseDate}
+                  onChange={(e) => {
+                    setOpenHouseDate(e.target.value);
+                    // Auto-set end time to 2 hours later if not set
+                    if (e.target.value && !openHouseEndDate) {
+                      const start = new Date(e.target.value);
+                      start.setHours(start.getHours() + 2);
+                      setOpenHouseEndDate(formatDateTimeLocal(start));
+                    }
+                  }}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  End Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={openHouseEndDate}
+                  onChange={(e) => setOpenHouseEndDate(e.target.value)}
+                  min={openHouseDate}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                />
+              </div>
+              {openHouseDate && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenHouseDate("");
+                    setOpenHouseEndDate("");
+                  }}
+                  className="text-sm text-[var(--error)] hover:underline"
+                >
+                  Remove open house
+                </button>
+              )}
             </div>
           </div>
 

@@ -1,10 +1,29 @@
 "use server";
 
+/**
+ * Booking Management Actions
+ *
+ * This file handles all booking CRUD operations for organizations.
+ * Includes support for single bookings, recurring series, and reminders.
+ *
+ * Email Integration:
+ * - confirmBooking(): Sends booking confirmation email to client
+ * - Uses sendBookingConfirmationEmail() from @/lib/email/send
+ *
+ * Related Files:
+ * - src/lib/actions/availability.ts - Availability and time-off management
+ * - src/lib/actions/booking-types.ts - Booking type configuration
+ * - src/emails/booking-confirmation.tsx - Email template
+ * - src/app/(dashboard)/scheduling/ - Scheduling UI
+ */
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import type { BookingStatus, RecurrencePattern } from "@prisma/client";
+import { BookingStatus, type RecurrencePattern } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
+import { getAuthContext } from "@/lib/auth/clerk";
 import { nanoid } from "nanoid";
+import { sendBookingConfirmationEmail } from "@/lib/email/send";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -253,6 +272,15 @@ export async function updateBooking(
 
 /**
  * Update booking status
+ *
+ * This action updates the status of a booking. When the status is changed
+ * to "confirmed", it automatically sends a confirmation email to the client.
+ *
+ * Status Flow:
+ * - pending → confirmed (sends email) | cancelled
+ * - confirmed → completed | cancelled
+ * - completed (terminal)
+ * - cancelled (terminal)
  */
 export async function updateBookingStatus(
   id: string,
@@ -261,10 +289,20 @@ export async function updateBookingStatus(
   try {
     const organizationId = await getOrganizationId();
 
+    // Fetch booking with client info for potential email
     const existing = await prisma.booking.findFirst({
       where: {
         id,
         organizationId,
+      },
+      include: {
+        client: {
+          select: {
+            fullName: true,
+            email: true,
+            phone: true,
+          },
+        },
       },
     });
 
@@ -277,6 +315,65 @@ export async function updateBookingStatus(
       data: { status },
     });
 
+    // Send confirmation email when booking is confirmed
+    if (status === "confirmed") {
+      const clientEmail = existing.client?.email || existing.clientEmail;
+      const clientName = existing.client?.fullName || existing.clientName;
+
+      if (clientEmail) {
+        // Get organization info for email
+        const organization = await prisma.organization.findUnique({
+          where: { id: organizationId },
+          select: { name: true, publicEmail: true, publicPhone: true },
+        });
+
+        // Send confirmation email (non-blocking)
+        try {
+          await sendBookingConfirmationEmail({
+            to: clientEmail,
+            clientName: clientName || "there",
+            bookingTitle: existing.title,
+            bookingDate: existing.startTime,
+            bookingTime: existing.startTime.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            location: existing.location || undefined,
+            photographerName: organization?.name || "Your Photographer",
+            photographerEmail: organization?.publicEmail || undefined,
+            photographerPhone: organization?.publicPhone || undefined,
+            notes: existing.notes || undefined,
+          });
+
+          console.log(`[Bookings] Confirmation email sent to ${clientEmail}`);
+        } catch (emailError) {
+          console.error(
+            `[Bookings] Failed to send confirmation to ${clientEmail}:`,
+            emailError
+          );
+          // Don't fail the action - status was updated successfully
+        }
+      }
+
+      // Log activity
+      await prisma.activityLog.create({
+        data: {
+          organizationId,
+          type: "booking_confirmed",
+          description: `Booking "${existing.title}" confirmed for ${clientName || clientEmail || "client"}`,
+          bookingId: id,
+          clientId: existing.clientId,
+          metadata: {
+            bookingTitle: existing.title,
+            clientEmail,
+            clientName,
+            startTime: existing.startTime.toISOString(),
+          },
+        },
+      });
+    }
+
     revalidatePath("/scheduling");
     revalidatePath(`/scheduling/${id}`);
     revalidatePath("/dashboard");
@@ -288,6 +385,131 @@ export async function updateBookingStatus(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to update booking status" };
+  }
+}
+
+/**
+ * Confirm a booking and send confirmation email
+ *
+ * This is a convenience action that:
+ * 1. Updates the booking status to "confirmed"
+ * 2. Sends a confirmation email to the client
+ * 3. Logs activity for the organization
+ *
+ * Use this when explicitly confirming a booking via the UI.
+ */
+export async function confirmBooking(
+  id: string,
+  options?: { sendEmail?: boolean }
+): Promise<ActionResult> {
+  const sendEmail = options?.sendEmail ?? true;
+
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Fetch booking with all data needed for email
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id,
+        organizationId,
+      },
+      include: {
+        client: {
+          select: {
+            fullName: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return { success: false, error: "Booking not found" };
+    }
+
+    if (booking.status === "confirmed") {
+      return { success: false, error: "Booking is already confirmed" };
+    }
+
+    if (booking.status === "cancelled" || booking.status === "completed") {
+      return { success: false, error: `Cannot confirm a ${booking.status} booking` };
+    }
+
+    // Update status
+    await prisma.booking.update({
+      where: { id },
+      data: { status: "confirmed" },
+    });
+
+    // Send confirmation email if requested
+    const clientEmail = booking.client?.email || booking.clientEmail;
+    const clientName = booking.client?.fullName || booking.clientName;
+
+    if (sendEmail && clientEmail) {
+      // Get organization info for email
+      const organization = await prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { name: true, publicEmail: true, publicPhone: true },
+      });
+
+      try {
+        await sendBookingConfirmationEmail({
+          to: clientEmail,
+          clientName: clientName || "there",
+          bookingTitle: booking.title,
+          bookingDate: booking.startTime,
+          bookingTime: booking.startTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          location: booking.location || undefined,
+          photographerName: organization?.name || "Your Photographer",
+          photographerEmail: organization?.publicEmail || undefined,
+          photographerPhone: organization?.publicPhone || undefined,
+          notes: booking.notes || undefined,
+        });
+
+        console.log(`[Bookings] Confirmation email sent to ${clientEmail}`);
+      } catch (emailError) {
+        console.error(
+          `[Bookings] Failed to send confirmation to ${clientEmail}:`,
+          emailError
+        );
+        // Don't fail the action - booking was confirmed successfully
+      }
+    }
+
+    // Log activity
+    await prisma.activityLog.create({
+      data: {
+        organizationId,
+        type: "booking_confirmed",
+        description: `Booking "${booking.title}" confirmed for ${clientName || clientEmail || "client"}`,
+        bookingId: id,
+        clientId: booking.clientId,
+        metadata: {
+          bookingTitle: booking.title,
+          clientEmail,
+          clientName,
+          startTime: booking.startTime.toISOString(),
+          emailSent: sendEmail && !!clientEmail,
+        },
+      },
+    });
+
+    revalidatePath("/scheduling");
+    revalidatePath(`/scheduling/${id}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error confirming booking:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to confirm booking" };
   }
 }
 
@@ -879,3 +1101,373 @@ export async function removeFromSeries(bookingId: string): Promise<ActionResult>
 
 // Note: getRecurrenceSummary has been moved to @/lib/utils/bookings
 // Import from there for client-side usage
+
+// ============================================================================
+// BOOKING REMINDERS
+// ============================================================================
+
+export interface ReminderInput {
+  type: "hours_24" | "hours_1" | "custom";
+  channel: "email" | "sms";
+  recipient: "client" | "photographer" | "both";
+  minutesBefore?: number;
+}
+
+/**
+ * Create reminders for a booking
+ */
+export async function createBookingReminders(
+  bookingId: string,
+  reminders: ReminderInput[]
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    const auth = await getAuthContext();
+    if (!auth) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify the booking belongs to this organization
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        organizationId: auth.organizationId,
+      },
+      select: {
+        id: true,
+        startTime: true,
+      },
+    });
+
+    if (!booking) {
+      return { success: false, error: "Booking not found" };
+    }
+
+    // Create reminders
+    const createdReminders = await Promise.all(
+      reminders.map(async (reminder) => {
+        const minutesBefore = reminder.type === "custom"
+          ? reminder.minutesBefore ?? 1440
+          : reminder.type === "hours_24"
+            ? 1440
+            : 60;
+
+        const sendAt = new Date(
+          booking.startTime.getTime() - minutesBefore * 60 * 1000
+        );
+
+        // Don't create reminder if sendAt is in the past
+        if (sendAt <= new Date()) {
+          return null;
+        }
+
+        return prisma.bookingReminder.create({
+          data: {
+            bookingId,
+            sendAt,
+            type: reminder.type,
+            channel: reminder.channel,
+            recipient: reminder.recipient,
+            minutesBefore,
+          },
+        });
+      })
+    );
+
+    const count = createdReminders.filter(Boolean).length;
+
+    return { success: true, data: { count } };
+  } catch (error) {
+    console.error("Error creating booking reminders:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create reminders" };
+  }
+}
+
+/**
+ * Get reminders for a booking
+ */
+export async function getBookingReminders(
+  bookingId: string
+): Promise<ActionResult<{
+  id: string;
+  type: string;
+  channel: string;
+  recipient: string;
+  sendAt: Date;
+  sent: boolean;
+  sentAt: Date | null;
+  minutesBefore: number;
+}[]>> {
+  try {
+    const auth = await getAuthContext();
+    if (!auth) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify the booking belongs to this organization
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        organizationId: auth.organizationId,
+      },
+      select: { id: true },
+    });
+
+    if (!booking) {
+      return { success: false, error: "Booking not found" };
+    }
+
+    const reminders = await prisma.bookingReminder.findMany({
+      where: { bookingId },
+      orderBy: { sendAt: "asc" },
+      select: {
+        id: true,
+        type: true,
+        channel: true,
+        recipient: true,
+        sendAt: true,
+        sent: true,
+        sentAt: true,
+        minutesBefore: true,
+      },
+    });
+
+    return { success: true, data: reminders };
+  } catch (error) {
+    console.error("Error fetching booking reminders:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch reminders" };
+  }
+}
+
+/**
+ * Delete a reminder
+ */
+export async function deleteBookingReminder(
+  reminderId: string
+): Promise<ActionResult> {
+  try {
+    const auth = await getAuthContext();
+    if (!auth) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify the reminder belongs to a booking in this organization
+    const reminder = await prisma.bookingReminder.findFirst({
+      where: { id: reminderId },
+      include: {
+        booking: {
+          select: { organizationId: true },
+        },
+      },
+    });
+
+    if (!reminder || reminder.booking.organizationId !== auth.organizationId) {
+      return { success: false, error: "Reminder not found" };
+    }
+
+    await prisma.bookingReminder.delete({
+      where: { id: reminderId },
+    });
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error deleting reminder:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete reminder" };
+  }
+}
+
+/**
+ * Update reminders for a booking (delete existing and create new ones)
+ */
+export async function updateBookingReminders(
+  bookingId: string,
+  reminders: ReminderInput[]
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    const auth = await getAuthContext();
+    if (!auth) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify the booking belongs to this organization
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        organizationId: auth.organizationId,
+      },
+      select: {
+        id: true,
+        startTime: true,
+      },
+    });
+
+    if (!booking) {
+      return { success: false, error: "Booking not found" };
+    }
+
+    // Delete existing unsent reminders
+    await prisma.bookingReminder.deleteMany({
+      where: {
+        bookingId,
+        sent: false,
+      },
+    });
+
+    // Create new reminders
+    const createdReminders = await Promise.all(
+      reminders.map(async (reminder) => {
+        const minutesBefore = reminder.type === "custom"
+          ? reminder.minutesBefore ?? 1440
+          : reminder.type === "hours_24"
+            ? 1440
+            : 60;
+
+        const sendAt = new Date(
+          booking.startTime.getTime() - minutesBefore * 60 * 1000
+        );
+
+        // Don't create reminder if sendAt is in the past
+        if (sendAt <= new Date()) {
+          return null;
+        }
+
+        return prisma.bookingReminder.create({
+          data: {
+            bookingId,
+            sendAt,
+            type: reminder.type,
+            channel: reminder.channel,
+            recipient: reminder.recipient,
+            minutesBefore,
+          },
+        });
+      })
+    );
+
+    const count = createdReminders.filter(Boolean).length;
+
+    return { success: true, data: { count } };
+  } catch (error) {
+    console.error("Error updating booking reminders:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update reminders" };
+  }
+}
+
+/**
+ * Get pending reminders that need to be sent (for background job/cron)
+ */
+export async function getPendingReminders(): Promise<ActionResult<{
+  id: string;
+  bookingId: string;
+  type: string;
+  channel: string;
+  recipient: string;
+  sendAt: Date;
+  booking: {
+    id: string;
+    title: string;
+    startTime: Date;
+    endTime: Date;
+    location: string | null;
+    clientName: string | null;
+    client: {
+      fullName: string | null;
+      email: string;
+      phone: string | null;
+    } | null;
+    assignedUser: {
+      fullName: string | null;
+      email: string;
+    } | null;
+    organization: {
+      name: string;
+    };
+  };
+}[]>> {
+  try {
+    const now = new Date();
+
+    const reminders = await prisma.bookingReminder.findMany({
+      where: {
+        sent: false,
+        sendAt: { lte: now },
+      },
+      include: {
+        booking: {
+          select: {
+            id: true,
+            title: true,
+            startTime: true,
+            endTime: true,
+            location: true,
+            clientName: true,
+            client: {
+              select: {
+                fullName: true,
+                email: true,
+                phone: true,
+              },
+            },
+            assignedUser: {
+              select: {
+                fullName: true,
+                email: true,
+              },
+            },
+            organization: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+      orderBy: { sendAt: "asc" },
+      take: 100,
+    });
+
+    return { success: true, data: reminders };
+  } catch (error) {
+    console.error("Error fetching pending reminders:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch pending reminders" };
+  }
+}
+
+/**
+ * Mark a reminder as sent
+ */
+export async function markReminderSent(
+  reminderId: string,
+  errorMessage?: string
+): Promise<ActionResult> {
+  try {
+    await prisma.bookingReminder.update({
+      where: { id: reminderId },
+      data: {
+        sent: true,
+        sentAt: new Date(),
+        errorMessage,
+      },
+    });
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error marking reminder as sent:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to mark reminder as sent" };
+  }
+}

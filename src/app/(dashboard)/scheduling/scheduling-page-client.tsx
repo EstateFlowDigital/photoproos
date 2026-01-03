@@ -34,6 +34,7 @@ interface Booking {
     company: string | null;
   } | null;
   clientName: string | null;
+  isRecurring?: boolean;
 }
 
 interface CalendarDay {
@@ -465,12 +466,18 @@ export function SchedulingPageClient({
         statusBlockColors[booking.status],
         compact ? "leading-tight" : ""
       )}
-      title={`${formatTime(new Date(booking.startTime))} - ${booking.title}`}
+      title={`${formatTime(new Date(booking.startTime))} - ${booking.title}${booking.isRecurring ? " (Recurring)" : ""}`}
     >
       {compact ? (
-        <span className="truncate">{formatShortTime(new Date(booking.startTime))}</span>
+        <span className="truncate flex items-center gap-0.5">
+          {booking.isRecurring && <RepeatIcon className="h-2 w-2 shrink-0" />}
+          {formatShortTime(new Date(booking.startTime))}
+        </span>
       ) : (
-        <span className="truncate">{formatShortTime(new Date(booking.startTime))} {booking.title}</span>
+        <span className="truncate flex items-center gap-0.5">
+          {booking.isRecurring && <RepeatIcon className="h-2.5 w-2.5 shrink-0" />}
+          {formatShortTime(new Date(booking.startTime))} {booking.title}
+        </span>
       )}
     </Link>
   );
@@ -528,7 +535,12 @@ export function SchedulingPageClient({
       {/* Details */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h4 className="font-semibold text-foreground group-hover:text-[var(--primary)] transition-colors truncate">
+          <h4 className="font-semibold text-foreground group-hover:text-[var(--primary)] transition-colors truncate flex items-center gap-1.5">
+            {booking.isRecurring && (
+              <span className="shrink-0 text-[var(--ai)]" title="Recurring booking">
+                <RepeatIcon className="h-3.5 w-3.5" />
+              </span>
+            )}
             {booking.title}
           </h4>
           <StatusBadge status={booking.status} />
@@ -592,7 +604,10 @@ export function SchedulingPageClient({
       <span className="text-sm font-medium text-foreground-muted w-20 shrink-0">
         {formatTime(new Date(booking.startTime))}
       </span>
-      <span className="font-medium text-foreground truncate flex-1 group-hover:text-[var(--primary)]">
+      <span className="font-medium text-foreground truncate flex-1 group-hover:text-[var(--primary)] flex items-center gap-1.5">
+        {booking.isRecurring && (
+          <RepeatIcon className="h-3.5 w-3.5 text-[var(--ai)] shrink-0" />
+        )}
         {booking.title}
       </span>
       <span className="text-sm text-foreground-muted truncate max-w-[150px] hidden sm:block">
@@ -713,7 +728,10 @@ export function SchedulingPageClient({
               >
                 <div className={cn("w-1 h-6 rounded-full", statusBlockColors[booking.status])} />
                 <div>
-                  <p className="text-xs font-bold text-foreground">{formatTime(new Date(booking.startTime))}</p>
+                  <p className="text-xs font-bold text-foreground flex items-center gap-1">
+                    {booking.isRecurring && <RepeatIcon className="h-2.5 w-2.5 text-[var(--ai)]" />}
+                    {formatTime(new Date(booking.startTime))}
+                  </p>
                   <p className="text-xs text-foreground-muted truncate max-w-[120px]">{booking.title}</p>
                 </div>
               </Link>
@@ -1126,6 +1144,14 @@ function UnavailableIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function RepeatIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0v2.43l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389 5.5 5.5 0 0 1 9.2-2.466l.312.311h-2.433a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.22Z" clipRule="evenodd" />
     </svg>
   );
 }

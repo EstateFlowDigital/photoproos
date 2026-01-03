@@ -171,6 +171,17 @@ export function GalleriesPageClient({
         onOpenChange={setIsCreateModalOpen}
         onSuccess={handleGalleryCreated}
         clients={clients}
+        services={availableServices.map((s) => ({
+          id: s.id,
+          name: s.name,
+          category: s.category as "real_estate" | "portrait" | "event" | "commercial" | "wedding" | "product" | "other",
+          description: null,
+          priceCents: 0,
+          duration: null,
+          deliverables: [],
+          isActive: true,
+          isDefault: false,
+        }))}
       />
     </>
   );

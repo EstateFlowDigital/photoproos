@@ -18,11 +18,12 @@ export interface PayoutBatchWithRelations {
   organizationId: string;
   batchNumber: string;
   status: PayoutStatus;
+  periodStart: Date;
+  periodEnd: Date;
   totalAmountCents: number;
   itemCount: number;
   processedAt: Date | null;
-  failedAt: Date | null;
-  failureReason: string | null;
+  failedReason: string | null;
   stripeTransferId: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -34,14 +35,18 @@ export interface PayoutItemWithRelations {
   batchId: string;
   userId: string;
   amountCents: number;
+  description: string | null;
   status: PayoutStatus;
   stripeTransferId: string | null;
-  failureReason: string | null;
+  stripePayoutId: string | null;
+  failedReason: string | null;
   processedAt: Date | null;
+  paidAt: Date | null;
   createdAt: Date;
+  updatedAt: Date;
   user?: {
     id: string;
-    name: string | null;
+    fullName: string | null;
     email: string | null;
     stripeConnectAccountId: string | null;
     stripeConnectOnboarded: boolean;
@@ -55,7 +60,8 @@ export interface PayoutItemWithRelations {
 
 export interface CreatePayoutBatchInput {
   photographerIds?: string[]; // If empty, include all with approved earnings
-  includeApprovedOnly?: boolean;
+  periodStart?: Date;
+  periodEnd?: Date;
 }
 
 // ============================================================================
@@ -102,15 +108,6 @@ export async function getPayoutBatch(
       include: {
         items: {
           include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                stripeConnectAccountId: true,
-                stripeConnectOnboarded: true,
-              },
-            },
             earnings: {
               select: {
                 id: true,
@@ -127,7 +124,26 @@ export async function getPayoutBatch(
       return { success: false, error: "Payout batch not found" };
     }
 
-    return { success: true, data: batch };
+    // Fetch user data separately for each item
+    const userIds = batch.items.map((item) => item.userId);
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        stripeConnectAccountId: true,
+        stripeConnectOnboarded: true,
+      },
+    });
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const itemsWithUsers = batch.items.map((item) => ({
+      ...item,
+      user: userMap.get(item.userId),
+    }));
+
+    return { success: true, data: { ...batch, items: itemsWithUsers } };
   } catch (error) {
     console.error("[Payouts] Error fetching batch:", error);
     return { success: false, error: "Failed to fetch payout batch" };
@@ -141,7 +157,7 @@ export async function getPendingPayouts(): Promise<
   ActionResult<
     Array<{
       userId: string;
-      userName: string | null;
+      userFullName: string | null;
       userEmail: string | null;
       totalAmountCents: number;
       earningsCount: number;
@@ -160,25 +176,28 @@ export async function getPendingPayouts(): Promise<
         status: "approved",
         payoutItemId: null,
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            stripeConnectAccountId: true,
-            stripeConnectOnboarded: true,
-          },
-        },
+    });
+
+    // Get unique user IDs
+    const userIds = [...new Set(earnings.map((e) => e.userId))];
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        stripeConnectAccountId: true,
+        stripeConnectOnboarded: true,
       },
     });
+    const userMap = new Map(users.map((u) => [u.id, u]));
 
     // Group by photographer
     const grouped = new Map<
       string,
       {
         userId: string;
-        userName: string | null;
+        userFullName: string | null;
         userEmail: string | null;
         totalAmountCents: number;
         earningsCount: number;
@@ -188,6 +207,7 @@ export async function getPendingPayouts(): Promise<
     >();
 
     for (const earning of earnings) {
+      const user = userMap.get(earning.userId);
       const existing = grouped.get(earning.userId);
       if (existing) {
         existing.totalAmountCents += earning.amountCents;
@@ -195,12 +215,12 @@ export async function getPendingPayouts(): Promise<
       } else {
         grouped.set(earning.userId, {
           userId: earning.userId,
-          userName: earning.user.name,
-          userEmail: earning.user.email,
+          userFullName: user?.fullName ?? null,
+          userEmail: user?.email ?? null,
           totalAmountCents: earning.amountCents,
           earningsCount: 1,
-          hasStripeConnect: !!earning.user.stripeConnectAccountId,
-          stripeConnectOnboarded: earning.user.stripeConnectOnboarded,
+          hasStripeConnect: !!user?.stripeConnectAccountId,
+          stripeConnectOnboarded: user?.stripeConnectOnboarded ?? false,
         });
       }
     }
@@ -237,20 +257,25 @@ export async function createPayoutBatch(
 
     const earnings = await prisma.photographerEarning.findMany({
       where: earningsWhere,
-      include: {
-        user: {
-          select: {
-            id: true,
-            stripeConnectAccountId: true,
-            stripeConnectOnboarded: true,
-          },
-        },
-      },
     });
 
     if (earnings.length === 0) {
       return { success: false, error: "No approved earnings to process" };
     }
+
+    // Get unique user IDs and their Connect status
+    const userIds = [...new Set(earnings.map((e) => e.userId))];
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        stripeConnectAccountId: true,
+        stripeConnectOnboarded: true,
+      },
+    });
+    const userMap = new Map(users.map((u) => [u.id, u]));
 
     // Group earnings by photographer
     const earningsByUser = new Map<string, typeof earnings>();
@@ -260,16 +285,16 @@ export async function createPayoutBatch(
       earningsByUser.set(earning.userId, existing);
     }
 
-    // Check that all photographers have Stripe Connect onboarded
+    // Filter out photographers without Connect onboarding
     const photographersWithoutConnect: string[] = [];
-    for (const earning of earnings) {
-      if (!earning.user.stripeConnectOnboarded) {
-        photographersWithoutConnect.push(earning.userId);
+    for (const userId of earningsByUser.keys()) {
+      const user = userMap.get(userId);
+      if (!user?.stripeConnectOnboarded) {
+        photographersWithoutConnect.push(userId);
       }
     }
 
     if (photographersWithoutConnect.length > 0) {
-      // Filter out photographers without Connect
       for (const userId of photographersWithoutConnect) {
         earningsByUser.delete(userId);
       }
@@ -296,37 +321,38 @@ export async function createPayoutBatch(
     });
     const batchNumber = `PAY-${String(batchCount + 1).padStart(5, "0")}`;
 
+    // Period dates
+    const periodStart = input.periodStart ?? new Date(new Date().setDate(1)); // Start of month
+    const periodEnd = input.periodEnd ?? new Date();
+
     // Create batch with items
     const batch = await prisma.payoutBatch.create({
       data: {
         organizationId,
         batchNumber,
         status: "pending",
+        periodStart,
+        periodEnd,
         totalAmountCents: totalAmount,
         itemCount: earningsByUser.size,
         items: {
-          create: Array.from(earningsByUser.entries()).map(([userId, userEarnings]) => ({
-            userId,
-            amountCents: userEarnings.reduce((sum, e) => sum + e.amountCents, 0),
-            status: "pending",
-            earnings: {
-              connect: userEarnings.map((e) => ({ id: e.id })),
-            },
-          })),
+          create: Array.from(earningsByUser.entries()).map(([userId, userEarnings]) => {
+            const user = userMap.get(userId);
+            return {
+              userId,
+              amountCents: userEarnings.reduce((sum, e) => sum + e.amountCents, 0),
+              description: `Payout for ${userEarnings.length} job${userEarnings.length > 1 ? "s" : ""}`,
+              status: "pending",
+              earnings: {
+                connect: userEarnings.map((e) => ({ id: e.id })),
+              },
+            };
+          }),
         },
       },
       include: {
         items: {
           include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                stripeConnectAccountId: true,
-                stripeConnectOnboarded: true,
-              },
-            },
             earnings: {
               select: {
                 id: true,
@@ -339,8 +365,14 @@ export async function createPayoutBatch(
       },
     });
 
+    // Add user data to items
+    const itemsWithUsers = batch.items.map((item) => ({
+      ...item,
+      user: userMap.get(item.userId),
+    }));
+
     revalidatePath("/settings/payouts");
-    return { success: true, data: batch };
+    return { success: true, data: { ...batch, items: itemsWithUsers } };
   } catch (error) {
     console.error("[Payouts] Error creating batch:", error);
     return { success: false, error: "Failed to create payout batch" };
@@ -361,13 +393,6 @@ export async function processPayoutBatch(
       include: {
         items: {
           include: {
-            user: {
-              select: {
-                id: true,
-                stripeConnectAccountId: true,
-                stripeConnectOnboarded: true,
-              },
-            },
             earnings: true,
           },
         },
@@ -382,6 +407,20 @@ export async function processPayoutBatch(
       return { success: false, error: `Batch is already ${batch.status}` };
     }
 
+    // Get user data for items
+    const userIds = batch.items.map((item) => item.userId);
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        stripeConnectAccountId: true,
+        stripeConnectOnboarded: true,
+      },
+    });
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
     // Update batch to processing
     await prisma.payoutBatch.update({
       where: { id: batchId },
@@ -390,16 +429,18 @@ export async function processPayoutBatch(
 
     // Process each item
     const failedItems: string[] = [];
-    const stripe = (await import("@/lib/stripe")).stripe;
+    const { getStripe } = await import("@/lib/stripe");
+    const stripeClient = getStripe();
 
     for (const item of batch.items) {
-      if (!item.user.stripeConnectAccountId || !item.user.stripeConnectOnboarded) {
+      const user = userMap.get(item.userId);
+      if (!user?.stripeConnectAccountId || !user.stripeConnectOnboarded) {
         // Mark item as failed
         await prisma.payoutItem.update({
           where: { id: item.id },
           data: {
             status: "failed",
-            failureReason: "Photographer has not completed Stripe Connect setup",
+            failedReason: "Photographer has not completed Stripe Connect setup",
           },
         });
         failedItems.push(item.id);
@@ -408,10 +449,10 @@ export async function processPayoutBatch(
 
       try {
         // Create Stripe transfer
-        const transfer = await stripe.transfers.create({
+        const transfer = await stripeClient.transfers.create({
           amount: item.amountCents,
           currency: "usd",
-          destination: item.user.stripeConnectAccountId,
+          destination: user.stripeConnectAccountId,
           metadata: {
             payoutBatchId: batchId,
             payoutItemId: item.id,
@@ -426,6 +467,7 @@ export async function processPayoutBatch(
             status: "completed",
             stripeTransferId: transfer.id,
             processedAt: new Date(),
+            paidAt: new Date(),
           },
         });
 
@@ -445,7 +487,7 @@ export async function processPayoutBatch(
           where: { id: item.id },
           data: {
             status: "failed",
-            failureReason: stripeError instanceof Error ? stripeError.message : "Transfer failed",
+            failedReason: stripeError instanceof Error ? stripeError.message : "Transfer failed",
           },
         });
         failedItems.push(item.id);
@@ -456,9 +498,7 @@ export async function processPayoutBatch(
     const finalStatus: PayoutStatus =
       failedItems.length === batch.items.length
         ? "failed"
-        : failedItems.length > 0
-          ? "completed" // Partial success
-          : "completed";
+        : "completed";
 
     const updatedBatch = await prisma.payoutBatch.update({
       where: { id: batchId },
@@ -466,22 +506,12 @@ export async function processPayoutBatch(
         status: finalStatus,
         processedAt: new Date(),
         ...(failedItems.length === batch.items.length && {
-          failedAt: new Date(),
-          failureReason: "All transfers failed",
+          failedReason: "All transfers failed",
         }),
       },
       include: {
         items: {
           include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                stripeConnectAccountId: true,
-                stripeConnectOnboarded: true,
-              },
-            },
             earnings: {
               select: {
                 id: true,
@@ -494,9 +524,15 @@ export async function processPayoutBatch(
       },
     });
 
+    // Add user data to items
+    const itemsWithUsers = updatedBatch.items.map((item) => ({
+      ...item,
+      user: userMap.get(item.userId),
+    }));
+
     revalidatePath("/settings/payouts");
     revalidatePath("/my-earnings");
-    return { success: true, data: updatedBatch };
+    return { success: true, data: { ...updatedBatch, items: itemsWithUsers } };
   } catch (error) {
     console.error("[Payouts] Error processing batch:", error);
 
@@ -505,8 +541,7 @@ export async function processPayoutBatch(
       where: { id: batchId },
       data: {
         status: "failed",
-        failedAt: new Date(),
-        failureReason: error instanceof Error ? error.message : "Processing failed",
+        failedReason: error instanceof Error ? error.message : "Processing failed",
       },
     });
 
@@ -552,7 +587,7 @@ export async function cancelPayoutBatch(batchId: string): Promise<ActionResult<v
       });
     }
 
-    // Delete batch and items
+    // Delete batch and items (cascade)
     await prisma.payoutBatch.delete({
       where: { id: batchId },
     });

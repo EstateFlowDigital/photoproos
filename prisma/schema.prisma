@@ -842,6 +842,10 @@ model BookingType {
   color           String  @default("#3b82f6")
   isActive        Boolean @default(true)
 
+  // Buffer time settings (default for bookings of this type)
+  bufferBeforeMinutes Int @default(0) // Prep time before booking
+  bufferAfterMinutes  Int @default(0) // Travel/wrap-up time after booking
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -886,6 +890,10 @@ model Booking {
   distanceMiles     Float?
   travelTimeMinutes Int?
   travelFeeCents    Int?   @default(0)
+
+  // Buffer time (per-booking override, null = use type defaults)
+  bufferBeforeMinutes Int? // Prep time before booking
+  bufferAfterMinutes  Int? // Travel/wrap-up time after booking
 
   // Weather data (cached for performance)
   weatherCache    Json?
@@ -938,12 +946,38 @@ model Booking {
   @@index([parentBookingId])
 }
 
+enum ReminderType {
+  hours_24
+  hours_1
+  custom
+}
+
+enum ReminderChannel {
+  email
+  sms
+}
+
+enum ReminderRecipient {
+  client
+  photographer
+  both
+}
+
 model BookingReminder {
   id        String    @id @default(cuid())
   bookingId String
   sendAt    DateTime
   sent      Boolean   @default(false)
   sentAt    DateTime?
+
+  // Reminder configuration
+  type          ReminderType      @default(hours_24)
+  channel       ReminderChannel   @default(email)
+  recipient     ReminderRecipient @default(client)
+  minutesBefore Int               @default(1440) // 24 hours = 1440 minutes
+
+  // Delivery tracking
+  errorMessage  String?
 
   createdAt DateTime @default(now())
 
@@ -952,6 +986,7 @@ model BookingReminder {
 
   @@index([bookingId])
   @@index([sendAt])
+  @@index([sent, sendAt]) // For finding unsent reminders due to be sent
 }
 
 // ============================================================================
@@ -1435,6 +1470,13 @@ model PropertyWebsite {
   showPrice    Boolean                 @default(true)
   showAgent    Boolean                 @default(true)
   customDomain String?                 @unique
+
+  // Template Customization
+  accentColor String? // Custom accent color override (hex, e.g., "#3b82f6")
+
+  // Open House Scheduling
+  openHouseDate    DateTime? // Open house start date/time
+  openHouseEndDate DateTime? // Open house end date/time (optional, defaults to +2 hours)
 
   // SEO
   slug            String  @unique

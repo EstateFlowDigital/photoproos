@@ -48,7 +48,15 @@ export default async function SchedulingPage() {
         startTime: { gte: now },
         status: { not: "cancelled" },
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        startTime: true,
+        endTime: true,
+        status: true,
+        location: true,
+        clientName: true,
+        isRecurring: true,
         client: { select: { fullName: true, company: true } },
       },
       orderBy: { startTime: "asc" },

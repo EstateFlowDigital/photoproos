@@ -8,7 +8,7 @@ import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { TravelInfoCard } from "@/components/dashboard/travel-info-card";
 import { TeamMemberSelector } from "@/components/dashboard/team-member-selector";
 import { Select } from "@/components/ui/select";
-import { createBooking, createRecurringBooking } from "@/lib/actions/bookings";
+import { createBooking, createRecurringBooking, createBookingReminders, type ReminderInput } from "@/lib/actions/bookings";
 import { getRecurrenceSummary } from "@/lib/utils/bookings";
 import { calculateTravelPreview } from "@/lib/actions/locations";
 import type { ServiceType } from "@/lib/services";
@@ -72,6 +72,11 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
   const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
   const [recurrenceCount, setRecurrenceCount] = useState(4);
   const [recurrenceDaysOfWeek, setRecurrenceDaysOfWeek] = useState<number[]>([]);
+
+  // Reminder state
+  const [reminder24h, setReminder24h] = useState(true);
+  const [reminder1h, setReminder1h] = useState(false);
+  const [reminderRecipient, setReminderRecipient] = useState<"client" | "photographer" | "both">("client");
 
   // Calculate travel from home base
   const calculateTravel = useCallback(async (lat: number, lng: number, userId?: string) => {
@@ -167,6 +172,23 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
         notes: notes || undefined,
       };
 
+      // Build reminders array
+      const reminders: ReminderInput[] = [];
+      if (reminder24h) {
+        reminders.push({
+          type: "hours_24",
+          channel: "email",
+          recipient: reminderRecipient,
+        });
+      }
+      if (reminder1h) {
+        reminders.push({
+          type: "hours_1",
+          channel: "email",
+          recipient: reminderRecipient,
+        });
+      }
+
       if (isRecurring) {
         // Create recurring booking series
         const result = await createRecurringBooking({
@@ -182,6 +204,10 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
         });
 
         if (result.success) {
+          // Create reminders for the parent booking
+          if (reminders.length > 0) {
+            await createBookingReminders(result.data.id, reminders);
+          }
           router.push(`/scheduling/${result.data.id}`);
         } else {
           setError(result.error);
@@ -191,6 +217,10 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
         const result = await createBooking(bookingInput);
 
         if (result.success) {
+          // Create reminders for the booking
+          if (reminders.length > 0) {
+            await createBookingReminders(result.data.id, reminders);
+          }
           router.push(`/scheduling/${result.data.id}`);
         } else {
           setError(result.error);
@@ -576,11 +606,12 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
         </div>
       </div>
 
-      {/* Notifications */}
+      {/* Notifications & Reminders */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Notifications</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Notifications & Reminders</h2>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
+          {/* Confirmation Email */}
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -594,31 +625,84 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
             </div>
           </label>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              name="sendReminder"
-              defaultChecked
-              className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
-            />
-            <div>
-              <span className="text-sm font-medium text-foreground">Send reminder</span>
-              <p className="text-xs text-foreground-muted">Remind client 24 hours before the session</p>
+          {/* Reminders Section */}
+          <div className="pt-3 border-t border-[var(--card-border)]">
+            <div className="flex items-center gap-2 mb-3">
+              <BellIcon className="h-4 w-4 text-foreground-muted" />
+              <span className="text-sm font-medium text-foreground">Automatic Reminders</span>
             </div>
-          </label>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              name="addToCalendar"
-              defaultChecked
-              className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
-            />
-            <div>
-              <span className="text-sm font-medium text-foreground">Add to calendar</span>
-              <p className="text-xs text-foreground-muted">Create a calendar event for this booking</p>
+            <div className="space-y-3 pl-6">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={reminder24h}
+                  onChange={(e) => setReminder24h(e.target.checked)}
+                  className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                />
+                <div>
+                  <span className="text-sm font-medium text-foreground">24 hours before</span>
+                  <p className="text-xs text-foreground-muted">Send reminder email one day before the session</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={reminder1h}
+                  onChange={(e) => setReminder1h(e.target.checked)}
+                  className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                />
+                <div>
+                  <span className="text-sm font-medium text-foreground">1 hour before</span>
+                  <p className="text-xs text-foreground-muted">Send last-minute reminder email</p>
+                </div>
+              </label>
+
+              {/* Recipient Selection */}
+              {(reminder24h || reminder1h) && (
+                <div className="pt-2">
+                  <label className="block text-xs font-medium text-foreground-muted mb-2">Send reminders to:</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: "client", label: "Client only" },
+                      { value: "photographer", label: "Team only" },
+                      { value: "both", label: "Both" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setReminderRecipient(option.value as typeof reminderRecipient)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                          reminderRecipient === option.value
+                            ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                            : "bg-[var(--background)] border-[var(--card-border)] text-foreground-muted hover:border-[var(--primary)]/50"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </label>
+          </div>
+
+          {/* Calendar */}
+          <div className="pt-3 border-t border-[var(--card-border)]">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="addToCalendar"
+                defaultChecked
+                className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+              />
+              <div>
+                <span className="text-sm font-medium text-foreground">Add to calendar</span>
+                <p className="text-xs text-foreground-muted">Create a calendar event for this booking</p>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -662,6 +746,14 @@ function RepeatIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6Zm0 14.5a2 2 0 0 1-1.95-1.557 33.54 33.54 0 0 0 3.9 0A2 2 0 0 1 10 16.5Z" clipRule="evenodd" />
     </svg>
   );
 }

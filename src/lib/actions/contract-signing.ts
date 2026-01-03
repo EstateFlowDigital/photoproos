@@ -1,11 +1,35 @@
 "use server";
 
+/**
+ * Contract Signing Actions
+ *
+ * This file handles all contract signing operations:
+ * - Adding/removing signers to contracts
+ * - Generating and managing signing tokens
+ * - Public signing flow for signers
+ * - Resending signing invitations
+ *
+ * Email Integration:
+ * - resendSigningInvitation(): Sends reminder emails to pending signers
+ * - signContract(): Sends confirmation emails after successful signature
+ *
+ * Related Files:
+ * - src/lib/actions/contracts.ts - Contract CRUD and initial send
+ * - src/lib/email/send.ts - Email sending functions
+ * - src/emails/contract-signing.tsx - Email template
+ * - src/app/sign/[token]/page.tsx - Public signing page
+ */
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { SignatureType, ContractStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { headers } from "next/headers";
 import crypto from "crypto";
+import {
+  sendContractSigningEmail,
+  sendContractSignedConfirmationEmail,
+} from "@/lib/email/send";
 
 // =============================================================================
 // Types
@@ -278,6 +302,17 @@ export async function removeContractSigner(signerId: string): Promise<ActionResu
 
 /**
  * Resend signing invitation to a signer
+ *
+ * This action:
+ * 1. Validates the signer exists and hasn't already signed
+ * 2. Generates a fresh signing token (extends expiry by 30 days)
+ * 3. Creates an audit log entry
+ * 4. Sends a reminder email with the new signing link
+ *
+ * Use this when:
+ * - Original email was lost or expired
+ * - Signer requests a new link
+ * - Following up on pending signatures
  */
 export async function resendSigningInvitation(
   signerId: string
@@ -285,7 +320,7 @@ export async function resendSigningInvitation(
   try {
     const organizationId = await requireOrganizationId();
 
-    // Get signer with contract
+    // Get signer with contract and organization info for email
     const signer = await prisma.contractSigner.findFirst({
       where: { id: signerId },
       include: {
@@ -303,7 +338,13 @@ export async function resendSigningInvitation(
       return { success: false, error: "This signer has already signed the contract" };
     }
 
-    // Generate new token
+    // Get organization info for email
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { name: true, publicEmail: true },
+    });
+
+    // Generate new token with fresh 30-day expiry
     const signingToken = generateSigningToken();
     const tokenExpiresAt = new Date();
     tokenExpiresAt.setDate(tokenExpiresAt.getDate() + 30);
@@ -327,8 +368,28 @@ export async function resendSigningInvitation(
 
     const signingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/sign/${signingToken}`;
 
-    // TODO: Send email with signing link
-    // await sendSigningInvitationEmail(signer.email, signer.name, signer.contract.name, signingUrl);
+    // Send reminder email with signing link
+    // This is non-blocking - we return success even if email fails
+    try {
+      await sendContractSigningEmail({
+        to: signer.email,
+        signerName: signer.name || "there",
+        contractName: signer.contract.name,
+        signingUrl,
+        photographerName: organization?.name || "Your Photographer",
+        photographerEmail: organization?.publicEmail || undefined,
+        expiresAt: tokenExpiresAt,
+        isReminder: true, // This triggers reminder-specific messaging
+      });
+
+      console.log(`[ContractSigning] Reminder sent to ${signer.email}`);
+    } catch (emailError) {
+      console.error(
+        `[ContractSigning] Failed to send reminder to ${signer.email}:`,
+        emailError
+      );
+      // Don't fail the action - the token was regenerated successfully
+    }
 
     return { success: true, data: { signingUrl } };
   } catch (error) {
@@ -444,6 +505,22 @@ export async function getContractForSigning(signingToken: string) {
 
 /**
  * Sign a contract (public endpoint for signers)
+ *
+ * This is the main action called when a signer submits their signature.
+ * It handles the complete signing flow:
+ *
+ * 1. Validates the signing token and signer state
+ * 2. Creates a signature record with IP/user agent tracking
+ * 3. Updates the signer record with signature timestamp
+ * 4. Checks if all signers have signed (to update contract status)
+ * 5. Creates an audit log entry
+ * 6. Logs activity for the organization
+ * 7. Sends confirmation email to the signer
+ *
+ * Security:
+ * - IP address and user agent are captured for audit purposes
+ * - Consent text is recorded with the signature
+ * - Signatures are stored as base64 encoded images
  */
 export async function signContract(
   input: SignContractInput
@@ -451,12 +528,14 @@ export async function signContract(
   try {
     const { ipAddress, userAgent } = await getRequestMetadata();
 
+    // Fetch signer with contract and organization info for email
     const signer = await prisma.contractSigner.findFirst({
       where: { signingToken: input.signingToken },
       include: {
         contract: {
           select: {
             id: true,
+            name: true,
             organizationId: true,
             status: true,
           },
@@ -480,14 +559,23 @@ export async function signContract(
       return { success: false, error: "This contract is no longer valid" };
     }
 
-    // Validate signature data (should be base64 encoded)
+    // Validate signature data (should be base64 encoded image)
     if (!input.signatureData || !input.signatureData.startsWith("data:image/")) {
       return { success: false, error: "Invalid signature format" };
     }
 
-    // Create signature record
+    // Get organization info for email and activity logging
+    const organization = await prisma.organization.findUnique({
+      where: { id: signer.contract.organizationId },
+      select: { name: true, publicEmail: true },
+    });
+
+    // Track if all signers have signed for status update
+    let allSigned = false;
+
+    // Create signature record within a transaction
     await prisma.$transaction(async (tx) => {
-      // Create the signature
+      // Create the signature with full audit trail
       await tx.contractSignature.create({
         data: {
           contractId: signer.contract.id,
@@ -501,7 +589,7 @@ export async function signContract(
         },
       });
 
-      // Update signer record
+      // Update signer record with signature timestamp
       await tx.contractSigner.update({
         where: { id: signer.id },
         data: {
@@ -512,16 +600,16 @@ export async function signContract(
         },
       });
 
-      // Check if all signers have signed
+      // Check if all signers have now signed
       const allSigners = await tx.contractSigner.findMany({
         where: { contractId: signer.contract.id },
         select: { signedAt: true },
       });
 
-      const allSigned = allSigners.every((s) => s.signedAt !== null);
+      allSigned = allSigners.every((s) => s.signedAt !== null);
 
       if (allSigned) {
-        // Update contract status to signed
+        // Update contract status to signed when all signers complete
         await tx.contract.update({
           where: { id: signer.contract.id },
           data: {
@@ -531,7 +619,7 @@ export async function signContract(
         });
       }
 
-      // Log audit event
+      // Log audit event for signature
       await tx.contractAuditLog.create({
         data: {
           contractId: signer.contract.id,
@@ -546,8 +634,42 @@ export async function signContract(
       });
     });
 
-    // TODO: Send confirmation email
-    // await sendSignatureConfirmationEmail(signer.email, signer.name);
+    // Log activity for the organization
+    await prisma.activityLog.create({
+      data: {
+        organizationId: signer.contract.organizationId,
+        type: "contract_signed",
+        description: allSigned
+          ? `Contract "${signer.contract.name}" fully signed by all parties`
+          : `${signer.name || signer.email} signed contract "${signer.contract.name}"`,
+        contractId: signer.contract.id,
+        metadata: {
+          signerEmail: signer.email,
+          signerName: signer.name,
+          allSigned,
+        },
+      },
+    });
+
+    // Send confirmation email to the signer
+    // Non-blocking - don't fail the action if email fails
+    try {
+      await sendContractSignedConfirmationEmail({
+        to: signer.email,
+        signerName: signer.name || "there",
+        contractName: signer.contract.name,
+        photographerName: organization?.name || "Your Photographer",
+        photographerEmail: organization?.publicEmail || undefined,
+      });
+
+      console.log(`[ContractSigning] Confirmation email sent to ${signer.email}`);
+    } catch (emailError) {
+      console.error(
+        `[ContractSigning] Failed to send confirmation to ${signer.email}:`,
+        emailError
+      );
+      // Don't fail the action - signature was recorded successfully
+    }
 
     const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/sign/${input.signingToken}/complete`;
 

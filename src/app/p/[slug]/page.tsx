@@ -184,6 +184,44 @@ function generateSchemaOrg(website: NonNullable<Awaited<ReturnType<typeof getPro
   return JSON.stringify(schema);
 }
 
+// Helper to format open house date/time
+function formatOpenHouseDateTime(date: Date): { date: string; time: string } {
+  const dateStr = date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+  const timeStr = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return { date: dateStr, time: timeStr };
+}
+
+// Check if open house is currently active or upcoming
+function getOpenHouseStatus(startDate: Date | null, endDate: Date | null): "upcoming" | "active" | "past" | null {
+  if (!startDate) return null;
+  const now = new Date();
+  const end = endDate || new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Default 2 hours
+  if (now < startDate) return "upcoming";
+  if (now >= startDate && now <= end) return "active";
+  return "past";
+}
+
+// Get the actual accent color value from template or custom color
+function getAccentColorHex(template: keyof typeof templateStyles, customColor?: string | null): string {
+  if (customColor) return customColor;
+  const templateAccents: Record<keyof typeof templateStyles, string> = {
+    modern: "#3b82f6",
+    classic: "#b8860b",
+    luxury: "#d4af37",
+    minimal: "#111111",
+    commercial: "#0066cc",
+  };
+  return templateAccents[template] || "#3b82f6";
+}
+
 export default async function PropertyWebsitePage({ params }: PageProps) {
   const { slug } = await params;
   const website = await getPropertyWebsiteBySlug(slug);
@@ -199,13 +237,51 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
   const template = (website.template as keyof typeof templateStyles) || "modern";
   const styles = templateStyles[template] || templateStyles.modern;
 
+  // Get custom accent color or use template default
+  const customAccentColor = website.accentColor;
+  const accentColorHex = getAccentColorHex(template, customAccentColor);
+
+  // Check open house status
+  const openHouseStatus = getOpenHouseStatus(website.openHouseDate, website.openHouseEndDate);
+  const showOpenHouse = openHouseStatus === "upcoming" || openHouseStatus === "active";
+
   return (
-    <main className={styles.main}>
+    <main
+      className={styles.main}
+      style={customAccentColor ? {
+        "--custom-accent": customAccentColor,
+      } as React.CSSProperties : undefined}
+    >
       {/* Schema.org Structured Data for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: generateSchemaOrg(website) }}
       />
+
+      {/* Open House Banner */}
+      {showOpenHouse && website.openHouseDate && (
+        <div
+          className="sticky top-0 z-50 py-3 px-4 text-center text-white font-medium"
+          style={{ backgroundColor: accentColorHex }}
+        >
+          <div className="flex items-center justify-center gap-3">
+            <OpenHouseIcon className="h-5 w-5" />
+            <span>
+              {openHouseStatus === "active" ? (
+                <>Open House in Progress!</>
+              ) : (
+                <>
+                  Open House: {formatOpenHouseDateTime(website.openHouseDate).date} at {formatOpenHouseDateTime(website.openHouseDate).time}
+                  {website.openHouseEndDate && (
+                    <> - {formatOpenHouseDateTime(website.openHouseEndDate).time}</>
+                  )}
+                </>
+              )}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative">
         {/* Photo Gallery Hero */}
@@ -380,13 +456,19 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6 space-y-6">
+            <div className={`sticky space-y-6 ${showOpenHouse ? "top-16" : "top-6"}`}>
               {/* Contact Agent Card */}
               {website.showAgent && website.project.client && (
                 <div className={styles.card}>
                   <h3 className={styles.sectionHeading.replace('mb-6', 'mb-4').replace('mb-8', 'mb-4')}>Contact Agent</h3>
                   <div className="flex items-center gap-4">
-                    <div className={`flex h-14 w-14 items-center justify-center rounded-full ${styles.accentBgLight} text-xl font-semibold ${styles.accent}`}>
+                    <div
+                      className={`flex h-14 w-14 items-center justify-center rounded-full text-xl font-semibold ${!customAccentColor ? `${styles.accentBgLight} ${styles.accent}` : ""}`}
+                      style={customAccentColor ? {
+                        backgroundColor: `${customAccentColor}20`,
+                        color: customAccentColor,
+                      } : undefined}
+                    >
                       {website.project.client.fullName?.charAt(0)}
                     </div>
                     <div>
@@ -419,6 +501,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
               <PropertyInquiryForm
                 propertyWebsiteId={website.id}
                 propertyAddress={website.address}
+                accentColor={customAccentColor}
               />
 
               {/* Share */}
@@ -438,8 +521,14 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
           <div className="mx-auto max-w-7xl px-6">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${styles.accentBgLight}`}>
-                  <CameraIcon className={`h-5 w-5 ${styles.accent}`} />
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${!customAccentColor ? styles.accentBgLight : ""}`}
+                  style={customAccentColor ? { backgroundColor: `${customAccentColor}20` } : undefined}
+                >
+                  <CameraIcon
+                    className={`h-5 w-5 ${!customAccentColor ? styles.accent : ""}`}
+                    style={customAccentColor ? { color: customAccentColor } : undefined}
+                  />
                 </div>
                 <div>
                   <p className={template === "luxury" ? "font-medium text-white" : template === "modern" ? "font-medium text-foreground" : "font-medium text-[#1d1d1f]"}>
@@ -450,7 +539,11 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
               </div>
               <p className={`text-sm ${styles.mutedText}`}>
                 Powered by{" "}
-                <Link href="/" className={`${styles.accent} hover:underline`}>
+                <Link
+                  href="/"
+                  className={`hover:underline ${!customAccentColor ? styles.accent : ""}`}
+                  style={customAccentColor ? { color: customAccentColor } : undefined}
+                >
                   PhotoProOS
                 </Link>
               </p>
@@ -797,9 +890,9 @@ function LinkIcon({ className }: { className?: string }) {
   );
 }
 
-function CameraIcon({ className }: { className?: string }) {
+function CameraIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -811,6 +904,19 @@ function CameraIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+}
+
+function OpenHouseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
       />
     </svg>
   );

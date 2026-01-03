@@ -6,11 +6,13 @@ import { submitPropertyLead } from "@/lib/actions/property-websites";
 interface PropertyInquiryFormProps {
   propertyWebsiteId: string;
   propertyAddress: string;
+  accentColor?: string | null;
 }
 
 export function PropertyInquiryForm({
   propertyWebsiteId,
   propertyAddress,
+  accentColor,
 }: PropertyInquiryFormProps) {
   const [isPending, startTransition] = useTransition();
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -196,7 +198,18 @@ export function PropertyInquiryForm({
         <button
           type="submit"
           disabled={isPending}
-          className="h-11 w-full rounded-lg bg-[var(--primary)] font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-11 w-full rounded-lg font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            backgroundColor: accentColor || "var(--primary)",
+          }}
+          onMouseEnter={(e) => {
+            if (!isPending) {
+              (e.target as HTMLButtonElement).style.opacity = "0.9";
+            }
+          }}
+          onMouseLeave={(e) => {
+            (e.target as HTMLButtonElement).style.opacity = "1";
+          }}
         >
           {isPending ? (
             <span className="flex items-center justify-center gap-2">
