@@ -585,7 +585,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
       {/* Gallery Display */}
       {displayedGalleries.length > 0 ? (
         viewMode === "grid" ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="auto-grid grid-min-240 grid-gap-4">
             {displayedGalleries.map((gallery) => (
               <div key={gallery.id} className="relative">
                 {isSelectMode && (
