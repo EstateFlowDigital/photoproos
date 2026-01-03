@@ -134,7 +134,7 @@ export function getRedirectForDisabledModule(
   }
 
   // Return redirect to dashboard
-  return "/";
+  return "/dashboard";
 }
 
 /**

@@ -51,7 +51,7 @@ export const MODULES: Record<string, ModuleDefinition> = {
     name: "Dashboard",
     description: "Overview of your business metrics and activity",
     icon: LayoutDashboard,
-    href: "/",
+    href: "/dashboard",
     isCore: true,
     industries: ["*"],
     category: "core",
