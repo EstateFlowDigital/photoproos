@@ -14,7 +14,7 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
       <p className="text-sm text-foreground-muted">
         Territory management (zone-based pricing, travel rules, and per-service overrides) is coming soon.
       </p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="auto-grid grid-min-200 grid-gap-3">
         <div className="rounded-lg border border-[var(--card-border)] bg-background p-4">
           <p className="text-xs uppercase text-foreground-muted">Territories</p>
           <p className="text-2xl font-semibold text-foreground">{initialTerritories.length}</p>
@@ -23,7 +23,7 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
           <p className="text-xs uppercase text-foreground-muted">Services</p>
           <p className="text-2xl font-semibold text-foreground">{services.length}</p>
         </div>
-        <div className="rounded-lg border border-[var(--card-border)] bg-background p-4 sm:col-span-2 lg:col-span-1">
+        <div className="rounded-lg border border-[var(--card-border)] bg-background p-4">
           <p className="text-xs uppercase text-foreground-muted">Status</p>
           <p className="text-2xl font-semibold text-foreground">Draft</p>
         </div>
