@@ -7,6 +7,7 @@ import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
+import { getModulesForIndustries } from "@/lib/constants/industries";
 
 export default async function DashboardLayout({
   children,
@@ -113,8 +114,11 @@ export default async function DashboardLayout({
   }
 
   // Get enabled modules (default to all if not set)
-  const enabledModules = (organization.enabledModules as string[]) ||
-    getDefaultModulesForIndustries(["real_estate"]);
+  const organizationIndustries = organization.industries as string[] || ["real_estate"];
+  const enabledModulesRaw = (organization.enabledModules as string[]) ||
+    getDefaultModulesForIndustries(organizationIndustries);
+  const availableModules = getModulesForIndustries(organizationIndustries);
+  const enabledModules = enabledModulesRaw.filter((m) => availableModules.includes(m));
 
   // Get unread notification count for badge
   const notificationCountResult = await getUnreadNotificationCount();
@@ -126,6 +130,7 @@ export default async function DashboardLayout({
         <CommandPaletteProvider>
           <DashboardLayoutClient
             enabledModules={enabledModules}
+            industries={organizationIndustries}
             unreadNotificationCount={unreadNotificationCount}
           >
             {children}

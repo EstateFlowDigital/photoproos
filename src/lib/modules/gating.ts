@@ -27,9 +27,22 @@ export function isModuleEnabled(
   context: GatingContext,
   moduleId: string
 ): boolean {
+  const module = MODULES[moduleId as ModuleId];
+
+  // Unknown modules are not enabled
+  if (!module) {
+    return false;
+  }
+
   // Core modules are always enabled
-  if (CORE_MODULES.includes(moduleId)) {
+  if (module.isCore) {
     return true;
+  }
+
+  // Only allow modules available to the org's industries
+  const availableForIndustries = getModulesForIndustries(context.industries);
+  if (!availableForIndustries.includes(moduleId)) {
+    return false;
   }
 
   // Check if explicitly enabled
@@ -59,7 +72,10 @@ export function isModuleAvailable(
  * Get all enabled modules for a context
  */
 export function getEnabledModuleIds(context: GatingContext): string[] {
-  return [...CORE_MODULES, ...context.enabledModules];
+  const available = getModulesForIndustries(context.industries);
+  const enabled = context.enabledModules.filter((m) => available.includes(m));
+
+  return [...CORE_MODULES, ...enabled];
 }
 
 /**

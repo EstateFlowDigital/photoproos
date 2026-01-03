@@ -5,44 +5,42 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import { CORE_MODULES } from "@/lib/constants/modules";
-
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.FC<{ className?: string }>;
-  moduleId: string;
-}
-
-const allNavItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: DashboardIcon, moduleId: "dashboard" },
-  { label: "Galleries", href: "/galleries", icon: GalleryIcon, moduleId: "galleries" },
-  { label: "Properties", href: "/properties", icon: PropertyIcon, moduleId: "properties" },
-  { label: "Services", href: "/services", icon: ServicesIcon, moduleId: "services" },
-  { label: "Clients", href: "/clients", icon: ClientsIcon, moduleId: "clients" },
-  { label: "Invoices", href: "/invoices", icon: InvoiceIcon, moduleId: "invoices" },
-  { label: "Payments", href: "/payments", icon: PaymentsIcon, moduleId: "invoices" },
-  { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
-  { label: "Settings", href: "/settings", icon: SettingsIcon, moduleId: "settings" },
-];
+import { getFilteredNavigation } from "@/lib/modules/gating";
 
 interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
   enabledModules: string[];
+  industries: string[];
   notificationCount?: number;
 }
 
-export function MobileNav({ isOpen, onClose, enabledModules, notificationCount = 0 }: MobileNavProps) {
+export function MobileNav({
+  isOpen,
+  onClose,
+  enabledModules,
+  industries,
+  notificationCount = 0,
+}: MobileNavProps) {
   const pathname = usePathname();
 
-  // Filter nav items based on enabled modules
-  const navItems = allNavItems.filter((item) => {
-    // Core modules are always shown
-    if (CORE_MODULES.includes(item.moduleId)) return true;
-    // Check if module is enabled
-    return enabledModules.includes(item.moduleId);
+  const navItems = getFilteredNavigation({
+    enabledModules,
+    industries,
   });
+
+  const paymentsVisible = navItems.some((item) => item.id === "invoices");
+  const mobileNav = paymentsVisible
+    ? [
+        ...navItems,
+        {
+          id: "payments",
+          label: "Payments",
+          href: "/payments",
+          icon: PaymentsIcon,
+        },
+      ]
+    : navItems;
 
   // Close menu on route change
   useEffect(() => {
@@ -110,7 +108,7 @@ export function MobileNav({ isOpen, onClose, enabledModules, notificationCount =
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
-          {navItems.map((item) => {
+          {mobileNav.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const IconComponent = item.icon;
 

@@ -8,10 +8,16 @@ import { MobileNav, MobileMenuButton } from "./mobile-nav";
 interface DashboardLayoutClientProps {
   children: React.ReactNode;
   enabledModules: string[];
+  industries: string[];
   unreadNotificationCount?: number;
 }
 
-export function DashboardLayoutClient({ children, enabledModules, unreadNotificationCount = 0 }: DashboardLayoutClientProps) {
+export function DashboardLayoutClient({
+  children,
+  enabledModules,
+  industries,
+  unreadNotificationCount = 0,
+}: DashboardLayoutClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleOpenMenu = useCallback(() => {
@@ -26,11 +32,21 @@ export function DashboardLayoutClient({ children, enabledModules, unreadNotifica
     <div className="flex h-screen bg-[var(--background)]">
       {/* Desktop Sidebar - hidden on mobile */}
       <div className="hidden lg:block">
-        <DashboardSidebar enabledModules={enabledModules} notificationCount={unreadNotificationCount} />
+        <DashboardSidebar
+          enabledModules={enabledModules}
+          industries={industries}
+          notificationCount={unreadNotificationCount}
+        />
       </div>
 
       {/* Mobile Navigation */}
-      <MobileNav isOpen={mobileMenuOpen} onClose={handleCloseMenu} enabledModules={enabledModules} notificationCount={unreadNotificationCount} />
+      <MobileNav
+        isOpen={mobileMenuOpen}
+        onClose={handleCloseMenu}
+        enabledModules={enabledModules}
+        industries={industries}
+        notificationCount={unreadNotificationCount}
+      />
 
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">

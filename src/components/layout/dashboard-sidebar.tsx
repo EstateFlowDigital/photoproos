@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import { CORE_MODULES } from "@/lib/constants/modules";
+import { getFilteredNavigation } from "@/lib/modules/gating";
 
 interface NavItem {
   label: string;
@@ -35,19 +35,36 @@ const bottomNavItems: NavItem[] = [
 interface DashboardSidebarProps {
   className?: string;
   enabledModules: string[];
+  industries: string[];
   notificationCount?: number;
 }
 
-export function DashboardSidebar({ className, enabledModules, notificationCount = 0 }: DashboardSidebarProps) {
+export function DashboardSidebar({
+  className,
+  enabledModules,
+  industries,
+  notificationCount = 0,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
 
-  // Filter nav items based on enabled modules
-  const navItems = allNavItems.filter((item) => {
-    // Core modules are always shown
-    if (CORE_MODULES.includes(item.moduleId)) return true;
-    // Check if module is enabled
-    return enabledModules.includes(item.moduleId);
+  const navItems = getFilteredNavigation({
+    enabledModules,
+    industries,
   });
+
+  // Add Payments link when invoices module is enabled
+  const paymentsVisible = navItems.some((item) => item.id === "invoices");
+  const sidebarNav = paymentsVisible
+    ? [
+        ...navItems,
+        {
+          id: "payments",
+          label: "Payments",
+          href: "/payments",
+          icon: PaymentsIcon,
+        },
+      ]
+    : navItems;
 
   return (
     <aside
@@ -64,9 +81,20 @@ export function DashboardSidebar({ className, enabledModules, notificationCount 
         <span className="text-lg font-semibold text-foreground">PhotoProOS</span>
       </div>
 
+      {/* New Project Button */}
+      <div className="p-4 pb-2">
+        <Link
+          href="/create"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+        >
+          <PlusIcon className="h-4 w-4" />
+          New Project
+        </Link>
+      </div>
+
       {/* Main Navigation */}
-      <nav className="flex-1 space-y-1 p-4">
-        {navItems.map((item) => {
+      <nav className="flex-1 space-y-1 px-4 pb-4">
+        {sidebarNav.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const IconComponent = item.icon;
 
@@ -309,4 +337,10 @@ function NotificationIcon({ className }: { className?: string }) {
   );
 }
 
-
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+    </svg>
+  );
+}
