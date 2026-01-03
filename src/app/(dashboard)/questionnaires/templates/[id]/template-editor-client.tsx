@@ -357,7 +357,7 @@ export function TemplateEditorClient({ template }: TemplateEditorClientProps) {
     <div className="min-h-screen">
       {/* Header */}
       <div className="sticky top-0 z-10 border-b border-[var(--card-border)] bg-[var(--background)] px-6 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/questionnaires"
@@ -372,7 +372,7 @@ export function TemplateEditorClient({ template }: TemplateEditorClientProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {hasChanges && (
               <span className="text-sm text-yellow-400">Unsaved changes</span>
             )}
@@ -401,7 +401,7 @@ export function TemplateEditorClient({ template }: TemplateEditorClientProps) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-4">
           <button
             onClick={() => setActiveTab("fields")}
             className={cn(
@@ -548,11 +548,11 @@ export function TemplateEditorClient({ template }: TemplateEditorClientProps) {
         )}
 
         {activeTab === "agreements" && (
-          <div className="flex gap-6 min-h-[calc(100vh-220px)]">
+          <div className="flex flex-col gap-6 min-h-[calc(100vh-220px)] lg:flex-row">
             {/* Left Panel - Agreement List */}
-            <div className="w-80 shrink-0 overflow-y-auto">
+            <div className="w-full overflow-y-auto lg:w-80 lg:shrink-0">
               <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                   <h3 className="text-sm font-semibold text-foreground">Legal Agreements</h3>
                   <button
                     onClick={handleAddAgreement}
@@ -650,7 +650,7 @@ export function TemplateEditorClient({ template }: TemplateEditorClientProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-medium text-foreground">Active</p>
                   <p className="text-xs text-foreground-muted">
@@ -850,7 +850,7 @@ function FieldEditor({
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <input
               type="text"
               value={newSection}
@@ -904,7 +904,7 @@ function FieldEditor({
       </div>
 
       {/* Required Toggle */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <label className="text-sm text-foreground">Required</label>
         <button
           type="button"
@@ -962,7 +962,7 @@ function AgreementEditor({
 }) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-lg font-semibold text-foreground">Edit Agreement</h3>
         <button
           onClick={onDelete}
@@ -1014,7 +1014,7 @@ function AgreementEditor({
         />
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-foreground">Required</p>
           <p className="text-xs text-foreground-muted">
@@ -1038,7 +1038,7 @@ function AgreementEditor({
         </button>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-foreground">Requires Signature</p>
           <p className="text-xs text-foreground-muted">

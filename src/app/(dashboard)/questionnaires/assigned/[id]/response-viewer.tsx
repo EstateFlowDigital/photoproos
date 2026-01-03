@@ -131,7 +131,7 @@ export function QuestionnaireResponseViewer({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Link
             href="/questionnaires"
@@ -147,7 +147,7 @@ export function QuestionnaireResponseViewer({
             Assigned to {questionnaire.client.fullName || questionnaire.client.email}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {(questionnaire.status === "pending" ||
             questionnaire.status === "in_progress") && (
             <button
@@ -289,7 +289,7 @@ export function QuestionnaireResponseViewer({
           <div className="divide-y divide-[var(--card-border)]">
             {items.map(({ field, value }) => (
               <div key={field.id} className="px-6 py-4">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">
                       {field.label}
@@ -299,7 +299,7 @@ export function QuestionnaireResponseViewer({
                       <p className="text-xs text-foreground-muted mt-0.5">{field.helpText}</p>
                     )}
                   </div>
-                  <div className="text-right max-w-md">
+                  <div className="max-w-md text-left sm:text-right">
                     <p
                       className={`text-sm ${
                         value ? "text-foreground" : "text-foreground-muted italic"
@@ -324,7 +324,7 @@ export function QuestionnaireResponseViewer({
           <div className="divide-y divide-[var(--card-border)]">
             {questionnaire.agreements.map((agreement) => (
               <div key={agreement.id} className="px-6 py-4">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div className="flex items-start gap-3">
                     <div
                       className={`rounded-full p-1 mt-0.5 ${

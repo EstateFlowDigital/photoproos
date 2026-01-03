@@ -23,8 +23,8 @@ export default async function QuestionnaireTemplatePreviewPage({ params }: Props
     <div className="min-h-screen bg-[#0a0a0a]">
       {/* Preview Banner */}
       <div className="sticky top-0 z-50 bg-gradient-to-r from-[#8b5cf6] to-[#6366f1] text-white">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <div className="flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
               <EyeIcon className="w-4 h-4" />
               Preview Mode
@@ -33,7 +33,7 @@ export default async function QuestionnaireTemplatePreviewPage({ params }: Props
               This is how your clients will see the questionnaire
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href={`/questionnaires/templates/${id}`}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white/90 hover:text-white transition-colors"

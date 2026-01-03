@@ -138,7 +138,7 @@ export function QuestionnairesPageClient({
                   href={"/questionnaires/templates/" + template.id}
                   className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 hover:border-[var(--border-hover)] transition-colors"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="font-semibold text-foreground group-hover:text-[var(--primary)]">
                         {template.name}
