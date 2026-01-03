@@ -121,7 +121,7 @@ export function ServicesPageClient({ services }: ServicesPageClientProps) {
   return (
     <div className="space-y-4">
       {/* Search and Controls */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row">
         {/* Search */}
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
@@ -138,7 +138,7 @@ export function ServicesPageClient({ services }: ServicesPageClientProps) {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className="h-10 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          className="h-10 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:w-auto"
         >
           <option value="name-asc">Name (A-Z)</option>
           <option value="name-desc">Name (Z-A)</option>
@@ -226,7 +226,7 @@ export function ServicesPageClient({ services }: ServicesPageClientProps) {
 
       {/* Selection Bar (when items exist) */}
       {filteredServices.length > 0 && (
-        <div className="flex items-center justify-between py-2 border-b border-[var(--card-border)]">
+        <div className="flex flex-col gap-2 border-b border-[var(--card-border)] py-2 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={handleSelectAll}
             className="flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground transition-colors"
