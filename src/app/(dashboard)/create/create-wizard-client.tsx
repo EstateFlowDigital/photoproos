@@ -33,14 +33,14 @@ interface Service {
   isDefault: boolean;
 }
 
-interface Location {
+type WizardLocation = {
   id: string;
-  name?: string;
-  address?: string;
   formattedAddress: string;
   city: string | null;
   state: string | null;
-}
+  name?: string | null;
+  address?: string | null;
+};
 
 interface BookingType {
   id: string;
@@ -52,7 +52,7 @@ interface BookingType {
 interface CreateWizardClientProps {
   clients: Client[];
   services: Service[];
-  locations: Location[];
+  locations: WizardLocation[];
   bookingTypes: BookingType[];
 }
 

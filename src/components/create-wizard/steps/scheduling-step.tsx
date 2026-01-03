@@ -5,11 +5,14 @@ import { Calendar, ArrowRight, ArrowLeft, Clock, MapPin, FileText, Receipt } fro
 import { cn } from "@/lib/utils";
 import type { WizardData } from "@/app/(dashboard)/create/create-wizard-client";
 
-interface Location {
+type SchedulingLocation = {
   id: string;
-  name: string;
-  address: string | null;
-}
+  formattedAddress: string;
+  city: string | null;
+  state: string | null;
+  name?: string | null;
+  address?: string | null;
+};
 
 interface BookingType {
   id: string;
@@ -24,7 +27,7 @@ interface SchedulingStepProps {
   onNext: () => void;
   onBack: () => void;
   isLoading: boolean;
-  locations: Location[];
+  locations: SchedulingLocation[];
   bookingTypes: BookingType[];
 }
 
@@ -226,8 +229,7 @@ export function SchedulingStep({
                 <option value="">Select a location...</option>
                 {locations.map((location) => (
                   <option key={location.id} value={location.id}>
-                    {location.name}
-                    {location.address && ` - ${location.address}`}
+                    {location.formattedAddress}
                   </option>
                 ))}
               </select>
