@@ -30,6 +30,7 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
       const result = await createProductCatalog({
         name,
         description,
+        tags: [],
       });
 
       if (!result.success) {
