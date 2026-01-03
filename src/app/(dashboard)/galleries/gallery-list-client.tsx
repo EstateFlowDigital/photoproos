@@ -381,7 +381,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
       {/* Controls Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Search Input */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative w-full max-w-none sm:max-w-md sm:flex-1">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
@@ -401,13 +401,13 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
         </div>
 
         {/* Sort & View Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Sort Dropdown */}
           <div className="relative">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="appearance-none rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-3 pr-10 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              className="w-full min-w-[180px] appearance-none rounded-lg border border-[var(--card-border)] bg-[var(--background)] py-2.5 pl-3 pr-10 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:w-auto"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -424,7 +424,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
               <button
                 onClick={() => setShowServiceFilter(!showServiceFilter)}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
+                  "inline-flex w-full items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors sm:w-auto",
                   serviceFilter.size > 0
                     ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
                     : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
@@ -515,7 +515,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
             <button
               onClick={toggleSelectMode}
               className={cn(
-                "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                "inline-flex items-center gap-2 whitespace-nowrap rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                 isSelectMode
                   ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
                   : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
