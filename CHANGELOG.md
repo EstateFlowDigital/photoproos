@@ -8,6 +8,360 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Contract Creation Page** (`/contracts/new`)
+  - Create new contracts from scratch or from templates
+  - Client selection dropdown to assign contracts
+  - Template selection with auto-population of content
+  - Expiration date setting
+  - Variable insertion helper for dynamic content
+  - Redirects to contract detail page after creation
+
+- **Brokerage Pricing Contracts**
+  - Add pricing contracts directly from brokerage detail page via modal
+  - Support for percentage discounts, fixed discounts, or no discount
+  - Configurable payment terms (Net 7, 15, 30, 45, 60)
+  - Contract status display (Active/Inactive)
+
+- **Email System Improvements**
+  - **Client Email History**: Client detail page now shows last 10 emails sent with delivery status
+    - Status badges for delivered, sent, pending, failed, and bounced emails
+    - "View All" link to email logs filtered by client
+    - Email type formatting helper for readable display
+  - **Bulk Resend**: Email logs page now supports bulk operations
+    - Checkbox selection for individual emails
+    - Select all/none functionality
+    - Bulk resend action bar for failed/bounced emails
+    - Clear selection option
+  - **Email Search**: Full-text search across email logs
+    - Search by recipient email, name, subject
+    - Search by linked client name or email
+    - Case-insensitive matching
+  - **Email Export to CSV**: Export email logs for external analysis
+    - Exports all visible columns (recipient, subject, type, status, dates)
+    - Supports filtered exports based on current view
+    - Automatic date formatting for spreadsheet compatibility
+  - **Email Bounce Handling**: Visual warning for clients with delivery issues
+    - Warning badge on client detail page when bounced/failed emails detected
+    - Tooltip showing bounce and failure counts from last 30 days
+    - New `getClientEmailHealth()` server action
+  - **Client Communication Preferences**: Edit email preferences from client detail page
+    - Toggle transactional emails (gallery deliveries, invoices, receipts)
+    - Toggle SMS notifications (bookings & reminders)
+    - Toggle questionnaire emails (pre-shoot questionnaires & reminders)
+    - Toggle marketing emails (promotions, newsletters, updates)
+    - Optimistic updates with error recovery
+    - New `updateClientEmailPreferences()` server action
+
+- **Stripe Product Catalog Sync**
+  - Auto-sync Services and ServiceBundles to Stripe Products/Prices
+  - New database fields: `stripeProductId`, `stripePriceId`, `stripeSyncedAt` on Service and ServiceBundle models
+  - New Stripe sync helper library (`src/lib/stripe/product-sync.ts`):
+    - `syncServiceToStripe()` - Create/update Stripe Product and Price for a service
+    - `syncBundleToStripe()` - Create/update Stripe Product and Price for a bundle
+    - `archiveStripeProduct()` - Archive product when service/bundle is deactivated
+    - `reactivateStripeProduct()` - Reactivate product when service/bundle is reactivated
+    - `syncAllServicesToStripe()` - Bulk sync all active services
+    - `syncAllBundlesToStripe()` - Bulk sync all active bundles
+    - `getStripeLineItems()` - Get Stripe line items for checkout
+    - `checkStripeSyncStatus()` - Check if items are synced to Stripe
+  - Service CRUD operations now automatically sync to Stripe:
+    - Create: New Stripe Product with Price created
+    - Update: Product updated, new Price created if price changed (old archived)
+    - Delete/Archive: Stripe Product archived
+    - Toggle Active: Stripe Product activated/deactivated
+    - Duplicate: New Stripe Product created for duplicate
+  - ServiceBundle CRUD operations now automatically sync to Stripe (same as services)
+  - Order checkout uses Stripe Price IDs when available and price matches, falls back to inline price_data
+  - Handles Stripe price immutability by archiving old prices and creating new ones
+  - **Developer Tools: Stripe Products Section**
+    - New UI in Settings → Developer Tools for managing Stripe products
+    - **Status Tab** (default view):
+      - Shows Stripe configuration status (configured/not configured)
+      - Overview cards for Services and Bundles with synced/pending counts
+      - Product table with Name, Type, Price, Status (Synced/Pending), Last Sync date, Actions
+      - **Refresh button** to reload sync status without page refresh
+      - **Direct Stripe links** per product - click to view product in Stripe Dashboard
+      - **Individual re-sync** per product - sync a single product without bulk sync
+      - Quick link to view all products in Stripe Dashboard
+      - One-click "Sync Pending Products" button
+    - **New Service Tab**: Create services with auto Stripe sync
+    - **New Bundle Tab**: Create bundles with auto Stripe sync
+    - **Bulk Sync Tab**: Sync all existing products to Stripe
+    - Server actions:
+      - `syncProductsToStripe()` - Sync all products to Stripe
+      - `syncSingleProductToStripe()` - Sync individual service or bundle
+      - `refreshSyncOverview()` - Get fresh sync status
+      - `getProductSyncOverview()` - Get sync status for all products
+    - Disables actions when Stripe is not configured with helpful error messages
+
+- **Subscription Plan Management (Application Pricing)**
+  - New database models for SaaS pricing management:
+    - `SubscriptionPlan` - Define Pro, Studio, Enterprise tiers with pricing
+    - `PlanFeature` - Configure features per plan with keys/values
+    - `PricingExperiment` - A/B testing experiments with traffic allocation
+    - `PricingVariant` - Different price points per experiment
+    - `BillingInterval` enum - monthly/yearly
+    - `ExperimentStatus` enum - draft/active/paused/completed/archived
+  - Subscription plan server actions (`src/lib/actions/subscription-plans.ts`):
+    - Full CRUD for subscription plans, features, variants, experiments
+    - `syncPlanToStripe()` - Sync plan to Stripe with monthly/yearly prices
+    - `syncAllPlansToStripe()` - Bulk sync all active plans
+    - `syncVariantToStripe()` - Create Stripe prices for A/B test variants
+    - `recordVariantImpression()` / `recordVariantConversion()` - A/B tracking
+    - `getPublicPricingPlans()` - Get plans with optional experiment variants
+  - **Developer Tools: Subscription Plans Section**
+    - **Plans Tab**: View all subscription plans with Stripe sync status
+      - Shows plan name, pricing (monthly/yearly), trial days, badge
+      - Sync status indicators (synced/pending)
+      - Direct links to Stripe Dashboard
+      - Individual and bulk sync to Stripe
+    - **Features Tab**: Manage features per plan
+      - Add features with name, key, value, category
+      - Feature categories: Core, Storage, Team, Support, Integrations, Branding, Analytics
+      - Delete features inline
+    - **A/B Tests Tab**: Create and manage pricing experiments
+      - Create experiments with name, slug, hypothesis
+      - Configure traffic allocation percentage
+      - Target specific landing page paths
+      - Start/pause/complete/resume experiments
+      - View variant performance (impressions, conversions, conversion rate)
+    - **New Plan Tab**: Create subscription plans
+      - Configure name, slug, plan type (free/pro/studio/enterprise)
+      - Set monthly and yearly pricing
+      - Configure trial days, tagline, badge text
+  - Enables managing application pricing tiers with A/B testing for different landing pages
+
+- **Portfolio Builder Enhancements - Phase 2**
+  - Gallery Lightbox:
+    - Full-screen image lightbox with keyboard navigation (Escape, Arrow keys)
+    - Image counter and navigation arrows for multi-image galleries
+    - Optional download button when downloads are enabled
+    - Smooth transitions and zoom indicator on hover
+    - Creates a new `lightbox.tsx` component at `/portfolio/[slug]/components/`
+  - Live Preview Panel:
+    - Split-screen preview panel showing portfolio in real-time
+    - Responsive viewport selector (Desktop 1280px, Tablet 768px, Mobile 375px)
+    - Device frame visualization with viewport size indicator
+    - Manual refresh button and open in new tab option
+    - Auto-refresh when any settings are saved across all tabs (Design, Sections, Projects, Settings)
+    - Creates new `preview-panel.tsx` component
+  - Drag-and-Drop Section Reordering:
+    - HTML5 drag-and-drop API implementation for section list
+    - Visual feedback with drag ghost and drop target highlighting
+    - Grip handle icon for intuitive drag initiation
+    - Retains up/down arrow buttons as alternative
+    - Smooth transitions during drag operations
+  - Gallery Section Improvements:
+    - Added `showAllImages` config option to display all project assets
+    - Zoom icon hover effect on images
+    - Click-to-open lightbox functionality
+    - Project name captions in lightbox view
+
+- **Questionnaire Email Improvements**
+  - Email Activity Logging System:
+    - New `EmailLog` model in database schema
+    - Tracks all emails sent with status (pending, sent, delivered, failed, bounced)
+    - Links emails to questionnaires, clients, bookings, and other entities
+    - Stores Resend API ID for tracking
+    - `getEmailLogs()` - View email logs with filtering
+    - `getEmailStats()` - Get email statistics (sent, failed, by type)
+    - `getQuestionnaireEmailActivity()` - View email history for a questionnaire
+  - Automated Reminder Scheduling:
+    - `/api/cron/questionnaire-reminders` - Cron endpoint for automatic reminders
+    - Sends reminders 3 days before due date
+    - Sends overdue reminders daily until completed
+    - Respects max reminder count (5) and 24-hour cooldown
+    - Processes up to 100 questionnaires per run
+  - Photographer Digest Email:
+    - `/api/cron/photographer-digest` - Daily digest cron endpoint
+    - New `PhotographerDigestEmail` template
+    - Shows pending, in-progress, overdue, and completed today counts
+    - Lists questionnaires needing attention with status badges
+    - Action required section for overdue items
+    - `sendPhotographerDigestEmail()` - Send function
+  - Email Preview Functionality:
+    - `/api/email-preview` - Preview any email template
+    - Supports all questionnaire email templates
+    - Query parameters for customizing preview data
+    - Returns rendered HTML for browser viewing
+  - Customizable Email Content:
+    - Added `personalNote` field to questionnaire assignment
+    - Personal note appears prominently in assignment email
+    - Photographers can add personalized messages to clients
+    - Blue-highlighted section with "A note from [photographer]" header
+  - Batch Reminder Sending:
+    - `sendBatchReminders()` - Send reminders to multiple questionnaires
+    - Optional `overdueOnly` filter
+    - Optional limit parameter
+    - Returns sent/failed/skipped counts
+    - `getRemindableQuestionnairesCount()` - Get counts for batch UI
+  - New Email Templates:
+    - `questionnaire-assigned.tsx` - Assignment notification with personal note support
+    - `questionnaire-reminder.tsx` - Reminder with overdue urgency styling
+    - `questionnaire-completed.tsx` - Completion notification to photographer
+    - `photographer-digest.tsx` - Daily summary email
+  - Database Schema Updates:
+    - `EmailType` enum with 15 email types
+    - `EmailStatus` enum (pending, sent, delivered, failed, bounced)
+    - `EmailLog` model with full audit trail
+    - `personalNote` field on `ClientQuestionnaire`
+    - `emailLogs` relation on Organization, Client, ClientQuestionnaire
+  - Resend Webhook Integration:
+    - `/api/webhooks/resend` - Webhook endpoint for email delivery events
+    - Tracks email.sent, email.delivered, email.bounced, email.complained events
+    - Updates EmailLog status in real-time based on webhook events
+    - HMAC signature verification for webhook security
+  - Email Resend Capability:
+    - `resendEmail()` - Retry failed or bounced emails
+    - Supports questionnaire_assigned, questionnaire_reminder, questionnaire_completed types
+    - Updates email log with new resend ID and status
+    - Only allows resending of failed/bounced emails
+  - Email Analytics Dashboard:
+    - New `/settings/email-logs` page with comprehensive analytics
+    - Stats cards: total sent, sent this month, failed count, email types
+    - Email types breakdown chart for last 30 days
+    - Paginated email logs table with filtering by status and type
+    - Resend button for failed emails with loading state
+    - Real-time status badges and error message display
+  - Organization Email Settings:
+    - New `/settings/email` page for email configuration
+    - Custom sender name configuration
+    - Custom reply-to email address
+    - Email signature support (appended to emails)
+    - Toggle questionnaire emails on/off
+    - Toggle digest emails on/off
+    - Digest frequency (daily, weekly, none)
+    - Digest delivery time selection
+    - Test email functionality
+    - Database fields: emailSenderName, emailReplyTo, emailSignature, enableQuestionnaireEmails, enableDigestEmails, digestEmailFrequency, digestEmailTime
+  - Client Communication Preferences:
+    - New client fields: emailOptIn, questionnaireEmailsOptIn, marketingEmailsOptIn
+    - Email sending respects client opt-in preferences
+    - Questionnaire emails check both emailOptIn and questionnaireEmailsOptIn
+    - Reminder emails return error if client has opted out
+  - Unsubscribe Handling:
+    - `/unsubscribe` page for managing email preferences
+    - `/api/unsubscribe` API for preference management
+    - Secure unsubscribe tokens with HMAC signature
+    - 30-day token expiry for security
+    - Unsubscribe links in questionnaire email footers
+    - Toggle individual preference types (all emails, questionnaire emails, marketing emails)
+    - Unsubscribe from all option
+    - Success/error states with clear messaging
+
+- **Portfolio Websites Enhancement**
+  - Portfolio Type Toggle:
+    - `photographer` - Showcase/marketing portfolio for attracting new clients
+    - `client` - Project deliverables gallery for sharing work with clients
+  - 5 Visual Templates:
+    - Modern (dark, clean, minimal)
+    - Bold (high contrast, dramatic)
+    - Elegant (luxury, serif fonts)
+    - Minimal (light theme, whitespace)
+    - Creative (asymmetric, artistic)
+  - Section Builder System:
+    - 13 section types: Hero, About, Gallery, Services, Testimonials, Awards, Contact, FAQ, Text, Image, Video, Spacer, Custom HTML
+    - Drag-and-drop section reordering
+    - Section visibility toggle
+    - Section duplication
+    - Per-section configuration with Zod validation
+  - Template Customization:
+    - Primary and accent color overrides
+    - Google Fonts integration with 16 font options
+    - Template-aware CSS variable generation
+  - SEO Settings:
+    - Meta title (70 char limit)
+    - Meta description (160 char limit)
+  - Social Links:
+    - 10 supported platforms (Instagram, Facebook, Twitter/X, LinkedIn, YouTube, TikTok, Pinterest, Behance, Dribbble, Website)
+  - New Database Schema:
+    - `PortfolioType` enum (photographer, client)
+    - `PortfolioTemplate` enum (modern, bold, elegant, minimal, creative)
+    - `PortfolioSectionType` enum (13 types)
+    - `PortfolioWebsiteSection` model with JSON config storage
+    - Extended `PortfolioWebsite` model with template settings
+  - New Server Actions:
+    - `updatePortfolioWebsiteSettings()` - Type, template, fonts, SEO
+    - `createPortfolioSection()` / `updatePortfolioSection()` / `deletePortfolioSection()`
+    - `reorderPortfolioSections()` - Update section order
+    - `duplicatePortfolioSection()` - Clone sections
+    - `toggleSectionVisibility()` - Show/hide sections
+    - `initializePortfolioSections()` - Create default sections
+  - Dashboard Editor UI:
+    - 4-tab interface: Design, Sections, Projects, Settings
+    - Template preview cards with live color samples
+    - Section builder with add modal, reorder buttons, visibility toggle
+    - Project selection grid with search and bulk actions
+    - SEO and social links management
+  - Public Portfolio Renderer:
+    - Section-based dynamic rendering
+    - Template-aware styling with CSS variables
+    - Google Fonts loading
+    - Responsive layouts for all section types
+    - Legacy fallback for portfolios without sections
+  - Section Config Editors:
+    - Inline editing modal for each section type
+    - Hero: title, subtitle, background image/video, CTA, overlay, alignment
+    - About: photo, title, content, highlights list
+    - Gallery: project selection, layout (grid/masonry/carousel), columns
+    - Services: dynamic items with name, description, price, icon
+    - Testimonials: dynamic items with quote, client info, layout options
+    - Contact: toggle form, email, phone, social, map display
+    - FAQ: dynamic Q&A items with reordering
+    - Text: rich text content, alignment options
+    - Image: URL, alt text, caption, layout variants
+    - Video: YouTube/Vimeo/direct support, autoplay, loop, muted
+    - Spacer: height slider with presets and visual preview
+    - Edit button in sections list to open config modal
+  - Password Protection:
+    - Enable password requirement for portfolio access
+    - SHA-256 password hashing
+    - Cookie-based session persistence (24 hours)
+    - Elegant password gate UI for visitors
+    - Password settings in Settings tab
+  - Portfolio Expiration:
+    - Set expiration date for time-limited access
+    - Expired portfolios show friendly notice
+    - Date picker with clear button
+    - Automatic expiration check on page load
+  - Download Settings:
+    - Toggle to allow/disallow image downloads
+    - Optional watermark for downloaded images
+    - Settings in dedicated Downloads section
+  - Portfolio Analytics:
+    - New Analytics tab in editor
+    - Track total views and unique visitors
+    - Average time on page and scroll depth
+    - Views over time chart (7d, 30d, 90d, all time)
+    - Top referrers list
+    - Recent views activity feed
+    - Visitor and session tracking with local storage
+  - Custom CSS:
+    - Add custom CSS to override default styles
+    - Textarea editor with placeholder examples
+    - Injected as style tag in public portfolio
+  - Scroll Animations:
+    - Fade-in-up entrance animations
+    - Toggle to enable/disable animations
+    - CSS keyframe animations with staggered delays
+  - New Database Fields:
+    - `isPasswordProtected` - Password requirement toggle
+    - `password` - Hashed password storage
+    - `expiresAt` - Expiration timestamp
+    - `allowDownloads` - Download permission
+    - `downloadWatermark` - Watermark toggle
+    - `customCss` - Custom CSS storage
+    - `enableAnimations` - Animation toggle
+    - `PortfolioWebsiteView` model for analytics
+  - New Server Actions:
+    - `setPortfolioPassword()` - Enable/disable password protection
+    - `verifyPortfolioPassword()` - Verify visitor password
+    - `updatePortfolioAdvancedSettings()` - Expiration, downloads, CSS, animations
+    - `trackPortfolioView()` - Record portfolio view
+    - `updatePortfolioViewEngagement()` - Update time on page and scroll depth
+    - `getPortfolioAnalytics()` - Fetch analytics data
+    - `submitPortfolioContactForm()` - Handle contact form submissions
+
 - **Twilio SMS Integration (Phase 3)**
   - Twilio client library (`/src/lib/sms/twilio.ts`):
     - `getTwilio()` - Get global Twilio client for platform-level operations
@@ -44,6 +398,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Uses templated messages with booking details
 
 ### Fixed
+- Broken navigation links leading to 404 pages:
+  - `/contracts/new` - Was missing, now properly implemented with full form
+  - `/payments/new` in EmptyPayments component - Changed to `/invoices/new`
+  - `/galleries/import` in EmptyGalleries component - Removed (feature not implemented)
+  - `/brokerages/[id]/contracts/new` - Replaced with inline modal for brokerage pricing contracts
+- TypeScript build errors in email system:
+  - Fixed `remindersSent` field reference in email-logs.ts (was incorrectly `reminderCount`)
+  - Fixed ZodError message access in email-settings.ts (use `.issues[0].message` instead of `.errors[0].message`)
+  - Fixed searchParams null check in unsubscribe page
+- Stripe product sync client-side bundling error:
+  - Created `stripe-product-sync.ts` server action to wrap sync functions
+  - Client components now use server action instead of importing server-only code
+  - Fixes `Can't resolve 'net'` and `Can't resolve 'tls'` webpack errors
 - Questionnaires module now available for all industries (was previously only available for Events)
   - Added questionnaires to modules list for real_estate, commercial, portraits, food, and product industries
   - Added questionnaires to default enabled modules for all industries
@@ -271,6 +638,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "Preview Mode" banner with quick navigation
     - Reset preview to test multiple times
     - Preview button added to template editor header
+  - Questionnaire Email Templates
+    - `questionnaire-assigned.tsx` - Sent to client when questionnaire is assigned
+      - Shows questionnaire name, description, due date
+      - Links to client portal for completion
+      - Related booking/session info
+    - `questionnaire-reminder.tsx` - Sent as reminder to client
+      - Normal and overdue states with visual distinction
+      - Urgency messaging for overdue questionnaires
+      - Reminder count tracking
+    - `questionnaire-completed.tsx` - Sent to photographer when client completes
+      - Submission summary with response and agreement counts
+      - Quick access to view responses
+      - Next steps checklist
+  - Email Integration for Questionnaires
+    - `assignQuestionnaireToClient()` now sends assignment email to client
+    - `sendQuestionnaireReminder()` now sends reminder email (with overdue detection)
+    - `submitQuestionnaireResponses()` now notifies photographer on completion
 
 - **Service Territory System (Phase 4)**
   - New `ServiceTerritory` model for zone-based pricing with ZIP codes or radius
