@@ -14,6 +14,19 @@ interface Client {
   email: string;
 }
 
+interface GalleryService {
+  id: string;
+  name: string;
+  category: string;
+  isPrimary: boolean;
+}
+
+interface AvailableService {
+  id: string;
+  name: string;
+  category: string;
+}
+
 interface Gallery {
   id: string;
   name: string;
@@ -25,6 +38,7 @@ interface Gallery {
   createdAt: string;
   views: number;
   downloads: number;
+  services: GalleryService[];
 }
 
 interface GalleriesPageClientProps {
@@ -38,6 +52,7 @@ interface GalleriesPageClientProps {
     delivered: number;
     archived: number;
   };
+  availableServices: AvailableService[];
 }
 
 export function GalleriesPageClient({
@@ -45,6 +60,7 @@ export function GalleriesPageClient({
   clients,
   filter,
   counts,
+  availableServices,
 }: GalleriesPageClientProps) {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -142,7 +158,11 @@ export function GalleriesPageClient({
 
       {/* Gallery List with Search, Sort, View Toggle */}
       {galleries.length > 0 && (
-        <GalleryListClient galleries={galleries} filter={filter} />
+        <GalleryListClient
+          galleries={galleries}
+          filter={filter}
+          availableServices={availableServices}
+        />
       )}
 
       {/* Create Gallery Modal */}

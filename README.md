@@ -23,6 +23,7 @@ PhotoProOS is a comprehensive business management platform for professional phot
 - **Analytics** - Revenue forecasting and client LTV metrics
 
 ### Recently Shipped
+- **Recurring Bookings** - Create repeating appointments (daily, weekly, biweekly, monthly, custom)
 - **Command Palette** - Global search and navigation with ⌘K/Ctrl+K
 - **Time-Off Management** - Request and approve team time-off with pending badges
 - **Contract Templates** - Reusable contract templates with variables
@@ -34,7 +35,7 @@ PhotoProOS is a comprehensive business management platform for professional phot
 #### Phase 1: Scheduling & Automation (Q1 2025)
 | Feature | Description | Status |
 |---------|-------------|--------|
-| Recurring Bookings | Create repeating appointments | Planned |
+| Recurring Bookings | Create repeating appointments | ✅ Shipped |
 | Buffer Time | Automatic travel/prep time between bookings | Planned |
 | Booking Reminders | SMS/email reminders (24h, 1h before) | Planned |
 | Multi-Day Events | Support for weddings, conferences | Planned |

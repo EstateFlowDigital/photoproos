@@ -49,8 +49,8 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
   // Build filter query
   const statusFilter = filter === "all" ? undefined : filter;
 
-  // Fetch galleries, counts, and clients in parallel
-  const [galleries, counts, clients] = await Promise.all([
+  // Fetch galleries, counts, clients, and services in parallel
+  const [galleries, counts, clients, services] = await Promise.all([
     prisma.project.findMany({
       where: {
         organizationId: organization.id,
@@ -59,6 +59,14 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
       include: {
         client: { select: { fullName: true, company: true } },
         _count: { select: { assets: true } },
+        services: {
+          include: {
+            service: {
+              select: { id: true, name: true, category: true },
+            },
+          },
+          orderBy: { isPrimary: "desc" },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -74,6 +82,11 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
       orderBy: { createdAt: "desc" },
       take: 50,
     }),
+    prisma.service.findMany({
+      where: { organizationId: organization.id, isActive: true },
+      select: { id: true, name: true, category: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   // Map galleries to the format expected by GalleriesPageClient
@@ -88,6 +101,19 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
     createdAt: gallery.createdAt.toISOString(),
     views: gallery.viewCount,
     downloads: gallery.downloadCount,
+    services: gallery.services.map((ps) => ({
+      id: ps.service.id,
+      name: ps.service.name,
+      category: ps.service.category,
+      isPrimary: ps.isPrimary,
+    })),
+  }));
+
+  // Map services for filter dropdown
+  const mappedServices = services.map((s) => ({
+    id: s.id,
+    name: s.name,
+    category: s.category,
   }));
 
   // Map clients to the format expected by CreateGalleryModal
@@ -104,6 +130,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
         clients={mappedClients}
         filter={filter}
         counts={counts}
+        availableServices={mappedServices}
       />
     </div>
   );

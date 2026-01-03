@@ -8,11 +8,13 @@ import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { TravelInfoCard } from "@/components/dashboard/travel-info-card";
 import { TeamMemberSelector } from "@/components/dashboard/team-member-selector";
 import { Select } from "@/components/ui/select";
-import { createBooking } from "@/lib/actions/bookings";
+import { createBooking, createRecurringBooking } from "@/lib/actions/bookings";
+import { getRecurrenceSummary } from "@/lib/utils/bookings";
 import { calculateTravelPreview } from "@/lib/actions/locations";
 import type { ServiceType } from "@/lib/services";
 import type { PlaceDetails } from "@/lib/google-maps/types";
 import type { TravelInfo } from "@/lib/google-maps/types";
+import type { RecurrencePattern } from "@prisma/client";
 
 // Union type for selected service (can be static or database service)
 type SelectedService = ServiceType | DatabaseServiceType | null;
@@ -61,6 +63,15 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
   const [travelInfo, setTravelInfo] = useState<TravelInfo | null>(null);
   const [travelLoading, setTravelLoading] = useState(false);
   const [travelError, setTravelError] = useState<string | null>(null);
+
+  // Recurrence state
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern>("weekly");
+  const [recurrenceInterval, setRecurrenceInterval] = useState(1);
+  const [recurrenceEndType, setRecurrenceEndType] = useState<"date" | "count">("count");
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
+  const [recurrenceCount, setRecurrenceCount] = useState(4);
+  const [recurrenceDaysOfWeek, setRecurrenceDaysOfWeek] = useState<number[]>([]);
 
   // Calculate travel from home base
   const calculateTravel = useCallback(async (lat: number, lng: number, userId?: string) => {
@@ -145,7 +156,7 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
     }
 
     startTransition(async () => {
-      const result = await createBooking({
+      const bookingInput = {
         title,
         clientId: clientId || undefined,
         serviceId: selectedService?.id || undefined,
@@ -154,12 +165,36 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
         location: address,
         locationNotes: locationNotes || undefined,
         notes: notes || undefined,
-      });
+      };
 
-      if (result.success) {
-        router.push(`/scheduling/${result.data.id}`);
+      if (isRecurring) {
+        // Create recurring booking series
+        const result = await createRecurringBooking({
+          ...bookingInput,
+          isRecurring: true,
+          recurrencePattern,
+          recurrenceInterval,
+          recurrenceEndDate: recurrenceEndType === "date" && recurrenceEndDate
+            ? new Date(recurrenceEndDate)
+            : undefined,
+          recurrenceCount: recurrenceEndType === "count" ? recurrenceCount : undefined,
+          recurrenceDaysOfWeek: recurrencePattern === "custom" ? recurrenceDaysOfWeek : undefined,
+        });
+
+        if (result.success) {
+          router.push(`/scheduling/${result.data.id}`);
+        } else {
+          setError(result.error);
+        }
       } else {
-        setError(result.error);
+        // Create single booking
+        const result = await createBooking(bookingInput);
+
+        if (result.success) {
+          router.push(`/scheduling/${result.data.id}`);
+        } else {
+          setError(result.error);
+        }
       }
     });
   };
@@ -247,6 +282,170 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
             />
           </div>
         </div>
+      </div>
+
+      {/* Recurrence */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Repeat</h2>
+            <p className="text-sm text-foreground-muted">Create a recurring booking series</p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isRecurring}
+              onChange={(e) => setIsRecurring(e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-[var(--background-secondary)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--primary)]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
+          </label>
+        </div>
+
+        {isRecurring && (
+          <div className="space-y-4 pt-4 border-t border-[var(--card-border)]">
+            {/* Recurrence Pattern */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Repeats
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {(["daily", "weekly", "biweekly", "monthly", "custom"] as RecurrencePattern[]).map((pattern) => (
+                  <button
+                    key={pattern}
+                    type="button"
+                    onClick={() => setRecurrencePattern(pattern)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      recurrencePattern === pattern
+                        ? "bg-[var(--primary)] text-white"
+                        : "bg-[var(--background-secondary)] text-foreground hover:bg-[var(--background-hover)]"
+                    }`}
+                  >
+                    {pattern === "daily" && "Daily"}
+                    {pattern === "weekly" && "Weekly"}
+                    {pattern === "biweekly" && "Every 2 weeks"}
+                    {pattern === "monthly" && "Monthly"}
+                    {pattern === "custom" && "Custom"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Interval (for daily, weekly, monthly) */}
+            {(recurrencePattern === "daily" || recurrencePattern === "weekly" || recurrencePattern === "monthly") && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Every
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={recurrenceInterval}
+                    onChange={(e) => setRecurrenceInterval(parseInt(e.target.value) || 1)}
+                    className="w-20 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <span className="text-sm text-foreground-muted">
+                    {recurrencePattern === "daily" && (recurrenceInterval === 1 ? "day" : "days")}
+                    {recurrencePattern === "weekly" && (recurrenceInterval === 1 ? "week" : "weeks")}
+                    {recurrencePattern === "monthly" && (recurrenceInterval === 1 ? "month" : "months")}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Days of Week (for custom) */}
+            {recurrencePattern === "custom" && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  On these days
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => {
+                        if (recurrenceDaysOfWeek.includes(index)) {
+                          setRecurrenceDaysOfWeek(recurrenceDaysOfWeek.filter((d) => d !== index));
+                        } else {
+                          setRecurrenceDaysOfWeek([...recurrenceDaysOfWeek, index].sort());
+                        }
+                      }}
+                      className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                        recurrenceDaysOfWeek.includes(index)
+                          ? "bg-[var(--primary)] text-white"
+                          : "bg-[var(--background-secondary)] text-foreground hover:bg-[var(--background-hover)]"
+                      }`}
+                    >
+                      {day.charAt(0)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* End Condition */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Ends
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="recurrenceEndType"
+                    checked={recurrenceEndType === "count"}
+                    onChange={() => setRecurrenceEndType("count")}
+                    className="h-4 w-4 text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  <span className="text-sm text-foreground">After</span>
+                  <input
+                    type="number"
+                    min={2}
+                    max={52}
+                    value={recurrenceCount}
+                    onChange={(e) => setRecurrenceCount(parseInt(e.target.value) || 4)}
+                    disabled={recurrenceEndType !== "count"}
+                    className="w-16 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
+                  />
+                  <span className="text-sm text-foreground-muted">occurrences</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="recurrenceEndType"
+                    checked={recurrenceEndType === "date"}
+                    onChange={() => setRecurrenceEndType("date")}
+                    className="h-4 w-4 text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  <span className="text-sm text-foreground">On</span>
+                  <input
+                    type="date"
+                    value={recurrenceEndDate}
+                    onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                    disabled={recurrenceEndType !== "date"}
+                    className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="rounded-lg bg-[var(--background-secondary)] p-3">
+              <div className="flex items-center gap-2">
+                <RepeatIcon className="h-4 w-4 text-[var(--primary)]" />
+                <span className="text-sm text-foreground">
+                  {getRecurrenceSummary(recurrencePattern, recurrenceInterval, recurrencePattern === "custom" ? recurrenceDaysOfWeek : undefined)}
+                  {recurrenceEndType === "count" && ` for ${recurrenceCount} sessions`}
+                  {recurrenceEndType === "date" && recurrenceEndDate && ` until ${new Date(recurrenceEndDate).toLocaleDateString()}`}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Location */}
@@ -455,6 +654,14 @@ function LoadingSpinner({ className }: { className?: string }) {
     <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  );
+}
+
+function RepeatIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clipRule="evenodd" />
     </svg>
   );
 }

@@ -8,6 +8,19 @@ import { duplicateGallery, archiveGallery, deleteGallery, bulkArchiveGalleries, 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+interface GalleryService {
+  id: string;
+  name: string;
+  category: string;
+  isPrimary: boolean;
+}
+
+interface AvailableService {
+  id: string;
+  name: string;
+  category: string;
+}
+
 interface Gallery {
   id: string;
   name: string;
@@ -19,17 +32,19 @@ interface Gallery {
   createdAt?: string;
   views?: number;
   downloads?: number;
+  services: GalleryService[];
 }
 
 interface GalleryListClientProps {
   galleries: Gallery[];
   filter: "all" | "delivered" | "pending" | "draft";
+  availableServices: AvailableService[];
 }
 
 type SortOption = "newest" | "oldest" | "name-asc" | "name-desc" | "revenue-high" | "revenue-low";
 type ViewMode = "grid" | "list";
 
-export function GalleryListClient({ galleries, filter }: GalleryListClientProps) {
+export function GalleryListClient({ galleries, filter, availableServices }: GalleryListClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
@@ -41,7 +56,10 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [serviceFilter, setServiceFilter] = useState<Set<string>>(new Set());
+  const [showServiceFilter, setShowServiceFilter] = useState(false);
   const actionMenuRef = useRef<HTMLDivElement>(null);
+  const serviceFilterRef = useRef<HTMLDivElement>(null);
 
   // Close action menu when clicking outside
   useEffect(() => {
@@ -55,6 +73,36 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [actionMenuOpen]);
+
+  // Close service filter when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (serviceFilterRef.current && !serviceFilterRef.current.contains(event.target as Node)) {
+        setShowServiceFilter(false);
+      }
+    }
+    if (showServiceFilter) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showServiceFilter]);
+
+  // Toggle service in filter
+  const toggleServiceFilter = (serviceId: string) => {
+    setServiceFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(serviceId)) {
+        next.delete(serviceId);
+      } else {
+        next.add(serviceId);
+      }
+      return next;
+    });
+  };
+
+  const clearServiceFilter = () => {
+    setServiceFilter(new Set());
+  };
 
   // Quick action handler
   const handleQuickAction = async (action: QuickAction, galleryId: string) => {
@@ -284,7 +332,15 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
       result = result.filter(
         (g) =>
           g.name.toLowerCase().includes(searchLower) ||
-          g.client.toLowerCase().includes(searchLower)
+          g.client.toLowerCase().includes(searchLower) ||
+          g.services.some((s) => s.name.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Apply service filter
+    if (serviceFilter.size > 0) {
+      result = result.filter((g) =>
+        g.services.some((s) => serviceFilter.has(s.id))
       );
     }
 
@@ -309,7 +365,7 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
     });
 
     return result;
-  }, [galleries, filter, search, sortBy]);
+  }, [galleries, filter, search, sortBy, serviceFilter]);
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: "newest", label: "Newest First" },
@@ -361,6 +417,70 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
             </select>
             <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
           </div>
+
+          {/* Service Filter Dropdown */}
+          {availableServices.length > 0 && (
+            <div className="relative" ref={serviceFilterRef}>
+              <button
+                onClick={() => setShowServiceFilter(!showServiceFilter)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
+                  serviceFilter.size > 0
+                    ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+                    : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
+                )}
+              >
+                <FilterIcon className="h-4 w-4" />
+                Services
+                {serviceFilter.size > 0 && (
+                  <span className="rounded-full bg-[var(--primary)] px-1.5 py-0.5 text-xs text-white">
+                    {serviceFilter.size}
+                  </span>
+                )}
+                <ChevronDownIcon className="h-4 w-4" />
+              </button>
+              {showServiceFilter && (
+                <div className="absolute right-0 top-12 z-20 w-64 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 shadow-xl">
+                  <div className="flex items-center justify-between px-3 pb-2 border-b border-[var(--card-border)]">
+                    <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">
+                      Filter by Service
+                    </span>
+                    {serviceFilter.size > 0 && (
+                      <button
+                        onClick={clearServiceFilter}
+                        className="text-xs text-[var(--primary)] hover:underline"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-64 overflow-y-auto py-1">
+                    {availableServices.map((service) => (
+                      <button
+                        key={service.id}
+                        onClick={() => toggleServiceFilter(service.id)}
+                        className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
+                      >
+                        <div
+                          className={cn(
+                            "flex h-4 w-4 items-center justify-center rounded border transition-colors",
+                            serviceFilter.has(service.id)
+                              ? "bg-[var(--primary)] border-[var(--primary)]"
+                              : "border-[var(--card-border)]"
+                          )}
+                        >
+                          {serviceFilter.has(service.id) && (
+                            <CheckIcon className="h-3 w-3 text-white" />
+                          )}
+                        </div>
+                        <span className="truncate">{service.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* View Toggle */}
           <div className="flex items-center rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-1">
@@ -498,6 +618,29 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
                     thumbnailUrl={gallery.thumbnailUrl}
                     onQuickAction={isSelectMode ? undefined : handleQuickAction}
                   />
+                  {/* Service badges */}
+                  {gallery.services.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {gallery.services.slice(0, 2).map((service) => (
+                        <span
+                          key={service.id}
+                          className={cn(
+                            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                            service.isPrimary
+                              ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                              : "bg-[var(--background-secondary)] text-foreground-muted"
+                          )}
+                        >
+                          {service.name}
+                        </span>
+                      ))}
+                      {gallery.services.length > 2 && (
+                        <span className="inline-flex items-center rounded-full bg-[var(--background-secondary)] px-2 py-0.5 text-xs font-medium text-foreground-muted">
+                          +{gallery.services.length - 2} more
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -527,6 +670,9 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">
                     Client
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider hidden md:table-cell">
+                    Services
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">
                     Photos
@@ -596,6 +742,32 @@ export function GalleryListClient({ galleries, filter }: GalleryListClientProps)
                     </td>
                     <td className="px-4 py-3 text-sm text-foreground-secondary">
                       {gallery.client}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      {gallery.services.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {gallery.services.slice(0, 2).map((service) => (
+                            <span
+                              key={service.id}
+                              className={cn(
+                                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                                service.isPrimary
+                                  ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                                  : "bg-[var(--background-secondary)] text-foreground-muted"
+                              )}
+                            >
+                              {service.name}
+                            </span>
+                          ))}
+                          {gallery.services.length > 2 && (
+                            <span className="inline-flex items-center text-xs text-foreground-muted">
+                              +{gallery.services.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-foreground-muted">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-foreground-secondary">
                       {gallery.photos}
@@ -882,6 +1054,14 @@ function CheckIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function FilterIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 0 1 .628.74v2.288a2.25 2.25 0 0 1-.659 1.59l-4.682 4.683a2.25 2.25 0 0 0-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 0 1 8 18.25v-5.757a2.25 2.25 0 0 0-.659-1.591L2.659 6.22A2.25 2.25 0 0 1 2 4.629V2.34a.75.75 0 0 1 .628-.74Z" clipRule="evenodd" />
     </svg>
   );
 }

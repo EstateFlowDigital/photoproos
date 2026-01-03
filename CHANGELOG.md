@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Recurring Bookings**
+  - Added `RecurrencePattern` enum (daily, weekly, biweekly, monthly, custom)
+  - Added recurring booking fields to Booking model (isRecurring, recurrencePattern, recurrenceInterval, recurrenceEndDate, recurrenceCount, recurrenceDaysOfWeek, seriesId, parentBookingId)
+  - Added self-referential relation for parent/child booking relationships
+  - Created `createRecurringBooking` server action to generate booking series
+  - Created `getBookingSeries`, `updateBookingSeries`, `deleteBookingSeries` actions for series management
+  - Created `removeFromSeries` action to delete individual occurrences
+  - Added recurrence UI to booking form with pattern selection, interval, and end conditions
+  - Added recurrence summary display with repeat icon
+  - Created `getRecurrenceSummary` utility for human-readable recurrence descriptions
+
 - **Property Websites - Comprehensive Improvements**
   - Added Schema.org structured data (RealEstateListing) for SEO optimization
   - Added honeypot spam protection to property inquiry forms

@@ -508,3 +508,374 @@ export async function getScheduleStats() {
     };
   }
 }
+
+// =============================================================================
+// RECURRING BOOKING FUNCTIONS
+// =============================================================================
+
+/**
+ * Generate dates for a recurring booking series
+ */
+function generateRecurringDates(
+  startDate: Date,
+  pattern: RecurrencePattern,
+  interval: number = 1,
+  endDate?: Date,
+  maxCount?: number,
+  daysOfWeek?: number[]
+): Date[] {
+  const dates: Date[] = [new Date(startDate)];
+  let currentDate = new Date(startDate);
+  const maxOccurrences = maxCount || 52; // Default to 1 year of weekly bookings
+
+  // End date defaults to 1 year from start if not specified
+  const effectiveEndDate = endDate || new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+
+  while (dates.length < maxOccurrences) {
+    switch (pattern) {
+      case "daily":
+        currentDate = new Date(currentDate);
+        currentDate.setDate(currentDate.getDate() + interval);
+        break;
+
+      case "weekly":
+        currentDate = new Date(currentDate);
+        currentDate.setDate(currentDate.getDate() + 7 * interval);
+        break;
+
+      case "biweekly":
+        currentDate = new Date(currentDate);
+        currentDate.setDate(currentDate.getDate() + 14);
+        break;
+
+      case "monthly":
+        currentDate = new Date(currentDate);
+        currentDate.setMonth(currentDate.getMonth() + interval);
+        break;
+
+      case "custom":
+        // For custom, use days of week
+        if (daysOfWeek && daysOfWeek.length > 0) {
+          currentDate = new Date(currentDate);
+          currentDate.setDate(currentDate.getDate() + 1);
+          // Find next matching day
+          let attempts = 0;
+          while (!daysOfWeek.includes(currentDate.getDay()) && attempts < 7) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            attempts++;
+          }
+        } else {
+          // Fallback to weekly
+          currentDate = new Date(currentDate);
+          currentDate.setDate(currentDate.getDate() + 7);
+        }
+        break;
+    }
+
+    // Check if we've passed the end date
+    if (currentDate > effectiveEndDate) break;
+
+    dates.push(new Date(currentDate));
+  }
+
+  return dates;
+}
+
+/**
+ * Create a recurring booking series
+ */
+export async function createRecurringBooking(
+  input: CreateBookingInput
+): Promise<ActionResult<{ id: string; seriesId: string; count: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    if (!input.isRecurring || !input.recurrencePattern) {
+      return { success: false, error: "Recurrence pattern is required" };
+    }
+
+    // Generate series ID
+    const seriesId = nanoid(12);
+
+    // Calculate duration in milliseconds
+    const duration = new Date(input.endTime).getTime() - new Date(input.startTime).getTime();
+
+    // Generate recurring dates
+    const dates = generateRecurringDates(
+      input.startTime,
+      input.recurrencePattern,
+      input.recurrenceInterval || 1,
+      input.recurrenceEndDate,
+      input.recurrenceCount,
+      input.recurrenceDaysOfWeek
+    );
+
+    // Create the parent booking (first occurrence)
+    const parentBooking = await prisma.booking.create({
+      data: {
+        organizationId,
+        title: input.title,
+        description: input.description,
+        clientId: input.clientId,
+        serviceId: input.serviceId,
+        startTime: dates[0],
+        endTime: new Date(dates[0].getTime() + duration),
+        timezone: input.timezone || "America/New_York",
+        location: input.location,
+        locationNotes: input.locationNotes,
+        notes: input.notes,
+        clientName: input.clientName,
+        clientEmail: input.clientEmail,
+        clientPhone: input.clientPhone,
+        status: "pending",
+        // Recurrence fields
+        isRecurring: true,
+        recurrencePattern: input.recurrencePattern,
+        recurrenceInterval: input.recurrenceInterval || 1,
+        recurrenceEndDate: input.recurrenceEndDate,
+        recurrenceCount: input.recurrenceCount,
+        recurrenceDaysOfWeek: input.recurrenceDaysOfWeek || [],
+        seriesId,
+      },
+    });
+
+    // Create child bookings for remaining dates
+    if (dates.length > 1) {
+      const childBookingsData = dates.slice(1).map((date) => ({
+        organizationId,
+        title: input.title,
+        description: input.description,
+        clientId: input.clientId,
+        serviceId: input.serviceId,
+        startTime: date,
+        endTime: new Date(date.getTime() + duration),
+        timezone: input.timezone || "America/New_York",
+        location: input.location,
+        locationNotes: input.locationNotes,
+        notes: input.notes,
+        clientName: input.clientName,
+        clientEmail: input.clientEmail,
+        clientPhone: input.clientPhone,
+        status: "pending" as const,
+        // Recurrence fields
+        isRecurring: true,
+        recurrencePattern: input.recurrencePattern!,
+        recurrenceInterval: input.recurrenceInterval || 1,
+        recurrenceEndDate: input.recurrenceEndDate,
+        recurrenceCount: input.recurrenceCount,
+        recurrenceDaysOfWeek: input.recurrenceDaysOfWeek || [],
+        seriesId,
+        parentBookingId: parentBooking.id,
+      }));
+
+      await prisma.booking.createMany({
+        data: childBookingsData,
+      });
+    }
+
+    revalidatePath("/scheduling");
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      data: {
+        id: parentBooking.id,
+        seriesId,
+        count: dates.length,
+      },
+    };
+  } catch (error) {
+    console.error("Error creating recurring booking:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create recurring booking" };
+  }
+}
+
+/**
+ * Get all bookings in a series
+ */
+export async function getBookingSeries(seriesId: string) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        organizationId,
+        seriesId,
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            fullName: true,
+            company: true,
+            email: true,
+          },
+        },
+        service: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+          },
+        },
+      },
+      orderBy: { startTime: "asc" },
+    });
+
+    return bookings;
+  } catch (error) {
+    console.error("Error fetching booking series:", error);
+    return [];
+  }
+}
+
+/**
+ * Update all future bookings in a series
+ */
+export async function updateBookingSeries(
+  seriesId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    location?: string;
+    locationNotes?: string;
+    notes?: string;
+    serviceId?: string;
+    clientId?: string;
+  },
+  updateFutureOnly: boolean = true
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const whereClause: Record<string, unknown> = {
+      organizationId,
+      seriesId,
+    };
+
+    if (updateFutureOnly) {
+      whereClause.startTime = { gte: new Date() };
+    }
+
+    const result = await prisma.booking.updateMany({
+      where: whereClause,
+      data: {
+        ...(updates.title && { title: updates.title }),
+        ...(updates.description !== undefined && { description: updates.description }),
+        ...(updates.location !== undefined && { location: updates.location }),
+        ...(updates.locationNotes !== undefined && { locationNotes: updates.locationNotes }),
+        ...(updates.notes !== undefined && { notes: updates.notes }),
+        ...(updates.serviceId !== undefined && { serviceId: updates.serviceId }),
+        ...(updates.clientId !== undefined && { clientId: updates.clientId }),
+      },
+    });
+
+    revalidatePath("/scheduling");
+    revalidatePath("/dashboard");
+
+    return { success: true, data: { updated: result.count } };
+  } catch (error) {
+    console.error("Error updating booking series:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update booking series" };
+  }
+}
+
+/**
+ * Delete a booking series (all or future only)
+ */
+export async function deleteBookingSeries(
+  seriesId: string,
+  deleteFutureOnly: boolean = true
+): Promise<ActionResult<{ deleted: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const whereClause: Record<string, unknown> = {
+      organizationId,
+      seriesId,
+    };
+
+    if (deleteFutureOnly) {
+      whereClause.startTime = { gte: new Date() };
+    }
+
+    // First get the booking IDs to delete reminders
+    const bookingsToDelete = await prisma.booking.findMany({
+      where: whereClause,
+      select: { id: true },
+    });
+
+    const bookingIds = bookingsToDelete.map((b) => b.id);
+
+    // Delete reminders
+    await prisma.bookingReminder.deleteMany({
+      where: { bookingId: { in: bookingIds } },
+    });
+
+    // Delete bookings
+    const result = await prisma.booking.deleteMany({
+      where: whereClause,
+    });
+
+    revalidatePath("/scheduling");
+    revalidatePath("/dashboard");
+
+    return { success: true, data: { deleted: result.count } };
+  } catch (error) {
+    console.error("Error deleting booking series:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete booking series" };
+  }
+}
+
+/**
+ * Remove a single booking from a series (without affecting others)
+ */
+export async function removeFromSeries(bookingId: string): Promise<ActionResult> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        organizationId,
+      },
+    });
+
+    if (!booking) {
+      return { success: false, error: "Booking not found" };
+    }
+
+    // First delete reminders
+    await prisma.bookingReminder.deleteMany({
+      where: { bookingId },
+    });
+
+    // Delete the booking
+    await prisma.booking.delete({
+      where: { id: bookingId },
+    });
+
+    revalidatePath("/scheduling");
+    revalidatePath("/dashboard");
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error removing booking from series:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to remove booking from series" };
+  }
+}
+
+// Note: getRecurrenceSummary has been moved to @/lib/utils/bookings
+// Import from there for client-side usage
