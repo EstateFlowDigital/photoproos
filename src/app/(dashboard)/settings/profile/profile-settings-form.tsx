@@ -159,7 +159,7 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
       {/* Avatar Section */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Profile Photo</h2>
-        <div className="flex items-center gap-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
           {avatarUrl ? (
             <div className="relative h-20 w-20 overflow-hidden rounded-full">
               <Image
@@ -312,11 +312,11 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex flex-col items-stretch sm:items-end">
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
         >
           {isPending ? (
             <>
