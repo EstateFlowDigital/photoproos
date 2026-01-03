@@ -91,6 +91,8 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
   const [viewMode, setViewMode] = useState<"board" | "list" | "calendar">("board");
   const [showAddTask, setShowAddTask] = useState<string | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [showAddColumn, setShowAddColumn] = useState(false);
+  const [newColumnName, setNewColumnName] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
@@ -116,6 +118,25 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
         router.refresh();
       } else {
         showToast(result.error || "Failed to create task", "error");
+      }
+    });
+  };
+
+  const handleAddColumn = async () => {
+    if (!newColumnName.trim()) return;
+
+    startTransition(async () => {
+      const result = await createColumn(board.id, {
+        name: newColumnName.trim(),
+      });
+
+      if (result.success) {
+        setNewColumnName("");
+        setShowAddColumn(false);
+        showToast("Column created", "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to create column", "error");
       }
     });
   };
@@ -445,10 +466,51 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
             ))}
 
             {/* Add Column Button */}
-            <button className="flex h-12 w-80 flex-shrink-0 items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--card-border)] text-sm text-foreground-muted transition-colors hover:border-[var(--border-hover)] hover:text-foreground">
-              <PlusIcon className="h-4 w-4" />
-              Add Column
-            </button>
+            {showAddColumn ? (
+              <div className="w-80 flex-shrink-0 rounded-xl border border-[var(--primary)] bg-[var(--card)] p-3">
+                <input
+                  type="text"
+                  placeholder="Column name..."
+                  value={newColumnName}
+                  onChange={(e) => setNewColumnName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddColumn();
+                    if (e.key === "Escape") {
+                      setShowAddColumn(false);
+                      setNewColumnName("");
+                    }
+                  }}
+                  className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-foreground-muted"
+                  autoFocus
+                />
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    onClick={handleAddColumn}
+                    disabled={!newColumnName.trim() || isPending}
+                    className="rounded-md bg-[var(--primary)] px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAddColumn(false);
+                      setNewColumnName("");
+                    }}
+                    className="rounded-md px-3 py-1 text-xs font-medium text-foreground-secondary hover:text-foreground"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAddColumn(true)}
+                className="flex h-12 w-80 flex-shrink-0 items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--card-border)] text-sm text-foreground-muted transition-colors hover:border-[var(--border-hover)] hover:text-foreground"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Add Column
+              </button>
+            )}
           </div>
         </div>
       )}

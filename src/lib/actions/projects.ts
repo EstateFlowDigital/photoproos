@@ -5,6 +5,18 @@ import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
 import type { TaskStatus, TaskPriority } from "@prisma/client";
 
+const COLUMN_STATUS_MAP: Record<string, TaskStatus> = {
+  "To Do": "todo",
+  "In Progress": "in_progress",
+  "In Review": "in_review",
+  "Done": "completed",
+  "Blocked": "blocked",
+};
+
+function getStatusForColumn(columnName: string, fallback: TaskStatus) {
+  return COLUMN_STATUS_MAP[columnName] || fallback;
+}
+
 // ============================================================================
 // BOARD ACTIONS
 // ============================================================================
@@ -586,6 +598,7 @@ export async function createTask(data: {
     }
 
     const maxPosition = Math.max(...column.tasks.map((t) => t.position), -1);
+    const status = getStatusForColumn(column.name, "todo");
 
     const task = await prisma.task.create({
       data: {
@@ -595,7 +608,7 @@ export async function createTask(data: {
         title: data.title,
         description: data.description,
         priority: data.priority || "medium",
-        status: "todo",
+        status,
         position: maxPosition + 1,
         dueDate: data.dueDate,
         startDate: data.startDate,
@@ -649,12 +662,33 @@ export async function updateTask(
     await requireAuth();
     const organizationId = await requireOrganizationId();
 
+    let completedAt = data.completedAt;
+    if (data.status) {
+      const existing = await prisma.task.findFirst({
+        where: { id: taskId, organizationId },
+        select: { status: true, completedAt: true },
+      });
+
+      if (!existing) {
+        return { success: false, error: "Task not found" };
+      }
+
+      if (data.status === "completed") {
+        completedAt = completedAt || existing.completedAt || new Date();
+      } else if (existing.completedAt && data.completedAt === undefined) {
+        completedAt = null;
+      }
+    }
+
     await prisma.task.update({
       where: {
         id: taskId,
         organizationId,
       },
-      data,
+      data: {
+        ...data,
+        completedAt,
+      },
     });
 
     revalidatePath("/projects");
@@ -701,51 +735,74 @@ export async function moveTask(
       return { success: false, error: "Target column not found" };
     }
 
-    // Update task column and position
-    // Also update status based on column
-    const columnStatusMap: Record<string, TaskStatus> = {
-      "To Do": "todo",
-      "In Progress": "in_progress",
-      "In Review": "in_review",
-      "Done": "completed",
-      "Blocked": "blocked",
-    };
-
-    const newStatus = columnStatusMap[targetColumn.name] || task.status;
+    const sourceColumnId = task.columnId;
+    const isSameColumn = sourceColumnId === targetColumnId;
+    const newStatus = getStatusForColumn(targetColumn.name, task.status);
     const completedAt = newStatus === "completed" && task.status !== "completed"
       ? new Date()
       : newStatus !== "completed"
         ? null
         : task.completedAt;
 
-    await prisma.task.update({
-      where: { id: taskId },
-      data: {
-        columnId: targetColumnId,
-        position: targetPosition,
-        status: newStatus,
-        completedAt,
-      },
-    });
-
-    // Reorder other tasks in the target column
-    const tasksInColumn = await prisma.task.findMany({
+    // Normalize target position for current column length
+    const targetTasks = await prisma.task.findMany({
       where: {
         columnId: targetColumnId,
         id: { not: taskId },
       },
       orderBy: { position: "asc" },
     });
-
-    await prisma.$transaction(
-      tasksInColumn.map((t, i) => {
-        const newPos = i >= targetPosition ? i + 1 : i;
-        return prisma.task.update({
-          where: { id: t.id },
-          data: { position: newPos },
-        });
-      })
+    const normalizedTargetPosition = Math.max(
+      0,
+      Math.min(targetPosition, targetTasks.length)
     );
+
+    const targetOrder = [
+      ...targetTasks.slice(0, normalizedTargetPosition),
+      { id: taskId },
+      ...targetTasks.slice(normalizedTargetPosition),
+    ];
+
+    const updates = [
+      prisma.task.update({
+        where: { id: taskId },
+        data: {
+          columnId: targetColumnId,
+          position: normalizedTargetPosition,
+          status: newStatus,
+          completedAt,
+        },
+      }),
+      ...targetOrder
+        .filter((t) => t.id !== taskId)
+        .map((t, i) =>
+          prisma.task.update({
+            where: { id: t.id },
+            data: { position: i },
+          })
+        ),
+    ];
+
+    if (!isSameColumn && sourceColumnId) {
+      const sourceTasks = await prisma.task.findMany({
+        where: {
+          columnId: sourceColumnId,
+          id: { not: taskId },
+        },
+        orderBy: { position: "asc" },
+      });
+
+      updates.push(
+        ...sourceTasks.map((t, i) =>
+          prisma.task.update({
+            where: { id: t.id },
+            data: { position: i },
+          })
+        )
+      );
+    }
+
+    await prisma.$transaction(updates);
 
     revalidatePath("/projects");
     return { success: true };

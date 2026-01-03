@@ -20,7 +20,7 @@ import {
   type QuestionnaireAgreement,
 } from "@/lib/validations/questionnaires";
 import { getAuthContext } from "@/lib/auth/clerk";
-import type { Industry, FormFieldType, LegalAgreementType } from "@prisma/client";
+import { Prisma, type Industry, type FormFieldType, type LegalAgreementType } from "@prisma/client";
 
 // ============================================================================
 // TYPES
@@ -300,20 +300,51 @@ export async function updateQuestionnaireTemplate(
       }
     }
 
-    const { id, ...updateData } = validated;
+    const { id, fields, ...updateData } = validated;
 
-    await prisma.questionnaireTemplate.update({
-      where: { id },
-      data: {
-        ...(updateData.name && { name: updateData.name }),
-        ...(updateData.slug && { slug: updateData.slug }),
-        ...(updateData.description !== undefined && { description: updateData.description }),
-        ...(updateData.industry && { industry: updateData.industry as Industry }),
-        ...(updateData.isActive !== undefined && { isActive: updateData.isActive }),
-      },
+    // Use transaction to update template and fields together
+    await prisma.$transaction(async (tx) => {
+      // Update template properties
+      await tx.questionnaireTemplate.update({
+        where: { id },
+        data: {
+          ...(updateData.name && { name: updateData.name }),
+          ...(updateData.slug && { slug: updateData.slug }),
+          ...(updateData.description !== undefined && { description: updateData.description }),
+          ...(updateData.industry && { industry: updateData.industry as Industry }),
+          ...(updateData.isActive !== undefined && { isActive: updateData.isActive }),
+        },
+      });
+
+      // Update fields if provided
+      if (fields && fields.length > 0) {
+        // Delete all existing fields and recreate them
+        await tx.questionnaireField.deleteMany({
+          where: { templateId: id },
+        });
+
+        // Create new fields
+        await tx.questionnaireField.createMany({
+          data: fields.map((field, idx) => ({
+            templateId: id,
+            label: field.label,
+            type: field.type as FormFieldType,
+            placeholder: field.placeholder ?? null,
+            helpText: field.helpText ?? null,
+            isRequired: field.isRequired ?? false,
+            sortOrder: field.sortOrder ?? idx,
+            section: field.section ?? null,
+            sectionOrder: field.sectionOrder ?? 0,
+            validation: field.validation ? (field.validation as Prisma.InputJsonValue) : Prisma.JsonNull,
+            conditionalOn: field.conditionalOn ?? null,
+            conditionalValue: field.conditionalValue ?? null,
+          })),
+        });
+      }
     });
 
     revalidatePath("/questionnaires");
+    revalidatePath(`/questionnaires/templates/${id}`);
 
     return { success: true, data: { id } };
   } catch (error) {
@@ -556,7 +587,7 @@ export async function updateQuestionnaireFields(
             sortOrder: field.sortOrder ?? index,
             section: field.section,
             sectionOrder: field.sectionOrder ?? 0,
-            validation: field.validation || undefined,
+            validation: field.validation ? (field.validation as Prisma.InputJsonValue) : Prisma.JsonNull,
             conditionalOn: field.conditionalOn,
             conditionalValue: field.conditionalValue,
           })),

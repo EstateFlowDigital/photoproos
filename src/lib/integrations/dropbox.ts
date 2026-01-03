@@ -205,12 +205,6 @@ export class DropboxClient {
     content: ArrayBuffer | Uint8Array,
     mode: "add" | "overwrite" = "overwrite"
   ): Promise<DropboxUploadResult> {
-    // Convert content to a format fetch accepts
-    // Use Uint8Array for consistent handling
-    const body = content instanceof ArrayBuffer
-      ? new Uint8Array(content)
-      : content;
-
     const response = await fetch(`${DROPBOX_CONTENT_BASE}/files/upload`, {
       method: "POST",
       headers: {
@@ -223,7 +217,8 @@ export class DropboxClient {
           mute: false,
         }),
       },
-      body: body as unknown as BodyInit,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      body: content as any,
     });
 
     if (!response.ok) {

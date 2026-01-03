@@ -130,6 +130,14 @@ export const updateQuestionnaireTemplateSchema = questionnaireTemplateSchema
   .partial()
   .extend({
     id: z.string().cuid(),
+    // Optional: include fields for combined update
+    fields: z
+      .array(
+        questionnaireFieldSchema.extend({
+          id: z.string().optional(), // Existing fields have IDs, new ones don't
+        })
+      )
+      .optional(),
   });
 
 export const deleteQuestionnaireTemplateSchema = z.object({
