@@ -745,7 +745,9 @@ export function SchedulingPageClient({
                     {booking.isRecurring && <RepeatIcon className="h-2.5 w-2.5 text-[var(--ai)]" />}
                     {formatTime(new Date(booking.startTime))}
                   </p>
-                  <p className="text-xs text-foreground-muted truncate max-w-[120px]">{booking.title}</p>
+                  <p className="text-xs text-foreground-muted line-clamp-1 max-w-[160px] sm:max-w-none">
+                    {booking.title}
+                  </p>
                 </div>
               </Link>
             ))}
@@ -755,7 +757,7 @@ export function SchedulingPageClient({
 
       {/* Search and Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full max-w-sm sm:flex-1">
+        <div className="relative w-full sm:max-w-sm sm:flex-1">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"

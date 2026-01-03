@@ -35,15 +35,15 @@ export function PageContextNav({ items, integrations, className }: PageContextNa
   };
 
   return (
-    <div className={cn("flex items-center gap-6 overflow-x-auto pb-1 -mb-1", className)}>
+    <div className={cn("flex flex-wrap items-center gap-3 sm:gap-6 sm:flex-nowrap sm:overflow-x-auto pb-1 -mb-1", className)}>
       {/* Related Pages */}
-      <nav className="flex items-center gap-2">
+      <nav className="flex flex-wrap items-center gap-2">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+              "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors whitespace-normal sm:whitespace-nowrap",
               isActive(item.href)
                 ? "bg-[var(--primary)] text-white"
                 : "bg-[var(--background-hover)] text-foreground-secondary hover:bg-[var(--border-hover)] hover:text-foreground"
@@ -71,12 +71,12 @@ export function PageContextNav({ items, integrations, className }: PageContextNa
       {integrations && integrations.length > 0 && (
         <>
           <div className="h-5 w-px bg-[var(--card-border)]" />
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {integrations.map((integration) => (
               <Link
                 key={integration.label}
                 href={integration.href}
-                className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground-secondary transition-colors whitespace-normal sm:whitespace-nowrap hover:bg-[var(--background-hover)] hover:text-foreground"
               >
                 {integration.icon}
                 <span>{integration.label}</span>
