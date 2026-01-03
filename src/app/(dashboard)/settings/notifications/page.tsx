@@ -227,7 +227,7 @@ export default function NotificationsSettingsPage() {
 
           {!pushEnabled ? (
             <div className="mb-4 p-4 rounded-lg bg-[var(--background)]">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-medium text-foreground">Enable Push Notifications</p>
                   <p className="text-xs text-foreground-muted">Allow notifications in your browser</p>
@@ -275,7 +275,7 @@ export default function NotificationsSettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">Enable Quiet Hours</p>
                 <p className="text-xs text-foreground-muted">Notifications will be silenced during this period</p>
@@ -366,7 +366,7 @@ function NotificationToggle({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between py-2">
+    <div className="flex flex-col gap-3 py-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="text-xs text-foreground-muted">{description}</p>
