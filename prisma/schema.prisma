@@ -259,6 +259,12 @@ enum AvailabilityBlockType {
   other
 }
 
+enum TimeOffRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 enum CommunicationType {
   email
   call
@@ -1908,6 +1914,12 @@ model AvailabilityBlock {
   recurrenceRule String?  // e.g., "FREQ=WEEKLY;BYDAY=SU"
   recurrenceEnd  DateTime?
 
+  // Time-off request approval workflow
+  requestStatus  TimeOffRequestStatus @default(approved)  // Legacy blocks are auto-approved
+  approvedById   String?
+  approvedAt     DateTime?
+  rejectionNote  String?
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -1915,6 +1927,7 @@ model AvailabilityBlock {
   @@index([userId])
   @@index([startDate])
   @@index([endDate])
+  @@index([requestStatus])
 }
 
 model BookingBuffer {

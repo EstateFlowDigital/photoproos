@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import type { AvailabilityBlockType } from "@prisma/client";
-import { requireOrganizationId } from "./auth-helper";
+import type { AvailabilityBlockType, TimeOffRequestStatus } from "@prisma/client";
+import { requireOrganizationId, requireAuth } from "./auth-helper";
 import { RRule, RRuleSet, rrulestr } from "rrule";
 
 // =============================================================================
@@ -765,4 +765,290 @@ export async function addHolidayBlock(
     endDate: endOfDay,
     allDay: true,
   });
+}
+
+// =============================================================================
+// Time-Off Request Actions
+// =============================================================================
+
+export interface TimeOffRequestInput {
+  title: string;
+  description?: string;
+  startDate: Date;
+  endDate: Date;
+  allDay?: boolean;
+}
+
+/**
+ * Submit a time-off request (creates a pending availability block)
+ */
+export async function submitTimeOffRequest(
+  input: TimeOffRequestInput
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const auth = await requireAuth();
+
+    const block = await prisma.availabilityBlock.create({
+      data: {
+        organizationId,
+        userId: auth.userId,
+        title: input.title,
+        description: input.description,
+        blockType: "time_off",
+        startDate: input.startDate,
+        endDate: input.endDate,
+        allDay: input.allDay ?? true,
+        requestStatus: "pending",
+      },
+    });
+
+    revalidatePath("/scheduling");
+    revalidatePath("/scheduling/time-off");
+
+    return { success: true, data: { id: block.id } };
+  } catch (error) {
+    console.error("[TimeOff] Error submitting request:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to submit time-off request" };
+  }
+}
+
+/**
+ * Get all pending time-off requests for the organization
+ */
+export async function getPendingTimeOffRequests() {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const requests = await prisma.availabilityBlock.findMany({
+      where: {
+        organizationId,
+        blockType: "time_off",
+        requestStatus: "pending",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Get user details for each request
+    const userIds = requests.map((r) => r.userId).filter(Boolean) as string[];
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, fullName: true, email: true },
+    });
+
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    return {
+      success: true as const,
+      data: requests.map((r) => ({
+        ...r,
+        user: r.userId ? userMap.get(r.userId) : null,
+      })),
+    };
+  } catch (error) {
+    console.error("[TimeOff] Error fetching pending requests:", error);
+    return { success: false as const, error: "Failed to fetch pending requests" };
+  }
+}
+
+/**
+ * Get all time-off requests (for calendar display)
+ */
+export async function getTimeOffRequests(filters?: {
+  userId?: string;
+  status?: TimeOffRequestStatus;
+  fromDate?: Date;
+  toDate?: Date;
+}) {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const requests = await prisma.availabilityBlock.findMany({
+      where: {
+        organizationId,
+        blockType: "time_off",
+        ...(filters?.userId && { userId: filters.userId }),
+        ...(filters?.status && { requestStatus: filters.status }),
+        ...(filters?.fromDate && { startDate: { gte: filters.fromDate } }),
+        ...(filters?.toDate && { endDate: { lte: filters.toDate } }),
+      },
+      orderBy: { startDate: "asc" },
+    });
+
+    // Get user details
+    const userIds = requests.map((r) => r.userId).filter(Boolean) as string[];
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, fullName: true, email: true },
+    });
+
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    return {
+      success: true as const,
+      data: requests.map((r) => ({
+        ...r,
+        user: r.userId ? userMap.get(r.userId) : null,
+      })),
+    };
+  } catch (error) {
+    console.error("[TimeOff] Error fetching requests:", error);
+    return { success: false as const, error: "Failed to fetch time-off requests" };
+  }
+}
+
+/**
+ * Approve a time-off request
+ */
+export async function approveTimeOffRequest(id: string): Promise<ActionResult> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const auth = await requireAuth();
+
+    const existing = await prisma.availabilityBlock.findFirst({
+      where: {
+        id,
+        organizationId,
+        blockType: "time_off",
+        requestStatus: "pending",
+      },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Time-off request not found or already processed" };
+    }
+
+    await prisma.availabilityBlock.update({
+      where: { id },
+      data: {
+        requestStatus: "approved",
+        approvedById: auth.userId,
+        approvedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/scheduling");
+    revalidatePath("/scheduling/time-off");
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("[TimeOff] Error approving request:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to approve time-off request" };
+  }
+}
+
+/**
+ * Reject a time-off request
+ */
+export async function rejectTimeOffRequest(
+  id: string,
+  rejectionNote?: string
+): Promise<ActionResult> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const auth = await requireAuth();
+
+    const existing = await prisma.availabilityBlock.findFirst({
+      where: {
+        id,
+        organizationId,
+        blockType: "time_off",
+        requestStatus: "pending",
+      },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Time-off request not found or already processed" };
+    }
+
+    await prisma.availabilityBlock.update({
+      where: { id },
+      data: {
+        requestStatus: "rejected",
+        approvedById: auth.userId,
+        approvedAt: new Date(),
+        rejectionNote,
+      },
+    });
+
+    revalidatePath("/scheduling");
+    revalidatePath("/scheduling/time-off");
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("[TimeOff] Error rejecting request:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to reject time-off request" };
+  }
+}
+
+/**
+ * Get my time-off requests (for the current user)
+ */
+export async function getMyTimeOffRequests() {
+  try {
+    const organizationId = await requireOrganizationId();
+    const auth = await requireAuth();
+
+    const requests = await prisma.availabilityBlock.findMany({
+      where: {
+        organizationId,
+        userId: auth.userId,
+        blockType: "time_off",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return { success: true as const, data: requests };
+  } catch (error) {
+    console.error("[TimeOff] Error fetching my requests:", error);
+    return { success: false as const, error: "Failed to fetch your time-off requests" };
+  }
+}
+
+/**
+ * Cancel my time-off request (only if pending)
+ */
+export async function cancelTimeOffRequest(id: string): Promise<ActionResult> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const auth = await requireAuth();
+
+    const existing = await prisma.availabilityBlock.findFirst({
+      where: {
+        id,
+        organizationId,
+        userId: auth.userId,
+        blockType: "time_off",
+        requestStatus: "pending",
+      },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Request not found or cannot be cancelled" };
+    }
+
+    await prisma.availabilityBlock.delete({
+      where: { id },
+    });
+
+    revalidatePath("/scheduling");
+    revalidatePath("/scheduling/time-off");
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("[TimeOff] Error cancelling request:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to cancel time-off request" };
+  }
 }

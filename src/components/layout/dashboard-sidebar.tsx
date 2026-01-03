@@ -26,7 +26,6 @@ const allNavItems: NavItem[] = [
   { label: "Invoices", href: "/invoices", icon: InvoiceIcon, moduleId: "invoices" },
   { label: "Payments", href: "/payments", icon: PaymentsIcon, moduleId: "invoices" }, // Payments is part of invoices module
   { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
-  { label: "Availability", href: "/scheduling/availability", icon: AvailabilityIcon, moduleId: "scheduling" }, // Part of scheduling module
 ];
 
 const bottomNavItems: NavItem[] = [
@@ -265,11 +264,4 @@ function ContractsIcon({ className }: { className?: string }) {
   );
 }
 
-function AvailabilityIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clipRule="evenodd" />
-    </svg>
-  );
-}
 

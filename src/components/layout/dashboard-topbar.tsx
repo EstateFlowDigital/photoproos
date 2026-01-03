@@ -448,7 +448,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
               </div>
               <div className="border-t border-[var(--card-border)] px-4 py-2">
                 <Link
-                  href="/settings/notifications"
+                  href="/notifications"
                   className="block text-center text-xs text-[var(--primary)] hover:underline"
                   onClick={() => setNotificationsOpen(false)}
                 >

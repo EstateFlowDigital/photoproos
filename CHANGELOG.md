@@ -8,6 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Scheduling Calendar Improvements**
+  - Added monthly calendar view with events displayed as color-coded blocks
+  - Added week calendar view with stacked event blocks
+  - Added list view for chronological booking display grouped by date
+  - Added view mode toggle (Month/Week/List) in calendar header
+  - Added click-to-expand day view for detailed daily schedule
+  - Added color-coded event blocks by status (pending=yellow, confirmed=blue, completed=green, cancelled=red)
+  - Added month navigation with previous/next controls
+  - Added "Today" button for quick navigation to current date
+
+- **Notifications & Activity Page**
+  - Created `/notifications` route with tabbed interface for Notifications and Activity
+  - Added notification list with unread indicators and time formatting
+  - Added activity log grouped by date (Today, Yesterday, etc.)
+  - Added click-to-navigate on notifications to source pages
+  - Added "Mark all as read" functionality
+  - Added activity icons for different event types (payments, galleries, bookings, etc.)
+  - Created `src/lib/actions/activity.ts` for activity log queries
+
+- **Team Time-Off Requests**
+  - Added approval workflow fields to `AvailabilityBlock` model (requestStatus, approvedById, approvedAt, rejectionNote)
+  - Created `TimeOffRequestStatus` enum (pending, approved, rejected)
+  - Added time-off request actions: `submitTimeOffRequest`, `approveTimeOffRequest`, `rejectTimeOffRequest`, `cancelTimeOffRequest`
+  - Created `/scheduling/time-off` page with tabs for My Requests, Pending Approval, and All Requests
+  - Added request submission modal with date range picker
+  - Added approve/reject buttons for pending requests (admin view)
+  - Added cancel button for own pending requests
+
+### Changed
+- Removed Availability from main sidebar navigation (now accessible via PageContextNav in scheduling)
+- Updated notifications dropdown to link to `/notifications` instead of `/settings/notifications`
+- Added "Time Off" link to scheduling PageContextNav
+
 - **Spiro Feature Parity - Phase 1: Ordering System Database Models**
   - Added `ServiceBundle` model for packaging services together with bundle pricing
   - Added `ServiceBundleItem` junction table for bundle ↔ service relationships
@@ -29,6 +62,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `reorderBundleItems` - drag-and-drop ordering support
     - `calculateBundleSavings` - auto-calculate savings percentage
     - `getBundles` / `getBundle` / `getBundleBySlug` - queries with filters
+
+- **Spiro Feature Parity - Phase 1: Addon CRUD Actions**
+  - Created `src/lib/validations/addons.ts` with Zod schemas for addon validation
+  - Created `src/lib/actions/addons.ts` with full CRUD operations:
+    - `createAddon` / `updateAddon` / `deleteAddon` - standard CRUD
+    - `toggleAddonStatus` - activate/deactivate addons
+    - `setAddonCompatibility` - link addons to compatible services
+    - `getCompatibleAddons` - get addons matching selected services
+    - `getSuggestedAddons` - smart suggestions based on cart contents and triggers
+    - `reorderAddons` - drag-and-drop ordering support
+    - `getAddons` / `getAddon` - queries with filters
+  - Trigger types: "always", "with_service", "cart_threshold"
+
+- **Spiro Feature Parity - Phase 1: Bundle & Addon Admin UI**
+  - Created `/services/bundles` page with bundle listing and status badges
+  - Created `/services/bundles/new` page with bundle creation form
+  - Created `/services/bundles/[id]` page for editing bundles
+  - Created `/services/addons` page with addon listing and trigger type badges
+  - Created `/services/addons/new` page with addon creation form
+  - Created `/services/addons/[id]` page for editing addons
+  - Added `BundleForm` component with service selection and savings preview
+  - Added `AddonForm` component with trigger configuration and service compatibility
+  - Context navigation between Services, Bundles, and Addons pages
 
 ### Fixed
 - **Addons Action Type Error**
