@@ -46,7 +46,7 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
   const inviteHandledRef = useRef(false);
 
   const canInvite = memberLimit === -1 || members.length < memberLimit;
-  const inviteParam = searchParams.get("invite");
+  const inviteParam = searchParams?.get("invite");
 
   useEffect(() => {
     if (inviteHandledRef.current || !inviteParam) {
