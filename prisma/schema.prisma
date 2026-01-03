@@ -451,6 +451,7 @@ model Organization {
   members            OrganizationMember[]
   invitations        Invitation[]
   projects           Project[]
+  portfolioWebsites  PortfolioWebsite[]
   clients            Client[]
   payments           Payment[]
   bookings           Booking[]
@@ -767,6 +768,7 @@ model Project {
   favorites       GalleryFavorite[]
   comments        GalleryComment[]
   propertyWebsite PropertyWebsite?
+  portfolioWebsites PortfolioWebsiteProject[]
   tasks           Task[]
 
   // Phase 2: Client Questionnaire System
@@ -1832,6 +1834,59 @@ model MarketingAsset {
 
   @@index([propertyWebsiteId])
   @@index([type])
+}
+
+// ============================================================================
+// PORTFOLIO WEBSITES
+// ============================================================================
+
+model PortfolioWebsite {
+  id             String @id @default(cuid())
+  organizationId String
+
+  name        String
+  slug        String @unique
+  description String? @db.Text
+
+  // Hero content
+  heroTitle    String?
+  heroSubtitle String? @db.Text
+
+  // Branding
+  logoUrl      String?
+  primaryColor String? @default("#3b82f6")
+  accentColor  String? @default("#8b5cf6")
+
+  // Settings
+  isPublished  Boolean @default(false)
+  customDomain String? @unique
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  // Relations
+  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projects     PortfolioWebsiteProject[]
+
+  @@index([organizationId])
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model PortfolioWebsiteProject {
+  id                 String @id @default(cuid())
+  portfolioWebsiteId String
+  projectId          String
+  position           Int    @default(0)
+
+  // Relations
+  portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
+  project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([portfolioWebsiteId, projectId])
+  @@index([portfolioWebsiteId])
+  @@index([projectId])
 }
 
 // ============================================================================
