@@ -21,6 +21,8 @@ export function PropertyInquiryForm({
     email: "",
     phone: "",
     message: `I'm interested in ${propertyAddress}...`,
+    // Honeypot field for spam protection - should remain empty
+    website: "",
   });
 
   const [fieldErrors, setFieldErrors] = useState<{
@@ -48,6 +50,13 @@ export function PropertyInquiryForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Honeypot spam check - if filled, silently reject
+    if (formData.website) {
+      // Pretend success to not alert bots
+      setIsSubmitted(true);
+      return;
+    }
 
     if (!validateForm()) {
       return;
@@ -89,6 +98,7 @@ export function PropertyInquiryForm({
               email: "",
               phone: "",
               message: `I'm interested in ${propertyAddress}...`,
+              website: "",
             });
           }}
           className="mt-4 text-sm text-[var(--primary)] hover:underline"
@@ -103,6 +113,19 @@ export function PropertyInquiryForm({
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
       <h3 className="mb-4 text-lg font-semibold text-foreground">Request Information</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Honeypot field - hidden from humans but bots will fill it */}
+        <div className="absolute -left-[9999px]" aria-hidden="true">
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            value={formData.website}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, website: e.target.value }))
+            }
+          />
+        </div>
         <div>
           <input
             type="text"

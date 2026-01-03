@@ -89,6 +89,8 @@ enum ActivityType {
   file_uploaded
   file_downloaded
   settings_updated
+  order_created
+  order_paid
 }
 
 enum NotificationType {

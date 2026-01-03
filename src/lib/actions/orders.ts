@@ -689,12 +689,33 @@ export async function cancelOrder(id: string): Promise<ActionResult> {
       return { success: false, error: "Cannot cancel a completed order" };
     }
 
-    // If paid, would need refund logic here
-    if (order.status === "paid") {
-      // TODO: Implement refund via Stripe
+    // If paid, process refund via Stripe first
+    if (order.status === "paid" && order.stripePaymentIntentId) {
+      const stripe = getStripe();
+      try {
+        await stripe.refunds.create({
+          payment_intent: order.stripePaymentIntentId,
+          reason: "requested_by_customer",
+          metadata: {
+            orderId: order.id,
+            orderNumber: order.orderNumber,
+            organizationId,
+          },
+        });
+      } catch (stripeError) {
+        console.error("[Orders] Stripe refund failed:", stripeError);
+        return {
+          success: false,
+          error: stripeError instanceof Error
+            ? `Refund failed: ${stripeError.message}`
+            : "Failed to process refund",
+        };
+      }
+    } else if (order.status === "paid") {
+      // Paid but no Stripe payment intent - manual refund required
       return {
         success: false,
-        error: "Cannot cancel a paid order. Please process a refund first."
+        error: "Cannot cancel a paid order without Stripe payment. Manual refund required.",
       };
     }
 

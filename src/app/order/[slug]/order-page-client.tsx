@@ -105,6 +105,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
   // Cart state
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Cart calculations
   const cartTotals = useMemo(() => {
@@ -576,8 +577,8 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                     className="w-full rounded-lg py-3.5 text-base font-medium text-white transition-all hover:opacity-90"
                     style={{ backgroundColor: primaryColor }}
                     onClick={() => {
-                      // TODO: Integrate with Stripe checkout
-                      alert("Checkout will be integrated with Stripe in the next phase.");
+                      setIsCartOpen(false);
+                      setIsCheckoutOpen(true);
                     }}
                   >
                     Proceed to Checkout
@@ -606,6 +607,16 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
           </span>
         </button>
       )}
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        orderPageId={orderPage.id}
+        cartItems={cartItems}
+        subtotalCents={cartTotals.subtotal}
+        primaryColor={primaryColor}
+      />
     </div>
   );
 }

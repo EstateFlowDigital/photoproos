@@ -107,6 +107,9 @@ export function CheckoutModal({
         return;
       }
 
+      // Save session token to localStorage for confirmation page
+      localStorage.setItem(`order_${orderResult.data.orderId}`, orderResult.data.sessionToken);
+
       // Redirect to Stripe checkout
       window.location.href = checkoutResult.data.checkoutUrl;
     } catch (err) {

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { getStripe } from "@/lib/stripe";
 import type { PaymentStatus } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendEmail } from "@/lib/email/resend";
@@ -494,15 +495,32 @@ export async function issueRefund(
       return { success: false, error: "No Stripe payment to refund. Manual refund required." };
     }
 
-    // TODO: Implement actual Stripe refund
-    // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-    // await stripe.refunds.create({
-    //   payment_intent: payment.stripePaymentIntentId,
-    //   amount: amountCents || payment.amountCents,
-    //   reason: reason as Stripe.RefundCreateParams.Reason,
-    // });
+    // Process refund via Stripe
+    const refundAmount = amountCents || payment.amountCents;
+    const stripe = getStripe();
 
-    // For now, just update the status
+    try {
+      await stripe.refunds.create({
+        payment_intent: payment.stripePaymentIntentId,
+        amount: refundAmount,
+        reason: reason === "duplicate" || reason === "fraudulent" || reason === "requested_by_customer"
+          ? reason
+          : undefined,
+        metadata: {
+          paymentId: id,
+          organizationId,
+          reason: reason || "not_specified",
+        },
+      });
+    } catch (stripeError) {
+      console.error("[Refund] Stripe refund failed:", stripeError);
+      return {
+        success: false,
+        error: stripeError instanceof Error ? stripeError.message : "Stripe refund failed",
+      };
+    }
+
+    // Update payment status in database
     await prisma.payment.update({
       where: { id },
       data: {
@@ -510,11 +528,21 @@ export async function issueRefund(
       },
     });
 
+    // Log activity
+    await prisma.activityLog.create({
+      data: {
+        organizationId,
+        type: "payment_received", // Using closest available type
+        description: `Refund processed: $${(refundAmount / 100).toFixed(2)}${reason ? ` - ${reason}` : ""}`,
+        paymentId: id,
+      },
+    });
+
     revalidatePath("/payments");
     revalidatePath(`/payments/${id}`);
     revalidatePath("/dashboard");
 
-    console.log(`[Refund] Marked payment ${id} as refunded. Amount: ${amountCents || payment.amountCents} cents. Reason: ${reason || "Not specified"}`);
+    console.log(`[Refund] Processed refund for payment ${id}. Amount: ${refundAmount} cents. Reason: ${reason || "Not specified"}`);
 
     return { success: true };
   } catch (error) {

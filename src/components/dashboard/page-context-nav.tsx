@@ -8,6 +8,7 @@ interface PageContextNavItem {
   label: string;
   href: string;
   icon?: React.ReactNode;
+  badge?: number;
 }
 
 interface PageContextIntegration {
@@ -49,6 +50,18 @@ export function PageContextNav({ items, integrations, className }: PageContextNa
           >
             {item.icon}
             {item.label}
+            {item.badge !== undefined && item.badge > 0 && (
+              <span
+                className={cn(
+                  "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-xs font-medium",
+                  isActive(item.href)
+                    ? "bg-white/20 text-white"
+                    : "bg-[var(--warning)] text-white"
+                )}
+              >
+                {item.badge > 99 ? "99+" : item.badge}
+              </span>
+            )}
           </Link>
         ))}
       </nav>

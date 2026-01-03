@@ -64,6 +64,7 @@ interface SchedulingPageClientProps {
   calendarDays: CalendarDay[];
   isGoogleCalendarConnected?: boolean;
   timeOffBlocks?: TimeOffBlock[];
+  pendingTimeOffCount?: number;
 }
 
 // Helper to format time
@@ -256,6 +257,7 @@ export function SchedulingPageClient({
   calendarDays: initialCalendarDays,
   isGoogleCalendarConnected = false,
   timeOffBlocks = [],
+  pendingTimeOffCount = 0,
 }: SchedulingPageClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -621,7 +623,7 @@ export function SchedulingPageClient({
         items={[
           { label: "Calendar", href: "/scheduling", icon: <ContextCalendarIcon className="h-4 w-4" /> },
           { label: "Availability", href: "/scheduling/availability", icon: <ContextClockIcon className="h-4 w-4" /> },
-          { label: "Time Off", href: "/scheduling/time-off", icon: <TimeOffIcon className="h-4 w-4" /> },
+          { label: "Time Off", href: "/scheduling/time-off", icon: <TimeOffIcon className="h-4 w-4" />, badge: pendingTimeOffCount },
           { label: "Booking Types", href: "/scheduling/types", icon: <TagIcon className="h-4 w-4" /> },
         ]}
         integrations={[

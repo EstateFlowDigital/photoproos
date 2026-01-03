@@ -13,7 +13,12 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { deletePropertyWebsite } from "@/lib/actions/property-websites";
+import {
+  deletePropertyWebsite,
+  duplicatePropertyWebsite,
+  deletePropertyWebsites,
+  publishPropertyWebsites
+} from "@/lib/actions/property-websites";
 import type { PropertyWebsiteWithRelations } from "@/lib/actions/property-websites";
 
 interface PropertiesClientProps {
@@ -44,6 +49,30 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<PropertyWebsiteWithRelations | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBatchDelete, setShowBatchDelete] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredWebsites.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredWebsites.map((w) => w.id)));
+    }
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
 
   const filteredWebsites = websites.filter((website) => {
     // Filter by status
@@ -76,6 +105,57 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
           router.refresh();
         } else {
           showToast(result.error || "Failed to delete property website", "error");
+        }
+      } catch {
+        showToast("An error occurred", "error");
+      }
+    });
+  };
+
+  const handleDuplicate = (website: PropertyWebsiteWithRelations) => {
+    startTransition(async () => {
+      try {
+        const result = await duplicatePropertyWebsite(website.id);
+        if (result.success) {
+          showToast("Property website duplicated", "success");
+          router.refresh();
+        } else {
+          showToast(result.error || "Failed to duplicate", "error");
+        }
+      } catch {
+        showToast("An error occurred", "error");
+      }
+    });
+  };
+
+  const handleBatchDelete = () => {
+    startTransition(async () => {
+      try {
+        const result = await deletePropertyWebsites(Array.from(selectedIds));
+        if (result.success) {
+          showToast(`Deleted ${result.deleted} property websites`, "success");
+          clearSelection();
+          setShowBatchDelete(false);
+          router.refresh();
+        } else {
+          showToast(result.error || "Failed to delete", "error");
+        }
+      } catch {
+        showToast("An error occurred", "error");
+      }
+    });
+  };
+
+  const handleBatchPublish = (publish: boolean) => {
+    startTransition(async () => {
+      try {
+        const result = await publishPropertyWebsites(Array.from(selectedIds), publish);
+        if (result.success) {
+          showToast(`${publish ? "Published" : "Unpublished"} ${result.updated} property websites`, "success");
+          clearSelection();
+          router.refresh();
+        } else {
+          showToast(result.error || "Failed to update", "error");
         }
       } catch {
         showToast("An error occurred", "error");
@@ -131,6 +211,46 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
         </div>
       </div>
 
+      {/* Batch Action Toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-lg">
+            <span className="text-sm font-medium text-foreground">
+              {selectedIds.size} selected
+            </span>
+            <div className="h-4 w-px bg-[var(--card-border)]" />
+            <button
+              onClick={() => handleBatchPublish(true)}
+              disabled={isPending}
+              className="rounded-lg bg-[var(--success)]/20 px-3 py-1.5 text-sm font-medium text-[var(--success)] transition-colors hover:bg-[var(--success)]/30 disabled:opacity-50"
+            >
+              Publish
+            </button>
+            <button
+              onClick={() => handleBatchPublish(false)}
+              disabled={isPending}
+              className="rounded-lg bg-foreground/10 px-3 py-1.5 text-sm font-medium text-foreground-secondary transition-colors hover:bg-foreground/20 disabled:opacity-50"
+            >
+              Unpublish
+            </button>
+            <button
+              onClick={() => setShowBatchDelete(true)}
+              disabled={isPending}
+              className="rounded-lg bg-[var(--error)]/20 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/30 disabled:opacity-50"
+            >
+              Delete
+            </button>
+            <div className="h-4 w-px bg-[var(--card-border)]" />
+            <button
+              onClick={clearSelection}
+              className="text-sm text-foreground-muted hover:text-foreground"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Property Grid */}
       {filteredWebsites.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
@@ -152,11 +272,38 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
           )}
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredWebsites.map((website) => (
-            <PropertyCard key={website.id} website={website} onDelete={setDeleteTarget} />
-          ))}
-        </div>
+        <>
+          {/* Select All */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSelectAll}
+              className="flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground"
+            >
+              <div className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+                selectedIds.size === filteredWebsites.length && filteredWebsites.length > 0
+                  ? "border-[var(--primary)] bg-[var(--primary)]"
+                  : "border-[var(--card-border)] bg-[var(--card)]"
+              }`}>
+                {selectedIds.size === filteredWebsites.length && filteredWebsites.length > 0 && (
+                  <CheckIcon className="h-3 w-3 text-white" />
+                )}
+              </div>
+              Select all
+            </button>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredWebsites.map((website) => (
+              <PropertyCard
+                key={website.id}
+                website={website}
+                isSelected={selectedIds.has(website.id)}
+                onToggleSelect={() => toggleSelect(website.id)}
+                onDelete={setDeleteTarget}
+                onDuplicate={() => handleDuplicate(website)}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -218,15 +365,93 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Batch Delete Confirmation Dialog */}
+      <Dialog open={showBatchDelete} onOpenChange={setShowBatchDelete}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle className="text-[var(--error)]">Delete {selectedIds.size} Properties</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            <div className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-4">
+              <div className="flex items-start gap-3">
+                <WarningIcon className="h-5 w-5 text-[var(--error)] shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-medium text-[var(--error)]">
+                    You are about to delete {selectedIds.size} property websites.
+                  </p>
+                  <p className="mt-2 text-foreground-muted">
+                    This will permanently delete the property websites and all associated leads. The original galleries will not be affected.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setShowBatchDelete(false)}
+              className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              disabled={isPending}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPending ? (
+                <>
+                  <LoadingSpinner className="h-4 w-4" />
+                  Deleting...
+                </>
+              ) : (
+                `Delete ${selectedIds.size} Properties`
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
 
-function PropertyCard({ website, onDelete }: { website: PropertyWebsiteWithRelations; onDelete: (website: PropertyWebsiteWithRelations) => void }) {
+interface PropertyCardProps {
+  website: PropertyWebsiteWithRelations;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+  onDelete: (website: PropertyWebsiteWithRelations) => void;
+  onDuplicate: () => void;
+}
+
+function PropertyCard({ website, isSelected, onToggleSelect, onDelete, onDuplicate }: PropertyCardProps) {
   const coverImage = website.project.coverImageUrl || website.project.assets[0]?.thumbnailUrl;
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--border-hover)]">
+    <div className={`group relative overflow-hidden rounded-xl border bg-[var(--card)] transition-all hover:border-[var(--border-hover)] ${
+      isSelected ? "border-[var(--primary)] ring-1 ring-[var(--primary)]" : "border-[var(--card-border)]"
+    }`}>
+      {/* Selection Checkbox */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleSelect();
+        }}
+        className="absolute left-2 top-2 z-20"
+      >
+        <div className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+          isSelected
+            ? "border-[var(--primary)] bg-[var(--primary)]"
+            : "border-white/50 bg-background/80 backdrop-blur-sm group-hover:border-white/80"
+        }`}>
+          {isSelected && <CheckIcon className="h-3 w-3 text-white" />}
+        </div>
+      </button>
+
       {/* Action Buttons - appear on hover */}
       <div className="absolute right-2 top-2 z-10 flex items-center gap-1.5 opacity-0 transition-all group-hover:opacity-100">
         {/* Preview Button */}
@@ -242,6 +467,18 @@ function PropertyCard({ website, onDelete }: { website: PropertyWebsiteWithRelat
             <PreviewIcon className="h-4 w-4" />
           </a>
         )}
+        {/* Duplicate Button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDuplicate();
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--primary)]/20 hover:text-[var(--primary)]"
+          title="Duplicate property website"
+        >
+          <DuplicateIcon className="h-4 w-4" />
+        </button>
         {/* Delete Button */}
         <button
           onClick={(e) => {
@@ -509,6 +746,14 @@ function WarningIcon({ className }: { className?: string }) {
   );
 }
 
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
 function LoadingSpinner({ className }: { className?: string }) {
   return (
     <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -523,6 +768,15 @@ function PreviewIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
       <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function DuplicateIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z" />
+      <path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-5.879a1.5 1.5 0 0 0-.44-1.06L9.44 6.439A1.5 1.5 0 0 0 8.378 6H4.5Z" />
     </svg>
   );
 }

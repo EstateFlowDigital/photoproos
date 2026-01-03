@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+type MetricType = "pageViews" | "uniqueVisitors" | "tourClicks";
+type TimeRange = 7 | 14 | 30;
 
 interface PropertyStat {
   id: string;
@@ -43,13 +46,67 @@ interface AnalyticsViewClientProps {
   analytics: AggregateAnalytics;
 }
 
+const METRIC_LABELS: Record<MetricType, string> = {
+  pageViews: "Page Views",
+  uniqueVisitors: "Unique Visitors",
+  tourClicks: "Tour Clicks",
+};
+
+const METRIC_COLORS: Record<MetricType, string> = {
+  pageViews: "var(--primary)",
+  uniqueVisitors: "var(--success)",
+  tourClicks: "var(--warning)",
+};
+
 export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
   const [sortBy, setSortBy] = useState<"views" | "leads">("views");
+  const [timeRange, setTimeRange] = useState<TimeRange>(30);
+  const [chartMetric, setChartMetric] = useState<MetricType>("pageViews");
 
   const sortedProperties = [...analytics.propertyStats].sort((a, b) => {
     if (sortBy === "views") return b.viewCount - a.viewCount;
     return b.leadCount - a.leadCount;
   });
+
+  // Filter daily data by time range
+  const filteredDailyData = useMemo(() => {
+    const cutoff = analytics.dailyData.length - timeRange;
+    return analytics.dailyData.slice(Math.max(0, cutoff));
+  }, [analytics.dailyData, timeRange]);
+
+  // Calculate totals for the selected time range
+  const rangeTotals = useMemo(() => {
+    return filteredDailyData.reduce(
+      (acc, day) => ({
+        pageViews: acc.pageViews + day.pageViews,
+        uniqueVisitors: acc.uniqueVisitors + day.uniqueVisitors,
+        tourClicks: acc.tourClicks + day.tourClicks,
+        photoViews: acc.photoViews + day.photoViews,
+        socialShares: acc.socialShares + day.socialShares,
+      }),
+      { pageViews: 0, uniqueVisitors: 0, tourClicks: 0, photoViews: 0, socialShares: 0 }
+    );
+  }, [filteredDailyData]);
+
+  // Calculate trend (compare first half to second half of time range)
+  const calculateTrend = (metric: keyof typeof rangeTotals): { value: number; isUp: boolean } => {
+    if (filteredDailyData.length < 2) return { value: 0, isUp: true };
+
+    const midpoint = Math.floor(filteredDailyData.length / 2);
+    const firstHalf = filteredDailyData.slice(0, midpoint);
+    const secondHalf = filteredDailyData.slice(midpoint);
+
+    const firstSum = firstHalf.reduce((sum, d) => sum + d[metric], 0);
+    const secondSum = secondHalf.reduce((sum, d) => sum + d[metric], 0);
+
+    if (firstSum === 0) return { value: secondSum > 0 ? 100 : 0, isUp: true };
+    const change = ((secondSum - firstSum) / firstSum) * 100;
+    return { value: Math.abs(change), isUp: change >= 0 };
+  };
+
+  const viewsTrend = calculateTrend("pageViews");
+  const visitorsTrend = calculateTrend("uniqueVisitors");
+  const leadsTrend = { value: 0, isUp: true }; // Leads don't have daily tracking
 
   // Calculate conversion rate
   const totalViews = analytics.propertyStats.reduce((sum, p) => sum + p.viewCount, 0);
@@ -65,15 +122,31 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <p className="text-sm text-foreground-muted">Total Views</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">
-            {analytics.totals.pageViews.toLocaleString()}
-          </p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <p className="text-2xl font-bold text-foreground">
+              {analytics.totals.pageViews.toLocaleString()}
+            </p>
+            {viewsTrend.value > 0 && (
+              <span className={`flex items-center text-xs font-medium ${viewsTrend.isUp ? "text-[var(--success)]" : "text-[var(--error)]"}`}>
+                {viewsTrend.isUp ? <TrendUpIcon className="h-3 w-3 mr-0.5" /> : <TrendDownIcon className="h-3 w-3 mr-0.5" />}
+                {viewsTrend.value.toFixed(0)}%
+              </span>
+            )}
+          </div>
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <p className="text-sm text-foreground-muted">Unique Visitors</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">
-            {analytics.totals.uniqueVisitors.toLocaleString()}
-          </p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <p className="text-2xl font-bold text-foreground">
+              {analytics.totals.uniqueVisitors.toLocaleString()}
+            </p>
+            {visitorsTrend.value > 0 && (
+              <span className={`flex items-center text-xs font-medium ${visitorsTrend.isUp ? "text-[var(--success)]" : "text-[var(--error)]"}`}>
+                {visitorsTrend.isUp ? <TrendUpIcon className="h-3 w-3 mr-0.5" /> : <TrendDownIcon className="h-3 w-3 mr-0.5" />}
+                {visitorsTrend.value.toFixed(0)}%
+              </span>
+            )}
+          </div>
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <p className="text-sm text-foreground-muted">Total Leads</p>

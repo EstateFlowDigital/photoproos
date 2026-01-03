@@ -48,7 +48,7 @@ export async function createService(
       },
     });
 
-    revalidatePath("/galleries/services");
+    revalidatePath("/services");
     revalidatePath("/galleries");
 
     return { success: true, data: { id: service.id } };
@@ -98,8 +98,8 @@ export async function updateService(
       },
     });
 
-    revalidatePath("/galleries/services");
-    revalidatePath(`/galleries/services/${id}`);
+    revalidatePath("/services");
+    revalidatePath(`/services/${id}`);
     revalidatePath("/galleries");
 
     return { success: true, data: { id: service.id } };
@@ -152,7 +152,7 @@ export async function deleteService(
         data: { isActive: false },
       });
 
-      revalidatePath("/galleries/services");
+      revalidatePath("/services");
       return {
         success: true,
         data: undefined,
@@ -164,7 +164,7 @@ export async function deleteService(
       where: { id },
     });
 
-    revalidatePath("/galleries/services");
+    revalidatePath("/services");
     revalidatePath("/galleries");
 
     return { success: true, data: undefined };
@@ -215,7 +215,7 @@ export async function duplicateService(
       },
     });
 
-    revalidatePath("/galleries/services");
+    revalidatePath("/services");
 
     return { success: true, data: { id: duplicate.id } };
   } catch (error) {
@@ -252,8 +252,8 @@ export async function toggleServiceStatus(
       data: { isActive: !existing.isActive },
     });
 
-    revalidatePath("/galleries/services");
-    revalidatePath(`/galleries/services/${id}`);
+    revalidatePath("/services");
+    revalidatePath(`/services/${id}`);
 
     return { success: true, data: { isActive: updated.isActive } };
   } catch (error) {
@@ -405,7 +405,7 @@ export async function seedDefaultServices(): Promise<ActionResult<{ count: numbe
       })),
     });
 
-    revalidatePath("/galleries/services");
+    revalidatePath("/services");
 
     return { success: true, data: { count: result.count } };
   } catch (error) {
@@ -460,7 +460,7 @@ export async function bulkToggleServiceStatus(
     });
 
     revalidatePath("/services");
-    revalidatePath("/galleries/services");
+    revalidatePath("/services");
 
     return { success: true, data: { count: result.count } };
   } catch (error) {
@@ -495,7 +495,7 @@ export async function bulkArchiveServices(
     });
 
     revalidatePath("/services");
-    revalidatePath("/galleries/services");
+    revalidatePath("/services");
 
     return { success: true, data: { count: result.count } };
   } catch (error) {
@@ -580,7 +580,7 @@ export async function bulkDeleteServices(
     }
 
     revalidatePath("/services");
-    revalidatePath("/galleries/services");
+    revalidatePath("/services");
 
     return { success: true, data: { count: deletedCount + archivedCount } };
   } catch (error) {

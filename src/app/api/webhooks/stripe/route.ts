@@ -84,15 +84,23 @@ export async function POST(request: Request) {
 
 /**
  * Handle successful checkout session
- * This is the primary event for pay-to-unlock galleries
+ * This handles both gallery payments and order payments
  */
 async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session
 ) {
+  const orderId = session.metadata?.orderId;
   const galleryId = session.metadata?.galleryId;
   const organizationId = session.metadata?.organizationId;
   const clientId = session.metadata?.clientId;
 
+  // Handle order payments
+  if (orderId) {
+    await handleOrderPaymentCompleted(session, orderId);
+    return;
+  }
+
+  // Handle gallery payments
   if (!galleryId || !organizationId) {
     console.error("Missing galleryId or organizationId in session metadata");
     return;
@@ -287,5 +295,75 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
       },
     });
     console.log(`Payment ${existingPayment.id} marked as failed`);
+  }
+}
+
+/**
+ * Handle order payment completed
+ * Updates order status and logs activity
+ */
+async function handleOrderPaymentCompleted(
+  session: Stripe.Checkout.Session,
+  orderId: string
+) {
+  // Find the order
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      organization: { select: { name: true } },
+      items: true,
+    },
+  });
+
+  if (!order) {
+    console.error(`Order not found: ${orderId}`);
+    return;
+  }
+
+  // Check if already paid (idempotency)
+  if (order.status === "paid") {
+    console.log(`Order ${orderId} already marked as paid`);
+    return;
+  }
+
+  // Update order to paid status
+  await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      status: "paid",
+      paidAt: new Date(),
+      stripePaymentIntentId:
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : session.payment_intent?.id || null,
+      paymentMethod: "card",
+    },
+  });
+
+  console.log(
+    `Order ${order.orderNumber} marked as paid: $${(order.totalCents / 100).toFixed(2)}`
+  );
+
+  // Log activity
+  await prisma.activityLog.create({
+    data: {
+      organizationId: order.organizationId,
+      type: "order_paid",
+      description: `Order ${order.orderNumber} was paid ($${(order.totalCents / 100).toFixed(2)})`,
+      metadata: {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        clientName: order.clientName,
+        clientEmail: order.clientEmail,
+        totalCents: order.totalCents,
+        itemCount: order.items.length,
+      },
+    },
+  });
+
+  // TODO: Send order confirmation email
+  // For now, we'll skip email - can be added later
+  if (session.customer_email) {
+    console.log(`Would send order confirmation to ${session.customer_email}`);
   }
 }

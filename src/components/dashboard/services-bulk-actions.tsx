@@ -8,7 +8,7 @@ import {
   bulkArchiveServices,
   bulkDeleteServices
 } from "@/lib/actions/services";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/toast";
 
 interface ServicesBulkActionsProps {
   selectedIds: string[];
@@ -22,6 +22,7 @@ export function ServicesBulkActions({
   onActionComplete,
 }: ServicesBulkActionsProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -34,14 +35,14 @@ export function ServicesBulkActions({
     try {
       const result = await bulkToggleServiceStatus(selectedIds);
       if (result.success) {
-        toast.success(`Updated ${result.data?.count || count} services`);
+        showToast(`Updated ${result.data?.count || count} services`, "success");
         onClearSelection();
         onActionComplete();
       } else {
-        toast.error(result.error || "Failed to update services");
+        showToast(result.error || "Failed to update services", "error");
       }
     } catch {
-      toast.error("An error occurred");
+      showToast("An error occurred", "error");
     } finally {
       setIsLoading(false);
     }
@@ -52,14 +53,14 @@ export function ServicesBulkActions({
     try {
       const result = await bulkArchiveServices(selectedIds, true);
       if (result.success) {
-        toast.success(`Archived ${result.data?.count || count} services`);
+        showToast(`Archived ${result.data?.count || count} services`, "success");
         onClearSelection();
         onActionComplete();
       } else {
-        toast.error(result.error || "Failed to archive services");
+        showToast(result.error || "Failed to archive services", "error");
       }
     } catch {
-      toast.error("An error occurred");
+      showToast("An error occurred", "error");
     } finally {
       setIsLoading(false);
     }
@@ -70,15 +71,15 @@ export function ServicesBulkActions({
     try {
       const result = await bulkDeleteServices(selectedIds);
       if (result.success) {
-        toast.success(`Deleted ${result.data?.count || count} services`);
+        showToast(`Deleted ${result.data?.count || count} services`, "success");
         onClearSelection();
         onActionComplete();
         setShowDeleteConfirm(false);
       } else {
-        toast.error(result.error || "Failed to delete services");
+        showToast(result.error || "Failed to delete services", "error");
       }
     } catch {
-      toast.error("An error occurred");
+      showToast("An error occurred", "error");
     } finally {
       setIsLoading(false);
     }

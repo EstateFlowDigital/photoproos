@@ -817,6 +817,31 @@ export async function submitTimeOffRequest(
 }
 
 /**
+ * Get count of pending time-off requests (lightweight query for badges)
+ */
+export async function getPendingTimeOffCount(): Promise<ActionResult<number>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const count = await prisma.availabilityBlock.count({
+      where: {
+        organizationId,
+        blockType: "time_off",
+        requestStatus: "pending",
+      },
+    });
+
+    return { success: true, data: count };
+  } catch (error) {
+    console.error("[TimeOff] Error getting pending count:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get pending count" };
+  }
+}
+
+/**
  * Get all pending time-off requests for the organization
  */
 export async function getPendingTimeOffRequests() {

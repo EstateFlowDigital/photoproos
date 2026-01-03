@@ -146,6 +146,44 @@ const templateStyles = {
   },
 };
 
+// Generate Schema.org structured data for SEO
+function generateSchemaOrg(website: NonNullable<Awaited<ReturnType<typeof getPropertyWebsiteBySlug>>>) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: website.headline || `${website.address}, ${website.city}`,
+    description: website.description || website.metaDescription || `${website.beds} bed, ${website.baths} bath property in ${website.city}, ${website.state}`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL || ''}/p/${website.slug}`,
+    datePosted: website.publishedAt?.toISOString() || website.createdAt.toISOString(),
+    ...(website.price && { price: website.price / 100, priceCurrency: "USD" }),
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: website.address,
+      addressLocality: website.city,
+      addressRegion: website.state,
+      postalCode: website.zipCode,
+      addressCountry: "US",
+    },
+    ...(website.project.assets[0]?.thumbnailUrl && {
+      image: website.project.assets.slice(0, 5).map(a => a.thumbnailUrl || a.originalUrl).filter(Boolean),
+    }),
+    ...(website.sqft && { floorSize: { "@type": "QuantitativeValue", value: website.sqft, unitCode: "SQF" } }),
+    ...(website.beds && { numberOfBedrooms: website.beds }),
+    ...(website.baths && { numberOfBathroomsTotal: website.baths }),
+    ...(website.yearBuilt && { yearBuilt: website.yearBuilt }),
+    ...(website.lotSize && { lotSize: { "@type": "QuantitativeValue", value: website.lotSize } }),
+    ...(website.project.client && {
+      broker: {
+        "@type": "RealEstateAgent",
+        name: website.project.client.fullName || website.project.client.company,
+        email: website.project.client.email,
+        ...(website.project.client.phone && { telephone: website.project.client.phone }),
+      },
+    }),
+  };
+  return JSON.stringify(schema);
+}
+
 export default async function PropertyWebsitePage({ params }: PageProps) {
   const { slug } = await params;
   const website = await getPropertyWebsiteBySlug(slug);
@@ -163,6 +201,11 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
 
   return (
     <main className={styles.main}>
+      {/* Schema.org Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: generateSchemaOrg(website) }}
+      />
       {/* Hero Section */}
       <section className="relative">
         {/* Photo Gallery Hero */}

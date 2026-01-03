@@ -7,7 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Order Stripe Checkout Integration**
+  - Full checkout flow for public order pages with Stripe payment
+  - `CheckoutModal` component with client info form and payment redirect
+  - Stripe webhook handler for order payment completion
+  - Order confirmation page with payment verification
+  - Session token persistence for guest order tracking
+  - Activity logging for `order_created` and `order_paid` events
+  - Added `order_created` and `order_paid` to ActivityType enum
+
+- **Scheduling Navigation Enhancements**
+  - Added pending approval badge to Time Off navigation item
+  - Badge shows count of pending time-off requests requiring approval
+  - Added `badge` prop support to `PageContextNav` component
+  - Added `getPendingTimeOffCount()` server action for efficient badge queries
+
+- **Services Consolidation & Multi-Select**
+  - Consolidated `/services` and `/galleries/services` into single `/services` route
+  - Added multi-select capability with clickable cards for bulk operations
+  - Added bulk actions: Toggle Status, Archive, Delete, Create Bundle from selection
+  - Added floating bulk action bar with selection count
+  - Added grid/list view toggle with search and category filters
+  - Added "Select All" / "Deselect All" functionality
+  - Created redirect routes from old `/galleries/services/*` paths
+
+- **Multi-Service Galleries (Database)**
+  - Added `ProjectService` junction table for many-to-many gallery-service relationship
+  - Galleries can now have multiple services (e.g., "Photos + Drone + Virtual Tour")
+  - Support for primary service designation per gallery
+  - Support for per-gallery price overrides on services
+
+- **New Components**
+  - Created `SelectableServiceCard` component with checkbox selection
+  - Created `SelectableServiceRow` component for list view selection
+  - Created `ServicesBulkActions` floating action bar component
+  - Created `MultiServiceSelector` component for selecting multiple services in forms
+
+- **Bulk Server Actions**
+  - Added `bulkToggleServiceStatus` - toggle active/inactive for multiple services
+  - Added `bulkArchiveServices` - archive multiple services at once
+  - Added `bulkDeleteServices` - delete or archive multiple services (archives if in use)
+
+### Changed
+- Services page now shows Bundles and Add-ons quick links in header
+- Updated service revalidation paths from `/galleries/services` to `/services`
+- Improved services list with usage count display (galleries + bookings)
+
 ### Fixed
+- **Stripe Integration & Payments**
+  - Implemented Stripe refund functionality for payments (`issueRefund` action)
+  - Added Stripe refund support for order cancellations (automatically refunds paid orders)
+  - Implemented invoice payment checkout session creation in client portal
+  - Refunds now include activity logging for audit trail
+
 - **Build Fixes**
   - Moved non-async utility functions from `activity.ts` server action to separate `utils/activity.ts` file
   - Fixed "Server Actions must be async functions" build error
@@ -16,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated activity type imports across components
 
 ### Added
-- **Public Order Page with Cart**
+- **Order Pages Complete Checkout Flow**
   - Added shopping cart functionality to public order pages (`/order/[slug]`)
   - Implemented add/remove bundle with visual feedback ("Added" state)
   - Implemented add service with quantity controls (+/- buttons)
@@ -26,7 +79,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added "Clear cart" functionality
   - Added subtotal calculation
   - Added floating cart button for mobile devices
-  - Added "Proceed to Checkout" button (placeholder for Stripe integration)
+  - Added checkout modal with customer information form
+  - Integrated Stripe checkout for order payments
+  - Added order confirmation page with payment verification
+  - Added order server actions (`createOrder`, `createOrderCheckoutSession`, `verifyOrderPayment`)
+  - Added order validations schema with Zod
+  - Added webhook handler for order payment completion
+  - Added activity logging for order creation and payment
 
 - **Service Addons & Bundles Enhancements**
   - Added search bar and filter dropdowns to addons list page (status, trigger type)

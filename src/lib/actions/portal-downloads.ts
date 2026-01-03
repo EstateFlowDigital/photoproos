@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { getClientSession } from "./client-auth";
 
 /**
@@ -311,9 +312,66 @@ export async function getInvoicePaymentLink(invoiceId: string): Promise<{
       return { success: true, paymentUrl: invoice.paymentLinkUrl };
     }
 
-    // TODO: Create Stripe checkout session for invoice payment
-    // For now, return error if no payment link exists
-    return { success: false, error: "Payment link not available. Please contact the photographer." };
+    // Create Stripe checkout session for invoice payment
+    const stripe = getStripe();
+    const platformFeeAmount = Math.round(
+      (invoice.totalCents * DEFAULT_PLATFORM_FEE_PERCENT) / 100
+    );
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: invoice.currency.toLowerCase(),
+            product_data: {
+              name: `Invoice ${invoice.invoiceNumber}`,
+              description: invoice.notes || `Payment for invoice ${invoice.invoiceNumber}`,
+            },
+            unit_amount: invoice.totalCents,
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: invoice.client?.email || undefined,
+      payment_intent_data: {
+        application_fee_amount: platformFeeAmount,
+        transfer_data: {
+          destination: invoice.organization.stripeConnectAccountId!,
+        },
+        metadata: {
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          organizationId: invoice.organizationId,
+          clientId: invoice.clientId || "",
+        },
+      },
+      success_url: `${baseUrl}/portal/invoices/${invoice.id}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/portal/invoices/${invoice.id}?payment=cancelled`,
+      metadata: {
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        organizationId: invoice.organizationId,
+      },
+    });
+
+    if (!checkoutSession.url) {
+      return { success: false, error: "Failed to create payment link" };
+    }
+
+    // Store the payment link URL for future use
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        paymentLinkUrl: checkoutSession.url,
+        stripePaymentLinkId: checkoutSession.id,
+      },
+    });
+
+    return { success: true, paymentUrl: checkoutSession.url };
   } catch (error) {
     console.error("[Portal Payment] Error getting payment link:", error);
     return { success: false, error: "Failed to get payment link" };

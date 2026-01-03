@@ -57,6 +57,8 @@ export function getActivityIcon(type: ActivityType): string {
     file_uploaded: "upload",
     file_downloaded: "download",
     settings_updated: "settings",
+    order_created: "cart",
+    order_paid: "currency",
   };
 
   return iconMap[type] || "info";

@@ -759,6 +759,110 @@ export async function getAggregateAnalytics(organizationId: string, days: number
   }
 }
 
+// Duplicate property website
+export async function duplicatePropertyWebsite(
+  id: string
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  try {
+    const existing = await prisma.propertyWebsite.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Property website not found" };
+    }
+
+    // Generate unique slug for the copy
+    let baseSlug = generateSlug(existing.address);
+    let counter = 1;
+    let uniqueSlug = `${baseSlug}-copy`;
+
+    while (await prisma.propertyWebsite.findUnique({ where: { slug: uniqueSlug } })) {
+      counter++;
+      uniqueSlug = `${baseSlug}-copy-${counter}`;
+    }
+
+    // Create duplicate with key fields copied
+    const duplicate = await prisma.propertyWebsite.create({
+      data: {
+        projectId: existing.projectId,
+        address: `${existing.address} (Copy)`,
+        city: existing.city,
+        state: existing.state,
+        zipCode: existing.zipCode,
+        price: existing.price,
+        beds: existing.beds,
+        baths: existing.baths,
+        sqft: existing.sqft,
+        lotSize: existing.lotSize,
+        yearBuilt: existing.yearBuilt,
+        propertyType: existing.propertyType,
+        headline: existing.headline,
+        description: existing.description,
+        features: existing.features,
+        virtualTourUrl: existing.virtualTourUrl,
+        videoUrl: existing.videoUrl,
+        template: existing.template,
+        isBranded: existing.isBranded,
+        showPrice: existing.showPrice,
+        showAgent: existing.showAgent,
+        metaTitle: existing.metaTitle,
+        metaDescription: existing.metaDescription,
+        slug: uniqueSlug,
+        isPublished: false, // Always start unpublished
+      },
+    });
+
+    revalidatePath("/properties");
+
+    return { success: true, id: duplicate.id };
+  } catch (error) {
+    console.error("Error duplicating property website:", error);
+    return { success: false, error: "Failed to duplicate property website" };
+  }
+}
+
+// Delete multiple property websites
+export async function deletePropertyWebsites(
+  ids: string[]
+): Promise<{ success: boolean; deleted: number; error?: string }> {
+  try {
+    const result = await prisma.propertyWebsite.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    revalidatePath("/properties");
+
+    return { success: true, deleted: result.count };
+  } catch (error) {
+    console.error("Error deleting property websites:", error);
+    return { success: false, deleted: 0, error: "Failed to delete property websites" };
+  }
+}
+
+// Publish multiple property websites
+export async function publishPropertyWebsites(
+  ids: string[],
+  publish: boolean
+): Promise<{ success: boolean; updated: number; error?: string }> {
+  try {
+    const result = await prisma.propertyWebsite.updateMany({
+      where: { id: { in: ids } },
+      data: {
+        isPublished: publish,
+        publishedAt: publish ? new Date() : null,
+      },
+    });
+
+    revalidatePath("/properties");
+
+    return { success: true, updated: result.count };
+  } catch (error) {
+    console.error("Error updating property websites:", error);
+    return { success: false, updated: 0, error: "Failed to update property websites" };
+  }
+}
+
 // Get projects without property websites (for creating new ones)
 export async function getProjectsWithoutPropertyWebsite(organizationId: string) {
   try {

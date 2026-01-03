@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import { SchedulingPageClient } from "./scheduling-page-client";
+import { getPendingTimeOffCount } from "@/lib/actions/availability";
 
 // Helper to check if date is today
 function isToday(date: Date): boolean {
@@ -40,7 +41,7 @@ export default async function SchedulingPage() {
   const threeMonthsFromNow = new Date();
   threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
 
-  const [bookings, clients, calendarIntegration, timeOffBlocks] = await Promise.all([
+  const [bookings, clients, calendarIntegration, timeOffBlocks, pendingTimeOffResult] = await Promise.all([
     prisma.booking.findMany({
       where: {
         organizationId: organization.id,
@@ -92,7 +93,11 @@ export default async function SchedulingPage() {
       },
       orderBy: { startDate: "asc" },
     }),
+    // Get count of pending time-off requests for badge
+    getPendingTimeOffCount(),
   ]);
+
+  const pendingTimeOffCount = pendingTimeOffResult.success ? pendingTimeOffResult.data : 0;
 
   // Generate mini calendar for current week
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -124,6 +129,7 @@ export default async function SchedulingPage() {
         calendarDays={calendarDays}
         isGoogleCalendarConnected={!!calendarIntegration}
         timeOffBlocks={timeOffBlocks}
+        pendingTimeOffCount={pendingTimeOffCount}
       />
     </div>
   );
