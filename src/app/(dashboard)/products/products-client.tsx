@@ -72,7 +72,7 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
             />
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={handleCreate}
             disabled={isPending || !name}
@@ -84,9 +84,9 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="auto-grid grid-min-240 grid-gap-4">
         {catalogs.length === 0 ? (
-          <div className="md:col-span-2 lg:col-span-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-10 text-center text-foreground-secondary">
+          <div className="col-span-full rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-10 text-center text-foreground-secondary">
             No catalogs yet. Create your first product catalog to start tracking SKUs.
           </div>
         ) : (
