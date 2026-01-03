@@ -43,7 +43,7 @@ export default async function OrderPagesPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="auto-grid grid-min-240 grid-gap-4">
           {orderPages.map((page) => (
             <Link
               key={page.id}
@@ -76,7 +76,7 @@ export default async function OrderPagesPage() {
                 </span>
               </div>
 
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div className="mt-4 auto-grid grid-gap-2 [--grid-min:140px] text-center">
                 <div className="rounded-lg bg-[var(--background)] p-2">
                   <p className="text-lg font-semibold text-foreground">{page.bundleCount}</p>
                   <p className="text-xs text-foreground-muted">Bundles</p>
