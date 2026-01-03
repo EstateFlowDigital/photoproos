@@ -1,57 +1,132 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
+import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 
 export default async function OnboardingPage() {
-  const { userId, orgId } = await auth();
+  const { userId: clerkUserId, orgId } = await auth();
 
-  if (!userId) {
+  if (!clerkUserId) {
     redirect("/sign-in");
   }
 
-  // Get organization and its onboarding progress
-  let organization = null;
-  let onboardingProgress = null;
-  let user = null;
+  const clerkUser = await currentUser();
+  if (!clerkUser) {
+    redirect("/sign-in");
+  }
 
+  // Ensure user exists and load memberships
+  const user = await prisma.user.upsert({
+    where: { clerkUserId },
+    update: {
+      email: clerkUser.emailAddresses[0]?.emailAddress || "",
+      fullName: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || null,
+      avatarUrl: clerkUser.imageUrl || null,
+    },
+    create: {
+      clerkUserId,
+      email: clerkUser.emailAddresses[0]?.emailAddress || "",
+      fullName: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || null,
+      avatarUrl: clerkUser.imageUrl || null,
+    },
+    include: {
+      memberships: {
+        include: {
+          organization: {
+            include: {
+              onboardingProgress: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Resolve organization (prefer Clerk org when present)
+  let organization = null;
   if (orgId) {
     organization = await prisma.organization.findFirst({
       where: { clerkOrganizationId: orgId },
-      include: {
-        onboardingProgress: true,
-      },
+      include: { onboardingProgress: true },
     });
+  }
 
-    if (organization) {
-      onboardingProgress = organization.onboardingProgress;
+  if (!organization) {
+    if (user.memberships.length === 0) {
+      const defaultModules = getDefaultModulesForIndustries(["real_estate"]);
+      organization = await prisma.organization.create({
+        data: {
+          name: clerkUser.firstName ? `${clerkUser.firstName}'s Studio` : "My Studio",
+          slug: `studio-${user.id.slice(0, 8)}`,
+          industries: ["real_estate"],
+          primaryIndustry: "real_estate",
+          enabledModules: defaultModules,
+          clerkOrganizationId: orgId || null,
+        },
+        include: { onboardingProgress: true },
+      });
 
-      // If onboarding is already completed, redirect to dashboard
-      if (organization.onboardingCompleted) {
-        redirect("/");
-      }
+      await prisma.organizationMember.create({
+        data: {
+          organizationId: organization.id,
+          userId: user.id,
+          role: "owner",
+        },
+      });
+
+      await prisma.onboardingProgress.create({
+        data: {
+          organizationId: organization.id,
+          currentStep: 1,
+        },
+      });
+    } else {
+      organization = user.memberships[0].organization;
     }
   }
 
-  // Get user info
-  user = await prisma.user.findUnique({
-    where: { clerkUserId: userId },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      firstName: true,
-      lastName: true,
-      avatarUrl: true,
-      phone: true,
-    },
-  });
+  if (orgId && organization && !organization.clerkOrganizationId) {
+    organization = await prisma.organization.update({
+      where: { id: organization.id },
+      data: { clerkOrganizationId: orgId },
+      include: { onboardingProgress: true },
+    });
+  }
+
+  if (organization && !organization.onboardingProgress) {
+    organization = await prisma.organization.update({
+      where: { id: organization.id },
+      data: {
+        onboardingProgress: {
+          create: { currentStep: 1 },
+        },
+      },
+      include: { onboardingProgress: true },
+    });
+  }
+
+  // If onboarding is already completed, redirect to dashboard
+  if (organization?.onboardingCompleted) {
+    redirect("/dashboard");
+  }
+
+  const onboardingProgress = organization?.onboardingProgress ?? null;
+  const userInfo = {
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    avatarUrl: user.avatarUrl,
+    phone: user.phone,
+  };
 
   return (
     <OnboardingWizard
       organization={organization}
       onboardingProgress={onboardingProgress}
-      user={user}
+      user={userInfo}
     />
   );
 }
