@@ -167,7 +167,7 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
     <>
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setFilter("all")}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
@@ -214,7 +214,7 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
       {/* Batch Action Toolbar */}
       {selectedIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-          <div className="flex items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-lg">
+          <div className="flex w-[calc(100vw-2rem)] max-w-[900px] flex-wrap items-center justify-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-lg">
             <span className="text-sm font-medium text-foreground">
               {selectedIds.size} selected
             </span>
