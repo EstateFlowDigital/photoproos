@@ -507,7 +507,7 @@ function TimeOffRequestModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="auto-grid grid-min-200 grid-gap-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">
                 Start Date
