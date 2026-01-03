@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { DeleteConfirmationModal } from "@/components/modals/delete-confirmation-modal";
-import { deleteClient } from "@/lib/actions/clients";
+import { deleteClient, impersonateClientPortal } from "@/lib/actions/clients";
 import { createTaskFromClient } from "@/lib/actions/projects";
 
 interface ClientActionsProps {
@@ -23,6 +23,7 @@ export function ClientActions({
   const { showToast } = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isAddingToProject, setIsAddingToProject] = useState(false);
+  const [isImpersonating, setIsImpersonating] = useState(false);
 
   const handleAddToProject = async () => {
     setIsAddingToProject(true);
@@ -54,6 +55,26 @@ export function ClientActions({
     }
   };
 
+  const handleImpersonate = async () => {
+    setIsImpersonating(true);
+    try {
+      const result = await impersonateClientPortal(clientId);
+      if (result.success) {
+        const portalUrl = result.data.portalUrl || "/portal";
+        const newWindow = window.open(portalUrl, "_blank", "noopener,noreferrer");
+        if (!newWindow) {
+          window.location.href = portalUrl;
+        }
+      } else {
+        showToast(result.error || "Unable to open client portal", "error");
+      }
+    } catch {
+      showToast("Unable to open client portal", "error");
+    } finally {
+      setIsImpersonating(false);
+    }
+  };
+
   return (
     <>
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
@@ -66,6 +87,15 @@ export function ClientActions({
             <EmailIcon className="h-4 w-4 text-foreground-muted" />
             Send Email
           </a>
+          <button
+            type="button"
+            onClick={handleImpersonate}
+            disabled={isImpersonating}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+          >
+            <ImpersonateIcon className="h-4 w-4 text-foreground-muted" />
+            {isImpersonating ? "Opening Portal..." : "View Client Portal"}
+          </button>
           <Link
             href={`/galleries/new?client=${clientId}`}
             className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -181,6 +211,15 @@ function InvoiceIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ImpersonateIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 10.75a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5Z" />
+      <path fillRule="evenodd" d="M2 10a8 8 0 1 1 16 0 8 8 0 0 1-16 0Zm8-6.5a5.5 5.5 0 0 0-4.313 9.02c.04.04.083.079.125.118A6.48 6.48 0 0 0 10 14.5a6.48 6.48 0 0 0 4.188-1.862c.043-.04.085-.078.125-.118A5.5 5.5 0 0 0 10 3.5Z" clipRule="evenodd" />
     </svg>
   );
 }

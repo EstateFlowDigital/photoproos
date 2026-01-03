@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
 import type { ClientIndustry } from "@prisma/client";
-import { requireAuth, requireOrganizationId } from "./auth-helper";
+import { requireAdmin, requireAuth, requireOrganizationId } from "./auth-helper";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -14,6 +16,9 @@ type ActionResult<T = void> =
 async function getOrganizationId(): Promise<string> {
   return requireOrganizationId();
 }
+
+const CLIENT_SESSION_COOKIE = "client_session";
+const IMPERSONATION_SESSION_HOURS = 2;
 
 // Helper to log activity
 async function logActivity(
@@ -295,6 +300,143 @@ export async function updateClient(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to update client" };
+  }
+}
+
+/**
+ * Create a client portal session for admin impersonation.
+ */
+export async function impersonateClientPortal(
+  clientId: string
+): Promise<ActionResult<{ portalUrl: string }>> {
+  try {
+    const auth = await requireAdmin();
+
+    const client = await prisma.client.findFirst({
+      where: {
+        id: clientId,
+        organizationId: auth.organizationId,
+      },
+      select: { id: true },
+    });
+
+    if (!client) {
+      return { success: false, error: "Client not found" };
+    }
+
+    const token = randomBytes(32).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + IMPERSONATION_SESSION_HOURS);
+
+    await prisma.clientSession.create({
+      data: {
+        clientId: client.id,
+        token,
+        expiresAt,
+      },
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set(CLIENT_SESSION_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      expires: expiresAt,
+      path: "/",
+    });
+
+    return { success: true, data: { portalUrl: "/portal" } };
+  } catch (error) {
+    console.error("Error impersonating client portal:", error);
+    return { success: false, error: "Failed to start client portal session" };
+  }
+}
+
+/**
+ * Update client email/communication preferences
+ */
+export interface UpdateClientPreferencesInput {
+  clientId: string;
+  emailOptIn?: boolean;
+  smsOptIn?: boolean;
+  questionnaireEmailsOptIn?: boolean;
+  marketingEmailsOptIn?: boolean;
+}
+
+export async function updateClientEmailPreferences(
+  input: UpdateClientPreferencesInput
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify client exists and belongs to organization
+    const existing = await prisma.client.findFirst({
+      where: {
+        id: input.clientId,
+        organizationId,
+      },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Client not found" };
+    }
+
+    const client = await prisma.client.update({
+      where: { id: input.clientId },
+      data: {
+        ...(input.emailOptIn !== undefined && { emailOptIn: input.emailOptIn }),
+        ...(input.smsOptIn !== undefined && { smsOptIn: input.smsOptIn }),
+        ...(input.questionnaireEmailsOptIn !== undefined && {
+          questionnaireEmailsOptIn: input.questionnaireEmailsOptIn,
+        }),
+        ...(input.marketingEmailsOptIn !== undefined && {
+          marketingEmailsOptIn: input.marketingEmailsOptIn,
+        }),
+      },
+    });
+
+    revalidatePath("/clients");
+    revalidatePath(`/clients/${input.clientId}`);
+
+    return { success: true, data: { id: client.id } };
+  } catch (error) {
+    console.error("Error updating client preferences:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update preferences" };
+  }
+}
+
+/**
+ * Get client email preferences
+ */
+export async function getClientEmailPreferences(clientId: string) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const client = await prisma.client.findFirst({
+      where: {
+        id: clientId,
+        organizationId,
+      },
+      select: {
+        id: true,
+        emailOptIn: true,
+        smsOptIn: true,
+        questionnaireEmailsOptIn: true,
+        marketingEmailsOptIn: true,
+      },
+    });
+
+    if (!client) {
+      return null;
+    }
+
+    return client;
+  } catch (error) {
+    console.error("Error fetching client preferences:", error);
+    return null;
   }
 }
 
