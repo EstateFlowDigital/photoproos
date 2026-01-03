@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PhotoProOSLogo } from "@/components/ui/photoproos-logo";
@@ -132,11 +133,13 @@ const resourceItems: DropdownItem[] = [
 ];
 
 export function Navbar({ className }: NavbarProps) {
+  const { isSignedIn, isLoaded } = useUser();
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const homeHref = isLoaded && isSignedIn ? "/dashboard" : "/";
 
   // Handle scroll for navbar blur effect
   React.useEffect(() => {
@@ -264,7 +267,7 @@ export function Navbar({ className }: NavbarProps) {
       {/* Logo */}
       <div className="mr-2">
         <Link
-          href="/"
+          href={homeHref}
           className="flex items-center"
           aria-label="PhotoProOS home"
         >

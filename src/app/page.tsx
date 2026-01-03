@@ -1,3 +1,5 @@
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { HeroSection } from "@/components/sections/hero";
@@ -21,7 +23,12 @@ import { ExitIntentPopup } from "@/components/ui/exit-intent-popup";
 import { SocialProofToast } from "@/components/ui/social-proof-toast";
 import { ChatWidget } from "@/components/ui/chat-widget";
 
-export default function Home() {
+export default async function Home() {
+  const { userId } = await auth();
+  if (userId) {
+    redirect("/dashboard");
+  }
+
   return (
     <main id="main-content" className="relative min-h-screen overflow-hidden bg-background">
       {/* Scroll Progress Indicator */}
