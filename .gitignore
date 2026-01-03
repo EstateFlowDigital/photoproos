@@ -46,5 +46,16 @@ coverage
 # Misc
 *.log
 
+# Incomplete features (synced by Dropbox - exclude from build)
+src/app/(field)
+src/lib/actions/field-operations.ts
+src/app/track
+src/app/(dashboard)/settings/slack
+src/lib/integrations/slack.ts
+src/lib/actions/slack.ts
+src/app/api/integrations/slack
+src/app/schedule
+src/lib/actions/self-booking.ts
+
 # clerk configuration (can include secrets)
 /.clerk/
