@@ -572,7 +572,7 @@ export function AvailabilityPageClient({
                   </select>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="auto-grid grid-min-200 grid-gap-4">
                   <div>
                     <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
                       Start Date
