@@ -459,7 +459,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
                 onDrop={(e) => handleDrop(e, column.id)}
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+                <div className="flex flex-col gap-2 border-b border-[var(--card-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
                     <div
                       className="h-3 w-3 rounded-full"
@@ -576,7 +576,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
                       </div>
 
                       {/* Footer */}
-                      <div className="mt-3 flex items-center justify-between text-xs text-foreground-muted">
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-foreground-muted">
                         <div className="flex items-center gap-3">
                           {task._count.subtasks > 0 && (
                             <span className="flex items-center gap-1">
@@ -838,7 +838,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
                             isSelected && "ring-2 ring-[var(--primary)]/40"
                           )}
                         >
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap items-center justify-between gap-1">
                             <span
                               className={cn(
                                 "text-sm font-medium",
@@ -985,7 +985,7 @@ function TaskDetailModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="relative max-h-[80vh] w-full max-w-2xl overflow-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-[var(--card-border)] p-6">
+        <div className="flex flex-col gap-3 border-b border-[var(--card-border)] p-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <PriorityBadge priority={task.priority} />
@@ -994,7 +994,7 @@ function TaskDetailModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
+            className="self-end rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground sm:self-auto"
           >
             <XIcon className="h-5 w-5" />
           </button>
@@ -1134,7 +1134,7 @@ function TaskDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-[var(--card-border)] p-4">
+        <div className="flex flex-col gap-2 border-t border-[var(--card-border)] p-4 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={onDelete}
             className="rounded-lg px-3 py-2 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/10"

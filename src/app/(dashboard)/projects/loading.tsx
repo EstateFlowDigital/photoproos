@@ -3,12 +3,12 @@ export default function ProjectsLoading() {
     <div className="flex h-full flex-col">
       {/* Header Skeleton */}
       <div className="border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="h-6 w-32 animate-pulse rounded bg-[var(--background-hover)]" />
             <div className="mt-2 h-4 w-48 animate-pulse rounded bg-[var(--background-hover)]" />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="h-9 w-32 animate-pulse rounded-lg bg-[var(--background-hover)]" />
             <div className="h-9 w-36 animate-pulse rounded-lg bg-[var(--background-hover)]" />
           </div>
@@ -25,7 +25,7 @@ export default function ProjectsLoading() {
               className="w-80 flex-shrink-0 rounded-xl border border-[var(--card-border)] bg-[var(--background-secondary)]"
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+              <div className="flex flex-col gap-2 border-b border-[var(--card-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 animate-pulse rounded-full bg-[var(--background-hover)]" />
                   <div className="h-4 w-20 animate-pulse rounded bg-[var(--background-hover)]" />
@@ -45,7 +45,7 @@ export default function ProjectsLoading() {
                     </div>
                     <div className="h-4 w-full animate-pulse rounded bg-[var(--background-hover)]" />
                     <div className="mt-1 h-4 w-3/4 animate-pulse rounded bg-[var(--background-hover)]" />
-                    <div className="mt-3 flex items-center justify-between">
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-3">
                         <div className="h-4 w-8 animate-pulse rounded bg-[var(--background-hover)]" />
                         <div className="h-4 w-8 animate-pulse rounded bg-[var(--background-hover)]" />
