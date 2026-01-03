@@ -56,6 +56,11 @@ src/lib/actions/slack.ts
 src/app/api/integrations/slack
 src/app/schedule
 src/lib/actions/self-booking.ts
+src/lib/actions/territories.ts
+src/lib/actions/referrals.ts
+src/lib/auth.ts
+src/app/(dashboard)/settings/territories
+src/app/(dashboard)/settings/referrals
 
 # clerk configuration (can include secrets)
 /.clerk/
