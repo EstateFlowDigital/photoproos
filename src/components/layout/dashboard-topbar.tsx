@@ -302,13 +302,13 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   return (
     <div
       className={cn(
-        "flex h-16 items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-4 lg:px-6",
+        "flex flex-wrap items-center justify-between gap-3 border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0 lg:px-6",
         className
       )}
     >
       {/* Left side - Search */}
-      <div className="flex flex-1 items-center gap-4">
-        <div ref={searchRef} className="relative max-w-md flex-1 hidden sm:block">
+      <div className="order-2 flex w-full flex-1 items-center gap-4 sm:order-1 sm:w-auto">
+        <div ref={searchRef} className="relative w-full max-w-none flex-1 sm:max-w-md">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted pointer-events-none z-10" />
           <input
             ref={searchInputRef}
@@ -368,7 +368,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
       </div>
 
       {/* Right side - Actions */}
-      <div className="flex items-center gap-2">
+      <div className="order-1 flex items-center gap-2 sm:order-2">
         {/* Quick create button */}
         <Link
           href="/create"

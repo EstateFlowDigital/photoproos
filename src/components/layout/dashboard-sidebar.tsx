@@ -81,7 +81,7 @@ export function DashboardSidebar({
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 space-y-2 px-4 pb-6 pt-4">
+      <nav className="flex-1 min-h-0 space-y-2 overflow-y-auto px-4 pb-6 pt-4">
         {sidebarNav.map((item) => {
           const isActive = pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
           const IconComponent = item.icon;

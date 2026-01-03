@@ -64,7 +64,7 @@ export function DashboardLayoutClient({
       />
 
       {/* Main content area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* Topbar with mobile menu button */}
         <header className="flex h-16 items-center border-b border-[var(--card-border)] bg-[var(--card)] px-4 lg:px-6">
           {/* Mobile menu button */}
@@ -77,7 +77,7 @@ export function DashboardLayoutClient({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-[var(--background)] p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-h-0 overflow-y-auto bg-[var(--background)] p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>
