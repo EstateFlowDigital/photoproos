@@ -59,6 +59,11 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
       include: {
         client: { select: { fullName: true, company: true } },
         _count: { select: { assets: true } },
+        assets: {
+          take: 1,
+          orderBy: { createdAt: "desc" },
+          select: { thumbnailUrl: true, originalUrl: true },
+        },
         services: {
           include: {
             service: {
@@ -97,7 +102,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
     photos: gallery._count.assets,
     status: gallery.status as "delivered" | "pending" | "draft" | "archived",
     revenue: gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : undefined,
-    thumbnailUrl: gallery.coverImageUrl || undefined,
+    thumbnailUrl: gallery.coverImageUrl || gallery.assets[0]?.thumbnailUrl || gallery.assets[0]?.originalUrl || undefined,
     createdAt: gallery.createdAt.toISOString(),
     views: gallery.viewCount,
     downloads: gallery.downloadCount,

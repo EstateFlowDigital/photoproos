@@ -233,6 +233,11 @@ export default async function DashboardPage() {
       include: {
         client: { select: { fullName: true, company: true } },
         _count: { select: { assets: true } },
+        assets: {
+          take: 1,
+          orderBy: { createdAt: "desc" },
+          select: { thumbnailUrl: true, originalUrl: true },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: 4,
@@ -453,7 +458,12 @@ export default async function DashboardPage() {
                 photos={gallery._count.assets}
                 status={gallery.status as "delivered" | "pending" | "draft"}
                 revenue={gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : undefined}
-                thumbnailUrl={gallery.coverImageUrl || undefined}
+                thumbnailUrl={
+                  gallery.coverImageUrl ||
+                  gallery.assets[0]?.thumbnailUrl ||
+                  gallery.assets[0]?.originalUrl ||
+                  undefined
+                }
               />
             ))}
           </div>
