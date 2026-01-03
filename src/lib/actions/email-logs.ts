@@ -448,11 +448,41 @@ export async function resendEmail(logId: string) {
       return { success: false, error: "Can only resend failed or bounced emails" };
     }
 
+    // Fetch additional related data based on email type
+    const project = emailLog.galleryId
+      ? await prisma.project.findUnique({
+          where: { id: emailLog.galleryId },
+          include: { client: true },
+        })
+      : null;
+    const booking = emailLog.bookingId
+      ? await prisma.booking.findUnique({
+          where: { id: emailLog.bookingId },
+          include: { client: true, service: true },
+        })
+      : null;
+    const contract = emailLog.contractId
+      ? await prisma.contract.findUnique({
+          where: { id: emailLog.contractId },
+          include: { client: true, signers: true },
+        })
+      : null;
+    const order = emailLog.invoiceId
+      ? await prisma.order.findUnique({
+          where: { id: emailLog.invoiceId },
+          include: { items: true },
+        })
+      : null;
+
     // Import send functions dynamically to avoid circular dependency
     const {
       sendQuestionnaireAssignedEmail,
       sendQuestionnaireReminderEmail,
       sendQuestionnaireCompletedEmail,
+      sendGalleryDeliveredEmail,
+      sendBookingConfirmationEmail,
+      sendOrderConfirmationEmail,
+      sendContractSigningEmail,
     } = await import("@/lib/email/send");
 
     let result: { success: boolean; resendId?: string; error?: string };
@@ -540,6 +570,114 @@ export async function resendEmail(logId: string) {
           completedAt: emailLog.questionnaire.completedAt || new Date(),
         });
         break;
+      }
+
+      case "gallery_delivered": {
+        if (!project) {
+          return { success: false, error: "Gallery not found for this email" };
+        }
+
+        const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/gallery/${project.id}`;
+
+        result = await sendGalleryDeliveredEmail({
+          to: emailLog.toEmail,
+          clientName: emailLog.toName || project.client?.fullName || "there",
+          galleryName: project.name,
+          galleryUrl,
+          photographerName: emailLog.organization.name,
+          expiresAt: project.expiresAt || undefined,
+        });
+        break;
+      }
+
+      case "booking_confirmation": {
+        if (!booking) {
+          return { success: false, error: "Booking not found for this email" };
+        }
+
+        // Format time string from start/end times
+        const startTimeDate = new Date(booking.startTime);
+        const endTimeDate = new Date(booking.endTime);
+        const timeFormatter = new Intl.DateTimeFormat("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+        const bookingTimeStr = `${timeFormatter.format(startTimeDate)} - ${timeFormatter.format(endTimeDate)}`;
+
+        result = await sendBookingConfirmationEmail({
+          to: emailLog.toEmail,
+          clientName: emailLog.toName || booking.client?.fullName || "there",
+          bookingTitle: booking.title,
+          bookingDate: booking.startTime,
+          bookingTime: bookingTimeStr,
+          location: booking.location || undefined,
+          photographerName: emailLog.organization.name,
+          notes: booking.notes || undefined,
+        });
+        break;
+      }
+
+      case "order_confirmation": {
+        if (!order || !order.items || order.items.length === 0) {
+          return {
+            success: false,
+            error: "Order details not found. Cannot resend order confirmation without item details.",
+          };
+        }
+
+        // Map order items to the expected format
+        const orderItems = order.items.map((item) => ({
+          name: item.name,
+          itemType: item.itemType as "service" | "bundle",
+          quantity: item.quantity,
+          totalCents: item.totalCents,
+        }));
+
+        result = await sendOrderConfirmationEmail({
+          to: emailLog.toEmail,
+          clientName: emailLog.toName || order.clientName || "there",
+          orderNumber: order.orderNumber,
+          items: orderItems,
+          subtotalCents: order.subtotalCents,
+          taxCents: order.taxCents || 0,
+          totalCents: order.totalCents,
+          photographerName: emailLog.organization.name,
+          clientNotes: order.clientNotes || undefined,
+        });
+        break;
+      }
+
+      case "contract_signing": {
+        if (!contract) {
+          return { success: false, error: "Contract not found for this email" };
+        }
+
+        // Find the signer for this email
+        const contractSigner = contract.signers.find((s) => s.email === emailLog.toEmail);
+        if (!contractSigner) {
+          return { success: false, error: "Signer not found for this contract" };
+        }
+
+        const signingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/sign/${contractSigner.signingToken}`;
+
+        result = await sendContractSigningEmail({
+          to: emailLog.toEmail,
+          signerName: contractSigner.name || emailLog.toName || "there",
+          contractName: contract.name,
+          signingUrl,
+          photographerName: emailLog.organization.name,
+          expiresAt: contract.expiresAt || undefined,
+        });
+        break;
+      }
+
+      case "payment_receipt": {
+        // Payment receipts need invoice/payment data which isn't stored for security
+        return {
+          success: false,
+          error: "Payment receipts cannot be resent. The original payment data is not stored for security reasons.",
+        };
       }
 
       default:

@@ -70,19 +70,19 @@ export default async function ProfileSettingsPage() {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Account Status</h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Plan</span>
                 <span className="inline-flex items-center rounded-full bg-[var(--primary)]/10 px-2.5 py-1 text-xs font-medium text-[var(--primary)]">
                   {planLabels[billingStats?.plan || "free"]}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Role</span>
                 <span className="inline-flex items-center rounded-full bg-[var(--success)]/10 px-2.5 py-1 text-xs font-medium text-[var(--success)] capitalize">
                   {role}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Member Since</span>
                 <span className="text-sm font-medium text-foreground">
                   {formatDate(billingStats?.memberSince)}

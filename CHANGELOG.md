@@ -43,6 +43,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Search functionality to filter territories
   - Responsive table layout with all territory details
 
+- **Email Log Resend** (Extended Support)
+  - Resend failed/bounced emails for more email types
+  - **Gallery Delivered**: Resend gallery delivery emails with public URL
+  - **Booking Confirmation**: Resend booking confirmations with formatted date/time
+  - **Order Confirmation**: Resend order emails with full item details
+  - **Contract Signing**: Resend signing invitations with active signing token
+  - Proper error handling for missing related data
+  - Status update and activity tracking for resent emails
+
+- **Profile Photo Upload**
+  - Upload profile photos to Cloudflare R2 storage
+  - New `/api/upload/profile-photo` API endpoint for presigned URLs
+  - File type validation (JPG, PNG, WebP only)
+  - 5MB file size limit for profile photos
+  - Real-time preview of uploaded photo
+  - Loading state during upload
+  - Displays actual photo instead of initials when available
+
+- **Invoice History Display**
+  - Real-time invoice data from Stripe API
+  - Invoice table with number, date, amount, status, and actions
+  - Status badges (Paid, Open, Draft, Void, Uncollectible)
+  - Direct links to view invoice on Stripe
+  - PDF download links
+  - Graceful empty state for users without invoices
+  - New `getInvoiceHistory()` server action
+
 - **Subscription Plans Management** (Developer Tools)
   - New subscription plan management system for application pricing tiers (Pro, Studio, Enterprise)
   - Complete CRUD operations for subscription plans with Stripe integration

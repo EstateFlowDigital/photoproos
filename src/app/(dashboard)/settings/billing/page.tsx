@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { getBillingStats } from "@/lib/actions/settings";
+import { getBillingStats, getInvoiceHistory } from "@/lib/actions/settings";
 
 const plans = [
   {
@@ -27,7 +27,10 @@ const plans = [
 ];
 
 export default async function BillingSettingsPage() {
-  const billingStats = await getBillingStats();
+  const [billingStats, invoiceData] = await Promise.all([
+    getBillingStats(),
+    getInvoiceHistory(10),
+  ]);
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -70,7 +73,7 @@ export default async function BillingSettingsPage() {
       <div className="space-y-6">
         {/* Current Plan */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold text-foreground">Current Plan</h2>
@@ -185,7 +188,7 @@ export default async function BillingSettingsPage() {
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Payment Method</h2>
           {billingStats?.stripeCustomerId ? (
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-16 items-center justify-center rounded-lg bg-[var(--background)]">
                   <CreditCardIcon className="h-8 w-8 text-foreground-muted" />
@@ -210,16 +213,75 @@ export default async function BillingSettingsPage() {
           )}
         </div>
 
-        {/* Invoice History - Coming Soon */}
+        {/* Invoice History */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Invoice History</h2>
-          <div className="rounded-lg border-2 border-dashed border-[var(--card-border)] p-8 text-center">
-            <ReceiptIcon className="mx-auto h-8 w-8 text-foreground-muted" />
-            <p className="mt-2 text-sm text-foreground">No invoices yet</p>
-            <p className="mt-1 text-xs text-foreground-muted">
-              Invoices will appear here when you have a paid subscription
-            </p>
-          </div>
+          {invoiceData.invoices.length > 0 ? (
+            <div className="overflow-x-auto rounded-lg border border-[var(--card-border)]">
+              <table className="w-full min-w-[640px]">
+                <thead className="border-b border-[var(--card-border)] bg-[var(--background)]">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">Invoice</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">Status</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--card-border)]">
+                  {invoiceData.invoices.map((invoice) => (
+                    <tr key={invoice.id} className="hover:bg-[var(--background-hover)]">
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium text-foreground">{invoice.number}</p>
+                        <p className="text-xs text-foreground-muted truncate max-w-[200px]">{invoice.description}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-foreground">
+                        {invoice.created.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">
+                        {formatCurrency(invoice.amount)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <InvoiceStatusBadge status={invoice.status} />
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {invoice.hostedInvoiceUrl && (
+                            <a
+                              href={invoice.hostedInvoiceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-[var(--primary)] hover:underline"
+                            >
+                              View
+                            </a>
+                          )}
+                          {invoice.invoicePdf && (
+                            <a
+                              href={invoice.invoicePdf}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-foreground-muted hover:text-foreground"
+                            >
+                              PDF
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="rounded-lg border-2 border-dashed border-[var(--card-border)] p-8 text-center">
+              <ReceiptIcon className="mx-auto h-8 w-8 text-foreground-muted" />
+              <p className="mt-2 text-sm text-foreground">No invoices yet</p>
+              <p className="mt-1 text-xs text-foreground-muted">
+                Invoices will appear here when you have a paid subscription
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -281,5 +343,23 @@ function ReceiptIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 15.5 2h-11ZM6 5.75a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 6 5.75Zm.75 2.25a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5ZM6 11.75a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
     </svg>
+  );
+}
+
+function InvoiceStatusBadge({ status }: { status: string | null }) {
+  const statusConfig: Record<string, { label: string; className: string }> = {
+    paid: { label: "Paid", className: "bg-[var(--success)]/10 text-[var(--success)]" },
+    open: { label: "Open", className: "bg-[var(--warning)]/10 text-[var(--warning)]" },
+    draft: { label: "Draft", className: "bg-foreground-muted/10 text-foreground-muted" },
+    void: { label: "Void", className: "bg-foreground-muted/10 text-foreground-muted" },
+    uncollectible: { label: "Uncollectible", className: "bg-[var(--error)]/10 text-[var(--error)]" },
+  };
+
+  const config = statusConfig[status || "draft"] || { label: status || "Unknown", className: "bg-foreground-muted/10 text-foreground-muted" };
+
+  return (
+    <span className={cn("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", config.className)}>
+      {config.label}
+    </span>
   );
 }

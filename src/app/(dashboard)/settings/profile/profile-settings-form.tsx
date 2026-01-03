@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
+import Image from "next/image";
 import { updateUserProfile, updateOrganizationProfile } from "@/lib/actions/settings";
 import { useToast } from "@/components/ui/toast";
 import { TIMEZONE_GROUPS } from "@/lib/constants/timezones";
@@ -30,9 +31,84 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
   const [phone, setPhone] = useState(user.phone);
   const [businessName, setBusinessName] = useState(organization.name);
   const [timezone, setTimezone] = useState(organization.timezone);
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUploadPhoto = () => {
-    showToast("Photo upload is coming soon. This feature will allow you to upload a profile photo.", "info");
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      showToast("Please upload a JPG, PNG, or WebP image.", "error");
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("Image must be less than 5MB.", "error");
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    setError(null);
+
+    try {
+      // Step 1: Get presigned URL
+      const urlResponse = await fetch("/api/upload/profile-photo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type,
+          size: file.size,
+        }),
+      });
+
+      const urlResult = await urlResponse.json();
+      if (!urlResult.success) {
+        throw new Error(urlResult.error || "Failed to get upload URL");
+      }
+
+      // Step 2: Upload to R2
+      const uploadResponse = await fetch(urlResult.data.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      // Step 3: Save the public URL to user profile
+      const updateResult = await updateUserProfile({
+        avatarUrl: urlResult.data.publicUrl,
+      });
+
+      if (!updateResult.success) {
+        throw new Error(updateResult.error || "Failed to save profile photo");
+      }
+
+      // Update local state
+      setAvatarUrl(urlResult.data.publicUrl);
+      showToast("Profile photo updated successfully!", "success");
+    } catch (err) {
+      console.error("Upload error:", err);
+      showToast(err instanceof Error ? err.message : "Failed to upload photo", "error");
+    } finally {
+      setIsUploadingPhoto(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const handleChangePassword = () => {
@@ -84,16 +160,42 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Profile Photo</h2>
         <div className="flex items-center gap-6">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-2xl font-bold">
-            {(fullName || user.email).charAt(0).toUpperCase()}
-          </div>
+          {avatarUrl ? (
+            <div className="relative h-20 w-20 overflow-hidden rounded-full">
+              <Image
+                src={avatarUrl}
+                alt="Profile photo"
+                fill
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-2xl font-bold">
+              {(fullName || user.email).charAt(0).toUpperCase()}
+            </div>
+          )}
           <div className="space-y-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleFileChange}
+              className="hidden"
+            />
             <button
               type="button"
               onClick={handleUploadPhoto}
-              className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              disabled={isUploadingPhoto}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Upload Photo
+              {isUploadingPhoto ? (
+                <>
+                  <LoadingSpinner className="h-4 w-4" />
+                  Uploading...
+                </>
+              ) : (
+                avatarUrl ? "Change Photo" : "Upload Photo"
+              )}
             </button>
             <p className="text-xs text-foreground-muted">JPG, PNG or WebP. Max 5MB.</p>
           </div>

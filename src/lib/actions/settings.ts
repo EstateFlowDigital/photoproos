@@ -733,3 +733,52 @@ export async function getBillingStats() {
     return null;
   }
 }
+
+/**
+ * Get invoice history from Stripe
+ */
+export async function getInvoiceHistory(limit: number = 10) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { stripeCustomerId: true },
+    });
+
+    if (!org?.stripeCustomerId) {
+      return { invoices: [], hasMore: false };
+    }
+
+    // Import Stripe dynamically to avoid issues if not configured
+    const { getStripe } = await import("@/lib/stripe");
+    const stripe = getStripe();
+
+    const invoices = await stripe.invoices.list({
+      customer: org.stripeCustomerId,
+      limit: limit + 1, // Fetch one extra to check if there are more
+    });
+
+    const hasMore = invoices.data.length > limit;
+    const invoiceData = invoices.data.slice(0, limit).map((invoice) => ({
+      id: invoice.id,
+      number: invoice.number || "—",
+      amount: invoice.amount_due,
+      currency: invoice.currency,
+      status: invoice.status,
+      created: new Date(invoice.created * 1000),
+      dueDate: invoice.due_date ? new Date(invoice.due_date * 1000) : null,
+      paidAt: invoice.status_transitions?.paid_at
+        ? new Date(invoice.status_transitions.paid_at * 1000)
+        : null,
+      hostedInvoiceUrl: invoice.hosted_invoice_url,
+      invoicePdf: invoice.invoice_pdf,
+      description: invoice.lines.data[0]?.description || "Subscription",
+    }));
+
+    return { invoices: invoiceData, hasMore };
+  } catch (error) {
+    console.error("Error fetching invoice history:", error);
+    return { invoices: [], hasMore: false };
+  }
+}
