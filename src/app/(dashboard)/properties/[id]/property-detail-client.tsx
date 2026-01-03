@@ -246,18 +246,18 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-[var(--card-border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-7xl px-6 py-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-4">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex min-w-0 items-start gap-4">
               <Link
                 href="/properties"
                 className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
               >
                 <ArrowLeftIcon className="h-5 w-5" />
               </Link>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-xl font-bold text-foreground">{website.address}</h1>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-xl font-bold text-foreground break-words">{website.address}</h1>
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       isPublished
@@ -273,7 +273,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 lg:justify-end">
               <Link
                 href={`/properties/${website.id}/edit`}
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -314,7 +314,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
           </div>
 
           {/* Tabs */}
-          <div className="mt-6 flex items-center gap-1 border-t border-[var(--card-border)] pt-4">
+          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-[var(--card-border)] pt-4">
             {(["overview", "photos", "leads", "analytics", "marketing", "settings"] as const).map((tab) => (
               <button
                 key={tab}
@@ -342,7 +342,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <div className="grid gap-8 lg:grid-cols-3">
@@ -351,7 +351,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
               {/* Photo Gallery Preview */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <h2 className="mb-4 font-semibold text-foreground">Photo Gallery</h2>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                   {website.project.assets.slice(0, 8).map((asset, i) => (
                     <div
                       key={asset.id}
@@ -473,39 +473,39 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                 <h2 className="mb-4 font-semibold text-foreground">Property Details</h2>
                 <dl className="space-y-3">
                   {website.price && (
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <dt className="text-foreground-muted">Price</dt>
-                      <dd className="font-medium text-foreground">{formatPrice(website.price)}</dd>
+                      <dd className="font-medium text-foreground sm:text-right">{formatPrice(website.price)}</dd>
                     </div>
                   )}
                   {website.beds && (
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <dt className="text-foreground-muted">Beds</dt>
-                      <dd className="font-medium text-foreground">{website.beds}</dd>
+                      <dd className="font-medium text-foreground sm:text-right">{website.beds}</dd>
                     </div>
                   )}
                   {website.baths && (
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <dt className="text-foreground-muted">Baths</dt>
-                      <dd className="font-medium text-foreground">{website.baths}</dd>
+                      <dd className="font-medium text-foreground sm:text-right">{website.baths}</dd>
                     </div>
                   )}
                   {website.sqft && (
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <dt className="text-foreground-muted">Sq. Ft.</dt>
-                      <dd className="font-medium text-foreground">{website.sqft.toLocaleString()}</dd>
+                      <dd className="font-medium text-foreground sm:text-right">{website.sqft.toLocaleString()}</dd>
                     </div>
                   )}
                   {website.lotSize && (
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <dt className="text-foreground-muted">Lot Size</dt>
-                      <dd className="font-medium text-foreground">{website.lotSize}</dd>
+                      <dd className="font-medium text-foreground sm:text-right">{website.lotSize}</dd>
                     </div>
                   )}
                   {website.yearBuilt && (
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <dt className="text-foreground-muted">Year Built</dt>
-                      <dd className="font-medium text-foreground">{website.yearBuilt}</dd>
+                      <dd className="font-medium text-foreground sm:text-right">{website.yearBuilt}</dd>
                     </div>
                   )}
                 </dl>
@@ -536,7 +536,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
               {/* Share Link */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <h2 className="mb-4 font-semibold text-foreground">Share Link</h2>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <input
                     type="text"
                     value={publicUrl}
@@ -548,7 +548,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                       navigator.clipboard.writeText(publicUrl);
                       showToast("Link copied to clipboard", "success");
                     }}
-                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                    className="flex h-10 w-full items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground sm:w-10 sm:flex-shrink-0"
                   >
                     <CopyIcon className="h-4 w-4" />
                   </button>
@@ -561,7 +561,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         {/* Photos Tab */}
         {activeTab === "photos" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">Photos</h2>
                 <p className="mt-1 text-foreground-secondary">
@@ -635,7 +635,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         {/* Leads Tab */}
         {activeTab === "leads" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-foreground">Leads ({leads.length})</h2>
             </div>
 
@@ -654,7 +654,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                     key={lead.id}
                     className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="flex items-start gap-4">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
                           {lead.name.charAt(0)}
@@ -676,7 +676,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                               {lead.status}
                             </span>
                           </div>
-                          <div className="mt-1 flex items-center gap-3 text-sm text-foreground-secondary">
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-foreground-secondary">
                             <span>{lead.email}</span>
                             {lead.phone && (
                               <>
@@ -690,7 +690,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                           )}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
+                      <div className="flex flex-col items-start gap-2 lg:items-end">
                         <p className="text-xs text-foreground-muted">{formatDateTime(lead.createdAt)}</p>
                         <select
                           value={lead.status}
@@ -780,7 +780,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         {/* Marketing Tab */}
         {activeTab === "marketing" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">Marketing Kit</h2>
                 <p className="mt-1 text-foreground-secondary">
@@ -805,7 +805,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                 </div>
 
                 <div className="mt-6 space-y-4">
-                  <div className="flex items-center justify-between rounded-lg bg-[var(--background-tertiary)] p-3">
+                  <div className="flex flex-col gap-3 rounded-lg bg-[var(--background-tertiary)] p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                       <div className="h-16 w-12 rounded bg-[var(--background-hover)]" />
                       <div>
@@ -816,7 +816,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                     <button
                       onClick={handleGenerateFlyer}
                       disabled={isGeneratingFlyer}
-                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 sm:w-auto"
                     >
                       {isGeneratingFlyer ? (
                         <>
@@ -865,7 +865,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                     </select>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-lg bg-[var(--background-tertiary)] p-3">
+                  <div className="flex flex-col gap-3 rounded-lg bg-[var(--background-tertiary)] p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                       <div className="h-12 w-12 rounded bg-[var(--background-hover)]" />
                       <div>
@@ -876,7 +876,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                     <button
                       onClick={handleGenerateSocial}
                       disabled={isGeneratingSocial}
-                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--ai)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--ai)]/90 disabled:opacity-50"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--ai)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--ai)]/90 disabled:opacity-50 sm:w-auto"
                     >
                       {isGeneratingSocial ? (
                         <>
