@@ -163,14 +163,14 @@ export function PayoutsPageClient({
 
       {/* Pending Payouts */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Ready to Pay</h2>
             <p className="text-sm text-foreground-muted">
               {pendingPayouts.length} photographer{pendingPayouts.length !== 1 ? "s" : ""} with approved earnings
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {pendingPayouts.length > 0 && (
               <>
                 <button
@@ -197,14 +197,14 @@ export function PayoutsPageClient({
               <div
                 key={payout.userId}
                 className={cn(
-                  "flex items-center justify-between rounded-lg border p-4 cursor-pointer transition-colors",
+                  "flex flex-col gap-3 rounded-lg border p-4 cursor-pointer transition-colors sm:flex-row sm:items-center sm:justify-between",
                   selectedPhotographers.includes(payout.userId)
                     ? "border-[var(--primary)] bg-[var(--primary)]/5"
                     : "border-[var(--card-border)] bg-[var(--background)] hover:bg-[var(--background-hover)]"
                 )}
                 onClick={() => togglePhotographer(payout.userId)}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                   <input
                     type="checkbox"
                     checked={selectedPhotographers.includes(payout.userId)}
@@ -226,7 +226,7 @@ export function PayoutsPageClient({
                     <p className="text-sm text-foreground-muted">{payout.userEmail}</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right">
                   <p className="text-lg font-semibold text-[var(--success)]">
                     {formatCurrency(payout.totalAmountCents)}
                   </p>
@@ -319,7 +319,7 @@ export function PayoutsPageClient({
                       </span>
                     </td>
                     <td className="py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         {batch.status === "pending" && (
                           <>
                             <button
@@ -367,7 +367,7 @@ export function PayoutsPageClient({
         <p className="text-sm text-foreground-secondary mb-4">
           Photographers must connect their Stripe account to receive payouts. They can do this from their earnings dashboard.
         </p>
-        <div className="flex items-center gap-4 rounded-lg bg-[var(--background)] p-4">
+        <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:gap-4">
           <StripeIcon className="h-8 w-8 text-[#635bff]" />
           <div>
             <p className="text-sm font-medium text-foreground">Payments powered by Stripe Connect</p>
