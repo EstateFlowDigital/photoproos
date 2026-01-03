@@ -212,7 +212,7 @@ export function ProjectsTab({
       )}
 
       {/* Save Button */}
-      <div className="flex items-center justify-between border-t border-[var(--card-border)] pt-6">
+      <div className="flex flex-col gap-3 border-t border-[var(--card-border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-foreground-muted">
           {hasChanges ? "You have unsaved changes" : "All changes saved"}
         </p>

@@ -69,7 +69,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-foreground">Analytics</h3>
           <p className="text-sm text-foreground-muted">
@@ -167,7 +167,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
                     );
                   })}
                 </div>
-                <div className="mt-2 flex justify-between text-xs text-foreground-muted">
+                <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-foreground-muted">
                   <span>{formatDate(analytics.viewsByDate[0]?.date || "")}</span>
                   <span>
                     {formatDate(
@@ -195,7 +195,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
                   {analytics.topReferrers.slice(0, 5).map((referrer) => (
                     <div
                       key={referrer.referrer}
-                      className="flex items-center justify-between"
+                    className="flex flex-wrap items-center justify-between gap-2"
                     >
                       <span className="truncate text-sm text-foreground">
                         {referrer.referrer}
@@ -223,7 +223,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
                   {analytics.recentViews.slice(0, 5).map((view) => (
                     <div
                       key={view.id}
-                      className="flex items-center justify-between text-sm"
+                    className="flex flex-wrap items-center justify-between gap-2 text-sm"
                     >
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-[var(--primary)]" />
@@ -281,7 +281,7 @@ function MetricCard({
 }) {
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-sm text-foreground-muted">{label}</span>
         <span className="text-foreground-muted">{icon}</span>
       </div>

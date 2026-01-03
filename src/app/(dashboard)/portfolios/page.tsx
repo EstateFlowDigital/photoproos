@@ -50,7 +50,7 @@ export default async function PortfolioWebsitesPage() {
               href={`/portfolios/${site.id}`}
               className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 min-w-0">
                   <h3 className="truncate font-medium text-foreground transition-colors group-hover:text-[var(--primary)]">
                     {site.name}

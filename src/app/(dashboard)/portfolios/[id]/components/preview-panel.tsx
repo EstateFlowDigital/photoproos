@@ -50,8 +50,8 @@ export function PreviewPanel({
   return (
     <div className="fixed inset-y-0 right-0 z-40 flex w-[50vw] max-w-[800px] flex-col border-l border-[var(--card-border)] bg-[var(--background)]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-4">
           <h3 className="text-sm font-semibold text-foreground">Live Preview</h3>
 
           {/* Viewport Selector */}
@@ -77,7 +77,7 @@ export function PreviewPanel({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           {/* Refresh Button */}
           <button
             onClick={handleRefresh}

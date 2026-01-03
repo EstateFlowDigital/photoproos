@@ -415,7 +415,7 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={addSocialLink}
             className="inline-flex items-center gap-2 text-sm font-medium text-[var(--primary)] hover:underline"
