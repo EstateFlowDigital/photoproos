@@ -123,15 +123,15 @@ export default async function NewClientPage() {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Stats</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Total Clients</span>
                 <span className="text-sm font-medium text-foreground">{totalClients}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Active This Month</span>
                 <span className="text-sm font-medium text-foreground">{activeThisMonth}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Total Revenue</span>
                 <span className="text-sm font-medium text-[var(--success)]">
                   {formatCurrency(totalRevenue._sum.lifetimeRevenueCents || 0)}
@@ -146,7 +146,7 @@ export default async function NewClientPage() {
               <h2 className="text-lg font-semibold text-foreground mb-4">Client Industries</h2>
               <div className="space-y-3">
                 {industryStats.map((stat) => (
-                  <div key={stat.industry} className="flex items-center justify-between">
+                  <div key={stat.industry} className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-sm text-foreground">
                       {industryLabels[stat.industry] || stat.industry}
                     </span>

@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ClientActions } from "./client-actions";
+import { ClientEmailPreferences } from "./client-email-preferences";
+import { getClientEmailLogs, getClientEmailHealth } from "@/lib/actions/email-logs";
 
 const industryLabels: Record<string, { label: string; color: string }> = {
   real_estate: { label: "Real Estate", color: "bg-blue-500/10 text-blue-400" },
@@ -52,8 +54,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     notFound();
   }
 
-  // Fetch payments, invoices, and communications for this client
-  const [payments, invoices, communications] = await Promise.all([
+  // Fetch payments, invoices, communications, email logs, and email health for this client
+  const [payments, invoices, communications, emailLogsResult, emailHealth] = await Promise.all([
     prisma.payment.findMany({
       where: {
         project: {
@@ -74,7 +76,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
+    getClientEmailLogs(id, { limit: 10 }),
+    getClientEmailHealth(id),
   ]);
+
+  const emailLogs = emailLogsResult.logs || [];
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -166,7 +172,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
           {/* Galleries */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-foreground">Galleries</h2>
               <Link
                 href={`/galleries/new?client=${id}`}
@@ -182,20 +188,20 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   <Link
                     key={gallery.id}
                     href={`/galleries/${gallery.id}`}
-                    className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)]"
+                    className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)] sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
                         <PhotoIcon className="h-5 w-5" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{gallery.name}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{gallery.name}</p>
                         <p className="text-xs text-foreground-muted">
                           {gallery._count.assets} photos • {new Date(gallery.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                       <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", statusStyles[gallery.status as keyof typeof statusStyles])}>
                         {gallery.status.charAt(0).toUpperCase() + gallery.status.slice(1)}
                       </span>
@@ -231,21 +237,21 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 {payments.map((payment) => (
                   <div
                     key={payment.id}
-                    className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
+                    className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
                       <div className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-lg",
                         payment.status === "paid" ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--warning)]/10 text-[var(--warning)]"
                       )}>
                         {payment.status === "paid" ? <CheckIcon className="h-5 w-5" /> : <ClockIcon className="h-5 w-5" />}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{payment.project?.name || payment.description || "Payment"}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{payment.project?.name || payment.description || "Payment"}</p>
                         <p className="text-xs text-foreground-muted">{new Date(payment.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                       <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", statusStyles[payment.status as keyof typeof statusStyles])}>
                         {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                       </span>
@@ -259,6 +265,65 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 <CreditCardIcon className="mx-auto h-10 w-10 text-foreground-muted" />
                 <p className="mt-3 text-sm text-foreground">No payments yet</p>
                 <p className="mt-1 text-xs text-foreground-muted">Payments will appear here when galleries are purchased</p>
+              </div>
+            )}
+          </div>
+
+          {/* Email History */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Email History</h2>
+              <Link
+                href={`/settings/email-logs?clientId=${id}`}
+                className="text-sm font-medium text-[var(--primary)] hover:underline"
+              >
+                View All
+              </Link>
+            </div>
+
+            {emailLogs.length > 0 ? (
+              <div className="space-y-3">
+                {emailLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-lg",
+                        log.status === "delivered" ? "bg-[var(--success)]/10 text-[var(--success)]" :
+                        log.status === "sent" ? "bg-blue-500/10 text-blue-400" :
+                        log.status === "failed" || log.status === "bounced" ? "bg-[var(--error)]/10 text-[var(--error)]" :
+                        "bg-[var(--warning)]/10 text-[var(--warning)]"
+                      )}>
+                        <EmailHistoryIcon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{log.subject || formatEmailType(log.emailType)}</p>
+                        <p className="text-xs text-foreground-muted">
+                          {new Date(log.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                      <span className={cn(
+                        "rounded-full px-2.5 py-1 text-xs font-medium",
+                        log.status === "delivered" ? "bg-[var(--success)]/10 text-[var(--success)]" :
+                        log.status === "sent" ? "bg-blue-500/10 text-blue-400" :
+                        log.status === "failed" || log.status === "bounced" ? "bg-[var(--error)]/10 text-[var(--error)]" :
+                        "bg-[var(--warning)]/10 text-[var(--warning)]"
+                      )}>
+                        {log.status.charAt(0).toUpperCase() + log.status.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-[var(--card-border)] rounded-lg p-8 text-center">
+                <EmailHistoryIcon className="mx-auto h-10 w-10 text-foreground-muted" />
+                <p className="mt-3 text-sm text-foreground">No emails sent yet</p>
+                <p className="mt-1 text-xs text-foreground-muted">Emails to this client will appear here</p>
               </div>
             )}
           </div>
@@ -290,9 +355,20 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
               <div>
                 <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider mb-1">Email</p>
-                <a href={`mailto:${client.email}`} className="text-sm text-[var(--primary)] hover:underline">
-                  {client.email}
-                </a>
+                <div className="flex items-center gap-2">
+                  <a href={`mailto:${client.email}`} className="text-sm text-[var(--primary)] hover:underline">
+                    {client.email}
+                  </a>
+                  {emailHealth.hasIssues && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-[var(--error)]/10 px-2 py-0.5 text-xs font-medium text-[var(--error)]"
+                      title={`${emailHealth.bouncedCount} bounced, ${emailHealth.failedCount} failed in last 30 days`}
+                    >
+                      <EmailWarningIcon className="h-3 w-3" />
+                      Issues
+                    </span>
+                  )}
+                </div>
               </div>
 
               {client.phone && (
@@ -359,6 +435,17 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               {client.notes ? "Edit Notes" : "Add Notes"}
             </Link>
           </div>
+
+          {/* Email Preferences */}
+          <ClientEmailPreferences
+            clientId={id}
+            initialPreferences={{
+              emailOptIn: client.emailOptIn,
+              smsOptIn: client.smsOptIn,
+              questionnaireEmailsOptIn: client.questionnaireEmailsOptIn,
+              marketingEmailsOptIn: client.marketingEmailsOptIn,
+            }}
+          />
 
           {/* Communication Timeline */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
@@ -561,4 +648,43 @@ function BookingLinkIcon({ className }: { className?: string }) {
       <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
     </svg>
   );
+}
+
+function EmailHistoryIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M3 4a2 2 0 0 0-2 2v1.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 7.162V6a2 2 0 0 0-2-2H3Z" />
+      <path d="m19 8.839-7.77 3.885a2.75 2.75 0 0 1-2.46 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z" />
+    </svg>
+  );
+}
+
+function EmailWarningIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+// Helper function to format email type for display
+function formatEmailType(type: string): string {
+  const typeLabels: Record<string, string> = {
+    questionnaire_assigned: "Questionnaire Assigned",
+    questionnaire_reminder: "Questionnaire Reminder",
+    questionnaire_completed: "Questionnaire Completed",
+    gallery_delivered: "Gallery Delivered",
+    invoice_sent: "Invoice Sent",
+    payment_received: "Payment Received",
+    booking_confirmed: "Booking Confirmed",
+    booking_reminder: "Booking Reminder",
+    contract_sent: "Contract Sent",
+    contract_signed: "Contract Signed",
+    welcome: "Welcome Email",
+    password_reset: "Password Reset",
+    digest: "Daily Digest",
+    marketing: "Marketing",
+    other: "Other",
+  };
+  return typeLabels[type] || type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }

@@ -78,19 +78,19 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Client Stats</h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Lifetime Revenue</span>
                 <span className="text-sm font-semibold text-[var(--success)]">{formatCurrency(client.lifetimeRevenueCents)}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Total Galleries</span>
                 <span className="text-sm font-medium text-foreground">{client.projects.length}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Total Payments</span>
                 <span className="text-sm font-medium text-foreground">{client.payments.length}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Client Since</span>
                 <span className="text-sm font-medium text-foreground">
                   {new Date(client.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}

@@ -128,7 +128,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
   return (
     <div className="space-y-6">
       {/* Header with Create Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Client Tags</h2>
           <p className="text-sm text-foreground-muted">
@@ -265,7 +265,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
                   : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
               )}
             >
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-center gap-3">
                   <div
                     className="h-4 w-4 rounded-full"
@@ -279,7 +279,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 self-end sm:self-auto">
                   <button
                     onClick={() => handleStartEdit(tag)}
                     className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
@@ -297,7 +297,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-between">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">
                   {tag.clientCount} client{tag.clientCount !== 1 ? "s" : ""}
                 </span>

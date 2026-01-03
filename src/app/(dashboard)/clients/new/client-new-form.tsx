@@ -274,7 +274,7 @@ export function ClientNewForm() {
       </div>
 
       {/* Form Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -285,7 +285,7 @@ export function ClientNewForm() {
           <span className="text-sm text-foreground">Create a gallery for this client</span>
         </label>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/clients"
             className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
