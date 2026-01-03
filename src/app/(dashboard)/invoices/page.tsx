@@ -268,8 +268,8 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
 
       {/* Invoices Table */}
       {invoices.length > 0 ? (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
-          <table className="w-full">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
+          <table className="w-full min-w-[700px]">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
