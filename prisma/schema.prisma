@@ -485,8 +485,9 @@ model Organization {
   // Phase 3: SMS & Field Operations relations
   smsTemplates      SMSTemplate[]
   smsLogs           SMSLog[]
-  slackIntegrations SlackIntegration[]
-  bookingSlots      BookingSlot[]
+  slackIntegrations  SlackIntegration[]
+  dropboxIntegration DropboxIntegration?
+  bookingSlots       BookingSlot[]
 
   // Public booking forms
   bookingForms    BookingForm[]
@@ -3608,6 +3609,48 @@ model SlackChannel {
   @@unique([integrationId, channelId])
   @@index([integrationId])
   @@index([channelId])
+}
+
+// ============================================================================
+// DROPBOX INTEGRATION (Cloud storage sync)
+// ============================================================================
+
+model DropboxIntegration {
+  id             String @id @default(cuid())
+  organizationId String @unique
+
+  // Dropbox account info
+  accountId   String // Dropbox account_id
+  email       String
+  displayName String
+
+  // OAuth tokens
+  accessToken  String  @db.Text
+  refreshToken String? @db.Text
+
+  // Sync settings
+  syncEnabled Boolean @default(true)
+  syncFolder  String  @default("/PhotoProOS") // Root folder in Dropbox
+  autoSync    Boolean @default(true) // Auto-sync on file changes
+
+  // Cursor for delta sync
+  cursor String? @db.Text
+
+  // Sync status
+  lastSyncAt    DateTime?
+  lastSyncError String?
+
+  // Settings
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([accountId])
 }
 
 // ============================================================================
