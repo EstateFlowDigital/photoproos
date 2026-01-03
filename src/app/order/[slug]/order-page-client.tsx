@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Testimonial } from "@/lib/validations/order-pages";
+import { CheckoutModal } from "@/components/order/checkout-modal";
 
 // Cart item types
 interface CartBundle {

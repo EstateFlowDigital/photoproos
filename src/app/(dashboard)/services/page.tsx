@@ -1,29 +1,9 @@
 export const dynamic = "force-dynamic";
-import { PageHeader, PageContextNav } from "@/components/dashboard";
+
+import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { type ServiceCategory } from "@/lib/services";
 import { getServices, seedDefaultServices } from "@/lib/actions/services";
-
-// Category display info
-const categoryInfo: Record<ServiceCategory, { label: string; color: string }> = {
-  real_estate: { label: "Real Estate", color: "bg-blue-500/10 text-blue-400" },
-  portrait: { label: "Portrait", color: "bg-purple-500/10 text-purple-400" },
-  wedding: { label: "Wedding", color: "bg-pink-500/10 text-pink-400" },
-  commercial: { label: "Commercial", color: "bg-amber-500/10 text-amber-400" },
-  event: { label: "Event", color: "bg-green-500/10 text-green-400" },
-  product: { label: "Product", color: "bg-cyan-500/10 text-cyan-400" },
-  other: { label: "Other", color: "bg-gray-500/10 text-gray-400" },
-};
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
+import { ServicesPageClient } from "./services-page-client";
 
 export default async function ServicesPage() {
   // Fetch services from database
@@ -35,17 +15,7 @@ export default async function ServicesPage() {
     services = await getServices();
   }
 
-  // Group services by category
-  const groupedServices = services.reduce((acc, service) => {
-    const category = service.category as ServiceCategory;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(service);
-    return acc;
-  }, {} as Record<ServiceCategory, typeof services>);
-
-  const activeCount = services.filter(s => s.isActive).length;
+  const activeCount = services.filter((s) => s.isActive).length;
 
   return (
     <div className="space-y-6">
@@ -53,142 +23,79 @@ export default async function ServicesPage() {
         title="Services"
         subtitle={`${services.length} service${services.length !== 1 ? "s" : ""} • ${activeCount} active`}
         actions={
-          <Link
-            href="/services/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Create Service
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/services/bundles"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              <BundleIcon className="h-4 w-4" />
+              Bundles
+            </Link>
+            <Link
+              href="/services/addons"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            >
+              <AddonIcon className="h-4 w-4" />
+              Add-ons
+            </Link>
+            <Link
+              href="/services/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Create Service
+            </Link>
+          </div>
         }
       />
 
-      {/* Context Navigation */}
-      <PageContextNav
-        items={[
-          { label: "Services", href: "/services", icon: <BriefcaseIcon className="h-4 w-4" /> },
-          { label: "Gallery Services", href: "/galleries/services", icon: <PhotoIcon className="h-4 w-4" /> },
-        ]}
-      />
-
-      {services.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
-          <div className="mx-auto rounded-full bg-[var(--primary)]/10 p-4 w-fit mb-4">
-            <ServiceIcon className="h-8 w-8 text-[var(--primary)]" />
-          </div>
-          <h3 className="text-lg font-medium text-foreground">No services yet</h3>
-          <p className="mt-2 text-sm text-foreground-muted max-w-md mx-auto">
-            Create your first service package to start managing your photography offerings and pricing.
-          </p>
-          <Link
-            href="/services/new"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Create Your First Service
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {Object.entries(groupedServices).map(([category, categoryServices]) => {
-            const info = categoryInfo[category as ServiceCategory];
-            return (
-              <div key={category}>
-                <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-lg font-semibold text-foreground">{info.label}</h2>
-                  <span className="rounded-full bg-[var(--background-secondary)] px-2 py-0.5 text-xs text-foreground-muted">
-                    {categoryServices.length}
-                  </span>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {categoryServices.map((service) => (
-                    <Link
-                      key={service.id}
-                      href={`/services/${service.id}`}
-                      className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-foreground truncate group-hover:text-[var(--primary)] transition-colors">
-                            {service.name}
-                          </h3>
-                          {service.description && (
-                            <p className="mt-1 text-sm text-foreground-muted line-clamp-2">
-                              {service.description}
-                            </p>
-                          )}
-                        </div>
-                        <span className={cn(
-                          "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
-                          service.isActive
-                            ? "bg-green-500/10 text-green-400"
-                            : "bg-[var(--background-secondary)] text-foreground-muted"
-                        )}>
-                          {service.isActive ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-
-                      <div className="mt-4 flex items-center justify-between">
-                        <span className="text-xl font-semibold text-foreground">
-                          {formatCurrency(service.priceCents)}
-                        </span>
-                        {service.duration && (
-                          <span className="text-sm text-foreground-muted">
-                            {service.duration}
-                          </span>
-                        )}
-                      </div>
-
-                      {service.deliverables && service.deliverables.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
-                          <p className="text-xs text-foreground-muted">
-                            Includes: {service.deliverables.slice(0, 3).join(", ")}
-                            {service.deliverables.length > 3 && ` +${service.deliverables.length - 3} more`}
-                          </p>
-                        </div>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <ServicesPageClient services={services} />
     </div>
   );
 }
 
 function PlusIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
       <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
     </svg>
   );
 }
 
-function ServiceIcon({ className }: { className?: string }) {
+function BundleIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M7.5 5.25a3 3 0 0 1 3-3h3a3 3 0 0 1 3 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0 1 12 15.75c-2.73 0-5.357-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 0 1 7.5 5.455V5.25Zm7.5 0v.09a49.488 49.488 0 0 0-6 0v-.09a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5Zm-3 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
-      <path d="M3 18.4v-2.796a4.3 4.3 0 0 0 .713.31A26.226 26.226 0 0 0 12 17.25c2.892 0 5.68-.468 8.287-1.335.252-.084.49-.189.713-.311V18.4c0 1.452-1.047 2.728-2.523 2.923-2.12.282-4.282.427-6.477.427a49.19 49.19 0 0 1-6.477-.427C4.047 21.128 3 19.852 3 18.4Z" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M3.196 12.87l-.825.483a.75.75 0 0 0 0 1.294l7.25 4.25a.75.75 0 0 0 .758 0l7.25-4.25a.75.75 0 0 0 0-1.294l-.825-.484-5.666 3.322a2.25 2.25 0 0 1-2.276 0L3.196 12.87Z" />
+      <path d="M3.196 8.87l-.825.483a.75.75 0 0 0 0 1.294l7.25 4.25a.75.75 0 0 0 .758 0l7.25-4.25a.75.75 0 0 0 0-1.294l-.825-.484-5.666 3.322a2.25 2.25 0 0 1-2.276 0L3.196 8.87Z" />
+      <path d="M10.38 1.103a.75.75 0 0 0-.76 0l-7.25 4.25a.75.75 0 0 0 0 1.294l7.25 4.25a.75.75 0 0 0 .76 0l7.25-4.25a.75.75 0 0 0 0-1.294l-7.25-4.25Z" />
     </svg>
   );
 }
 
-function BriefcaseIcon({ className }: { className?: string }) {
+function AddonIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M6 3.75A2.75 2.75 0 0 1 8.75 1h2.5A2.75 2.75 0 0 1 14 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.54-1.952.599-4.024.921-6.17.921s-4.219-.322-6.17-.921C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 0 1 6 4.193V3.75Zm6.5 0v.325a41.622 41.622 0 0 0-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25ZM10 10a1 1 0 0 0-1 1v.01a1 1 0 0 0 1 1h.01a1 1 0 0 0 1-1V11a1 1 0 0 0-1-1H10Z" clipRule="evenodd" />
-      <path d="M3 15.055v-.684c.126.053.255.1.39.142 2.092.642 4.313.987 6.61.987 2.297 0 4.518-.345 6.61-.987.135-.041.264-.089.39-.142v.684c0 1.347-.985 2.53-2.363 2.686a41.454 41.454 0 0 1-9.274 0C3.985 17.585 3 16.402 3 15.055Z" />
-    </svg>
-  );
-}
-
-function PhotoIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 8.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clipRule="evenodd" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M10.75 6.75a.75.75 0 0 0-1.5 0v2.5h-2.5a.75.75 0 0 0 0 1.5h2.5v2.5a.75.75 0 0 0 1.5 0v-2.5h2.5a.75.75 0 0 0 0-1.5h-2.5v-2.5Z" />
+      <path
+        fillRule="evenodd"
+        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-1.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }
