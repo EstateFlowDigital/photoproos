@@ -9,9 +9,15 @@ interface StatCardProps {
   className?: string;
   href?: string;
   icon?: React.ReactNode;
+  variant?: "default" | "success";
 }
 
-export function StatCard({ label, value, change, positive, className, href, icon }: StatCardProps) {
+export function StatCard({ label, value, change, positive, className, href, icon, variant = "default" }: StatCardProps) {
+  const accentClass =
+    variant === "success"
+      ? "bg-[var(--success)]/10 text-[var(--success)]"
+      : "bg-[var(--primary)]/10 text-[var(--primary)]";
+
   const content = (
     <>
       <div className="flex items-center justify-between">
