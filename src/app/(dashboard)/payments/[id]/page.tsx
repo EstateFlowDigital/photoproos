@@ -75,7 +75,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
         title={`Payment #${payment.id.slice(0, 8)}`}
         subtitle={payment.description || payment.project?.name || "Payment"}
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/payments"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -96,7 +96,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Status Banner */}
-          <div className={cn("rounded-xl border p-4 flex items-center justify-between", status.bg, "border-transparent")}>
+          <div className={cn("rounded-xl border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", status.bg, "border-transparent")}>
             <div className="flex items-center gap-3">
               <div className={cn("flex h-10 w-10 items-center justify-center rounded-full", status.bg)}>
                 {payment.status === "paid" && <CheckIcon className={cn("h-5 w-5", status.text)} />}
@@ -116,7 +116,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <p className="text-2xl font-bold text-foreground">{formatCurrency(payment.amountCents)}</p>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
                 </div>
               </div>
               <hr className="border-[var(--card-border)]" />
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm font-medium text-foreground">Net Amount</p>
                 <p className="text-xl font-bold text-[var(--success)]">{formatCurrency(netCents)}</p>
               </div>
@@ -149,7 +149,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
           {payment.status === "paid" && payment.stripePaymentIntentId && (
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Payment Method</h2>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--background)]">
                   <CreditCardIcon className="h-6 w-6 text-foreground-muted" />
                 </div>
@@ -339,4 +339,3 @@ function ChevronRightIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
