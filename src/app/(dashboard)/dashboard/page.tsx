@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { DashboardCalendar, DashboardCalendarEvent } from "@/components/dashboard/dashboard-calendar";
 
 // Icons
 function PaymentIcon({ className }: { className?: string }) {
@@ -137,6 +138,10 @@ export default async function DashboardPage() {
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const calendarStart = new Date(now);
+  calendarStart.setDate(calendarStart.getDate() - 30);
+  const calendarEnd = new Date(now);
+  calendarEnd.setDate(calendarEnd.getDate() + 90);
 
   // Fetch dashboard data
   const [
@@ -152,6 +157,9 @@ export default async function DashboardPage() {
     upcomingBookings,
     servicesCount,
     propertiesCount,
+    calendarTasks,
+    calendarBookings,
+    calendarOpenHouses,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -256,6 +264,44 @@ export default async function DashboardPage() {
         project: { organizationId: organization.id },
       },
     }),
+
+    // Calendar tasks (due dates)
+    prisma.task.findMany({
+      where: {
+        organizationId: organization.id,
+        dueDate: { gte: calendarStart, lte: calendarEnd },
+      },
+      include: {
+        project: { select: { id: true, name: true } },
+      },
+      orderBy: { dueDate: "asc" },
+    }),
+
+    // Calendar bookings (appointments)
+    prisma.booking.findMany({
+      where: {
+        organizationId: organization.id,
+        startTime: { gte: calendarStart, lte: calendarEnd },
+        status: { in: ["pending", "confirmed"] },
+      },
+      include: {
+        client: { select: { fullName: true, company: true } },
+        service: { select: { name: true, category: true } },
+      },
+      orderBy: { startTime: "asc" },
+    }),
+
+    // Property open houses / project events
+    prisma.propertyWebsite.findMany({
+      where: {
+        project: { organizationId: organization.id },
+        openHouseDate: { gte: calendarStart, lte: calendarEnd },
+      },
+      include: {
+        project: { select: { id: true, name: true } },
+      },
+      orderBy: { openHouseDate: "asc" },
+    }),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
@@ -297,6 +343,33 @@ export default async function DashboardPage() {
     status: booking.status as "confirmed" | "pending" | "cancelled",
     serviceType: booking.service?.category || booking.service?.name || undefined,
   }));
+
+  const calendarEvents: DashboardCalendarEvent[] = [
+    ...calendarTasks.map((task) => ({
+      id: `task-${task.id}`,
+      title: task.title,
+      subtitle: task.project?.name || "Task",
+      date: task.dueDate?.toISOString() ?? "",
+      href: "/projects",
+      type: "task",
+    })),
+    ...calendarBookings.map((booking) => ({
+      id: `booking-${booking.id}`,
+      title: booking.title,
+      subtitle: booking.client?.company || booking.client?.fullName || "Booking",
+      date: booking.startTime.toISOString(),
+      href: `/scheduling/${booking.id}`,
+      type: "booking",
+    })),
+    ...calendarOpenHouses.map((site) => ({
+      id: `open-house-${site.id}`,
+      title: `Open House · ${site.project?.name || "Property"}`,
+      subtitle: site.address,
+      date: site.openHouseDate!.toISOString(),
+      href: `/properties/${site.projectId}`,
+      type: "open_house",
+    })),
+  ];
 
   return (
     <div className="space-y-8">
@@ -350,6 +423,11 @@ export default async function DashboardPage() {
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
         <QuickActions />
+      </div>
+
+      {/* Unified Scheduler */}
+      <div className="space-y-4">
+        <DashboardCalendar events={calendarEvents} />
       </div>
 
       {/* Main Content Grid */}
