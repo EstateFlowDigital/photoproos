@@ -767,7 +767,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
       {(isExpiringSoon || isExpired) && (
         <div
           className={cn(
-            "mb-6 flex items-center justify-between rounded-xl border px-6 py-4",
+            "mb-6 flex flex-col gap-4 rounded-xl border px-6 py-4 sm:flex-row sm:items-center sm:justify-between",
             isExpired
               ? "border-[var(--error)]/30 bg-[var(--error)]/10"
               : "border-[var(--warning)]/30 bg-[var(--warning)]/10"
@@ -797,7 +797,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {!isExpired && (
               <button
                 onClick={handleSendReminder}
@@ -892,7 +892,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               {/* Description - Now above Service Package */}
           {gallery.description && (
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="text-lg font-semibold text-foreground">Description</h2>
                 <Link
                   href={`/galleries/${gallery.id}/edit`}
@@ -921,7 +921,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
           {/* Contracts Section - Coming Soon */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-semibold text-foreground">Contracts</h2>
                 <span className="rounded-full bg-[var(--primary)]/10 px-2.5 py-1 text-xs font-medium text-[var(--primary)]">
@@ -947,7 +947,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
           {/* Photo Grid */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-semibold text-foreground">
                   Photos <span className="text-foreground-muted font-normal">({photos.length})</span>
@@ -1065,11 +1065,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
             {/* Batch Action Bar */}
             {isSelectMode && selectedPhotos.size > 0 && (
-              <div className="mb-4 flex items-center justify-between rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3">
+              <div className="mb-4 flex flex-col gap-3 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm font-medium text-foreground">
                   {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? "s" : ""} selected
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={handleBatchFavorite}
                     className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
