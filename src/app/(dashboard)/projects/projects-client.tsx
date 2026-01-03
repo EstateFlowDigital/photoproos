@@ -685,8 +685,9 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
       {viewMode === "list" && (
         <div className="flex-1 overflow-auto p-6">
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-            <table className="w-full">
-              <thead>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
                 <tr className="border-b border-[var(--card-border)]">
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                     Task
