@@ -105,7 +105,7 @@ export default async function BillingSettingsPage() {
         {/* Usage */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Current Usage</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="auto-grid grid-min-200 grid-gap-4">
             <UsageCard
               label="Storage"
               used={usage.storage.used}
@@ -133,7 +133,7 @@ export default async function BillingSettingsPage() {
         {/* Plans Comparison */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Available Plans</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="auto-grid grid-min-240 grid-gap-4">
             {plans.map((plan) => {
               const isCurrent = plan.id === currentPlan;
               return (
