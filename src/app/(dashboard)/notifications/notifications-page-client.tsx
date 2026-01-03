@@ -138,8 +138,8 @@ export function NotificationsPageClient({
       />
 
       {/* Tab Navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-1 rounded-lg bg-[var(--background-tertiary)] p-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1 rounded-lg bg-[var(--background-tertiary)] p-1 sm:flex-nowrap">
           <button
             onClick={() => setActiveTab("notifications")}
             className={`relative flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
@@ -294,7 +294,7 @@ function NotificationsList({
             <NotificationIcon type={notification.type} read={notification.read} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <p
                 className={`text-sm ${
                   notification.read
