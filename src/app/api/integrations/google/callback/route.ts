@@ -84,6 +84,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Look up the organization by Clerk ID
+    const organization = await prisma.organization.findUnique({
+      where: { clerkId: orgId },
+    });
+
+    if (!organization) {
+      console.error("[GoogleCalendar] Organization not found for Clerk ID:", orgId);
+      return NextResponse.redirect(
+        new URL("/settings/calendar?error=org_not_found", request.url)
+      );
+    }
+
     // Get code verifier from cookie
     const codeVerifier = request.cookies.get("google_code_verifier")?.value;
     if (!codeVerifier) {
@@ -181,13 +193,13 @@ export async function GET(request: NextRequest) {
     await prisma.calendarIntegration.upsert({
       where: {
         organizationId_provider_externalId: {
-          organizationId: orgId,
+          organizationId: organization.id,
           provider: "google",
           externalId: primaryCalendar.id,
         },
       },
       create: {
-        organizationId: orgId,
+        organizationId: organization.id,
         userId: userId,
         provider: "google",
         externalId: primaryCalendar.id,

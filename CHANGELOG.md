@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Stripe Connect onboarding error "email is invalid" - was incorrectly passing organization name as email field
+- Dropbox OAuth callback foreign key error - was using Clerk org ID instead of internal database organization ID
+- Google Calendar OAuth callback foreign key error - same fix as Dropbox
 
 ### Added
 - **Dropbox Integration**

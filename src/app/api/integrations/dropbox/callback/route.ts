@@ -74,6 +74,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Look up the organization by Clerk ID
+    const organization = await prisma.organization.findUnique({
+      where: { clerkId: orgId },
+    });
+
+    if (!organization) {
+      console.error("Organization not found for Clerk ID:", orgId);
+      return NextResponse.redirect(
+        new URL("/settings/dropbox?error=org_not_found", request.url)
+      );
+    }
+
     // Get code verifier from cookie
     const codeVerifier = request.cookies.get("dropbox_code_verifier")?.value;
     if (!codeVerifier) {
@@ -144,9 +156,9 @@ export async function GET(request: NextRequest) {
 
     // Save or update integration in database
     await prisma.dropboxIntegration.upsert({
-      where: { organizationId: orgId },
+      where: { organizationId: organization.id },
       create: {
-        organizationId: orgId,
+        organizationId: organization.id,
         accountId: accountInfo.account_id,
         email: accountInfo.email,
         displayName: accountInfo.name.display_name,
