@@ -96,7 +96,7 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
               href={`/products/${catalog.id}`}
               className="flex flex-col gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition hover:border-[var(--primary)]/50"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-lg font-semibold text-foreground">{catalog.name}</h3>
                 <span className="rounded-full bg-[var(--primary)]/10 px-3 py-1 text-xs font-medium text-[var(--primary)]">
                   {catalog.status}
@@ -105,7 +105,7 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
               {catalog.description && (
                 <p className="text-sm text-foreground-secondary line-clamp-2">{catalog.description}</p>
               )}
-              <div className="flex items-center justify-between text-sm text-foreground-secondary">
+              <div className="flex flex-col gap-1 text-sm text-foreground-secondary sm:flex-row sm:items-center sm:justify-between">
                 <span>{catalog._count.products} products</span>
                 <span>
                   Updated {new Date(catalog.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}

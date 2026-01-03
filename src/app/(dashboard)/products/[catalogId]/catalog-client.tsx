@@ -127,7 +127,7 @@ export function CatalogClient({ catalog }: CatalogClientProps) {
             />
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={handleCreateProduct}
             disabled={isPending || !form.sku || !form.name}
@@ -140,7 +140,7 @@ export function CatalogClient({ catalog }: CatalogClientProps) {
       </div>
 
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-sm">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-foreground">Products</h2>
           <span className="text-sm text-foreground-secondary">{catalog.products.length} items</span>
         </div>
