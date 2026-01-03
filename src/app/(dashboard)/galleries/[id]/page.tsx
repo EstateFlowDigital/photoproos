@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { PageHeader } from "@/components/dashboard";
+import { PageHeader, Breadcrumb } from "@/components/dashboard";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GalleryDetailClient } from "./gallery-detail-client";
@@ -95,9 +95,30 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
 
   return (
     <div className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: "Galleries", href: "/galleries" },
+          { label: gallery.name },
+        ]}
+      />
       <PageHeader
         title={gallery.name}
-        subtitle={`${gallery.photos.length} photos • Created ${new Date(gallery.createdAt).toLocaleDateString()}`}
+        subtitle={
+          <span className="flex items-center gap-2 flex-wrap">
+            {gallery.photos.length} photos • Created {new Date(gallery.createdAt).toLocaleDateString()}
+            {gallery.client && (
+              <>
+                <span className="text-foreground-muted">•</span>
+                <Link
+                  href={`/clients/${gallery.client.id}`}
+                  className="text-[var(--primary)] hover:underline"
+                >
+                  {gallery.client.company || gallery.client.fullName}
+                </Link>
+              </>
+            )}
+          </span>
+        }
         actions={
           <div className="flex items-center gap-3">
             <Link

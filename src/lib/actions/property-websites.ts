@@ -606,6 +606,159 @@ export async function getPropertyAnalytics(
   }
 }
 
+// Get ALL leads across all properties for organization
+export async function getAllPropertyLeads(organizationId: string) {
+  try {
+    const leads = await prisma.propertyLead.findMany({
+      where: {
+        propertyWebsite: {
+          project: {
+            organizationId,
+          },
+        },
+      },
+      include: {
+        propertyWebsite: {
+          select: {
+            id: true,
+            address: true,
+            city: true,
+            state: true,
+            slug: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return leads;
+  } catch (error) {
+    console.error("Error fetching all leads:", error);
+    return [];
+  }
+}
+
+// Get aggregate analytics across all properties
+export async function getAggregateAnalytics(organizationId: string, days: number = 30) {
+  try {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    // Get all property websites for the organization
+    const websites = await prisma.propertyWebsite.findMany({
+      where: {
+        project: {
+          organizationId,
+        },
+      },
+      select: {
+        id: true,
+        address: true,
+        city: true,
+        state: true,
+        slug: true,
+        viewCount: true,
+        isPublished: true,
+        _count: {
+          select: {
+            leads: true,
+          },
+        },
+      },
+    });
+
+    // Get analytics data for all properties
+    const analytics = await prisma.propertyAnalytics.findMany({
+      where: {
+        propertyWebsite: {
+          project: {
+            organizationId,
+          },
+        },
+        date: {
+          gte: startDate,
+        },
+      },
+      include: {
+        propertyWebsite: {
+          select: {
+            id: true,
+            address: true,
+          },
+        },
+      },
+      orderBy: { date: "asc" },
+    });
+
+    // Aggregate totals
+    const totals = analytics.reduce(
+      (acc, day) => ({
+        pageViews: acc.pageViews + day.pageViews,
+        uniqueVisitors: acc.uniqueVisitors + day.uniqueVisitors,
+        tourClicks: acc.tourClicks + day.tourClicks,
+        photoViews: acc.photoViews + day.photoViews,
+        socialShares: acc.socialShares + day.socialShares,
+      }),
+      {
+        pageViews: 0,
+        uniqueVisitors: 0,
+        tourClicks: 0,
+        photoViews: 0,
+        socialShares: 0,
+      }
+    );
+
+    // Group analytics by date for chart
+    const dailyTotals = analytics.reduce((acc, day) => {
+      const dateKey = day.date.toISOString().split("T")[0];
+      if (!acc[dateKey]) {
+        acc[dateKey] = { date: dateKey, pageViews: 0, uniqueVisitors: 0, tourClicks: 0, photoViews: 0, socialShares: 0 };
+      }
+      acc[dateKey].pageViews += day.pageViews;
+      acc[dateKey].uniqueVisitors += day.uniqueVisitors;
+      acc[dateKey].tourClicks += day.tourClicks;
+      acc[dateKey].photoViews += day.photoViews;
+      acc[dateKey].socialShares += day.socialShares;
+      return acc;
+    }, {} as Record<string, { date: string; pageViews: number; uniqueVisitors: number; tourClicks: number; photoViews: number; socialShares: number }>);
+
+    // Calculate per-property stats
+    const propertyStats = websites.map((website) => ({
+      id: website.id,
+      address: website.address,
+      city: website.city,
+      state: website.state,
+      slug: website.slug,
+      viewCount: website.viewCount,
+      leadCount: website._count.leads,
+      isPublished: website.isPublished,
+    }));
+
+    // Sort by views descending
+    propertyStats.sort((a, b) => b.viewCount - a.viewCount);
+
+    return {
+      totals,
+      dailyData: Object.values(dailyTotals).sort((a, b) => a.date.localeCompare(b.date)),
+      propertyStats,
+      totalProperties: websites.length,
+      publishedProperties: websites.filter((w) => w.isPublished).length,
+      totalLeads: websites.reduce((sum, w) => sum + w._count.leads, 0),
+    };
+  } catch (error) {
+    console.error("Error fetching aggregate analytics:", error);
+    return {
+      totals: { pageViews: 0, uniqueVisitors: 0, tourClicks: 0, photoViews: 0, socialShares: 0 },
+      dailyData: [],
+      propertyStats: [],
+      totalProperties: 0,
+      publishedProperties: 0,
+      totalLeads: 0,
+    };
+  }
+}
+
 // Get projects without property websites (for creating new ones)
 export async function getProjectsWithoutPropertyWebsite(organizationId: string) {
   try {

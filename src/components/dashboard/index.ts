@@ -63,4 +63,6 @@ export { InvoiceBuilder, InvoiceSummary, type LineItem, type PricingType } from 
 export { ServiceSelector, ServiceDisplay } from "./service-selector";
 export { ServiceForm } from "./service-form";
 export { OnboardingChecklist } from "./onboarding-checklist";
+export { RelatedItems } from "./related-items";
+export { Breadcrumb } from "./breadcrumb";
 export { getChecklistItems } from "@/lib/utils/checklist-items";

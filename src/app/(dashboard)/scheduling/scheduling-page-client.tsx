@@ -11,6 +11,7 @@ import {
   GoogleIcon,
   ContextCalendarIcon,
   ContextClockIcon,
+  TagIcon,
 } from "@/components/dashboard";
 
 interface Client {
@@ -210,6 +211,7 @@ export function SchedulingPageClient({
         items={[
           { label: "Calendar", href: "/scheduling", icon: <ContextCalendarIcon className="h-4 w-4" /> },
           { label: "Availability", href: "/scheduling/availability", icon: <ContextClockIcon className="h-4 w-4" /> },
+          { label: "Booking Types", href: "/scheduling/types", icon: <TagIcon className="h-4 w-4" /> },
         ]}
         integrations={[
           {

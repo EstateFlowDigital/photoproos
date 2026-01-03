@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
@@ -6,15 +7,29 @@ interface StatCardProps {
   change?: string;
   positive?: boolean;
   className?: string;
+  href?: string;
 }
 
-export function StatCard({ label, value, change, positive, className }: StatCardProps) {
-  return (
-    <div className={cn(
-      "rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 lg:p-5",
-      className
-    )}>
-      <p className="text-sm text-foreground-muted">{label}</p>
+export function StatCard({ label, value, change, positive, className, href }: StatCardProps) {
+  const content = (
+    <>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-foreground-muted">{label}</p>
+        {href && (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-4 w-4 text-foreground-muted opacity-0 transition-opacity group-hover:opacity-100"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        )}
+      </div>
       <div className="mt-2 flex items-baseline gap-2">
         <span className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">{value}</span>
         {change && (
@@ -28,6 +43,26 @@ export function StatCard({ label, value, change, positive, className }: StatCard
           </span>
         )}
       </div>
+    </>
+  );
+
+  const cardClasses = cn(
+    "rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 lg:p-5",
+    href && "group cursor-pointer transition-all hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]",
+    className
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={cardClasses}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={cardClasses}>
+      {content}
     </div>
   );
 }

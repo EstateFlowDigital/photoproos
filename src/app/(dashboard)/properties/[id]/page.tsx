@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
+import { Breadcrumb } from "@/components/dashboard";
 import { getPropertyWebsiteById, getPropertyLeads, getPropertyAnalytics } from "@/lib/actions/property-websites";
 import { PropertyDetailClient } from "./property-detail-client";
 
@@ -21,5 +22,15 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     notFound();
   }
 
-  return <PropertyDetailClient website={website} leads={leads} analytics={analytics} />;
+  return (
+    <div className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: "Properties", href: "/properties" },
+          { label: website.address || "Property" },
+        ]}
+      />
+      <PropertyDetailClient website={website} leads={leads} analytics={analytics} />
+    </div>
+  );
 }

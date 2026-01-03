@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { DashboardLayoutClient } from "@/components/layout/dashboard-layout-client";
 import { ToastProvider } from "@/components/ui/toast";
 import { TourProvider } from "@/components/tour";
+import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 
@@ -82,9 +83,11 @@ export default async function DashboardLayout({
   return (
     <ToastProvider>
       <TourProvider organizationId={organization.id}>
-        <DashboardLayoutClient enabledModules={enabledModules}>
-          {children}
-        </DashboardLayoutClient>
+        <CommandPaletteProvider>
+          <DashboardLayoutClient enabledModules={enabledModules}>
+            {children}
+          </DashboardLayoutClient>
+        </CommandPaletteProvider>
       </TourProvider>
     </ToastProvider>
   );

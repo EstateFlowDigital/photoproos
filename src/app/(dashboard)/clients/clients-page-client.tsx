@@ -32,6 +32,12 @@ function formatCurrency(cents: number): string {
   }).format(cents / 100);
 }
 
+interface ClientTag {
+  id: string;
+  name: string;
+  color: string | null;
+}
+
 interface Client {
   id: string;
   fullName: string | null;
@@ -40,14 +46,24 @@ interface Client {
   industry: string;
   lifetimeRevenueCents: number;
   _count: { projects: number };
+  tags?: ClientTag[];
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string | null;
+  clientCount: number;
 }
 
 interface ClientsPageClientProps {
   clients: Client[];
   searchQuery?: string;
+  allTags?: Tag[];
+  activeTagId?: string;
 }
 
-export function ClientsPageClient({ clients, searchQuery }: ClientsPageClientProps) {
+export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTagId }: ClientsPageClientProps) {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -82,6 +98,43 @@ export function ClientsPageClient({ clients, searchQuery }: ClientsPageClientPro
 
       {/* Search bar */}
       <ClientSearch initialQuery={searchQuery || ""} />
+
+      {/* Tag Filter Pills */}
+      {allTags && allTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/clients"
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+              !activeTagId
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background-secondary)] text-foreground-secondary hover:bg-[var(--background-hover)]"
+            )}
+          >
+            All
+          </Link>
+          {allTags.map((tag) => (
+            <Link
+              key={tag.id}
+              href={`/clients?tag=${tag.id}`}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                activeTagId === tag.id
+                  ? "text-white"
+                  : "bg-[var(--background-secondary)] text-foreground-secondary hover:bg-[var(--background-hover)]"
+              )}
+              style={activeTagId === tag.id ? { backgroundColor: tag.color || "#3b82f6" } : undefined}
+            >
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: tag.color || "#6b7280" }}
+              />
+              {tag.name}
+              <span className="text-xs opacity-70">({tag.clientCount})</span>
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Clients Table */}
       {clients.length > 0 ? (
@@ -123,6 +176,19 @@ export function ClientsPageClient({ clients, searchQuery }: ClientsPageClientPro
                         </p>
                         {client.company && (
                           <p className="text-sm text-foreground-muted">{client.company}</p>
+                        )}
+                        {client.tags && client.tags.length > 0 && (
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {client.tags.map((tag) => (
+                              <span
+                                key={tag.id}
+                                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                                style={{ backgroundColor: tag.color || "#6b7280" }}
+                              >
+                                {tag.name}
+                              </span>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </div>

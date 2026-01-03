@@ -323,22 +323,26 @@ export default async function DashboardPage() {
           value={formatCurrency(thisMonthRevenueValue)}
           change={revenueChange?.change}
           positive={revenueChange?.positive}
+          href="/payments"
         />
         <StatCard
           label="Active Galleries"
           value={activeGalleries.toString()}
           change={galleriesChange?.change}
           positive={galleriesChange?.positive}
+          href="/galleries"
         />
         <StatCard
           label="Total Clients"
           value={totalClients.toString()}
           change={clientsChange?.change}
           positive={clientsChange?.positive}
+          href="/clients"
         />
         <StatCard
           label="Pending Payments"
           value={formatCurrency(pendingPaymentsValue)}
+          href="/payments?status=pending"
         />
       </div>
 

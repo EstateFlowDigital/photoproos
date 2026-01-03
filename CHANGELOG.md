@@ -8,6 +8,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Global Command Palette (⌘K)**
+  - Access via Cmd+K (Mac) or Ctrl+K (Windows/Linux)
+  - Quick search across all modules (clients, galleries, properties, services, invoices, bookings)
+  - Fast navigation to any page with keyboard shortcuts
+  - Debounced search with loading state
+  - Arrow key navigation and Enter to select
+  - Integrated into dashboard layout via `CommandPaletteProvider`
+
+- **Booking Types Management**
+  - New page at `/scheduling/types` for managing booking categories
+  - Create, edit, delete booking types with color picker
+  - Default duration and price per type
+  - Active/inactive status toggle
+  - Auto-seeding of default booking types
+  - Added "Booking Types" to scheduling PageContextNav
+  - Server actions in `/src/lib/actions/booking-types.ts`
+
+- **Dashboard Clickable Stat Cards**
+  - All stat cards now link to relevant pages:
+    - Monthly Revenue → `/payments`
+    - Active Galleries → `/galleries`
+    - Total Clients → `/clients`
+    - Pending Payments → `/payments?status=pending`
+  - Hover arrow indicator shows clickability
+  - Updated `StatCard` component with optional `href` prop
+
+- **Detail Page Cross-Links and Breadcrumbs**
+  - New `Breadcrumb` component for navigation hierarchy
+  - New `RelatedItems` component showing counts with links
+  - Client detail page:
+    - Added "Create Invoice" quick action
+    - RelatedItems widget showing galleries, invoices, bookings counts with links
+    - Breadcrumb navigation: Clients > [Name]
+  - Gallery detail page:
+    - Breadcrumb navigation: Galleries > [Name]
+    - Client name link in subtitle
+  - Property detail page:
+    - Breadcrumb navigation: Properties > [Address]
+
+- **Contract Templates Management**
+  - Full CRUD for contract templates at `/contracts/templates`
+  - Create, edit, duplicate, and delete contract templates
+  - Template variable insertion ({{client_name}}, {{project_name}}, etc.)
+  - Default template seeding for new organizations
+  - Server actions in `/src/lib/actions/contract-templates.ts`
+
+- **Client Tags Management**
+  - Full tag management UI at `/clients?view=tags`
+  - Create, edit, delete tags with color picker (9 color options)
+  - Tag filter pills on main clients list
+  - Tags displayed on client rows in the table
+  - Filter clients by clicking on tag pills
+  - Server actions already existed in `/src/lib/actions/client-tags.ts`
+
+- **Property Leads & Analytics Views**
+  - Aggregate leads view at `/properties?view=leads`
+    - All leads across all properties in one table
+    - Status filter (new, contacted, qualified, closed)
+    - Search by lead name, email, or property
+    - Inline status updates
+  - Aggregate analytics view at `/properties?view=analytics`
+    - Total views, unique visitors, leads, conversion rate
+    - 30-day activity chart
+    - Property-by-property performance ranking
+    - Sort by views or leads
+  - New server actions: `getAllPropertyLeads()`, `getAggregateAnalytics()`
+
+- **Extended PageContextNav to More Modules**
+  - Added to Payments page (links to Invoices, Stripe settings)
+  - Added to Projects page (links to Scheduling)
+  - Added to Services page (links to Gallery Services)
+  - Added to Settings page (quick links to Profile, Billing, Team, Branding)
+  - Bidirectional navigation between Services ↔ Gallery Services
+
 - **Contextual Quick Actions Navigation (PageContextNav)**
   - New `PageContextNav` component for contextual navigation below page headers
   - Horizontal pill-style links showing related pages and integration shortcuts
