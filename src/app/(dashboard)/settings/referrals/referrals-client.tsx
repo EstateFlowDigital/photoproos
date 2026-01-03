@@ -139,7 +139,7 @@ export function ReferralsClient({
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="auto-grid grid-min-200 grid-gap-4">
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
             <p className="text-sm text-foreground-muted">Active Referrers</p>
             <p className="text-2xl font-semibold text-foreground">{stats.activeReferrers}</p>
