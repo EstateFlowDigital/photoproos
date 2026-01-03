@@ -23,6 +23,9 @@ const isPublicRoute = createRouteMatcher([
   // Webhooks (Stripe, Clerk, etc.)
   "/api/webhooks/(.*)",
 
+  // Third-party integrations (Dropbox, etc.)
+  "/api/integrations/(.*)",
+
   // Marketing pages
   "/pricing",
   "/features(.*)",
