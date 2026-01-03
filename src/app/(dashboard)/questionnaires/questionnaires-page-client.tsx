@@ -178,8 +178,8 @@ export function QuestionnairesPageClient({
               </p>
             </div>
           ) : (
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
-              <table className="w-full">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
+              <table className="w-full min-w-[640px]">
                 <thead className="border-b border-[var(--card-border)] bg-background">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase">Client</th>

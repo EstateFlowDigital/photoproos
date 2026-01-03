@@ -124,7 +124,7 @@ export function LeadsViewClient({ leads }: LeadsViewClientProps) {
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Search */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative w-full max-w-none sm:max-w-md sm:flex-1">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
@@ -167,8 +167,8 @@ export function LeadsViewClient({ leads }: LeadsViewClientProps) {
 
       {/* Leads Table */}
       {filteredLeads.length > 0 ? (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
-          <table className="w-full">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
+          <table className="w-full min-w-[700px]">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
