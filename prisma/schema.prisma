@@ -354,6 +354,32 @@ enum ClientQuestionnaireStatus {
   expired // Past deadline
 }
 
+enum EmailType {
+  gallery_delivered
+  payment_receipt
+  booking_confirmation
+  welcome
+  property_lead
+  gallery_expiration
+  order_confirmation
+  contract_signing
+  contract_signed
+  team_invitation
+  questionnaire_assigned
+  questionnaire_reminder
+  questionnaire_completed
+  photographer_digest
+  custom
+}
+
+enum EmailStatus {
+  pending
+  sent
+  delivered
+  failed
+  bounced
+}
+
 enum LegalAgreementType {
   terms_of_service
   licensing_agreement
@@ -458,6 +484,15 @@ model Organization {
   // PHASE 3: SMS & FIELD OPERATIONS SETTINGS
   // ============================================================================
 
+  // Email Settings
+  emailSenderName           String? // Custom "from" name for emails
+  emailReplyTo              String? // Custom reply-to email address
+  emailSignature            String? @db.Text // Optional email signature
+  enableQuestionnaireEmails Boolean @default(true)
+  enableDigestEmails        Boolean @default(true)
+  digestEmailFrequency      String? @default("daily") // "daily", "weekly", "none"
+  digestEmailTime           String? @default("08:00") // Time in HH:MM format
+
   // Twilio SMS Settings
   twilioAccountSid  String?
   twilioAuthToken   String?
@@ -515,8 +550,8 @@ model Organization {
   payoutBatches PayoutBatch[]
 
   // Phase 3: SMS & Field Operations relations
-  smsTemplates      SMSTemplate[]
-  smsLogs           SMSLog[]
+  smsTemplates       SMSTemplate[]
+  smsLogs            SMSLog[]
   slackIntegrations  SlackIntegration[]
   dropboxIntegration DropboxIntegration?
   bookingSlots       BookingSlot[]
@@ -532,6 +567,9 @@ model Organization {
   // Phase 2: Client Questionnaire System
   questionnaireTemplates QuestionnaireTemplate[]
   clientQuestionnaires   ClientQuestionnaire[]
+
+  // Email Logging System
+  emailLogs EmailLog[]
 
   @@index([slug])
   @@index([plan])
@@ -660,8 +698,11 @@ model Client {
   isVIP          Boolean   @default(false)
   lastActivityAt DateTime?
 
-  // SMS preferences
-  smsOptIn Boolean @default(true) // Client consent for SMS notifications
+  // Communication preferences
+  smsOptIn                 Boolean @default(true) // Client consent for SMS notifications
+  emailOptIn               Boolean @default(true) // Client consent for email communications
+  questionnaireEmailsOptIn Boolean @default(true) // Receive questionnaire-related emails
+  marketingEmailsOptIn     Boolean @default(false) // Receive marketing emails (opt-in required)
 
   // Phase 2: Brokerage relationship (client is an agent under a brokerage)
   brokerageId String?
@@ -692,6 +733,9 @@ model Client {
 
   // Phase 3: SMS Integration
   smsLogs SMSLog[]
+
+  // Email Logging System
+  emailLogs EmailLog[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -730,6 +774,11 @@ model Service {
   isActive       Boolean         @default(true)
   isDefault      Boolean         @default(false) // System-provided template
   sortOrder      Int             @default(0)
+
+  // Stripe Product Catalog sync
+  stripeProductId String? // Stripe Product ID (prod_xxx)
+  stripePriceId   String? // Stripe Price ID (price_xxx)
+  stripeSyncedAt  DateTime? // Last successful sync timestamp
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -794,19 +843,19 @@ model Project {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client          Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  service         Service?          @relation(fields: [serviceId], references: [id], onDelete: SetNull) // Deprecated - use services
-  location        Location?         @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  services        ProjectService[] // Many-to-many: services for this gallery
-  assets          Asset[]
-  deliveryLinks   DeliveryLink[]
-  payments        Payment[]
-  favorites       GalleryFavorite[]
-  comments        GalleryComment[]
-  propertyWebsite PropertyWebsite?
+  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client            Client?                   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  service           Service?                  @relation(fields: [serviceId], references: [id], onDelete: SetNull) // Deprecated - use services
+  location          Location?                 @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  services          ProjectService[] // Many-to-many: services for this gallery
+  assets            Asset[]
+  deliveryLinks     DeliveryLink[]
+  payments          Payment[]
+  favorites         GalleryFavorite[]
+  comments          GalleryComment[]
+  propertyWebsite   PropertyWebsite?
   portfolioWebsites PortfolioWebsiteProject[]
-  tasks           Task[]
+  tasks             Task[]
 
   // Phase 2: Client Questionnaire System
   questionnaires ClientQuestionnaire[]
@@ -1885,7 +1934,7 @@ model PortfolioWebsite {
   organizationId String
 
   name        String
-  slug        String @unique
+  slug        String  @unique
   description String? @db.Text
 
   // Hero content (kept for backwards compatibility)
@@ -1918,6 +1967,23 @@ model PortfolioWebsite {
   showBranding Boolean @default(true)
   customDomain String? @unique
 
+  // Password Protection
+  isPasswordProtected Boolean @default(false)
+  password            String? // Hashed password
+
+  // Expiration
+  expiresAt DateTime?
+
+  // Download Settings
+  allowDownloads    Boolean @default(false)
+  downloadWatermark Boolean @default(true) // Apply watermark to downloads
+
+  // Custom CSS
+  customCss String? @db.Text
+
+  // Scroll Animations
+  enableAnimations Boolean @default(true)
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   publishedAt DateTime?
@@ -1926,11 +1992,13 @@ model PortfolioWebsite {
   organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   projects     PortfolioWebsiteProject[]
   sections     PortfolioWebsiteSection[]
+  views        PortfolioWebsiteView[]
 
   @@index([organizationId])
   @@index([slug])
   @@index([isPublished])
   @@index([portfolioType])
+  @@index([expiresAt])
 }
 
 model PortfolioWebsiteProject {
@@ -1984,6 +2052,37 @@ model PortfolioWebsiteSection {
 
   @@index([portfolioWebsiteId])
   @@index([position])
+}
+
+model PortfolioWebsiteView {
+  id                 String @id @default(cuid())
+  portfolioWebsiteId String
+
+  // Visitor Info
+  visitorId String? // Anonymous visitor ID (cookie-based)
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+  country   String?
+  city      String?
+
+  // Page Info
+  pagePath  String? // Which section/page was viewed
+  sessionId String? // Group views into sessions
+
+  // Engagement
+  duration    Int? // Time spent in seconds
+  scrollDepth Int? // Max scroll depth percentage
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioWebsiteId])
+  @@index([createdAt])
+  @@index([visitorId])
+  @@index([sessionId])
 }
 
 // ============================================================================
@@ -2913,6 +3012,11 @@ model ServiceBundle {
   // Settings
   isActive Boolean @default(true)
   isPublic Boolean @default(true) // Show on public order pages
+
+  // Stripe Product Catalog sync
+  stripeProductId String? // Stripe Product ID (prod_xxx)
+  stripePriceId   String? // Stripe Price ID (price_xxx)
+  stripeSyncedAt  DateTime? // Last successful sync timestamp
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4203,6 +4307,9 @@ model ClientQuestionnaire {
   // Internal notes (visible only to photographer)
   internalNotes String?
 
+  // Personal note to include in assignment email
+  personalNote String? @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -4214,6 +4321,7 @@ model ClientQuestionnaire {
   project      Project?                       @relation(fields: [projectId], references: [id], onDelete: SetNull)
   responses    ClientQuestionnaireResponse[]
   agreements   ClientQuestionnaireAgreement[]
+  emailLogs    EmailLog[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -4274,4 +4382,54 @@ model ClientQuestionnaireAgreement {
   @@index([questionnaireId])
   @@index([agreementType])
   @@index([accepted])
+}
+
+// ============================================================================
+// EMAIL LOGGING SYSTEM
+// ============================================================================
+
+// Log of all emails sent from the system
+model EmailLog {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Recipient info
+  toEmail  String
+  toName   String?
+  clientId String?
+
+  // Email details
+  emailType EmailType
+  subject   String
+  status    EmailStatus @default(pending)
+
+  // Optional linking to related entities
+  questionnaireId String?
+  bookingId       String?
+  projectId       String?
+  invoiceId       String?
+  contractId      String?
+  galleryId       String?
+
+  // Resend tracking
+  resendId     String? // ID from Resend API
+  errorMessage String? @db.Text
+
+  // Timestamps
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  failedAt    DateTime?
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  organization  Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client        Client?              @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  questionnaire ClientQuestionnaire? @relation(fields: [questionnaireId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([emailType])
+  @@index([status])
+  @@index([questionnaireId])
+  @@index([createdAt])
 }
