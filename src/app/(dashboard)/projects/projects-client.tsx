@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { PageContextNav } from "@/components/dashboard";
 import {
@@ -17,6 +18,7 @@ import {
   toggleSubtask,
 } from "@/lib/actions/projects";
 import type { TaskPriority } from "@prisma/client";
+import { isSameDay, isToday } from "date-fns";
 
 // Types
 interface Subtask {
@@ -78,8 +80,81 @@ interface Board {
   columns: Column[];
 }
 
+interface CalendarDay {
+  date: Date;
+  dayNumber: number;
+  isToday: boolean;
+  isCurrentMonth: boolean;
+  taskCount: number;
+}
+
 interface ProjectsClientProps {
   board: Board;
+}
+
+function getMonthLabel(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(date);
+}
+
+function generateMonthDays(
+  year: number,
+  month: number,
+  tasks: Task[]
+): CalendarDay[][] {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startPadding = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+
+  const weeks: CalendarDay[][] = [];
+  let currentWeek: CalendarDay[] = [];
+
+  for (let i = 0; i < startPadding; i++) {
+    const paddingDate = new Date(year, month, 1 - (startPadding - i));
+    const dayTasks = tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), paddingDate));
+    currentWeek.push({
+      date: paddingDate,
+      dayNumber: paddingDate.getDate(),
+      isToday: isToday(paddingDate),
+      isCurrentMonth: false,
+      taskCount: dayTasks.length,
+    });
+  }
+
+  for (let day = 1; day <= totalDays; day++) {
+    const date = new Date(year, month, day);
+    const dayTasks = tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), date));
+    currentWeek.push({
+      date,
+      dayNumber: day,
+      isToday: isToday(date),
+      isCurrentMonth: true,
+      taskCount: dayTasks.length,
+    });
+
+    if (currentWeek.length === 7) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+  }
+
+  if (currentWeek.length > 0) {
+    const remaining = 7 - currentWeek.length;
+    for (let i = 1; i <= remaining; i++) {
+      const paddingDate = new Date(year, month + 1, i);
+      const dayTasks = tasks.filter((t) => t.dueDate && isSameDay(new Date(t.dueDate), paddingDate));
+      currentWeek.push({
+        date: paddingDate,
+        dayNumber: paddingDate.getDate(),
+        isToday: isToday(paddingDate),
+        isCurrentMonth: false,
+        taskCount: dayTasks.length,
+      });
+    }
+    weeks.push(currentWeek);
+  }
+
+  return weeks;
 }
 
 export function ProjectsClient({ board }: ProjectsClientProps) {
@@ -96,9 +171,26 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => new Date());
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
 
   // Filter state
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "all">("all");
+  const allTasks = useMemo(
+    () => board.columns.flatMap((column) => column.tasks),
+    [board.columns]
+  );
+  const filteredTasks = useMemo(() => {
+    if (priorityFilter === "all") return allTasks;
+    return allTasks.filter((task) => task.priority === priorityFilter);
+  }, [allTasks, priorityFilter]);
+  const tasksWithDueDate = useMemo(
+    () => filteredTasks.filter((task) => task.dueDate),
+    [filteredTasks]
+  );
 
   // Handlers
   const handleAddTask = async (columnId: string) => {
@@ -181,6 +273,65 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
     });
   };
 
+  const handleToggleSubtask = async (subtaskId: string) => {
+    startTransition(async () => {
+      const result = await toggleSubtask(subtaskId);
+
+      if (result.success) {
+        setSelectedTask((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            subtasks: prev.subtasks.map((subtask) =>
+              subtask.id === subtaskId
+                ? { ...subtask, isCompleted: !subtask.isCompleted }
+                : subtask
+            ),
+          };
+        });
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to update subtask", "error");
+      }
+    });
+  };
+
+  const handleAddSubtask = async (taskId: string, title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+
+    startTransition(async () => {
+      const result = await addSubtask(taskId, trimmed);
+
+      if (result.success && result.subtaskId) {
+        setSelectedTask((prev) => {
+          if (!prev || prev.id !== taskId) return prev;
+          const position = prev.subtasks.length;
+          return {
+            ...prev,
+            subtasks: [
+              ...prev.subtasks,
+              {
+                id: result.subtaskId,
+                title: trimmed,
+                isCompleted: false,
+                position,
+              },
+            ],
+            _count: {
+              ...prev._count,
+              subtasks: prev._count.subtasks + 1,
+            },
+          };
+        });
+        showToast("Subtask added", "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to add subtask", "error");
+      }
+    });
+  };
+
   // Drag and drop handlers
   const handleDragStart = (task: Task) => {
     setDraggedTask(task);
@@ -220,6 +371,20 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
   const completedTasks = board.columns
     .filter((c) => c.name === "Done")
     .reduce((sum, col) => sum + col.tasks.length, 0);
+  const monthWeeks = useMemo(
+    () => generateMonthDays(calendarMonth.year, calendarMonth.month, tasksWithDueDate),
+    [calendarMonth, tasksWithDueDate]
+  );
+  const selectedDayTasks = useMemo(() => {
+    if (!selectedDate) return [];
+    return tasksWithDueDate
+      .filter((task) => task.dueDate && isSameDay(new Date(task.dueDate), selectedDate))
+      .sort((a, b) => {
+        const aTime = new Date(a.dueDate || 0).getTime();
+        const bTime = new Date(b.dueDate || 0).getTime();
+        return aTime - bTime;
+      });
+  }, [selectedDate, tasksWithDueDate]);
 
   return (
     <div className="flex h-full flex-col">
@@ -603,15 +768,152 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
         </div>
       )}
 
-      {/* Calendar View (Placeholder) */}
+      {/* Calendar View */}
       {viewMode === "calendar" && (
-        <div className="flex flex-1 items-center justify-center p-6">
-          <div className="text-center">
-            <CalendarIcon className="mx-auto h-12 w-12 text-foreground-muted" />
-            <h3 className="mt-4 text-lg font-medium text-foreground">Calendar View</h3>
-            <p className="mt-1 text-sm text-foreground-secondary">
-              Calendar view coming soon. View tasks by due date.
-            </p>
+        <div className="flex flex-1 flex-col gap-6 p-6">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+            <div className="flex items-center justify-between border-b border-[var(--card-border)] px-5 py-4">
+              <div>
+                <p className="text-sm text-foreground-muted">Task Calendar</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {getMonthLabel(new Date(calendarMonth.year, calendarMonth.month, 1))}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCalendarMonth((prev) => ({
+                    year: prev.month === 0 ? prev.year - 1 : prev.year,
+                    month: prev.month === 0 ? 11 : prev.month - 1,
+                  }))}
+                  className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => {
+                    const now = new Date();
+                    setCalendarMonth({ year: now.getFullYear(), month: now.getMonth() });
+                    setSelectedDate(now);
+                  }}
+                  className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                >
+                  Today
+                </button>
+                <button
+                  onClick={() => setCalendarMonth((prev) => ({
+                    year: prev.month === 11 ? prev.year + 1 : prev.year,
+                    month: prev.month === 11 ? 0 : prev.month + 1,
+                  }))}
+                  className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-7 border-b border-[var(--card-border)] bg-[var(--background)] text-xs font-medium text-foreground-muted">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                <div key={day} className="px-4 py-2 text-center">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-px bg-[var(--card-border)]">
+              {monthWeeks.flatMap((week, weekIndex) =>
+                week.map((day, dayIndex) => {
+                  const isSelected = selectedDate && isSameDay(day.date, selectedDate);
+                  return (
+                    <button
+                      key={`${weekIndex}-${dayIndex}-${day.date.toISOString()}`}
+                      onClick={() => setSelectedDate(day.date)}
+                      className={cn(
+                        "min-h-[90px] bg-[var(--card)] px-3 py-2 text-left transition-colors hover:bg-[var(--background-hover)]",
+                        !day.isCurrentMonth && "text-foreground-muted/60",
+                        isSelected && "ring-2 ring-[var(--primary)]/40"
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={cn(
+                            "text-sm font-medium",
+                            day.isToday && "text-[var(--primary)]"
+                          )}
+                        >
+                          {day.dayNumber}
+                        </span>
+                        {day.taskCount > 0 && (
+                          <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs text-[var(--primary)]">
+                            {day.taskCount}
+                          </span>
+                        )}
+                      </div>
+                      {day.taskCount === 0 && (
+                        <p className="mt-3 text-xs text-foreground-muted">No tasks</p>
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+            <div className="flex items-center justify-between border-b border-[var(--card-border)] px-5 py-4">
+              <div>
+                <p className="text-sm text-foreground-muted">Tasks Due</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {selectedDate
+                    ? selectedDate.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "Select a date"}
+                </p>
+              </div>
+              <span className="text-sm text-foreground-muted">
+                {selectedDate ? `${selectedDayTasks.length} tasks` : `${tasksWithDueDate.length} total`}
+              </span>
+            </div>
+
+            <div className="divide-y divide-[var(--card-border)]">
+              {selectedDate && selectedDayTasks.length === 0 && (
+                <div className="p-5 text-sm text-foreground-muted">
+                  No tasks due this day.
+                </div>
+              )}
+              {!selectedDate && (
+                <div className="p-5 text-sm text-foreground-muted">
+                  Choose a date to see tasks due.
+                </div>
+              )}
+              {selectedDayTasks.map((task) => (
+                <button
+                  key={task.id}
+                  onClick={() => setSelectedTask(task)}
+                  className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-[var(--background-hover)]"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <PriorityBadge priority={task.priority} />
+                      <p className="text-sm font-medium text-foreground">{task.title}</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
+                      {task.project && <span>{task.project.name}</span>}
+                      {task.client && <span>{task.client.fullName || task.client.email}</span>}
+                      {task.assignee && <span>Assigned to {task.assignee.fullName}</span>}
+                    </div>
+                  </div>
+                  <div className="text-xs text-foreground-muted">
+                    {task.dueDate
+                      ? new Date(task.dueDate).toLocaleDateString()
+                      : "No due date"}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -623,6 +925,8 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
           onClose={() => setSelectedTask(null)}
           onDelete={() => handleDeleteTask(selectedTask.id)}
           onUpdatePriority={(p) => handleUpdatePriority(selectedTask.id, p)}
+          onAddSubtask={(title) => handleAddSubtask(selectedTask.id, title)}
+          onToggleSubtask={handleToggleSubtask}
         />
       )}
     </div>
@@ -652,12 +956,24 @@ function TaskDetailModal({
   onClose,
   onDelete,
   onUpdatePriority,
+  onAddSubtask,
+  onToggleSubtask,
 }: {
   task: Task;
   onClose: () => void;
   onDelete: () => void;
   onUpdatePriority: (priority: TaskPriority) => void;
+  onAddSubtask: (title: string) => void;
+  onToggleSubtask: (subtaskId: string) => void;
 }) {
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+
+  const handleSubmitSubtask = () => {
+    if (!newSubtaskTitle.trim()) return;
+    onAddSubtask(newSubtaskTitle);
+    setNewSubtaskTitle("");
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="relative max-h-[80vh] w-full max-w-2xl overflow-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
@@ -716,17 +1032,18 @@ function TaskDetailModal({
           </div>
 
           {/* Subtasks */}
-          {task.subtasks.length > 0 && (
-            <div className="mb-6">
-              <h3 className="mb-2 text-sm font-medium text-foreground">
-                Subtasks ({task.subtasks.filter((s) => s.isCompleted).length}/
-                {task.subtasks.length})
-              </h3>
+          <div className="mb-6">
+            <h3 className="mb-2 text-sm font-medium text-foreground">
+              Subtasks ({task.subtasks.filter((s) => s.isCompleted).length}/
+              {task.subtasks.length})
+            </h3>
+            {task.subtasks.length > 0 ? (
               <div className="space-y-1">
                 {task.subtasks.map((subtask) => (
-                  <div
+                  <button
                     key={subtask.id}
-                    className="flex items-center gap-2 rounded-lg p-2 hover:bg-[var(--background-hover)]"
+                    onClick={() => onToggleSubtask(subtask.id)}
+                    className="flex w-full items-center gap-2 rounded-lg p-2 text-left transition-colors hover:bg-[var(--background-hover)]"
                   >
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded border ${
@@ -746,11 +1063,32 @@ function TaskDetailModal({
                     >
                       {subtask.title}
                     </span>
-                  </div>
+                  </button>
                 ))}
               </div>
+            ) : (
+              <p className="text-sm text-foreground-muted">No subtasks yet.</p>
+            )}
+
+            <div className="mt-3 flex items-center gap-2">
+              <input
+                value={newSubtaskTitle}
+                onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSubmitSubtask();
+                }}
+                placeholder="Add a subtask..."
+                className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground outline-none focus:border-[var(--primary)]"
+              />
+              <button
+                onClick={handleSubmitSubtask}
+                disabled={!newSubtaskTitle.trim()}
+                className="rounded-lg bg-[var(--primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+              >
+                Add
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Priority Selector */}
           <div className="mb-6">
