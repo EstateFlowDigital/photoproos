@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { DropboxConfig } from "@/lib/actions/dropbox";
 import {
-  saveDropboxConfig,
   updateDropboxSettings,
   testDropboxIntegration,
   deleteDropboxIntegration,
@@ -18,70 +18,71 @@ interface DropboxSettingsClientProps {
 export function DropboxSettingsClient({
   initialConfig,
 }: DropboxSettingsClientProps) {
+  const searchParams = useSearchParams();
   const [config, setConfig] = useState<DropboxConfig | null>(initialConfig);
-  const [accessToken, setAccessToken] = useState("");
   const [syncFolder, setSyncFolder] = useState(
     config?.syncFolder || "/PhotoProOS"
   );
   const [autoSync, setAutoSync] = useState(config?.autoSync ?? true);
   const [loading, setLoading] = useState(false);
-  const [testResult, setTestResult] = useState<{
-    success: boolean;
-    message: string;
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
   } | null>(null);
 
-  const handleConnect = async () => {
-    if (!accessToken.trim()) {
-      setTestResult({ success: false, message: "Please enter an access token" });
-      return;
-    }
+  // Handle OAuth callback messages
+  useEffect(() => {
+    const success = searchParams?.get("success");
+    const error = searchParams?.get("error");
 
-    setLoading(true);
-    setTestResult(null);
-
-    try {
-      const result = await saveDropboxConfig({
-        accessToken,
-        syncFolder,
-        autoSync,
+    if (success === "connected") {
+      setMessage({
+        type: "success",
+        text: "Successfully connected to Dropbox!",
       });
-
-      if (result.success) {
-        setConfig(result.data);
-        setAccessToken("");
-        setTestResult({
-          success: true,
-          message: `Connected to Dropbox as ${result.data.displayName}`,
-        });
-
-        // Create folder structure
-        await ensureDropboxRootFolder();
-      } else {
-        setTestResult({ success: false, message: result.error });
-      }
-    } catch {
-      setTestResult({ success: false, message: "Failed to connect" });
-    } finally {
-      setLoading(false);
+      // Refresh config after connection
+      window.location.reload();
+    } else if (error) {
+      const errorMessages: Record<string, string> = {
+        not_configured: "Dropbox integration is not configured. Please contact support.",
+        auth_failed: "Failed to start authorization. Please try again.",
+        missing_params: "Missing required parameters from Dropbox.",
+        invalid_state: "Invalid state parameter. Please try again.",
+        org_mismatch: "Organization mismatch. Please try again.",
+        missing_verifier: "Session expired. Please try again.",
+        token_exchange_failed: "Failed to complete authorization. Please try again.",
+        account_fetch_failed: "Failed to get account info. Please try again.",
+        callback_failed: "Authorization callback failed. Please try again.",
+        access_denied: "You denied access to Dropbox.",
+      };
+      setMessage({
+        type: "error",
+        text: errorMessages[error] || `Error: ${error}`,
+      });
     }
+  }, [searchParams]);
+
+  const handleConnect = () => {
+    // Redirect to OAuth authorization endpoint
+    window.location.href = "/api/integrations/dropbox/authorize";
   };
 
   const handleTest = async () => {
     setLoading(true);
-    setTestResult(null);
+    setMessage(null);
 
     try {
       const result = await testDropboxIntegration();
       if (result.success) {
-        setTestResult({
-          success: true,
-          message: `Connected as ${result.data.account.name.display_name} (${result.data.account.email})`,
+        setMessage({
+          type: "success",
+          text: `Connected as ${result.data.account.name.display_name} (${result.data.account.email})`,
         });
       } else {
-        setTestResult({ success: false, message: result.error });
+        setMessage({ type: "error", text: result.error });
       }
     } catch {
-      setTestResult({ success: false, message: "Connection test failed" });
+      setMessage({ type: "error", text: "Connection test failed" });
     } finally {
       setLoading(false);
     }
@@ -96,16 +97,15 @@ export function DropboxSettingsClient({
       });
 
       if (result.success) {
-        setTestResult({ success: true, message: "Settings updated" });
-        // Update local config
+        setMessage({ type: "success", text: "Settings updated" });
         if (config) {
           setConfig({ ...config, syncFolder, autoSync });
         }
       } else {
-        setTestResult({ success: false, message: result.error });
+        setMessage({ type: "error", text: result.error });
       }
     } catch {
-      setTestResult({ success: false, message: "Failed to update settings" });
+      setMessage({ type: "error", text: "Failed to update settings" });
     } finally {
       setLoading(false);
     }
@@ -125,12 +125,12 @@ export function DropboxSettingsClient({
       const result = await deleteDropboxIntegration();
       if (result.success) {
         setConfig(null);
-        setTestResult({ success: true, message: "Dropbox disconnected" });
+        setMessage({ type: "success", text: "Dropbox disconnected" });
       } else {
-        setTestResult({ success: false, message: result.error });
+        setMessage({ type: "error", text: result.error });
       }
     } catch {
-      setTestResult({ success: false, message: "Failed to disconnect" });
+      setMessage({ type: "error", text: "Failed to disconnect" });
     } finally {
       setLoading(false);
     }
@@ -141,15 +141,15 @@ export function DropboxSettingsClient({
     try {
       const result = await ensureDropboxRootFolder();
       if (result.success) {
-        setTestResult({
-          success: true,
-          message: `Folder structure created at ${result.data.path}`,
+        setMessage({
+          type: "success",
+          text: `Folder structure created at ${result.data.path}`,
         });
       } else {
-        setTestResult({ success: false, message: result.error });
+        setMessage({ type: "error", text: result.error });
       }
     } catch {
-      setTestResult({ success: false, message: "Failed to create folders" });
+      setMessage({ type: "error", text: "Failed to create folders" });
     } finally {
       setLoading(false);
     }
@@ -158,11 +158,11 @@ export function DropboxSettingsClient({
   return (
     <div className="space-y-6">
       {/* Status Banner */}
-      {testResult && (
+      {message && (
         <div
           className={cn(
             "rounded-lg border px-4 py-3",
-            testResult.success
+            message.type === "success"
               ? "border-[var(--success)]/30 bg-[var(--success)]/10"
               : "border-[var(--error)]/30 bg-[var(--error)]/10"
           )}
@@ -170,12 +170,12 @@ export function DropboxSettingsClient({
           <p
             className={cn(
               "text-sm",
-              testResult.success
+              message.type === "success"
                 ? "text-[var(--success)]"
                 : "text-[var(--error)]"
             )}
           >
-            {testResult.message}
+            {message.text}
           </p>
         </div>
       )}
@@ -183,7 +183,7 @@ export function DropboxSettingsClient({
       {/* Connection Status */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#0061FF]/10">
             <DropboxIcon className="h-8 w-8 text-[#0061FF]" />
           </div>
           <div className="flex-1">
@@ -246,7 +246,7 @@ export function DropboxSettingsClient({
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <button
                 onClick={handleTest}
                 disabled={loading}
@@ -262,6 +262,12 @@ export function DropboxSettingsClient({
                 Create Folder Structure
               </button>
               <button
+                onClick={handleConnect}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
+                Reconnect
+              </button>
+              <button
                 onClick={handleDisconnect}
                 disabled={loading}
                 className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 disabled:opacity-50"
@@ -273,40 +279,17 @@ export function DropboxSettingsClient({
         ) : (
           // Not connected state
           <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="accessToken"
-                className="block text-sm font-medium text-foreground mb-1.5"
-              >
-                Access Token
-              </label>
-              <input
-                id="accessToken"
-                type="password"
-                value={accessToken}
-                onChange={(e) => setAccessToken(e.target.value)}
-                placeholder="sl.xxxxx..."
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              />
-              <p className="mt-1.5 text-xs text-foreground-muted">
-                Get your access token from the{" "}
-                <a
-                  href="https://www.dropbox.com/developers/apps"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[var(--primary)] hover:underline"
-                >
-                  Dropbox App Console
-                </a>
-              </p>
-            </div>
+            <p className="text-sm text-foreground-muted">
+              Click the button below to connect your Dropbox account. You&apos;ll be
+              redirected to Dropbox to authorize access.
+            </p>
 
             <button
               onClick={handleConnect}
-              disabled={loading || !accessToken.trim()}
-              className="rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+              className="inline-flex items-center gap-3 rounded-lg bg-[#0061FF] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0061FF]/90"
             >
-              {loading ? "Connecting..." : "Connect Dropbox"}
+              <DropboxIcon className="h-5 w-5" />
+              Connect with Dropbox
             </button>
           </div>
         )}
@@ -399,56 +382,29 @@ export function DropboxSettingsClient({
         </div>
       )}
 
-      {/* Help Section */}
+      {/* What Gets Synced */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">
-          Setup Instructions
+          What Gets Synced
         </h2>
-        <ol className="space-y-3 text-sm text-foreground-muted">
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
-              1
-            </span>
-            <span>
-              Go to the{" "}
-              <a
-                href="https://www.dropbox.com/developers/apps"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[var(--primary)] hover:underline"
-              >
-                Dropbox App Console
-              </a>{" "}
-              and create or select your app
-            </span>
+        <ul className="space-y-3 text-sm text-foreground-muted">
+          <li className="flex items-start gap-3">
+            <CheckIcon className="h-5 w-5 text-[var(--success)] shrink-0 mt-0.5" />
+            <span>Gallery photos are automatically backed up when uploaded</span>
           </li>
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
-              2
-            </span>
-            <span>
-              In the Settings tab, generate an access token with full Dropbox
-              access
-            </span>
+          <li className="flex items-start gap-3">
+            <CheckIcon className="h-5 w-5 text-[var(--success)] shrink-0 mt-0.5" />
+            <span>Client deliverables are synced to their folders</span>
           </li>
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
-              3
-            </span>
-            <span>Paste the access token above and click Connect</span>
+          <li className="flex items-start gap-3">
+            <CheckIcon className="h-5 w-5 text-[var(--success)] shrink-0 mt-0.5" />
+            <span>Export files are saved to the Exports folder</span>
           </li>
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
-              4
-            </span>
-            <span>
-              Optional: Set up a webhook in the Dropbox App Console with URL:{" "}
-              <code className="rounded bg-[var(--background-secondary)] px-1.5 py-0.5">
-                https://app.photoproos.com/api/integrations/dropbox/webhook
-              </code>
-            </span>
+          <li className="flex items-start gap-3">
+            <CheckIcon className="h-5 w-5 text-[var(--success)] shrink-0 mt-0.5" />
+            <span>Changes in Dropbox sync back to PhotoProOS (with webhooks enabled)</span>
           </li>
-        </ol>
+        </ul>
       </div>
     </div>
   );
@@ -463,6 +419,23 @@ function DropboxIcon({ className }: { className?: string }) {
       className={className}
     >
       <path d="M6 2l6 3.75L6 9.5 0 5.75 6 2zm12 0l6 3.75-6 3.75-6-3.75L18 2zM0 13.25L6 9.5l6 3.75-6 3.75-6-3.75zm18-3.75l6 3.75-6 3.75-6-3.75 6-3.75zM6 17.5l6-3.75 6 3.75-6 3.75-6-3.75z" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }

@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Dropbox Integration**
+  - OAuth 2.0 Authorization Flow with PKCE:
+    - Authorization endpoint (`/api/integrations/dropbox/authorize`) with PKCE code challenge
+    - Callback handler (`/api/integrations/dropbox/callback`) for token exchange
+    - State parameter with org ID for CSRF protection
+    - httpOnly cookie storage for code verifier
+    - Automatic folder structure creation after connection
+  - Token Refresh Handling:
+    - `refreshDropboxToken()` - Refresh access token using refresh token
+    - `getValidAccessToken()` - Get valid token, auto-refreshing if expired
+    - `getDropboxClient()` - Get DropboxClient with valid token
+    - Automatic inactive marking when tokens can't be refreshed
+    - User-friendly error messages prompting reconnection
   - Webhook endpoint for Dropbox file change notifications (`/api/integrations/dropbox/webhook`)
   - Challenge verification for Dropbox webhook registration
   - HMAC-SHA256 signature verification for webhook security
@@ -27,11 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `listDropboxFolder` / `createDropboxFolder` / `getDropboxDownloadLink`
     - `ensureDropboxRootFolder` - Creates standard folder structure
   - Dropbox settings page (`/settings/dropbox`) with:
-    - Access token connection flow
+    - One-click "Connect with Dropbox" OAuth button
     - Sync folder configuration
     - Auto-sync toggle
-    - Connection testing
+    - Connection testing with auto token refresh
     - Folder structure creation
+    - OAuth callback success/error message handling
   - Updated integrations page to link to Dropbox settings
 
 ### Fixed

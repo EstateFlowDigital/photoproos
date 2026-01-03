@@ -18,6 +18,145 @@ type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+interface DropboxTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token?: string;
+}
+
+// ============================================================================
+// TOKEN REFRESH
+// ============================================================================
+
+/**
+ * Refresh the Dropbox access token using the refresh token
+ */
+async function refreshDropboxToken(
+  refreshToken: string
+): Promise<{ accessToken: string; refreshToken?: string } | null> {
+  const appKey = process.env.DROPBOX_APP_KEY;
+  const appSecret = process.env.DROPBOX_APP_SECRET;
+
+  if (!appKey || !appSecret) {
+    console.error("Dropbox credentials not configured for token refresh");
+    return null;
+  }
+
+  try {
+    const response = await fetch("https://api.dropboxapi.com/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: appKey,
+        client_secret: appSecret,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to refresh Dropbox token:", errorText);
+      return null;
+    }
+
+    const tokens: DropboxTokenResponse = await response.json();
+    return {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token, // Dropbox may return a new refresh token
+    };
+  } catch (error) {
+    console.error("Error refreshing Dropbox token:", error);
+    return null;
+  }
+}
+
+/**
+ * Get a valid access token for the organization, refreshing if necessary.
+ * Returns the access token and updates the database if refreshed.
+ */
+async function getValidAccessToken(
+  organizationId: string
+): Promise<string | null> {
+  const config = await prisma.dropboxIntegration.findUnique({
+    where: { organizationId },
+    select: {
+      id: true,
+      accessToken: true,
+      refreshToken: true,
+      isActive: true,
+    },
+  });
+
+  if (!config || !config.isActive) {
+    return null;
+  }
+
+  // First, try using the existing access token
+  const testResult = await testDropboxConnection(config.accessToken);
+  if (testResult.success) {
+    return config.accessToken;
+  }
+
+  // Access token is invalid/expired - try to refresh
+  if (!config.refreshToken) {
+    console.error("No refresh token available, user needs to reconnect");
+    // Mark integration as inactive since we can't refresh
+    await prisma.dropboxIntegration.update({
+      where: { id: config.id },
+      data: {
+        isActive: false,
+        lastSyncError: "Session expired. Please reconnect to Dropbox.",
+      },
+    });
+    return null;
+  }
+
+  // Attempt to refresh the token
+  const newTokens = await refreshDropboxToken(config.refreshToken);
+  if (!newTokens) {
+    // Refresh failed - mark as inactive
+    await prisma.dropboxIntegration.update({
+      where: { id: config.id },
+      data: {
+        isActive: false,
+        lastSyncError: "Failed to refresh session. Please reconnect to Dropbox.",
+      },
+    });
+    return null;
+  }
+
+  // Update database with new tokens
+  await prisma.dropboxIntegration.update({
+    where: { id: config.id },
+    data: {
+      accessToken: newTokens.accessToken,
+      // Only update refresh token if a new one was provided
+      ...(newTokens.refreshToken && { refreshToken: newTokens.refreshToken }),
+      lastSyncError: null,
+    },
+  });
+
+  return newTokens.accessToken;
+}
+
+/**
+ * Get a DropboxClient with a valid access token for the organization.
+ * Automatically handles token refresh if needed.
+ */
+async function getDropboxClient(
+  organizationId: string
+): Promise<DropboxClient | null> {
+  const accessToken = await getValidAccessToken(organizationId);
+  if (!accessToken) {
+    return null;
+  }
+  return new DropboxClient(accessToken);
+}
+
 export type DropboxConfig = {
   id: string;
   organizationId: string;
@@ -82,14 +221,20 @@ export async function getDropboxConnectionStatus(): Promise<
 
     const config = await prisma.dropboxIntegration.findUnique({
       where: { organizationId: auth.organizationId },
-      select: { accessToken: true, isActive: true },
+      select: { isActive: true },
     });
 
     if (!config || !config.isActive) {
       return { success: true, data: { connected: false } };
     }
 
-    const result = await testDropboxConnection(config.accessToken);
+    // This will automatically refresh the token if needed
+    const accessToken = await getValidAccessToken(auth.organizationId);
+    if (!accessToken) {
+      return { success: true, data: { connected: false } };
+    }
+
+    const result = await testDropboxConnection(accessToken);
     if (!result.success) {
       return { success: true, data: { connected: false } };
     }
@@ -255,16 +400,13 @@ export async function testDropboxIntegration(): Promise<ActionResult<{ account: 
       return { success: false, error: "Unauthorized" };
     }
 
-    const config = await prisma.dropboxIntegration.findUnique({
-      where: { organizationId: auth.organizationId },
-      select: { accessToken: true },
-    });
-
-    if (!config) {
-      return { success: false, error: "Dropbox integration not configured" };
+    // This will automatically refresh the token if needed
+    const accessToken = await getValidAccessToken(auth.organizationId);
+    if (!accessToken) {
+      return { success: false, error: "Dropbox session expired. Please reconnect." };
     }
 
-    const result = await testDropboxConnection(config.accessToken);
+    const result = await testDropboxConnection(accessToken);
     if (!result.success || !result.account) {
       return { success: false, error: result.error || "Connection failed" };
     }
@@ -310,14 +452,18 @@ export async function listDropboxFolder(
 
     const config = await prisma.dropboxIntegration.findUnique({
       where: { organizationId: auth.organizationId },
-      select: { accessToken: true, syncFolder: true },
+      select: { syncFolder: true },
     });
 
     if (!config) {
       return { success: false, error: "Dropbox integration not configured" };
     }
 
-    const client = new DropboxClient(config.accessToken);
+    const client = await getDropboxClient(auth.organizationId);
+    if (!client) {
+      return { success: false, error: "Dropbox session expired. Please reconnect." };
+    }
+
     const fullPath = path || config.syncFolder;
     const entries = await client.listAllFiles(fullPath);
 
@@ -340,14 +486,18 @@ export async function createDropboxFolder(
 
     const config = await prisma.dropboxIntegration.findUnique({
       where: { organizationId: auth.organizationId },
-      select: { accessToken: true, syncFolder: true },
+      select: { syncFolder: true },
     });
 
     if (!config) {
       return { success: false, error: "Dropbox integration not configured" };
     }
 
-    const client = new DropboxClient(config.accessToken);
+    const client = await getDropboxClient(auth.organizationId);
+    if (!client) {
+      return { success: false, error: "Dropbox session expired. Please reconnect." };
+    }
+
     const basePath = parentPath || config.syncFolder;
     const fullPath = `${basePath}/${folderName}`;
 
@@ -369,16 +519,11 @@ export async function getDropboxDownloadLink(
       return { success: false, error: "Unauthorized" };
     }
 
-    const config = await prisma.dropboxIntegration.findUnique({
-      where: { organizationId: auth.organizationId },
-      select: { accessToken: true },
-    });
-
-    if (!config) {
-      return { success: false, error: "Dropbox integration not configured" };
+    const client = await getDropboxClient(auth.organizationId);
+    if (!client) {
+      return { success: false, error: "Dropbox session expired. Please reconnect." };
     }
 
-    const client = new DropboxClient(config.accessToken);
     const link = await client.getTemporaryLink(path);
 
     return { success: true, data: { link } };
@@ -397,14 +542,17 @@ export async function ensureDropboxRootFolder(): Promise<ActionResult<{ path: st
 
     const config = await prisma.dropboxIntegration.findUnique({
       where: { organizationId: auth.organizationId },
-      select: { accessToken: true, syncFolder: true },
+      select: { syncFolder: true },
     });
 
     if (!config) {
       return { success: false, error: "Dropbox integration not configured" };
     }
 
-    const client = new DropboxClient(config.accessToken);
+    const client = await getDropboxClient(auth.organizationId);
+    if (!client) {
+      return { success: false, error: "Dropbox session expired. Please reconnect." };
+    }
 
     // Create root folder and subfolders
     await client.ensureFolder(config.syncFolder);
