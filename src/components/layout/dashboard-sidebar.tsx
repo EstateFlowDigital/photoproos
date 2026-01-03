@@ -82,17 +82,6 @@ export function DashboardSidebar({
         <span className="text-lg font-semibold text-foreground">PhotoProOS</span>
       </div>
 
-      {/* New Project Button */}
-      <div className="p-4 pb-2">
-        <Link
-          href="/create"
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-        >
-          <PlusIcon className="h-4 w-4" />
-          New Project
-        </Link>
-      </div>
-
       {/* Main Navigation */}
       <nav className="flex-1 space-y-1 px-4 pb-4">
         {sidebarNav.map((item) => {

@@ -371,11 +371,11 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
       <div className="flex items-center gap-2">
         {/* Quick create button */}
         <Link
-          href="/galleries/new"
-          className="flex h-9 items-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
+          href="/create"
+          className="hidden h-9 items-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 lg:flex"
         >
           <PlusIcon className="h-4 w-4" />
-          <span className="hidden sm:inline">New Gallery</span>
+          <span className="hidden xl:inline">New Project</span>
         </Link>
 
         {/* Notifications */}
