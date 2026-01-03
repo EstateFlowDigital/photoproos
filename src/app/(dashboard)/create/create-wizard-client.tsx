@@ -35,8 +35,11 @@ interface Service {
 
 interface Location {
   id: string;
-  name: string;
-  address: string | null;
+  name?: string;
+  address?: string;
+  formattedAddress: string;
+  city: string | null;
+  state: string | null;
 }
 
 interface BookingType {
