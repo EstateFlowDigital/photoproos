@@ -126,18 +126,18 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
               return (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
+                  className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                       {(member.user.fullName || member.user.email).charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground">{member.user.fullName || member.user.email}</p>
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground truncate">{member.user.fullName || member.user.email}</p>
                       <p className="text-sm text-foreground-muted">{member.user.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", roleInfo.color)}>
                       {roleInfo.label}
                     </span>
