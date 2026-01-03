@@ -444,15 +444,16 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
       {/* Board View */}
       {viewMode === "board" && (
         <div className="flex-1 overflow-x-auto p-6">
-          <div className="flex gap-4" style={{ minWidth: "max-content" }}>
+          <div className="grid gap-4 auto-rows-min lg:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
             {board.columns.map((column) => (
               <div
                 key={column.id}
-                className={`w-80 flex-shrink-0 rounded-xl border bg-[var(--background-secondary)] ${
+                className={cn(
+                  "flex h-full flex-col min-w-[220px] flex-1 rounded-xl border bg-[var(--background-secondary)]",
                   dragOverColumn === column.id
                     ? "border-[var(--primary)] ring-2 ring-[var(--primary)]/20"
                     : "border-[var(--card-border)]"
-                }`}
+                )}
                 onDragOver={(e) => handleDragOver(e, column.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, column.id)}

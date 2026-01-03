@@ -48,15 +48,18 @@ export async function createConnectAccount(): Promise<
     }
 
     // Create a new Connect account
+    // Note: Don't pre-fill email - Stripe will collect it during onboarding
     const account = await getStripe().accounts.create({
       type: "express",
       country: "US",
-      email: organization.name, // Use org name as placeholder, user will update
       capabilities: {
         card_payments: { requested: true },
         transfers: { requested: true },
       },
       business_type: "individual",
+      business_profile: {
+        name: organization.name,
+      },
       metadata: {
         organizationId,
         organizationName: organization.name,

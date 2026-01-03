@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Stripe Connect onboarding error "email is invalid" - was incorrectly passing organization name as email field
+
 ### Added
 - **Dropbox Integration**
   - OAuth 2.0 Authorization Flow with PKCE:
