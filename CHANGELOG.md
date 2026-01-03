@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Second Shooter / Crew Assignment System**
+  - New `BookingCrew` model for assigning multiple team members to bookings
+  - New `BookingCrewRole` enum: lead_photographer, second_shooter, assistant, videographer, stylist, makeup_artist, other
+  - Server actions for crew management:
+    - `getBookingCrew` - Get all crew members for a booking
+    - `getAvailableCrewMembers` - Get team members available for assignment
+    - `addCrewMember` - Assign a team member to a booking with role
+    - `updateCrewMember` - Update role, notes, or hourly rate
+    - `removeCrewMember` - Remove a crew member from a booking
+    - `confirmCrewAssignment` - Crew member confirms availability
+    - `declineCrewAssignment` - Crew member declines with optional reason
+    - `getMyCrewAssignments` - View current user's upcoming assignments
+  - Confirmation workflow for crew members to accept/decline assignments
+  - Optional hourly rate override per booking for contractor payments
+
 - **Comprehensive Email Notification System**
   - Created `OrderConfirmationEmail` template for order payment confirmations
   - Created `ContractSigningEmail` template for contract signing invitations and reminders
@@ -182,9 +197,131 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `getPendingPayouts` for photographers with approved earnings
   - `createPayoutBatch` for creating payout batches from approved earnings
   - `processPayoutBatch` for sending money via Stripe Connect transfers
-
   - `cancelPayoutBatch` for canceling pending batches
   - `getPayoutStats` for payout statistics
+
+- **Phase 3: SMS Notifications Database Models**
+  - `SMSTemplate` model for customizable SMS message templates with variable support
+  - `SMSLog` model for tracking all sent SMS with delivery status
+  - `BookingCheckIn` model for photographer check-in events (arrival, departure, en_route)
+  - `LocationPing` model for GPS pings during active bookings
+  - `SlackIntegration` model for Slack workspace connections
+  - `SlackChannel` model for event-based channel routing
+  - `BookingSlot` model for self-booking availability slots
+  - New enums: `SMSDeliveryStatus`, `SMSTemplateType`, `CheckInType`, `SlackEventType`
+  - Added Twilio configuration fields to Organization (twilioAccountSid, twilioAuthToken, twilioPhoneNumber, smsEnabled)
+  - Added self-booking fields to Organization (selfBookingEnabled, selfBookingPageSlug)
+
+- **Phase 3: Twilio SMS Integration**
+  - Created `src/lib/sms/twilio.ts` with lazy client initialization pattern
+  - Created `src/lib/sms/send.ts` with `sendSMS` and `sendTemplatedSMS` functions
+  - Created `src/lib/sms/templates.ts` with template variables and interpolation
+  - Template types: booking_confirmation, booking_reminder, photographer_en_route, photographer_arrived, gallery_ready
+  - E.164 phone number format validation
+  - SMS character counting with segment calculation
+  - Support for per-organization Twilio credentials
+
+- **Phase 3: SMS Server Actions**
+  - Settings: `getSMSSettings`, `updateSMSSettings` for Twilio configuration
+  - Templates: `getSMSTemplates`, `createSMSTemplate`, `updateSMSTemplate`, `deleteSMSTemplate`, `seedDefaultTemplates`
+  - Logs: `getSMSLogs`, `getSMSStats` for message history and analytics
+  - Sending: `sendManualSMS`, `sendBookingConfirmationSMS`, `sendPhotographerEnRouteSMS`, `sendGalleryReadySMS`, `sendTestSMS`
+  - Created `/api/webhooks/twilio/status` endpoint for delivery status callbacks
+
+- **Phase 3: SMS Settings UI**
+  - `/settings/sms` - SMS configuration page with Twilio credentials form
+  - Test SMS sending functionality with phone number input
+  - Templates overview grid with search and filtering
+  - `/settings/sms/templates` - Template management with CRUD operations
+  - Recent messages table with delivery status tracking
+  - Template variable reference display
+
+- **Phase 3: GPS Tracking & Check-In System**
+  - Created `src/lib/actions/field-operations.ts` with GPS-based operations
+  - `checkInToBooking` - GPS check-in with distance validation from property
+  - `recordLocationPing` - Continuous location tracking during bookings
+  - `getLatestLocation` - Retrieve photographer's last known location
+  - `getTodaysBookings` - Get photographer's schedule for the day
+  - `markEnRoute` - Mark photographer as traveling to booking location
+  - `getPublicTrackingData` - Client-facing tracking data for live updates
+  - Haversine formula for accurate distance calculation between coordinates
+
+- **Phase 3: Public Tracking Page**
+  - `/track/[id]` - Public tracking page for clients to view photographer location
+  - Real-time location updates with 10-second polling interval
+  - OpenStreetMap embed for visual tracking
+  - ETA display when photographer is en route
+  - Status indicators: waiting, en_route, on_site, completed
+  - Booking details display (date, time, service)
+
+- **Phase 3: Mobile PWA for Field Operations**
+  - Created `/public/manifest.json` for Progressive Web App installation
+  - PWA metadata: "ListingLens Field" with standalone display mode
+  - Created `/(field)/layout.tsx` with mobile-optimized layout
+  - Apple meta tags for iOS home screen support
+  - Safe area insets for notched devices
+  - Created `/(field)/field/page.tsx` - Field dashboard server page
+  - Created `field-dashboard-client.tsx` - Today's bookings with status grouping
+  - GPS location status indicator with real-time updates
+  - Check-in/check-out functionality with GPS verification
+  - Mark en route with automatic SMS notification to client
+  - Bottom navigation bar (Today, Schedule, Dashboard)
+  - Client phone call links and Google Maps navigation integration
+  - Created `/(field)/field/schedule/page.tsx` - Weekly schedule view
+  - Day selector with booking count indicators
+  - Grouped bookings display by date
+  - Created `/(field)/field/[id]/page.tsx` - Booking detail page
+  - Full booking info: time, service, client, property, notes
+  - Access instructions display for property entry
+  - Check-in history and activity timeline
+  - Action buttons: En Route → Check In → Check Out flow
+
+- **Phase 3: Slack Integration**
+  - Created `src/lib/integrations/slack.ts` with Slack Web API client
+  - OAuth 2.0 flow for workspace connection
+  - `exchangeCodeForToken` for OAuth token exchange
+  - `getSlackChannels` for listing public and private channels
+  - `sendSlackMessage` for posting to channels with Block Kit support
+  - `testSlackConnection` for verifying integration
+  - Rich message templates for: new_booking, booking_confirmed, photographer_en_route, photographer_arrived, gallery_ready, payment_received
+  - Block Kit message formatting with headers, fields, and action buttons
+
+- **Phase 3: Slack Server Actions**
+  - `getSlackAuthUrl` - Generate OAuth authorization URL
+  - `completeSlackOAuth` - Complete OAuth flow and save credentials
+  - `disconnectSlack` - Remove Slack integration
+  - `getAvailableSlackChannels` - List channels for configuration
+  - `configureSlackChannel` - Set channel for event type
+  - `removeSlackChannel` - Remove channel configuration
+  - `testSlackIntegration` - Send test message
+  - Notification functions: `notifySlackNewBooking`, `notifySlackBookingConfirmed`, `notifySlackPhotographerEnRoute`, `notifySlackPhotographerArrived`, `notifySlackGalleryReady`, `notifySlackPaymentReceived`
+
+- **Phase 3: Slack Settings UI**
+  - `/settings/slack` - Slack integration settings page
+  - OAuth connection button with workspace name display
+  - Disconnect functionality with confirmation
+  - Channel configuration per event type
+  - Test message sending for configured channels
+  - Error and success message handling
+  - Created `/api/integrations/slack/callback` for OAuth callback
+
+- **Phase 3: Client Self-Booking Portal**
+  - Created `src/lib/actions/self-booking.ts` with booking actions:
+    - `getSelfBookingSettings` - Check organization self-booking status
+    - `getAvailableServicesForBooking` - Get bookable services
+    - `getAvailableSlots` - Get time slots for date with conflict checking
+    - `getAvailableDates` - Get dates with available slots
+    - `submitBookingRequest` - Create booking request with client/property
+  - Created `/schedule/[orgSlug]` - Public self-booking portal
+  - Multi-step booking wizard: Service → Date/Time → Details → Confirm
+  - Progress indicator with step numbers
+  - Service cards grouped by category with pricing
+  - Interactive date picker showing available dates
+  - Time slot grid with photographer names
+  - Contact form with optional property address
+  - Booking review summary before submission
+  - Confirmation page with booking details and next steps
+  - Organization branding with logo and primary color
 
 - **Phase 2: Brokerage Management UI**
   - `/brokerages` - Brokerages list page with stats cards (total, active, agents, revenue)
