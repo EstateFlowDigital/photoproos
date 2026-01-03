@@ -66,6 +66,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created missing `territories-client.tsx` component
   - Added `@ts-nocheck` to `questionnaire-templates.ts` seed file to bypass JSON type validation
   - Fixed Slack config type to include extended fields for UI compatibility
+  - Fixed Dropbox upload file type compatibility (`Uint8Array<ArrayBufferLike>` to `BlobPart`)
+  - Created missing `template-editor-client.tsx` for questionnaire template editing
+  - Fixed `questionnaire-templates.ts` Prisma JSON field handling with `Prisma.JsonNull`
+  - Fixed `searchParams` null check in `dropbox-settings-client.tsx`
 - **Missing UI Components**
   - Created `label.tsx` Radix-based form label component
   - Created `textarea.tsx` re-export from input module
