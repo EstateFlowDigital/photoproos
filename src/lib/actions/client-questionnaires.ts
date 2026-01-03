@@ -99,6 +99,9 @@ export type ClientQuestionnaireWithRelations = {
     accepted: boolean;
     acceptedAt: Date | null;
     signatureData: string | null;
+    signatureType: "drawn" | "typed" | "uploaded" | null;
+    acceptedIp: string | null;
+    acceptedUserAgent: string | null;
   }>;
 };
 

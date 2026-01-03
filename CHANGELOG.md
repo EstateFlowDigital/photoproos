@@ -47,6 +47,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - OAuth callback success/error message handling
   - Updated integrations page to link to Dropbox settings
 
+- **Google Calendar Integration**
+  - OAuth 2.0 Authorization Flow with PKCE:
+    - Authorization endpoint (`/api/integrations/google/authorize`) with SHA-256 PKCE code challenge
+    - Callback handler (`/api/integrations/google/callback`) for token exchange
+    - State parameter with orgId, userId, and nonce for CSRF protection
+    - httpOnly cookie storage for code verifier (10 min expiry)
+    - Automatic calendar list fetching after connection
+  - Token Refresh Handling:
+    - `refreshGoogleToken()` - Refresh access token using refresh token
+    - `getValidAccessToken()` - Get valid token, auto-refreshing if expired
+    - Automatic inactive marking when tokens can't be refreshed
+  - Server actions (`src/lib/actions/google-calendar.ts`):
+    - `getGoogleCalendarConfig()` - Get current configuration
+    - `testGoogleCalendarConnection()` - Test connection with token refresh
+    - `updateGoogleCalendarSettings()` - Update sync settings
+    - `disconnectGoogleCalendar()` - Remove integration
+    - `syncGoogleCalendar()` - Trigger manual sync
+  - Calendar settings page (`/settings/calendar`) with:
+    - One-click "Connect with Google" OAuth button
+    - Calendar selection and sync settings
+    - Connection status with auto token refresh
+    - OAuth callback success/error message handling
+
+- **Enhanced Stripe Payments Settings**
+  - `getConnectAccountDetails()` server action with comprehensive account info:
+    - Account status (onboarded, charges/payouts enabled)
+    - Business info (type, name, email, country, currency)
+    - Payout schedule details (interval, delay days, anchor)
+    - External accounts (bank accounts and cards with last4)
+    - Onboarding requirements (currently due, eventually due, past due)
+    - Capabilities status (card payments, transfers)
+  - `isStripeTestMode()` helper to detect test vs live keys
+  - Enhanced payments settings client component with:
+    - Test mode banner when using test keys
+    - Account details card (business info, account ID)
+    - Payout settings card with linked bank accounts
+    - Onboarding requirements display for incomplete accounts
+    - Human-readable requirement labels
+    - Integrated tax settings form
+
 ### Fixed
 - **Onboarding Error**
   - Fixed `completeOnboarding` action crashing when organization doesn't exist (P2025 error)

@@ -8,12 +8,19 @@ import {
   submitQuestionnaireResponses,
   acceptAgreement,
 } from "@/lib/actions/questionnaire-portal";
+import { AgreementSignature } from "@/components/portal/agreement-signature";
 
 interface QuestionnaireFormProps {
   questionnaire: PortalQuestionnaireWithRelations;
 }
 
 type FormValues = Record<string, string | string[] | boolean>;
+
+// Track signature data for agreements that require signatures
+interface SignatureState {
+  signatureData: string | null;
+  signatureType: "drawn" | "typed" | "uploaded" | null;
+}
 
 export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
   const [isPending, startTransition] = useTransition();
@@ -37,6 +44,18 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
     const states: Record<string, boolean> = {};
     questionnaire.agreements.forEach((agreement) => {
       states[agreement.id] = agreement.accepted;
+    });
+    return states;
+  });
+
+  // Track signature data for agreements that require signatures
+  const [signatureStates, setSignatureStates] = useState<Record<string, SignatureState>>(() => {
+    const states: Record<string, SignatureState> = {};
+    questionnaire.agreements.forEach((agreement) => {
+      states[agreement.id] = {
+        signatureData: agreement.signatureData,
+        signatureType: agreement.signatureType,
+      };
     });
     return states;
   });
@@ -97,18 +116,52 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
     setValues((prev) => ({ ...prev, [fieldLabel]: value }));
   };
 
+  // Handle signature changes for agreements that require signatures
+  const handleSignatureChange = (
+    agreementId: string,
+    signatureData: string | null,
+    signatureType: "drawn" | "typed" | null
+  ) => {
+    setSignatureStates((prev) => ({
+      ...prev,
+      [agreementId]: { signatureData, signatureType },
+    }));
+  };
+
   const handleAgreementAccept = async (agreementId: string, accepted: boolean) => {
+    // Find the template agreement to check if signature is required
+    const agreement = questionnaire.agreements.find((a) => a.id === agreementId);
+    const templateAgreement = questionnaire.template.legalAgreements.find(
+      (ta) => ta.agreementType === agreement?.agreementType
+    );
+
+    // If signature is required, check if we have valid signature data
+    if (accepted && templateAgreement?.requiresSignature) {
+      const sigState = signatureStates[agreementId];
+      if (!sigState?.signatureData) {
+        setError("Please provide your signature before accepting this agreement");
+        return;
+      }
+    }
+
     setAgreementStates((prev) => ({ ...prev, [agreementId]: accepted }));
 
     if (accepted) {
+      const sigState = signatureStates[agreementId];
+
       startTransition(async () => {
         const result = await acceptAgreement({
           questionnaireId: questionnaire.id,
           agreementId,
+          signatureData: sigState?.signatureData || undefined,
+          signatureType: sigState?.signatureType || undefined,
         });
 
         if (!result.success) {
           setAgreementStates((prev) => ({ ...prev, [agreementId]: false }));
+          setError(result.error);
+        } else {
+          setError(null);
         }
       });
     }
@@ -155,7 +208,24 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
   const requiredAgreements = questionnaire.template.legalAgreements.filter((a) => a.isRequired);
   const acceptedRequiredAgreements = requiredAgreements.filter((a) => {
     const agreement = questionnaire.agreements.find((ag) => ag.agreementType === a.agreementType);
-    return agreement && agreementStates[agreement.id];
+    if (!agreement || !agreementStates[agreement.id]) return false;
+
+    // If signature is required, check if we have valid signature data
+    if (a.requiresSignature) {
+      const sigState = signatureStates[agreement.id];
+      return sigState?.signatureData !== null && sigState?.signatureData !== undefined;
+    }
+
+    return true;
+  });
+
+  // Count agreements that need signatures but don't have them yet
+  const agreementsNeedingSignature = requiredAgreements.filter((a) => {
+    if (!a.requiresSignature) return false;
+    const agreement = questionnaire.agreements.find((ag) => ag.agreementType === a.agreementType);
+    if (!agreement) return false;
+    const sigState = signatureStates[agreement.id];
+    return !sigState?.signatureData;
   });
 
   const isComplete =
@@ -284,15 +354,24 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
                   Please review and accept the following agreements
                 </p>
               </div>
-              <div className="p-6 space-y-6">
+              <div className="p-6 space-y-8">
                 {questionnaire.template.legalAgreements.map((legalAgreement) => {
                   const agreement = questionnaire.agreements.find(
                     (a) => a.agreementType === legalAgreement.agreementType
                   );
                   if (!agreement) return null;
 
+                  const isAccepted = agreementStates[agreement.id];
+                  const sigState = signatureStates[agreement.id];
+                  const hasSignature = sigState?.signatureData !== null && sigState?.signatureData !== undefined;
+
                   return (
-                    <div key={legalAgreement.id} className="space-y-3">
+                    <div
+                      key={legalAgreement.id}
+                      className={`space-y-4 pb-6 border-b border-[#262626] last:border-0 last:pb-0 ${
+                        legalAgreement.requiresSignature ? "bg-[#0a0a0a] -mx-6 px-6 py-6 first:-mt-2" : ""
+                      }`}
+                    >
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h3 className="font-medium text-white">
@@ -301,30 +380,93 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
                               <span className="ml-1 text-[#ef4444]">*</span>
                             )}
                           </h3>
+                          {legalAgreement.requiresSignature && (
+                            <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f97316]">
+                              <SignatureRequiredIcon className="w-3 h-3" />
+                              Signature required
+                            </span>
+                          )}
                         </div>
-                        {agreementStates[agreement.id] && (
-                          <span className="rounded-full bg-[#22c55e]/20 px-2 py-0.5 text-xs text-[#22c55e]">
-                            Accepted
+                        {isAccepted && (
+                          <span className="rounded-full bg-[#22c55e]/20 px-2 py-0.5 text-xs text-[#22c55e] flex items-center gap-1">
+                            <CheckSmallIcon className="w-3 h-3" />
+                            Accepted & Signed
                           </span>
                         )}
                       </div>
-                      <div className="max-h-40 overflow-y-auto rounded-lg border border-[#262626] bg-[#0a0a0a] p-4 text-sm text-[#a7a7a7]">
+
+                      {/* Agreement Content */}
+                      <div className="max-h-48 overflow-y-auto rounded-lg border border-[#262626] bg-[#141414] p-4 text-sm text-[#a7a7a7]">
                         <div
                           dangerouslySetInnerHTML={{
                             __html: legalAgreement.content.replace(/\n/g, "<br />"),
                           }}
                         />
                       </div>
-                      <label className="flex items-center gap-3 cursor-pointer">
+
+                      {/* Signature Pad (if required and not yet accepted) */}
+                      {legalAgreement.requiresSignature && !isAccepted && (
+                        <div className="pt-2">
+                          <p className="text-sm text-white mb-3 font-medium">
+                            Your Signature
+                          </p>
+                          <AgreementSignature
+                            onSignatureChange={(signatureData, signatureType) =>
+                              handleSignatureChange(agreement.id, signatureData, signatureType)
+                            }
+                            disabled={isPending || isAccepted}
+                          />
+                        </div>
+                      )}
+
+                      {/* Show stored signature if already signed */}
+                      {legalAgreement.requiresSignature && isAccepted && hasSignature && (
+                        <div className="pt-2">
+                          <p className="text-sm text-[#7c7c7c] mb-2">Your signature:</p>
+                          <div className="bg-white rounded-lg p-3 inline-block border border-[#262626]">
+                            <img
+                              src={sigState.signatureData!}
+                              alt="Your signature"
+                              className="h-16 w-auto"
+                            />
+                          </div>
+                          <p className="text-xs text-[#7c7c7c] mt-2">
+                            Signed on{" "}
+                            {agreement.acceptedAt
+                              ? new Date(agreement.acceptedAt).toLocaleDateString("en-US", {
+                                  month: "long",
+                                  day: "numeric",
+                                  year: "numeric",
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                })
+                              : "N/A"}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Accept checkbox */}
+                      <label
+                        className={`flex items-start gap-3 cursor-pointer ${
+                          isAccepted ? "opacity-75" : ""
+                        }`}
+                      >
                         <input
                           type="checkbox"
-                          checked={agreementStates[agreement.id] || false}
+                          checked={isAccepted || false}
                           onChange={(e) => handleAgreementAccept(agreement.id, e.target.checked)}
-                          disabled={isPending}
-                          className="h-5 w-5 rounded border-[#262626] bg-[#0a0a0a] text-[#3b82f6] focus:ring-[#3b82f6] disabled:opacity-50"
+                          disabled={isPending || isAccepted}
+                          className="mt-0.5 h-5 w-5 rounded border-[#262626] bg-[#0a0a0a] text-[#3b82f6] focus:ring-[#3b82f6] disabled:opacity-50"
                         />
                         <span className="text-sm text-white">
-                          I have read and agree to the {legalAgreement.title}
+                          {legalAgreement.requiresSignature ? (
+                            <>
+                              I have read, understand, and agree to the {legalAgreement.title}.
+                              I confirm that the signature above is my legal signature.
+                            </>
+                          ) : (
+                            <>I have read and agree to the {legalAgreement.title}</>
+                          )}
                         </span>
                       </label>
                     </div>
@@ -337,11 +479,29 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
           {/* Submit button */}
           <div className="flex items-center justify-between rounded-xl border border-[#262626] bg-[#141414] p-6">
             <div>
-              <p className="text-sm text-[#7c7c7c]">
-                {isComplete
-                  ? "All required fields and agreements completed"
-                  : `${requiredFields.length - completedRequired.length} required fields remaining`}
-              </p>
+              {isComplete ? (
+                <p className="text-sm text-[#22c55e]">
+                  All required fields and agreements completed
+                </p>
+              ) : (
+                <div className="space-y-1">
+                  {requiredFields.length - completedRequired.length > 0 && (
+                    <p className="text-sm text-[#7c7c7c]">
+                      {requiredFields.length - completedRequired.length} required field{requiredFields.length - completedRequired.length !== 1 ? 's' : ''} remaining
+                    </p>
+                  )}
+                  {requiredAgreements.length - acceptedRequiredAgreements.length > 0 && (
+                    <p className="text-sm text-[#7c7c7c]">
+                      {requiredAgreements.length - acceptedRequiredAgreements.length} agreement{requiredAgreements.length - acceptedRequiredAgreements.length !== 1 ? 's' : ''} require acceptance
+                    </p>
+                  )}
+                  {agreementsNeedingSignature.length > 0 && (
+                    <p className="text-sm text-[#f97316]">
+                      {agreementsNeedingSignature.length} agreement{agreementsNeedingSignature.length !== 1 ? 's' : ''} need{agreementsNeedingSignature.length === 1 ? 's' : ''} your signature
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
             <button
               type="submit"
@@ -547,6 +707,23 @@ function LoadingSpinner({ className }: { className?: string }) {
     <svg className={`animate-spin ${className}`} fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function SignatureRequiredIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
+      <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
+    </svg>
+  );
+}
+
+function CheckSmallIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
     </svg>
   );
 }

@@ -245,3 +245,213 @@ export async function createDashboardLink(): Promise<
     return { success: false, error: "Failed to create dashboard link" };
   }
 }
+
+// ============================================================================
+// DETAILED ACCOUNT INFO
+// ============================================================================
+
+export interface ConnectAccountDetails {
+  hasAccount: boolean;
+  accountId: string | null;
+  isOnboarded: boolean;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  detailsSubmitted: boolean;
+  pendingVerification: boolean;
+  isTestMode: boolean;
+  businessType: string | null;
+  businessName: string | null;
+  email: string | null;
+  country: string | null;
+  defaultCurrency: string | null;
+  payoutSchedule: {
+    interval: string;
+    delayDays: number;
+    weeklyAnchor?: string;
+    monthlyAnchor?: number;
+  } | null;
+  externalAccounts: Array<{
+    id: string;
+    type: "bank_account" | "card";
+    last4: string;
+    bankName?: string;
+    currency: string;
+    isDefault: boolean;
+  }>;
+  requirements: {
+    currentlyDue: string[];
+    eventuallyDue: string[];
+    pastDue: string[];
+  } | null;
+  capabilities: {
+    cardPayments: string;
+    transfers: string;
+  } | null;
+}
+
+/**
+ * Check if Stripe is in test mode
+ */
+export async function isStripeTestMode(): Promise<boolean> {
+  const key = process.env.STRIPE_SECRET_KEY || "";
+  return key.startsWith("sk_test_");
+}
+
+/**
+ * Get detailed Stripe Connect account information
+ */
+export async function getConnectAccountDetails(): Promise<
+  ActionResult<ConnectAccountDetails>
+> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+    });
+
+    if (!organization) {
+      return { success: false, error: "Organization not found" };
+    }
+
+    const defaultResult: ConnectAccountDetails = {
+      hasAccount: false,
+      accountId: null,
+      isOnboarded: false,
+      chargesEnabled: false,
+      payoutsEnabled: false,
+      detailsSubmitted: false,
+      pendingVerification: false,
+      isTestMode: await isStripeTestMode(),
+      businessType: null,
+      businessName: null,
+      email: null,
+      country: null,
+      defaultCurrency: null,
+      payoutSchedule: null,
+      externalAccounts: [],
+      requirements: null,
+      capabilities: null,
+    };
+
+    if (!organization.stripeConnectAccountId) {
+      return { success: true, data: defaultResult };
+    }
+
+    // Get the full account from Stripe with expanded external_accounts
+    const account = await getStripe().accounts.retrieve(
+      organization.stripeConnectAccountId,
+      {
+        expand: ["external_accounts"],
+      }
+    );
+
+    const isOnboarded =
+      account.charges_enabled &&
+      account.payouts_enabled &&
+      account.details_submitted;
+
+    // Update the organization if onboarding status changed
+    if (isOnboarded !== organization.stripeConnectOnboarded) {
+      await prisma.organization.update({
+        where: { id: organizationId },
+        data: { stripeConnectOnboarded: isOnboarded },
+      });
+    }
+
+    // Extract external accounts (bank accounts and cards)
+    const externalAccounts: ConnectAccountDetails["externalAccounts"] = [];
+    if (account.external_accounts?.data) {
+      for (const ext of account.external_accounts.data) {
+        if (ext.object === "bank_account") {
+          externalAccounts.push({
+            id: ext.id,
+            type: "bank_account",
+            last4: ext.last4,
+            bankName: ext.bank_name || undefined,
+            currency: ext.currency,
+            isDefault: ext.default_for_currency ?? false,
+          });
+        } else if (ext.object === "card") {
+          externalAccounts.push({
+            id: ext.id,
+            type: "card",
+            last4: ext.last4,
+            currency: ext.currency || "usd",
+            isDefault: ext.default_for_currency ?? false,
+          });
+        }
+      }
+    }
+
+    // Extract payout schedule
+    let payoutSchedule: ConnectAccountDetails["payoutSchedule"] = null;
+    if (account.settings?.payouts?.schedule) {
+      const schedule = account.settings.payouts.schedule;
+      payoutSchedule = {
+        interval: schedule.interval,
+        delayDays: schedule.delay_days as number,
+        weeklyAnchor: schedule.weekly_anchor,
+        monthlyAnchor: schedule.monthly_anchor,
+      };
+    }
+
+    // Extract requirements
+    let requirements: ConnectAccountDetails["requirements"] = null;
+    if (account.requirements) {
+      requirements = {
+        currentlyDue: account.requirements.currently_due || [],
+        eventuallyDue: account.requirements.eventually_due || [],
+        pastDue: account.requirements.past_due || [],
+      };
+    }
+
+    // Extract capabilities
+    let capabilities: ConnectAccountDetails["capabilities"] = null;
+    if (account.capabilities) {
+      capabilities = {
+        cardPayments: account.capabilities.card_payments || "inactive",
+        transfers: account.capabilities.transfers || "inactive",
+      };
+    }
+
+    // Get business name from the account
+    let businessName: string | null = null;
+    if (account.business_profile?.name) {
+      businessName = account.business_profile.name;
+    } else if (account.individual?.first_name) {
+      businessName = `${account.individual.first_name} ${account.individual.last_name || ""}`.trim();
+    }
+
+    return {
+      success: true,
+      data: {
+        hasAccount: true,
+        accountId: organization.stripeConnectAccountId,
+        isOnboarded,
+        chargesEnabled: account.charges_enabled ?? false,
+        payoutsEnabled: account.payouts_enabled ?? false,
+        detailsSubmitted: account.details_submitted ?? false,
+        pendingVerification:
+          (account.requirements?.pending_verification?.length ?? 0) > 0,
+        isTestMode: await isStripeTestMode(),
+        businessType: account.business_type || null,
+        businessName,
+        email: account.email || null,
+        country: account.country || null,
+        defaultCurrency: account.default_currency || null,
+        payoutSchedule,
+        externalAccounts,
+        requirements,
+        capabilities,
+      },
+    };
+  } catch (error) {
+    console.error("Error getting Connect account details:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get account details" };
+  }
+}

@@ -324,10 +324,10 @@ export function QuestionnaireResponseViewer({
           <div className="divide-y divide-[var(--card-border)]">
             {questionnaire.agreements.map((agreement) => (
               <div key={agreement.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
                     <div
-                      className={`rounded-full p-1 ${
+                      className={`rounded-full p-1 mt-0.5 ${
                         agreement.accepted
                           ? "bg-green-500/10 text-green-400"
                           : "bg-gray-500/10 text-gray-400"
@@ -344,18 +344,44 @@ export function QuestionnaireResponseViewer({
                       <p className="text-xs text-foreground-muted">
                         {agreement.agreementType.replace(/_/g, " ")}
                       </p>
+
+                      {/* Signature display */}
+                      {agreement.signatureData && (
+                        <div className="mt-3">
+                          <p className="text-xs text-foreground-muted mb-2">Signature:</p>
+                          <div className="inline-block rounded-lg border border-[var(--card-border)] bg-white p-2">
+                            <img
+                              src={agreement.signatureData}
+                              alt={`Signature for ${agreement.title}`}
+                              className="h-12 w-auto"
+                            />
+                          </div>
+                          <p className="text-xs text-foreground-muted mt-1">
+                            {agreement.signatureType === "drawn" ? "Hand-drawn" :
+                             agreement.signatureType === "typed" ? "Typed" :
+                             agreement.signatureType === "uploaded" ? "Uploaded" : ""} signature
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     {agreement.accepted ? (
-                      <p className="text-sm text-green-400">
-                        Accepted {agreement.acceptedAt && formatDate(agreement.acceptedAt)}
-                      </p>
+                      <div>
+                        <p className="text-sm text-green-400">Accepted</p>
+                        {agreement.acceptedAt && (
+                          <p className="text-xs text-foreground-muted">
+                            {formatDate(agreement.acceptedAt)}
+                          </p>
+                        )}
+                        {agreement.acceptedIp && (
+                          <p className="text-xs text-foreground-muted mt-1">
+                            IP: {agreement.acceptedIp}
+                          </p>
+                        )}
+                      </div>
                     ) : (
                       <p className="text-sm text-foreground-muted">Not accepted</p>
-                    )}
-                    {agreement.signatureData && (
-                      <p className="text-xs text-foreground-muted">Signature on file</p>
                     )}
                   </div>
                 </div>
