@@ -255,7 +255,7 @@ export function PortfolioDetailClient({ website, availableProjects }: PortfolioD
             </div>
           </div>
 
-          <div className="mt-6 flex items-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <button
               onClick={handleSaveDetails}
               disabled={isPending}
@@ -324,7 +324,7 @@ export function PortfolioDetailClient({ website, availableProjects }: PortfolioD
             })}
           </div>
 
-          <div className="mt-5 flex items-center justify-between text-sm text-foreground-muted">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-foreground-muted">
             <span>{selectedProjectsCount} selected</span>
             <button
               onClick={handleSaveProjects}
