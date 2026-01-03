@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -267,6 +267,7 @@ export function SchedulingPageClient({
   const [isPending, startTransition] = useTransition();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [calendarView, setCalendarView] = useState<CalendarViewMode>("month");
+  const [isCompact, setIsCompact] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -313,6 +314,18 @@ export function SchedulingPageClient({
     setWeekOffset(0);
     setSelectedDate(null);
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const compact = window.innerWidth < 640;
+      setIsCompact(compact);
+      setCalendarView((prev) => (compact && prev === "month" ? "list" : prev));
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Generate calendar data
   const weekDays = useMemo(() => generateWeekDays(weekOffset, bookings), [weekOffset, bookings]);
@@ -859,8 +872,8 @@ export function SchedulingPageClient({
               {/* Day Headers */}
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                  <div key={day} className="text-center text-xs font-medium text-foreground-muted py-2">
-                    {day}
+                  <div key={day} className="text-center text-[10px] font-medium text-foreground-muted py-1 sm:text-xs sm:py-2">
+                    {isCompact ? day.charAt(0) : day}
                   </div>
                 ))}
               </div>
@@ -878,7 +891,7 @@ export function SchedulingPageClient({
                       key={index}
                       onClick={() => setSelectedDate(day.date)}
                       className={cn(
-                        "min-h-[100px] p-1.5 rounded-lg border text-left transition-all flex flex-col",
+                        "min-h-[90px] p-1.5 rounded-lg border text-left transition-all flex flex-col sm:min-h-[100px]",
                         isCurrentMonth
                           ? "bg-[var(--background)] border-[var(--card-border)] hover:border-[var(--primary)]/50"
                           : "bg-[var(--background)]/50 border-transparent",
@@ -887,7 +900,7 @@ export function SchedulingPageClient({
                       )}
                     >
                       <span className={cn(
-                        "text-sm font-medium mb-1",
+                        "text-xs font-medium mb-1 sm:text-sm",
                         isCurrentMonth ? "text-foreground" : "text-foreground-muted",
                         day.isToday && "text-[var(--primary)]"
                       )}>
