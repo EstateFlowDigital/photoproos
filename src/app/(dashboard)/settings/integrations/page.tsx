@@ -12,7 +12,7 @@ const availableIntegrations = [
       description: "Two-way sync bookings with your Google Calendar",
       icon: "📅",
       category: "Scheduling",
-      connectUrl: "/api/integrations/google/authorize",
+      connectUrl: "/settings/calendar",
       featured: true,
     },
     {
