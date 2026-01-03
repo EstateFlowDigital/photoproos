@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { InviteModal, PendingInvitations } from "./invite-modal";
 
@@ -41,8 +42,23 @@ const roleLabels = {
 
 export function TeamPageClient({ members, pendingInvitations, memberLimit }: TeamPageClientProps) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const inviteHandledRef = useRef(false);
 
   const canInvite = memberLimit === -1 || members.length < memberLimit;
+  const inviteParam = searchParams.get("invite");
+
+  useEffect(() => {
+    if (inviteHandledRef.current || !inviteParam) {
+      return;
+    }
+
+    if (["1", "true", "yes"].includes(inviteParam.toLowerCase())) {
+      setIsInviteModalOpen(true);
+    }
+
+    inviteHandledRef.current = true;
+  }, [inviteParam]);
 
   return (
     <div className="space-y-6">

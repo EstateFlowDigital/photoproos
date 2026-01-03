@@ -28,9 +28,7 @@ const allNavItems: NavItem[] = [
   { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
 ];
 
-const bottomNavItems: NavItem[] = [
-  { label: "Settings", href: "/settings", icon: SettingsIcon, moduleId: "settings" },
-];
+const bottomNavItems: NavItem[] = [];
 
 interface DashboardSidebarProps {
   className?: string;
@@ -83,7 +81,7 @@ export function DashboardSidebar({
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 space-y-1 px-4 pb-4">
+      <nav className="flex-1 space-y-2 px-4 pb-6 pt-4">
         {sidebarNav.map((item) => {
           const isActive = pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
           const IconComponent = item.icon;
@@ -124,71 +122,72 @@ export function DashboardSidebar({
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="border-t border-[var(--card-border)] p-4 space-y-1">
-        {/* Notifications Link */}
-        {(() => {
-          const isActive = pathname === "/notifications" || (pathname ? pathname.startsWith("/notifications/") : false);
-          return (
-            <Link
-              href="/notifications"
-              className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-[var(--primary)] text-white"
-                  : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-              )}
-            >
-              <NotificationIcon
+      <div className="border-t border-[var(--card-border)] p-4">
+        <div className="space-y-2">
+          {/* Notifications Link */}
+          {(() => {
+            const isActive = pathname === "/notifications" || (pathname ? pathname.startsWith("/notifications/") : false);
+            return (
+              <Link
+                href="/notifications"
                 className={cn(
-                  "h-5 w-5 shrink-0 transition-colors",
-                  isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-[var(--primary)] text-white"
+                    : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                 )}
-              />
-              <span className="flex-1">Notifications</span>
-              {notificationCount > 0 && (
-                <span
+              >
+                <NotificationIcon
                   className={cn(
-                    "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                    "h-5 w-5 shrink-0 transition-colors",
+                    isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
                   )}
-                >
-                  {notificationCount > 99 ? "99+" : notificationCount}
-                </span>
-              )}
-            </Link>
-          );
-        })()}
-
-        {bottomNavItems.map((item) => {
-          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-          const IconComponent = item.icon;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-[var(--primary)] text-white"
-                  : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-              )}
-            >
-              <IconComponent
-                className={cn(
-                  "h-5 w-5 shrink-0 transition-colors",
-                  isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                />
+                <span className="flex-1">Notifications</span>
+                {notificationCount > 0 && (
+                  <span
+                    className={cn(
+                      "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                    )}
+                  >
+                    {notificationCount > 99 ? "99+" : notificationCount}
+                  </span>
                 )}
-              />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })()}
 
-        {/* Organization Switcher */}
-        <div className="mt-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
+          {bottomNavItems.map((item) => {
+            const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+            const IconComponent = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-[var(--primary)] text-white"
+                    : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                )}
+              >
+                <IconComponent
+                  className={cn(
+                    "h-5 w-5 shrink-0 transition-colors",
+                    isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                  )}
+                />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 space-y-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
           <OrganizationSwitcher
             appearance={{
               elements: {
@@ -199,20 +198,39 @@ export function DashboardSidebar({
             afterSelectOrganizationUrl="/dashboard"
             afterCreateOrganizationUrl="/dashboard"
           />
-        </div>
 
-        {/* User Button */}
-        <div className="mt-3 flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "h-9 w-9",
-              },
-            }}
-            afterSignOutUrl="/"
-          />
-          <div className="flex-1 min-w-0 hidden sm:block">
-            <p className="truncate text-xs text-foreground-muted">Signed in</p>
+          <div className="flex items-center gap-3">
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "h-9 w-9",
+                },
+              }}
+              afterSignOutUrl="/"
+            />
+            <div className="flex-1 min-w-0 hidden sm:block">
+              <p className="truncate text-xs text-foreground-muted">Signed in</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              href="/settings"
+              className={cn(
+                "flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-medium transition-colors",
+                pathname.startsWith("/settings")
+                  ? "border-transparent bg-[var(--primary)] text-white"
+                  : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+              )}
+            >
+              Settings
+            </Link>
+            <Link
+              href="/settings/team?invite=1"
+              className="flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-medium text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            >
+              Invite Team
+            </Link>
           </div>
         </div>
       </div>
