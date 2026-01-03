@@ -25,6 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Applied fix to both desktop sidebar and mobile nav
 
 ### Changed
+- **Redesigned Scheduling Page for Better UX**
+  - Bookings now displayed as proper clickable cards instead of list items
+  - Entire booking card is clickable to navigate to booking details
+  - Added interactive week calendar with day selection
+  - Click any day to see bookings for that specific date
+  - Calendar days now show booking count badges
+  - Improved visual hierarchy with time blocks, status badges, and location info
+  - Added "View all upcoming" link to return from day view
+  - Responsive grid layout for booking cards
+  - Arrow indicator on cards highlights on hover
+  - Better empty states for days with no bookings
+
+
 - **Standardized Dropdown/Select Styling**
   - Created new `Select` component at `/components/ui/select.tsx` matching design system
   - Created new `DropdownMenu` component at `/components/ui/dropdown-menu.tsx` for action menus

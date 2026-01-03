@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -41,7 +41,10 @@ interface CalendarDay {
   dayNumber: number;
   isToday: boolean;
   hasBooking: boolean;
+  bookingCount: number;
 }
+
+type ViewMode = "upcoming" | "day";
 
 interface SchedulingPageClientProps {
   clients: Client[];
@@ -121,16 +124,38 @@ function generateCalendarDays(weekOffset: number, bookings: Booking[]): Calendar
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
+    const dayBookings = bookings.filter(
+      (b) => new Date(b.startTime).toDateString() === date.toDateString()
+    );
     return {
       date,
       dayName: weekDays[i],
       dayNumber: date.getDate(),
       isToday: date.toDateString() === today.toDateString(),
-      hasBooking: bookings.some(
-        (b) => new Date(b.startTime).toDateString() === date.toDateString()
-      ),
+      hasBooking: dayBookings.length > 0,
+      bookingCount: dayBookings.length,
     };
   });
+}
+
+// Helper to format full date
+function formatFullDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+// Helper to calculate duration in hours and minutes
+function formatDuration(start: Date, end: Date): string {
+  const diffMs = end.getTime() - start.getTime();
+  const hours = Math.floor(diffMs / 3600000);
+  const minutes = Math.floor((diffMs % 3600000) / 60000);
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
 }
 
 // Helper to get week label
@@ -163,11 +188,14 @@ export function SchedulingPageClient({
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("upcoming");
 
   // Generate calendar days based on week offset
-  const calendarDays = weekOffset === 0
-    ? initialCalendarDays
-    : generateCalendarDays(weekOffset, bookings);
+  const calendarDays = useMemo(() => {
+    const days = generateCalendarDays(weekOffset, bookings);
+    return days;
+  }, [weekOffset, bookings]);
 
   const handleBookingCreated = (booking: { id: string }) => {
     router.refresh();
@@ -175,19 +203,115 @@ export function SchedulingPageClient({
 
   const goToPreviousWeek = () => setWeekOffset((prev) => prev - 1);
   const goToNextWeek = () => setWeekOffset((prev) => prev + 1);
-  const goToCurrentWeek = () => setWeekOffset(0);
+  const goToCurrentWeek = () => {
+    setWeekOffset(0);
+    setSelectedDate(null);
+    setViewMode("upcoming");
+  };
 
-  // Group bookings by day
-  const bookingsByDay = bookings.reduce((acc, booking) => {
-    const dayKey = new Date(booking.startTime).toDateString();
-    if (!acc[dayKey]) {
-      acc[dayKey] = [];
-    }
-    acc[dayKey].push(booking);
-    return acc;
-  }, {} as Record<string, typeof bookings>);
+  const handleDayClick = (day: CalendarDay) => {
+    setSelectedDate(day.date);
+    setViewMode("day");
+  };
 
-  const days = Object.keys(bookingsByDay);
+  // Get bookings for selected day
+  const selectedDayBookings = useMemo(() => {
+    if (!selectedDate) return [];
+    return bookings
+      .filter((b) => new Date(b.startTime).toDateString() === selectedDate.toDateString())
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }, [selectedDate, bookings]);
+
+  // Group upcoming bookings by day
+  const bookingsByDay = useMemo(() => {
+    const grouped = bookings.reduce((acc, booking) => {
+      const dayKey = new Date(booking.startTime).toDateString();
+      if (!acc[dayKey]) {
+        acc[dayKey] = [];
+      }
+      acc[dayKey].push(booking);
+      return acc;
+    }, {} as Record<string, typeof bookings>);
+
+    // Sort bookings within each day by time
+    Object.keys(grouped).forEach((key) => {
+      grouped[key].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    });
+
+    return grouped;
+  }, [bookings]);
+
+  const days = Object.keys(bookingsByDay).sort(
+    (a, b) => new Date(a).getTime() - new Date(b).getTime()
+  );
+
+  // Status badge component
+  const StatusBadge = ({ status }: { status: string }) => {
+    const statusLabels: Record<string, string> = {
+      pending: "Pending",
+      confirmed: "Confirmed",
+      completed: "Completed",
+      cancelled: "Cancelled",
+    };
+    const statusBadgeColors: Record<string, string> = {
+      pending: "bg-[var(--warning)]/15 text-[var(--warning)]",
+      confirmed: "bg-[var(--primary)]/15 text-[var(--primary)]",
+      completed: "bg-[var(--success)]/15 text-[var(--success)]",
+      cancelled: "bg-[var(--error)]/15 text-[var(--error)]",
+    };
+    return (
+      <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", statusBadgeColors[status])}>
+        {statusLabels[status] || status}
+      </span>
+    );
+  };
+
+  // Booking Card Component
+  const BookingCard = ({ booking }: { booking: Booking }) => (
+    <Link
+      href={`/scheduling/${booking.id}`}
+      className="group block rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/5"
+    >
+      <div className="flex items-start justify-between gap-4">
+        {/* Left: Time & Status */}
+        <div className="flex items-start gap-4">
+          {/* Time Block */}
+          <div className="shrink-0 rounded-lg bg-[var(--background)] border border-[var(--card-border)] px-3 py-2 text-center min-w-[80px]">
+            <p className="text-lg font-bold text-foreground">
+              {formatTime(new Date(booking.startTime))}
+            </p>
+            <p className="text-xs text-foreground-muted">
+              {formatDuration(new Date(booking.startTime), new Date(booking.endTime))}
+            </p>
+          </div>
+
+          {/* Details */}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-semibold text-foreground group-hover:text-[var(--primary)] transition-colors">
+                {booking.title}
+              </h4>
+              <StatusBadge status={booking.status} />
+            </div>
+            <p className="mt-1 text-sm text-foreground-muted">
+              {booking.client?.company || booking.client?.fullName || booking.clientName || "No client"}
+            </p>
+            {booking.location && (
+              <p className="mt-2 text-xs text-foreground-muted flex items-center gap-1.5">
+                <LocationIcon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{booking.location}</span>
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Right: Arrow */}
+        <div className="shrink-0 rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors group-hover:bg-[var(--primary)] group-hover:text-white">
+          <ChevronRightIcon className="h-4 w-4" />
+        </div>
+      </div>
+    </Link>
+  );
 
   return (
     <>
@@ -223,15 +347,15 @@ export function SchedulingPageClient({
         ]}
       />
 
-      {/* Week View */}
+      {/* Week Calendar */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h3 className="font-semibold text-foreground">{getWeekLabel(weekOffset)}</h3>
-            {weekOffset !== 0 && (
+            <h3 className="text-lg font-semibold text-foreground">{getWeekLabel(weekOffset)}</h3>
+            {(weekOffset !== 0 || viewMode === "day") && (
               <button
                 onClick={goToCurrentWeek}
-                className="rounded-md px-2 py-1 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+                className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 transition-colors hover:bg-[var(--primary)]/20"
               >
                 Today
               </button>
@@ -240,14 +364,14 @@ export function SchedulingPageClient({
           <div className="flex gap-1">
             <button
               onClick={goToPreviousWeek}
-              className="rounded-lg bg-[var(--card)] border border-[var(--card-border)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
               title="Previous week"
             >
               <ChevronLeftIcon className="h-4 w-4" />
             </button>
             <button
               onClick={goToNextWeek}
-              className="rounded-lg bg-[var(--card)] border border-[var(--card-border)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
               title="Next week"
             >
               <ChevronRightIcon className="h-4 w-4" />
@@ -255,121 +379,146 @@ export function SchedulingPageClient({
           </div>
         </div>
 
+        {/* Calendar Grid */}
         <div className="grid grid-cols-7 gap-2">
-          {calendarDays.map((day, index) => (
-            <div key={`${weekOffset}-${index}`} className="text-center">
-              <p className="mb-2 text-xs font-medium text-foreground-muted">
-                {day.dayName}
-              </p>
-              <div
+          {calendarDays.map((day, index) => {
+            const isSelected = selectedDate?.toDateString() === day.date.toDateString();
+            return (
+              <button
+                key={`${weekOffset}-${index}`}
+                onClick={() => handleDayClick(day)}
                 className={cn(
-                  "mx-auto flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors",
-                  day.isToday
+                  "relative flex flex-col items-center rounded-xl p-3 transition-all",
+                  isSelected
                     ? "bg-[var(--primary)] text-white"
-                    : day.hasBooking
-                    ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-                    : "text-foreground hover:bg-[var(--background-hover)]"
+                    : day.isToday
+                    ? "bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20"
+                    : "hover:bg-[var(--background-hover)]"
                 )}
               >
-                {day.dayNumber}
-              </div>
-              {day.hasBooking && !day.isToday && (
-                <div className="mx-auto mt-1 h-1 w-1 rounded-full bg-[var(--primary)]" />
-              )}
-            </div>
-          ))}
+                <span className={cn(
+                  "text-xs font-medium mb-1",
+                  isSelected ? "text-white/80" : "text-foreground-muted"
+                )}>
+                  {day.dayName}
+                </span>
+                <span className={cn(
+                  "text-lg font-semibold",
+                  isSelected ? "text-white" : day.isToday ? "text-[var(--primary)]" : "text-foreground"
+                )}>
+                  {day.dayNumber}
+                </span>
+                {day.bookingCount > 0 && (
+                  <span className={cn(
+                    "mt-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium",
+                    isSelected
+                      ? "bg-white/20 text-white"
+                      : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                  )}>
+                    {day.bookingCount} {day.bookingCount === 1 ? "booking" : "bookings"}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Upcoming Bookings */}
+      {/* Bookings Section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">Upcoming Bookings</h2>
-
-        {days.length > 0 ? (
-          <div className="space-y-6">
-            {days.map((dayKey) => (
-              <div key={dayKey}>
-                <h3 className="mb-3 text-sm font-medium text-foreground-muted">
-                  {getRelativeDay(new Date(dayKey))}
-                </h3>
-                <div className="space-y-3">
-                  {bookingsByDay[dayKey].map((booking) => (
-                    <div
-                      key={booking.id}
-                      className={cn(
-                        "flex items-center gap-4 rounded-xl border-l-4 bg-[var(--card)] p-4 transition-all hover:shadow-md",
-                        statusColors[booking.status]
-                      )}
-                    >
-                      {/* Time */}
-                      <div className="shrink-0 text-center">
-                        <p className="text-lg font-semibold text-foreground">
-                          {formatTime(new Date(booking.startTime))}
-                        </p>
-                        <p className="text-xs text-foreground-muted">
-                          {Math.round(
-                            (new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) /
-                              3600000
-                          )}h
-                        </p>
-                      </div>
-
-                      {/* Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              "h-2 w-2 rounded-full",
-                              statusDotColors[booking.status]
-                            )}
-                          />
-                          <p className="font-medium text-foreground truncate">
-                            {booking.title}
-                          </p>
-                        </div>
-                        <p className="mt-0.5 text-sm text-foreground-muted truncate">
-                          {booking.client?.company ||
-                            booking.client?.fullName ||
-                            booking.clientName}
-                        </p>
-                        {booking.location && (
-                          <p className="mt-1 text-xs text-foreground-muted flex items-center gap-1">
-                            <LocationIcon className="h-3 w-3" />
-                            {booking.location}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <Link
-                        href={`/scheduling/${booking.id}`}
-                        className="shrink-0 rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
-                      >
-                        <ChevronRightIcon className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  ))}
-                </div>
+        {viewMode === "day" && selectedDate ? (
+          <>
+            {/* Selected Day Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {formatFullDate(selectedDate)}
+                </h2>
+                <p className="text-sm text-foreground-muted">
+                  {selectedDayBookings.length} {selectedDayBookings.length === 1 ? "booking" : "bookings"}
+                </p>
               </div>
-            ))}
-          </div>
+              <button
+                onClick={() => {
+                  setViewMode("upcoming");
+                  setSelectedDate(null);
+                }}
+                className="text-sm font-medium text-[var(--primary)] hover:underline"
+              >
+                View all upcoming
+              </button>
+            </div>
+
+            {/* Selected Day Bookings */}
+            {selectedDayBookings.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                {selectedDayBookings.map((booking) => (
+                  <BookingCard key={booking.id} booking={booking} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-12 text-center">
+                <CalendarIcon className="mx-auto h-10 w-10 text-foreground-muted" />
+                <h3 className="mt-3 text-base font-medium text-foreground">
+                  No bookings on this day
+                </h3>
+                <p className="mt-1 text-sm text-foreground-muted">
+                  Click below to schedule a shoot for this date.
+                </p>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  New Booking
+                </button>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
-            <CalendarIcon className="mx-auto h-12 w-12 text-foreground-muted" />
-            <h3 className="mt-4 text-lg font-medium text-foreground">
-              No upcoming bookings
-            </h3>
-            <p className="mt-2 text-sm text-foreground-muted">
-              Create a booking to start scheduling your photo shoots.
-            </p>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
-            >
-              <PlusIcon className="h-4 w-4" />
-              New Booking
-            </button>
-          </div>
+          <>
+            {/* Upcoming Bookings Header */}
+            <h2 className="text-lg font-semibold text-foreground">Upcoming Bookings</h2>
+
+            {days.length > 0 ? (
+              <div className="space-y-6">
+                {days.map((dayKey) => (
+                  <div key={dayKey}>
+                    <div className="mb-3 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {getRelativeDay(new Date(dayKey))}
+                      </h3>
+                      <span className="rounded-full bg-[var(--background-secondary)] px-2 py-0.5 text-xs text-foreground-muted">
+                        {bookingsByDay[dayKey].length} {bookingsByDay[dayKey].length === 1 ? "booking" : "bookings"}
+                      </span>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                      {bookingsByDay[dayKey].map((booking) => (
+                        <BookingCard key={booking.id} booking={booking} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
+                <CalendarIcon className="mx-auto h-12 w-12 text-foreground-muted" />
+                <h3 className="mt-4 text-lg font-medium text-foreground">
+                  No upcoming bookings
+                </h3>
+                <p className="mt-2 text-sm text-foreground-muted">
+                  Create a booking to start scheduling your photo shoots.
+                </p>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  New Booking
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

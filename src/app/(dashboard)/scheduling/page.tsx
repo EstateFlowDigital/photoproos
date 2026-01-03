@@ -80,14 +80,16 @@ export default async function SchedulingPage() {
   const calendarDays = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
+    const dayBookings = bookings.filter(
+      (b) => b.startTime.toDateString() === date.toDateString()
+    );
     return {
       date,
       dayName: weekDays[i],
       dayNumber: date.getDate(),
       isToday: isToday(date),
-      hasBooking: bookings.some(
-        (b) => b.startTime.toDateString() === date.toDateString()
-      ),
+      hasBooking: dayBookings.length > 0,
+      bookingCount: dayBookings.length,
     };
   });
 

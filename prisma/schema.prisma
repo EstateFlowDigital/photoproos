@@ -411,6 +411,12 @@ model Organization {
   paymentPlans       PaymentPlan[]
   invoiceTemplates   InvoiceTemplate[]
 
+  // Phase 1: Ordering System relations
+  serviceBundles     ServiceBundle[]
+  serviceAddons      ServiceAddon[]
+  orderPages         OrderPage[]
+  orders             Order[]
+
   @@index([slug])
   @@index([plan])
 }
@@ -513,6 +519,10 @@ model Client {
   communications  ClientCommunication[]
   tags            ClientTagAssignment[]
 
+  // Phase 1: Ordering System relations
+  orderPages      OrderPage[]            // Dedicated order pages for this client
+  orders          Order[]                // Orders placed by this client
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([email])
@@ -559,6 +569,12 @@ model Service {
   bookings              Booking[] // Bookings using this service
   userCapabilities      UserServiceCapability[] // Team members who can perform this service
   equipmentRequirements ServiceEquipmentRequirement[] // Equipment required for this service
+
+  // Phase 1: Ordering System relations
+  bundleItems           ServiceBundleItem[]           // Bundles this service is part of
+  addonCompatibility    ServiceAddonCompat[]          // Addons compatible with this service
+  orderPageServices     OrderPageService[]            // Order pages featuring this service
+  orderItems            OrderItem[]                   // Order items referencing this service
 
   @@index([organizationId])
   @@index([category])
@@ -844,6 +860,10 @@ model Booking {
   invoiceLineItems InvoiceLineItem[]
   tasks            Task[]
 
+  // Phase 1: Ordering System relations
+  orderId          String?           @unique
+  order            Order?            @relation("OrderBooking", fields: [orderId], references: [id], onDelete: SetNull)
+
   @@index([organizationId])
   @@index([clientId])
   @@index([serviceId])
@@ -916,6 +936,10 @@ model Invoice {
   lineItems    InvoiceLineItem[]
   payments     Payment[]
   tasks        Task[]
+
+  // Phase 1: Ordering System relations
+  orderId      String?           @unique
+  order        Order?            @relation("OrderInvoice", fields: [orderId], references: [id], onDelete: SetNull)
 
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
@@ -1196,6 +1220,9 @@ model Location {
   bookings        Booking[]
   projects        Project[]
   propertyDetails PropertyDetails?
+
+  // Phase 1: Ordering System relations
+  orders          Order[]
 
   @@index([organizationId])
   @@index([placeId])
@@ -1646,6 +1673,9 @@ model DiscountCode {
   organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   usages       DiscountCodeUsage[]
 
+  // Phase 1: Ordering System relations
+  orders       Order[]
+
   @@unique([organizationId, code])
   @@index([organizationId])
   @@index([code])
@@ -2076,4 +2106,340 @@ model CalendarEvent {
   @@index([calendarIntegrationId])
   @@index([bookingId])
   @@index([startTime])
+}
+
+// ============================================================================
+// SPIRO FEATURE PARITY - PHASE 1: ORDERING SYSTEM & PRODUCT BUNDLES
+// ============================================================================
+
+enum OrderStatus {
+  cart        // Items added, not submitted
+  pending     // Submitted, awaiting payment
+  paid        // Payment received
+  processing  // Being worked on
+  completed   // Delivered
+  cancelled   // Cancelled by client or admin
+}
+
+enum BundleType {
+  fixed       // Fixed set of services
+  tiered      // Pick X services from a group
+  custom      // Build your own
+}
+
+enum AddonTrigger {
+  always            // Always show
+  with_service      // Show when specific service selected
+  cart_threshold    // Show when cart > X amount
+}
+
+// ============================================================================
+// SERVICE BUNDLES (Package services together with bundle pricing)
+// ============================================================================
+
+model ServiceBundle {
+  id             String     @id @default(cuid())
+  organizationId String
+
+  // Bundle info
+  name           String
+  slug           String
+  description    String?    @db.Text
+  priceCents     Int        // Bundle price
+  bundleType     BundleType @default(fixed)
+
+  // Display
+  imageUrl       String?
+  badgeText      String?    // "Most Popular", "Best Value"
+  sortOrder      Int        @default(0)
+
+  // Savings display
+  originalPriceCents Int?   // Sum of individual services (for savings display)
+  savingsPercent     Float? // Calculated savings percentage
+
+  // Settings
+  isActive       Boolean    @default(true)
+  isPublic       Boolean    @default(true)  // Show on public order pages
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // Relations
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  services       ServiceBundleItem[]    // Services included in bundle
+  orderPages     OrderPageBundle[]      // Order pages featuring this bundle
+  orderItems     OrderItem[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([isActive, isPublic])
+}
+
+model ServiceBundleItem {
+  id        String @id @default(cuid())
+  bundleId  String
+  serviceId String
+
+  // For tiered bundles: is this required or optional?
+  isRequired Boolean @default(true)
+  quantity   Int     @default(1)
+  sortOrder  Int     @default(0)
+
+  // Relations
+  bundle  ServiceBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  service Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([bundleId, serviceId])
+  @@index([bundleId])
+  @@index([serviceId])
+}
+
+// ============================================================================
+// SERVICE ADDONS (Cross-sells/Upsells)
+// ============================================================================
+
+model ServiceAddon {
+  id             String       @id @default(cuid())
+  organizationId String
+
+  // Addon info
+  name           String
+  description    String?
+  priceCents     Int
+
+  // Display
+  imageUrl       String?
+  iconName       String?      // Icon identifier
+  sortOrder      Int          @default(0)
+
+  // Trigger conditions
+  triggerType    AddonTrigger @default(always)
+  triggerValue   String?      // Service ID or amount threshold
+
+  // Settings
+  isActive       Boolean      @default(true)
+  isOneTime      Boolean      @default(true)  // Can only add once
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  compatibleWith ServiceAddonCompat[] // Services this addon works with
+  orderItems     OrderItem[]
+
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+model ServiceAddonCompat {
+  id        String @id @default(cuid())
+  addonId   String
+  serviceId String
+
+  addon   ServiceAddon @relation(fields: [addonId], references: [id], onDelete: Cascade)
+  service Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([addonId, serviceId])
+  @@index([addonId])
+  @@index([serviceId])
+}
+
+// ============================================================================
+// ORDER PAGES (Custom branded landing pages)
+// ============================================================================
+
+model OrderPage {
+  id             String @id @default(cuid())
+  organizationId String
+  clientId       String?  // Optional: dedicated page for specific client/brokerage
+
+  // Page info
+  name           String
+  slug           String
+
+  // Branding overrides
+  headline       String?
+  subheadline    String?
+  heroImageUrl   String?
+  logoOverrideUrl String?   // Override org logo for this page
+  primaryColor   String?    // Override org primary color
+
+  // Contact info display
+  showPhone      Boolean @default(true)
+  showEmail      Boolean @default(true)
+  customPhone    String?
+  customEmail    String?
+
+  // Template/Layout
+  template       String  @default("default")  // "default", "minimal", "luxury"
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  // Settings
+  isPublished    Boolean @default(false)
+  requireLogin   Boolean @default(false)  // Require client portal login
+
+  // Testimonials/social proof
+  testimonials   Json?    // Array of { name, company, quote, photoUrl }
+
+  // Analytics
+  viewCount      Int      @default(0)
+  orderCount     Int      @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client         Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  bundles        OrderPageBundle[]
+  services       OrderPageService[]
+  orders         Order[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([isPublished])
+}
+
+model OrderPageBundle {
+  id          String  @id @default(cuid())
+  orderPageId String
+  bundleId    String
+  sortOrder   Int     @default(0)
+  isFeatured  Boolean @default(false)  // Highlight as recommended
+
+  orderPage OrderPage     @relation(fields: [orderPageId], references: [id], onDelete: Cascade)
+  bundle    ServiceBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  @@unique([orderPageId, bundleId])
+  @@index([orderPageId])
+}
+
+model OrderPageService {
+  id          String  @id @default(cuid())
+  orderPageId String
+  serviceId   String
+  sortOrder   Int     @default(0)
+
+  orderPage OrderPage @relation(fields: [orderPageId], references: [id], onDelete: Cascade)
+  service   Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([orderPageId, serviceId])
+  @@index([orderPageId])
+}
+
+// ============================================================================
+// ORDERS (Shopping Cart / Pre-Invoice)
+// ============================================================================
+
+model Order {
+  id             String      @id @default(cuid())
+  organizationId String
+  orderPageId    String?     // Which order page it came from
+  clientId       String?     // Linked client (if known)
+
+  // Order reference
+  orderNumber    String      // e.g., "ORD-2025-0001"
+  status         OrderStatus @default(cart)
+
+  // Totals (in cents)
+  subtotalCents  Int         @default(0)
+  discountCents  Int         @default(0)
+  taxCents       Int         @default(0)
+  totalCents     Int         @default(0)
+
+  // Discount code applied
+  discountCodeId String?
+
+  // Client info (for guest checkout)
+  clientName     String?
+  clientEmail    String?
+  clientPhone    String?
+  clientCompany  String?
+
+  // Property/Shoot location
+  locationId     String?
+  locationNotes  String?
+
+  // Scheduling preference
+  preferredDate  DateTime?
+  preferredTime  String?     // "morning", "afternoon", "evening"
+  flexibleDates  Boolean     @default(true)
+
+  // Notes
+  clientNotes    String?     @db.Text
+  internalNotes  String?     @db.Text
+
+  // Session token for guest checkout
+  sessionToken   String?     @unique
+
+  // Payment
+  paidAt         DateTime?
+  paymentMethod  String?
+
+  // Stripe
+  stripeCheckoutSessionId String? @unique
+  stripePaymentIntentId   String? @unique
+
+  // Conversion tracking
+  source         String?     // utm_source
+  medium         String?     // utm_medium
+  campaign       String?     // utm_campaign
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  submittedAt    DateTime?   // When cart was submitted
+
+  // Relations
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  orderPage      OrderPage?     @relation(fields: [orderPageId], references: [id], onDelete: SetNull)
+  client         Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  location       Location?      @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  discountCode   DiscountCode?  @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  invoice        Invoice?       @relation("OrderInvoice")
+  booking        Booking?       @relation("OrderBooking")
+
+  @@unique([organizationId, orderNumber])
+  @@index([organizationId])
+  @@index([orderPageId])
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+
+  // Item type
+  itemType  String   // "service", "bundle", "addon"
+  serviceId String?
+  bundleId  String?
+  addonId   String?
+
+  // Details
+  name        String
+  description String?
+  quantity    Int     @default(1)
+  unitCents   Int
+  totalCents  Int
+
+  sortOrder   Int     @default(0)
+
+  createdAt   DateTime @default(now())
+
+  // Relations
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  service Service?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  bundle  ServiceBundle? @relation(fields: [bundleId], references: [id], onDelete: SetNull)
+  addon   ServiceAddon?  @relation(fields: [addonId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([serviceId])
+  @@index([bundleId])
 }
