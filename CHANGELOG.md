@@ -7,7 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Spiro Feature Parity - Phase 1: Ordering System Database Models**
+  - Added `ServiceBundle` model for packaging services together with bundle pricing
+  - Added `ServiceBundleItem` junction table for bundle ↔ service relationships
+  - Added `ServiceAddon` model for cross-sell/upsell items with trigger conditions
+  - Added `ServiceAddonCompat` junction table for addon ↔ service compatibility
+  - Added `OrderPage` model for custom branded landing pages with testimonials
+  - Added `OrderPageBundle` and `OrderPageService` junction tables
+  - Added `Order` model for shopping cart / pre-invoice with guest checkout support
+  - Added `OrderItem` model for individual cart items
+  - Added new enums: `OrderStatus`, `BundleType`, `AddonTrigger`
+  - Updated existing models (Service, Organization, Client, Invoice, Booking, Location, DiscountCode) with ordering system relations
+
+- **Spiro Feature Parity - Phase 1: Bundle CRUD Actions**
+  - Created `src/lib/validations/bundles.ts` with Zod schemas for bundle validation
+  - Created `src/lib/actions/bundles.ts` with full CRUD operations:
+    - `createBundle` / `updateBundle` / `deleteBundle` / `duplicateBundle`
+    - `toggleBundleStatus` - activate/deactivate bundles
+    - `setBundleServices` / `addServiceToBundle` / `removeServiceFromBundle`
+    - `reorderBundleItems` - drag-and-drop ordering support
+    - `calculateBundleSavings` - auto-calculate savings percentage
+    - `getBundles` / `getBundle` / `getBundleBySlug` - queries with filters
+
 ### Fixed
+- **Addons Action Type Error**
+  - Fixed `typeof addons` return type error in `getCompatibleAddons` function
+  - Added proper `CompatibleAddon` interface with correct types
+
 - **Dashboard Metrics Not Updating Correctly**
   - Changed monthly revenue calculation to use Invoice table instead of Payment table
   - Revenue now calculated from paid invoices with `paidAt` date in the current month
@@ -36,6 +63,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Responsive grid layout for booking cards
   - Arrow indicator on cards highlights on hover
   - Better empty states for days with no bookings
+  - **Stats Summary**: Added 4 stat cards showing This Week count, Hours Scheduled, Pending, and Confirmed
+  - **Today's Agenda**: Dedicated section highlighting today's bookings with quick preview cards
+  - **Status Filters**: Filter tabs (All, Pending, Confirmed, Completed, Cancelled) with real-time counts
+  - **Search**: Search bookings by client name, company, title, or location
+  - **Quick Actions**: Hover over cards to reveal Confirm/Complete/Cancel buttons for instant status updates
 
 
 - **Standardized Dropdown/Select Styling**
