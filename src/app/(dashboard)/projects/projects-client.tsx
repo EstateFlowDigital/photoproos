@@ -303,32 +303,32 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
     startTransition(async () => {
       const result = await addSubtask(taskId, trimmed);
 
-      if (result.success && result.subtaskId) {
-        setSelectedTask((prev) => {
-          if (!prev || prev.id !== taskId) return prev;
-          const position = prev.subtasks.length;
-          return {
-            ...prev,
-            subtasks: [
-              ...prev.subtasks,
-              {
-                id: result.subtaskId,
-                title: trimmed,
-                isCompleted: false,
-                position,
-              },
-            ],
-            _count: {
-              ...prev._count,
-              subtasks: prev._count.subtasks + 1,
-            },
-          };
-        });
-        showToast("Subtask added", "success");
-        router.refresh();
-      } else {
+    if (!result.success || !result.subtaskId) {
         showToast(result.error || "Failed to add subtask", "error");
+        return;
       }
+
+      const newSubtask: Subtask = {
+        id: result.subtaskId,
+        title: trimmed,
+        isCompleted: false,
+        position: 0,
+      };
+
+      setSelectedTask((prev) => {
+        if (!prev || prev.id !== taskId) return prev;
+        const nextPosition = prev.subtasks.length;
+        return {
+          ...prev,
+          subtasks: [...prev.subtasks, { ...newSubtask, position: nextPosition }],
+          _count: {
+            ...prev._count,
+            subtasks: prev._count.subtasks + 1,
+          },
+        };
+      });
+      showToast("Subtask added", "success");
+      router.refresh();
     });
   };
 
