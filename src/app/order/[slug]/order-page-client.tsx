@@ -423,7 +423,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
             <p className="text-sm text-[#454545]">
               Powered by{" "}
               <Link href="/" className="text-[#7c7c7c] hover:text-white transition-colors">
-                ListingLens
+                PhotoProOS
               </Link>
             </p>
           </div>

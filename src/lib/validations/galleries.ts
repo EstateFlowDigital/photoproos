@@ -38,6 +38,17 @@ export const gallerySchema = z.object({
     .refine((val) => val === null || /^[cC][^\s-]{8,}$/.test(val), {
       message: "Invalid service ID",
     }),
+  // Multi-service support
+  services: z
+    .array(
+      z.object({
+        serviceId: z.string().cuid(),
+        isPrimary: z.boolean().default(false),
+        priceCentsOverride: z.number().optional().nullable(),
+      })
+    )
+    .optional()
+    .default([]),
   locationId: z
     .string()
     .optional()
