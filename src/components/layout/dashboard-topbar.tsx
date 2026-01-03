@@ -313,7 +313,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search galleries, clients..."
+            placeholder="Search galleries, clients, invoices..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             onFocus={() => setSearchOpen(true)}
@@ -349,8 +349,12 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
                         {getResultIcon(result.type)}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{result.title}</p>
-                        <p className="text-xs text-foreground-muted truncate">{result.subtitle}</p>
+                        <p className="text-sm font-medium text-foreground truncate" title={result.title}>
+                          {result.title}
+                        </p>
+                        <p className="text-xs text-foreground-muted truncate" title={result.subtitle}>
+                          {result.subtitle}
+                        </p>
                       </div>
                       <span className="text-xs text-foreground-muted capitalize">{result.type}</span>
                     </button>
