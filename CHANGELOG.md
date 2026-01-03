@@ -125,6 +125,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Timeline showing created, started, completed, and reminder dates
     - Actions: Send Reminder (for pending/in-progress), Approve (for completed)
     - Clickable rows in assigned questionnaires table for quick navigation
+  - Questionnaire Template Builder (`/questionnaires/templates/[id]`)
+    - Three-panel layout: field palette, form canvas, field editor
+    - Drag-and-drop field reordering
+    - Add fields by type: text, email, phone, textarea, number, date, time, select, checkbox, radio, url, address, file
+    - Field settings: label, section, placeholder, help text, required toggle
+    - Dynamic section creation and assignment
+    - Options editor for select/multiselect/radio fields
+    - Legal Agreements tab for managing agreement templates
+    - Agreement settings: type, title, content, required, signature required
+    - Settings tab for template metadata (name, description, active status)
+    - Unsaved changes tracking and save confirmation
+    - Delete template with confirmation
+  - New Template Creation (`/questionnaires/templates/new`)
+    - Create blank template with name, slug, industry, description
+    - Duplicate existing template (system or custom)
+    - Automatic redirect to editor after creation
 
 - **Service Territory System (Phase 4)**
   - New `ServiceTerritory` model for zone-based pricing with ZIP codes or radius
