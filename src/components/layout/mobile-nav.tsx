@@ -108,6 +108,16 @@ export function MobileNav({
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
+          {/* New Project */}
+          <Link
+            href="/create"
+            onClick={onClose}
+            className="flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+          >
+            <PlusIcon className="h-4 w-4" />
+            New Project
+          </Link>
+
           {mobileNav.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const IconComponent = item.icon;
@@ -291,6 +301,14 @@ function MenuIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
     </svg>
   );
 }
