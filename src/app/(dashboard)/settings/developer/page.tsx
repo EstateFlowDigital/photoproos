@@ -3,8 +3,11 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { SeedDatabaseButton, ClearDataButton } from "./seed-buttons";
+import { StripeProductsSection } from "./stripe-products";
+import { requireOrganizationId } from "@/lib/actions/auth-helper";
 
-export default function DeveloperSettingsPage() {
+export default async function DeveloperSettingsPage() {
+  const organizationId = await requireOrganizationId();
   return (
     <div className="space-y-6">
       <PageHeader
@@ -45,7 +48,7 @@ export default function DeveloperSettingsPage() {
             <p className="text-sm text-foreground-secondary">
               This will create comprehensive sample data in your organization:
             </p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-foreground-muted">
+            <div className="grid gap-x-4 gap-y-1.5 text-sm text-foreground-muted sm:grid-cols-2">
               <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
                 8 sample clients
@@ -154,6 +157,9 @@ export default function DeveloperSettingsPage() {
           <ClearDataButton />
         </div>
       </div>
+
+      {/* Stripe Products */}
+      <StripeProductsSection organizationId={organizationId} />
 
       {/* Data Overview */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
