@@ -352,7 +352,7 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
       </div>
 
       {/* Form Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={() => setShowDeleteConfirm(true)}
@@ -361,7 +361,7 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
           <TrashIcon className="h-4 w-4" />
           Delete Gallery
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href={`/galleries/${gallery.id}`}
             className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"

@@ -441,7 +441,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
               </button>
               {showServiceFilter && (
                 <div className="absolute right-0 top-12 z-20 w-64 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 shadow-xl">
-                  <div className="flex items-center justify-between px-3 pb-2 border-b border-[var(--card-border)]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 pb-2 border-b border-[var(--card-border)]">
                     <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">
                       Filter by Service
                     </span>

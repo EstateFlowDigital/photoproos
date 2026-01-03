@@ -125,15 +125,15 @@ export default async function NewGalleryPage() {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Stats</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Total Galleries</span>
                 <span className="text-sm font-medium text-foreground">{stats.totalGalleries}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Delivered This Month</span>
                 <span className="text-sm font-medium text-foreground">{stats.deliveredThisMonth}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Revenue This Month</span>
                 <span className="text-sm font-medium text-[var(--success)]">
                   ${(stats.revenueThisMonth / 100).toLocaleString()}

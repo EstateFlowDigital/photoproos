@@ -136,20 +136,20 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Stats</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Photos</span>
                 <span className="text-sm font-medium text-foreground">{gallery.photos.length}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Views</span>
                 <span className="text-sm font-medium text-foreground">{gallery.viewCount}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Downloads</span>
                 <span className="text-sm font-medium text-foreground">{gallery.downloadCount}</span>
               </div>
               {gallery.deliveredAt && (
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-sm text-foreground-muted">Delivered</span>
                   <span className="text-sm font-medium text-foreground">
                     {new Date(gallery.deliveredAt).toLocaleDateString()}
