@@ -5,13 +5,23 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";
 import type { NotificationData } from "@/lib/actions/notifications";
-import type { ActivityData } from "@/lib/actions/activity";
+import type { ActivityData } from "@/lib/utils/activity";
 import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
 } from "@/lib/actions/notifications";
 
 type TabType = "notifications" | "activity";
+type NotificationFilterType = "all" | "payments" | "galleries" | "bookings" | "contracts" | "system";
+
+const NOTIFICATION_FILTERS: { value: NotificationFilterType; label: string; types: string[] }[] = [
+  { value: "all", label: "All", types: [] },
+  { value: "payments", label: "Payments", types: ["payment_received", "payment_failed"] },
+  { value: "galleries", label: "Galleries", types: ["gallery_viewed", "gallery_delivered"] },
+  { value: "bookings", label: "Bookings", types: ["booking_confirmed", "booking_created"] },
+  { value: "contracts", label: "Contracts", types: ["contract_signed", "contract_sent"] },
+  { value: "system", label: "System", types: ["system", "invoice_overdue"] },
+];
 
 interface NotificationsPageClientProps {
   notifications: NotificationData[];
@@ -29,6 +39,22 @@ export function NotificationsPageClient({
   const [activeTab, setActiveTab] = useState<TabType>("notifications");
   const [localNotifications, setLocalNotifications] = useState(notifications);
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const [activeFilter, setActiveFilter] = useState<NotificationFilterType>("all");
+
+  // Filter notifications based on active filter
+  const filteredNotifications = activeFilter === "all"
+    ? localNotifications
+    : localNotifications.filter((n) => {
+        const filter = NOTIFICATION_FILTERS.find((f) => f.value === activeFilter);
+        return filter?.types.includes(n.type);
+      });
+
+  // Get counts for each filter
+  const getFilterCount = (filterValue: NotificationFilterType) => {
+    if (filterValue === "all") return localNotifications.filter((n) => !n.read).length;
+    const filter = NOTIFICATION_FILTERS.find((f) => f.value === filterValue);
+    return localNotifications.filter((n) => !n.read && filter?.types.includes(n.type)).length;
+  };
 
   const handleMarkAsRead = async (notificationId: string) => {
     // Optimistic update
@@ -155,13 +181,48 @@ export function NotificationsPageClient({
         )}
       </div>
 
+      {/* Type Filters - Only show for notifications tab */}
+      {activeTab === "notifications" && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {NOTIFICATION_FILTERS.map((filter) => {
+            const count = getFilterCount(filter.value);
+            const isActive = activeFilter === filter.value;
+            return (
+              <button
+                key={filter.value}
+                onClick={() => setActiveFilter(filter.value)}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-[var(--primary)] text-white"
+                    : "bg-[var(--background-tertiary)] text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+                }`}
+              >
+                {filter.label}
+                {count > 0 && (
+                  <span
+                    className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-xs ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Content */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
         {activeTab === "notifications" ? (
           <NotificationsList
-            notifications={localNotifications}
+            notifications={filteredNotifications}
             onNotificationClick={handleNotificationClick}
             formatTimeAgo={formatTimeAgo}
+            filterActive={activeFilter !== "all"}
           />
         ) : (
           <ActivityList
@@ -190,22 +251,30 @@ function NotificationsList({
   notifications,
   onNotificationClick,
   formatTimeAgo,
+  filterActive = false,
 }: {
   notifications: NotificationData[];
   onNotificationClick: (n: NotificationData) => void;
   formatTimeAgo: (date: Date) => string;
+  filterActive?: boolean;
 }) {
   if (notifications.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <div className="mb-4 rounded-full bg-[var(--background-tertiary)] p-4">
-          <BellIcon className="h-8 w-8 text-foreground-muted" />
+          {filterActive ? (
+            <FilterIcon className="h-8 w-8 text-foreground-muted" />
+          ) : (
+            <BellIcon className="h-8 w-8 text-foreground-muted" />
+          )}
         </div>
         <h3 className="text-lg font-medium text-foreground">
-          No notifications yet
+          {filterActive ? "No matching notifications" : "No notifications yet"}
         </h3>
         <p className="mt-1 text-sm text-foreground-muted">
-          When something important happens, you&apos;ll see it here
+          {filterActive
+            ? "Try selecting a different filter"
+            : "When something important happens, you'll see it here"}
         </p>
       </div>
     );
@@ -462,6 +531,14 @@ function BellIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function FilterIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 0 1 .628.74v2.288a2.25 2.25 0 0 1-.659 1.59l-4.682 4.683a2.25 2.25 0 0 0-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 0 1 8 18.25v-5.757a2.25 2.25 0 0 0-.659-1.591L2.659 6.22A2.25 2.25 0 0 1 2 4.629V2.34a.75.75 0 0 1 .628-.74Z" clipRule="evenodd" />
     </svg>
   );
 }

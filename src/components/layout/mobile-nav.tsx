@@ -30,9 +30,10 @@ interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
   enabledModules: string[];
+  notificationCount?: number;
 }
 
-export function MobileNav({ isOpen, onClose, enabledModules }: MobileNavProps) {
+export function MobileNav({ isOpen, onClose, enabledModules, notificationCount = 0 }: MobileNavProps) {
   const pathname = usePathname();
 
   // Filter nav items based on enabled modules
@@ -135,6 +136,43 @@ export function MobileNav({ isOpen, onClose, enabledModules }: MobileNavProps) {
               </Link>
             );
           })}
+
+          {/* Notifications Link */}
+          {(() => {
+            const isActive = pathname === "/notifications" || pathname.startsWith("/notifications/");
+            return (
+              <Link
+                href="/notifications"
+                onClick={onClose}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-[var(--primary)] text-white"
+                    : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                )}
+              >
+                <NotificationIcon
+                  className={cn(
+                    "h-5 w-5 shrink-0",
+                    isActive ? "text-white" : "text-foreground-muted"
+                  )}
+                />
+                <span className="flex-1">Notifications</span>
+                {notificationCount > 0 && (
+                  <span
+                    className={cn(
+                      "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                    )}
+                  >
+                    {notificationCount > 99 ? "99+" : notificationCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })()}
         </nav>
 
         {/* Organization & User */}
@@ -288,6 +326,14 @@ function ServicesIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M6 3.75A2.75 2.75 0 0 1 8.75 1h2.5A2.75 2.75 0 0 1 14 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.54-1.952.599-4.024.921-6.17.921s-4.219-.322-6.17-.921C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 0 1 6 4.193V3.75Zm6.5 0v.325a41.622 41.622 0 0 0-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25ZM10 10a1 1 0 0 0-1 1v.01a1 1 0 0 0 1 1h.01a1 1 0 0 0 1-1V11a1 1 0 0 0-1-1H10Z" clipRule="evenodd" />
       <path d="M3 15.055v-.684c.126.053.255.1.39.142 2.092.642 4.313.987 6.61.987 2.297 0 4.518-.345 6.61-.987.135-.041.264-.089.39-.142v.684c0 1.347-.985 2.53-2.363 2.686a41.454 41.454 0 0 1-9.274 0C3.985 17.585 3 16.402 3 15.055Z" />
+    </svg>
+  );
+}
+
+function NotificationIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z" clipRule="evenodd" />
     </svg>
   );
 }

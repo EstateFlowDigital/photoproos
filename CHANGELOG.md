@@ -7,7 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Build Fixes**
+  - Moved non-async utility functions from `activity.ts` server action to separate `utils/activity.ts` file
+  - Fixed "Server Actions must be async functions" build error
+  - Fixed duplicate `FilterIcon` function in notifications page client
+  - Fixed testimonials type mismatch in public order page
+  - Updated activity type imports across components
+
 ### Added
+- **Service Addons & Bundles Enhancements**
+  - Added search bar and filter dropdowns to addons list page (status, trigger type)
+  - Added search bar and filter dropdowns to bundles list page (status, bundle type)
+  - Added drag-and-drop reordering for addons in the list view
+  - Added drag-and-drop reordering for services within bundle forms
+  - Added duplicate functionality for addons with customizable name
+  - Added reusable image upload component with drag-and-drop support
+  - Added image upload to addon form (replaces URL-only input)
+  - Added image upload to bundle form (replaces URL-only input)
+  - Added server action for service image uploads (`getServiceImageUploadUrl`)
+  - Added order numbering for services in bundle form
+  - Added "Clear all filters" button when filtering with no results
+  - Added duplicate modal with name input for addons
+
+- **Property Websites UX Improvements**
+  - Added visual template preview cards in edit form with mini mockups showing color schemes
+  - Added quick preview button on property cards in list view (eye icon opens live site)
+  - Added live preview modal with iframe to preview property website while editing
+  - Added floating preview button on mobile for quick access
+  - Added "Live Preview" link in template selection section
+  - Added "Preview Website" button in edit form actions
+  - Added refresh button in preview modal to reload iframe
+  - Improved template selection with visual cards showing layout mockups and accent colors
+
 - **Scheduling Calendar Improvements**
   - Added monthly calendar view with events displayed as color-coded blocks
   - Added week calendar view with stacked event blocks
@@ -35,6 +67,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added request submission modal with date range picker
   - Added approve/reject buttons for pending requests (admin view)
   - Added cancel button for own pending requests
+  - Show approved time-off blocks on main scheduling calendar with color-coded indicators
+
+- **Notification System Enhancements**
+  - Added notification badge to sidebar navigation with unread count
+  - Added notification badge to mobile navigation with unread count
+  - Added notification type filters (All, Payments, Galleries, Bookings, Contracts, System)
+  - Filter pills show unread counts per category
+  - Created `getUnreadNotificationCount` server action for lightweight badge queries
+
+- **Public Order Pages**
+  - Created `/order/[slug]` public-facing storefront for clients to browse services
+  - Hero section with custom headline, subheadline, and hero image
+  - Service bundles display with pricing, savings percentage, and included services list
+  - Individual services display with duration and pricing
+  - Testimonials section with client quotes and photos
+  - Organization branding with logo and primary color overrides
+  - SEO metadata with Open Graph tags for social sharing
+  - Automatic view count tracking
+  - Contact information display with phone/email options
 
 ### Changed
 - Removed Availability from main sidebar navigation (now accessible via PageContextNav in scheduling)

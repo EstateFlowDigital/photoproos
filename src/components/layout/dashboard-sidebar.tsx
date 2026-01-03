@@ -35,9 +35,10 @@ const bottomNavItems: NavItem[] = [
 interface DashboardSidebarProps {
   className?: string;
   enabledModules: string[];
+  notificationCount?: number;
 }
 
-export function DashboardSidebar({ className, enabledModules }: DashboardSidebarProps) {
+export function DashboardSidebar({ className, enabledModules, notificationCount = 0 }: DashboardSidebarProps) {
   const pathname = usePathname();
 
   // Filter nav items based on enabled modules
@@ -105,7 +106,43 @@ export function DashboardSidebar({ className, enabledModules }: DashboardSidebar
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="border-t border-[var(--card-border)] p-4">
+      <div className="border-t border-[var(--card-border)] p-4 space-y-1">
+        {/* Notifications Link */}
+        {(() => {
+          const isActive = pathname === "/notifications" || pathname.startsWith("/notifications/");
+          return (
+            <Link
+              href="/notifications"
+              className={cn(
+                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                isActive
+                  ? "bg-[var(--primary)] text-white"
+                  : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+              )}
+            >
+              <NotificationIcon
+                className={cn(
+                  "h-5 w-5 shrink-0 transition-colors",
+                  isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                )}
+              />
+              <span className="flex-1">Notifications</span>
+              {notificationCount > 0 && (
+                <span
+                  className={cn(
+                    "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                  )}
+                >
+                  {notificationCount > 99 ? "99+" : notificationCount}
+                </span>
+              )}
+            </Link>
+          );
+        })()}
+
         {bottomNavItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const IconComponent = item.icon;
@@ -260,6 +297,14 @@ function ContractsIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M3 3.5A1.5 1.5 0 0 1 4.5 2h6.879a1.5 1.5 0 0 1 1.06.44l4.122 4.12A1.5 1.5 0 0 1 17 7.622V16.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 16.5v-13Zm10.857 5.691a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function NotificationIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z" clipRule="evenodd" />
     </svg>
   );
 }

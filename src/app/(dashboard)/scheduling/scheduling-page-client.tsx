@@ -45,6 +45,16 @@ interface CalendarDay {
   bookingCount: number;
 }
 
+interface TimeOffBlock {
+  id: string;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  allDay: boolean;
+  blockType: string;
+  userId: string | null;
+}
+
 type CalendarViewMode = "week" | "month" | "list";
 type StatusFilter = "all" | "pending" | "confirmed" | "completed" | "cancelled";
 
@@ -53,6 +63,7 @@ interface SchedulingPageClientProps {
   bookings: Booking[];
   calendarDays: CalendarDay[];
   isGoogleCalendarConnected?: boolean;
+  timeOffBlocks?: TimeOffBlock[];
 }
 
 // Helper to format time
@@ -244,6 +255,7 @@ export function SchedulingPageClient({
   bookings,
   calendarDays: initialCalendarDays,
   isGoogleCalendarConnected = false,
+  timeOffBlocks = [],
 }: SchedulingPageClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -324,6 +336,23 @@ export function SchedulingPageClient({
     return filteredBookings.filter((b) => isSameDay(new Date(b.startTime), date))
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
   };
+
+  // Get time-off blocks for a specific date
+  const getTimeOffForDate = (date: Date) => {
+    return timeOffBlocks.filter((block) => {
+      const startDate = new Date(block.startDate);
+      const endDate = new Date(block.endDate);
+      const checkDate = new Date(date);
+      // Reset times for date comparison
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(23, 59, 59, 999);
+      checkDate.setHours(12, 0, 0, 0);
+      return checkDate >= startDate && checkDate <= endDate;
+    });
+  };
+
+  // Check if date has time-off
+  const hasTimeOff = (date: Date) => getTimeOffForDate(date).length > 0;
 
   // Selected day bookings
   const selectedDayBookings = useMemo(() => {
@@ -443,6 +472,41 @@ export function SchedulingPageClient({
       )}
     </Link>
   );
+
+  // Time-off block for calendar
+  const TimeOffBlockDisplay = ({ block, compact = false }: { block: TimeOffBlock; compact?: boolean }) => {
+    const blockTypeColors: Record<string, string> = {
+      time_off: "bg-[var(--foreground-muted)]/30 border-[var(--foreground-muted)]/50 text-foreground-muted",
+      holiday: "bg-[var(--ai)]/20 border-[var(--ai)]/40 text-[var(--ai)]",
+      personal: "bg-[var(--warning)]/20 border-[var(--warning)]/40 text-[var(--warning)]",
+    };
+
+    const blockTypeIcons: Record<string, string> = {
+      time_off: "Off",
+      holiday: "Holiday",
+      personal: "Personal",
+    };
+
+    return (
+      <div
+        className={cn(
+          "rounded px-1.5 py-0.5 text-[10px] font-medium truncate border",
+          blockTypeColors[block.blockType] || blockTypeColors.time_off,
+          compact ? "leading-tight" : ""
+        )}
+        title={block.title}
+      >
+        {compact ? (
+          <span className="truncate">{blockTypeIcons[block.blockType] || "Off"}</span>
+        ) : (
+          <span className="truncate flex items-center gap-1">
+            <UnavailableIcon className="h-2.5 w-2.5 shrink-0" />
+            {block.title}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   // Booking card for list/detail views
   const BookingCard = ({ booking }: { booking: Booking }) => (
@@ -770,6 +834,8 @@ export function SchedulingPageClient({
                 {monthWeeks.flat().map((day, index) => {
                   const isCurrentMonth = day.date.getMonth() === currentMonth.month;
                   const dayBookings = getBookingsForDate(day.date);
+                  const dayTimeOff = getTimeOffForDate(day.date);
+                  const hasTimeOffToday = dayTimeOff.length > 0;
 
                   return (
                     <button
@@ -780,7 +846,8 @@ export function SchedulingPageClient({
                         isCurrentMonth
                           ? "bg-[var(--background)] border-[var(--card-border)] hover:border-[var(--primary)]/50"
                           : "bg-[var(--background)]/50 border-transparent",
-                        day.isToday && "ring-2 ring-[var(--primary)] ring-offset-1 ring-offset-[var(--card)]"
+                        day.isToday && "ring-2 ring-[var(--primary)] ring-offset-1 ring-offset-[var(--card)]",
+                        hasTimeOffToday && "bg-[var(--foreground-muted)]/5"
                       )}
                     >
                       <span className={cn(
@@ -791,14 +858,23 @@ export function SchedulingPageClient({
                         {day.dayNumber}
                       </span>
 
+                      {/* Time-off blocks */}
+                      {hasTimeOffToday && (
+                        <div className="space-y-0.5 mb-0.5">
+                          {dayTimeOff.slice(0, 1).map((block) => (
+                            <TimeOffBlockDisplay key={block.id} block={block} compact />
+                          ))}
+                        </div>
+                      )}
+
                       {/* Event blocks */}
                       <div className="flex-1 space-y-0.5 overflow-hidden">
-                        {dayBookings.slice(0, 3).map((booking) => (
+                        {dayBookings.slice(0, hasTimeOffToday ? 2 : 3).map((booking) => (
                           <EventBlock key={booking.id} booking={booking} compact={dayBookings.length > 2} />
                         ))}
-                        {dayBookings.length > 3 && (
+                        {dayBookings.length > (hasTimeOffToday ? 2 : 3) && (
                           <span className="text-[10px] text-foreground-muted font-medium px-1">
-                            +{dayBookings.length - 3} more
+                            +{dayBookings.length - (hasTimeOffToday ? 2 : 3)} more
                           </span>
                         )}
                       </div>
@@ -813,6 +889,8 @@ export function SchedulingPageClient({
             <div className="grid grid-cols-7 gap-2">
               {weekDays.map((day, index) => {
                 const dayBookings = getBookingsForDate(day.date);
+                const dayTimeOff = getTimeOffForDate(day.date);
+                const hasTimeOffToday = dayTimeOff.length > 0;
 
                 return (
                   <button
@@ -821,7 +899,8 @@ export function SchedulingPageClient({
                     className={cn(
                       "min-h-[200px] p-2 rounded-xl border text-left transition-all flex flex-col",
                       "bg-[var(--background)] border-[var(--card-border)] hover:border-[var(--primary)]/50",
-                      day.isToday && "ring-2 ring-[var(--primary)] ring-offset-1 ring-offset-[var(--card)]"
+                      day.isToday && "ring-2 ring-[var(--primary)] ring-offset-1 ring-offset-[var(--card)]",
+                      hasTimeOffToday && "bg-[var(--foreground-muted)]/5"
                     )}
                   >
                     <div className="text-center mb-2">
@@ -833,6 +912,15 @@ export function SchedulingPageClient({
                         {day.dayNumber}
                       </span>
                     </div>
+
+                    {/* Time-off blocks */}
+                    {hasTimeOffToday && (
+                      <div className="space-y-1 mb-1">
+                        {dayTimeOff.map((block) => (
+                          <TimeOffBlockDisplay key={block.id} block={block} />
+                        ))}
+                      </div>
+                    )}
 
                     <div className="flex-1 space-y-1 overflow-hidden">
                       {dayBookings.map((booking) => (
@@ -1028,6 +1116,14 @@ function TimeOffIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10 3.75a2 2 0 1 0-4 0 2 2 0 0 0 4 0ZM17.25 4.5a.75.75 0 0 0 0-1.5h-5.5a.75.75 0 0 0 0 1.5h5.5ZM5 3.75a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 .75.75ZM4.25 17a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5h1.5ZM17.25 17a.75.75 0 0 0 0-1.5h-5.5a.75.75 0 0 0 0 1.5h5.5ZM9 10a.75.75 0 0 1-.75.75h-5.5a.75.75 0 0 1 0-1.5h5.5A.75.75 0 0 1 9 10ZM17.25 10.75a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5h1.5ZM14 10a2 2 0 1 0-4 0 2 2 0 0 0 4 0ZM10 16.25a2 2 0 1 0-4 0 2 2 0 0 0 4 0Z" />
+    </svg>
+  );
+}
+
+function UnavailableIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
     </svg>
   );
 }

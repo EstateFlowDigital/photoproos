@@ -12,6 +12,7 @@ import {
 } from "@/lib/actions/addons";
 import { getServices } from "@/lib/actions/services";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface AddonFormData {
   name: string;
@@ -340,23 +341,18 @@ export function AddonForm({ initialData, mode }: AddonFormProps) {
             />
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload */}
           <div>
-            <label
-              htmlFor="imageUrl"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
-              Image URL
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Addon Image
             </label>
-            <input
-              type="url"
-              id="imageUrl"
+            <ImageUpload
               value={formData.imageUrl}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))
+              onChange={(url) =>
+                setFormData((prev) => ({ ...prev, imageUrl: url }))
               }
-              placeholder="https://example.com/image.jpg"
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              entityType="addon"
+              entityId={initialData?.id}
             />
           </div>
         </div>

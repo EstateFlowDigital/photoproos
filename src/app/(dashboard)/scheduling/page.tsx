@@ -35,9 +35,12 @@ export default async function SchedulingPage() {
     );
   }
 
-  // Fetch upcoming bookings, clients, and check for calendar integrations
+  // Fetch upcoming bookings, clients, time-off blocks, and check for calendar integrations
   const now = new Date();
-  const [bookings, clients, calendarIntegration] = await Promise.all([
+  const threeMonthsFromNow = new Date();
+  threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+
+  const [bookings, clients, calendarIntegration, timeOffBlocks] = await Promise.all([
     prisma.booking.findMany({
       where: {
         organizationId: organization.id,
@@ -48,7 +51,7 @@ export default async function SchedulingPage() {
         client: { select: { fullName: true, company: true } },
       },
       orderBy: { startTime: "asc" },
-      take: 20,
+      take: 100,
     }),
     prisma.client.findMany({
       where: { organizationId: organization.id },
@@ -68,6 +71,26 @@ export default async function SchedulingPage() {
         syncEnabled: true,
       },
       select: { id: true },
+    }),
+    // Fetch approved time-off blocks for display on calendar
+    prisma.availabilityBlock.findMany({
+      where: {
+        organizationId: organization.id,
+        blockType: { in: ["time_off", "holiday", "personal"] },
+        requestStatus: "approved",
+        endDate: { gte: now },
+        startDate: { lte: threeMonthsFromNow },
+      },
+      select: {
+        id: true,
+        title: true,
+        startDate: true,
+        endDate: true,
+        allDay: true,
+        blockType: true,
+        userId: true,
+      },
+      orderBy: { startDate: "asc" },
     }),
   ]);
 
@@ -100,6 +123,7 @@ export default async function SchedulingPage() {
         bookings={bookings}
         calendarDays={calendarDays}
         isGoogleCalendarConnected={!!calendarIntegration}
+        timeOffBlocks={timeOffBlocks}
       />
     </div>
   );

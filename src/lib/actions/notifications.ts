@@ -92,6 +92,27 @@ export async function markNotificationAsRead(
 }
 
 /**
+ * Gets just the unread notification count (lightweight query for badges)
+ */
+export async function getUnreadNotificationCount(): Promise<ActionResult<number>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const count = await prisma.notification.count({
+      where: { organizationId, read: false },
+    });
+
+    return { success: true, data: count };
+  } catch (error) {
+    console.error("[Notifications] Error getting unread count:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get unread count" };
+  }
+}
+
+/**
  * Marks all notifications as read
  */
 export async function markAllNotificationsAsRead(): Promise<ActionResult> {

@@ -1,23 +1,8 @@
 export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav } from "@/components/dashboard";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { getBundles } from "@/lib/actions/bundles";
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
-
-const bundleTypeInfo = {
-  fixed: { label: "Fixed", color: "bg-blue-500/10 text-blue-400" },
-  tiered: { label: "Tiered", color: "bg-purple-500/10 text-purple-400" },
-  custom: { label: "Custom", color: "bg-amber-500/10 text-amber-400" },
-};
+import { BundleList } from "@/components/dashboard/bundle-list";
 
 export default async function BundlesPage() {
   const bundles = await getBundles();
@@ -49,94 +34,7 @@ export default async function BundlesPage() {
         ]}
       />
 
-      {bundles.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
-          <div className="mx-auto rounded-full bg-[var(--primary)]/10 p-4 w-fit mb-4">
-            <CubeIcon className="h-8 w-8 text-[var(--primary)]" />
-          </div>
-          <h3 className="text-lg font-medium text-foreground">No bundles yet</h3>
-          <p className="mt-2 text-sm text-foreground-muted max-w-md mx-auto">
-            Create service bundles to offer package deals and increase your average order value.
-          </p>
-          <Link
-            href="/services/bundles/new"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Create Your First Bundle
-          </Link>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {bundles.map((bundle) => {
-            const typeInfo = bundleTypeInfo[bundle.bundleType as keyof typeof bundleTypeInfo];
-            return (
-              <Link
-                key={bundle.id}
-                href={`/services/bundles/${bundle.id}`}
-                className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {bundle.badgeText && (
-                        <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">
-                          {bundle.badgeText}
-                        </span>
-                      )}
-                      <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", typeInfo.color)}>
-                        {typeInfo.label}
-                      </span>
-                    </div>
-                    <h3 className="font-medium text-foreground truncate group-hover:text-[var(--primary)] transition-colors">
-                      {bundle.name}
-                    </h3>
-                    {bundle.description && (
-                      <p className="mt-1 text-sm text-foreground-muted line-clamp-2">
-                        {bundle.description}
-                      </p>
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
-                      bundle.isActive
-                        ? "bg-green-500/10 text-green-400"
-                        : "bg-[var(--background-secondary)] text-foreground-muted"
-                    )}
-                  >
-                    {bundle.isActive ? "Active" : "Inactive"}
-                  </span>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-xl font-semibold text-foreground">
-                    {formatCurrency(bundle.priceCents)}
-                  </span>
-                  {bundle.savingsPercent && bundle.savingsPercent > 0 && (
-                    <span className="text-sm text-[var(--success)]">
-                      Save {bundle.savingsPercent}%
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-foreground-muted">
-                      {bundle.services.length} service{bundle.services.length !== 1 ? "s" : ""} included
-                    </span>
-                    {bundle.usageCount > 0 && (
-                      <span className="text-foreground-muted">
-                        {bundle.usageCount} order{bundle.usageCount !== 1 ? "s" : ""}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      <BundleList initialBundles={bundles} />
     </div>
   );
 }

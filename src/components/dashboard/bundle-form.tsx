@@ -12,6 +12,7 @@ import {
 } from "@/lib/actions/bundles";
 import { getServices } from "@/lib/actions/services";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface BundleFormData {
   name: string;
@@ -98,6 +99,8 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [autoSlug, setAutoSlug] = useState(mode === "create");
+  const [draggedServiceId, setDraggedServiceId] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const usageCount = initialData?.usageCount || 0;
 
@@ -164,6 +167,51 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
       );
     },
     []
+  );
+
+  // Drag-and-drop handlers for reordering services
+  const handleServiceDragStart = useCallback((e: React.DragEvent, serviceId: string) => {
+    setDraggedServiceId(serviceId);
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
+
+  const handleServiceDragEnd = useCallback(() => {
+    setDraggedServiceId(null);
+    setIsDragging(false);
+  }, []);
+
+  const handleServiceDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const handleServiceDrop = useCallback(
+    (e: React.DragEvent, targetServiceId: string) => {
+      e.preventDefault();
+      if (!draggedServiceId || draggedServiceId === targetServiceId) return;
+
+      setBundleServicesState((prev) => {
+        const draggedIndex = prev.findIndex((s) => s.serviceId === draggedServiceId);
+        const targetIndex = prev.findIndex((s) => s.serviceId === targetServiceId);
+
+        if (draggedIndex === -1 || targetIndex === -1) return prev;
+
+        const newServices = [...prev];
+        const [removed] = newServices.splice(draggedIndex, 1);
+        newServices.splice(targetIndex, 0, removed);
+
+        // Update sort orders
+        return newServices.map((s, index) => ({
+          ...s,
+          sortOrder: index,
+        }));
+      });
+
+      setDraggedServiceId(null);
+      setIsDragging(false);
+    },
+    [draggedServiceId]
   );
 
   // Calculate total value of services
@@ -444,23 +492,18 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
             />
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload */}
           <div>
-            <label
-              htmlFor="imageUrl"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
-              Image URL
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Bundle Image
             </label>
-            <input
-              type="url"
-              id="imageUrl"
+            <ImageUpload
               value={formData.imageUrl}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))
+              onChange={(url) =>
+                setFormData((prev) => ({ ...prev, imageUrl: url }))
               }
-              placeholder="https://example.com/image.jpg"
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              entityType="bundle"
+              entityId={initialData?.id}
             />
           </div>
         </div>
@@ -480,8 +523,13 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
           <>
             {/* Selected Services */}
             {bundleServices.length > 0 && (
-              <div className="space-y-3 mb-6">
-                {bundleServices.map((bs) => {
+              <div className={cn("space-y-3 mb-6", isDragging && "cursor-grabbing")}>
+                {bundleServices.length > 1 && (
+                  <p className="text-xs text-foreground-muted mb-2">
+                    Drag services to reorder them
+                  </p>
+                )}
+                {bundleServices.map((bs, index) => {
                   const service = availableServices.find(
                     (s) => s.id === bs.serviceId
                   );
@@ -489,8 +537,25 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
                   return (
                     <div
                       key={bs.serviceId}
-                      className="flex items-center gap-4 p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]"
+                      draggable
+                      onDragStart={(e) => handleServiceDragStart(e, bs.serviceId)}
+                      onDragEnd={handleServiceDragEnd}
+                      onDragOver={handleServiceDragOver}
+                      onDrop={(e) => handleServiceDrop(e, bs.serviceId)}
+                      className={cn(
+                        "group flex items-center gap-4 p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] transition-all",
+                        draggedServiceId === bs.serviceId && "opacity-50 ring-2 ring-[var(--primary)]",
+                        isDragging && draggedServiceId !== bs.serviceId && "hover:ring-2 hover:ring-[var(--primary)]/50"
+                      )}
                     >
+                      {/* Drag Handle */}
+                      <div className="cursor-grab opacity-50 group-hover:opacity-100 transition-opacity">
+                        <GripIcon className="h-4 w-4 text-foreground-muted" />
+                      </div>
+                      {/* Order Number */}
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
+                        {index + 1}
+                      </span>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-foreground truncate">
                           {service.name}
@@ -754,6 +819,14 @@ function CloseIcon({ className }: { className?: string }) {
       className={className}
     >
       <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+    </svg>
+  );
+}
+
+function GripIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3 7a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1Zm0 6a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1Z" clipRule="evenodd" />
     </svg>
   );
 }

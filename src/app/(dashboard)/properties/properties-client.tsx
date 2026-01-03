@@ -227,18 +227,34 @@ function PropertyCard({ website, onDelete }: { website: PropertyWebsiteWithRelat
 
   return (
     <div className="group relative overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--border-hover)]">
-      {/* Delete Button - appears on hover */}
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onDelete(website);
-        }}
-        className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-foreground-muted opacity-0 backdrop-blur-sm transition-all hover:bg-[var(--error)]/20 hover:text-[var(--error)] group-hover:opacity-100"
-        title="Delete property website"
-      >
-        <TrashIcon className="h-4 w-4" />
-      </button>
+      {/* Action Buttons - appear on hover */}
+      <div className="absolute right-2 top-2 z-10 flex items-center gap-1.5 opacity-0 transition-all group-hover:opacity-100">
+        {/* Preview Button */}
+        {website.isPublished && (
+          <a
+            href={`/p/${website.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--primary)]/20 hover:text-[var(--primary)]"
+            title="Preview live site"
+          >
+            <PreviewIcon className="h-4 w-4" />
+          </a>
+        )}
+        {/* Delete Button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete(website);
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--error)]/20 hover:text-[var(--error)]"
+          title="Delete property website"
+        >
+          <TrashIcon className="h-4 w-4" />
+        </button>
+      </div>
 
       <Link href={`/properties/${website.id}`} className="block">
         {/* Image Preview */}
@@ -498,6 +514,15 @@ function LoadingSpinner({ className }: { className?: string }) {
     <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function PreviewIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
     </svg>
   );
 }

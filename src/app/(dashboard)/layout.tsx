@@ -6,6 +6,7 @@ import { TourProvider } from "@/components/tour";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
+import { getUnreadNotificationCount } from "@/lib/actions/notifications";
 
 export default async function DashboardLayout({
   children,
@@ -80,11 +81,18 @@ export default async function DashboardLayout({
   const enabledModules = (organization.enabledModules as string[]) ||
     getDefaultModulesForIndustries(["real_estate"]);
 
+  // Get unread notification count for badge
+  const notificationCountResult = await getUnreadNotificationCount();
+  const unreadNotificationCount = notificationCountResult.success ? notificationCountResult.data : 0;
+
   return (
     <ToastProvider>
       <TourProvider organizationId={organization.id}>
         <CommandPaletteProvider>
-          <DashboardLayoutClient enabledModules={enabledModules}>
+          <DashboardLayoutClient
+            enabledModules={enabledModules}
+            unreadNotificationCount={unreadNotificationCount}
+          >
             {children}
           </DashboardLayoutClient>
         </CommandPaletteProvider>

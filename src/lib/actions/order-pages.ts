@@ -671,11 +671,13 @@ export async function getOrderPage(id: string) {
  */
 export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
   try {
-    const whereClause: {
+    interface WhereClause {
       slug: string;
       isPublished: boolean;
       organization?: { slug: string };
-    } = {
+    }
+
+    const whereClause: WhereClause = {
       slug,
       isPublished: true,
     };
@@ -692,14 +694,13 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
             id: true,
             name: true,
             slug: true,
-            logo: true,
+            logoUrl: true,
             primaryColor: true,
           },
         },
         bundles: {
           include: {
             bundle: {
-              where: { isActive: true },
               include: {
                 services: {
                   include: {
@@ -711,6 +712,7 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
                         priceCents: true,
                         duration: true,
                         deliverables: true,
+                        isActive: true,
                       },
                     },
                   },
@@ -724,7 +726,6 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
         services: {
           include: {
             service: {
-              where: { isActive: true },
               select: {
                 id: true,
                 name: true,
@@ -733,6 +734,7 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
                 duration: true,
                 deliverables: true,
                 category: true,
+                isActive: true,
               },
             },
           },
@@ -751,6 +753,44 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
       data: { viewCount: { increment: 1 } },
     });
 
+    // Define types for the bundles and services
+    type BundleItem = {
+      bundle: {
+        id: string;
+        name: string;
+        description: string | null;
+        priceCents: number;
+        imageUrl: string | null;
+        badgeText: string | null;
+        originalPriceCents: number | null;
+        savingsPercent: number | null;
+        isActive: boolean;
+        services: Array<{
+          quantity: number;
+          isRequired: boolean;
+          service: {
+            id: string;
+            name: string;
+            description: string | null;
+            isActive: boolean;
+          };
+        }>;
+      };
+    };
+
+    type ServiceItem = {
+      service: {
+        id: string;
+        name: string;
+        description: string | null;
+        priceCents: number;
+        duration: number;
+        deliverables: string | null;
+        category: string;
+        isActive: boolean;
+      };
+    };
+
     return {
       id: orderPage.id,
       name: orderPage.name,
@@ -758,7 +798,7 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
       headline: orderPage.headline,
       subheadline: orderPage.subheadline,
       heroImageUrl: orderPage.heroImageUrl,
-      logoOverrideUrl: orderPage.logoOverrideUrl || orderPage.organization.logo,
+      logoOverrideUrl: orderPage.logoOverrideUrl || orderPage.organization.logoUrl,
       primaryColor: orderPage.primaryColor || orderPage.organization.primaryColor,
       showPhone: orderPage.showPhone,
       showEmail: orderPage.showEmail,
@@ -770,8 +810,8 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
         name: orderPage.organization.name,
         slug: orderPage.organization.slug,
       },
-      bundles: orderPage.bundles
-        .filter((b) => b.bundle)
+      bundles: (orderPage.bundles as unknown as BundleItem[])
+        .filter((b) => b.bundle && b.bundle.isActive)
         .map((b) => ({
           id: b.bundle.id,
           name: b.bundle.name,
@@ -789,8 +829,8 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
             isRequired: s.isRequired,
           })),
         })),
-      services: orderPage.services
-        .filter((s) => s.service)
+      services: (orderPage.services as unknown as ServiceItem[])
+        .filter((s) => s.service && s.service.isActive)
         .map((s) => ({
           id: s.service.id,
           name: s.service.name,
