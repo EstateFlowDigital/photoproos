@@ -72,7 +72,7 @@ interface QuickActionsProps {
 
 export function QuickActions({ actions = defaultActions, className }: QuickActionsProps) {
   return (
-    <div className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-4", className)}>
+    <div className={cn("auto-grid grid-min-220 grid-gap-3", className)}>
       {actions.map((action) => (
         <Link
           key={action.href}

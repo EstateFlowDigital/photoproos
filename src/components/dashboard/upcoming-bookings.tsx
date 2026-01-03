@@ -105,7 +105,9 @@ export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps)
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h4 className="truncate text-sm font-semibold text-foreground">{booking.title}</h4>
+                <h4 className="line-clamp-2 text-sm font-semibold text-foreground sm:line-clamp-1">
+                  {booking.title}
+                </h4>
                 <span className={cn(
                   "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",
                   statusColors[booking.status]
@@ -113,7 +115,9 @@ export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps)
                   {statusLabels[booking.status]}
                 </span>
               </div>
-              <p className="mt-0.5 truncate text-xs text-foreground-muted">{booking.client}</p>
+              <p className="mt-0.5 line-clamp-2 text-xs text-foreground-muted sm:line-clamp-1">
+                {booking.client}
+              </p>
 
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                 <div className="flex items-center gap-1 text-xs text-foreground-muted">
@@ -127,7 +131,9 @@ export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps)
                 {booking.location && (
                   <div className="flex items-center gap-1 text-xs text-foreground-muted">
                     <LocationIcon className="h-3.5 w-3.5" />
-                    <span className="truncate max-w-[120px]">{booking.location}</span>
+                    <span className="line-clamp-1 max-w-[160px] sm:max-w-none">
+                      {booking.location}
+                    </span>
                   </div>
                 )}
               </div>

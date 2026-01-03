@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export type DashboardEventType = "task" | "booking" | "open_house";
@@ -92,11 +92,24 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
   const [currentMonth, setCurrentMonth] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(now);
   const [viewMode, setViewMode] = useState<CalendarView>("month");
+  const [isCompact, setIsCompact] = useState(false);
   const [activeFilters, setActiveFilters] = useState<DashboardEventType[]>([
     "task",
     "booking",
     "open_house",
   ]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const compact = window.innerWidth < 640;
+      setIsCompact(compact);
+      setViewMode((prev) => (compact && prev === "month" ? "list" : prev));
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const normalizedEvents = useMemo<CalendarEvent[]>(() => {
     return events
@@ -303,9 +316,9 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
               {WEEKDAYS.map((day) => (
                 <div
                   key={day}
-                  className="text-center text-xs font-medium text-foreground-muted py-2"
+                  className="text-center text-[10px] font-medium text-foreground-muted py-1 sm:text-xs sm:py-2"
                 >
-                  {day}
+                  {isCompact ? day.charAt(0) : day}
                 </div>
               ))}
             </div>
@@ -323,7 +336,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
                     type="button"
                     onClick={() => setSelectedDate(day)}
                     className={cn(
-                      "min-h-[100px] p-1.5 rounded-lg border text-left transition-all flex flex-col",
+                      "min-h-[80px] p-1.5 rounded-lg border text-left transition-all flex flex-col sm:min-h-[100px]",
                       isCurrentMonth
                         ? "bg-[var(--background)] border-[var(--card-border)] hover:border-[var(--primary)]/50"
                         : "bg-[var(--background)]/50 border-transparent",
@@ -333,7 +346,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
                   >
                     <span
                       className={cn(
-                        "text-sm font-medium mb-1",
+                        "text-xs font-medium mb-1 sm:text-sm",
                         isCurrentMonth ? "text-foreground" : "text-foreground-muted",
                         isSelected && "text-[var(--primary)]",
                         !isSelected && isToday && "text-[var(--primary)]"
