@@ -126,7 +126,7 @@ export function extractKeyFromUrl(url: string): string | null {
 
   try {
     const parsed = new URL(url);
-    return parsed.pathname.replace(/^\\//, "") || null;
+    return parsed.pathname.replace(/^\//, "") || null;
   } catch {
     return null;
   }
