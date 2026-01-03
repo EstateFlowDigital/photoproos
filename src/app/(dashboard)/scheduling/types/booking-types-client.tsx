@@ -201,27 +201,29 @@ export function BookingTypesClient({ bookingTypes }: BookingTypesClientProps) {
     <>
       <div className="space-y-6">
         {/* Header with create button */}
-        <div className="flex items-center justify-between">
+        <div className="stack-header">
           <p className="text-sm text-foreground-muted">
             {bookingTypes.length} booking type{bookingTypes.length !== 1 ? "s" : ""}
           </p>
-          <button
-            onClick={() => {
-              resetForm();
-              setIsCreateModalOpen(true);
-            }}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Create Type
-          </button>
+          <div className="stack-actions">
+            <button
+              onClick={() => {
+                resetForm();
+                setIsCreateModalOpen(true);
+              }}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Create Type
+            </button>
+          </div>
         </div>
 
         {/* Active Types */}
         {activeTypes.length > 0 && (
           <div>
             <h3 className="text-sm font-medium text-foreground-muted mb-3">Active</h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="auto-grid grid-min-240 grid-gap-4">
               {activeTypes.map((type) => (
                 <BookingTypeCard
                   key={type.id}
@@ -240,7 +242,7 @@ export function BookingTypesClient({ bookingTypes }: BookingTypesClientProps) {
         {inactiveTypes.length > 0 && (
           <div>
             <h3 className="text-sm font-medium text-foreground-muted mb-3">Inactive</h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="auto-grid grid-min-240 grid-gap-4">
               {inactiveTypes.map((type) => (
                 <BookingTypeCard
                   key={type.id}
