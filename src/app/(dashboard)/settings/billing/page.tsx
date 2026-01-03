@@ -189,7 +189,7 @@ export default async function BillingSettingsPage() {
           <h2 className="text-lg font-semibold text-foreground mb-4">Payment Method</h2>
           {billingStats?.stripeCustomerId ? (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <div className="flex h-12 w-16 items-center justify-center rounded-lg bg-[var(--background)]">
                   <CreditCardIcon className="h-8 w-8 text-foreground-muted" />
                 </div>
@@ -245,7 +245,7 @@ export default async function BillingSettingsPage() {
                         <InvoiceStatusBadge status={invoice.status} />
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex flex-wrap items-center justify-end gap-2">
                           {invoice.hostedInvoiceUrl && (
                             <a
                               href={invoice.hostedInvoiceUrl}
