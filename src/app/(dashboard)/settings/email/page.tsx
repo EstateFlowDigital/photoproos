@@ -206,7 +206,7 @@ export default function EmailSettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between py-2">
+            <div className="flex flex-col gap-3 py-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">Questionnaire Emails</p>
                 <p className="text-xs text-foreground-muted">
@@ -219,7 +219,7 @@ export default function EmailSettingsPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between py-2">
+            <div className="flex flex-col gap-3 py-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">Digest Emails</p>
                 <p className="text-xs text-foreground-muted">
