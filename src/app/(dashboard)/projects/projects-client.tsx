@@ -389,17 +389,17 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-4 sm:px-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-xl font-semibold text-foreground">{board.name}</h1>
             <p className="mt-0.5 text-sm text-foreground-secondary">
               {totalTasks} tasks · {completedTasks} completed
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {/* View Mode Toggle */}
-            <div className="flex rounded-lg border border-[var(--card-border)] bg-background p-1">
+            <div className="flex flex-wrap rounded-lg border border-[var(--card-border)] bg-background p-1">
               {(["board", "list", "calendar"] as const).map((mode) => (
                 <button
                   key={mode}
@@ -419,7 +419,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value as TaskPriority | "all")}
-              className="h-9 rounded-lg border border-[var(--card-border)] bg-background px-3 text-sm text-foreground"
+              className="h-9 w-full min-w-[160px] rounded-lg border border-[var(--card-border)] bg-background px-3 text-sm text-foreground sm:w-auto"
             >
               <option value="all">All Priorities</option>
               <option value="urgent">Urgent</option>
@@ -432,7 +432,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
       </div>
 
       {/* Context Navigation */}
-      <div className="border-b border-[var(--card-border)] px-6 py-3 bg-[var(--background)]">
+      <div className="border-b border-[var(--card-border)] bg-[var(--background)] px-4 py-3 sm:px-6">
         <PageContextNav
           items={[
             { label: "Board", href: "/projects", icon: <BoardIcon className="h-4 w-4" /> },
@@ -773,16 +773,16 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
 
       {/* Calendar View */}
       {viewMode === "calendar" && (
-        <div className="flex flex-1 flex-col gap-6 p-6">
+        <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6">
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-            <div className="flex items-center justify-between border-b border-[var(--card-border)] px-5 py-4">
+            <div className="flex flex-col gap-3 border-b border-[var(--card-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-foreground-muted">Task Calendar</p>
                 <p className="text-lg font-semibold text-foreground">
                   {getMonthLabel(new Date(calendarMonth.year, calendarMonth.month, 1))}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setCalendarMonth((prev) => ({
                     year: prev.month === 0 ? prev.year - 1 : prev.year,
@@ -814,55 +814,59 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-7 border-b border-[var(--card-border)] bg-[var(--background)] text-xs font-medium text-foreground-muted">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day} className="px-4 py-2 text-center">
-                  {day}
+            <div className="overflow-x-auto">
+              <div className="min-w-[720px]">
+                <div className="grid grid-cols-7 border-b border-[var(--card-border)] bg-[var(--background)] text-xs font-medium text-foreground-muted">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                    <div key={day} className="px-4 py-2 text-center">
+                      {day}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="grid grid-cols-7 gap-px bg-[var(--card-border)]">
-              {monthWeeks.flatMap((week, weekIndex) =>
-                week.map((day, dayIndex) => {
-                  const isSelected = selectedDate && isSameDay(day.date, selectedDate);
-                  return (
-                    <button
-                      key={`${weekIndex}-${dayIndex}-${day.date.toISOString()}`}
-                      onClick={() => setSelectedDate(day.date)}
-                      className={cn(
-                        "min-h-[90px] bg-[var(--card)] px-3 py-2 text-left transition-colors hover:bg-[var(--background-hover)]",
-                        !day.isCurrentMonth && "text-foreground-muted/60",
-                        isSelected && "ring-2 ring-[var(--primary)]/40"
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span
+                <div className="grid grid-cols-7 gap-px bg-[var(--card-border)]">
+                  {monthWeeks.flatMap((week, weekIndex) =>
+                    week.map((day, dayIndex) => {
+                      const isSelected = selectedDate && isSameDay(day.date, selectedDate);
+                      return (
+                        <button
+                          key={`${weekIndex}-${dayIndex}-${day.date.toISOString()}`}
+                          onClick={() => setSelectedDate(day.date)}
                           className={cn(
-                            "text-sm font-medium",
-                            day.isToday && "text-[var(--primary)]"
+                            "min-h-[90px] bg-[var(--card)] px-3 py-2 text-left transition-colors hover:bg-[var(--background-hover)]",
+                            !day.isCurrentMonth && "text-foreground-muted/60",
+                            isSelected && "ring-2 ring-[var(--primary)]/40"
                           )}
                         >
-                          {day.dayNumber}
-                        </span>
-                        {day.taskCount > 0 && (
-                          <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs text-[var(--primary)]">
-                            {day.taskCount}
-                          </span>
-                        )}
-                      </div>
-                      {day.taskCount === 0 && (
-                        <p className="mt-3 text-xs text-foreground-muted">No tasks</p>
-                      )}
-                    </button>
-                  );
-                })
-              )}
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={cn(
+                                "text-sm font-medium",
+                                day.isToday && "text-[var(--primary)]"
+                              )}
+                            >
+                              {day.dayNumber}
+                            </span>
+                            {day.taskCount > 0 && (
+                              <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs text-[var(--primary)]">
+                                {day.taskCount}
+                              </span>
+                            )}
+                          </div>
+                          {day.taskCount === 0 && (
+                            <p className="mt-3 text-xs text-foreground-muted">No tasks</p>
+                          )}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-            <div className="flex items-center justify-between border-b border-[var(--card-border)] px-5 py-4">
+            <div className="flex flex-col gap-2 border-b border-[var(--card-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-foreground-muted">Tasks Due</p>
                 <p className="text-lg font-semibold text-foreground">
@@ -896,7 +900,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
                 <button
                   key={task.id}
                   onClick={() => setSelectedTask(task)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-[var(--background-hover)]"
+                  className="flex w-full flex-col gap-3 px-5 py-4 text-left transition-colors hover:bg-[var(--background-hover)] sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
