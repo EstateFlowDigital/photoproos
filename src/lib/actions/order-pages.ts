@@ -508,7 +508,7 @@ export async function getOrderPages(filters?: OrderPageFilters) {
         client: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
           },
         },
         bundles: {
@@ -555,7 +555,7 @@ export async function getOrderPages(filters?: OrderPageFilters) {
       primaryColor: page.primaryColor,
       isPublished: page.isPublished,
       isActive: page.isPublished, // Alias for backward compatibility
-      client: page.client,
+      client: page.client ? { id: page.client.id, name: page.client.fullName } : null,
       bundleCount: page.bundles.length,
       serviceCount: page.services.length,
       orderCount: page._count.orders,
@@ -584,7 +584,7 @@ export async function getOrderPage(id: string) {
         client: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
             email: true,
           },
         },
@@ -640,15 +640,15 @@ export async function getOrderPage(id: string) {
       isPublished: orderPage.isPublished,
       isActive: orderPage.isPublished, // Alias for backward compatibility
       requireLogin: orderPage.requireLogin,
-      client: orderPage.client,
-      bundles: orderPage.bundles.map((b) => ({
+      client: orderPage.client ? { id: orderPage.client.id, name: orderPage.client.fullName, email: orderPage.client.email } : null,
+      bundles: orderPage.bundles.map((b: { id: string; bundleId: string; sortOrder: number; bundle: { name: string; priceCents: number } }) => ({
         id: b.id,
         bundleId: b.bundleId,
         bundleName: b.bundle.name,
         bundlePriceCents: b.bundle.priceCents,
         sortOrder: b.sortOrder,
       })),
-      services: orderPage.services.map((s) => ({
+      services: orderPage.services.map((s: { id: string; serviceId: string; sortOrder: number; service: { name: string; priceCents: number } }) => ({
         id: s.id,
         serviceId: s.serviceId,
         serviceName: s.service.name,
