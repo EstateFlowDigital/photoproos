@@ -479,7 +479,7 @@ export async function syncAllPlansToStripe(): Promise<
         synced++;
       } else {
         failed++;
-        errors.push(`${plan.name}: ${result.error}`);
+        errors.push(`${plan.name}: ${"error" in result ? result.error : "Unknown error"}`);
       }
     }
 
@@ -762,7 +762,8 @@ export async function getPublicPricingPlans(experimentSlug?: string) {
 
       if (experiment && experiment.variants.length > 0) {
         // Apply variant pricing overrides
-        const variantMap = new Map(
+        type VariantType = (typeof experiment.variants)[number];
+        const variantMap = new Map<string, VariantType>(
           experiment.variants.map((v) => [v.planId, v])
         );
 
