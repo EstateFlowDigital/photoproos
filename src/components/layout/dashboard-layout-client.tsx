@@ -64,20 +64,20 @@ export function DashboardLayoutClient({
       />
 
       {/* Main content area */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {/* Topbar with mobile menu button */}
         <header className="flex h-16 items-center border-b border-[var(--card-border)] bg-[var(--card)] px-4 lg:px-6">
           {/* Mobile menu button */}
           <MobileMenuButton onClick={handleOpenMenu} className="mr-3" />
 
           {/* Desktop topbar content */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <DashboardTopbar className="h-full border-0 px-0" />
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 min-h-0 overflow-y-auto bg-[var(--background)] p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-h-0 min-w-0 overflow-y-auto bg-[var(--background)] p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>
