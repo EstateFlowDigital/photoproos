@@ -138,45 +138,149 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
 
           {/* Views Chart */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h4 className="text-sm font-medium text-foreground">
-              Views Over Time
-            </h4>
+            <div className="mb-4 flex items-center justify-between">
+              <h4 className="text-sm font-medium text-foreground">
+                Views Over Time
+              </h4>
+              {analytics.viewsByDate.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-[var(--primary)]" />
+                    <span className="text-xs text-foreground-muted">Views</span>
+                  </div>
+                </div>
+              )}
+            </div>
             {analytics.viewsByDate.length === 0 ? (
-              <div className="mt-6 py-12 text-center text-sm text-foreground-muted">
+              <div className="py-12 text-center text-sm text-foreground-muted">
                 No views in this time period
               </div>
             ) : (
-              <div className="mt-6">
-                <div className="flex h-40 items-end gap-1">
-                  {analytics.viewsByDate.map((item) => {
-                    const height = (item.views / getMaxViews()) * 100;
-                    return (
-                      <div
-                        key={item.date}
-                        className="group relative flex-1"
-                        title={`${formatDate(item.date)}: ${item.views} views`}
-                      >
-                        <div
-                          className="w-full rounded-t bg-[var(--primary)] transition-all hover:bg-[var(--primary)]/80"
-                          style={{ height: `${Math.max(height, 2)}%` }}
-                        />
-                        <div className="absolute -top-8 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-[var(--background-elevated)] px-2 py-1 text-xs text-foreground shadow-lg group-hover:block">
-                          {item.views} views
-                        </div>
-                      </div>
-                    );
-                  })}
+              <div className="relative">
+                {/* Y-axis labels */}
+                <div className="absolute left-0 flex h-48 flex-col justify-between pr-2 text-right text-xs text-foreground-muted">
+                  <span>{getMaxViews()}</span>
+                  <span>{Math.round(getMaxViews() / 2)}</span>
+                  <span>0</span>
                 </div>
-                <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-foreground-muted">
-                  <span>{formatDate(analytics.viewsByDate[0]?.date || "")}</span>
-                  <span>
-                    {formatDate(
-                      analytics.viewsByDate[analytics.viewsByDate.length - 1]?.date || ""
+                {/* Chart area */}
+                <div className="ml-8">
+                  {/* Grid lines */}
+                  <div className="absolute inset-x-8 flex h-48 flex-col justify-between">
+                    <div className="border-t border-dashed border-[var(--card-border)]" />
+                    <div className="border-t border-dashed border-[var(--card-border)]" />
+                    <div className="border-t border-dashed border-[var(--card-border)]" />
+                  </div>
+                  {/* Bar chart with gradient */}
+                  <div className="relative flex h-48 items-end gap-0.5">
+                    {analytics.viewsByDate.map((item, index) => {
+                      const height = (item.views / getMaxViews()) * 100;
+                      const isToday = index === analytics.viewsByDate.length - 1;
+                      return (
+                        <div
+                          key={item.date}
+                          className="group relative flex-1"
+                          title={`${formatDate(item.date)}: ${item.views} views`}
+                        >
+                          <div
+                            className={cn(
+                              "w-full rounded-t transition-all",
+                              isToday ? "bg-[var(--primary)]" : "bg-[var(--primary)]/70",
+                              "hover:bg-[var(--primary)]"
+                            )}
+                            style={{ height: `${Math.max(height, 2)}%` }}
+                          />
+                          {/* Tooltip */}
+                          <div className="pointer-events-none absolute -top-12 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-[var(--background-elevated)] px-3 py-2 text-xs shadow-xl group-hover:block">
+                            <div className="font-medium text-foreground">{item.views} views</div>
+                            <div className="text-foreground-muted">{formatDate(item.date)}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* X-axis labels */}
+                  <div className="mt-2 flex justify-between text-xs text-foreground-muted">
+                    <span>{formatDate(analytics.viewsByDate[0]?.date || "")}</span>
+                    {analytics.viewsByDate.length > 2 && (
+                      <span>
+                        {formatDate(analytics.viewsByDate[Math.floor(analytics.viewsByDate.length / 2)]?.date || "")}
+                      </span>
                     )}
-                  </span>
+                    <span>
+                      {formatDate(analytics.viewsByDate[analytics.viewsByDate.length - 1]?.date || "")}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Engagement Insights */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h4 className="mb-4 text-sm font-medium text-foreground">
+              Engagement Insights
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {/* Scroll Depth Distribution */}
+              <div className="rounded-lg bg-[var(--background-secondary)] p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs text-foreground-muted">Scroll Depth</span>
+                  <span className="text-sm font-medium text-foreground">{analytics.avgScrollDepth}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--success)]"
+                    style={{ width: `${analytics.avgScrollDepth}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-foreground-muted">
+                  {analytics.avgScrollDepth >= 75 ? "Excellent" : analytics.avgScrollDepth >= 50 ? "Good" : "Needs improvement"}
+                </p>
+              </div>
+
+              {/* Average Session Duration */}
+              <div className="rounded-lg bg-[var(--background-secondary)] p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs text-foreground-muted">Avg. Session</span>
+                  <span className="text-sm font-medium text-foreground">{formatDuration(analytics.avgDuration)}</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[var(--warning)] to-[var(--primary)]"
+                    style={{ width: `${Math.min((analytics.avgDuration / 180) * 100, 100)}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-foreground-muted">
+                  {analytics.avgDuration >= 120 ? "Highly engaged" : analytics.avgDuration >= 60 ? "Engaged" : "Quick visits"}
+                </p>
+              </div>
+
+              {/* Visitor Ratio */}
+              <div className="rounded-lg bg-[var(--background-secondary)] p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs text-foreground-muted">New Visitors</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {analytics.totalViews > 0
+                      ? Math.round((analytics.uniqueVisitors / analytics.totalViews) * 100)
+                      : 0}%
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[var(--success)] to-[var(--primary)]"
+                    style={{
+                      width: `${analytics.totalViews > 0
+                        ? (analytics.uniqueVisitors / analytics.totalViews) * 100
+                        : 0}%`
+                    }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-foreground-muted">
+                  {analytics.uniqueVisitors} of {analytics.totalViews} views
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Two Column Layout */}

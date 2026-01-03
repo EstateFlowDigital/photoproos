@@ -8,6 +8,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Portfolio Website Enhancements**
+  - **QR Code Generator**: Generate and download QR codes for portfolio URLs
+    - Modal with canvas-based QR code rendering
+    - Size selection (200px, 300px, 400px)
+    - Download as PNG functionality
+    - Copy image to clipboard support
+  - **Social Share Buttons**: Floating share menu on public portfolios
+    - Twitter/X, Facebook, LinkedIn, Pinterest share links
+    - Native Web Share API support on mobile devices
+    - Copy link with confirmation feedback
+    - Uses portfolio's primary color for branding
+  - **Portfolio Stats Widget**: Quick stats in portfolio editor header
+    - Total views (30-day period)
+    - Unique visitors count
+    - Last updated timestamp with relative time formatting
+  - **OG Image Generator**: Dynamic Open Graph images for social sharing
+    - Auto-generated preview images for each portfolio
+    - Displays portfolio name, description, organization logo
+    - Shows up to 4 project images in grid layout
+    - Uses portfolio's primary color theme
+  - **Image Lazy Loading**: BlurImage component with blur-up placeholders
+    - Intersection Observer for true lazy loading
+    - Low-quality placeholder with blur effect for Cloudinary images
+    - Shimmer loading animation
+    - Error state handling with fallback icon
+    - Configurable aspect ratios and object-fit options
+    - Priority loading for above-the-fold images
+  - **Enhanced Analytics Dashboard**: Improved charts and engagement insights
+    - Enhanced bar chart with Y-axis labels and grid lines
+    - Interactive tooltips with date and view count
+    - New Engagement Insights section:
+      - Scroll depth progress bar with quality indicator
+      - Average session duration with engagement level
+      - New visitors percentage with visual breakdown
+    - Legend indicators for chart data
+
 - **Platform Referral System** (ListingLens User Referrals)
   - Database models for user-to-user referral tracking:
     - `PlatformReferralSettings` - Global program configuration

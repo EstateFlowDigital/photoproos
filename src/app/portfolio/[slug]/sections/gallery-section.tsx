@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import type { PortfolioTemplate } from "@prisma/client";
 import type { PORTFOLIO_TEMPLATES } from "@/lib/portfolio-templates";
 import { Lightbox } from "../components/lightbox";
+import { BlurImage } from "@/components/ui/blur-image";
 
 interface Project {
   id: string;
@@ -155,13 +156,13 @@ export function GallerySection({
                     backgroundColor: templateConfig.colors.backgroundSecondary,
                   }}
                 >
-                  <div className="aspect-[4/3] w-full overflow-hidden">
-                    <img
-                      src={image.url}
-                      alt={image.alt}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
+                  <BlurImage
+                    src={image.url}
+                    alt={image.alt}
+                    aspectRatio="landscape"
+                    priority={index < 6}
+                    className="transition-transform duration-300 group-hover:scale-105"
+                  />
                   {/* Hover Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
                     <ZoomIcon className="h-8 w-8 text-white opacity-0 transition-opacity group-hover:opacity-100" />
@@ -196,33 +197,31 @@ export function GallerySection({
                       onClick={() => imageUrl && openLightbox(currentIndex)}
                       className="relative w-full focus:outline-none"
                     >
-                      <div
-                        className="aspect-[4/3] w-full overflow-hidden"
-                        style={{
-                          backgroundColor: templateConfig.colors.backgroundSecondary,
-                        }}
-                      >
-                        {imageUrl ? (
-                          <>
-                            <img
-                              src={imageUrl}
-                              alt={project.name}
-                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                            {/* Hover Overlay */}
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
-                              <ZoomIcon className="h-8 w-8 text-white opacity-0 transition-opacity group-hover:opacity-100" />
-                            </div>
-                          </>
-                        ) : (
-                          <div
-                            className="flex h-full w-full items-center justify-center text-sm"
-                            style={{ color: templateConfig.colors.textMuted }}
-                          >
-                            No image
+                      {imageUrl ? (
+                        <>
+                          <BlurImage
+                            src={imageUrl}
+                            alt={project.name}
+                            aspectRatio="landscape"
+                            priority={currentIndex < 6}
+                            className="transition-transform duration-300 group-hover:scale-105"
+                          />
+                          {/* Hover Overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
+                            <ZoomIcon className="h-8 w-8 text-white opacity-0 transition-opacity group-hover:opacity-100" />
                           </div>
-                        )}
-                      </div>
+                        </>
+                      ) : (
+                        <div
+                          className="flex aspect-[4/3] w-full items-center justify-center text-sm"
+                          style={{
+                            backgroundColor: templateConfig.colors.backgroundSecondary,
+                            color: templateConfig.colors.textMuted,
+                          }}
+                        >
+                          No image
+                        </div>
+                      )}
                     </button>
                     {showProjectNames && (
                       <div className="p-4">
