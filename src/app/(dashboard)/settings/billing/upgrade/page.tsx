@@ -98,7 +98,7 @@ export default async function UpgradePage() {
         subtitle="Unlock more features and grow your photography business"
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="auto-grid grid-min-280 grid-gap-6">
         {plans.map((plan) => (
           <div
             key={plan.id}
@@ -155,7 +155,7 @@ export default async function UpgradePage() {
         <h3 className="text-lg font-semibold text-foreground mb-4">
           Frequently Asked Questions
         </h3>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="auto-grid grid-min-240 grid-gap-4">
           <div>
             <h4 className="font-medium text-foreground">Can I cancel anytime?</h4>
             <p className="mt-1 text-sm text-foreground-muted">
