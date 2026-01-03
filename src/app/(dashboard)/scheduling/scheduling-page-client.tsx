@@ -614,13 +614,13 @@ export function SchedulingPageClient({
   const BookingRow = ({ booking }: { booking: Booking }) => (
     <Link
       href={`/scheduling/${booking.id}`}
-      className="group flex items-center gap-3 py-3 px-4 hover:bg-[var(--background-hover)] transition-colors border-b border-[var(--card-border)] last:border-b-0"
+      className="group flex flex-wrap items-center gap-2 py-3 px-4 hover:bg-[var(--background-hover)] transition-colors border-b border-[var(--card-border)] last:border-b-0"
     >
       <div className={cn("w-1 h-8 rounded-full shrink-0", statusBlockColors[booking.status])} />
       <span className="text-sm font-medium text-foreground-muted w-20 shrink-0">
         {formatTime(new Date(booking.startTime))}
       </span>
-      <span className="font-medium text-foreground truncate flex-1 group-hover:text-[var(--primary)] flex items-center gap-1.5">
+      <span className="font-medium text-foreground truncate flex-1 min-w-0 group-hover:text-[var(--primary)] flex items-center gap-1.5">
         {booking.isRecurring && (
           <RepeatIcon className="h-3.5 w-3.5 text-[var(--ai)] shrink-0" />
         )}

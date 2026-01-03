@@ -334,8 +334,8 @@ function RequestsList({
         const canApproveReject = !isOwn && request.requestStatus === "pending" && showActions;
 
         return (
-          <div key={request.id} className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-4">
+          <div key={request.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4 min-w-0">
               {showUser && request.user && (
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/15 text-sm font-medium text-[var(--primary)]">
                   {(request.user.fullName || request.user.email).charAt(0).toUpperCase()}
@@ -361,7 +361,7 @@ function RequestsList({
             </div>
 
             {showActions && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {canApproveReject && onApprove && onReject && (
                   <>
                     <button
@@ -464,7 +464,7 @@ function TimeOffRequestModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-foreground">Request Time Off</h2>
           <button
             onClick={onClose}

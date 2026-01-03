@@ -316,7 +316,7 @@ export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormP
 
       {/* Recurrence */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Repeat</h2>
             <p className="text-sm text-foreground-muted">Create a recurring booking series</p>

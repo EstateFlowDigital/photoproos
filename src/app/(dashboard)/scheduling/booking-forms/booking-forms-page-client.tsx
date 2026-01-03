@@ -311,8 +311,8 @@ export function BookingFormsPageClient({
               className="group relative rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden transition-all hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/5"
             >
               {/* Header with status */}
-              <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 p-4 border-b border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
                   {form.industry && (
                     <span className="inline-flex items-center rounded-full bg-[var(--background-secondary)] px-2 py-0.5 text-xs font-medium text-foreground-muted">
                       {industryLabels[form.industry]}
@@ -331,7 +331,7 @@ export function BookingFormsPageClient({
                 </div>
 
                 {/* Actions Menu */}
-                <div className="relative">
+                <div className="relative self-end sm:self-auto">
                   <button
                     onClick={() => setMenuOpenId(menuOpenId === form.id ? null : form.id)}
                     className="rounded-lg p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
@@ -425,7 +425,7 @@ export function BookingFormsPageClient({
               </Link>
 
               {/* Footer */}
-              <div className="flex items-center justify-between px-4 py-3 bg-[var(--background)] border-t border-[var(--card-border)]">
+              <div className="flex flex-col gap-2 px-4 py-3 bg-[var(--background)] border-t border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
                 <code className="text-xs text-foreground-muted">/book/{form.slug}</code>
                 <button
                   onClick={() => {
@@ -471,7 +471,7 @@ export function BookingFormsPageClient({
             onClick={() => setIsCreateModalOpen(false)}
           />
           <div className="relative w-full max-w-lg mx-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl animate-in zoom-in-95 fade-in duration-200">
-            <div className="flex items-center justify-between p-6 border-b border-[var(--card-border)]">
+            <div className="flex flex-col gap-3 p-6 border-b border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-foreground">Create Booking Form</h2>
               <button
                 onClick={() => setIsCreateModalOpen(false)}

@@ -224,14 +224,14 @@ export function AvailabilityPageClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Availability</h1>
           <p className="text-[#7c7c7c] mt-1">
             Manage your time off, holidays, and booking settings
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setShowBufferModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg text-white hover:bg-[#313131] transition-colors"
@@ -253,7 +253,7 @@ export function AvailabilityPageClient({
         {/* Calendar */}
         <div className="lg:col-span-2 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
           {/* Calendar Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.08)]">
+          <div className="flex flex-col gap-3 px-6 py-4 border-b border-[rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={prevMonth}
@@ -361,7 +361,7 @@ export function AvailabilityPageClient({
                 .map((block) => (
                   <div
                     key={block.id}
-                    className="p-4 flex items-start justify-between group"
+                    className="p-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between group"
                   >
                     <div className="flex items-start gap-3">
                       <div
@@ -412,19 +412,19 @@ export function AvailabilityPageClient({
               </h3>
             </div>
             <div className="p-4 space-y-3">
-              <div className="flex justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[#7c7c7c] text-sm">Before booking</span>
                 <span className="text-white text-sm">
                   {bufferSettings.bufferBefore} min
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[#7c7c7c] text-sm">After booking</span>
                 <span className="text-white text-sm">
                   {bufferSettings.bufferAfter} min
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[#7c7c7c] text-sm">Min. advance notice</span>
                 <span className="text-white text-sm">
                   {bufferSettings.minAdvanceHours} hours
@@ -444,7 +444,7 @@ export function AvailabilityPageClient({
               </div>
               <div className="divide-y divide-[rgba(255,255,255,0.04)]">
                 {calendarIntegrations.map((integration) => (
-                  <div key={integration.id} className="p-4 flex items-center justify-between">
+                  <div key={integration.id} className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                       <div
                         className="w-3 h-3 rounded-full"
@@ -494,7 +494,7 @@ export function AvailabilityPageClient({
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.08)]">
+            <div className="flex flex-col gap-3 px-6 py-4 border-b border-[rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-white">Add Availability Block</h2>
               <button
                 onClick={() => setShowAddModal(false)}
@@ -625,7 +625,7 @@ export function AvailabilityPageClient({
       {showBufferModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.08)]">
+            <div className="flex flex-col gap-3 px-6 py-4 border-b border-[rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-white">Booking Buffer Settings</h2>
               <button
                 onClick={() => setShowBufferModal(false)}

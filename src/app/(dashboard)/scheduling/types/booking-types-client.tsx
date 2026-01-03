@@ -390,7 +390,7 @@ function BookingTypeCard({
         !type.isActive && "opacity-60"
       )}
     >
-      <div className="flex items-start justify-between gap-3 mb-4">
+      <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-3">
           <span
             className="h-3 w-3 rounded-full shrink-0"
@@ -398,7 +398,7 @@ function BookingTypeCard({
           />
           <h3 className="font-medium text-foreground">{type.name}</h3>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 self-end sm:self-auto">
           <button
             onClick={onEdit}
             className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
@@ -566,7 +566,7 @@ function BookingTypeForm({ formData, setFormData }: BookingTypeFormProps) {
       </div>
 
       {/* Active Toggle */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-foreground">Active</p>
           <p className="text-xs text-foreground-muted">

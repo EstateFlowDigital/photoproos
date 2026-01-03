@@ -251,7 +251,7 @@ export function BookingFormEditClient({
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-[var(--card-border)] bg-[var(--background)]">
-        <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/scheduling/booking-forms"
@@ -273,7 +273,7 @@ export function BookingFormEditClient({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {hasUnsavedChanges && (
               <span className="text-sm text-[var(--warning)]">Unsaved changes</span>
             )}
@@ -304,7 +304,7 @@ export function BookingFormEditClient({
         </div>
 
         {/* Tabs */}
-        <div className="flex px-6 gap-1">
+        <div className="flex flex-wrap gap-1 px-6">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -328,7 +328,7 @@ export function BookingFormEditClient({
         {/* Fields Tab */}
         {activeTab === "fields" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-foreground-muted">
                 Drag and drop to reorder fields. Click a field to edit its properties.
               </p>
@@ -354,7 +354,7 @@ export function BookingFormEditClient({
         {/* Services Tab */}
         {activeTab === "services" && (
           <div className="max-w-2xl space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base font-semibold text-foreground">Available Services</h2>
                 <p className="text-sm text-foreground-muted">
@@ -390,7 +390,7 @@ export function BookingFormEditClient({
                   return (
                     <div
                       key={service.id}
-                      className="flex items-center justify-between p-4"
+                      className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex items-center gap-3">
                         <input
@@ -434,7 +434,7 @@ export function BookingFormEditClient({
         {/* Settings Tab */}
         {activeTab === "settings" && (
           <div className="max-w-2xl space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-base font-semibold text-foreground">Form Settings</h2>
               <button
                 type="button"
@@ -513,7 +513,7 @@ export function BookingFormEditClient({
 
               {/* Toggles */}
               <div className="space-y-4 pt-4 border-t border-[var(--card-border)]">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <label className="text-sm font-medium text-foreground">
                       Require Approval
@@ -539,7 +539,7 @@ export function BookingFormEditClient({
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <label className="text-sm font-medium text-foreground">
                       Confirmation Email
@@ -572,7 +572,7 @@ export function BookingFormEditClient({
         {/* Branding Tab */}
         {activeTab === "branding" && (
           <div className="max-w-2xl space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-base font-semibold text-foreground">Branding</h2>
               <button
                 type="button"

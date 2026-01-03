@@ -156,7 +156,7 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Pricing Summary</h2>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-sm text-foreground-muted">Session Fee</span>
                   <span className="text-sm font-medium text-foreground">{formatCurrency(bookingForForm.price)}</span>
                 </div>

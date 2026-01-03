@@ -100,17 +100,17 @@ export default async function NewBookingPage() {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Schedule</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">This Week</span>
                 <span className="text-sm font-medium text-foreground">
                   {scheduleStats.thisWeekCount} session{scheduleStats.thisWeekCount !== 1 ? "s" : ""}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Next Session</span>
                 <span className="text-sm font-medium text-foreground">{scheduleStats.nextAvailable}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-foreground-muted">Busiest Day</span>
                 <span className="text-sm font-medium text-foreground">{scheduleStats.busiestDay}</span>
               </div>

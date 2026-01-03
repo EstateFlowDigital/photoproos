@@ -136,7 +136,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Status Banner */}
-          <div className={cn("rounded-xl border p-4 flex items-center justify-between", status.bg, "border-transparent")}>
+          <div className={cn("rounded-xl border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", status.bg, "border-transparent")}>
             <div className="flex items-center gap-3">
               <div className={cn("flex h-10 w-10 items-center justify-center rounded-full", status.bg)}>
                 {booking.status === "confirmed" && <CheckIcon className={cn("h-5 w-5", status.text)} />}
@@ -152,7 +152,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
               </div>
             </div>
             {isUpcoming && (
-              <div className="text-right">
+              <div className="self-start sm:self-auto sm:text-right">
                 <p className="text-sm text-foreground-muted">Starts in</p>
                 <p className={cn("text-lg font-semibold", status.text)}>
                   {Math.max(0, Math.ceil((booking.startTime.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days
@@ -294,19 +294,19 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Pricing</h2>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-sm text-foreground-secondary">Session Fee</span>
                   <span className="font-medium text-foreground">{formatCurrency(price)}</span>
                 </div>
                 {booking.travelFeeCents && booking.travelFeeCents > 0 && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-sm text-foreground-secondary">Travel Fee</span>
                     <span className="font-medium text-foreground">{formatCurrency(booking.travelFeeCents)}</span>
                   </div>
                 )}
                 {booking.travelFeeCents && booking.travelFeeCents > 0 && (
                   <div className="pt-3 border-t border-[var(--card-border)]">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm font-medium text-foreground">Total</span>
                       <span className="font-semibold text-foreground">{formatCurrency(price + (booking.travelFeeCents || 0))}</span>
                     </div>
