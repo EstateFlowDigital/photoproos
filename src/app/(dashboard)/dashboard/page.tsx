@@ -439,7 +439,7 @@ export default async function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Galleries */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-foreground">Recent Galleries</h2>
             <Link
               href="/galleries"
@@ -474,7 +474,7 @@ export default async function DashboardPage() {
         <div className="space-y-6">
           {/* Upcoming Bookings */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-semibold text-foreground">Upcoming Bookings</h2>
               <Link
                 href="/scheduling"

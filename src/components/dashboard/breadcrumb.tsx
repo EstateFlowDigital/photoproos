@@ -13,16 +13,16 @@ interface BreadcrumbProps {
 
 export function Breadcrumb({ items, className }: BreadcrumbProps) {
   return (
-    <nav className={cn("flex items-center gap-2 text-sm", className)} aria-label="Breadcrumb">
+    <nav className={cn("flex flex-wrap items-center gap-2 text-sm", className)} aria-label="Breadcrumb">
       {items.map((item, index) => (
-        <div key={index} className="flex items-center gap-2">
+        <div key={index} className="flex min-w-0 items-center gap-2">
           {index > 0 && (
             <ChevronRightIcon className="h-4 w-4 text-foreground-muted" />
           )}
           {item.href ? (
             <Link
               href={item.href}
-              className="text-foreground-muted hover:text-foreground transition-colors"
+              className="text-foreground-muted hover:text-foreground transition-colors truncate max-w-[200px]"
             >
               {item.label}
             </Link>
