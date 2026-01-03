@@ -174,7 +174,7 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Service Territories</h1>
           <p className="mt-1 text-sm text-foreground-muted">
@@ -282,7 +282,7 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
-            <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+            <div className="flex flex-col gap-2 border-b border-[var(--card-border)] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-foreground">
                 {editingTerritory ? "Edit Territory" : "Create Territory"}
               </h2>
@@ -424,7 +424,7 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
                 </label>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col gap-3 pt-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={closeModal}
@@ -460,7 +460,7 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
                 This will permanently delete this territory. Any bookings or orders using this zone
                 will need to be updated manually.
               </p>
-              <div className="mt-6 flex gap-3">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   className="flex-1 rounded-lg border border-[var(--card-border)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
