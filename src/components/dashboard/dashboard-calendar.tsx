@@ -326,8 +326,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
                       "min-h-[100px] p-1.5 rounded-lg border text-left transition-all flex flex-col",
                       isCurrentMonth
                         ? "bg-[var(--background)] border-[var(--card-border)] hover:border-[var(--primary)]/50"
-                        : "bg-[var(--background)]/50 border-transparent"
-                      ,
+                        : "bg-[var(--background)]/50 border-transparent",
                       isSelected &&
                         "ring-2 ring-[var(--primary)] ring-offset-1 ring-offset-[var(--card)]"
                     )}
@@ -353,19 +352,6 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
                           "block rounded px-1.5 py-0.5 text-[10px] font-medium truncate transition-opacity hover:opacity-80 border leading-tight",
                           EVENT_PILL_STYLES[event.type]
                         );
-
-                        if (event.href) {
-                          return (
-                            <Link
-                              key={event.id}
-                              href={event.href}
-                              className={pillClasses}
-                              title={event.title}
-                            >
-                              {pill}
-                            </Link>
-                          );
-                        }
 
                         return (
                           <div key={event.id} className={pillClasses} title={event.title}>
