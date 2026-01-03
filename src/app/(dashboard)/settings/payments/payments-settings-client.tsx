@@ -206,7 +206,7 @@ export function PaymentsSettingsClient({
 
       {/* Stripe Connect Status */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#635bff]/10">
             <StripeIcon className="h-8 w-8 text-[#635bff]" />
           </div>
@@ -365,7 +365,7 @@ export function PaymentsSettingsClient({
       {/* Payout Information */}
       {status?.hasAccount && status.isOnboarded && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground">
                 Payout Settings
@@ -405,7 +405,7 @@ export function PaymentsSettingsClient({
                   {status.externalAccounts.map((account) => (
                     <div
                       key={account.id}
-                      className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3"
+                      className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex items-center gap-3">
                         {account.type === "bank_account" ? (
@@ -505,7 +505,7 @@ export function PaymentsSettingsClient({
           Platform Fees
         </h2>
         <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-foreground">Transaction Fee</p>
               <p className="text-sm text-foreground-muted">
@@ -522,7 +522,7 @@ export function PaymentsSettingsClient({
 
       {/* Tax Settings */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-start gap-4 mb-6">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10">
             <ReceiptIcon className="h-6 w-6 text-[var(--primary)]" />
           </div>
@@ -579,11 +579,11 @@ export function PaymentsSettingsClient({
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-col items-stretch sm:items-end">
             <button
               type="submit"
               disabled={savingTax}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 sm:w-auto"
             >
               {savingTax ? (
                 <>
@@ -624,7 +624,7 @@ export function PaymentsSettingsClient({
 
       {/* Payment History Link */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">
               Payment History
