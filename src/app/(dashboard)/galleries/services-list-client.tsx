@@ -214,7 +214,7 @@ export function ServicesListClient({ services }: ServicesListClientProps) {
           </Link>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="auto-grid grid-min-240 grid-gap-4">
           {filteredServices.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}
