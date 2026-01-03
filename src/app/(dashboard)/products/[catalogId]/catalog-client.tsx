@@ -144,8 +144,8 @@ export function CatalogClient({ catalog }: CatalogClientProps) {
           <h2 className="text-lg font-semibold text-foreground">Products</h2>
           <span className="text-sm text-foreground-secondary">{catalog.products.length} items</span>
         </div>
-        <div className="mt-4 overflow-hidden rounded-lg border border-[var(--card-border)]">
-          <table className="min-w-full divide-y divide-[var(--card-border)]">
+        <div className="mt-4 overflow-x-auto rounded-lg border border-[var(--card-border)]">
+          <table className="min-w-[720px] w-full divide-y divide-[var(--card-border)]">
             <thead className="bg-[var(--background)]">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-secondary">SKU</th>
