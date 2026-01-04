@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";
-import { getAppearancePreferences, THEME_PRESETS } from "@/lib/actions/appearance";
+import { getAppearancePreferences } from "@/lib/actions/appearance";
+import { THEME_PRESETS } from "@/lib/appearance-types";
 import { AppearanceSettingsForm } from "./appearance-settings-form";
 
 export default async function AppearanceSettingsPage() {

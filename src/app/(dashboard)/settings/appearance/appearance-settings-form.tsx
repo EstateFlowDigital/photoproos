@@ -5,9 +5,8 @@ import { cn } from "@/lib/utils";
 import {
   updateAppearancePreferences,
   applyThemePreset,
-  type AppearancePreferences,
-  type ThemePreset,
 } from "@/lib/actions/appearance";
+import type { AppearancePreferences, ThemePreset } from "@/lib/appearance-types";
 import { useToast } from "@/components/ui/toast";
 
 interface AppearanceSettingsFormProps {
