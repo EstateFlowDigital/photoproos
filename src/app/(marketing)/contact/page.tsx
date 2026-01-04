@@ -54,7 +54,7 @@ export default function ContactPage() {
                   icon={<CalendarIcon className="h-5 w-5" />}
                   title="Book a Demo"
                   content="Schedule a personalized walkthrough"
-                  href="/demo"
+                  href="/webinars"
                 />
               </div>
 

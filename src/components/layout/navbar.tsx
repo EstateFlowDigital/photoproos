@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -134,12 +135,24 @@ const resourceItems: DropdownItem[] = [
 
 export function Navbar({ className }: NavbarProps) {
   const { isSignedIn, isLoaded } = useUser();
+  const pathname = usePathname();
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const homeHref = isLoaded && isSignedIn ? "/dashboard" : "/";
+  const isHomePage = pathname === "/";
+
+  const resolveHref = React.useCallback(
+    (href: string) => {
+      if (href.startsWith("#")) {
+        return isHomePage ? href : `/${href}`;
+      }
+      return href;
+    },
+    [isHomePage]
+  );
 
   // Handle scroll for navbar blur effect
   React.useEffect(() => {
@@ -238,7 +251,7 @@ export function Navbar({ className }: NavbarProps) {
       case "Enter":
       case " ":
         e.preventDefault();
-        window.location.href = href;
+        window.location.href = resolveHref(href);
         break;
       case "ArrowDown":
         e.preventDefault();
@@ -305,6 +318,7 @@ export function Navbar({ className }: NavbarProps) {
                     <DropdownLink
                       key={item.href + item.title}
                       {...item}
+                      href={resolveHref(item.href)}
                       isFocused={focusedIndex === index}
                       onKeyDown={(e) => handleItemKeyDown(e, item.href)}
                     />
@@ -343,6 +357,7 @@ export function Navbar({ className }: NavbarProps) {
                     <DropdownLink
                       key={item.href + item.title}
                       {...item}
+                      href={resolveHref(item.href)}
                       isFocused={focusedIndex === index}
                       onKeyDown={(e) => handleItemKeyDown(e, item.href)}
                     />
@@ -378,6 +393,7 @@ export function Navbar({ className }: NavbarProps) {
                     <DropdownLink
                       key={item.href + item.title}
                       {...item}
+                      href={resolveHref(item.href)}
                       isFocused={focusedIndex === index}
                       onKeyDown={(e) => handleItemKeyDown(e, item.href)}
                     />
@@ -388,7 +404,7 @@ export function Navbar({ className }: NavbarProps) {
           )}
         </div>
 
-        <NavLink href="#pricing">Pricing</NavLink>
+        <NavLink href={resolveHref("#pricing")}>Pricing</NavLink>
       </div>
 
       {/* Right Side Actions */}
@@ -439,7 +455,7 @@ export function Navbar({ className }: NavbarProps) {
                 {featuresItems.map((item) => (
                   <Link
                     key={item.href + item.title}
-                    href={item.href}
+                    href={resolveHref(item.href)}
                     className="flex items-center justify-between rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -476,7 +492,7 @@ export function Navbar({ className }: NavbarProps) {
                 {industriesItems.map((item) => (
                   <Link
                     key={item.href + item.title}
-                    href={item.href}
+                    href={resolveHref(item.href)}
                     className="flex items-center justify-between rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -506,7 +522,7 @@ export function Navbar({ className }: NavbarProps) {
                 {resourceItems.map((item) => (
                   <Link
                     key={item.href + item.title}
-                    href={item.href}
+                    href={resolveHref(item.href)}
                     className="flex items-center justify-between rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -530,7 +546,7 @@ export function Navbar({ className }: NavbarProps) {
             {/* Pricing Link */}
             <div className="border-b border-[var(--border)] py-4">
               <Link
-                href="#pricing"
+                href={resolveHref("#pricing")}
                 className="flex items-center justify-between rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

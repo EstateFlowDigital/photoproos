@@ -107,7 +107,7 @@ export function CTASection() {
               gradient="linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6)"
               className="px-8 py-4 text-base"
             >
-              <Link href="/demo">Watch demo</Link>
+              <Link href="/webinars">Watch demo</Link>
             </GradientButton>
           </div>
 
