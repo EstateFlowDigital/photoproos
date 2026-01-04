@@ -181,7 +181,7 @@ export default function ContractSigningPage() {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)] mx-auto mb-4" />
           <p className="text-[#a7a7a7]">Loading contract...</p>
         </div>
       </div>
@@ -192,7 +192,7 @@ export default function ContractSigningPage() {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
         <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] p-8 max-w-md w-full text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <AlertCircle className="w-12 h-12 text-[var(--error)] mx-auto mb-4" />
           <h1 className="text-xl font-semibold text-white mb-2">Unable to Load Contract</h1>
           <p className="text-[#a7a7a7]">{error}</p>
         </div>
@@ -279,7 +279,7 @@ export default function ContractSigningPage() {
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors ${
                       signatureMode === "draw"
-                        ? "bg-blue-500/10 border-blue-500 text-blue-500"
+                        ? "bg-[var(--primary)]/10 border-[var(--primary)] text-[var(--primary)]"
                         : "border-[rgba(255,255,255,0.08)] text-[#7c7c7c] hover:text-white"
                     }`}
                   >
@@ -293,7 +293,7 @@ export default function ContractSigningPage() {
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors ${
                       signatureMode === "type"
-                        ? "bg-blue-500/10 border-blue-500 text-blue-500"
+                        ? "bg-[var(--primary)]/10 border-[var(--primary)] text-[var(--primary)]"
                         : "border-[rgba(255,255,255,0.08)] text-[#7c7c7c] hover:text-white"
                     }`}
                   >
@@ -337,7 +337,7 @@ export default function ContractSigningPage() {
                       type="checkbox"
                       checked={hasAgreed}
                       onChange={(e) => setHasAgreed(e.target.checked)}
-                      className="mt-1 w-4 h-4 rounded border-[rgba(255,255,255,0.24)] bg-transparent checked:bg-blue-500 checked:border-blue-500"
+                      className="mt-1 w-4 h-4 rounded border-[rgba(255,255,255,0.24)] bg-transparent checked:bg-[var(--primary)] checked:border-[var(--primary)]"
                     />
                     <span className="text-sm text-[#a7a7a7]">
                       I agree to sign this document electronically and understand that my
@@ -347,8 +347,8 @@ export default function ContractSigningPage() {
                 </div>
 
                 {error && (
-                  <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                    <p className="text-red-400 text-sm">{error}</p>
+                  <div className="mt-4 p-3 bg-[var(--error)]/10 border border-[var(--error)]/20 rounded-lg">
+                    <p className="text-[var(--error)] text-sm">{error}</p>
                   </div>
                 )}
 
@@ -394,9 +394,9 @@ export default function ContractSigningPage() {
                       )}
                     </div>
                     {s.hasSigned ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      <CheckCircle2 className="w-5 h-5 text-[var(--success)]" />
                     ) : s.id === signer.id ? (
-                      <span className="text-xs px-2 py-1 bg-blue-500/10 text-blue-500 rounded">
+                      <span className="text-xs px-2 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded">
                         You
                       </span>
                     ) : (
