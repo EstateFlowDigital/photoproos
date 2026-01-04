@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Automated Build Error Fixing via GitHub Actions**
+  - GitHub Actions workflow (`fix-build-errors.yml`) to auto-fix TypeScript build errors
+  - Railway webhook endpoint (`/api/webhooks/railway`) to trigger fixes on deploy failure
+  - Creates PR with fixes for review before merging
+  - Manual trigger option via GitHub Actions UI with pasted error logs
+
 ### Fixed
 - **TypeScript Build Errors**
   - Fixed `invoiceNumber` type conversion in recurring invoice processing (String to number and back)

@@ -44,6 +44,9 @@ import { ReferralInviteEmail } from "@/emails/referral-invite";
 import { ReferralSignupNotificationEmail } from "@/emails/referral-signup-notification";
 import { ReferralRewardEarnedEmail } from "@/emails/referral-reward-earned";
 import { FormSubmissionNotificationEmail } from "@/emails/form-submission-notification";
+import { PaymentReminderEmail } from "@/emails/payment-reminder";
+import { PortfolioWeeklyDigestEmail } from "@/emails/portfolio-weekly-digest";
+import { ClientMagicLinkEmail } from "@/emails/client-magic-link";
 
 /**
  * Send gallery delivered notification to client
@@ -1006,6 +1009,135 @@ export async function sendReferralRewardEarnedEmail(params: {
       totalEarned,
       totalReferrals,
       referralDashboardUrl,
+    }),
+  });
+}
+
+/**
+ * Send payment reminder to client for gallery access
+ *
+ * Triggered by: payment reminder cron job or manual action
+ * Location: src/lib/actions/payments.ts
+ */
+export async function sendPaymentReminderEmail(params: {
+  to: string;
+  clientName: string;
+  galleryName: string;
+  paymentUrl: string;
+  amountCents: number;
+  currency: string;
+  photographerName: string;
+  photographerEmail?: string;
+  dueDate?: string;
+  isOverdue?: boolean;
+}) {
+  const {
+    to,
+    clientName,
+    galleryName,
+    paymentUrl,
+    amountCents,
+    currency,
+    photographerName,
+    photographerEmail,
+    dueDate,
+    isOverdue = false,
+  } = params;
+
+  const subject = isOverdue
+    ? `Payment Overdue: ${galleryName}`
+    : `Payment Reminder: ${galleryName}`;
+
+  return sendEmail({
+    to,
+    subject,
+    react: PaymentReminderEmail({
+      clientName,
+      galleryName,
+      paymentUrl,
+      amountCents,
+      currency,
+      photographerName,
+      dueDate,
+      isOverdue,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+/**
+ * Send weekly portfolio analytics digest to photographer
+ *
+ * Triggered by: portfolio digest cron job
+ * Location: src/app/api/cron/portfolio-digest/route.ts
+ */
+export async function sendPortfolioWeeklyDigestEmail(params: {
+  to: string;
+  userName: string;
+  portfolios: Array<{
+    name: string;
+    slug: string;
+    views: number;
+    uniqueVisitors: number;
+    inquiries: number;
+    topCountry?: string;
+  }>;
+  totalViews: number;
+  totalVisitors: number;
+  totalInquiries: number;
+  weekStartDate: string;
+  weekEndDate: string;
+  dashboardUrl?: string;
+}) {
+  const {
+    to,
+    userName,
+    portfolios,
+    totalViews,
+    totalVisitors,
+    totalInquiries,
+    weekStartDate,
+    weekEndDate,
+    dashboardUrl,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `Your Portfolio Analytics: ${weekStartDate} - ${weekEndDate}`,
+    react: PortfolioWeeklyDigestEmail({
+      userName,
+      portfolios,
+      totalViews,
+      totalVisitors,
+      totalInquiries,
+      weekStartDate,
+      weekEndDate,
+      dashboardUrl,
+    }),
+  });
+}
+
+/**
+ * Send magic link login email to client
+ *
+ * Triggered by: client portal login request
+ * Location: src/lib/actions/client-portal.ts
+ */
+export async function sendClientMagicLinkEmail(params: {
+  to: string;
+  clientName: string;
+  magicLinkUrl: string;
+  expiresInMinutes?: number;
+}) {
+  const { to, clientName, magicLinkUrl, expiresInMinutes = 15 } = params;
+
+  return sendEmail({
+    to,
+    subject: "Your secure login link - PhotoProOS",
+    react: ClientMagicLinkEmail({
+      clientName,
+      magicLinkUrl,
+      expiresInMinutes,
     }),
   });
 }
