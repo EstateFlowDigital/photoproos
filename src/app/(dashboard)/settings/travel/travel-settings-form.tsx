@@ -180,12 +180,12 @@ export function TravelSettingsForm({ settings }: TravelSettingsFormProps) {
           </div>
 
           {/* Save Button */}
-          <div className="flex justify-end">
+          <div className="flex flex-col items-stretch sm:items-end">
             <button
               onClick={handleSave}
               disabled={!hasChanges || isPending}
               className={cn(
-                "inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium transition-colors",
+                "inline-flex items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium transition-colors sm:w-auto",
                 hasChanges
                   ? "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
                   : "bg-[var(--background-secondary)] text-foreground-muted cursor-not-allowed"
@@ -230,7 +230,7 @@ export function TravelSettingsForm({ settings }: TravelSettingsFormProps) {
                   const billable = Math.max(0, miles - freeThresholdMiles);
                   const fee = billable * travelFeePerMile;
                   return (
-                    <div key={miles} className="flex items-center justify-between">
+                    <div key={miles} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-foreground-muted">{miles} miles</span>
                       <span className={cn("font-medium", fee === 0 ? "text-[var(--success)]" : "text-foreground")}>
                         {fee === 0 ? "Free" : `$${(fee / 100).toFixed(2)}`}
