@@ -317,7 +317,7 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
 
       {/* Templates Overview */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-foreground">Message Templates</h2>
           <Link
             href="/settings/sms/templates"
@@ -434,7 +434,7 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
 
       {/* Info Card */}
       <div className="rounded-xl border border-[var(--primary)]/20 bg-[var(--primary)]/5 p-6">
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
             <InfoIcon className="h-5 w-5 text-[var(--primary)]" />
           </div>
