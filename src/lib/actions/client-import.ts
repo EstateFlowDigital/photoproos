@@ -55,12 +55,12 @@ const VALID_INDUSTRIES: ClientIndustry[] = [
   "real_estate",
   "commercial",
   "architecture",
-  "hospitality",
+  "food_hospitality",
   "events",
-  "portraits",
+  "portrait",
   "wedding",
-  "food",
-  "automotive",
+  "headshots",
+  "product",
   "other",
 ];
 

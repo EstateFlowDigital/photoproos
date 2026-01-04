@@ -11,7 +11,43 @@ import {
   type DuplicateGroup,
 } from "@/lib/actions/client-merge";
 
-type MergePreview = Awaited<ReturnType<typeof getClientMergePreview>> extends { success: true; data: infer T } ? T : never;
+interface MergePreview {
+  primary: {
+    id: string;
+    email: string;
+    fullName: string | null;
+    company: string | null;
+    phone: string | null;
+    projectCount: number;
+    bookingCount: number;
+    invoiceCount: number;
+    contractCount: number;
+    taskCount: number;
+    lifetimeRevenueCents: number;
+  };
+  secondary: {
+    id: string;
+    email: string;
+    fullName: string | null;
+    company: string | null;
+    phone: string | null;
+    projectCount: number;
+    bookingCount: number;
+    invoiceCount: number;
+    contractCount: number;
+    taskCount: number;
+    lifetimeRevenueCents: number;
+  };
+  recordsToTransfer: {
+    projects: number;
+    bookings: number;
+    invoices: number;
+    contracts: number;
+    tasks: number;
+    orders: number;
+    questionnaires: number;
+  };
+}
 
 export function ClientMergeClient() {
   const router = useRouter();

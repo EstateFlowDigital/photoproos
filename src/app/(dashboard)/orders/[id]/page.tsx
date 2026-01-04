@@ -179,7 +179,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                 {(order.discountCents ?? 0) > 0 && (
                   <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-foreground-muted">Discount</span>
-                    <span className="text-green-400">-{formatCurrency(order.discountCents ?? 0)}</span>
+                    <span className="text-[var(--success)]">-{formatCurrency(order.discountCents ?? 0)}</span>
                   </div>
                 )}
                 {order.taxCents > 0 && (

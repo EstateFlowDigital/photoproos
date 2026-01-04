@@ -79,6 +79,9 @@ enum ActivityType {
   payment_received
   payment_failed
   client_added
+  client_created
+  client_updated
+  client_merged
   booking_created
   booking_confirmed
   booking_cancelled

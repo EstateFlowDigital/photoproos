@@ -69,8 +69,8 @@ export function CheckInClient({ bookings }: CheckInClientProps) {
   if (isCheckedIn && checkInTime) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
-        <div className="rounded-full bg-green-500/20 p-6">
-          <CheckCircle className="h-16 w-16 text-green-400" />
+        <div className="rounded-full bg-[var(--success)]/20 p-6">
+          <CheckCircle className="h-16 w-16 text-[var(--success)]" />
         </div>
         <h1 className="mt-6 text-2xl font-bold text-foreground">Checked In!</h1>
         <p className="mt-2 text-foreground-muted">

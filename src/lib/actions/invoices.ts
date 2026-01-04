@@ -618,7 +618,7 @@ export async function sendInvoiceReminder(
         organization: {
           select: {
             name: true,
-            email: true,
+            publicEmail: true,
           },
         },
       },

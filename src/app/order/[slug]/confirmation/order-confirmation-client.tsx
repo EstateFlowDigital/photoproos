@@ -118,8 +118,8 @@ export function OrderConfirmationClient({
       <div className="min-h-screen bg-[#0a0a0a]">
         <Header orderPage={orderPage} />
         <main className="mx-auto max-w-2xl px-6 py-16 text-center">
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-8">
-            <ErrorIcon className="mx-auto h-16 w-16 text-red-400" />
+          <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/10 p-8">
+            <ErrorIcon className="mx-auto h-16 w-16 text-[var(--error)]" />
             <h1 className="mt-6 text-2xl font-bold text-white">
               Something went wrong
             </h1>
