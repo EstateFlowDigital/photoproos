@@ -84,7 +84,7 @@ export default function IntegrationsSettingsPage() {
         actions={
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             Back to Settings
@@ -128,7 +128,7 @@ export default function IntegrationsSettingsPage() {
                   {integration.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium text-foreground">{integration.name}</p>
                     <span className="rounded-full bg-[var(--background-secondary)] px-2 py-0.5 text-xs text-foreground-muted">
                       {integration.category}
@@ -174,13 +174,13 @@ export default function IntegrationsSettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-[var(--background)]">
+            <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">API Key</p>
                 <p className="text-xs text-foreground-muted">Use this key to authenticate API requests</p>
               </div>
-              <div className="flex items-center gap-2">
-                <code className="rounded-lg bg-[var(--background-secondary)] px-3 py-1.5 text-sm text-foreground-muted">
+              <div className="flex flex-wrap items-center gap-2">
+                <code className="rounded-lg bg-[var(--background-secondary)] px-3 py-1.5 text-sm text-foreground-muted break-all">
                   sk_live_••••••••••••••••
                 </code>
                 <button className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground">
@@ -189,7 +189,7 @@ export default function IntegrationsSettingsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <span
                 className="text-sm font-medium text-foreground-muted cursor-not-allowed"
                 title="API Documentation coming soon"
@@ -209,7 +209,7 @@ export default function IntegrationsSettingsPage() {
 
         {/* Webhooks */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
                 <WebhookIcon className="h-5 w-5" />
@@ -219,7 +219,7 @@ export default function IntegrationsSettingsPage() {
                 <p className="text-sm text-foreground-muted">Receive real-time event notifications</p>
               </div>
             </div>
-            <button className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">
+            <button className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto">
               Add Webhook
             </button>
           </div>
