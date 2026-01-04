@@ -285,7 +285,7 @@ export default function EmailSettingsPage() {
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <input
               type="email"
               value={testEmail}
@@ -296,7 +296,7 @@ export default function EmailSettingsPage() {
             <button
               onClick={handleSendTest}
               disabled={sendingTest || !testEmail}
-              className="rounded-lg bg-[var(--background-secondary)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--background-secondary)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
             >
               {sendingTest ? (
                 <span className="flex items-center gap-2">
@@ -311,7 +311,7 @@ export default function EmailSettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           {hasChanges && (
             <span className="flex items-center text-sm text-foreground-muted">
               <span className="mr-2 h-2 w-2 rounded-full bg-[var(--warning)]" />
