@@ -196,6 +196,19 @@ export function LeadsPageClient({
     });
   };
 
+  const handleNotesUpdate = async (inquiry: typeof selectedInquiry, notes: string) => {
+    if (!inquiry || inquiry.type === "booking") return;
+
+    startTransition(async () => {
+      if (inquiry.type === "portfolio") {
+        await updatePortfolioInquiryStatus(inquiry.id, inquiry.status as LeadStatus, notes);
+      } else {
+        await updateChatInquiryStatus(inquiry.id, inquiry.status as LeadStatus, notes);
+      }
+      router.refresh();
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -413,6 +426,7 @@ export function LeadsPageClient({
           }}
           onStatusChange={(status) => handleStatusChange(selectedInquiry, status)}
           onConvertToClient={() => handleConvertToClient(selectedInquiry)}
+          onNotesUpdate={(notes) => handleNotesUpdate(selectedInquiry, notes)}
           isPending={isPending}
           convertedClientId={convertedClientId}
         />
@@ -427,6 +441,7 @@ function InquiryDetailModal({
   onClose,
   onStatusChange,
   onConvertToClient,
+  onNotesUpdate,
   isPending,
   convertedClientId,
 }: {
@@ -437,9 +452,24 @@ function InquiryDetailModal({
   onClose: () => void;
   onStatusChange: (status: LeadStatus) => void;
   onConvertToClient: () => void;
+  onNotesUpdate: (notes: string) => void;
   isPending: boolean;
   convertedClientId: string | null;
 }) {
+  // Notes state
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [editedNotes, setEditedNotes] = useState("");
+
+  // Get existing notes
+  const getNotes = () => {
+    if (inquiry.type === "booking") {
+      return (inquiry as BookingSubmission & { type: "booking" }).rejectionNote;
+    }
+    return (inquiry as PortfolioInquiry | ChatInquiry).notes;
+  };
+
+  const existingNotes = getNotes();
+
   // Helper to get email based on inquiry type
   const getEmail = () => {
     if (inquiry.type === "booking") {
@@ -470,6 +500,16 @@ function InquiryDetailModal({
   const isClosed = inquiry.type === "booking"
     ? ["converted", "rejected", "expired"].includes(inquiry.status)
     : inquiry.status === "closed";
+
+  const handleSaveNotes = () => {
+    onNotesUpdate(editedNotes);
+    setIsEditingNotes(false);
+  };
+
+  const handleStartEditing = () => {
+    setEditedNotes(existingNotes || "");
+    setIsEditingNotes(true);
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
@@ -665,6 +705,62 @@ function InquiryDetailModal({
               </Link>
             </div>
           )}
+
+          {/* Notes Section (only for portfolio/chat) */}
+          {inquiry.type !== "booking" && (
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium uppercase text-foreground-muted">
+                  Notes
+                </label>
+                {!isEditingNotes && (
+                  <button
+                    onClick={handleStartEditing}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
+                  >
+                    <NoteIcon className="h-3 w-3" />
+                    {existingNotes ? "Edit" : "Add Note"}
+                  </button>
+                )}
+              </div>
+              {isEditingNotes ? (
+                <div className="mt-2 space-y-2">
+                  <textarea
+                    value={editedNotes}
+                    onChange={(e) => setEditedNotes(e.target.value)}
+                    placeholder="Add internal notes about this lead..."
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] p-3 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    rows={3}
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSaveNotes}
+                      disabled={isPending}
+                      className="rounded-lg bg-[var(--primary)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                    >
+                      {isPending ? "Saving..." : "Save"}
+                    </button>
+                    <button
+                      onClick={() => setIsEditingNotes(false)}
+                      className="rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : existingNotes ? (
+                <div className="mt-1 rounded-lg bg-[var(--background-elevated)] p-3">
+                  <p className="whitespace-pre-wrap text-sm text-foreground-secondary">
+                    {existingNotes}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-1 text-sm italic text-foreground-muted">
+                  No notes added yet
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -737,6 +833,23 @@ function StatCard({
 }
 
 // Icons
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
 function GlobeIcon({ className }: { className?: string }) {
   return (
     <svg

@@ -73,7 +73,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
   } catch (err) {
     if (react) {
       try {
-        const html = render(react);
+        const html = await render(react);
         const fallbackOptions: {
           from: string;
           to: string[];
