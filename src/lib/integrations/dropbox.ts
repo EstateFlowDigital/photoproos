@@ -92,14 +92,19 @@ export class DropboxClient {
     body?: object,
     base: string = DROPBOX_API_BASE
   ): Promise<T> {
-    const payload = body ?? {};
+    const hasBody = body !== undefined;
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.accessToken}`,
+    };
+
+    if (hasBody) {
+      headers["Content-Type"] = "application/json";
+    }
+
     const response = await fetch(`${base}${endpoint}`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+      headers,
+      body: hasBody ? JSON.stringify(body) : undefined,
     });
 
     if (!response.ok) {

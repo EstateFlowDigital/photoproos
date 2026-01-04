@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getDefaultModulesForIndustries, getModulesForIndustries } from "@/lib/constants/industries";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 /**
  * Save progress for a specific onboarding step
  */
@@ -85,13 +87,17 @@ export async function saveOnboardingStep(
         break;
 
       case 3: // Branding step
+        const publicEmail = (data.publicEmail as string | undefined)?.trim();
+        if (publicEmail && !EMAIL_REGEX.test(publicEmail)) {
+          return { success: false, error: "Please enter a valid email address" };
+        }
         await prisma.$transaction([
           prisma.organization.update({
             where: { id: organizationId },
             data: {
               displayMode: data.displayMode as "personal" | "company",
               publicName: data.publicName as string,
-              publicEmail: data.publicEmail as string,
+              publicEmail: publicEmail || null,
               publicPhone: data.publicPhone as string,
               website: data.website as string,
             },
