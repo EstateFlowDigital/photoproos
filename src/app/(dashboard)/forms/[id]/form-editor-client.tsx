@@ -59,9 +59,12 @@ interface FormField {
 }
 
 // Helper to safely get options as FormFieldOption[]
-function getOptionsArray(options: unknown): FormFieldOption[] {
-  if (!options || !Array.isArray(options)) return [];
-  return options as FormFieldOption[];
+function getOptionsArray(options: unknown): Array<FormFieldOption> {
+  if (!options || !Array.isArray(options)) return [] as Array<FormFieldOption>;
+  return options.map((opt: unknown) => ({
+    label: String((opt as Record<string, unknown>)?.label || ""),
+    value: String((opt as Record<string, unknown>)?.value || ""),
+  }));
 }
 
 interface Form {

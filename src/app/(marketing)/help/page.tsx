@@ -76,12 +76,12 @@ const categories = [
 ];
 
 const popularArticles = [
-  { title: "How to upload photos to a gallery", category: "Galleries" },
-  { title: "Setting up pay-to-unlock delivery", category: "Payments" },
-  { title: "Connecting your Stripe account", category: "Payments" },
-  { title: "Customizing gallery branding", category: "Galleries" },
-  { title: "Managing client access", category: "Clients" },
-  { title: "Exporting your data", category: "Account" },
+  { title: "How to upload photos to a gallery", category: "Galleries", href: "/help/galleries/create" },
+  { title: "Setting up pay-to-unlock delivery", category: "Payments", href: "/help/payments/pay-to-unlock" },
+  { title: "Connecting your Stripe account", category: "Payments", href: "/help/payments/stripe-setup" },
+  { title: "Customizing gallery branding", category: "Galleries", href: "/help/getting-started/branding" },
+  { title: "Managing client access", category: "Clients", href: "/help/clients/portal" },
+  { title: "Exporting your data", category: "Account", href: "/help/account/data-export" },
 ];
 
 export default function HelpPage() {
@@ -165,7 +165,7 @@ export default function HelpPage() {
               {popularArticles.map((article) => (
                 <li key={article.title}>
                   <Link
-                    href="#"
+                    href={article.href}
                     className="group flex items-center justify-between py-4 text-foreground hover:text-[var(--primary)]"
                   >
                     <span>{article.title}</span>
@@ -193,13 +193,14 @@ export default function HelpPage() {
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
-              { title: "Getting Started with PhotoProOS", duration: "5:32" },
-              { title: "Creating Your First Gallery", duration: "8:15" },
-              { title: "Setting Up Payments", duration: "6:47" },
+              { title: "Getting Started with PhotoProOS", duration: "5:32", href: "/webinars" },
+              { title: "Creating Your First Gallery", duration: "8:15", href: "/webinars" },
+              { title: "Setting Up Payments", duration: "6:47", href: "/webinars" },
             ].map((video) => (
-              <div
+              <Link
                 key={video.title}
-                className="group cursor-pointer overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]"
+                href={video.href}
+                className="group overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-colors hover:border-[var(--border-hover)]"
               >
                 <div className="relative aspect-video bg-[var(--background-tertiary)]">
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -216,7 +217,7 @@ export default function HelpPage() {
                     {video.title}
                   </h3>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
