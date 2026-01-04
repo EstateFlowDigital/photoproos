@@ -182,7 +182,7 @@ export function DropboxSettingsClient({
 
       {/* Connection Status */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#0061FF]/10">
             <DropboxIcon className="h-8 w-8 text-[#0061FF]" />
           </div>
@@ -286,7 +286,7 @@ export function DropboxSettingsClient({
 
             <button
               onClick={handleConnect}
-              className="inline-flex items-center gap-3 rounded-lg bg-[#0061FF] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0061FF]/90"
+              className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-[#0061FF] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0061FF]/90 sm:w-auto"
             >
               <DropboxIcon className="h-5 w-5" />
               Connect with Dropbox
@@ -323,7 +323,7 @@ export function DropboxSettingsClient({
               </p>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg bg-[var(--background)] p-4">
+            <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">Auto Sync</p>
                 <p className="text-xs text-foreground-muted">
@@ -367,7 +367,7 @@ export function DropboxSettingsClient({
             PhotoProOS creates the following folder structure in your Dropbox:
           </p>
 
-          <div className="rounded-lg bg-[var(--background)] p-4 font-mono text-sm">
+          <div className="rounded-lg bg-[var(--background)] p-4 font-mono text-sm overflow-x-auto">
             <div className="text-foreground">{syncFolder}/</div>
             <div className="text-foreground-muted ml-4">Galleries/</div>
             <div className="text-foreground-muted ml-8">
