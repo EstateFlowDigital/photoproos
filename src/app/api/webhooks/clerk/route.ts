@@ -153,26 +153,39 @@ async function handleUserCreated(clerkUser: ClerkUser) {
       console.log(`Linked existing user ${user.id} to Clerk account ${clerkUser.id}`);
     } else {
       try {
-        user = await prisma.user.create({
-          data: {
+        user = await prisma.user.upsert({
+          where: { clerkUserId: clerkUser.id },
+          update: {
+            email,
+            fullName,
+            avatarUrl: clerkUser.image_url || null,
+          },
+          create: {
             clerkUserId: clerkUser.id,
             email,
             fullName,
             avatarUrl: clerkUser.image_url || null,
           },
         });
-        console.log(`Created new user ${user.id} from Clerk account ${clerkUser.id}`);
+        console.log(`Upserted user ${user.id} from Clerk account ${clerkUser.id}`);
       } catch (error) {
-        const existingByClerk = await prisma.user.findUnique({
-          where: { clerkUserId: clerkUser.id },
+        const existingByEmailFallback = await prisma.user.findUnique({
+          where: { email },
         });
 
-        if (!existingByClerk) {
+        if (!existingByEmailFallback) {
           throw error;
         }
 
-        user = existingByClerk;
-        console.log(`User already created for Clerk account ${clerkUser.id}`);
+        user = await prisma.user.update({
+          where: { id: existingByEmailFallback.id },
+          data: {
+            clerkUserId: clerkUser.id,
+            fullName: fullName || existingByEmailFallback.fullName,
+            avatarUrl: clerkUser.image_url || existingByEmailFallback.avatarUrl,
+          },
+        });
+        console.log(`Linked existing user ${user.id} to Clerk account ${clerkUser.id}`);
       }
     }
   }
