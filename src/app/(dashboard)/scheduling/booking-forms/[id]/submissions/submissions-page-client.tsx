@@ -2,28 +2,38 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { SubmissionDetailModal } from "@/components/dashboard/submission-detail-modal";
 import type { BookingFormSubmissionStatus } from "@prisma/client";
+
+interface FormField {
+  id: string;
+  label: string;
+  type: string;
+}
 
 interface BookingForm {
   id: string;
   name: string;
   slug: string;
+  fields?: FormField[];
 }
 
 interface Submission {
   id: string;
-  bookingFormId?: string;
+  bookingFormId: string;
   bookingId?: string | null;
-  data: unknown;
+  data: Record<string, unknown>;
   clientName: string | null;
   clientEmail: string | null;
   clientPhone: string | null;
   preferredDate: Date | null;
   preferredTime: string | null;
-  serviceId?: string | null;
+  serviceId: string | null;
   status: BookingFormSubmissionStatus;
   createdAt: Date;
+  rejectionNote?: string | null;
   booking?: {
     id: string;
     title: string;
@@ -54,11 +64,18 @@ const statusLabels: Record<BookingFormSubmissionStatus, string> = {
 };
 
 export function SubmissionsPageClient({ bookingForm, submissions }: SubmissionsPageClientProps) {
+  const router = useRouter();
   const [filter, setFilter] = useState<BookingFormSubmissionStatus | "all">("all");
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
 
   const filteredSubmissions = filter === "all"
     ? submissions
     : submissions.filter((s) => s.status === filter);
+
+  const handleStatusChange = () => {
+    // Refresh the page to get updated data
+    router.refresh();
+  };
 
   const stats = {
     total: submissions.length,
@@ -185,18 +202,22 @@ export function SubmissionsPageClient({ bookingForm, submissions }: SubmissionsP
                       </p>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {submission.booking ? (
-                        <Link
-                          href={`/scheduling/${submission.booking.id}`}
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => setSelectedSubmission(submission)}
                           className="text-sm text-[var(--primary)] hover:underline"
                         >
-                          View Booking
-                        </Link>
-                      ) : submission.status === "pending" ? (
-                        <button className="text-sm text-[var(--primary)] hover:underline">
-                          Review
+                          View
                         </button>
-                      ) : null}
+                        {submission.booking && (
+                          <Link
+                            href={`/scheduling/${submission.booking.id}`}
+                            className="text-sm text-foreground-muted hover:text-foreground"
+                          >
+                            → Booking
+                          </Link>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -212,6 +233,16 @@ export function SubmissionsPageClient({ bookingForm, submissions }: SubmissionsP
           </div>
         )}
       </div>
+
+      {/* Submission Detail Modal */}
+      {selectedSubmission && (
+        <SubmissionDetailModal
+          submission={selectedSubmission}
+          fields={bookingForm.fields || []}
+          onClose={() => setSelectedSubmission(null)}
+          onStatusChange={handleStatusChange}
+        />
+      )}
     </div>
   );
 }

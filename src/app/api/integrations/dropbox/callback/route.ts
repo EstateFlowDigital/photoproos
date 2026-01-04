@@ -141,7 +141,9 @@ export async function GET(request: NextRequest) {
         method: "POST",
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
+          "Content-Type": "application/json",
         },
+        body: "{}",
       }
     );
 

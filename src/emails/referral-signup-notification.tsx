@@ -24,7 +24,7 @@ export function ReferralSignupNotificationEmail({
   referrerName = "there",
   referredName = "Someone",
   referredEmail = "user@example.com",
-  referralDashboardUrl = "https://app.listinglens.com/settings/my-referrals",
+  referralDashboardUrl = "https://app.photoproos.com/settings/my-referrals",
   rewardAmount = 25,
 }: ReferralSignupNotificationEmailProps) {
   const previewText = `${referredName || referredEmail} just signed up using your referral link!`;
@@ -37,7 +37,7 @@ export function ReferralSignupNotificationEmail({
         <Container style={container}>
           {/* Logo/Header */}
           <Section style={logoSection}>
-            <Heading style={logoText}>ListingLens</Heading>
+            <Heading style={logoText}>PhotoProOS</Heading>
             <Text style={tagline}>The Business OS for Professional Photographers</Text>
           </Section>
 
@@ -50,7 +50,7 @@ export function ReferralSignupNotificationEmail({
 
             <Text style={paragraph}>
               <strong>{referredName || referredEmail}</strong> just signed up for
-              ListingLens using your referral link!
+              PhotoProOS using your referral link!
             </Text>
 
             {/* Progress Box */}
@@ -87,7 +87,7 @@ export function ReferralSignupNotificationEmail({
             <Text style={tipTitle}>💡 Pro Tip</Text>
             <Text style={tipText}>
               Following up with a quick message can help your referrals understand the
-              value of ListingLens and increase your chances of earning the reward!
+              value of PhotoProOS and increase your chances of earning the reward!
             </Text>
 
             <Hr style={divider} />
@@ -105,12 +105,12 @@ export function ReferralSignupNotificationEmail({
                 My Referrals
               </Link>
               {" · "}
-              <Link href="https://listinglens.com/help" style={footerLink}>
+              <Link href="https://photoproos.com/help" style={footerLink}>
                 Help Center
               </Link>
             </Text>
             <Text style={footerText}>
-              © {new Date().getFullYear()} ListingLens. All rights reserved.
+              © {new Date().getFullYear()} PhotoProOS. All rights reserved.
             </Text>
           </Section>
         </Container>

@@ -4,7 +4,7 @@ This document explains how to set up and use the automatic Stripe Product Catalo
 
 ## Overview
 
-When you create or update a Service or ServiceBundle in ListingLens, it automatically syncs to your Stripe Product Catalog. This means:
+When you create or update a Service or ServiceBundle in PhotoProOS, it automatically syncs to your Stripe Product Catalog. This means:
 
 - Products appear in your Stripe Dashboard under Products
 - Checkout sessions can use Stripe Price IDs for better reporting

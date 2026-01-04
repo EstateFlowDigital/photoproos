@@ -22,6 +22,7 @@ import {
   Scale,
   Layers,
   Settings,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 
@@ -142,6 +143,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
   // ============================================================================
   // CLIENT MODULES
   // ============================================================================
+  leads: {
+    id: "leads",
+    name: "Leads",
+    description: "Inquiries from website forms and chat",
+    icon: MessageSquare,
+    href: "/leads",
+    isCore: false,
+    industries: ["real_estate", "commercial", "events", "portraits", "food", "product"],
+    category: "client",
+    sortOrder: 5.5,
+  },
   clients: {
     id: "clients",
     name: "Clients",

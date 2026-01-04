@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { PageHeader } from "@/components/dashboard";
 import { useToast } from "@/components/ui/toast";
 import Link from "next/link";
@@ -17,12 +17,20 @@ import {
 // Types
 // =============================================================================
 
+export type LeaderboardEntry = {
+  rank: number;
+  name: string;
+  successfulReferrals: number;
+  totalEarnedCents: number;
+};
+
 interface MyReferralsClientProps {
   profile: PlatformReferrerProfile | null;
   stats: PlatformReferralStats | null;
   referrals: PlatformReferralItem[];
   rewards: PlatformReward[];
   referralLink: string | null;
+  leaderboard: LeaderboardEntry[];
 }
 
 // Milestone definitions
@@ -44,13 +52,16 @@ export function MyReferralsClient({
   referrals,
   rewards,
   referralLink,
+  leaderboard,
 }: MyReferralsClientProps) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [activeTab, setActiveTab] = useState<"overview" | "referrals" | "rewards">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "referrals" | "rewards" | "leaderboard">("overview");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [showInviteForm, setShowInviteForm] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [qrCodeSize, setQRCodeSize] = useState(200);
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = async () => {
@@ -159,7 +170,7 @@ export function MyReferralsClient({
     <div className="space-y-6">
       <PageHeader
         title="Refer & Earn"
-        subtitle="Invite photographers to ListingLens and earn rewards"
+        subtitle="Invite photographers to PhotoProOS and earn rewards"
         actions={
           <Link
             href="/settings"
@@ -227,7 +238,7 @@ export function MyReferralsClient({
             Email Invite
           </button>
           <a
-            href={`https://twitter.com/intent/tweet?text=I%20use%20ListingLens%20to%20run%20my%20photography%20business%20-%20stunning%20galleries%2C%20automated%20payments%2C%20and%20more!%20Try%20it%20with%20my%20link%20for%2021%20days%20free%20%2B%2020%25%20off%3A&url=${encodeURIComponent(referralLink || "")}`}
+            href={`https://twitter.com/intent/tweet?text=I%20use%20PhotoProOS%20to%20run%20my%20photography%20business%20-%20stunning%20galleries%2C%20automated%20payments%2C%20and%20more!%20Try%20it%20with%20my%20link%20for%2021%20days%20free%20%2B%2020%25%20off%3A&url=${encodeURIComponent(referralLink || "")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-[var(--card)] hover:shadow-md"
@@ -245,7 +256,7 @@ export function MyReferralsClient({
             LinkedIn
           </a>
           <a
-            href={`https://wa.me/?text=${encodeURIComponent(`Check out ListingLens - the all-in-one platform for photographers! Get 21 days free + 20% off with my link: ${referralLink}`)}`}
+            href={`https://wa.me/?text=${encodeURIComponent(`Check out PhotoProOS - the all-in-one platform for photographers! Get 21 days free + 20% off with my link: ${referralLink}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-[var(--card)] hover:shadow-md"
@@ -253,6 +264,13 @@ export function MyReferralsClient({
             <WhatsAppIcon className="h-4 w-4" />
             WhatsApp
           </a>
+          <button
+            onClick={() => setShowQRCode(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-[var(--card)] hover:shadow-md"
+          >
+            <QRCodeIcon className="h-4 w-4" />
+            QR Code
+          </button>
         </div>
       </div>
 
@@ -321,6 +339,79 @@ export function MyReferralsClient({
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal */}
+      {showQRCode && referralLink && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+                  <QRCodeIcon className="h-5 w-5 text-[var(--primary)]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Your Referral QR Code
+                  </h3>
+                  <p className="text-xs text-foreground-muted">
+                    Perfect for events & networking
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowQRCode(false)}
+                className="p-1.5 rounded-lg hover:bg-[var(--background-hover)] text-foreground-muted hover:text-foreground transition-colors"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* QR Code Display */}
+            <div className="flex justify-center py-6 bg-white rounded-lg mb-4">
+              <QRCodeCanvas referralLink={referralLink} size={qrCodeSize} />
+            </div>
+
+            {/* Size Selector */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="text-xs text-foreground-muted">Size:</span>
+              {[150, 200, 300].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setQRCodeSize(size)}
+                  className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                    qrCodeSize === size
+                      ? "bg-[var(--primary)] text-white"
+                      : "bg-[var(--background)] text-foreground-muted hover:text-foreground"
+                  }`}
+                >
+                  {size}px
+                </button>
+              ))}
+            </div>
+
+            {/* Download Button */}
+            <button
+              onClick={() => {
+                const canvas = document.querySelector("#qr-code-canvas") as HTMLCanvasElement;
+                if (canvas) {
+                  const link = document.createElement("a");
+                  link.download = `referral-qr-${profile?.referralCode || "code"}.png`;
+                  link.href = canvas.toDataURL("image/png");
+                  link.click();
+                  showToast("QR code downloaded!", "success");
+                }
+              }}
+              className="w-full rounded-lg bg-[var(--primary)] py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/25"
+            >
+              Download QR Code
+            </button>
+
+            <p className="text-center text-xs text-foreground-muted mt-4">
+              Scan to visit: {referralLink}
+            </p>
           </div>
         </div>
       )}
@@ -440,12 +531,12 @@ export function MyReferralsClient({
 
       {/* Tabs */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
-        <div className="flex gap-0 border-b border-[var(--card-border)] bg-[var(--background)]">
-          {(["overview", "referrals", "rewards"] as const).map((tab) => (
+        <div className="flex gap-0 border-b border-[var(--card-border)] bg-[var(--background)] overflow-x-auto">
+          {(["overview", "referrals", "rewards", "leaderboard"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-all relative ${
+              className={`flex-1 min-w-fit px-4 py-3 text-sm font-medium transition-all relative ${
                 activeTab === tab
                   ? "text-foreground bg-[var(--card)]"
                   : "text-foreground-muted hover:text-foreground hover:bg-[var(--card)]/50"
@@ -461,6 +552,11 @@ export function MyReferralsClient({
                       {pendingRewards.length}
                     </span>
                   )}
+                </span>
+              )}
+              {tab === "leaderboard" && (
+                <span className="flex items-center justify-center gap-1.5">
+                  🏆 Leaderboard
                 </span>
               )}
               {activeTab === tab && (
@@ -525,7 +621,7 @@ export function MyReferralsClient({
                     <div className="sm:text-right">
                       <p className="text-sm text-foreground-muted">Short Link</p>
                       <p className="text-sm font-mono text-[var(--primary)]">
-                        listinglens.com/r/{profile.referralCode}
+                        photoproos.com/r/{profile.referralCode}
                       </p>
                     </div>
                   </div>
@@ -544,7 +640,7 @@ export function MyReferralsClient({
                       <li>Share in photography Facebook groups and communities</li>
                       <li>Mention it when networking with other photographers</li>
                       <li>Add your referral link to your email signature</li>
-                      <li>Create a quick video showing how you use ListingLens</li>
+                      <li>Create a quick video showing how you use PhotoProOS</li>
                     </ul>
                   </div>
                 </div>
@@ -722,6 +818,105 @@ export function MyReferralsClient({
               )}
             </div>
           )}
+
+          {/* Leaderboard Tab */}
+          {activeTab === "leaderboard" && (
+            <div className="space-y-6">
+              {/* Leaderboard Header */}
+              <div className="text-center mb-6">
+                <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 mb-3">
+                  <span className="text-3xl">🏆</span>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">Top Referrers</h3>
+                <p className="text-sm text-foreground-muted">See who&apos;s leading the referral game</p>
+              </div>
+
+              {leaderboard.length > 0 ? (
+                <div className="space-y-3">
+                  {leaderboard.map((entry, index) => {
+                    const isTopThree = entry.rank <= 3;
+                    const rankEmoji = entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : entry.rank === 3 ? "🥉" : null;
+                    const isCurrentUser = profile && entry.name === (profile.referralCode ? "You" : entry.name);
+
+                    return (
+                      <div
+                        key={entry.rank}
+                        className={`flex items-center gap-4 rounded-xl border p-4 transition-all ${
+                          isTopThree
+                            ? "border-yellow-500/30 bg-gradient-to-r from-yellow-500/5 to-orange-500/5"
+                            : "border-[var(--card-border)] bg-[var(--background)] hover:bg-[var(--background-hover)]"
+                        } ${isCurrentUser ? "ring-2 ring-[var(--primary)]" : ""}`}
+                      >
+                        {/* Rank */}
+                        <div className="flex h-10 w-10 items-center justify-center">
+                          {rankEmoji ? (
+                            <span className="text-2xl">{rankEmoji}</span>
+                          ) : (
+                            <span className="text-lg font-bold text-foreground-muted">#{entry.rank}</span>
+                          )}
+                        </div>
+
+                        {/* Name */}
+                        <div className="flex-1">
+                          <p className={`font-medium ${isTopThree ? "text-foreground" : "text-foreground-secondary"}`}>
+                            {entry.name}
+                            {isCurrentUser && (
+                              <span className="ml-2 text-xs text-[var(--primary)]">(You)</span>
+                            )}
+                          </p>
+                          <p className="text-xs text-foreground-muted">
+                            {entry.successfulReferrals} successful referral{entry.successfulReferrals !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+
+                        {/* Earnings */}
+                        <div className="text-right">
+                          <p className={`font-bold ${isTopThree ? "text-[var(--success)]" : "text-foreground"}`}>
+                            ${(entry.totalEarnedCents / 100).toFixed(0)}
+                          </p>
+                          <p className="text-xs text-foreground-muted">earned</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background)] mb-4">
+                    <TrophyIcon className="h-8 w-8 text-foreground-muted" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1">No leaders yet</h3>
+                  <p className="text-sm text-foreground-muted max-w-sm mx-auto mb-4">
+                    Be the first to climb the leaderboard by referring photographers!
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("overview")}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90"
+                  >
+                    Start Referring
+                  </button>
+                </div>
+              )}
+
+              {/* Your Rank */}
+              {leaderboard.length > 0 && stats && stats.subscribedReferrals > 0 && (
+                <div className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-foreground-muted">Your Stats</p>
+                      <p className="text-lg font-semibold text-foreground">
+                        {stats.subscribedReferrals} referral{stats.subscribedReferrals !== 1 ? "s" : ""} • ${(stats.totalEarnedCents / 100).toFixed(0)} earned
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-foreground-muted">Keep going!</p>
+                      <p className="text-sm text-[var(--primary)]">Share more to climb up</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -870,4 +1065,127 @@ function SparklesIcon({ className }: { className?: string }) {
       <path d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" />
     </svg>
   );
+}
+
+function TrophyIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 1c-1.828 0-3.623.149-5.371.435a.75.75 0 0 0-.629.74v.387c-.827.157-1.642.345-2.445.564a.75.75 0 0 0-.552.698 5 5 0 0 0 4.503 5.152 6 6 0 0 0 2.946 1.822A6.451 6.451 0 0 1 7.768 13H7.5A1.5 1.5 0 0 0 6 14.5V17h-.75a.75.75 0 0 0 0 1.5h9.5a.75.75 0 0 0 0-1.5H14v-2.5a1.5 1.5 0 0 0-1.5-1.5h-.268a6.453 6.453 0 0 1-.684-2.202 6 6 0 0 0 2.946-1.822 5 5 0 0 0 4.503-5.152.75.75 0 0 0-.552-.698A31.804 31.804 0 0 0 16 2.562v-.387a.75.75 0 0 0-.629-.74A33.227 33.227 0 0 0 10 1ZM2.525 4.422a34.51 34.51 0 0 1 1.473-.34v2.047a3.5 3.5 0 0 1-1.473-1.707Zm14.95 0a3.5 3.5 0 0 1-1.473 1.707V4.082a34.493 34.493 0 0 1 1.473.34Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function QRCodeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3.75 2A1.75 1.75 0 0 0 2 3.75v3.5c0 .966.784 1.75 1.75 1.75h3.5A1.75 1.75 0 0 0 9 7.25v-3.5A1.75 1.75 0 0 0 7.25 2h-3.5ZM3.5 3.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM3.75 11A1.75 1.75 0 0 0 2 12.75v3.5c0 .966.784 1.75 1.75 1.75h3.5A1.75 1.75 0 0 0 9 16.25v-3.5A1.75 1.75 0 0 0 7.25 11h-3.5Zm-.25 1.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM12.75 2A1.75 1.75 0 0 0 11 3.75v3.5c0 .966.784 1.75 1.75 1.75h3.5A1.75 1.75 0 0 0 18 7.25v-3.5A1.75 1.75 0 0 0 16.25 2h-3.5Zm-.25 1.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM11 12.25a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm0 2.75a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm0 2.75a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+    </svg>
+  );
+}
+
+// =============================================================================
+// QR Code Canvas Component
+// =============================================================================
+
+function QRCodeCanvas({ referralLink, size }: { referralLink: string; size: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Simple QR code generation using a basic algorithm
+    // For production, you'd use a library like qrcode.js
+    const qrSize = size;
+    const moduleCount = 25; // Standard QR code size
+    const moduleSize = qrSize / moduleCount;
+
+    canvas.width = qrSize;
+    canvas.height = qrSize;
+
+    // Clear canvas
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, qrSize, qrSize);
+
+    // Generate a simple hash-based pattern (pseudo-QR code)
+    // In production, use a proper QR library
+    const hash = simpleHash(referralLink);
+    const pattern = generateQRPattern(hash, moduleCount);
+
+    ctx.fillStyle = "#000000";
+    for (let row = 0; row < moduleCount; row++) {
+      for (let col = 0; col < moduleCount; col++) {
+        if (pattern[row][col]) {
+          ctx.fillRect(col * moduleSize, row * moduleSize, moduleSize, moduleSize);
+        }
+      }
+    }
+
+    // Add finder patterns (the three corner squares)
+    drawFinderPattern(ctx, 0, 0, moduleSize);
+    drawFinderPattern(ctx, moduleCount - 7, 0, moduleSize);
+    drawFinderPattern(ctx, 0, moduleCount - 7, moduleSize);
+  }, [referralLink, size]);
+
+  return <canvas ref={canvasRef} id="qr-code-canvas" />;
+}
+
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function generateQRPattern(hash: number, size: number): boolean[][] {
+  const pattern: boolean[][] = [];
+  let seed = hash;
+
+  for (let row = 0; row < size; row++) {
+    pattern[row] = [];
+    for (let col = 0; col < size; col++) {
+      // Skip finder pattern areas
+      const inTopLeft = row < 8 && col < 8;
+      const inTopRight = row < 8 && col > size - 9;
+      const inBottomLeft = row > size - 9 && col < 8;
+
+      if (inTopLeft || inTopRight || inBottomLeft) {
+        pattern[row][col] = false;
+      } else {
+        // Pseudo-random pattern based on hash
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        pattern[row][col] = (seed % 100) < 40;
+      }
+    }
+  }
+
+  return pattern;
+}
+
+function drawFinderPattern(ctx: CanvasRenderingContext2D, x: number, y: number, moduleSize: number) {
+  // Outer black square
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(x * moduleSize, y * moduleSize, 7 * moduleSize, 7 * moduleSize);
+
+  // White square
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect((x + 1) * moduleSize, (y + 1) * moduleSize, 5 * moduleSize, 5 * moduleSize);
+
+  // Inner black square
+  ctx.fillStyle = "#000000";
+  ctx.fillRect((x + 2) * moduleSize, (y + 2) * moduleSize, 3 * moduleSize, 3 * moduleSize);
 }

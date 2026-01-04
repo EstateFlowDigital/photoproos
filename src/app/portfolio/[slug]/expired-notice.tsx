@@ -45,7 +45,7 @@ export function ExpiredNotice({ websiteName }: ExpiredNoticeProps) {
 
         {/* Branding */}
         <p className="mt-8 text-xs text-[#454545]">
-          Powered by ListingLens
+          Powered by PhotoProOS
         </p>
       </div>
     </div>

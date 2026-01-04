@@ -322,7 +322,7 @@ export async function getMyReferralLink(): Promise<ActionResult<string>> {
       return profileResult;
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://listinglens.com";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://photoproos.com";
     const referralLink = `${baseUrl}/signup?ref=${profileResult.data.referralCode}`;
 
     return { success: true, data: referralLink };
@@ -423,7 +423,7 @@ export async function sendReferralInvite(
       await sendReferralInviteEmail({
         to: email,
         inviteeName: name || undefined,
-        referrerName: referrerUser?.fullName || "A ListingLens user",
+        referrerName: referrerUser?.fullName || "A PhotoProOS user",
         referralUrl,
         trialDays: settings.referredTrialDays,
         discountPercent: settings.referredDiscountPercent || undefined,
@@ -569,6 +569,29 @@ export async function processReferralSignup(
       } catch (emailError) {
         console.error("[PlatformReferrals] Failed to send signup notification:", emailError);
       }
+
+      // Create in-app notification
+      const referrerMembership = await prisma.organizationMember.findFirst({
+        where: { userId: referrer.userId },
+        select: { organizationId: true },
+      });
+
+      if (referrerMembership) {
+        try {
+          await prisma.notification.create({
+            data: {
+              organizationId: referrerMembership.organizationId,
+              type: "referral_signup",
+              title: "New Referral Signup! 🎉",
+              message: `${newUser.fullName || newUser.email} signed up using your referral link. You'll earn $${settings.referrerRewardValue / 100} when they subscribe!`,
+              linkUrl: "/settings/my-referrals",
+            },
+          });
+          console.log(`[PlatformReferrals] Created in-app notification for referral signup`);
+        } catch (notifError) {
+          console.error("[PlatformReferrals] Failed to create notification:", notifError);
+        }
+      }
     }
 
     return { success: true, data: undefined };
@@ -659,6 +682,29 @@ export async function processReferralConversion(
         console.log(`[PlatformReferrals] Sent reward notification to ${referrerUser.email}`);
       } catch (emailError) {
         console.error("[PlatformReferrals] Failed to send reward notification:", emailError);
+      }
+
+      // Create in-app notification for conversion
+      const referrerMembership = await prisma.organizationMember.findFirst({
+        where: { userId: referral.referrer.userId },
+        select: { organizationId: true },
+      });
+
+      if (referrerMembership) {
+        try {
+          await prisma.notification.create({
+            data: {
+              organizationId: referrerMembership.organizationId,
+              type: "referral_conversion",
+              title: "You Earned $" + (settings.referrerRewardValue / 100) + "! 💰",
+              message: `${referral.referredName || referral.referredEmail} subscribed to PhotoProOS. Your $${settings.referrerRewardValue / 100} credit is ready to apply!`,
+              linkUrl: "/settings/my-referrals",
+            },
+          });
+          console.log(`[PlatformReferrals] Created in-app notification for referral conversion`);
+        } catch (notifError) {
+          console.error("[PlatformReferrals] Failed to create conversion notification:", notifError);
+        }
       }
     }
 

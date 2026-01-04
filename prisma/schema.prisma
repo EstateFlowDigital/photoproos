@@ -519,6 +519,7 @@ model Organization {
   invitations        Invitation[]
   projects           Project[]
   portfolioWebsites  PortfolioWebsite[]
+  portfolioInquiries PortfolioInquiry[]
   clients            Client[]
   payments           Payment[]
   bookings           Booking[]
@@ -1973,7 +1974,13 @@ model PortfolioWebsite {
   // Settings
   isPublished  Boolean @default(false)
   showBranding Boolean @default(true)
-  customDomain String? @unique
+
+  // Custom Domain
+  customDomain                  String?   @unique
+  customDomainVerified          Boolean   @default(false)
+  customDomainVerificationToken String?   // DNS TXT record value for verification
+  customDomainVerifiedAt        DateTime?
+  customDomainSslStatus         String?   // pending, active, error
 
   // Password Protection
   isPasswordProtected Boolean @default(false)
@@ -1981,6 +1988,9 @@ model PortfolioWebsite {
 
   // Expiration
   expiresAt DateTime?
+
+  // Scheduled Publishing
+  scheduledPublishAt DateTime? // Auto-publish at this date/time
 
   // Download Settings
   allowDownloads    Boolean @default(false)
@@ -2001,12 +2011,78 @@ model PortfolioWebsite {
   projects     PortfolioWebsiteProject[]
   sections     PortfolioWebsiteSection[]
   views        PortfolioWebsiteView[]
+  inquiries    PortfolioInquiry[]
 
   @@index([organizationId])
   @@index([slug])
   @@index([isPublished])
   @@index([portfolioType])
   @@index([expiresAt])
+}
+
+// Portfolio website contact form submissions
+model PortfolioInquiry {
+  id                 String @id @default(cuid())
+  portfolioWebsiteId String
+  organizationId     String
+
+  // Inquiry details
+  name    String
+  email   String
+  phone   String?
+  message String  @db.Text
+
+  // Status tracking
+  status LeadStatus @default(new)
+  notes  String?    @db.Text
+
+  // Metadata
+  source    String? // where they came from
+  userAgent String?
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioWebsiteId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Website Chat Inquiries (from marketing site chat widget)
+model WebsiteChatInquiry {
+  id String @id @default(cuid())
+
+  // Contact info (optional for anonymous)
+  name  String?
+  email String?
+  phone String?
+
+  // Message content
+  message  String  @db.Text
+  category String? // "pricing", "features", "trial", "other"
+
+  // Status tracking
+  status LeadStatus @default(new)
+  notes  String?    @db.Text
+
+  // Metadata
+  source    String? // "marketing_website", "portfolio", etc.
+  pageUrl   String? // URL where chat was initiated
+  userAgent String?
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
 }
 
 model PortfolioWebsiteProject {
@@ -4197,7 +4273,7 @@ model ReferralReward {
 }
 
 // ============================================================================
-// PLATFORM REFERRAL SYSTEM (ListingLens user-to-user referrals)
+// PLATFORM REFERRAL SYSTEM (PhotoProOS user-to-user referrals)
 // ============================================================================
 
 enum PlatformReferralStatus {

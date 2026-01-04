@@ -248,7 +248,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
             }}
           >
             <span style={{ color: "white", fontSize: 14, fontWeight: 500 }}>
-              Powered by ListingLens
+              Powered by PhotoProOS
             </span>
           </div>
         </div>

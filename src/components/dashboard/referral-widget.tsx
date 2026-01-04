@@ -84,7 +84,7 @@ export function ReferralWidget({
               Earn $25 Per Referral
             </h3>
             <p className="mt-1 text-sm text-foreground-muted">
-              Share ListingLens with fellow photographers and earn account credit.
+              Share PhotoProOS with fellow photographers and earn account credit.
             </p>
           </div>
         </div>

@@ -11,6 +11,10 @@ import {
   deletePortfolioWebsite,
   setPortfolioPassword,
   updatePortfolioAdvancedSettings,
+  schedulePortfolioPublish,
+  addCustomDomain,
+  verifyCustomDomain,
+  removeCustomDomain,
 } from "@/lib/actions/portfolio-websites";
 import { SOCIAL_PLATFORMS } from "@/lib/portfolio-templates";
 
@@ -55,6 +59,18 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
     website.expiresAt ? new Date(website.expiresAt).toISOString().split("T")[0] : ""
   );
 
+  // Scheduled Publishing
+  const [scheduledDate, setScheduledDate] = useState<string>(
+    website.scheduledPublishAt
+      ? new Date(website.scheduledPublishAt).toISOString().split("T")[0]
+      : ""
+  );
+  const [scheduledTime, setScheduledTime] = useState<string>(
+    website.scheduledPublishAt
+      ? new Date(website.scheduledPublishAt).toTimeString().slice(0, 5)
+      : ""
+  );
+
   // Downloads
   const [allowDownloads, setAllowDownloads] = useState(website.allowDownloads || false);
   const [downloadWatermark, setDownloadWatermark] = useState(
@@ -66,6 +82,10 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
   const [enableAnimations, setEnableAnimations] = useState(
     website.enableAnimations !== false
   );
+
+  // Custom Domain
+  const [customDomain, setCustomDomain] = useState(website.customDomain || "");
+  const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
 
   const loading = isPending || parentPending;
 
@@ -178,6 +198,30 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
     });
   };
 
+  const handleSaveSchedule = () => {
+    startTransition(async () => {
+      let scheduledAt: Date | null = null;
+
+      if (scheduledDate) {
+        scheduledAt = new Date(`${scheduledDate}T${scheduledTime || "00:00"}:00`);
+      }
+
+      const result = await schedulePortfolioPublish(website.id, scheduledAt);
+
+      if (result.success) {
+        if (scheduledAt) {
+          showToast("Portfolio scheduled for publishing", "success");
+        } else {
+          showToast("Schedule cleared", "success");
+        }
+        router.refresh();
+        onSave?.();
+      } else {
+        showToast(result.error || "Failed to save schedule", "error");
+      }
+    });
+  };
+
   const handleSaveDownloads = () => {
     startTransition(async () => {
       const result = await updatePortfolioAdvancedSettings(website.id, {
@@ -208,6 +252,63 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
         onSave?.();
       } else {
         showToast(result.error || "Failed to save", "error");
+      }
+    });
+  };
+
+  const handleAddCustomDomain = () => {
+    if (!customDomain.trim()) {
+      showToast("Please enter a domain", "error");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await addCustomDomain(website.id, customDomain.trim());
+
+      if (result.success) {
+        showToast("Domain added. Please add the DNS TXT record to verify.", "success");
+        router.refresh();
+        onSave?.();
+      } else {
+        showToast(result.error || "Failed to add domain", "error");
+      }
+    });
+  };
+
+  const handleVerifyDomain = async () => {
+    setIsVerifyingDomain(true);
+    try {
+      const result = await verifyCustomDomain(website.id);
+
+      if (result.success && result.verified) {
+        showToast("Domain verified successfully!", "success");
+        router.refresh();
+        onSave?.();
+      } else if (result.success && !result.verified) {
+        showToast("Domain not verified yet. Please check your DNS settings.", "error");
+      } else {
+        showToast(result.error || "Failed to verify domain", "error");
+      }
+    } finally {
+      setIsVerifyingDomain(false);
+    }
+  };
+
+  const handleRemoveCustomDomain = () => {
+    if (!confirm("Remove custom domain? This cannot be undone.")) {
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await removeCustomDomain(website.id);
+
+      if (result.success) {
+        showToast("Custom domain removed", "success");
+        setCustomDomain("");
+        router.refresh();
+        onSave?.();
+      } else {
+        showToast(result.error || "Failed to remove domain", "error");
       }
     });
   };
@@ -449,7 +550,7 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
               className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
             />
             <span className="text-sm text-foreground">
-              Show &quot;Powered by ListingLens&quot; badge
+              Show &quot;Powered by PhotoProOS&quot; badge
             </span>
           </label>
         </div>
@@ -575,6 +676,80 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
         </div>
       </div>
 
+      {/* Scheduled Publishing */}
+      {!website.isPublished && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5 text-foreground-muted" />
+            <h3 className="text-lg font-semibold text-foreground">
+              Scheduled Publishing
+            </h3>
+          </div>
+          <p className="mt-1 text-sm text-foreground-muted">
+            Schedule this portfolio to be automatically published at a specific date
+            and time.
+          </p>
+
+          <div className="mt-5">
+            <label className="text-sm font-medium text-foreground">
+              Publish On
+            </label>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <input
+                type="date"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground outline-none focus:border-[var(--primary)]"
+              />
+              <input
+                type="time"
+                value={scheduledTime}
+                onChange={(e) => setScheduledTime(e.target.value)}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground outline-none focus:border-[var(--primary)]"
+              />
+              {(scheduledDate || scheduledTime) && (
+                <button
+                  onClick={() => {
+                    setScheduledDate("");
+                    setScheduledTime("");
+                  }}
+                  className="text-sm text-foreground-muted hover:text-foreground"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {scheduledDate && (
+              <p className="mt-2 text-xs text-foreground-muted">
+                Portfolio will be published on{" "}
+                {new Date(
+                  `${scheduledDate}T${scheduledTime || "00:00"}:00`
+                ).toLocaleString(undefined, {
+                  dateStyle: "long",
+                  timeStyle: "short",
+                })}
+              </p>
+            )}
+            {!scheduledDate && (
+              <p className="mt-2 text-xs text-foreground-muted">
+                No schedule set. Use the Publish button to publish manually.
+              </p>
+            )}
+          </div>
+
+          <div className="mt-5 flex justify-end">
+            <button
+              onClick={handleSaveSchedule}
+              disabled={loading}
+              className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+            >
+              {scheduledDate ? "Save Schedule" : "Clear Schedule"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Downloads */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6">
         <div className="flex items-center gap-2">
@@ -682,6 +857,176 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
         </div>
       </div>
 
+      {/* Custom Domain */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6">
+        <div className="flex items-center gap-2">
+          <GlobeIcon className="h-5 w-5 text-foreground-muted" />
+          <h3 className="text-lg font-semibold text-foreground">
+            Custom Domain
+          </h3>
+          {website.customDomainVerified && (
+            <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-400">
+              Verified
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-sm text-foreground-muted">
+          Connect your own domain to this portfolio for professional branding.
+        </p>
+
+        <div className="mt-5 space-y-4">
+          {/* If domain is already configured */}
+          {website.customDomain ? (
+            <div className="space-y-4">
+              {/* Current Domain Display */}
+              <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {website.customDomain}
+                    </p>
+                    <p className="mt-0.5 text-xs text-foreground-muted">
+                      {website.customDomainVerified
+                        ? `Verified on ${new Date(website.customDomainVerifiedAt!).toLocaleDateString()}`
+                        : "Pending verification"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {website.customDomainVerified ? (
+                      <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                    ) : (
+                      <AlertCircleIcon className="h-5 w-5 text-[var(--warning)]" />
+                    )}
+                  </div>
+                </div>
+
+                {/* SSL Status */}
+                {website.customDomainVerified && website.customDomainSslStatus && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <ShieldIcon className="h-4 w-4 text-foreground-muted" />
+                    <span className="text-xs text-foreground-muted">
+                      SSL:{" "}
+                      <span
+                        className={cn(
+                          "font-medium",
+                          website.customDomainSslStatus === "active"
+                            ? "text-green-400"
+                            : website.customDomainSslStatus === "pending"
+                            ? "text-[var(--warning)]"
+                            : "text-[var(--error)]"
+                        )}
+                      >
+                        {website.customDomainSslStatus.charAt(0).toUpperCase() +
+                          website.customDomainSslStatus.slice(1)}
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Verification Instructions - show only if not verified */}
+              {!website.customDomainVerified && website.customDomainVerificationToken && (
+                <div className="rounded-lg border border-[var(--warning)]/30 bg-[var(--warning)]/5 p-4">
+                  <h4 className="text-sm font-medium text-foreground">
+                    Verify your domain
+                  </h4>
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    Add the following TXT record to your DNS settings:
+                  </p>
+
+                  <div className="mt-3 space-y-2">
+                    <div>
+                      <p className="text-xs font-medium text-foreground-muted">
+                        Record Type
+                      </p>
+                      <code className="mt-0.5 block rounded bg-[var(--background)] px-2 py-1 text-xs text-foreground">
+                        TXT
+                      </code>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-foreground-muted">
+                        Host / Name
+                      </p>
+                      <code className="mt-0.5 block rounded bg-[var(--background)] px-2 py-1 text-xs text-foreground">
+                        _photoproos-verify
+                      </code>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-foreground-muted">
+                        Value
+                      </p>
+                      <code className="mt-0.5 block rounded bg-[var(--background)] px-2 py-1 text-xs text-foreground break-all">
+                        {website.customDomainVerificationToken}
+                      </code>
+                    </div>
+                  </div>
+
+                  <p className="mt-3 text-xs text-foreground-muted">
+                    DNS changes may take up to 48 hours to propagate.
+                  </p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-2">
+                {!website.customDomainVerified && (
+                  <button
+                    onClick={handleVerifyDomain}
+                    disabled={loading || isVerifyingDomain}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                  >
+                    {isVerifyingDomain ? (
+                      <>
+                        <LoadingIcon className="h-4 w-4 animate-spin" />
+                        Verifying...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshIcon className="h-4 w-4" />
+                        Check Verification
+                      </>
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={handleRemoveCustomDomain}
+                  disabled={loading}
+                  className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+                >
+                  Remove Domain
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Domain input for new domain
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-foreground">
+                  Your Domain
+                </label>
+                <input
+                  value={customDomain}
+                  onChange={(e) => setCustomDomain(e.target.value)}
+                  placeholder="portfolio.yourdomain.com"
+                  className="mt-2 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground outline-none focus:border-[var(--primary)]"
+                />
+                <p className="mt-1 text-xs text-foreground-muted">
+                  Enter your domain without https:// or www
+                </p>
+              </div>
+
+              <button
+                onClick={handleAddCustomDomain}
+                disabled={loading || !customDomain.trim()}
+                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+              >
+                Add Domain
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Danger Zone */}
       <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
         <h3 className="text-lg font-semibold text-[var(--error)]">
@@ -743,6 +1088,17 @@ function ClockIcon({ className }: { className?: string }) {
   );
 }
 
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <path d="M3 10h18" />
+    </svg>
+  );
+}
+
 function DownloadIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -758,6 +1114,62 @@ function CodeIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
       <polyline points="16 18 22 12 16 6" />
       <polyline points="8 6 2 12 8 18" />
+    </svg>
+  );
+}
+
+function GlobeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function AlertCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" x2="12" y1="8" y2="12" />
+      <line x1="12" x2="12.01" y1="16" y2="16" />
+    </svg>
+  );
+}
+
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+    </svg>
+  );
+}
+
+function RefreshIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
+    </svg>
+  );
+}
+
+function LoadingIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
 }

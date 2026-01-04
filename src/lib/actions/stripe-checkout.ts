@@ -8,6 +8,13 @@ type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(value?: string | null): value is string {
+  if (!value) return false;
+  return EMAIL_REGEX.test(value.trim());
+}
+
 /**
  * Create a checkout session for subscription upgrade
  */
@@ -56,14 +63,23 @@ export async function createCheckoutSession(params: {
     let customerId = organization.stripeCustomerId;
 
     if (!customerId) {
-      const customer = await getStripe().customers.create({
-        email: user.email,
+      const customerParams: {
+        email?: string;
+        name: string;
+        metadata: Record<string, string>;
+      } = {
         name: organization.name,
         metadata: {
           organizationId,
           userId: user.id,
         },
-      });
+      };
+
+      if (isValidEmail(user.email)) {
+        customerParams.email = user.email;
+      }
+
+      const customer = await getStripe().customers.create(customerParams);
       customerId = customer.id;
 
       // Save the customer ID
@@ -182,7 +198,11 @@ export async function createGalleryCheckoutSession(
           quantity: 1,
         },
       ],
-      customer_email: customerEmail || gallery.client?.email || undefined,
+      customer_email: isValidEmail(customerEmail)
+        ? customerEmail
+        : isValidEmail(gallery.client?.email)
+          ? gallery.client?.email
+          : undefined,
       payment_intent_data: {
         application_fee_amount: platformFeeAmount,
         transfer_data: {

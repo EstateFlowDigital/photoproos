@@ -1070,7 +1070,8 @@ export async function getFormSubmissions(
 
     return submissions.map((s) => ({
       id: s.id,
-      data: s.data,
+      bookingFormId,
+      data: s.data as Record<string, unknown>,
       clientName: s.clientName,
       clientEmail: s.clientEmail,
       clientPhone: s.clientPhone,
@@ -1151,5 +1152,91 @@ export async function getAllSubmissions(filters?: SubmissionFilters) {
   } catch (error) {
     console.error("Error fetching all submissions:", error);
     return [];
+  }
+}
+
+/**
+ * Convert a booking form submission to a client
+ */
+export async function convertBookingSubmissionToClient(
+  submissionId: string,
+  additionalData?: {
+    company?: string;
+    industry?: string;
+    notes?: string;
+  }
+): Promise<{ success: boolean; clientId?: string; error?: string }> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Get the submission
+    const submission = await prisma.bookingFormSubmission.findFirst({
+      where: {
+        id: submissionId,
+        bookingForm: {
+          organizationId,
+        },
+      },
+      include: {
+        bookingForm: true,
+      },
+    });
+
+    if (!submission) {
+      return { success: false, error: "Submission not found" };
+    }
+
+    if (!submission.clientEmail) {
+      return { success: false, error: "Email is required to create a client" };
+    }
+
+    // Check if client with this email already exists
+    const existingClient = await prisma.client.findFirst({
+      where: {
+        organizationId,
+        email: submission.clientEmail,
+      },
+    });
+
+    if (existingClient) {
+      // Don't update submission status, just return existing client
+      revalidatePath("/leads");
+      revalidatePath("/clients");
+      return { success: true, clientId: existingClient.id };
+    }
+
+    // Create new client
+    const client = await prisma.client.create({
+      data: {
+        organizationId,
+        email: submission.clientEmail,
+        fullName: submission.clientName || "Unknown",
+        phone: submission.clientPhone,
+        company: additionalData?.company,
+        industry: (additionalData?.industry as "real_estate" | "wedding" | "portrait" | "commercial" | "architecture" | "food_hospitality" | "events" | "headshots" | "product" | "other") ||
+          (submission.bookingForm.industry as "real_estate" | "wedding" | "portrait" | "commercial" | "architecture" | "food_hospitality" | "events" | "headshots" | "product" | "other") ||
+          "other",
+        notes: additionalData?.notes || `Converted from booking form submission`,
+        source: "booking_form",
+      },
+    });
+
+    // Log activity
+    const { logActivity } = await import("@/lib/actions/activity");
+    await logActivity(
+      organizationId,
+      "client_added",
+      `Client "${submission.clientName || submission.clientEmail}" was created from booking form`,
+      { clientId: client.id }
+    );
+
+    revalidatePath("/leads");
+    revalidatePath("/clients");
+    revalidatePath("/dashboard");
+
+    return { success: true, clientId: client.id };
+  } catch (error) {
+    console.error("Error converting booking submission to client:", error);
+    return { success: false, error: "Failed to convert submission to client" };
   }
 }

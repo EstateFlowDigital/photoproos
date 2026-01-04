@@ -856,7 +856,7 @@ export async function sendReferralInviteEmail(params: {
 
   return sendEmail({
     to,
-    subject: `${referrerName} invited you to try ListingLens - Get ${discountPercent}% off!`,
+    subject: `${referrerName} invited you to try PhotoProOS - Get ${discountPercent}% off!`,
     react: ReferralInviteEmail({
       inviteeName,
       referrerName,
@@ -930,7 +930,7 @@ export async function sendReferralRewardEarnedEmail(params: {
 
   return sendEmail({
     to,
-    subject: `You earned $${rewardAmount}! ${referredName} subscribed to ListingLens`,
+    subject: `You earned $${rewardAmount}! ${referredName} subscribed to PhotoProOS`,
     react: ReferralRewardEarnedEmail({
       referrerName,
       referredName,

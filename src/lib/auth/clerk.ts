@@ -62,8 +62,14 @@ export async function getAuthContext(): Promise<AuthContext | null> {
         });
       } else {
         // Create a new user with default organization
-        user = await prisma.user.create({
-          data: {
+        user = await prisma.user.upsert({
+          where: { clerkUserId },
+          update: {
+            email,
+            fullName: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || null,
+            avatarUrl: clerkUser.imageUrl || null,
+          },
+          create: {
             clerkUserId,
             email,
             fullName: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || null,

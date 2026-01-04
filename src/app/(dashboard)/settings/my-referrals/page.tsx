@@ -8,21 +8,23 @@ import {
   getMyReferrals,
   getMyRewards,
   getMyReferralLink,
+  getReferralLeaderboard,
 } from "@/lib/actions/platform-referrals";
 
 export const metadata: Metadata = {
   title: "My Referrals | Settings",
-  description: "Refer photographers to ListingLens and earn rewards",
+  description: "Refer photographers to PhotoProOS and earn rewards",
 };
 
 export default async function MyReferralsPage() {
-  const [profileResult, statsResult, referralsResult, rewardsResult, linkResult] =
+  const [profileResult, statsResult, referralsResult, rewardsResult, linkResult, leaderboardResult] =
     await Promise.all([
       getMyReferralProfile(),
       getMyReferralStats(),
       getMyReferrals(),
       getMyRewards(),
       getMyReferralLink(),
+      getReferralLeaderboard(10),
     ]);
 
   const profile = profileResult.success ? profileResult.data : null;
@@ -30,6 +32,7 @@ export default async function MyReferralsPage() {
   const referrals = referralsResult.success ? referralsResult.data : [];
   const rewards = rewardsResult.success ? rewardsResult.data : [];
   const referralLink = linkResult.success ? linkResult.data : null;
+  const leaderboard = leaderboardResult.success ? leaderboardResult.data : [];
 
   return (
     <MyReferralsClient
@@ -38,6 +41,7 @@ export default async function MyReferralsPage() {
       referrals={referrals}
       rewards={rewards}
       referralLink={referralLink}
+      leaderboard={leaderboard}
     />
   );
 }

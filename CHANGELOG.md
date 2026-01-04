@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `customDomainSslStatus` - SSL certificate status (pending, active, error)
   - **DNS TXT Record Verification**:
     - Auto-generates unique verification token on domain add
-    - Users add TXT record at `_listinglens-verify.{domain}`
+    - Users add TXT record at `_photoproos-verify.{domain}`
     - Server-side DNS lookup to verify ownership
   - **Server actions**:
     - `addCustomDomain()` - Add a domain and generate verification token
@@ -62,6 +62,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Detects requests from custom domains
     - Routes to portfolio renderer via `_custom-domain` handler
     - Excludes main app domains and Railway preview URLs
+
+- **Portfolio Scheduled Publishing**
+  - Schedule portfolios to be automatically published at a specific date and time
+  - **Database schema**: `scheduledPublishAt` field on PortfolioWebsite model
+  - **Server actions**:
+    - `schedulePortfolioPublish()` - Set or clear a publish schedule
+    - `processScheduledPortfolioPublishing()` - Process due portfolios (for cron job)
+    - `getScheduledPortfolios()` - Get all portfolios due for publishing
+  - **Settings UI**: Date and time picker in portfolio settings (only shown for unpublished portfolios)
+  - **Cron job endpoint**: `/api/cron/portfolio-publish` - Auto-publish scheduled portfolios
+    - Protected by CRON_SECRET environment variable
+    - Recommended: Run every 5-15 minutes
 
 - **Portfolio Website Enhancements**
   - **QR Code Generator**: Generate and download QR codes for portfolio URLs
@@ -99,7 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - New visitors percentage with visual breakdown
     - Legend indicators for chart data
 
-- **Platform Referral System** (ListingLens User Referrals)
+- **Platform Referral System** (PhotoProOS User Referrals)
   - Database models for user-to-user referral tracking:
     - `PlatformReferralSettings` - Global program configuration
     - `PlatformReferrer` - User referral profiles with unique codes
@@ -241,6 +253,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Page URL tracking for context
   - Loading state during submission
   - Server actions: `submitChatInquiry()`, `getChatInquiries()`, `updateChatInquiryStatus()`, `getChatInquiryStats()`
+
+- **Leads Dashboard**
+  - New `/leads` page for managing all inquiries in one place
+  - Combines portfolio contact form submissions and chat widget messages
+  - Filter by type (Portfolio, Chat) and status (New, Contacted, Qualified, Closed)
+  - Stats cards showing total leads, new leads, and breakdown by source
+  - Detail modal with full contact info, message, and quick actions
+  - Status update buttons to track lead progress
+  - Reply via email button opens email client with prefilled recipient
+  - "Leads" module added to navigation (available for all industries)
+  - Module auto-enabled by default for new organizations
 
 - **Subscription Plans Management** (Developer Tools)
   - New subscription plan management system for application pricing tiers (Pro, Studio, Enterprise)

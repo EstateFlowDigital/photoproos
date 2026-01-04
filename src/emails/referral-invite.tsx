@@ -23,11 +23,11 @@ interface ReferralInviteEmailProps {
 export function ReferralInviteEmail({
   inviteeName = "there",
   referrerName = "A fellow photographer",
-  referralUrl = "https://listinglens.com/r/LENS-ABC123",
+  referralUrl = "https://photoproos.com/r/LENS-ABC123",
   trialDays = 21,
   discountPercent = 20,
 }: ReferralInviteEmailProps) {
-  const previewText = `${referrerName} thinks you'd love ListingLens - Get an extended trial + ${discountPercent}% off!`;
+  const previewText = `${referrerName} thinks you'd love PhotoProOS - Get an extended trial + ${discountPercent}% off!`;
 
   return (
     <Html>
@@ -37,7 +37,7 @@ export function ReferralInviteEmail({
         <Container style={container}>
           {/* Logo/Header */}
           <Section style={logoSection}>
-            <Heading style={logoText}>ListingLens</Heading>
+            <Heading style={logoText}>PhotoProOS</Heading>
             <Text style={tagline}>The Business OS for Professional Photographers</Text>
           </Section>
 
@@ -49,7 +49,7 @@ export function ReferralInviteEmail({
             <Text style={paragraph}>Hi {inviteeName},</Text>
 
             <Text style={paragraph}>
-              <strong>{referrerName}</strong> thinks you&apos;d love ListingLens and
+              <strong>{referrerName}</strong> thinks you&apos;d love PhotoProOS and
               wants to give you an exclusive offer to try it out!
             </Text>
 
@@ -80,7 +80,7 @@ export function ReferralInviteEmail({
 
             <Hr style={divider} />
 
-            <Text style={sectionTitle}>What you get with ListingLens</Text>
+            <Text style={sectionTitle}>What you get with PhotoProOS</Text>
 
             <Section style={featureList}>
               <Text style={featureItem}>
@@ -118,20 +118,20 @@ export function ReferralInviteEmail({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              <Link href="https://listinglens.com/features" style={footerLink}>
+              <Link href="https://photoproos.com/features" style={footerLink}>
                 Features
               </Link>
               {" · "}
-              <Link href="https://listinglens.com/pricing" style={footerLink}>
+              <Link href="https://photoproos.com/pricing" style={footerLink}>
                 Pricing
               </Link>
               {" · "}
-              <Link href="https://listinglens.com/help" style={footerLink}>
+              <Link href="https://photoproos.com/help" style={footerLink}>
                 Help
               </Link>
             </Text>
             <Text style={footerText}>
-              © {new Date().getFullYear()} ListingLens. All rights reserved.
+              © {new Date().getFullYear()} PhotoProOS. All rights reserved.
             </Text>
           </Section>
         </Container>

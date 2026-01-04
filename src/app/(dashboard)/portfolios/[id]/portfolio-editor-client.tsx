@@ -76,10 +76,17 @@ export interface PortfolioWebsite {
   // New fields
   isPasswordProtected: boolean;
   expiresAt: Date | null;
+  scheduledPublishAt: Date | null;
   allowDownloads: boolean;
   downloadWatermark: boolean;
   customCss: string | null;
   enableAnimations: boolean;
+  // Custom Domain
+  customDomain: string | null;
+  customDomainVerified: boolean;
+  customDomainVerificationToken: string | null;
+  customDomainVerifiedAt: Date | null;
+  customDomainSslStatus: string | null;
   // Relations
   projects: PortfolioProject[];
   sections: PortfolioSection[];

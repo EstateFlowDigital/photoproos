@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { submitChatInquiry } from "@/lib/actions/chat-inquiries";
 
 interface ChatWidgetProps {
   delay?: number; // Delay before showing the widget
@@ -11,7 +12,10 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
   const [isVisible, setIsVisible] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
   const [message, setMessage] = React.useState("");
+  const [email, setEmail] = React.useState("");
   const [isSubmitted, setIsSubmitted] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [showEmailField, setShowEmailField] = React.useState(false);
 
   // Show widget after delay
   React.useEffect(() => {
@@ -33,20 +37,38 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || isSubmitting) return;
 
-    // In production, this would send to a chat service
-    console.log("[Chat Widget] Message:", message);
-    setIsSubmitted(true);
-    setMessage("");
+    setIsSubmitting(true);
 
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setIsOpen(false);
-    }, 3000);
+    try {
+      const result = await submitChatInquiry({
+        email: email || undefined,
+        message,
+        pageUrl: typeof window !== "undefined" ? window.location.href : undefined,
+      });
+
+      if (result.success) {
+        setIsSubmitted(true);
+        setMessage("");
+        setEmail("");
+        setShowEmailField(false);
+
+        // Reset after 3 seconds
+        setTimeout(() => {
+          setIsSubmitted(false);
+          setIsOpen(false);
+        }, 3000);
+      } else {
+        console.error("[Chat Widget] Error:", result.error);
+      }
+    } catch (error) {
+      console.error("[Chat Widget] Error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isVisible) return null;
@@ -131,23 +153,46 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
                 </div>
 
                 {/* Message input */}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  {showEmailField && (
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Your email (optional)"
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
+                    />
+                  )}
                   <div className="relative">
                     <input
                       type="text"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Type your message..."
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3 pr-12 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
+                      disabled={isSubmitting}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3 pr-12 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 disabled:opacity-50"
                     />
                     <button
                       type="submit"
-                      disabled={!message.trim()}
+                      disabled={!message.trim() || isSubmitting}
                       className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md bg-[var(--primary)] text-white transition-opacity disabled:opacity-50"
                     >
-                      <SendIcon className="h-4 w-4" />
+                      {isSubmitting ? (
+                        <LoadingIcon className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <SendIcon className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
+                  {!showEmailField && (
+                    <button
+                      type="button"
+                      onClick={() => setShowEmailField(true)}
+                      className="text-xs text-foreground-muted hover:text-foreground transition-colors"
+                    >
+                      + Add email for a reply
+                    </button>
+                  )}
                 </form>
               </>
             ) : (
@@ -211,6 +256,15 @@ function CheckIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
       <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function LoadingIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+      <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
     </svg>
   );
 }

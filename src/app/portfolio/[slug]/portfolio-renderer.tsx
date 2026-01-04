@@ -358,7 +358,7 @@ export function PortfolioRenderer({ website }: PortfolioRendererProps) {
               ))}
               {website.showBranding && (
                 <span style={{ color: templateConfig.colors.textSecondary }}>
-                  Powered by ListingLens
+                  Powered by PhotoProOS
                 </span>
               )}
             </div>

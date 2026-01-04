@@ -27,9 +27,9 @@ export function ReferralRewardEarnedEmail({
   rewardAmount = 25,
   totalEarned = 25,
   totalReferrals = 1,
-  referralDashboardUrl = "https://app.listinglens.com/settings/my-referrals",
+  referralDashboardUrl = "https://app.photoproos.com/settings/my-referrals",
 }: ReferralRewardEarnedEmailProps) {
-  const previewText = `You just earned $${rewardAmount}! ${referredName} subscribed to ListingLens.`;
+  const previewText = `You just earned $${rewardAmount}! ${referredName} subscribed to PhotoProOS.`;
 
   return (
     <Html>
@@ -39,7 +39,7 @@ export function ReferralRewardEarnedEmail({
         <Container style={container}>
           {/* Logo/Header */}
           <Section style={logoSection}>
-            <Heading style={logoText}>ListingLens</Heading>
+            <Heading style={logoText}>PhotoProOS</Heading>
             <Text style={tagline}>The Business OS for Professional Photographers</Text>
           </Section>
 
@@ -51,7 +51,7 @@ export function ReferralRewardEarnedEmail({
             <Text style={paragraph}>Hi {referrerName},</Text>
 
             <Text style={paragraph}>
-              Awesome news! <strong>{referredName}</strong> just subscribed to ListingLens,
+              Awesome news! <strong>{referredName}</strong> just subscribed to PhotoProOS,
               and you&apos;ve earned <strong style={{ color: "#22c55e" }}>${rewardAmount}</strong> in
               account credit!
             </Text>
@@ -124,12 +124,12 @@ export function ReferralRewardEarnedEmail({
                 My Referrals
               </Link>
               {" · "}
-              <Link href="https://listinglens.com/help" style={footerLink}>
+              <Link href="https://photoproos.com/help" style={footerLink}>
                 Help Center
               </Link>
             </Text>
             <Text style={footerText}>
-              © {new Date().getFullYear()} ListingLens. All rights reserved.
+              © {new Date().getFullYear()} PhotoProOS. All rights reserved.
             </Text>
           </Section>
         </Container>

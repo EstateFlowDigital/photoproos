@@ -121,33 +121,60 @@ async function handleUserCreated(clerkUser: ClerkUser) {
     .filter(Boolean)
     .join(" ") || null;
 
-  // Check if user already exists (might be invited user)
+  // Check if user already exists (by Clerk ID first to avoid duplicates)
   let user = await prisma.user.findUnique({
-    where: { email },
+    where: { clerkUserId: clerkUser.id },
   });
 
   if (user) {
-    // Link existing user to Clerk account
     user = await prisma.user.update({
       where: { id: user.id },
       data: {
-        clerkUserId: clerkUser.id,
+        email,
         fullName: fullName || user.fullName,
         avatarUrl: clerkUser.image_url || user.avatarUrl,
       },
     });
-    console.log(`Linked existing user ${user.id} to Clerk account ${clerkUser.id}`);
+    console.log(`Updated existing user ${user.id} for Clerk account ${clerkUser.id}`);
   } else {
-    // Create new user
-    user = await prisma.user.create({
-      data: {
-        clerkUserId: clerkUser.id,
-        email,
-        fullName,
-        avatarUrl: clerkUser.image_url || null,
-      },
+    const existingByEmail = await prisma.user.findUnique({
+      where: { email },
     });
-    console.log(`Created new user ${user.id} from Clerk account ${clerkUser.id}`);
+
+    if (existingByEmail) {
+      user = await prisma.user.update({
+        where: { id: existingByEmail.id },
+        data: {
+          clerkUserId: clerkUser.id,
+          fullName: fullName || existingByEmail.fullName,
+          avatarUrl: clerkUser.image_url || existingByEmail.avatarUrl,
+        },
+      });
+      console.log(`Linked existing user ${user.id} to Clerk account ${clerkUser.id}`);
+    } else {
+      try {
+        user = await prisma.user.create({
+          data: {
+            clerkUserId: clerkUser.id,
+            email,
+            fullName,
+            avatarUrl: clerkUser.image_url || null,
+          },
+        });
+        console.log(`Created new user ${user.id} from Clerk account ${clerkUser.id}`);
+      } catch (error) {
+        const existingByClerk = await prisma.user.findUnique({
+          where: { clerkUserId: clerkUser.id },
+        });
+
+        if (!existingByClerk) {
+          throw error;
+        }
+
+        user = existingByClerk;
+        console.log(`User already created for Clerk account ${clerkUser.id}`);
+      }
+    }
   }
 
   // Check for referral code in metadata

@@ -946,6 +946,7 @@ export async function updatePortfolioAdvancedSettings(
   portfolioId: string,
   data: {
     expiresAt?: Date | null;
+    scheduledPublishAt?: Date | null;
     allowDownloads?: boolean;
     downloadWatermark?: boolean;
     customCss?: string | null;
@@ -968,6 +969,7 @@ export async function updatePortfolioAdvancedSettings(
       where: { id: portfolioId },
       data: {
         expiresAt: data.expiresAt !== undefined ? data.expiresAt : undefined,
+        scheduledPublishAt: data.scheduledPublishAt !== undefined ? data.scheduledPublishAt : undefined,
         allowDownloads: data.allowDownloads !== undefined ? data.allowDownloads : undefined,
         downloadWatermark: data.downloadWatermark !== undefined ? data.downloadWatermark : undefined,
         customCss: data.customCss !== undefined ? data.customCss : undefined,
@@ -981,6 +983,132 @@ export async function updatePortfolioAdvancedSettings(
   } catch (error) {
     console.error("Error updating advanced settings:", error);
     return { success: false, error: "Failed to update settings" };
+  }
+}
+
+export async function schedulePortfolioPublish(
+  portfolioId: string,
+  scheduledAt: Date | null
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioId, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio website not found" };
+    }
+
+    // Validate scheduled date is in the future
+    if (scheduledAt && scheduledAt <= new Date()) {
+      return { success: false, error: "Scheduled time must be in the future" };
+    }
+
+    await prisma.portfolioWebsite.update({
+      where: { id: portfolioId },
+      data: {
+        scheduledPublishAt: scheduledAt,
+      },
+    });
+
+    revalidatePath(`/portfolios/${portfolioId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error scheduling portfolio publish:", error);
+    return { success: false, error: "Failed to schedule publication" };
+  }
+}
+
+export async function getScheduledPortfolios(): Promise<{
+  success: boolean;
+  data?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    scheduledPublishAt: Date;
+    organizationId: string;
+  }>;
+  error?: string;
+}> {
+  try {
+    const now = new Date();
+
+    const portfolios = await prisma.portfolioWebsite.findMany({
+      where: {
+        scheduledPublishAt: {
+          lte: now,
+        },
+        isPublished: false,
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        scheduledPublishAt: true,
+        organizationId: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: portfolios.filter((p) => p.scheduledPublishAt !== null) as Array<{
+        id: string;
+        name: string;
+        slug: string;
+        scheduledPublishAt: Date;
+        organizationId: string;
+      }>,
+    };
+  } catch (error) {
+    console.error("Error getting scheduled portfolios:", error);
+    return { success: false, error: "Failed to get scheduled portfolios" };
+  }
+}
+
+export async function processScheduledPortfolioPublishing(): Promise<{
+  success: boolean;
+  publishedCount: number;
+  error?: string;
+}> {
+  try {
+    const now = new Date();
+
+    // Find all portfolios that should be published
+    const portfoliosToPublish = await prisma.portfolioWebsite.findMany({
+      where: {
+        scheduledPublishAt: {
+          lte: now,
+        },
+        isPublished: false,
+      },
+    });
+
+    let publishedCount = 0;
+
+    for (const portfolio of portfoliosToPublish) {
+      await prisma.portfolioWebsite.update({
+        where: { id: portfolio.id },
+        data: {
+          isPublished: true,
+          publishedAt: now,
+          scheduledPublishAt: null, // Clear the schedule after publishing
+        },
+      });
+
+      // Revalidate paths
+      revalidatePath(`/portfolios/${portfolio.id}`);
+      revalidatePath(`/portfolio/${portfolio.slug}`);
+
+      publishedCount++;
+    }
+
+    return { success: true, publishedCount };
+  } catch (error) {
+    console.error("Error processing scheduled portfolios:", error);
+    return { success: false, publishedCount: 0, error: "Failed to process scheduled portfolios" };
   }
 }
 
@@ -1268,5 +1396,568 @@ export async function submitPortfolioContactForm(
   } catch (error) {
     console.error("Error submitting contact form:", error);
     return { success: false, error: "Failed to send message" };
+  }
+}
+
+// ============================================================================
+// CUSTOM DOMAIN MANAGEMENT
+// ============================================================================
+
+/**
+ * Generate a verification token for custom domain
+ */
+function generateVerificationToken(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let token = "photoproos-verify-";
+  for (let i = 0; i < 32; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+/**
+ * Validate domain format
+ */
+function isValidDomain(domain: string): boolean {
+  // Basic domain validation
+  const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+  return domainRegex.test(domain);
+}
+
+/**
+ * Add a custom domain to a portfolio
+ */
+export async function addCustomDomain(
+  portfolioId: string,
+  domain: string
+): Promise<{ success: boolean; verificationToken?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Clean and validate domain
+    const cleanDomain = domain.toLowerCase().trim().replace(/^(https?:\/\/)?(www\.)?/, "").replace(/\/$/, "");
+
+    if (!isValidDomain(cleanDomain)) {
+      return { success: false, error: "Invalid domain format. Please enter a valid domain like 'portfolio.example.com'" };
+    }
+
+    // Check if portfolio exists and belongs to org
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioId, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    // Check if domain is already in use by another portfolio
+    const existingDomain = await prisma.portfolioWebsite.findFirst({
+      where: {
+        customDomain: cleanDomain,
+        id: { not: portfolioId },
+      },
+    });
+
+    if (existingDomain) {
+      return { success: false, error: "This domain is already in use by another portfolio" };
+    }
+
+    // Generate verification token
+    const verificationToken = generateVerificationToken();
+
+    // Update portfolio with domain and verification token
+    await prisma.portfolioWebsite.update({
+      where: { id: portfolioId },
+      data: {
+        customDomain: cleanDomain,
+        customDomainVerified: false,
+        customDomainVerificationToken: verificationToken,
+        customDomainVerifiedAt: null,
+        customDomainSslStatus: "pending",
+      },
+    });
+
+    return { success: true, verificationToken };
+  } catch (error) {
+    console.error("Error adding custom domain:", error);
+    return { success: false, error: "Failed to add custom domain" };
+  }
+}
+
+/**
+ * Verify custom domain by checking DNS TXT record
+ */
+export async function verifyCustomDomain(
+  portfolioId: string
+): Promise<{ success: boolean; verified?: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioId, organizationId },
+      select: {
+        id: true,
+        customDomain: true,
+        customDomainVerificationToken: true,
+        customDomainVerified: true,
+      },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    if (!website.customDomain) {
+      return { success: false, error: "No custom domain configured" };
+    }
+
+    if (website.customDomainVerified) {
+      return { success: true, verified: true };
+    }
+
+    // Perform DNS TXT record lookup
+    const dns = await import("dns").then(m => m.promises);
+
+    try {
+      // Check for TXT record on _photoproos-verify subdomain
+      const records = await dns.resolveTxt(`_photoproos-verify.${website.customDomain}`);
+      const flatRecords = records.flat();
+
+      const isVerified = flatRecords.some(
+        record => record === website.customDomainVerificationToken
+      );
+
+      if (isVerified) {
+        // Update portfolio as verified
+        await prisma.portfolioWebsite.update({
+          where: { id: portfolioId },
+          data: {
+            customDomainVerified: true,
+            customDomainVerifiedAt: new Date(),
+            customDomainSslStatus: "active", // In production, this would trigger SSL provisioning
+          },
+        });
+
+        return { success: true, verified: true };
+      }
+
+      return { success: true, verified: false };
+    } catch (dnsError) {
+      // DNS lookup failed - record doesn't exist yet
+      console.log("DNS lookup failed (record may not exist yet):", dnsError);
+      return { success: true, verified: false };
+    }
+  } catch (error) {
+    console.error("Error verifying custom domain:", error);
+    return { success: false, error: "Failed to verify domain" };
+  }
+}
+
+/**
+ * Remove custom domain from a portfolio
+ */
+export async function removeCustomDomain(
+  portfolioId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioId, organizationId },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    await prisma.portfolioWebsite.update({
+      where: { id: portfolioId },
+      data: {
+        customDomain: null,
+        customDomainVerified: false,
+        customDomainVerificationToken: null,
+        customDomainVerifiedAt: null,
+        customDomainSslStatus: null,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing custom domain:", error);
+    return { success: false, error: "Failed to remove custom domain" };
+  }
+}
+
+/**
+ * Get custom domain status for a portfolio
+ */
+export async function getCustomDomainStatus(
+  portfolioId: string
+): Promise<{
+  success: boolean;
+  data?: {
+    domain: string | null;
+    verified: boolean;
+    verificationToken: string | null;
+    verifiedAt: Date | null;
+    sslStatus: string | null;
+  };
+  error?: string;
+}> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: { id: portfolioId, organizationId },
+      select: {
+        customDomain: true,
+        customDomainVerified: true,
+        customDomainVerificationToken: true,
+        customDomainVerifiedAt: true,
+        customDomainSslStatus: true,
+      },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    return {
+      success: true,
+      data: {
+        domain: website.customDomain,
+        verified: website.customDomainVerified,
+        verificationToken: website.customDomainVerificationToken,
+        verifiedAt: website.customDomainVerifiedAt,
+        sslStatus: website.customDomainSslStatus,
+      },
+    };
+  } catch (error) {
+    console.error("Error getting custom domain status:", error);
+    return { success: false, error: "Failed to get domain status" };
+  }
+}
+
+/**
+ * Find portfolio by custom domain (for routing)
+ */
+export async function getPortfolioByCustomDomain(
+  domain: string
+): Promise<{
+  success: boolean;
+  slug?: string;
+  error?: string;
+}> {
+  try {
+    const cleanDomain = domain.toLowerCase().trim();
+
+    const website = await prisma.portfolioWebsite.findFirst({
+      where: {
+        customDomain: cleanDomain,
+        customDomainVerified: true,
+        isPublished: true,
+      },
+      select: {
+        slug: true,
+        expiresAt: true,
+      },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    // Check if expired
+    if (website.expiresAt && website.expiresAt < new Date()) {
+      return { success: false, error: "Portfolio expired" };
+    }
+
+    return { success: true, slug: website.slug };
+  } catch (error) {
+    console.error("Error finding portfolio by domain:", error);
+    return { success: false, error: "Failed to find portfolio" };
+  }
+}
+
+// =============================================================================
+// PORTFOLIO INQUIRIES (Contact Form Submissions)
+// =============================================================================
+
+/**
+ * Submit a contact inquiry from a portfolio website (public, no auth required)
+ */
+export async function submitPortfolioInquiry(input: {
+  portfolioWebsiteId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+  source?: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Validate required fields
+    if (!input.name?.trim()) {
+      return { success: false, error: "Name is required" };
+    }
+    if (!input.email?.trim()) {
+      return { success: false, error: "Email is required" };
+    }
+    if (!input.message?.trim()) {
+      return { success: false, error: "Message is required" };
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(input.email)) {
+      return { success: false, error: "Invalid email address" };
+    }
+
+    // Get the portfolio website to verify it exists and get org ID
+    const website = await prisma.portfolioWebsite.findUnique({
+      where: { id: input.portfolioWebsiteId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        organizationId: true,
+        isPublished: true,
+        organization: {
+          select: {
+            name: true,
+            members: {
+              where: { role: "owner" },
+              include: {
+                user: {
+                  select: { email: true, fullName: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!website) {
+      return { success: false, error: "Portfolio not found" };
+    }
+
+    if (!website.isPublished) {
+      return { success: false, error: "Portfolio is not published" };
+    }
+
+    // Create the inquiry
+    await prisma.portfolioInquiry.create({
+      data: {
+        portfolioWebsiteId: website.id,
+        organizationId: website.organizationId,
+        name: input.name.trim(),
+        email: input.email.trim().toLowerCase(),
+        phone: input.phone?.trim() || null,
+        message: input.message.trim(),
+        source: input.source || "portfolio_contact_form",
+        status: "new",
+      },
+    });
+
+    // Send notification email to organization owner
+    try {
+      const owner = website.organization.members[0]?.user;
+      if (owner?.email) {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
+        const portfolioUrl = `${baseUrl}/portfolio/${website.slug}`;
+
+        const { sendPortfolioContactEmail } = await import("@/lib/email/send");
+        await sendPortfolioContactEmail({
+          to: owner.email,
+          photographerName: owner.fullName || website.organization.name,
+          portfolioName: website.name,
+          portfolioUrl,
+          senderName: input.name.trim(),
+          senderEmail: input.email.trim(),
+          senderPhone: input.phone?.trim(),
+          message: input.message.trim(),
+        });
+      }
+    } catch (emailError) {
+      // Don't fail the submission if email fails
+      console.error("Failed to send inquiry notification:", emailError);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error submitting portfolio inquiry:", error);
+    return { success: false, error: "Failed to submit inquiry" };
+  }
+}
+
+/**
+ * Get portfolio inquiries for the dashboard
+ */
+export async function getPortfolioInquiries(filters?: {
+  portfolioWebsiteId?: string;
+  status?: string;
+}) {
+  await requireAuth();
+  const organizationId = await requireOrganizationId();
+
+  return prisma.portfolioInquiry.findMany({
+    where: {
+      organizationId,
+      ...(filters?.portfolioWebsiteId && { portfolioWebsiteId: filters.portfolioWebsiteId }),
+      ...(filters?.status && { status: filters.status as "new" | "contacted" | "qualified" | "closed" }),
+    },
+    include: {
+      portfolioWebsite: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+/**
+ * Update portfolio inquiry status
+ */
+export async function updatePortfolioInquiryStatus(
+  inquiryId: string,
+  status: "new" | "contacted" | "qualified" | "closed",
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Verify inquiry belongs to organization
+    const inquiry = await prisma.portfolioInquiry.findFirst({
+      where: {
+        id: inquiryId,
+        organizationId,
+      },
+    });
+
+    if (!inquiry) {
+      return { success: false, error: "Inquiry not found" };
+    }
+
+    await prisma.portfolioInquiry.update({
+      where: { id: inquiryId },
+      data: {
+        status,
+        ...(notes !== undefined && { notes }),
+      },
+    });
+
+    revalidatePath("/portfolios");
+    revalidatePath("/leads");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating inquiry status:", error);
+    return { success: false, error: "Failed to update inquiry" };
+  }
+}
+
+/**
+ * Convert a portfolio inquiry to a client
+ */
+export async function convertPortfolioInquiryToClient(
+  inquiryId: string,
+  additionalData?: {
+    company?: string;
+    industry?: string;
+    notes?: string;
+  }
+): Promise<{ success: boolean; clientId?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Get the inquiry
+    const inquiry = await prisma.portfolioInquiry.findFirst({
+      where: {
+        id: inquiryId,
+        organizationId,
+      },
+      include: {
+        portfolioWebsite: {
+          select: { name: true },
+        },
+      },
+    });
+
+    if (!inquiry) {
+      return { success: false, error: "Inquiry not found" };
+    }
+
+    // Check if client with this email already exists
+    const existingClient = await prisma.client.findFirst({
+      where: {
+        organizationId,
+        email: inquiry.email,
+      },
+    });
+
+    if (existingClient) {
+      // Update inquiry to closed and link note about existing client
+      await prisma.portfolioInquiry.update({
+        where: { id: inquiryId },
+        data: {
+          status: "closed",
+          notes: `${inquiry.notes || ""}\n[Converted] Client already exists (ID: ${existingClient.id})`.trim(),
+        },
+      });
+
+      revalidatePath("/leads");
+      revalidatePath("/clients");
+      return { success: true, clientId: existingClient.id };
+    }
+
+    // Create new client
+    const client = await prisma.client.create({
+      data: {
+        organizationId,
+        email: inquiry.email,
+        fullName: inquiry.name,
+        phone: inquiry.phone,
+        company: additionalData?.company,
+        industry: (additionalData?.industry as "real_estate" | "wedding" | "portrait" | "commercial" | "architecture" | "food_hospitality" | "events" | "headshots" | "product" | "other") || "other",
+        notes: additionalData?.notes || `Converted from portfolio inquiry (${inquiry.portfolioWebsite.name})`,
+        source: "portfolio_inquiry",
+      },
+    });
+
+    // Update inquiry to closed
+    await prisma.portfolioInquiry.update({
+      where: { id: inquiryId },
+      data: {
+        status: "closed",
+        notes: `${inquiry.notes || ""}\n[Converted to client on ${new Date().toLocaleDateString()}]`.trim(),
+      },
+    });
+
+    // Log activity
+    const { logActivity } = await import("@/lib/actions/activity");
+    await logActivity(
+      organizationId,
+      "client_added",
+      `Client "${inquiry.name}" was created from portfolio inquiry`,
+      { clientId: client.id }
+    );
+
+    revalidatePath("/leads");
+    revalidatePath("/clients");
+    revalidatePath("/dashboard");
+
+    return { success: true, clientId: client.id };
+  } catch (error) {
+    console.error("Error converting inquiry to client:", error);
+    return { success: false, error: "Failed to convert inquiry to client" };
   }
 }
