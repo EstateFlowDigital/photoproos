@@ -67,6 +67,9 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [slideshowPlaying, setSlideshowPlaying] = useState(true);
   const [slideshowInterval, setSlideshowInterval] = useState(4000); // 4 seconds default
+  const [showThumbnails, setShowThumbnails] = useState(true);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Comments state
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
@@ -413,6 +416,10 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         case "P":
           toggleSlideshowPlayPause();
           break;
+        case "t":
+        case "T":
+          setShowThumbnails((prev) => !prev);
+          break;
       }
     };
 
@@ -442,6 +449,55 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
       document.body.style.overflow = "";
     };
   }, [slideshowActive]);
+
+  // Touch/swipe handlers for mobile
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextSlide();
+    } else if (isRightSwipe) {
+      prevSlide();
+    }
+  }, [touchStart, touchEnd, nextSlide, prevSlide]);
+
+  // Preload adjacent images for smoother transitions
+  useEffect(() => {
+    if (!slideshowActive || slideshowPhotos.length === 0) return;
+
+    const preloadImage = (index: number) => {
+      if (index >= 0 && index < slideshowPhotos.length) {
+        const img = new Image();
+        img.src = slideshowPhotos[index]?.originalUrl || slideshowPhotos[index]?.url;
+      }
+    };
+
+    // Preload next and previous images
+    preloadImage((slideshowIndex + 1) % slideshowPhotos.length);
+    preloadImage((slideshowIndex - 1 + slideshowPhotos.length) % slideshowPhotos.length);
+    // Preload two ahead for very fast clicking
+    preloadImage((slideshowIndex + 2) % slideshowPhotos.length);
+  }, [slideshowActive, slideshowIndex, slideshowPhotos]);
+
+  // Jump to specific slide from thumbnail
+  const goToSlide = useCallback((index: number) => {
+    setSlideshowIndex(index);
+    setSlideshowPlaying(false); // Pause when manually selecting
+  }, []);
 
   const getThemeColors = () => {
     if (resolvedTheme === "light") {
@@ -927,9 +983,17 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* Slideshow Modal */}
       {slideshowActive && slideshowPhotos.length > 0 && (
-        <div className="fixed inset-0 z-[70] bg-black">
+        <div
+          className="fixed inset-0 z-[70] bg-black"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {/* Current Photo */}
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className={cn(
+            "absolute inset-0 flex items-center justify-center transition-all duration-300",
+            showThumbnails ? "bottom-24" : "bottom-0"
+          )}>
             <img
               src={slideshowPhotos[slideshowIndex]?.originalUrl || slideshowPhotos[slideshowIndex]?.url}
               alt={slideshowPhotos[slideshowIndex]?.filename}
@@ -943,6 +1007,17 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               {slideshowIndex + 1} / {slideshowPhotos.length}
             </div>
             <div className="flex items-center gap-2">
+              {/* Thumbnail Toggle */}
+              <button
+                onClick={() => setShowThumbnails(!showThumbnails)}
+                className={cn(
+                  "rounded-lg p-2 text-white transition-colors",
+                  showThumbnails ? "bg-white/20" : "bg-white/10 hover:bg-white/20"
+                )}
+                title="Toggle thumbnails (T)"
+              >
+                <GridIcon className="h-5 w-5" />
+              </button>
               {/* Speed Controls */}
               <select
                 value={slideshowInterval}
@@ -967,7 +1042,10 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           </div>
 
           {/* Bottom Controls */}
-          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-4 p-6 bg-gradient-to-t from-black/60 to-transparent">
+          <div className={cn(
+            "absolute left-0 right-0 flex items-center justify-center gap-4 p-6 bg-gradient-to-t from-black/60 to-transparent transition-all duration-300",
+            showThumbnails ? "bottom-24" : "bottom-0"
+          )}>
             {/* Previous */}
             <button
               onClick={prevSlide}
@@ -1001,7 +1079,10 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           </div>
 
           {/* Progress Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+          <div className={cn(
+            "absolute left-0 right-0 h-1 bg-white/10 transition-all duration-300",
+            showThumbnails ? "bottom-24" : "bottom-0"
+          )}>
             <div
               className="h-full bg-white/60 transition-all duration-300"
               style={{ width: `${((slideshowIndex + 1) / slideshowPhotos.length) * 100}%` }}
@@ -1009,13 +1090,50 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           </div>
 
           {/* Photo filename */}
-          <div className="absolute bottom-20 left-0 right-0 text-center">
+          <div className={cn(
+            "absolute left-0 right-0 text-center transition-all duration-300",
+            showThumbnails ? "bottom-[7.5rem]" : "bottom-20"
+          )}>
             <p className="text-white/70 text-sm">{slideshowPhotos[slideshowIndex]?.filename}</p>
           </div>
 
+          {/* Thumbnail Strip */}
+          {showThumbnails && (
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-black/80 backdrop-blur-sm border-t border-white/10">
+              <div className="h-full flex items-center overflow-x-auto px-4 gap-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                {slideshowPhotos.map((photo, index) => (
+                  <button
+                    key={photo.id}
+                    onClick={() => goToSlide(index)}
+                    className={cn(
+                      "flex-shrink-0 h-16 w-24 rounded-lg overflow-hidden transition-all duration-200",
+                      index === slideshowIndex
+                        ? "ring-2 ring-white ring-offset-2 ring-offset-black opacity-100"
+                        : "opacity-50 hover:opacity-80"
+                    )}
+                  >
+                    <img
+                      src={photo.url}
+                      alt={photo.filename}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Keyboard hints */}
-          <div className="absolute bottom-4 right-4 text-white/40 text-xs hidden sm:block">
-            ← → Navigate • Space Next • P Play/Pause • ESC Exit
+          <div className={cn(
+            "absolute right-4 text-white/40 text-xs hidden sm:block transition-all duration-300",
+            showThumbnails ? "bottom-28" : "bottom-4"
+          )}>
+            ← → Navigate • Space Next • P Play/Pause • T Thumbnails • ESC Exit
+          </div>
+
+          {/* Swipe hint for mobile */}
+          <div className="absolute bottom-28 left-4 text-white/40 text-xs sm:hidden">
+            Swipe to navigate
           </div>
         </div>
       )}
@@ -1166,6 +1284,14 @@ function ChevronRightIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function GridIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 0 0 2 4.25v2.5A2.25 2.25 0 0 0 4.25 9h2.5A2.25 2.25 0 0 0 9 6.75v-2.5A2.25 2.25 0 0 0 6.75 2h-2.5Zm0 9A2.25 2.25 0 0 0 2 13.25v2.5A2.25 2.25 0 0 0 4.25 18h2.5A2.25 2.25 0 0 0 9 15.75v-2.5A2.25 2.25 0 0 0 6.75 11h-2.5Zm9-9A2.25 2.25 0 0 0 11 4.25v2.5A2.25 2.25 0 0 0 13.25 9h2.5A2.25 2.25 0 0 0 18 6.75v-2.5A2.25 2.25 0 0 0 15.75 2h-2.5Zm0 9A2.25 2.25 0 0 0 11 13.25v2.5A2.25 2.25 0 0 0 13.25 18h2.5A2.25 2.25 0 0 0 18 15.75v-2.5A2.25 2.25 0 0 0 15.75 11h-2.5Z" clipRule="evenodd" />
     </svg>
   );
 }

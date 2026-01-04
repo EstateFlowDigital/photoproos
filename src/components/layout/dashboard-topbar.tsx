@@ -103,6 +103,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [navModeState, setNavModeState] = useState<"sidebar" | "top">(navMode);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [topNavOpen, setTopNavOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
 
   const searchRef = useRef<HTMLDivElement>(null);
@@ -111,6 +112,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   const helpRef = useRef<HTMLDivElement>(null);
   const quickActionsRef = useRef<HTMLDivElement>(null);
   const navToggleRef = useRef<HTMLDivElement>(null);
+  const topNavRef = useRef<HTMLDivElement>(null);
 
   // Fetch notifications on mount
   useEffect(() => {
@@ -137,6 +139,12 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
     }
     fetchNotifications();
   }, []);
+
+  // Sync nav mode from parent changes
+  useEffect(() => {
+    setNavModeState(navMode);
+    setTopNavOpen(false);
+  }, [navMode]);
 
   // Debounce search query
   useEffect(() => {
@@ -230,6 +238,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
     setQuickActionsOpen(false);
     setNotificationsOpen(false);
     setHelpOpen(false);
+    setTopNavOpen(false);
   };
 
   // Keyboard shortcuts
@@ -257,6 +266,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         setHelpOpen(false);
         setQuickActionsOpen(false);
         setShortcutsOpen(false);
+        setTopNavOpen(false);
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -271,7 +281,8 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         quickActionsRef.current?.contains(e.target as Node) ||
         notificationsRef.current?.contains(e.target as Node) ||
         helpRef.current?.contains(e.target as Node) ||
-        navToggleRef.current?.contains(e.target as Node)
+        navToggleRef.current?.contains(e.target as Node) ||
+        topNavRef.current?.contains(e.target as Node)
       ) {
         return;
       }
@@ -279,6 +290,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
       setQuickActionsOpen(false);
       setNotificationsOpen(false);
       setHelpOpen(false);
+      setTopNavOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -417,6 +429,48 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
 
       {/* Right side - Actions */}
       <div className="order-1 flex items-center gap-2 sm:order-2">
+        {/* Top nav hamburger (when top mode is active) */}
+        {navModeState === "top" && navLinks.length > 0 && (
+          <div ref={topNavRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setTopNavOpen((prev) => !prev)}
+              className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+            >
+              <MenuIcon className="h-4 w-4" />
+              <span className="hidden md:inline">Menu</span>
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  topNavOpen ? "rotate-180" : "rotate-0"
+                )}
+              />
+            </button>
+            {topNavOpen && (
+              <div className="absolute right-0 top-full mt-2 w-[min(360px,90vw)] max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-xl z-50">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-[var(--primary)] text-white"
+                          : "text-foreground hover:bg-[var(--background-hover)]"
+                      )}
+                      onClick={() => setTopNavOpen(false)}
+                    >
+                      <span className="truncate">{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Quick actions popup */}
         <div ref={quickActionsRef} className="relative">
           <button
@@ -434,7 +488,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
             />
           </button>
           {quickActionsOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[320px] max-w-full rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50">
+            <div className="absolute right-0 top-full mt-2 w-[min(360px,90vw)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50">
               <QuickActions className="grid grid-cols-1 gap-2" actions={QUICK_ACTIONS} />
             </div>
           )}
@@ -448,6 +502,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
               const nextMode = navModeState === "sidebar" ? "top" : "sidebar";
               setNavModeState(nextMode);
               onNavModeChange?.(nextMode);
+              setTopNavOpen(false);
             }}
             className="hidden sm:flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
           >
@@ -475,7 +530,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
 
           {/* Notifications dropdown */}
           {notificationsOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-[min(360px,90vw)] max-h-[70vh] overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50">
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
                 <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                 {unreadCount > 0 && (
@@ -550,7 +605,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
 
           {/* Help dropdown */}
           {helpOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-[min(320px,90vw)] rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
               <div className="py-1">
                 <a
                   href="https://docs.example.com"
@@ -595,29 +650,6 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         </div>
       </div>
 
-      {/* Top navigation bar (optional) */}
-      {navModeState === "top" && navLinks.length > 0 && (
-        <div className="order-3 w-full overflow-x-auto pb-1 -mb-1 flex gap-2 border-t border-[var(--card-border)] pt-2">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-[var(--primary)] text-white"
-                    : "bg-[var(--background)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-                )}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
-      )}
-
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal
         isOpen={shortcutsOpen}
@@ -640,6 +672,14 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+    </svg>
+  );
+}
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M3 6.75A.75.75 0 0 1 3.75 6h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 6.75ZM3 10a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 10Zm0 3.25a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" />
     </svg>
   );
 }

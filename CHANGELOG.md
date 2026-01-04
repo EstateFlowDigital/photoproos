@@ -26,15 +26,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dashboard Appearance Customization**
   - Font customization with 6 font options (System, Inter, Plus Jakarta, DM Sans, Space Grotesk, JetBrains Mono)
   - Google Fonts loading for all custom font options
+  - Text size customization (Small, Medium, Large, Extra Large) for accessibility
   - Content density settings (Compact, Comfortable, Spacious) for adjustable spacing
   - Density-aware CSS variables (`--card-padding`, `--section-gap`, `--item-gap`) applied to dashboard components
+  - **High Contrast mode** for improved visibility and accessibility
   - Quick theme switcher in sidebar for fast accent color changes
   - Full keyboard navigation for theme switcher (arrow keys, Home/End, Escape to close)
-  - Live preview mode for theme/font/density changes before saving
+  - Live preview mode for theme/font/density/size changes before saving
   - Preview banner with reset option for unsaved changes
   - Reset to defaults button to restore all appearance settings
   - Smooth CSS transitions for theme, color, and density changes
   - Respects `prefers-reduced-motion` for users who prefer no animations
+  - **Theme sync across browser tabs** - changing theme in one tab updates all tabs
   - User preferences stored in database and applied via CSS custom properties
 
 - **Invoice PDF Generation**

@@ -4,10 +4,13 @@ export interface AppearancePreferences {
   sidebarCompact: boolean;
   fontFamily: string;
   density: string;
+  fontSize: string;
+  highContrast: boolean;
 }
 
 export type FontFamily = "system" | "inter" | "jakarta" | "dm-sans" | "space-grotesk" | "jetbrains";
 export type Density = "compact" | "comfortable" | "spacious";
+export type FontSize = "small" | "medium" | "large" | "x-large";
 
 export interface FontOption {
   id: FontFamily;
@@ -23,6 +26,40 @@ export interface DensityOption {
   description: string;
   scale: number;
 }
+
+export interface FontSizeOption {
+  id: FontSize;
+  name: string;
+  description: string;
+  scale: number;
+}
+
+export const FONT_SIZE_OPTIONS: FontSizeOption[] = [
+  {
+    id: "small",
+    name: "Small",
+    description: "Smaller text for more content",
+    scale: 0.875,
+  },
+  {
+    id: "medium",
+    name: "Medium",
+    description: "Standard text size (default)",
+    scale: 1,
+  },
+  {
+    id: "large",
+    name: "Large",
+    description: "Larger text for better readability",
+    scale: 1.125,
+  },
+  {
+    id: "x-large",
+    name: "Extra Large",
+    description: "Extra large for accessibility",
+    scale: 1.25,
+  },
+];
 
 export const FONT_OPTIONS: FontOption[] = [
   {
@@ -224,4 +261,6 @@ export const DEFAULT_APPEARANCE: AppearancePreferences = {
   sidebarCompact: false,
   fontFamily: "system",
   density: "comfortable",
+  fontSize: "medium",
+  highContrast: false,
 };

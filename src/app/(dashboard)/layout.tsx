@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
 import { getModulesForIndustries } from "@/lib/constants/industries";
-import { FONT_OPTIONS, DENSITY_OPTIONS } from "@/lib/appearance-types";
+import { FONT_OPTIONS, DENSITY_OPTIONS, FONT_SIZE_OPTIONS } from "@/lib/appearance-types";
 
 export default async function DashboardLayout({
   children,
@@ -59,11 +59,14 @@ export default async function DashboardLayout({
   // Get user's appearance preferences
   const fontOption = FONT_OPTIONS.find((f) => f.id === user.fontFamily) || FONT_OPTIONS[0];
   const densityOption = DENSITY_OPTIONS.find((d) => d.id === user.density) || DENSITY_OPTIONS[1];
+  const fontSizeOption = FONT_SIZE_OPTIONS.find((f) => f.id === user.fontSize) || FONT_SIZE_OPTIONS[1];
   const userAppearance = {
     dashboardAccent: user.dashboardAccent || "#3b82f6",
     sidebarCompact: user.sidebarCompact || false,
     fontFamily: fontOption.fontFamily,
     densityScale: densityOption.scale,
+    fontSizeScale: fontSizeOption.scale,
+    highContrast: user.highContrast || false,
   };
 
   // Check if user has an organization
@@ -158,13 +161,36 @@ export default async function DashboardLayout({
                   --primary-hover: ${userAppearance.dashboardAccent}e6;
                   --font-family: ${userAppearance.fontFamily};
                   --density-scale: ${userAppearance.densityScale};
+                  --font-size-scale: ${userAppearance.fontSizeScale};
                   --card-padding: calc(24px * ${userAppearance.densityScale});
                   --section-gap: calc(24px * ${userAppearance.densityScale});
                   --item-gap: calc(16px * ${userAppearance.densityScale});
                 }
                 body {
                   font-family: var(--font-family);
+                  font-size: calc(16px * ${userAppearance.fontSizeScale});
                 }
+                ${userAppearance.highContrast ? `
+                /* High Contrast Mode */
+                :root, [data-theme="dark"] {
+                  --foreground: #ffffff;
+                  --foreground-secondary: #e5e5e5;
+                  --foreground-muted: #d4d4d4;
+                  --muted-foreground: #d4d4d4;
+                  --card-border: rgba(255, 255, 255, 0.25);
+                  --border: rgba(255, 255, 255, 0.25);
+                  --border-emphasis: rgba(255, 255, 255, 0.4);
+                }
+                [data-theme="light"] {
+                  --foreground: #000000;
+                  --foreground-secondary: #1a1a1a;
+                  --foreground-muted: #333333;
+                  --muted-foreground: #333333;
+                  --card-border: rgba(0, 0, 0, 0.25);
+                  --border: rgba(0, 0, 0, 0.25);
+                  --border-emphasis: rgba(0, 0, 0, 0.4);
+                }
+                ` : ''}
               `,
             }}
           />

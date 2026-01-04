@@ -66,6 +66,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme, mounted]);
 
+  // Sync theme across browser tabs via storage event
+  useEffect(() => {
+    if (!mounted) return;
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === THEME_KEY && event.newValue) {
+        const newTheme = event.newValue as Theme;
+        if (["dark", "light", "system"].includes(newTheme)) {
+          setThemeState(newTheme);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [mounted]);
+
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem(THEME_KEY, newTheme);

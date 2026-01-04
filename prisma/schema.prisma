@@ -636,6 +636,8 @@ model User {
   sidebarCompact    Boolean @default(false) // Compact sidebar mode
   fontFamily        String  @default("system") // Font: system, inter, jakarta, dm-sans, space-grotesk, jetbrains
   density           String  @default("comfortable") // Spacing: compact, comfortable, spacious
+  fontSize          String  @default("medium") // Font size: small, medium, large, x-large
+  highContrast      Boolean @default(false) // High contrast mode for accessibility
 
   // Home base location (overrides org default for travel calculations)
   homeBaseLocationId String?

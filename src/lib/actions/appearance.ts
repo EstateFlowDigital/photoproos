@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, DEFAULT_APPEARANCE, type AppearancePreferences } from "@/lib/appearance-types";
+import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, FONT_SIZE_OPTIONS, DEFAULT_APPEARANCE, type AppearancePreferences } from "@/lib/appearance-types";
 
 /**
  * Get user's appearance preferences
@@ -27,6 +27,8 @@ export async function getAppearancePreferences(): Promise<{
         sidebarCompact: true,
         fontFamily: true,
         density: true,
+        fontSize: true,
+        highContrast: true,
       },
     });
 
@@ -42,6 +44,8 @@ export async function getAppearancePreferences(): Promise<{
         sidebarCompact: user.sidebarCompact,
         fontFamily: user.fontFamily,
         density: user.density,
+        fontSize: user.fontSize,
+        highContrast: user.highContrast,
       },
     };
   } catch (error) {
@@ -94,6 +98,14 @@ export async function updateAppearancePreferences(
       }
     }
 
+    // Validate font size
+    if (preferences.fontSize) {
+      const validFontSizes = FONT_SIZE_OPTIONS.map((f) => f.id as string);
+      if (!validFontSizes.includes(preferences.fontSize)) {
+        return { success: false, error: "Invalid font size option" };
+      }
+    }
+
     await prisma.user.update({
       where: { clerkUserId: userId },
       data: {
@@ -111,6 +123,12 @@ export async function updateAppearancePreferences(
         }),
         ...(preferences.density !== undefined && {
           density: preferences.density,
+        }),
+        ...(preferences.fontSize !== undefined && {
+          fontSize: preferences.fontSize,
+        }),
+        ...(preferences.highContrast !== undefined && {
+          highContrast: preferences.highContrast,
         }),
       },
     });
@@ -162,6 +180,8 @@ export async function resetAppearancePreferences(): Promise<{
         sidebarCompact: DEFAULT_APPEARANCE.sidebarCompact,
         fontFamily: DEFAULT_APPEARANCE.fontFamily,
         density: DEFAULT_APPEARANCE.density,
+        fontSize: DEFAULT_APPEARANCE.fontSize,
+        highContrast: DEFAULT_APPEARANCE.highContrast,
       },
     });
 
