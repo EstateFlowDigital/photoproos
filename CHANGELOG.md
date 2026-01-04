@@ -8,6 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Invoice PDF Generation**
+  - Professional PDF export for invoices using @react-pdf/renderer
+  - Includes line items, totals, business info, client info, and payment link
+  - Download button on invoice detail page (replaces plain text download)
+  - Professional styling with status badges and formatted dates
+
+- **Receipt PDF Generation**
+  - Professional PDF receipts for completed payments
+  - Green-themed design with payment confirmation
+  - Includes transaction ID, client info, and payment details
+  - Download button on payment detail page
+
+- **Contract PDF Export**
+  - PDF export for contracts (signed and unsigned)
+  - Shows contract content, signers, and signature status
+  - Professional formatting with party information
+  - Download button available on all contract detail pages
+
+### Fixed
+- **Missing Email Send Functions**
+  - Added `sendPaymentReminderEmail()` for gallery payment reminders
+  - Added `sendPortfolioWeeklyDigestEmail()` for weekly portfolio analytics digest
+  - Added `sendClientMagicLinkEmail()` for client portal magic link authentication
+  - Fixed email templates not having corresponding send wrapper functions
+
+### Added
 - **Automated Build Error Fixing via GitHub Actions**
   - GitHub Actions workflow (`fix-build-errors.yml`) to auto-fix TypeScript build errors
   - Railway webhook endpoint (`/api/webhooks/railway`) to trigger fixes on deploy failure

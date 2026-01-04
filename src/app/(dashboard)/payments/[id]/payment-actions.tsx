@@ -6,11 +6,10 @@ import { useToast } from "@/components/ui/toast";
 import {
   sendPaymentReminder,
   getPaymentLinkUrl,
-  getPaymentReceiptData,
   exportPaymentsToCSV,
   issueRefund,
 } from "@/lib/actions/payments";
-import { cn } from "@/lib/utils";
+import { generateReceiptPdf } from "@/lib/actions/receipt-pdf";
 import type { PaymentStatus } from "@prisma/client";
 
 interface PaymentActionsProps {
@@ -54,58 +53,36 @@ export function PaymentActions({
     }).format(date);
   };
 
-  // Download Receipt as text file (could be PDF with a library)
+  // Download Receipt as PDF
   const handleDownloadReceipt = async () => {
     setIsLoading(true);
     try {
-      const result = await getPaymentReceiptData(paymentId);
-      if (!result.success || !result.data) {
-        showToast(result.error || "Failed to get receipt data", "error");
+      const result = await generateReceiptPdf(paymentId);
+
+      if (!result.success || !result.pdfBuffer) {
+        showToast(result.error || "Failed to generate receipt PDF", "error");
         return;
       }
 
-      const data = result.data;
-      const receiptContent = `
-=====================================
-         PAYMENT RECEIPT
-=====================================
+      // Convert base64 to blob and download
+      const byteCharacters = atob(result.pdfBuffer);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
 
-Receipt Number: ${data.receiptNumber}
-Date: ${data.paidAt ? formatDate(new Date(data.paidAt)) : "N/A"}
-
-FROM:
-${data.organization}
-
-TO:
-${data.client.name}
-${data.client.email}
-${data.client.company ? `Company: ${data.client.company}` : ""}
-
--------------------------------------
-PAYMENT DETAILS
--------------------------------------
-Description: ${data.description}
-Amount: ${formatCurrency(data.amount)}
-
-${data.stripePaymentIntentId ? `Transaction ID: ${data.stripePaymentIntentId}` : ""}
-
-=====================================
-      Thank you for your payment!
-=====================================
-`.trim();
-
-      // Create and download the file
-      const blob = new Blob([receiptContent], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `receipt-${data.receiptNumber}.txt`;
+      a.download = result.filename || `receipt-${paymentId.slice(0, 8)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showToast("Receipt downloaded", "success");
+      showToast("Receipt PDF downloaded", "success");
     } catch {
       showToast("Failed to download receipt", "error");
     } finally {
@@ -397,53 +374,32 @@ export function PaymentSidebarActions({
   const handleDownloadReceipt = async () => {
     setIsLoading(true);
     try {
-      const result = await getPaymentReceiptData(paymentId);
-      if (!result.success || !result.data) {
-        showToast(result.error || "Failed to get receipt data", "error");
+      const result = await generateReceiptPdf(paymentId);
+
+      if (!result.success || !result.pdfBuffer) {
+        showToast(result.error || "Failed to generate receipt PDF", "error");
         return;
       }
 
-      const data = result.data;
-      const receiptContent = `
-=====================================
-         PAYMENT RECEIPT
-=====================================
+      // Convert base64 to blob and download
+      const byteCharacters = atob(result.pdfBuffer);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
 
-Receipt Number: ${data.receiptNumber}
-Date: ${data.paidAt ? formatDate(new Date(data.paidAt)) : "N/A"}
-
-FROM:
-${data.organization}
-
-TO:
-${data.client.name}
-${data.client.email}
-${data.client.company ? `Company: ${data.client.company}` : ""}
-
--------------------------------------
-PAYMENT DETAILS
--------------------------------------
-Description: ${data.description}
-Amount: ${formatCurrency(data.amount)}
-
-${data.stripePaymentIntentId ? `Transaction ID: ${data.stripePaymentIntentId}` : ""}
-
-=====================================
-      Thank you for your payment!
-=====================================
-`.trim();
-
-      const blob = new Blob([receiptContent], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `receipt-${data.receiptNumber}.txt`;
+      a.download = result.filename || `receipt-${paymentId.slice(0, 8)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showToast("Receipt downloaded", "success");
+      showToast("Receipt PDF downloaded", "success");
     } catch {
       showToast("Failed to download receipt", "error");
     } finally {
@@ -699,53 +655,32 @@ export function PaymentHeaderActions({
   const handleDownloadReceipt = async () => {
     setIsLoading(true);
     try {
-      const result = await getPaymentReceiptData(paymentId);
-      if (!result.success || !result.data) {
-        showToast(result.error || "Failed to get receipt data", "error");
+      const result = await generateReceiptPdf(paymentId);
+
+      if (!result.success || !result.pdfBuffer) {
+        showToast(result.error || "Failed to generate receipt PDF", "error");
         return;
       }
 
-      const data = result.data;
-      const receiptContent = `
-=====================================
-         PAYMENT RECEIPT
-=====================================
+      // Convert base64 to blob and download
+      const byteCharacters = atob(result.pdfBuffer);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
 
-Receipt Number: ${data.receiptNumber}
-Date: ${data.paidAt ? formatDate(new Date(data.paidAt)) : "N/A"}
-
-FROM:
-${data.organization}
-
-TO:
-${data.client.name}
-${data.client.email}
-${data.client.company ? `Company: ${data.client.company}` : ""}
-
--------------------------------------
-PAYMENT DETAILS
--------------------------------------
-Description: ${data.description}
-Amount: ${formatCurrency(data.amount)}
-
-${data.stripePaymentIntentId ? `Transaction ID: ${data.stripePaymentIntentId}` : ""}
-
-=====================================
-      Thank you for your payment!
-=====================================
-`.trim();
-
-      const blob = new Blob([receiptContent], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `receipt-${data.receiptNumber}.txt`;
+      a.download = result.filename || `receipt-${paymentId.slice(0, 8)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showToast("Receipt downloaded", "success");
+      showToast("Receipt PDF downloaded", "success");
     } catch {
       showToast("Failed to download receipt", "error");
     } finally {

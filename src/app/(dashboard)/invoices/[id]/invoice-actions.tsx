@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { updateInvoiceStatus, deleteInvoice } from "@/lib/actions/invoices";
+import { generateInvoicePdf } from "@/lib/actions/invoice-pdf";
 import type { InvoiceStatus } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -72,22 +73,42 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
     setShowMenu(false);
   };
 
-  const handleDownload = () => {
-    // Generate a simple text invoice for download
-    const invoiceText = `INVOICE\n${"=".repeat(40)}\n\nInvoice ID: ${invoiceId}\nStatus: ${currentStatus}\n\nView full invoice at:\n${window.location.href}\n`;
-
-    const blob = new Blob([invoiceText], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `invoice-${invoiceId.slice(0, 8)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    showToast("Invoice downloaded", "success");
+  const handleDownload = async () => {
+    setIsLoading(true);
     setShowMenu(false);
+
+    try {
+      const result = await generateInvoicePdf(invoiceId);
+
+      if (!result.success || !result.pdfBuffer) {
+        showToast(result.error || "Failed to generate PDF", "error");
+        return;
+      }
+
+      // Convert base64 to blob and download
+      const byteCharacters = atob(result.pdfBuffer);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = result.filename || `invoice-${invoiceId.slice(0, 8)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast("Invoice PDF downloaded", "success");
+    } catch {
+      showToast("Failed to download invoice", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -168,10 +189,11 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
 
               <button
                 onClick={handleDownload}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                disabled={isLoading}
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50"
               >
                 <DownloadIcon className="h-4 w-4" />
-                Download Invoice
+                {isLoading ? "Generating PDF..." : "Download PDF"}
               </button>
 
               <button

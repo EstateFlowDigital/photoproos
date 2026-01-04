@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getContract, deleteContract, sendContract } from "@/lib/actions/contracts";
 import { cancelContract } from "@/lib/actions/contract-signing";
+import { ContractDownloadButton } from "./contract-download-button";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { ContractStatus } from "@prisma/client";
@@ -395,6 +396,16 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Download/Export Actions - Available for all contracts */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+            <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
+              <h2 className="font-semibold text-foreground">Export</h2>
+            </div>
+            <div className="p-6 space-y-3">
+              <ContractDownloadButton contractId={id} />
             </div>
           </div>
 
