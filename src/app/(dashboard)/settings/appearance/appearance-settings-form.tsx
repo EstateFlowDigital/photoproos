@@ -1,22 +1,32 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   updateAppearancePreferences,
   applyThemePreset,
 } from "@/lib/actions/appearance";
-import type { AppearancePreferences, ThemePreset } from "@/lib/appearance-types";
+import type { AppearancePreferences, ThemePreset, FontOption, DensityOption } from "@/lib/appearance-types";
 import { useToast } from "@/components/ui/toast";
 
 interface AppearanceSettingsFormProps {
   initialPreferences: AppearancePreferences;
   themePresets: ThemePreset[];
+  fontOptions: FontOption[];
+  densityOptions: DensityOption[];
+}
+
+interface PreviewState {
+  accentColor: string | null;
+  fontFamily: string | null;
+  density: string | null;
 }
 
 export function AppearanceSettingsForm({
   initialPreferences,
   themePresets,
+  fontOptions,
+  densityOptions,
 }: AppearanceSettingsFormProps) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -27,7 +37,74 @@ export function AppearanceSettingsForm({
       : "#3b82f6"
   );
 
-  const handleThemeSelect = (presetId: string) => {
+  // Preview state - separate from saved preferences
+  const [preview, setPreview] = useState<PreviewState>({
+    accentColor: null,
+    fontFamily: null,
+    density: null,
+  });
+
+  const hasPreviewChanges = preview.accentColor !== null || preview.fontFamily !== null || preview.density !== null;
+
+  // Apply preview styles dynamically
+  useEffect(() => {
+    const styleId = "appearance-preview-styles";
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+
+    const accentColor = preview.accentColor || preferences.dashboardAccent;
+    const fontOption = fontOptions.find((f) => f.id === (preview.fontFamily || preferences.fontFamily));
+    const densityOption = densityOptions.find((d) => d.id === (preview.density || preferences.density));
+    const fontFamily = fontOption?.fontFamily || fontOptions[0].fontFamily;
+    const densityScale = densityOption?.scale || 1;
+
+    styleEl.textContent = `
+      :root, [data-theme="dark"], [data-theme="light"] {
+        --primary: ${accentColor} !important;
+        --primary-hover: ${accentColor}e6 !important;
+        --font-family: ${fontFamily} !important;
+        --density-scale: ${densityScale} !important;
+        --card-padding: calc(24px * ${densityScale}) !important;
+        --section-gap: calc(24px * ${densityScale}) !important;
+        --item-gap: calc(16px * ${densityScale}) !important;
+      }
+      body {
+        font-family: var(--font-family) !important;
+      }
+    `;
+
+    return () => {
+      // Clean up on unmount
+    };
+  }, [preview, preferences, fontOptions, densityOptions]);
+
+  // Reset preview on component unmount or navigation
+  useEffect(() => {
+    return () => {
+      const styleEl = document.getElementById("appearance-preview-styles");
+      if (styleEl) {
+        styleEl.remove();
+      }
+    };
+  }, []);
+
+  const resetPreview = useCallback(() => {
+    setPreview({ accentColor: null, fontFamily: null, density: null });
+    showToast("Preview reset", "info");
+  }, [showToast]);
+
+  const handleThemePreview = (presetId: string) => {
+    const preset = themePresets.find((p) => p.id === presetId);
+    if (!preset) return;
+    setPreview((prev) => ({ ...prev, accentColor: preset.accent }));
+  };
+
+  const handleThemeSave = (presetId: string) => {
     const preset = themePresets.find((p) => p.id === presetId);
     if (!preset) return;
 
@@ -39,20 +116,20 @@ export function AppearanceSettingsForm({
           dashboardTheme: presetId,
           dashboardAccent: preset.accent,
         });
-        showToast(`Theme changed to ${preset.name}`, "success");
-        // Trigger a re-render of the page to apply the new theme
-        window.location.reload();
+        setPreview((prev) => ({ ...prev, accentColor: null }));
+        showToast(`Theme saved: ${preset.name}`, "success");
       } else {
-        showToast(result.error || "Failed to update theme", "error");
+        showToast(result.error || "Failed to save theme", "error");
       }
     });
   };
 
-  const handleCustomColorChange = (color: string) => {
+  const handleCustomColorPreview = (color: string) => {
     setCustomColor(color);
+    setPreview((prev) => ({ ...prev, accentColor: color }));
   };
 
-  const handleCustomColorApply = () => {
+  const handleCustomColorSave = () => {
     startTransition(async () => {
       const result = await updateAppearancePreferences({
         dashboardTheme: "custom",
@@ -64,10 +141,10 @@ export function AppearanceSettingsForm({
           dashboardTheme: "custom",
           dashboardAccent: customColor,
         });
-        showToast("Custom color applied", "success");
-        window.location.reload();
+        setPreview((prev) => ({ ...prev, accentColor: null }));
+        showToast("Custom color saved", "success");
       } else {
-        showToast(result.error || "Failed to apply custom color", "error");
+        showToast(result.error || "Failed to save custom color", "error");
       }
     });
   };
@@ -90,38 +167,115 @@ export function AppearanceSettingsForm({
     });
   };
 
+  const handleFontPreview = (fontId: string) => {
+    setPreview((prev) => ({ ...prev, fontFamily: fontId }));
+  };
+
+  const handleFontSave = (fontId: string) => {
+    const font = fontOptions.find((f) => f.id === fontId);
+    if (!font) return;
+
+    startTransition(async () => {
+      const result = await updateAppearancePreferences({
+        fontFamily: fontId,
+      });
+      if (result.success) {
+        setPreferences({ ...preferences, fontFamily: fontId });
+        setPreview((prev) => ({ ...prev, fontFamily: null }));
+        showToast(`Font saved: ${font.name}`, "success");
+      } else {
+        showToast(result.error || "Failed to save font", "error");
+      }
+    });
+  };
+
+  const handleDensityPreview = (densityId: string) => {
+    setPreview((prev) => ({ ...prev, density: densityId }));
+  };
+
+  const handleDensitySave = (densityId: string) => {
+    const density = densityOptions.find((d) => d.id === densityId);
+    if (!density) return;
+
+    startTransition(async () => {
+      const result = await updateAppearancePreferences({
+        density: densityId,
+      });
+      if (result.success) {
+        setPreferences({ ...preferences, density: densityId });
+        setPreview((prev) => ({ ...prev, density: null }));
+        showToast(`Density saved: ${density.name}`, "success");
+      } else {
+        showToast(result.error || "Failed to save density", "error");
+      }
+    });
+  };
+
+  // Get current preview values
+  const currentAccentColor = preview.accentColor || preferences.dashboardAccent;
+  const currentFontId = preview.fontFamily || preferences.fontFamily;
+  const currentDensityId = preview.density || preferences.density;
+
   return (
     <div className="space-y-8">
+      {/* Preview Banner */}
+      {hasPreviewChanges && (
+        <div className="sticky top-0 z-50 flex items-center justify-between gap-4 rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/10 p-4">
+          <div className="flex items-center gap-3">
+            <EyeIcon className="h-5 w-5 text-[var(--primary)]" />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Preview Mode
+              </p>
+              <p className="text-xs text-foreground-muted">
+                You&apos;re viewing unsaved changes. Click save on any section to keep changes.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={resetPreview}
+            className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground hover:bg-[var(--background-hover)]"
+          >
+            Reset Preview
+          </button>
+        </div>
+      )}
+
       {/* Theme Presets */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-2">
           Color Themes
         </h2>
         <p className="text-sm text-foreground-muted mb-6">
-          Choose a color theme for your dashboard. This changes the accent color
-          used for buttons, links, and highlights.
+          Click to preview, then click &quot;Save&quot; to apply permanently.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {themePresets
             .filter((preset) => preset.id !== "custom")
             .map((preset) => {
-              const isSelected = preferences.dashboardTheme === preset.id;
+              const isSaved = preferences.dashboardTheme === preset.id;
+              const isPreviewing = preview.accentColor === preset.accent;
               return (
-                <button
+                <div
                   key={preset.id}
-                  type="button"
-                  onClick={() => handleThemeSelect(preset.id)}
-                  disabled={isPending}
                   className={cn(
                     "group relative flex flex-col rounded-xl border p-4 text-left transition-all",
-                    isSelected
+                    isPreviewing
                       ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-2 ring-[var(--primary)]/20"
-                      : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:shadow-lg"
+                      : isSaved
+                        ? "border-[var(--success)] bg-[var(--success)]/5"
+                        : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:shadow-lg"
                   )}
                 >
                   {/* Color Preview */}
-                  <div className="flex items-center gap-3 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => handleThemePreview(preset.id)}
+                    disabled={isPending}
+                    className="flex items-center gap-3 mb-3"
+                  >
                     <div
                       className="h-10 w-10 rounded-lg shadow-inner"
                       style={{ backgroundColor: preset.accent }}
@@ -130,7 +284,7 @@ export function AppearanceSettingsForm({
                       className="h-10 w-10 rounded-lg opacity-60"
                       style={{ backgroundColor: preset.preview.secondary }}
                     />
-                  </div>
+                  </button>
 
                   {/* Name and Description */}
                   <h3 className="font-medium text-foreground">{preset.name}</h3>
@@ -138,13 +292,30 @@ export function AppearanceSettingsForm({
                     {preset.description}
                   </p>
 
-                  {/* Selected Indicator */}
-                  {isSelected && (
+                  {/* Status Indicator */}
+                  {isSaved && !isPreviewing && (
                     <div className="absolute top-3 right-3">
-                      <CheckIcon className="h-5 w-5 text-[var(--primary)]" />
+                      <span className="text-xs font-medium text-[var(--success)]">Saved</span>
                     </div>
                   )}
-                </button>
+                  {isPreviewing && (
+                    <div className="absolute top-3 right-3">
+                      <span className="text-xs font-medium text-[var(--primary)]">Previewing</span>
+                    </div>
+                  )}
+
+                  {/* Save Button */}
+                  {isPreviewing && !isSaved && (
+                    <button
+                      type="button"
+                      onClick={() => handleThemeSave(preset.id)}
+                      disabled={isPending}
+                      className="mt-3 w-full rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50"
+                    >
+                      {isPending ? "Saving..." : "Save Theme"}
+                    </button>
+                  )}
+                </div>
               );
             })}
         </div>
@@ -156,7 +327,7 @@ export function AppearanceSettingsForm({
           Custom Color
         </h2>
         <p className="text-sm text-foreground-muted mb-6">
-          Pick any color to use as your dashboard accent
+          Pick any color to use as your dashboard accent. Changes preview live.
         </p>
 
         <div className="flex flex-wrap items-end gap-4">
@@ -169,7 +340,7 @@ export function AppearanceSettingsForm({
                 <input
                   type="color"
                   value={customColor}
-                  onChange={(e) => handleCustomColorChange(e.target.value)}
+                  onChange={(e) => handleCustomColorPreview(e.target.value)}
                   className="absolute inset-0 opacity-0 cursor-pointer w-14 h-10"
                 />
                 <div
@@ -180,7 +351,7 @@ export function AppearanceSettingsForm({
               <input
                 type="text"
                 value={customColor}
-                onChange={(e) => handleCustomColorChange(e.target.value)}
+                onChange={(e) => handleCustomColorPreview(e.target.value)}
                 placeholder="#3b82f6"
                 className="w-28 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground uppercase"
               />
@@ -189,7 +360,7 @@ export function AppearanceSettingsForm({
 
           <button
             type="button"
-            onClick={handleCustomColorApply}
+            onClick={handleCustomColorSave}
             disabled={isPending}
             className={cn(
               "rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors",
@@ -197,7 +368,7 @@ export function AppearanceSettingsForm({
             )}
             style={{ backgroundColor: customColor }}
           >
-            {isPending ? "Applying..." : "Apply Custom Color"}
+            {isPending ? "Saving..." : "Save Custom Color"}
           </button>
         </div>
 
@@ -242,6 +413,162 @@ export function AppearanceSettingsForm({
               Link Text
             </a>
           </div>
+        </div>
+      </div>
+
+      {/* Font Selection */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">
+          Typography
+        </h2>
+        <p className="text-sm text-foreground-muted mb-6">
+          Click to preview, then save to apply permanently.
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {fontOptions.map((font) => {
+            const isSaved = preferences.fontFamily === font.id;
+            const isPreviewing = preview.fontFamily === font.id;
+            return (
+              <div
+                key={font.id}
+                className={cn(
+                  "group relative flex flex-col rounded-xl border p-4 text-left transition-all",
+                  isPreviewing
+                    ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-2 ring-[var(--primary)]/20"
+                    : isSaved
+                      ? "border-[var(--success)] bg-[var(--success)]/5"
+                      : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:shadow-lg"
+                )}
+              >
+                {/* Font Preview */}
+                <button
+                  type="button"
+                  onClick={() => handleFontPreview(font.id)}
+                  disabled={isPending}
+                  className="text-2xl mb-2 text-foreground text-left"
+                  style={{ fontFamily: font.fontFamily }}
+                >
+                  Aa
+                </button>
+
+                {/* Name and Description */}
+                <h3 className="font-medium text-foreground">{font.name}</h3>
+                <p className="text-xs text-foreground-muted mt-1">
+                  {font.description}
+                </p>
+
+                {/* Status Indicator */}
+                {isSaved && !isPreviewing && (
+                  <div className="absolute top-3 right-3">
+                    <span className="text-xs font-medium text-[var(--success)]">Saved</span>
+                  </div>
+                )}
+                {isPreviewing && (
+                  <div className="absolute top-3 right-3">
+                    <span className="text-xs font-medium text-[var(--primary)]">Previewing</span>
+                  </div>
+                )}
+
+                {/* Save Button */}
+                {isPreviewing && !isSaved && (
+                  <button
+                    type="button"
+                    onClick={() => handleFontSave(font.id)}
+                    disabled={isPending}
+                    className="mt-3 w-full rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50"
+                  >
+                    {isPending ? "Saving..." : "Save Font"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Density/Spacing */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">
+          Content Density
+        </h2>
+        <p className="text-sm text-foreground-muted mb-6">
+          Click to preview spacing changes.
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          {densityOptions.map((density) => {
+            const isSaved = preferences.density === density.id;
+            const isPreviewing = preview.density === density.id;
+            return (
+              <div
+                key={density.id}
+                className={cn(
+                  "group relative flex flex-col rounded-xl border p-4 text-left transition-all",
+                  isPreviewing
+                    ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-2 ring-[var(--primary)]/20"
+                    : isSaved
+                      ? "border-[var(--success)] bg-[var(--success)]/5"
+                      : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:shadow-lg"
+                )}
+              >
+                {/* Density Visual */}
+                <button
+                  type="button"
+                  onClick={() => handleDensityPreview(density.id)}
+                  disabled={isPending}
+                  className="mb-3 flex gap-1"
+                >
+                  {density.id === "compact" && (
+                    <>
+                      <div className="h-2 w-full rounded bg-[var(--foreground-muted)]" />
+                      <div className="h-2 w-full rounded bg-[var(--foreground-muted)]" />
+                      <div className="h-2 w-full rounded bg-[var(--foreground-muted)]" />
+                    </>
+                  )}
+                  {density.id === "comfortable" && (
+                    <>
+                      <div className="h-3 w-full rounded bg-[var(--foreground-muted)]" />
+                      <div className="h-3 w-full rounded bg-[var(--foreground-muted)]" />
+                    </>
+                  )}
+                  {density.id === "spacious" && (
+                    <div className="h-4 w-full rounded bg-[var(--foreground-muted)]" />
+                  )}
+                </button>
+
+                {/* Name and Description */}
+                <h3 className="font-medium text-foreground">{density.name}</h3>
+                <p className="text-xs text-foreground-muted mt-1">
+                  {density.description}
+                </p>
+
+                {/* Status Indicator */}
+                {isSaved && !isPreviewing && (
+                  <div className="absolute top-3 right-3">
+                    <span className="text-xs font-medium text-[var(--success)]">Saved</span>
+                  </div>
+                )}
+                {isPreviewing && (
+                  <div className="absolute top-3 right-3">
+                    <span className="text-xs font-medium text-[var(--primary)]">Previewing</span>
+                  </div>
+                )}
+
+                {/* Save Button */}
+                {isPreviewing && !isSaved && (
+                  <button
+                    type="button"
+                    onClick={() => handleDensitySave(density.id)}
+                    disabled={isPending}
+                    className="mt-3 w-full rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50"
+                  >
+                    {isPending ? "Saving..." : "Save Density"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -337,6 +664,24 @@ function InfoIcon({ className }: { className?: string }) {
       <path
         fillRule="evenodd"
         d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      <path
+        fillRule="evenodd"
+        d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
         clipRule="evenodd"
       />
     </svg>

@@ -1543,6 +1543,17 @@ html[data-scroll-theme="light"] {
     min-width: 0;
   }
 
+  /* Container-query shell for responsive navigation */
+  .shell-container {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 1180px) {
+    .shell-sidebar {
+      display: none;
+    }
+  }
+
   .table-scroll {
     @apply overflow-x-auto;
   }

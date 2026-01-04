@@ -2,7 +2,93 @@ export interface AppearancePreferences {
   dashboardTheme: string;
   dashboardAccent: string;
   sidebarCompact: boolean;
+  fontFamily: string;
+  density: string;
 }
+
+export type FontFamily = "system" | "inter" | "jakarta" | "dm-sans" | "space-grotesk" | "jetbrains";
+export type Density = "compact" | "comfortable" | "spacious";
+
+export interface FontOption {
+  id: FontFamily;
+  name: string;
+  description: string;
+  fontFamily: string;
+  preview: string;
+}
+
+export interface DensityOption {
+  id: Density;
+  name: string;
+  description: string;
+  scale: number;
+}
+
+export const FONT_OPTIONS: FontOption[] = [
+  {
+    id: "system",
+    name: "System",
+    description: "Uses your device's default font",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    preview: "The quick brown fox",
+  },
+  {
+    id: "inter",
+    name: "Inter",
+    description: "Clean and modern, great for interfaces",
+    fontFamily: "'Inter', sans-serif",
+    preview: "The quick brown fox",
+  },
+  {
+    id: "jakarta",
+    name: "Plus Jakarta",
+    description: "Friendly and approachable",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    preview: "The quick brown fox",
+  },
+  {
+    id: "dm-sans",
+    name: "DM Sans",
+    description: "Geometric and contemporary",
+    fontFamily: "'DM Sans', sans-serif",
+    preview: "The quick brown fox",
+  },
+  {
+    id: "space-grotesk",
+    name: "Space Grotesk",
+    description: "Distinctive and technical",
+    fontFamily: "'Space Grotesk', sans-serif",
+    preview: "The quick brown fox",
+  },
+  {
+    id: "jetbrains",
+    name: "JetBrains Mono",
+    description: "Monospace for a developer feel",
+    fontFamily: "'JetBrains Mono', monospace",
+    preview: "The quick brown fox",
+  },
+];
+
+export const DENSITY_OPTIONS: DensityOption[] = [
+  {
+    id: "compact",
+    name: "Compact",
+    description: "Smaller spacing, more content visible",
+    scale: 0.85,
+  },
+  {
+    id: "comfortable",
+    name: "Comfortable",
+    description: "Balanced spacing (default)",
+    scale: 1,
+  },
+  {
+    id: "spacious",
+    name: "Spacious",
+    description: "More breathing room",
+    scale: 1.15,
+  },
+];
 
 export interface ThemePreset {
   id: string;

@@ -217,6 +217,9 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
     setSearchOpen(false);
     setSearchQuery("");
     setSearchResults([]);
+    setQuickActionsOpen(false);
+    setNotificationsOpen(false);
+    setHelpOpen(false);
   };
 
   // Keyboard shortcuts
@@ -242,6 +245,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
         setSearchOpen(false);
         setNotificationsOpen(false);
         setHelpOpen(false);
+        setQuickActionsOpen(false);
         setShortcutsOpen(false);
       }
     };

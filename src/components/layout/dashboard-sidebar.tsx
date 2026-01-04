@@ -8,6 +8,7 @@ import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { QuickThemeSwitcher } from "@/components/ui/quick-theme-switcher";
 
 interface NavItem {
   id: string;
@@ -271,6 +272,7 @@ export function DashboardSidebar({
             <div className="flex-1 min-w-0 hidden sm:block">
               <p className="truncate text-xs text-foreground-muted">Signed in</p>
             </div>
+            <QuickThemeSwitcher />
             <ThemeToggle />
           </div>
 

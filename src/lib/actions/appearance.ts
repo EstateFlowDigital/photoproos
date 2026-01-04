@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { THEME_PRESETS, type AppearancePreferences } from "@/lib/appearance-types";
+import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, type AppearancePreferences } from "@/lib/appearance-types";
 
 /**
  * Get user's appearance preferences
@@ -25,6 +25,8 @@ export async function getAppearancePreferences(): Promise<{
         dashboardTheme: true,
         dashboardAccent: true,
         sidebarCompact: true,
+        fontFamily: true,
+        density: true,
       },
     });
 
@@ -38,6 +40,8 @@ export async function getAppearancePreferences(): Promise<{
         dashboardTheme: user.dashboardTheme,
         dashboardAccent: user.dashboardAccent,
         sidebarCompact: user.sidebarCompact,
+        fontFamily: user.fontFamily,
+        density: user.density,
       },
     };
   } catch (error) {
@@ -74,6 +78,22 @@ export async function updateAppearancePreferences(
       }
     }
 
+    // Validate font family
+    if (preferences.fontFamily) {
+      const validFonts = FONT_OPTIONS.map((f) => f.id as string);
+      if (!validFonts.includes(preferences.fontFamily)) {
+        return { success: false, error: "Invalid font family" };
+      }
+    }
+
+    // Validate density
+    if (preferences.density) {
+      const validDensities = DENSITY_OPTIONS.map((d) => d.id as string);
+      if (!validDensities.includes(preferences.density)) {
+        return { success: false, error: "Invalid density option" };
+      }
+    }
+
     await prisma.user.update({
       where: { clerkUserId: userId },
       data: {
@@ -85,6 +105,12 @@ export async function updateAppearancePreferences(
         }),
         ...(preferences.sidebarCompact !== undefined && {
           sidebarCompact: preferences.sidebarCompact,
+        }),
+        ...(preferences.fontFamily !== undefined && {
+          fontFamily: preferences.fontFamily,
+        }),
+        ...(preferences.density !== undefined && {
+          density: preferences.density,
         }),
       },
     });

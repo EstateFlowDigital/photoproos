@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
 import { getModulesForIndustries } from "@/lib/constants/industries";
+import { FONT_OPTIONS, DENSITY_OPTIONS } from "@/lib/appearance-types";
 
 export default async function DashboardLayout({
   children,
@@ -56,9 +57,13 @@ export default async function DashboardLayout({
   });
 
   // Get user's appearance preferences
+  const fontOption = FONT_OPTIONS.find((f) => f.id === user.fontFamily) || FONT_OPTIONS[0];
+  const densityOption = DENSITY_OPTIONS.find((d) => d.id === user.density) || DENSITY_OPTIONS[1];
   const userAppearance = {
     dashboardAccent: user.dashboardAccent || "#3b82f6",
     sidebarCompact: user.sidebarCompact || false,
+    fontFamily: fontOption.fontFamily,
+    densityScale: densityOption.scale,
   };
 
   // Check if user has an organization
@@ -144,13 +149,21 @@ export default async function DashboardLayout({
       <TourProvider organizationId={organization.id}>
         <CommandPaletteProvider>
           <ReferralProcessor />
-          {/* Apply user's custom accent color */}
+          {/* Apply user's appearance preferences */}
           <style
             dangerouslySetInnerHTML={{
               __html: `
                 :root, [data-theme="dark"], [data-theme="light"] {
                   --primary: ${userAppearance.dashboardAccent};
                   --primary-hover: ${userAppearance.dashboardAccent}e6;
+                  --font-family: ${userAppearance.fontFamily};
+                  --density-scale: ${userAppearance.densityScale};
+                  --card-padding: calc(24px * ${userAppearance.densityScale});
+                  --section-gap: calc(24px * ${userAppearance.densityScale});
+                  --item-gap: calc(16px * ${userAppearance.densityScale});
+                }
+                body {
+                  font-family: var(--font-family);
                 }
               `,
             }}

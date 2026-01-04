@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Dashboard Appearance Customization**
+  - Font customization with 6 font options (System, Inter, Plus Jakarta, DM Sans, Space Grotesk, JetBrains Mono)
+  - Content density settings (Compact, Comfortable, Spacious) for adjustable spacing
+  - Quick theme switcher in sidebar for fast accent color changes
+  - Live preview mode for theme/font/density changes before saving
+  - Preview banner with reset option for unsaved changes
+  - User preferences stored in database and applied via CSS custom properties
+
 - **Invoice PDF Generation**
   - Professional PDF export for invoices using @react-pdf/renderer
   - Includes line items, totals, business info, client info, and payment link

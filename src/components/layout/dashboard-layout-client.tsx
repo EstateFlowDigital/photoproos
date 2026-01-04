@@ -46,9 +46,9 @@ export function DashboardLayoutClient({
 
   return (
     <ResponsiveTester>
-      <div className="flex h-screen bg-[var(--background)]">
+      <div className="shell-container flex h-screen bg-[var(--background)]">
         {/* Desktop Sidebar - hidden on mobile */}
-        <div className="hidden lg:block">
+        <div className="shell-sidebar hidden lg:block">
           <DashboardSidebar
             enabledModules={enabledModules}
             industries={industries}
@@ -66,11 +66,11 @@ export function DashboardLayoutClient({
         />
 
         {/* Main content area */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {/* Topbar with mobile menu button */}
           <header className="flex h-16 items-center border-b border-[var(--card-border)] bg-[var(--card)] px-4 lg:px-6">
             {/* Mobile menu button */}
-            <MobileMenuButton onClick={handleOpenMenu} className="mr-3" />
+            <MobileMenuButton onClick={handleOpenMenu} className="mr-3 shell-mobile-trigger" />
 
             {/* Desktop topbar content */}
             <div className="flex-1 min-w-0">

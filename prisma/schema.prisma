@@ -634,6 +634,8 @@ model User {
   dashboardTheme    String  @default("default") // Theme preset: default, midnight, forest, sunset, ocean, lavender
   dashboardAccent   String  @default("#3b82f6") // Custom accent color
   sidebarCompact    Boolean @default(false) // Compact sidebar mode
+  fontFamily        String  @default("system") // Font: system, inter, jakarta, dm-sans, space-grotesk, jetbrains
+  density           String  @default("comfortable") // Spacing: compact, comfortable, spacious
 
   // Home base location (overrides org default for travel calculations)
   homeBaseLocationId String?
