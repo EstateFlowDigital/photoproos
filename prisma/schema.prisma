@@ -1357,6 +1357,12 @@ model Invoice {
   // Phase 4: Referral Program back-reference
   referrals Referral[] @relation("ReferralInvoice")
 
+  // Payment Reminders
+  remindersSent    Int       @default(0)
+  lastReminderAt   DateTime?
+  nextReminderAt   DateTime?
+  autoReminders    Boolean   @default(true) // Enable/disable auto reminders
+
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
   @@index([clientId])

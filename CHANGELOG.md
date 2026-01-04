@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Late Payment Reminders System**
+  - Automated invoice payment reminders for overdue invoices
+  - Email template with escalating urgency messaging (1-7 days, 7-14 days, 14+ days)
+  - Reminder tracking: count, last sent, next scheduled
+  - Auto-reminders every 3 days (max 5 reminders per invoice)
+  - Manual "Send Reminder" action on invoice detail page
+  - Auto-update invoice status to "overdue" when past due
+  - Toggle auto-reminders per invoice
+  - Cron endpoint at `/api/cron/invoice-reminders` for scheduled execution
+  - Database fields: `remindersSent`, `lastReminderAt`, `nextReminderAt`, `autoReminders`
+
+- **Client Merge System**
+  - Duplicate detection by email (high confidence), phone (high), and name (medium)
+  - Merge preview showing records to be transferred
+  - Full record transfer: projects, bookings, invoices, contracts, tasks, orders, questionnaires, payments, communications
+  - Option to preserve secondary email/phone in notes
+  - Automatic metrics aggregation (revenue, project count)
+  - Client merge UI at `/clients/merge`
+
+- **CSV Client Import**
+  - Bulk import clients from CSV files
+  - Drag-and-drop file upload
+  - Smart column header detection (email, fullName, company, phone, etc.)
+  - Preview before import with validation
+  - Duplicate detection and skip/update options
+  - Download template CSV
+  - Import progress tracking
+  - Client import UI at `/clients/import`
+
 - **Developer Responsive Tester**
   - Overlay component for testing responsive layouts
   - Only visible when logged in as developer email

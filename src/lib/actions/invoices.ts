@@ -6,6 +6,10 @@ import type { LineItemType, InvoiceStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
+import { Resend } from "resend";
+import { InvoiceReminderEmail } from "@/emails/invoice-reminder";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -588,5 +592,367 @@ export async function calculateTravelFeeForInvoice(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to calculate travel fee" };
+  }
+}
+
+// ============================================================================
+// INVOICE REMINDERS
+// ============================================================================
+
+/**
+ * Send a payment reminder for a specific invoice
+ */
+export async function sendInvoiceReminder(
+  invoiceId: string
+): Promise<ActionResult<{ remindersSent: number }>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        organizationId,
+      },
+      include: {
+        client: true,
+        organization: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      return { success: false, error: "Invoice not found" };
+    }
+
+    if (invoice.status === "paid") {
+      return { success: false, error: "Invoice is already paid" };
+    }
+
+    if (invoice.status === "draft") {
+      return { success: false, error: "Cannot send reminder for draft invoice" };
+    }
+
+    const clientEmail = invoice.clientEmail || invoice.client?.email;
+    if (!clientEmail) {
+      return { success: false, error: "No email address for client" };
+    }
+
+    // Calculate if overdue
+    const now = new Date();
+    const dueDate = new Date(invoice.dueDate);
+    const isOverdue = now > dueDate;
+    const daysOverdue = isOverdue
+      ? Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    // Format due date
+    const formattedDueDate = dueDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    // Generate payment URL (could be Stripe link or invoice view page)
+    const paymentUrl = invoice.paymentLinkUrl ||
+      `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoiceId}`;
+
+    // Send email
+    const emailResult = await resend.emails.send({
+      from: process.env.EMAIL_FROM || "PhotoProOS <noreply@photoproos.com>",
+      to: clientEmail,
+      subject: isOverdue
+        ? `Payment Overdue: Invoice ${invoice.invoiceNumber}`
+        : `Payment Reminder: Invoice ${invoice.invoiceNumber}`,
+      react: InvoiceReminderEmail({
+        clientName: invoice.clientName || invoice.client?.fullName || "there",
+        invoiceNumber: invoice.invoiceNumber,
+        paymentUrl,
+        amountCents: invoice.totalCents,
+        currency: invoice.currency,
+        photographerName: invoice.organization.name,
+        dueDate: formattedDueDate,
+        isOverdue,
+        daysOverdue,
+        reminderCount: invoice.remindersSent + 1,
+      }),
+    });
+
+    if (emailResult.error) {
+      console.error("Failed to send invoice reminder:", emailResult.error);
+      return { success: false, error: "Failed to send reminder email" };
+    }
+
+    // Update invoice reminder tracking
+    const updatedInvoice = await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        remindersSent: { increment: 1 },
+        lastReminderAt: now,
+        // Schedule next reminder in 3 days if still unpaid
+        nextReminderAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    // Log activity
+    const auth = await getAuthContext();
+    await logActivity({
+      organizationId,
+      type: "invoice_sent",
+      description: `Payment reminder #${updatedInvoice.remindersSent} sent for Invoice ${invoice.invoiceNumber}`,
+      userId: auth?.userId,
+      invoiceId: invoice.id,
+      clientId: invoice.clientId || undefined,
+      metadata: {
+        invoiceNumber: invoice.invoiceNumber,
+        isOverdue,
+        daysOverdue,
+        reminderCount: updatedInvoice.remindersSent,
+      },
+    });
+
+    revalidatePath(`/invoices/${invoiceId}`);
+
+    return { success: true, data: { remindersSent: updatedInvoice.remindersSent } };
+  } catch (error) {
+    console.error("Error sending invoice reminder:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to send reminder" };
+  }
+}
+
+/**
+ * Get invoices that need reminders (overdue and haven't received recent reminder)
+ */
+export async function getInvoicesNeedingReminders(): Promise<ActionResult<{
+  invoices: Array<{
+    id: string;
+    invoiceNumber: string;
+    clientName: string | null;
+    clientEmail: string | null;
+    totalCents: number;
+    dueDate: Date;
+    daysOverdue: number;
+    remindersSent: number;
+    lastReminderAt: Date | null;
+  }>;
+}>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const now = new Date();
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+    // Find invoices that are:
+    // 1. Sent or overdue status
+    // 2. Past due date
+    // 3. Auto reminders enabled
+    // 4. Haven't had a reminder in last 3 days (or never)
+    // 5. Less than 5 reminders sent (prevent spam)
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        organizationId,
+        status: { in: ["sent", "overdue"] },
+        dueDate: { lt: now },
+        autoReminders: true,
+        remindersSent: { lt: 5 },
+        OR: [
+          { lastReminderAt: null },
+          { lastReminderAt: { lt: threeDaysAgo } },
+        ],
+      },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        clientName: true,
+        clientEmail: true,
+        totalCents: true,
+        dueDate: true,
+        remindersSent: true,
+        lastReminderAt: true,
+        client: {
+          select: { email: true },
+        },
+      },
+      orderBy: { dueDate: "asc" },
+    });
+
+    const enrichedInvoices = invoices
+      .filter((inv) => inv.clientEmail || inv.client?.email)
+      .map((inv) => ({
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        clientName: inv.clientName,
+        clientEmail: inv.clientEmail || inv.client?.email || null,
+        totalCents: inv.totalCents,
+        dueDate: inv.dueDate,
+        daysOverdue: Math.floor(
+          (now.getTime() - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24)
+        ),
+        remindersSent: inv.remindersSent,
+        lastReminderAt: inv.lastReminderAt,
+      }));
+
+    return { success: true, data: { invoices: enrichedInvoices } };
+  } catch (error) {
+    console.error("Error getting invoices needing reminders:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get invoices" };
+  }
+}
+
+/**
+ * Send batch reminders for all overdue invoices
+ * Used by cron job
+ */
+export async function sendBatchInvoiceReminders(
+  organizationId: string
+): Promise<ActionResult<{ sent: number; failed: number }>> {
+  try {
+    const now = new Date();
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+    // Find all invoices needing reminders for this org
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        organizationId,
+        status: { in: ["sent", "overdue"] },
+        dueDate: { lt: now },
+        autoReminders: true,
+        remindersSent: { lt: 5 },
+        OR: [
+          { lastReminderAt: null },
+          { lastReminderAt: { lt: threeDaysAgo } },
+        ],
+      },
+      include: {
+        client: true,
+        organization: {
+          select: { name: true },
+        },
+      },
+    });
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const invoice of invoices) {
+      const clientEmail = invoice.clientEmail || invoice.client?.email;
+      if (!clientEmail) {
+        failed++;
+        continue;
+      }
+
+      try {
+        const dueDate = new Date(invoice.dueDate);
+        const isOverdue = now > dueDate;
+        const daysOverdue = isOverdue
+          ? Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+          : 0;
+
+        const formattedDueDate = dueDate.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+
+        const paymentUrl = invoice.paymentLinkUrl ||
+          `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoice.id}`;
+
+        const emailResult = await resend.emails.send({
+          from: process.env.EMAIL_FROM || "PhotoProOS <noreply@photoproos.com>",
+          to: clientEmail,
+          subject: isOverdue
+            ? `Payment Overdue: Invoice ${invoice.invoiceNumber}`
+            : `Payment Reminder: Invoice ${invoice.invoiceNumber}`,
+          react: InvoiceReminderEmail({
+            clientName: invoice.clientName || invoice.client?.fullName || "there",
+            invoiceNumber: invoice.invoiceNumber,
+            paymentUrl,
+            amountCents: invoice.totalCents,
+            currency: invoice.currency,
+            photographerName: invoice.organization.name,
+            dueDate: formattedDueDate,
+            isOverdue,
+            daysOverdue,
+            reminderCount: invoice.remindersSent + 1,
+          }),
+        });
+
+        if (emailResult.error) {
+          failed++;
+          continue;
+        }
+
+        // Update reminder tracking
+        await prisma.invoice.update({
+          where: { id: invoice.id },
+          data: {
+            remindersSent: { increment: 1 },
+            lastReminderAt: now,
+            nextReminderAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
+            // Also update status to overdue if it was just "sent"
+            ...(invoice.status === "sent" && { status: "overdue" }),
+          },
+        });
+
+        sent++;
+      } catch {
+        failed++;
+      }
+    }
+
+    return { success: true, data: { sent, failed } };
+  } catch (error) {
+    console.error("Error sending batch invoice reminders:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to send batch reminders" };
+  }
+}
+
+/**
+ * Toggle auto reminders for an invoice
+ */
+export async function toggleInvoiceAutoReminders(
+  invoiceId: string,
+  enabled: boolean
+): Promise<ActionResult> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        organizationId,
+      },
+    });
+
+    if (!invoice) {
+      return { success: false, error: "Invoice not found" };
+    }
+
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { autoReminders: enabled },
+    });
+
+    revalidatePath(`/invoices/${invoiceId}`);
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error toggling auto reminders:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update settings" };
   }
 }
