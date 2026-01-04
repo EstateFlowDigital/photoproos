@@ -6,6 +6,7 @@ import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
 import { MobileNav, MobileMenuButton } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
+import { ResponsiveTester } from "@/components/dev/responsive-tester";
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode;
@@ -81,6 +82,9 @@ export function DashboardLayoutClient({
           {children}
         </main>
       </div>
+
+      {/* Developer Tools - Only visible to developer email */}
+      <ResponsiveTester />
     </div>
   );
 }

@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Developer Responsive Tester**
+  - Overlay component for testing responsive layouts
+  - Only visible when logged in as developer email
+  - Toggle with settings button (bottom-right corner)
+  - 10 viewport presets: iPhone SE, iPhone 14, iPhone 14 Pro Max, iPad Mini, iPad Pro 11", iPad Pro 12.9", Laptop, Desktop, Large Desktop, 2K Display
+  - Portrait/landscape orientation toggle
+  - Visual viewport frame with dimension indicator
+  - Dark overlays to simulate constrained viewport
+  - Warning when selected viewport exceeds window size
+  - State persisted in localStorage
+
 - **Contract Edit Page with Signer Management**
   - Full contract edit page at `/contracts/[id]/edit`
   - Two-tab interface: Content and Signers

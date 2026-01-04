@@ -1453,6 +1453,19 @@ html[data-scroll-theme="light"] {
     @apply flex flex-wrap items-center gap-2;
   }
 
+  .main-content {
+    @apply min-w-0;
+  }
+
+  .main-content > * {
+    min-width: 0;
+  }
+
+  .main-content .card,
+  .main-content .card-interactive {
+    min-width: 0;
+  }
+
   .table-scroll {
     @apply overflow-x-auto;
   }
