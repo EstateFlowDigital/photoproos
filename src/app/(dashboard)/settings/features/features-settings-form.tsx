@@ -68,8 +68,8 @@ export function FeaturesSettingsForm({
   const [primaryIndustry, setPrimaryIndustry] = useState<string>(initialPrimaryIndustry);
   const [enabledModules, setEnabledModules] = useState<string[]>(initialEnabledModules);
 
-  const highlightModuleId = (searchParams.get("module") || "").trim();
-  const highlightFromPath = (searchParams.get("from") || "").trim();
+  const highlightModuleId = (searchParams?.get("module") || "").trim();
+  const highlightFromPath = (searchParams?.get("from") || "").trim();
   const highlightedModule = highlightModuleId
     ? allModules.find((module) => module.id === highlightModuleId)
     : null;

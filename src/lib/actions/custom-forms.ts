@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
 import { Prisma, type CustomFormFieldType } from "@prisma/client";
+import { sendFormSubmissionNotificationEmail } from "@/lib/email/send";
 
 // ============================================================================
 // TYPES
@@ -78,6 +79,55 @@ function slugify(value: string) {
 }
 
 const toInputJsonValue = (value: unknown): Prisma.InputJsonValue => value as Prisma.InputJsonValue;
+
+function formatFieldValue(value: unknown, fieldType: string): string {
+  if (value === undefined || value === null || value === "") {
+    return "—";
+  }
+
+  // Handle arrays (multiselect, checkbox)
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+
+  // Handle booleans
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
+  }
+
+  // Handle dates
+  if (fieldType === "date" && typeof value === "string") {
+    try {
+      return new Date(value).toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return String(value);
+    }
+  }
+
+  // Handle datetime
+  if (fieldType === "datetime" && typeof value === "string") {
+    try {
+      return new Date(value).toLocaleString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch {
+      return String(value);
+    }
+  }
+
+  return String(value);
+}
 
 async function getUniqueSlug(base: string, excludeId?: string) {
   let slug = base || "form";
@@ -585,7 +635,52 @@ export async function submitForm(
       },
     });
 
-    // TODO: Send notification email if enabled
+    // Send notification email if enabled
+    if (form.sendEmailOnSubmission) {
+      try {
+        // Get notification recipients
+        const notificationEmails = form.notificationEmails
+          ? form.notificationEmails.split(",").map((e) => e.trim()).filter(Boolean)
+          : [];
+
+        // If no notification emails configured, try to get organization's public email
+        if (notificationEmails.length === 0) {
+          const org = await prisma.organization.findUnique({
+            where: { id: form.organizationId },
+            select: { publicEmail: true },
+          });
+          if (org?.publicEmail) {
+            notificationEmails.push(org.publicEmail);
+          }
+        }
+
+        if (notificationEmails.length > 0) {
+          // Format fields for the email
+          const emailFields = form.fields
+            .filter((field) => !["heading", "paragraph", "divider", "hidden"].includes(field.type))
+            .map((field) => ({
+              label: field.label,
+              value: formatFieldValue(data[field.name], field.type),
+            }));
+
+          await sendFormSubmissionNotificationEmail({
+            to: notificationEmails,
+            formName: form.name,
+            formUrl: `${process.env.NEXT_PUBLIC_APP_URL}/forms/${form.slug}`,
+            fields: emailFields,
+            submitterInfo: {
+              ipAddress: metadata?.ipAddress,
+              country: metadata?.country,
+              city: metadata?.city,
+            },
+            dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/forms/${form.id}/submissions`,
+          });
+        }
+      } catch (emailError) {
+        // Log email error but don't fail the submission
+        console.error("Error sending form submission notification email:", emailError);
+      }
+    }
 
     return {
       success: true,

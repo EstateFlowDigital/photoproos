@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { InvoiceStatus, LineItemType } from "@prisma/client";
 import { InvoiceActions } from "./invoice-actions";
+import { InvoiceSplitSection } from "./invoice-split-section";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -52,7 +53,16 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
       organizationId: auth.organizationId,
     },
     include: {
-      client: true,
+      client: {
+        include: {
+          brokerage: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
       lineItems: {
         orderBy: { sortOrder: "asc" },
         include: {
@@ -276,6 +286,19 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
               </div>
             )}
           </div>
+
+          {/* Invoice Split Section */}
+          <InvoiceSplitSection
+            invoiceId={invoice.id}
+            invoiceTotal={invoice.totalCents}
+            lineItems={invoice.lineItems.map((item) => ({
+              id: item.id,
+              description: item.description,
+              totalCents: item.totalCents,
+            }))}
+            clientHasBrokerage={!!invoice.client?.brokerage}
+            brokerageName={invoice.client?.brokerage?.name}
+          />
 
           {/* Client Card */}
           {invoice.client && (

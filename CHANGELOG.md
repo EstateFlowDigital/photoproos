@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Invoice Split UI Integration**
+  - Split section added to invoice detail page sidebar
+  - Three split modes: Single (no split), Percentage Split, Dual Invoices
+  - Percentage slider for configuring brokerage vs agent split
+  - Line item assignment for dual invoice mode
+  - Real-time split preview before saving
+  - Works with clients associated with brokerages
+  - Secondary invoice auto-creation for dual mode
+
 - **Client Comments/Feedback System**
   - Public comment submission on portfolios (requires moderation)
   - Optional email requirement for commenters
@@ -41,6 +50,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Per-user submission limits
   - Email notifications on submissions
   - Form duplication and statistics
+  - **Full Form Editor UI**:
+    - Three-column layout: field palette, form canvas, field editor
+    - Drag-and-drop field reordering with @dnd-kit
+    - Live form preview tab
+    - Field configuration: label, name, placeholder, help text, width, required toggle
+    - Options editor for select/multiselect/radio fields
+    - Validation settings: min/max length
+    - Form settings: name, description, submit button text, success message, redirect URL
+    - Email notification configuration
 
 - **Bundle Pricing Methods** (Square Footage & Tiered Pricing)
   - **Pricing Method Options**:

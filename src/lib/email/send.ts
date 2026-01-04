@@ -43,6 +43,7 @@ import { BookingFormSubmittedEmail } from "@/emails/booking-form-submitted";
 import { ReferralInviteEmail } from "@/emails/referral-invite";
 import { ReferralSignupNotificationEmail } from "@/emails/referral-signup-notification";
 import { ReferralRewardEarnedEmail } from "@/emails/referral-reward-earned";
+import { FormSubmissionNotificationEmail } from "@/emails/form-submission-notification";
 
 /**
  * Send gallery delivered notification to client
@@ -271,6 +272,71 @@ export async function sendPortfolioContactEmail(params: {
     }),
     replyTo: senderEmail,
   });
+}
+
+/**
+ * Send custom form submission notification to photographer
+ *
+ * Triggered by: submitForm() action when sendEmailOnSubmission is enabled
+ * Location: src/lib/actions/custom-forms.ts
+ */
+export async function sendFormSubmissionNotificationEmail(params: {
+  to: string | string[];
+  formName: string;
+  formUrl?: string;
+  fields: { label: string; value: string }[];
+  submitterInfo?: {
+    ipAddress?: string;
+    country?: string;
+    city?: string;
+  };
+  dashboardUrl: string;
+}) {
+  const {
+    to,
+    formName,
+    formUrl,
+    fields,
+    submitterInfo,
+    dashboardUrl,
+  } = params;
+
+  const recipients = Array.isArray(to) ? to : [to];
+  const submittedAt = new Date().toLocaleString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  // Send to all notification recipients
+  const results = await Promise.all(
+    recipients.map((recipient) =>
+      sendEmail({
+        to: recipient,
+        subject: `New submission: ${formName}`,
+        react: FormSubmissionNotificationEmail({
+          formName,
+          formUrl,
+          submittedAt,
+          fields,
+          submitterInfo,
+          dashboardUrl,
+        }),
+      })
+    )
+  );
+
+  // Return success if at least one email was sent
+  const successCount = results.filter((r) => r.success).length;
+  return {
+    success: successCount > 0,
+    sent: successCount,
+    total: recipients.length,
+  };
 }
 
 /**
