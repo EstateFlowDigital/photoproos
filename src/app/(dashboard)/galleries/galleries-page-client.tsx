@@ -85,7 +85,7 @@ export function GalleriesPageClient({
         actions={
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
           >
             <PlusIcon className="h-4 w-4" />
             New Gallery
@@ -147,7 +147,7 @@ export function GalleriesPageClient({
           {filter === "all" && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
             >
               <PlusIcon className="h-4 w-4" />
               Create Gallery
