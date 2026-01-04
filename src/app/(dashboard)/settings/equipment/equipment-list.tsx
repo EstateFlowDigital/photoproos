@@ -159,10 +159,10 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
   return (
     <div className="space-y-6">
       {/* Add Equipment Button */}
-      <div className="flex justify-end">
+      <div className="flex flex-col items-stretch sm:items-end">
         <button
           onClick={openAddModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
         >
           <PlusIcon className="h-4 w-4" />
           Add Equipment
@@ -212,7 +212,10 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
                 {/* Equipment List */}
                 <div className="divide-y divide-[var(--card-border)]">
                   {items.map((equipment) => (
-                    <div key={equipment.id} className="px-6 py-4 flex items-center justify-between">
+                    <div
+                      key={equipment.id}
+                      className="px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-foreground">{equipment.name}</h4>
                         <div className="flex items-center gap-3 mt-1">
@@ -234,7 +237,7 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
                           <p className="text-sm text-foreground-muted mt-1 line-clamp-1">{equipment.description}</p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex items-center gap-2 mt-3 sm:mt-0 sm:ml-4">
                         <button
                           onClick={() => openEditModal(equipment)}
                           aria-label={`Edit ${equipment.name}`}
@@ -356,7 +359,7 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
