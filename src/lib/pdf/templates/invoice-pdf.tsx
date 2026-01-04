@@ -238,6 +238,39 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#1e40af",
   },
+  qrCodeSection: {
+    marginBottom: 30,
+    padding: 20,
+    backgroundColor: "#f0fdf4",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20,
+  },
+  qrCode: {
+    width: 80,
+    height: 80,
+  },
+  qrCodeTextContainer: {
+    flex: 1,
+  },
+  qrCodeTitle: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#166534",
+    marginBottom: 4,
+  },
+  qrCodeSubtitle: {
+    fontSize: 10,
+    color: "#15803d",
+    marginBottom: 2,
+  },
+  qrCodeUrl: {
+    fontSize: 8,
+    color: "#6b7280",
+  },
 });
 
 interface InvoiceLineItem {
@@ -269,6 +302,7 @@ export interface InvoicePdfProps {
   notes: string | null;
   terms: string | null;
   paymentUrl: string | null;
+  qrCodeDataUrl: string | null;
 }
 
 function formatCurrency(cents: number): string {
@@ -328,6 +362,7 @@ export function InvoicePdf({
   notes,
   terms,
   paymentUrl,
+  qrCodeDataUrl,
 }: InvoicePdfProps) {
   const statusColors = getStatusColor(status);
 
@@ -389,8 +424,22 @@ export function InvoicePdf({
           )}
         </View>
 
-        {/* Payment Info (if URL exists and not paid) */}
-        {paymentUrl && status !== "paid" && status !== "cancelled" && (
+        {/* QR Code Payment Section (if QR code exists and not paid) */}
+        {qrCodeDataUrl && paymentUrl && status !== "paid" && status !== "cancelled" && (
+          <View style={styles.qrCodeSection}>
+            <Image src={qrCodeDataUrl} style={styles.qrCode} />
+            <View style={styles.qrCodeTextContainer}>
+              <Text style={styles.qrCodeTitle}>Scan to Pay</Text>
+              <Text style={styles.qrCodeSubtitle}>
+                Use your phone camera to scan and pay instantly
+              </Text>
+              <Text style={styles.qrCodeUrl}>{paymentUrl}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Fallback Payment Info (if no QR code but URL exists) */}
+        {!qrCodeDataUrl && paymentUrl && status !== "paid" && status !== "cancelled" && (
           <View style={styles.paymentInfo}>
             <Text style={styles.paymentLabel}>Pay Online</Text>
             <Text style={styles.paymentText}>{paymentUrl}</Text>

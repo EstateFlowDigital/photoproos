@@ -5,6 +5,7 @@ import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoicePdf } from "@/lib/pdf/templates/invoice-pdf";
 import React from "react";
+import QRCode from "qrcode";
 
 // Type assertion helper for react-pdf
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,6 +77,24 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
       || invoice.organization?.logoUrl
       || null;
 
+    // Generate QR code for payment URL if available and invoice is not paid
+    let qrCodeDataUrl: string | null = null;
+    if (paymentUrl && displayStatus !== "paid" && displayStatus !== "cancelled") {
+      try {
+        qrCodeDataUrl = await QRCode.toDataURL(paymentUrl, {
+          width: 200,
+          margin: 1,
+          color: {
+            dark: "#166534", // Green color to match theme
+            light: "#ffffff",
+          },
+        });
+      } catch (qrError) {
+        console.error("Failed to generate QR code:", qrError);
+        // Continue without QR code
+      }
+    }
+
     // Generate the PDF
     const pdfBuffer = await renderToBuffer(
       createPdfElement(
@@ -106,6 +125,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
           notes: invoice.notes,
           terms: invoice.terms,
           paymentUrl,
+          qrCodeDataUrl,
         })
       )
     );

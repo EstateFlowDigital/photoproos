@@ -12,12 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fullscreen slideshow presentation for client galleries
   - Auto-advance with configurable timing (2s, 3s, 4s, 5s, 8s intervals)
   - Play/pause controls with visual feedback
-  - Keyboard navigation (← → arrows, Space for next, P for play/pause, ESC to exit)
+  - Keyboard navigation (← → arrows, Space for next, P for play/pause, T for thumbnails, ESC to exit)
   - Progress bar showing position in gallery
   - Photo counter (e.g., "3 / 45")
   - Current filename display
   - Respects favorites filter (show only favorited photos in slideshow)
   - Slideshow button in gallery header for easy access
+  - **Thumbnail strip navigation** - Scrollable thumbnail bar at bottom for quick navigation
+  - **Touch/swipe support** - Swipe left/right on mobile devices to navigate
+  - **Image preloading** - Preloads adjacent images for smooth transitions
+  - Jump to any photo by clicking its thumbnail
 
 - **Dashboard Appearance Customization**
   - Font customization with 6 font options (System, Inter, Plus Jakarta, DM Sans, Space Grotesk, JetBrains Mono)
@@ -56,6 +60,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Uses logo priority: Invoice-specific logo → Light variant → Default logo
   - Consistent branding across all downloadable documents
   - Two-column header layout for contracts showing logo and business info
+
+- **QR Code Payment on Invoices**
+  - Scannable QR code on unpaid invoice PDFs linking to payment page
+  - Green-themed "Scan to Pay" section with instructions
+  - QR code generated using `qrcode` library with branded colors
+  - Enables faster mobile payments by scanning with phone camera
+  - Fallback to text URL when QR code generation fails
 
 ### Fixed
 - **Missing Email Send Functions**
