@@ -167,6 +167,10 @@ export async function createOrder(
           ? item.priceCents * item.quantity
           : item.priceCents,
         sortOrder: index,
+        // Sqft pricing fields for bundles
+        sqft: item.type === "bundle" ? item.sqft ?? null : null,
+        pricingTierId: item.type === "bundle" ? item.pricingTierId ?? null : null,
+        pricingTierName: item.type === "bundle" ? item.pricingTierName ?? null : null,
       }));
 
       await tx.orderItem.createMany({
@@ -400,6 +404,8 @@ export async function getOrderBySessionToken(
     itemType: string;
     quantity: number;
     totalCents: number;
+    sqft: number | null;
+    pricingTierName: string | null;
   }>;
   paidAt: Date | null;
   createdAt: Date;
@@ -436,6 +442,8 @@ export async function getOrderBySessionToken(
           itemType: item.itemType,
           quantity: item.quantity,
           totalCents: item.totalCents,
+          sqft: item.sqft,
+          pricingTierName: item.pricingTierName,
         })),
         paidAt: order.paidAt,
         createdAt: order.createdAt,
@@ -644,6 +652,9 @@ export async function getOrder(id: string) {
         quantity: item.quantity,
         unitCents: item.unitCents,
         totalCents: item.totalCents,
+        sqft: item.sqft,
+        pricingTierId: item.pricingTierId,
+        pricingTierName: item.pricingTierName,
         service: item.service,
         bundle: item.bundle,
         addon: item.addon,

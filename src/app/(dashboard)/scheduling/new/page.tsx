@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { BookingNewForm } from "./booking-new-form";
 import { getClientsForBooking, getServicesForBooking, getScheduleStats } from "@/lib/actions/bookings";
+import { getOrder } from "@/lib/actions/orders";
 
 // Generate time slots
 function generateTimeSlots() {
@@ -22,7 +23,12 @@ function generateTimeSlots() {
   return slots;
 }
 
-export default async function NewBookingPage() {
+interface PageProps {
+  searchParams: Promise<{ fromOrder?: string }>;
+}
+
+export default async function NewBookingPage({ searchParams }: PageProps) {
+  const { fromOrder } = await searchParams;
   const timeSlots = generateTimeSlots();
 
   // Fetch real data from database
@@ -31,6 +37,12 @@ export default async function NewBookingPage() {
     getServicesForBooking(),
     getScheduleStats(),
   ]);
+
+  // If creating from an order, fetch the order data
+  let orderData = null;
+  if (fromOrder) {
+    orderData = await getOrder(fromOrder);
+  }
 
   // Map clients for dropdown
   const clientsForForm = clients.map((client) => ({
@@ -49,18 +61,37 @@ export default async function NewBookingPage() {
     description: service.description,
   }));
 
+  // Build order data for form
+  const orderDataForForm = orderData ? {
+    orderId: orderData.id,
+    orderNumber: orderData.orderNumber,
+    clientId: orderData.client?.id,
+    clientName: orderData.clientName,
+    clientEmail: orderData.clientEmail,
+    clientPhone: orderData.clientPhone,
+    preferredDate: orderData.preferredDate,
+    preferredTime: orderData.preferredTime,
+    locationNotes: orderData.locationNotes,
+    notes: orderData.clientNotes,
+    items: orderData.items.map((item) => ({
+      name: item.name,
+      sqft: item.sqft,
+      pricingTierName: item.pricingTierName,
+    })),
+  } : undefined;
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="New Booking"
-        subtitle="Schedule a new photography session"
+        title={orderData ? `Booking from ${orderData.orderNumber}` : "New Booking"}
+        subtitle={orderData ? "Schedule from order details" : "Schedule a new photography session"}
         actions={
           <Link
-            href="/scheduling"
+            href={orderData ? `/orders/${orderData.id}` : "/scheduling"}
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
           >
             <ArrowLeftIcon className="h-4 w-4" />
-            Back to Schedule
+            {orderData ? "Back to Order" : "Back to Schedule"}
           </Link>
         }
       />
@@ -72,6 +103,7 @@ export default async function NewBookingPage() {
             clients={clientsForForm}
             timeSlots={timeSlots}
             services={servicesForForm}
+            fromOrder={orderDataForForm}
           />
         </div>
 

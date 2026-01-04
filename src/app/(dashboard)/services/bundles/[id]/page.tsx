@@ -66,6 +66,7 @@ export default async function BundleDetailPage({ params }: BundleDetailPageProps
                 quantity: s.quantity,
                 sortOrder: s.sortOrder,
               })),
+              pricingTiers: bundle.pricingTiers || [],
             }}
           />
         </div>

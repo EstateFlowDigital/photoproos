@@ -789,6 +789,9 @@ export async function getBundle(id: string) {
           },
           orderBy: { sortOrder: "asc" },
         },
+        pricingTiers: {
+          orderBy: { sortOrder: "asc" },
+        },
         _count: {
           select: {
             orderItems: true,
@@ -827,6 +830,14 @@ export async function getBundle(id: string) {
         isRequired: item.isRequired,
         quantity: item.quantity,
         sortOrder: item.sortOrder,
+      })),
+      pricingTiers: bundle.pricingTiers.map((tier) => ({
+        id: tier.id,
+        minSqft: tier.minSqft,
+        maxSqft: tier.maxSqft,
+        priceCents: tier.priceCents,
+        tierName: tier.tierName,
+        sortOrder: tier.sortOrder,
       })),
       usageCount: bundle._count.orderItems + bundle._count.orderPages,
       createdAt: bundle.createdAt,

@@ -22,6 +22,8 @@ import { SectionsTab } from "./tabs/sections-tab";
 import { ProjectsTab } from "./tabs/projects-tab";
 import { AnalyticsTab } from "./tabs/analytics-tab";
 import { SettingsTab } from "./tabs/settings-tab";
+import { CommentsTab } from "./tabs/comments-tab";
+import { ABTestingTab } from "./tabs/ab-testing-tab";
 import { PreviewPanel } from "./components/preview-panel";
 import { QRCodeModal } from "./components/qr-code-modal";
 
@@ -81,6 +83,9 @@ export interface PortfolioWebsite {
   downloadWatermark: boolean;
   customCss: string | null;
   enableAnimations: boolean;
+  // Comments
+  allowComments: boolean;
+  requireCommentEmail: boolean;
   // Custom Domain
   customDomain: string | null;
   customDomainVerified: boolean;
@@ -115,7 +120,7 @@ interface PortfolioEditorClientProps {
   quickStats?: QuickStats | null;
 }
 
-type TabId = "design" | "sections" | "projects" | "analytics" | "settings";
+type TabId = "design" | "sections" | "projects" | "analytics" | "comments" | "abtesting" | "settings";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   {
@@ -137,6 +142,16 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
     id: "analytics",
     label: "Analytics",
     icon: <ChartIcon className="h-4 w-4" />,
+  },
+  {
+    id: "comments",
+    label: "Comments",
+    icon: <MessageIcon className="h-4 w-4" />,
+  },
+  {
+    id: "abtesting",
+    label: "A/B Testing",
+    icon: <TestTubeIcon className="h-4 w-4" />,
   },
   {
     id: "settings",
@@ -382,6 +397,12 @@ export function PortfolioEditorClient({
           )}
           {activeTab === "analytics" && (
             <AnalyticsTab website={website} isPending={isPending} />
+          )}
+          {activeTab === "comments" && (
+            <CommentsTab website={website} isPending={isPending} />
+          )}
+          {activeTab === "abtesting" && (
+            <ABTestingTab website={website} isPending={isPending} />
           )}
           {activeTab === "settings" && (
             <SettingsTab website={website} isPending={isPending} onSave={refreshPreview} />
@@ -661,6 +682,42 @@ function ClockIcon({ className }: { className?: string }) {
     >
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function MessageIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </svg>
+  );
+}
+
+function TestTubeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M14.5 2v17.5c0 1.4-1.1 2.5-2.5 2.5s-2.5-1.1-2.5-2.5V2" />
+      <path d="M8.5 2h7" />
+      <path d="M14.5 16h-5" />
     </svg>
   );
 }

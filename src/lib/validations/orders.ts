@@ -6,6 +6,10 @@ export const cartBundleSchema = z.object({
   id: z.string().cuid(),
   name: z.string(),
   priceCents: z.number().int().min(0),
+  // Sqft pricing fields (optional, only for sqft-based bundles)
+  sqft: z.number().int().min(1).optional(),
+  pricingTierId: z.string().cuid().optional(),
+  pricingTierName: z.string().optional().nullable(),
 });
 
 export const cartServiceSchema = z.object({

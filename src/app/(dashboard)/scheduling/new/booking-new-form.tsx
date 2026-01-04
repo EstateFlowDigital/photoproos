@@ -42,13 +42,34 @@ interface Service {
   description: string | null;
 }
 
+interface OrderItem {
+  name: string;
+  sqft: number | null;
+  pricingTierName: string | null;
+}
+
+interface OrderData {
+  orderId: string;
+  orderNumber: string;
+  clientId?: string;
+  clientName?: string | null;
+  clientEmail?: string | null;
+  clientPhone?: string | null;
+  preferredDate?: Date | null;
+  preferredTime?: string | null;
+  locationNotes?: string | null;
+  notes?: string | null;
+  items: OrderItem[];
+}
+
 interface BookingNewFormProps {
   clients: Client[];
   timeSlots: { value: string; label: string }[];
   services: Service[];
+  fromOrder?: OrderData;
 }
 
-export function BookingNewForm({ clients, timeSlots, services }: BookingNewFormProps) {
+export function BookingNewForm({ clients, timeSlots, services, fromOrder }: BookingNewFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);

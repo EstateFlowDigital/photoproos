@@ -194,6 +194,15 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
     );
     if (exists) return; // Only one of each bundle
 
+    // Check if bundle requires sqft input
+    if (requiresSqftInput(bundle)) {
+      setSelectedBundle(bundle);
+      setSqftInput("");
+      setShowSqftModal(true);
+      return;
+    }
+
+    // Fixed price bundle - add directly
     setCartItems((prev) => [
       ...prev,
       {
@@ -203,6 +212,34 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
         priceCents: bundle.priceCents,
       },
     ]);
+    setIsCartOpen(true);
+  };
+
+  // Add bundle with sqft to cart
+  const addBundleWithSqft = () => {
+    if (!selectedBundle || !sqftInput) return;
+
+    const sqft = parseInt(sqftInput, 10);
+    if (isNaN(sqft) || sqft <= 0) return;
+
+    const { priceCents, tier } = calculateSqftPrice(selectedBundle, sqft);
+
+    setCartItems((prev) => [
+      ...prev,
+      {
+        type: "bundle",
+        id: selectedBundle.id,
+        name: selectedBundle.name,
+        priceCents,
+        sqft,
+        pricingTierId: tier?.id,
+        pricingTierName: tier?.tierName,
+      },
+    ]);
+
+    setShowSqftModal(false);
+    setSelectedBundle(null);
+    setSqftInput("");
     setIsCartOpen(true);
   };
 
@@ -554,7 +591,18 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-white truncate">{bundle.name}</p>
-                            <p className="text-sm text-[#7c7c7c]">Package</p>
+                            <p className="text-sm text-[#7c7c7c]">
+                              {bundle.sqft ? (
+                                <>
+                                  {bundle.sqft.toLocaleString()} sqft
+                                  {bundle.pricingTierName && (
+                                    <span className="ml-1">• {bundle.pricingTierName}</span>
+                                  )}
+                                </>
+                              ) : (
+                                "Package"
+                              )}
+                            </p>
                           </div>
                           <div className="flex items-center gap-3">
                             <p className="font-medium text-white">
@@ -669,6 +717,124 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
         </button>
       )}
 
+      {/* Square Footage Input Modal */}
+      {showSqftModal && selectedBundle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => {
+              setShowSqftModal(false);
+              setSelectedBundle(null);
+            }}
+          />
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-[#262626] bg-[#141414] shadow-2xl">
+            <div className="border-b border-[#262626] px-6 py-4">
+              <h2 className="text-lg font-semibold text-white">
+                Enter Property Size
+              </h2>
+              <p className="mt-1 text-sm text-[#7c7c7c]">
+                {selectedBundle.name}
+              </p>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Pricing Method Info */}
+              {selectedBundle.pricingMethod === "per_sqft" && (
+                <div className="rounded-lg bg-[#0a0a0a] border border-[#262626] p-4">
+                  <p className="text-sm text-[#a7a7a7]">
+                    Price: <span className="font-semibold text-white">{formatPrice(selectedBundle.pricePerSqftCents || 0)}/sqft</span>
+                  </p>
+                  {selectedBundle.minSqft && selectedBundle.minSqft > 0 && (
+                    <p className="text-xs text-[#7c7c7c] mt-1">
+                      Minimum: {selectedBundle.minSqft.toLocaleString()} sqft
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {selectedBundle.pricingMethod === "tiered" && selectedBundle.pricingTiers.length > 0 && (
+                <div className="rounded-lg bg-[#0a0a0a] border border-[#262626] p-4">
+                  <p className="text-sm font-medium text-white mb-2">Pricing Tiers</p>
+                  <div className="space-y-1.5">
+                    {selectedBundle.pricingTiers.map((tier) => (
+                      <div key={tier.id} className="flex items-center justify-between text-sm">
+                        <span className="text-[#a7a7a7]">
+                          {tier.minSqft.toLocaleString()} - {tier.maxSqft ? tier.maxSqft.toLocaleString() : "∞"} sqft
+                          {tier.tierName && <span className="text-[#7c7c7c] ml-1">({tier.tierName})</span>}
+                        </span>
+                        <span className="font-medium text-white">{formatPrice(tier.priceCents)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sqft Input */}
+              <div>
+                <label htmlFor="sqft" className="block text-sm font-medium text-white mb-2">
+                  Square Footage
+                </label>
+                <input
+                  type="number"
+                  id="sqft"
+                  value={sqftInput}
+                  onChange={(e) => setSqftInput(e.target.value)}
+                  placeholder="e.g., 2500"
+                  min={selectedBundle.minSqft || 1}
+                  className="w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-3 text-lg text-white placeholder:text-[#7c7c7c] focus:border-[#454545] focus:outline-none focus:ring-1 focus:ring-[#454545]"
+                  autoFocus
+                />
+              </div>
+
+              {/* Calculated Price Preview */}
+              {sqftInput && parseInt(sqftInput, 10) > 0 && (
+                <div className="rounded-lg border border-[#262626] bg-[#0a0a0a] p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-[#7c7c7c]">Estimated Price</p>
+                      <p className="text-2xl font-bold text-white">
+                        {formatPrice(calculateSqftPrice(selectedBundle, parseInt(sqftInput, 10)).priceCents)}
+                      </p>
+                    </div>
+                    {calculateSqftPrice(selectedBundle, parseInt(sqftInput, 10)).tier && (
+                      <div className="text-right">
+                        <p className="text-xs text-[#7c7c7c]">Tier</p>
+                        <p className="text-sm font-medium" style={{ color: primaryColor }}>
+                          {calculateSqftPrice(selectedBundle, parseInt(sqftInput, 10)).tier?.tierName || "Standard"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSqftModal(false);
+                    setSelectedBundle(null);
+                  }}
+                  className="flex-1 rounded-lg border border-[#262626] bg-[#0a0a0a] py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={addBundleWithSqft}
+                  disabled={!sqftInput || parseInt(sqftInput, 10) <= 0}
+                  className="flex-1 rounded-lg py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Checkout Modal */}
       <CheckoutModal
         isOpen={isCheckoutOpen}
@@ -761,18 +927,44 @@ function BundleCard({
         {/* Pricing */}
         <div className="mt-6 flex items-end justify-between border-t border-[#262626] pt-4">
           <div>
-            {bundle.originalPriceCents && bundle.savingsPercent && bundle.savingsPercent > 0 && (
-              <p className="text-sm text-[#7c7c7c] line-through">
-                {formatPrice(bundle.originalPriceCents)}
-              </p>
-            )}
-            <p className="text-2xl font-bold text-white">
-              {formatPrice(bundle.priceCents)}
-            </p>
-            {bundle.savingsPercent && bundle.savingsPercent > 0 && (
-              <p className="text-sm font-medium" style={{ color: primaryColor }}>
-                Save {Math.round(bundle.savingsPercent)}%
-              </p>
+            {bundle.pricingMethod === "per_sqft" ? (
+              <>
+                <p className="text-sm text-[#7c7c7c]">Starting at</p>
+                <p className="text-2xl font-bold text-white">
+                  {formatPrice(bundle.pricePerSqftCents || 0)}<span className="text-sm font-normal text-[#7c7c7c]">/sqft</span>
+                </p>
+                {bundle.minSqft && bundle.minSqft > 0 && (
+                  <p className="text-xs text-[#7c7c7c]">
+                    Min {bundle.minSqft.toLocaleString()} sqft
+                  </p>
+                )}
+              </>
+            ) : bundle.pricingMethod === "tiered" && bundle.pricingTiers.length > 0 ? (
+              <>
+                <p className="text-sm text-[#7c7c7c]">From</p>
+                <p className="text-2xl font-bold text-white">
+                  {formatPrice(Math.min(...bundle.pricingTiers.map((t) => t.priceCents)))}
+                </p>
+                <p className="text-xs text-[#7c7c7c]">
+                  {bundle.pricingTiers.length} tier{bundle.pricingTiers.length > 1 ? "s" : ""} by sqft
+                </p>
+              </>
+            ) : (
+              <>
+                {bundle.originalPriceCents && bundle.savingsPercent && bundle.savingsPercent > 0 && (
+                  <p className="text-sm text-[#7c7c7c] line-through">
+                    {formatPrice(bundle.originalPriceCents)}
+                  </p>
+                )}
+                <p className="text-2xl font-bold text-white">
+                  {formatPrice(bundle.priceCents)}
+                </p>
+                {bundle.savingsPercent && bundle.savingsPercent > 0 && (
+                  <p className="text-sm font-medium" style={{ color: primaryColor }}>
+                    Save {Math.round(bundle.savingsPercent)}%
+                  </p>
+                )}
+              </>
             )}
           </div>
           {isInCart ? (

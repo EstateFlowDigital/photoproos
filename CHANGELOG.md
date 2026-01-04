@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comment moderation actions: approve, hide, delete
   - Server actions for managing comments
   - CommentsSection component for portfolio pages
+  - **Comments tab in portfolio editor** for managing comments and settings
+
+- **Dashboard Integration**
+  - **Forms module** added to core navigation (always visible in sidebar)
+  - **Forms management page** with create, duplicate, and delete functionality
+  - **A/B Testing tab** in portfolio editor for creating and managing tests
+  - All new features now accessible from dashboard UI
 
 - **Portfolio A/B Testing**
   - Create and manage A/B tests for portfolios
@@ -56,6 +63,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Track sqft on order items
     - Store applied pricing tier on orders
     - Support for sqft-based checkout
+  - **Admin Bundle Form Enhancements**:
+    - Pricing tier management UI for tiered_sqft bundles
+    - Add/remove/edit pricing tiers with tier name, min/max sqft, and price
+    - Per-sqft pricing configuration for sqft_based bundles
+    - Configure sqft increments, min/max bounds
+    - Live price preview calculation
+    - Dynamic form validation based on bundle type
+  - **Order & Email Display Enhancements**:
+    - Order confirmation email displays sqft and pricing tier info
+    - Order confirmation page displays sqft and tier for bundles
+    - `getOrderBySessionToken` and `getOrder` return sqft data
 
 - **Leads Dashboard Enhancements**
   - **Search Functionality**:

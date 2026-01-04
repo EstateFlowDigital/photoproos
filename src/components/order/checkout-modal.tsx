@@ -9,6 +9,10 @@ interface CartItem {
   name: string;
   priceCents: number;
   quantity?: number;
+  // Sqft pricing fields (for bundles)
+  sqft?: number;
+  pricingTierId?: string;
+  pricingTierName?: string | null;
 }
 
 interface CheckoutModalProps {
@@ -65,6 +69,10 @@ export function CheckoutModal({
             id: item.id,
             name: item.name,
             priceCents: item.priceCents,
+            // Include sqft pricing data
+            sqft: item.sqft,
+            pricingTierId: item.pricingTierId,
+            pricingTierName: item.pricingTierName,
           };
         }
         return {

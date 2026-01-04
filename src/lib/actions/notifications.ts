@@ -140,3 +140,123 @@ export async function markAllNotificationsAsRead(): Promise<ActionResult> {
     return { success: false, error: "Failed to mark all notifications as read" };
   }
 }
+
+/**
+ * Notification types that can be created
+ */
+export type NotificationType =
+  | "payment_received"
+  | "payment_failed"
+  | "gallery_viewed"
+  | "gallery_delivered"
+  | "booking_created"
+  | "booking_confirmed"
+  | "booking_cancelled"
+  | "booking_reminder"
+  | "contract_sent"
+  | "contract_signed"
+  | "invoice_sent"
+  | "invoice_paid"
+  | "invoice_overdue"
+  | "questionnaire_assigned"
+  | "questionnaire_completed"
+  | "questionnaire_reminder"
+  | "lead_received"
+  | "client_added"
+  | "system";
+
+interface CreateNotificationInput {
+  type: NotificationType;
+  title: string;
+  message: string;
+  linkUrl?: string;
+  organizationId: string;
+}
+
+/**
+ * Creates a notification for an organization
+ * This is a helper function that can be called from other server actions
+ * when events occur that should trigger notifications.
+ */
+export async function createNotification(
+  input: CreateNotificationInput
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const notification = await prisma.notification.create({
+      data: {
+        organizationId: input.organizationId,
+        type: input.type,
+        title: input.title,
+        message: input.message,
+        linkUrl: input.linkUrl || null,
+        read: false,
+      },
+    });
+
+    // Revalidate to update notification counts in UI
+    revalidatePath("/");
+
+    return {
+      success: true,
+      data: { id: notification.id },
+    };
+  } catch (error) {
+    console.error("[Notifications] Error creating notification:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create notification" };
+  }
+}
+
+/**
+ * Deletes a notification
+ */
+export async function deleteNotification(
+  notificationId: string
+): Promise<ActionResult> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    await prisma.notification.delete({
+      where: {
+        id: notificationId,
+        organizationId, // Ensure user owns this notification
+      },
+    });
+
+    revalidatePath("/");
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("[Notifications] Error deleting notification:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete notification" };
+  }
+}
+
+/**
+ * Deletes all read notifications (cleanup)
+ */
+export async function deleteReadNotifications(): Promise<ActionResult<{ count: number }>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const result = await prisma.notification.deleteMany({
+      where: {
+        organizationId,
+        read: true,
+      },
+    });
+
+    revalidatePath("/");
+    return { success: true, data: { count: result.count } };
+  } catch (error) {
+    console.error("[Notifications] Error deleting read notifications:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete read notifications" };
+  }
+}

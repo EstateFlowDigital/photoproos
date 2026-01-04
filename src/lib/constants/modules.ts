@@ -23,6 +23,7 @@ import {
   Layers,
   Settings,
   MessageSquare,
+  FileInput,
   type LucideIcon,
 } from "lucide-react";
 
@@ -79,6 +80,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
     industries: ["*"],
     category: "core",
     sortOrder: 1.5,
+  },
+  forms: {
+    id: "forms",
+    name: "Forms",
+    description: "Custom form builder for leads and inquiries",
+    icon: FileInput,
+    href: "/forms",
+    isCore: true,
+    industries: ["*"],
+    category: "core",
+    sortOrder: 1.6,
   },
 
   // ============================================================================

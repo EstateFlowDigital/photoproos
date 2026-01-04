@@ -423,6 +423,8 @@ async function handleOrderPaymentCompleted(
           itemType: item.itemType as "bundle" | "service",
           quantity: item.quantity,
           totalCents: item.totalCents,
+          sqft: item.sqft,
+          pricingTierName: item.pricingTierName,
         })),
         subtotalCents: order.subtotalCents,
         taxCents: order.taxCents,

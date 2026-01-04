@@ -39,6 +39,8 @@ interface OrderDetails {
     itemType: string;
     quantity: number;
     totalCents: number;
+    sqft: number | null;
+    pricingTierName: string | null;
   }>;
   paidAt: Date | null;
   createdAt: Date;
@@ -178,16 +180,24 @@ export function OrderConfirmationClient({
               {orderDetails.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between text-sm"
+                  className="flex items-start justify-between text-sm"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-white">{item.name}</span>
-                    {item.quantity > 1 && (
-                      <span className="text-[#7c7c7c]">x{item.quantity}</span>
-                    )}
-                    {item.itemType === "bundle" && (
-                      <span className="rounded bg-[#262626] px-1.5 py-0.5 text-xs text-[#7c7c7c]">
-                        Bundle
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white">{item.name}</span>
+                      {item.quantity > 1 && (
+                        <span className="text-[#7c7c7c]">x{item.quantity}</span>
+                      )}
+                      {item.itemType === "bundle" && (
+                        <span className="rounded bg-[#262626] px-1.5 py-0.5 text-xs text-[#7c7c7c]">
+                          Bundle
+                        </span>
+                      )}
+                    </div>
+                    {item.sqft && (
+                      <span className="text-xs text-[#7c7c7c]">
+                        {item.sqft.toLocaleString()} sqft
+                        {item.pricingTierName && ` • ${item.pricingTierName}`}
                       </span>
                     )}
                   </div>

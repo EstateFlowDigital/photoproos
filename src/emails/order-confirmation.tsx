@@ -26,6 +26,8 @@ interface OrderItem {
   itemType: "bundle" | "service";
   quantity: number;
   totalCents: number;
+  sqft?: number | null;
+  pricingTierName?: string | null;
 }
 
 interface OrderConfirmationEmailProps {
@@ -127,6 +129,12 @@ export function OrderConfirmationEmail({
                     </Text>
                     {item.quantity > 1 && (
                       <Text style={itemQuantity}>Qty: {item.quantity}</Text>
+                    )}
+                    {item.sqft && (
+                      <Text style={itemQuantity}>
+                        {item.sqft.toLocaleString()} sqft
+                        {item.pricingTierName && ` • ${item.pricingTierName}`}
+                      </Text>
                     )}
                   </Section>
                   <Text style={itemPrice}>{formatPrice(item.totalCents)}</Text>

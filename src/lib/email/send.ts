@@ -336,6 +336,8 @@ export async function sendOrderConfirmationEmail(params: {
     itemType: "bundle" | "service";
     quantity: number;
     totalCents: number;
+    sqft?: number | null;
+    pricingTierName?: string | null;
   }>;
   subtotalCents: number;
   taxCents: number;

@@ -9,6 +9,7 @@ import {
   updateBundle,
   deleteBundle,
   setBundleServices,
+  setBundlePricingTiers,
 } from "@/lib/actions/bundles";
 import { getServices } from "@/lib/actions/services";
 import { useToast } from "@/components/ui/toast";
@@ -46,11 +47,21 @@ interface BundleService {
   sortOrder: number;
 }
 
+interface PricingTier {
+  id?: string;
+  minSqft: number;
+  maxSqft: number | null;
+  priceCents: number;
+  tierName: string | null;
+  sortOrder?: number;
+}
+
 interface BundleFormProps {
   initialData?: BundleFormData & {
     id?: string;
     usageCount?: number;
     services?: BundleService[];
+    pricingTiers?: PricingTier[];
   };
   mode: "create" | "edit";
 }
@@ -104,6 +115,9 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
   );
   const [bundleServices, setBundleServicesState] = useState<BundleService[]>(
     initialData?.services || []
+  );
+  const [pricingTiers, setPricingTiers] = useState<PricingTier[]>(
+    initialData?.pricingTiers || []
   );
   const [availableServices, setAvailableServices] = useState<ServiceItem[]>([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
@@ -176,6 +190,37 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
         prev.map((s) =>
           s.serviceId === serviceId ? { ...s, ...updates } : s
         )
+      );
+    },
+    []
+  );
+
+  // Pricing tier handlers
+  const handleAddPricingTier = useCallback(() => {
+    setPricingTiers((prev) => {
+      const lastTier = prev[prev.length - 1];
+      const newMinSqft = lastTier ? (lastTier.maxSqft || lastTier.minSqft) + 1 : 0;
+      return [
+        ...prev,
+        {
+          minSqft: newMinSqft,
+          maxSqft: newMinSqft + 999,
+          priceCents: 0,
+          tierName: null,
+          sortOrder: prev.length,
+        },
+      ];
+    });
+  }, []);
+
+  const handleRemovePricingTier = useCallback((index: number) => {
+    setPricingTiers((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleUpdatePricingTier = useCallback(
+    (index: number, updates: Partial<PricingTier>) => {
+      setPricingTiers((prev) =>
+        prev.map((tier, i) => (i === index ? { ...tier, ...updates } : tier))
       );
     },
     []
@@ -273,6 +318,22 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
               services: bundleServices,
             });
           }
+          // Add pricing tiers for tiered bundles
+          if (
+            (formData.bundleType === "tiered_sqft" || formData.pricingMethod === "tiered") &&
+            pricingTiers.length > 0
+          ) {
+            await setBundlePricingTiers({
+              bundleId: result.data.id,
+              tiers: pricingTiers.map((tier, index) => ({
+                minSqft: tier.minSqft,
+                maxSqft: tier.maxSqft,
+                priceCents: tier.priceCents,
+                tierName: tier.tierName,
+                sortOrder: index,
+              })),
+            });
+          }
           showToast("Bundle created successfully", "success");
           router.push("/services/bundles");
         } else {
@@ -309,6 +370,19 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
             bundleId: initialData.id,
             services: bundleServices,
           });
+          // Update pricing tiers for tiered bundles
+          if (formData.bundleType === "tiered_sqft" || formData.pricingMethod === "tiered") {
+            await setBundlePricingTiers({
+              bundleId: initialData.id,
+              tiers: pricingTiers.map((tier, index) => ({
+                minSqft: tier.minSqft,
+                maxSqft: tier.maxSqft,
+                priceCents: tier.priceCents,
+                tierName: tier.tierName,
+                sortOrder: index,
+              })),
+            });
+          }
           showToast("Bundle updated successfully", "success");
           router.push("/services/bundles");
         } else {
@@ -429,12 +503,20 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
                 <button
                   key={type.value}
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
+                    const newBundleType = type.value as "fixed" | "tiered" | "custom" | "sqft_based" | "tiered_sqft";
+                    let newPricingMethod: "fixed" | "per_sqft" | "tiered" = "fixed";
+                    if (newBundleType === "sqft_based") {
+                      newPricingMethod = "per_sqft";
+                    } else if (newBundleType === "tiered_sqft") {
+                      newPricingMethod = "tiered";
+                    }
                     setFormData((prev) => ({
                       ...prev,
-                      bundleType: type.value as "fixed" | "tiered" | "custom",
-                    }))
-                  }
+                      bundleType: newBundleType,
+                      pricingMethod: newPricingMethod,
+                    }));
+                  }}
                   className={cn(
                     "rounded-lg border p-4 text-left transition-all",
                     formData.bundleType === type.value
@@ -453,43 +535,281 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
             </div>
           </div>
 
-          {/* Price */}
-          <div>
-            <label
-              htmlFor="price"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
-              Bundle Price <span className="text-[var(--error)]">*</span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground-muted">
-                $
-              </span>
-              <input
-                type="number"
-                id="price"
-                min="0"
-                step="0.01"
-                value={formData.priceCents / 100 || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    priceCents: Math.round(
-                      parseFloat(e.target.value || "0") * 100
-                    ),
-                  }))
-                }
-                placeholder="0.00"
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-8 pr-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              />
+          {/* Price - Only show for fixed pricing */}
+          {(formData.bundleType === "fixed" || formData.bundleType === "tiered" || formData.bundleType === "custom") && (
+            <div>
+              <label
+                htmlFor="price"
+                className="block text-sm font-medium text-foreground mb-1.5"
+              >
+                Bundle Price <span className="text-[var(--error)]">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground-muted">
+                  $
+                </span>
+                <input
+                  type="number"
+                  id="price"
+                  min="0"
+                  step="0.01"
+                  value={formData.priceCents / 100 || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      priceCents: Math.round(
+                        parseFloat(e.target.value || "0") * 100
+                      ),
+                    }))
+                  }
+                  placeholder="0.00"
+                  required
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-8 pr-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                />
+              </div>
+              {savingsPercent > 0 && (
+                <p className="mt-1.5 text-xs text-[var(--success)]">
+                  {savingsPercent}% savings vs. purchasing services separately
+                </p>
+              )}
             </div>
-            {savingsPercent > 0 && (
-              <p className="mt-1.5 text-xs text-[var(--success)]">
-                {savingsPercent}% savings vs. purchasing services separately
+          )}
+
+          {/* Per Sqft Pricing - Show for sqft_based bundles */}
+          {formData.bundleType === "sqft_based" && (
+            <div className="space-y-4 p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+              <h4 className="text-sm font-medium text-foreground">
+                Square Footage Pricing
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="pricePerSqft"
+                    className="block text-xs font-medium text-foreground-muted mb-1.5"
+                  >
+                    Price per Sqft <span className="text-[var(--error)]">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted text-sm">
+                      $
+                    </span>
+                    <input
+                      type="number"
+                      id="pricePerSqft"
+                      min="0"
+                      step="0.01"
+                      value={formData.pricePerSqftCents / 100 || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          pricePerSqftCents: Math.round(
+                            parseFloat(e.target.value || "0") * 100
+                          ),
+                          pricingMethod: "per_sqft",
+                        }))
+                      }
+                      placeholder="0.15"
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] pl-7 pr-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label
+                    htmlFor="sqftIncrements"
+                    className="block text-xs font-medium text-foreground-muted mb-1.5"
+                  >
+                    Sqft Increments
+                  </label>
+                  <input
+                    type="number"
+                    id="sqftIncrements"
+                    min="1"
+                    value={formData.sqftIncrements || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sqftIncrements: parseInt(e.target.value) || 500,
+                      }))
+                    }
+                    placeholder="500"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="minSqft"
+                    className="block text-xs font-medium text-foreground-muted mb-1.5"
+                  >
+                    Minimum Sqft
+                  </label>
+                  <input
+                    type="number"
+                    id="minSqft"
+                    min="0"
+                    value={formData.minSqft || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        minSqft: parseInt(e.target.value) || 0,
+                      }))
+                    }
+                    placeholder="1000"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="maxSqft"
+                    className="block text-xs font-medium text-foreground-muted mb-1.5"
+                  >
+                    Maximum Sqft
+                  </label>
+                  <input
+                    type="number"
+                    id="maxSqft"
+                    min="0"
+                    value={formData.maxSqft || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        maxSqft: parseInt(e.target.value) || null,
+                      }))
+                    }
+                    placeholder="10000 (optional)"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                </div>
+              </div>
+              {formData.pricePerSqftCents > 0 && (
+                <p className="text-xs text-foreground-muted">
+                  Example: 2,000 sqft = {formatCurrency(2000 * formData.pricePerSqftCents)}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Tiered Sqft Pricing - Show for tiered_sqft bundles */}
+          {formData.bundleType === "tiered_sqft" && (
+            <div className="space-y-4 p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-foreground">
+                  Pricing Tiers
+                </h4>
+                <button
+                  type="button"
+                  onClick={handleAddPricingTier}
+                  className="flex items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                >
+                  <PlusIcon className="h-3.5 w-3.5" />
+                  Add Tier
+                </button>
+              </div>
+
+              {pricingTiers.length === 0 ? (
+                <div className="text-center py-6 text-sm text-foreground-muted">
+                  No pricing tiers configured. Add tiers to set prices for different square footage ranges.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pricingTiers.map((tier, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)]"
+                    >
+                      <div className="flex-1 grid grid-cols-4 gap-3">
+                        <div>
+                          <label className="block text-xs text-foreground-muted mb-1">
+                            Tier Name
+                          </label>
+                          <input
+                            type="text"
+                            value={tier.tierName || ""}
+                            onChange={(e) =>
+                              handleUpdatePricingTier(index, {
+                                tierName: e.target.value || null,
+                              })
+                            }
+                            placeholder="e.g., Small"
+                            className="w-full rounded-md border border-[var(--card-border)] bg-[var(--background)] px-2.5 py-1.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-foreground-muted mb-1">
+                            Min Sqft
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={tier.minSqft}
+                            onChange={(e) =>
+                              handleUpdatePricingTier(index, {
+                                minSqft: parseInt(e.target.value) || 0,
+                              })
+                            }
+                            className="w-full rounded-md border border-[var(--card-border)] bg-[var(--background)] px-2.5 py-1.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-foreground-muted mb-1">
+                            Max Sqft
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={tier.maxSqft || ""}
+                            onChange={(e) =>
+                              handleUpdatePricingTier(index, {
+                                maxSqft: parseInt(e.target.value) || null,
+                              })
+                            }
+                            placeholder="No limit"
+                            className="w-full rounded-md border border-[var(--card-border)] bg-[var(--background)] px-2.5 py-1.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-foreground-muted mb-1">
+                            Price
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-foreground-muted text-xs">
+                              $
+                            </span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={tier.priceCents / 100 || ""}
+                              onChange={(e) =>
+                                handleUpdatePricingTier(index, {
+                                  priceCents: Math.round(
+                                    parseFloat(e.target.value || "0") * 100
+                                  ),
+                                })
+                              }
+                              className="w-full rounded-md border border-[var(--card-border)] bg-[var(--background)] pl-5 pr-2.5 py-1.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePricingTier(index)}
+                        className="mt-5 p-1.5 rounded-lg text-foreground-muted hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors"
+                      >
+                        <CloseIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-xs text-foreground-muted">
+                Tiers should not overlap. Leave &ldquo;Max Sqft&rdquo; empty for the last tier to accept any larger properties.
               </p>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Description */}
           <div>
@@ -816,7 +1136,10 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
               isSaving ||
               !formData.name ||
               !formData.slug ||
-              formData.priceCents <= 0
+              // Validate pricing based on bundle type
+              (formData.bundleType === "sqft_based" && formData.pricePerSqftCents <= 0) ||
+              (formData.bundleType === "tiered_sqft" && pricingTiers.length === 0) ||
+              (!["sqft_based", "tiered_sqft"].includes(formData.bundleType) && formData.priceCents <= 0)
             }
             className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -849,6 +1172,14 @@ function GripIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M3 7a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1Zm0 6a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
     </svg>
   );
 }

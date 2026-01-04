@@ -30,27 +30,52 @@ interface LineItem {
   itemType: LineItemType;
 }
 
+interface OrderData {
+  orderId: string;
+  orderNumber: string;
+  clientId?: string;
+  clientName?: string | null;
+  clientEmail?: string | null;
+  notes?: string;
+  items: Array<{
+    description: string;
+    quantity: number;
+    unitCents: number;
+    itemType: LineItemType;
+  }>;
+}
+
 interface InvoiceFormProps {
   clients: Client[];
   services: Service[];
+  fromOrder?: OrderData;
 }
 
-export function InvoiceForm({ clients, services }: InvoiceFormProps) {
+export function InvoiceForm({ clients, services, fromOrder }: InvoiceFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState(fromOrder?.clientId || "");
   const [dueDate, setDueDate] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() + 30);
     return date.toISOString().split("T")[0];
   });
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(fromOrder?.notes || "");
   const [terms, setTerms] = useState("Payment is due within 30 days of invoice date.");
-  const [lineItems, setLineItems] = useState<LineItem[]>([
-    { id: crypto.randomUUID(), description: "", quantity: 1, unitCents: 0, itemType: "service" },
-  ]);
+  const [lineItems, setLineItems] = useState<LineItem[]>(() => {
+    if (fromOrder?.items && fromOrder.items.length > 0) {
+      return fromOrder.items.map((item) => ({
+        id: crypto.randomUUID(),
+        description: item.description,
+        quantity: item.quantity,
+        unitCents: item.unitCents,
+        itemType: item.itemType,
+      }));
+    }
+    return [{ id: crypto.randomUUID(), description: "", quantity: 1, unitCents: 0, itemType: "service" }];
+  });
 
   const addLineItem = () => {
     setLineItems([
@@ -136,6 +161,25 @@ export function InvoiceForm({ clients, services }: InvoiceFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Order Source Banner */}
+      {fromOrder && (
+        <div className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+              <OrderIcon className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Creating invoice from order {fromOrder.orderNumber}
+              </p>
+              <p className="text-xs text-foreground-muted">
+                Line items and client info have been pre-filled from the order
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Client Selection */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <Select
@@ -344,6 +388,14 @@ function LoadingIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={className}>
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function OrderIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M6 5v1H4.667a1.75 1.75 0 0 0-1.743 1.598l-.826 9.5A1.75 1.75 0 0 0 3.84 19H16.16a1.75 1.75 0 0 0 1.743-1.902l-.826-9.5A1.75 1.75 0 0 0 15.333 6H14V5a4 4 0 0 0-8 0Zm4-2.5A2.5 2.5 0 0 0 7.5 5v1h5V5A2.5 2.5 0 0 0 10 2.5ZM7.5 10a2.5 2.5 0 0 0 5 0V8.75a.75.75 0 0 1 1.5 0V10a4 4 0 0 1-8 0V8.75a.75.75 0 0 1 1.5 0V10Z" clipRule="evenodd" />
     </svg>
   );
 }

@@ -9,6 +9,35 @@ type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function getValidEmail(value?: string | null): string | null {
+  if (!value) return null;
+  return EMAIL_REGEX.test(value.trim()) ? value.trim() : null;
+}
+
+function formatStripeError(error: unknown): string {
+  if (error && typeof error === "object") {
+    const stripeError = error as { message?: string; code?: string };
+
+    if (stripeError.code === "email_invalid") {
+      return "Please provide a valid email address in your organization settings before connecting Stripe.";
+    }
+
+    if (stripeError.message) {
+      if (stripeError.message.includes("platform profile")) {
+        return "Stripe Connect setup is incomplete for this platform. Complete the Stripe platform profile before onboarding accounts.";
+      }
+      if (stripeError.message.includes("managing losses")) {
+        return "Stripe Connect requires a platform profile update. Review loss management settings in Stripe and try again.";
+      }
+      return stripeError.message;
+    }
+  }
+
+  return "Failed to create Connect account";
+}
+
 /**
  * Create a Stripe Connect account for the organization and return the onboarding link
  */
@@ -22,6 +51,16 @@ export async function createConnectAccount(): Promise<
     // Get organization details
     const organization = await prisma.organization.findUnique({
       where: { id: organizationId },
+      include: {
+        members: {
+          where: { role: "owner" },
+          include: {
+            user: {
+              select: { email: true },
+            },
+          },
+        },
+      },
     });
 
     if (!organization) {
@@ -49,6 +88,12 @@ export async function createConnectAccount(): Promise<
 
     // Create a new Connect account
     // Note: Don't pre-fill email - Stripe will collect it during onboarding
+    const ownerEmail = organization.members[0]?.user?.email || null;
+    const supportEmail =
+      getValidEmail(organization.publicEmail) ||
+      getValidEmail(organization.emailReplyTo) ||
+      getValidEmail(ownerEmail);
+
     const account = await getStripe().accounts.create({
       type: "express",
       country: "US",
@@ -59,7 +104,9 @@ export async function createConnectAccount(): Promise<
       business_type: "individual",
       business_profile: {
         name: organization.name,
+        support_email: supportEmail || undefined,
       },
+      email: supportEmail || undefined,
       metadata: {
         organizationId,
         organizationName: organization.name,
@@ -94,10 +141,7 @@ export async function createConnectAccount(): Promise<
     };
   } catch (error) {
     console.error("Error creating Connect account:", error);
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to create Connect account" };
+    return { success: false, error: formatStripeError(error) };
   }
 }
 

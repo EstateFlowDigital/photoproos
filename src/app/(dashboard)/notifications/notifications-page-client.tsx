@@ -12,14 +12,16 @@ import {
 } from "@/lib/actions/notifications";
 
 type TabType = "notifications" | "activity";
-type NotificationFilterType = "all" | "payments" | "galleries" | "bookings" | "contracts" | "system";
+type NotificationFilterType = "all" | "payments" | "galleries" | "bookings" | "contracts" | "questionnaires" | "leads" | "system";
 
 const NOTIFICATION_FILTERS: { value: NotificationFilterType; label: string; types: string[] }[] = [
   { value: "all", label: "All", types: [] },
-  { value: "payments", label: "Payments", types: ["payment_received", "payment_failed"] },
+  { value: "payments", label: "Payments", types: ["payment_received", "payment_failed", "invoice_sent", "invoice_paid"] },
   { value: "galleries", label: "Galleries", types: ["gallery_viewed", "gallery_delivered"] },
-  { value: "bookings", label: "Bookings", types: ["booking_confirmed", "booking_created"] },
+  { value: "bookings", label: "Bookings", types: ["booking_confirmed", "booking_created", "booking_cancelled", "booking_reminder"] },
   { value: "contracts", label: "Contracts", types: ["contract_signed", "contract_sent"] },
+  { value: "questionnaires", label: "Questionnaires", types: ["questionnaire_assigned", "questionnaire_completed", "questionnaire_reminder"] },
+  { value: "leads", label: "Leads", types: ["lead_received", "client_added"] },
   { value: "system", label: "System", types: ["system", "invoice_overdue"] },
 ];
 
@@ -446,29 +448,86 @@ function NotificationIcon({ type, read }: { type: string; read: boolean }) {
   const getStyles = () => {
     switch (type) {
       case "payment_received":
+      case "invoice_paid":
         return {
           bg: read ? "bg-[var(--success)]/10" : "bg-[var(--success)]/20",
           icon: <CurrencyIcon className={`${iconClasses} text-[var(--success)]`} />,
+        };
+      case "payment_failed":
+        return {
+          bg: read ? "bg-[var(--error)]/10" : "bg-[var(--error)]/20",
+          icon: <CurrencyIcon className={`${iconClasses} text-[var(--error)]`} />,
         };
       case "gallery_viewed":
         return {
           bg: read ? "bg-[var(--primary)]/10" : "bg-[var(--primary)]/20",
           icon: <EyeIcon className={`${iconClasses} text-[var(--primary)]`} />,
         };
+      case "gallery_delivered":
+        return {
+          bg: read ? "bg-[var(--success)]/10" : "bg-[var(--success)]/20",
+          icon: <PhotoIcon className={`${iconClasses} text-[var(--success)]`} />,
+        };
       case "contract_signed":
         return {
           bg: read ? "bg-[var(--success)]/10" : "bg-[var(--success)]/20",
           icon: <CheckIcon className={`${iconClasses} text-[var(--success)]`} />,
         };
+      case "contract_sent":
+        return {
+          bg: read ? "bg-[var(--primary)]/10" : "bg-[var(--primary)]/20",
+          icon: <DocumentIcon className={`${iconClasses} text-[var(--primary)]`} />,
+        };
+      case "booking_created":
       case "booking_confirmed":
         return {
           bg: read ? "bg-[var(--primary)]/10" : "bg-[var(--primary)]/20",
           icon: <CalendarIcon className={`${iconClasses} text-[var(--primary)]`} />,
         };
+      case "booking_cancelled":
+        return {
+          bg: read ? "bg-[var(--error)]/10" : "bg-[var(--error)]/20",
+          icon: <CalendarIcon className={`${iconClasses} text-[var(--error)]`} />,
+        };
+      case "booking_reminder":
+        return {
+          bg: read ? "bg-[var(--warning)]/10" : "bg-[var(--warning)]/20",
+          icon: <ClockIcon className={`${iconClasses} text-[var(--warning)]`} />,
+        };
       case "invoice_overdue":
         return {
           bg: read ? "bg-[var(--error)]/10" : "bg-[var(--error)]/20",
           icon: <AlertIcon className={`${iconClasses} text-[var(--error)]`} />,
+        };
+      case "invoice_sent":
+        return {
+          bg: read ? "bg-[var(--primary)]/10" : "bg-[var(--primary)]/20",
+          icon: <DocumentIcon className={`${iconClasses} text-[var(--primary)]`} />,
+        };
+      case "questionnaire_assigned":
+        return {
+          bg: read ? "bg-[var(--primary)]/10" : "bg-[var(--primary)]/20",
+          icon: <ClipboardIcon className={`${iconClasses} text-[var(--primary)]`} />,
+        };
+      case "questionnaire_completed":
+        return {
+          bg: read ? "bg-[var(--success)]/10" : "bg-[var(--success)]/20",
+          icon: <ClipboardIcon className={`${iconClasses} text-[var(--success)]`} />,
+        };
+      case "questionnaire_reminder":
+        return {
+          bg: read ? "bg-[var(--warning)]/10" : "bg-[var(--warning)]/20",
+          icon: <ClipboardIcon className={`${iconClasses} text-[var(--warning)]`} />,
+        };
+      case "lead_received":
+        return {
+          bg: read ? "bg-[var(--primary)]/10" : "bg-[var(--primary)]/20",
+          icon: <UserPlusIcon className={`${iconClasses} text-[var(--primary)]`} />,
+        };
+      case "client_added":
+        return {
+          bg: read ? "bg-[var(--success)]/10" : "bg-[var(--success)]/20",
+          icon: <UserIcon className={`${iconClasses} text-[var(--success)]`} />,
         };
       default:
         return {
@@ -672,6 +731,23 @@ function InfoIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ClipboardIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M15.988 3.012A2.25 2.25 0 0 1 18 5.25v6.5A2.25 2.25 0 0 1 15.75 14H13.5V7A2.5 2.5 0 0 0 11 4.5H8.128a2.252 2.252 0 0 1 1.884-1.488A2.25 2.25 0 0 1 12.25 1h1.5a2.25 2.25 0 0 1 2.238 2.012ZM11.5 3.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75v.25h-3v-.25Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M2 7a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7Zm2 3.25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Zm0 3.5a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function UserPlusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.573.398-.254.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM16.75 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z" />
     </svg>
   );
 }

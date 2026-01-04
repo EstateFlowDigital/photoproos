@@ -5,11 +5,24 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { InvoiceForm } from "./invoice-form";
+import { getOrder } from "@/lib/actions/orders";
 
-export default async function NewInvoicePage() {
+interface PageProps {
+  searchParams: Promise<{ fromOrder?: string }>;
+}
+
+export default async function NewInvoicePage({ searchParams }: PageProps) {
+  const { fromOrder } = await searchParams;
+
   const auth = await getAuthContext();
   if (!auth) {
     redirect("/sign-in");
+  }
+
+  // If creating from an order, fetch the order data
+  let orderData = null;
+  if (fromOrder) {
+    orderData = await getOrder(fromOrder);
   }
 
   // Fetch clients for the dropdown
@@ -42,8 +55,8 @@ export default async function NewInvoicePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Create Invoice"
-        subtitle="Generate a new invoice for your client"
+        title={orderData ? `Invoice from ${orderData.orderNumber}` : "Create Invoice"}
+        subtitle={orderData ? "Generate an invoice from order details" : "Generate a new invoice for your client"}
       />
 
       {/* Breadcrumb */}
@@ -58,7 +71,26 @@ export default async function NewInvoicePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Form */}
         <div className="lg:col-span-2">
-          <InvoiceForm clients={clients} services={services} />
+          <InvoiceForm
+            clients={clients}
+            services={services}
+            fromOrder={orderData ? {
+              orderId: orderData.id,
+              orderNumber: orderData.orderNumber,
+              clientId: orderData.client?.id,
+              clientName: orderData.clientName,
+              clientEmail: orderData.clientEmail,
+              notes: `Invoice generated from order ${orderData.orderNumber}`,
+              items: orderData.items.map((item) => ({
+                description: item.sqft
+                  ? `${item.name} (${item.sqft.toLocaleString()} sqft${item.pricingTierName ? ` - ${item.pricingTierName}` : ""})`
+                  : item.name,
+                quantity: item.quantity,
+                unitCents: item.unitCents,
+                itemType: "service" as const,
+              })),
+            } : undefined}
+          />
         </div>
 
         {/* Sidebar */}

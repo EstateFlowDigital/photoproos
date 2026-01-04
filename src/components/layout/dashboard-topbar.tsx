@@ -47,11 +47,24 @@ function formatRelativeTime(date: Date): string {
 // Map database notification types to UI types
 function mapNotificationType(dbType: string): string {
   switch (dbType) {
-    case "payment_received": return "payment";
+    case "payment_received":
+    case "invoice_paid": return "payment";
+    case "payment_failed": return "payment_failed";
     case "gallery_viewed": return "view";
-    case "contract_signed": return "contract";
-    case "booking_confirmed": return "booking";
+    case "gallery_delivered": return "gallery";
+    case "contract_signed":
+    case "contract_sent": return "contract";
+    case "booking_confirmed":
+    case "booking_created": return "booking";
+    case "booking_cancelled": return "booking_cancelled";
+    case "booking_reminder": return "reminder";
     case "invoice_overdue": return "expiring";
+    case "invoice_sent": return "invoice";
+    case "questionnaire_assigned":
+    case "questionnaire_reminder": return "questionnaire";
+    case "questionnaire_completed": return "questionnaire_done";
+    case "lead_received": return "lead";
+    case "client_added": return "client";
     case "system": return "system";
     default: return "system";
   }
@@ -276,12 +289,21 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "payment": return <PaymentIcon className="h-4 w-4 text-[var(--success)]" />;
+      case "payment_failed": return <PaymentIcon className="h-4 w-4 text-[var(--error)]" />;
       case "view": return <EyeIcon className="h-4 w-4 text-[var(--primary)]" />;
+      case "gallery": return <GalleryIcon className="h-4 w-4 text-[var(--success)]" />;
       case "download": return <DownloadIcon className="h-4 w-4 text-[var(--primary)]" />;
       case "comment": return <CommentIcon className="h-4 w-4 text-[var(--warning)]" />;
       case "expiring": return <ClockIcon className="h-4 w-4 text-[var(--error)]" />;
       case "contract": return <ContractIcon className="h-4 w-4 text-[var(--primary)]" />;
       case "booking": return <CalendarIcon className="h-4 w-4 text-[var(--primary)]" />;
+      case "booking_cancelled": return <CalendarIcon className="h-4 w-4 text-[var(--error)]" />;
+      case "reminder": return <ClockIcon className="h-4 w-4 text-[var(--warning)]" />;
+      case "invoice": return <InvoiceIcon className="h-4 w-4 text-[var(--primary)]" />;
+      case "questionnaire": return <ClipboardIcon className="h-4 w-4 text-[var(--primary)]" />;
+      case "questionnaire_done": return <ClipboardIcon className="h-4 w-4 text-[var(--success)]" />;
+      case "lead": return <UserPlusIcon className="h-4 w-4 text-[var(--primary)]" />;
+      case "client": return <UserIcon className="h-4 w-4 text-[var(--success)]" />;
       default: return <BellIcon className="h-4 w-4" />;
     }
   };
@@ -687,6 +709,23 @@ function InvoiceIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ClipboardIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M15.988 3.012A2.25 2.25 0 0 1 18 5.25v6.5A2.25 2.25 0 0 1 15.75 14H13.5V7A2.5 2.5 0 0 0 11 4.5H8.128a2.252 2.252 0 0 1 1.884-1.488A2.25 2.25 0 0 1 12.25 1h1.5a2.25 2.25 0 0 1 2.238 2.012ZM11.5 3.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75v.25h-3v-.25Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M2 7a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7Zm2 3.25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Zm0 3.5a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function UserPlusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.573.398-.254.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM16.75 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z" />
     </svg>
   );
 }
