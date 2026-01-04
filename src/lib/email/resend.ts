@@ -39,12 +39,28 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
   const { to, subject, react, text, from = DEFAULT_FROM_EMAIL, replyTo } = options;
 
   try {
+    let html: string | undefined;
+    if (react) {
+      try {
+        html = await render(react);
+      } catch (renderError) {
+        console.error("Error rendering email:", renderError);
+        if (!text) {
+          return {
+            success: false,
+            error:
+              renderError instanceof Error ? renderError.message : "Failed to render email",
+          };
+        }
+      }
+    }
+
     // Build email options based on what's provided
     const emailOptions: {
       from: string;
       to: string[];
       subject: string;
-      react?: React.ReactElement;
+      html?: string;
       text?: string;
       replyTo?: string;
     } = {
@@ -54,9 +70,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
       replyTo,
     };
 
-    if (react) {
-      emailOptions.react = react;
-    } else if (text) {
+    if (html) {
+      emailOptions.html = html;
+    }
+
+    if (text && !emailOptions.text) {
       emailOptions.text = text;
     }
 
@@ -71,45 +89,6 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
 
     return { success: true, resendId: data?.id };
   } catch (err) {
-    if (react) {
-      try {
-        const html = await render(react);
-        const fallbackOptions: {
-          from: string;
-          to: string[];
-          subject: string;
-          html: string;
-          replyTo?: string;
-        } = {
-          from,
-          to: Array.isArray(to) ? to : [to],
-          subject,
-          html,
-          replyTo,
-        };
-
-        const { data, error } = await getResend().emails.send(
-          fallbackOptions as CreateEmailOptions
-        );
-
-        if (error) {
-          console.error("Error sending email:", error);
-          return { success: false, error: error.message };
-        }
-
-        return { success: true, resendId: data?.id };
-      } catch (fallbackError) {
-        console.error("Failed to send email:", fallbackError);
-        return {
-          success: false,
-          error:
-            fallbackError instanceof Error
-              ? fallbackError.message
-              : "Unknown error",
-        };
-      }
-    }
-
     console.error("Failed to send email:", err);
     return {
       success: false,
