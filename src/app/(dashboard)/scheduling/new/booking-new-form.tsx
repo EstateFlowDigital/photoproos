@@ -250,8 +250,67 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
     });
   };
 
+  // Build order title from items with sqft info
+  const orderTitle = fromOrder
+    ? fromOrder.items.map((item) => {
+        if (item.sqft) {
+          return `${item.name} (${item.sqft.toLocaleString()} sqft${item.pricingTierName ? ` - ${item.pricingTierName}` : ""})`;
+        }
+        return item.name;
+      }).join(", ")
+    : "";
+
+  // Format preferred date for input
+  const preferredDateValue = fromOrder?.preferredDate
+    ? new Date(fromOrder.preferredDate).toISOString().split("T")[0]
+    : "";
+
+  // Map preferred time to time slot value
+  const preferredTimeValue = fromOrder?.preferredTime
+    ? fromOrder.preferredTime === "morning"
+      ? "09:00"
+      : fromOrder.preferredTime === "afternoon"
+        ? "13:00"
+        : fromOrder.preferredTime === "evening"
+          ? "17:00"
+          : ""
+    : "";
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Order Source Banner */}
+      {fromOrder && (
+        <div className="rounded-xl border border-[var(--success)]/30 bg-[var(--success)]/5 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/10 text-[var(--success)]">
+              <OrderIcon className="h-4 w-4" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">
+                Creating booking from order {fromOrder.orderNumber}
+              </p>
+              <p className="text-xs text-foreground-muted mt-0.5">
+                {fromOrder.items.length > 0 && (
+                  <span>
+                    {fromOrder.items.map((item, i) => (
+                      <span key={i}>
+                        {i > 0 && ", "}
+                        {item.name}
+                        {item.sqft && (
+                          <span className="text-[var(--primary)]">
+                            {" "}({item.sqft.toLocaleString()} sqft{item.pricingTierName && ` - ${item.pricingTierName}`})
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Error Message */}
       {error && (
         <div className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-3">
@@ -273,6 +332,7 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
               id="title"
               name="title"
               placeholder="e.g., Downtown Luxury Listing"
+              defaultValue={orderTitle}
               required
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
@@ -283,6 +343,7 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
               name="clientId"
               label="Client"
               placeholder="Select a client (optional)..."
+              value={fromOrder?.clientId}
               options={clients.map((client) => ({
                 value: client.id,
                 label: `${client.name} (${client.contact})`,
@@ -311,6 +372,7 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
               type="date"
               id="date"
               name="date"
+              defaultValue={preferredDateValue}
               required
               className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
@@ -322,6 +384,7 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
               label="Start Time"
               required
               placeholder="Select start time..."
+              value={preferredTimeValue}
               options={timeSlots}
             />
             <Select
@@ -775,6 +838,14 @@ function BellIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6Zm0 14.5a2 2 0 0 1-1.95-1.557 33.54 33.54 0 0 0 3.9 0A2 2 0 0 1 10 16.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function OrderIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M6 5v1H4.667a1.75 1.75 0 0 0-1.743 1.598l-.826 9.5A1.75 1.75 0 0 0 3.84 19H16.16a1.75 1.75 0 0 0 1.743-1.902l-.826-9.5A1.75 1.75 0 0 0 15.333 6H14V5a4 4 0 0 0-8 0Zm4-2.5A2.5 2.5 0 0 0 7.5 5v1h5V5A2.5 2.5 0 0 0 10 2.5ZM7.5 10a2.5 2.5 0 0 0 5 0V8.75a.75.75 0 0 1 1.5 0V10a4 4 0 0 1-8 0V8.75a.75.75 0 0 1 1.5 0V10Z" clipRule="evenodd" />
     </svg>
   );
 }

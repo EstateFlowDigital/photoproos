@@ -23,6 +23,7 @@ const allNavItems: NavItem[] = [
   { label: "Services", href: "/services", icon: ServicesIcon, moduleId: "services" },
   { label: "Clients", href: "/clients", icon: ClientsIcon, moduleId: "clients" },
   { label: "Contracts", href: "/contracts", icon: ContractsIcon, moduleId: "contracts" },
+  { label: "Orders", href: "/orders", icon: OrdersIcon, moduleId: "invoices" }, // Orders are part of invoices module
   { label: "Invoices", href: "/invoices", icon: InvoiceIcon, moduleId: "invoices" },
   { label: "Payments", href: "/payments", icon: PaymentsIcon, moduleId: "invoices" }, // Payments is part of invoices module
   { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
@@ -303,6 +304,14 @@ function InvoiceIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function OrdersIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M6 5v1H4.667a1.75 1.75 0 0 0-1.743 1.598l-.826 9.5A1.75 1.75 0 0 0 3.84 19H16.16a1.75 1.75 0 0 0 1.743-1.902l-.826-9.5A1.75 1.75 0 0 0 15.333 6H14V5a4 4 0 0 0-8 0Zm4-2.5A2.5 2.5 0 0 0 7.5 5v1h5V5A2.5 2.5 0 0 0 10 2.5ZM7.5 10a2.5 2.5 0 0 0 5 0V8.75a.75.75 0 0 1 1.5 0V10a4 4 0 0 1-8 0V8.75a.75.75 0 0 1 1.5 0V10Z" clipRule="evenodd" />
     </svg>
   );
 }

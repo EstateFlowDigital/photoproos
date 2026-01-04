@@ -847,3 +847,159 @@ export async function getOrderStats() {
     };
   }
 }
+
+/**
+ * Get sqft analytics for orders
+ * Provides metrics on square footage-based pricing
+ */
+export async function getSqftAnalytics() {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    // Get all order items with sqft data from paid orders
+    const sqftItems = await prisma.orderItem.findMany({
+      where: {
+        sqft: { not: null },
+        order: {
+          organizationId,
+          status: { in: ["paid", "completed"] },
+        },
+      },
+      include: {
+        order: {
+          select: {
+            paidAt: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    // Recent sqft items (last 30 days)
+    const recentSqftItems = sqftItems.filter(
+      (item) => item.order.paidAt && item.order.paidAt >= thirtyDaysAgo
+    );
+
+    // Previous period (30-60 days ago) for trend calculation
+    const previousSqftItems = sqftItems.filter(
+      (item) =>
+        item.order.paidAt &&
+        item.order.paidAt >= sixtyDaysAgo &&
+        item.order.paidAt < thirtyDaysAgo
+    );
+
+    // Calculate totals
+    const totalSqft = sqftItems.reduce((sum, item) => sum + (item.sqft || 0), 0);
+    const totalRevenue = sqftItems.reduce((sum, item) => sum + item.totalCents, 0);
+    const recentSqft = recentSqftItems.reduce((sum, item) => sum + (item.sqft || 0), 0);
+    const recentRevenue = recentSqftItems.reduce((sum, item) => sum + item.totalCents, 0);
+    const previousSqft = previousSqftItems.reduce((sum, item) => sum + (item.sqft || 0), 0);
+
+    // Calculate averages
+    const avgSqftPerOrder = sqftItems.length > 0 ? Math.round(totalSqft / sqftItems.length) : 0;
+    const revenuePerSqft = totalSqft > 0 ? Math.round(totalRevenue / totalSqft) : 0;
+
+    // Calculate trend (percentage change in sqft from previous period)
+    const sqftTrend = previousSqft > 0
+      ? Math.round(((recentSqft - previousSqft) / previousSqft) * 100)
+      : recentSqft > 0 ? 100 : 0;
+
+    // Group by pricing tier
+    const tierBreakdown: Record<string, { count: number; sqft: number; revenue: number }> = {};
+    for (const item of sqftItems) {
+      const tierName = item.pricingTierName || "Standard";
+      if (!tierBreakdown[tierName]) {
+        tierBreakdown[tierName] = { count: 0, sqft: 0, revenue: 0 };
+      }
+      tierBreakdown[tierName].count += 1;
+      tierBreakdown[tierName].sqft += item.sqft || 0;
+      tierBreakdown[tierName].revenue += item.totalCents;
+    }
+
+    // Convert to array and sort by revenue
+    const tiers = Object.entries(tierBreakdown)
+      .map(([name, data]) => ({
+        name,
+        ...data,
+        avgPricePerSqft: data.sqft > 0 ? Math.round(data.revenue / data.sqft) : 0,
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
+
+    // Calculate distribution by sqft range
+    const sqftRanges = [
+      { label: "Under 1,000", min: 0, max: 1000 },
+      { label: "1,000 - 2,499", min: 1000, max: 2500 },
+      { label: "2,500 - 4,999", min: 2500, max: 5000 },
+      { label: "5,000 - 9,999", min: 5000, max: 10000 },
+      { label: "10,000+", min: 10000, max: Infinity },
+    ];
+
+    const distribution = sqftRanges.map((range) => {
+      const items = sqftItems.filter(
+        (item) => (item.sqft || 0) >= range.min && (item.sqft || 0) < range.max
+      );
+      return {
+        label: range.label,
+        count: items.length,
+        sqft: items.reduce((sum, item) => sum + (item.sqft || 0), 0),
+        revenue: items.reduce((sum, item) => sum + item.totalCents, 0),
+      };
+    }).filter((range) => range.count > 0);
+
+    // Monthly breakdown (last 6 months)
+    const monthlyData: Record<string, { sqft: number; revenue: number; count: number }> = {};
+    for (const item of sqftItems) {
+      const date = item.order.paidAt || item.order.createdAt;
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { sqft: 0, revenue: 0, count: 0 };
+      }
+      monthlyData[monthKey].sqft += item.sqft || 0;
+      monthlyData[monthKey].revenue += item.totalCents;
+      monthlyData[monthKey].count += 1;
+    }
+
+    // Convert to sorted array (last 6 months)
+    const monthly = Object.entries(monthlyData)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-6)
+      .map(([month, data]) => ({
+        month,
+        monthLabel: new Date(`${month}-01`).toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        }),
+        ...data,
+      }));
+
+    return {
+      success: true,
+      data: {
+        summary: {
+          totalSqft,
+          totalRevenue,
+          totalOrders: sqftItems.length,
+          avgSqftPerOrder,
+          revenuePerSqft,
+          recentSqft,
+          recentRevenue,
+          sqftTrend,
+        },
+        tiers,
+        distribution,
+        monthly,
+      },
+    };
+  } catch (error) {
+    console.error("[Orders] Error fetching sqft analytics:", error);
+    return {
+      success: false,
+      error: "Failed to fetch sqft analytics",
+      data: null,
+    };
+  }
+}

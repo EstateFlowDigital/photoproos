@@ -44,11 +44,11 @@ export function QuestionnairesPageClient({
   const [showAssignModal, setShowAssignModal] = useState(false);
 
   const statCards = [
-    { label: "Total Sent", value: stats?.total || 0, icon: FileText, color: "text-blue-400" },
-    { label: "Pending", value: stats?.pending || 0, icon: Clock, color: "text-yellow-400" },
-    { label: "In Progress", value: stats?.inProgress || 0, icon: Users, color: "text-purple-400" },
-    { label: "Completed", value: stats?.completed || 0, icon: CheckCircle, color: "text-green-400" },
-    { label: "Overdue", value: stats?.overdue || 0, icon: AlertTriangle, color: "text-red-400" },
+    { label: "Total Sent", value: stats?.total || 0, icon: FileText, color: "text-[var(--primary)]" },
+    { label: "Pending", value: stats?.pending || 0, icon: Clock, color: "text-[var(--warning)]" },
+    { label: "In Progress", value: stats?.inProgress || 0, icon: Users, color: "text-[var(--ai)]" },
+    { label: "Completed", value: stats?.completed || 0, icon: CheckCircle, color: "text-[var(--success)]" },
+    { label: "Overdue", value: stats?.overdue || 0, icon: AlertTriangle, color: "text-[var(--error)]" },
   ];
 
   return (

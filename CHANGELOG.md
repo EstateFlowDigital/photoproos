@@ -75,6 +75,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Order confirmation page displays sqft and tier for bundles
     - `getOrderBySessionToken` and `getOrder` return sqft data
 
+- **Orders Management Dashboard**
+  - **Orders List Page** (`/orders`):
+    - View all orders with filtering by status (pending, paid, completed, cancelled)
+    - Summary stats: total orders, 30-day revenue, pending/paid counts
+    - Table view with client, items, preferred date, status, and total
+    - Quick navigation to order details
+  - **Order Detail Page** (`/orders/[id]`):
+    - Full order information with client details
+    - Order items with sqft and pricing tier info displayed
+    - Scheduling preferences (preferred date/time, location notes, flexibility)
+    - Linked records section showing connected invoice, booking, and client
+    - Payment status and timeline
+  - **Order-to-Invoice Conversion**:
+    - Create invoice directly from paid orders
+    - Pre-fills line items with sqft info in descriptions (e.g., "Bundle Name (2,500 sqft - Premium Tier)")
+    - Auto-selects linked client and pre-fills notes
+    - Order source banner shows connection to original order
+  - **Order-to-Booking Conversion**:
+    - Schedule booking directly from orders
+    - Pre-fills session title with service names and sqft info
+    - Uses order's preferred date/time as defaults
+    - Displays sqft and pricing tier info in order source banner
+  - **Order Actions**:
+    - Create Invoice and Schedule Booking quick actions
+    - Mark as Completed status update
+    - Cancel Order with automatic Stripe refund processing
+  - **Navigation Integration**:
+    - Orders added to main dashboard sidebar (under Invoices module)
+    - Context navigation linking Orders, Order Pages, and Invoices
+
+- **Sqft Analytics Dashboard** (`/orders/analytics`)
+  - **Summary Metrics**:
+    - Total square footage booked (all-time and last 30 days)
+    - Revenue from sqft-based orders
+    - Average sqft per order
+    - Revenue per sqft calculation
+    - Trend indicator comparing to previous 30-day period
+  - **Pricing Tier Breakdown**:
+    - Revenue distribution by pricing tier
+    - Order count and total sqft per tier
+    - Average price per sqft by tier
+    - Visual progress bars for comparison
+  - **Property Size Distribution**:
+    - Orders grouped by sqft ranges (Under 1K, 1-2.5K, 2.5-5K, 5-10K, 10K+)
+    - Count, total sqft, and revenue per range
+  - **Monthly Trend Chart**:
+    - 6-month sqft booking history
+    - Bar chart with hover tooltips showing monthly details
+  - **Server Action**: `getSqftAnalytics()` for comprehensive sqft metrics
+  - **Context Navigation**: Quick access from Orders page to Analytics view
+
+- **General Analytics Dashboard** (`/analytics`)
+  - Revenue overview (this month, YTD, trends)
+  - Invoice status tracking (pending, overdue)
+  - Revenue trend chart with projections
+  - Top clients by lifetime value
+  - Client LTV summary with repeat rate
+
 - **Leads Dashboard Enhancements**
   - **Search Functionality**:
     - Real-time search across all leads by name, email, and message content
@@ -870,7 +928,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Booking confirmation sends SMS notification to client
     - Uses templated messages with booking details
 
+- **Notification System Enhancements**
+  - **New Server Actions**:
+    - `createNotification()` - Helper function for creating notifications from any server action
+    - `deleteNotification()` - Delete individual notifications
+    - `deleteReadNotifications()` - Bulk cleanup of read notifications
+  - **Extended Notification Types** (Prisma schema + UI):
+    - Payments: `payment_received`, `payment_failed`
+    - Galleries: `gallery_viewed`, `gallery_delivered`
+    - Bookings: `booking_created`, `booking_confirmed`, `booking_cancelled`, `booking_reminder`
+    - Contracts: `contract_sent`, `contract_signed`
+    - Invoices: `invoice_sent`, `invoice_paid`, `invoice_overdue`
+    - Questionnaires: `questionnaire_assigned`, `questionnaire_completed`, `questionnaire_reminder`
+    - Leads & Clients: `lead_received`, `client_added`
+  - **Notification Filters**:
+    - Added "Questionnaires" filter to notifications page
+    - Added "Leads" filter to notifications page
+    - Extended existing filters with new notification types
+  - **Icon Improvements**:
+    - Type-specific icons for all notification types
+    - Color-coded icons (success, error, warning, primary)
+    - Consistent icons in topbar dropdown and notifications page
+
+- **Order Detail Page**
+  - **OrderActions component** for managing order status
+    - Status transitions dropdown (pending → paid → processing → completed)
+    - Cancel order action
+    - Quick actions: Create Invoice, Schedule Booking
+  - Links from orders list now navigate to order detail page
+
+- **Form Editor Placeholder**
+  - Added form editor client component placeholder
+  - Form editing route now renders properly
+
 ### Fixed
+- Orders page TypeScript error - status filter properly validated against allowed values
+- Order detail page missing OrderActions component - now implemented with status management
+- Form editor page missing FormEditorClient component - added placeholder component
+
 - Broken navigation links leading to 404 pages:
   - `/contracts/new` - Was missing, now properly implemented with full form
   - `/payments/new` in EmptyPayments component - Changed to `/invoices/new`
@@ -895,6 +990,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Google Calendar OAuth callback foreign key error - same fix as Dropbox
 - Projects page syntax error - missing closing `</div>` tag in list view causing build failure
 - OAuth callbacks now use correct Prisma field name (`clerkOrganizationId` instead of `clerkId`)
+
+- **UI Polish & Security Improvements**
+  - Portfolio Awards Section: Implemented missing awards section component for portfolio websites
+    - Support for grid, list, and carousel layouts
+    - Award icons with organization and year display
+  - Platform Referrals Admin Check: Added `requireAdmin()` security check to platform referral settings
+    - Both `getPlatformReferralSettings` and `updatePlatformReferralSettings` now require admin/owner role
+  - Design Token Compliance: Fixed hardcoded Tailwind colors to use CSS custom properties
+    - Contracts page: `text-blue-400` → `text-[var(--primary)]`
+    - Invoices page: `text-blue-400` → `text-[var(--primary)]`, `text-red-400` → `text-[var(--error)]`
+    - Questionnaires page: Updated stat card colors to use `--primary`, `--warning`, `--ai`, `--success`, `--error` tokens
 
 ### Added
 - Dashboard calendar component (`dashboard-calendar.tsx`) for unified scheduler view

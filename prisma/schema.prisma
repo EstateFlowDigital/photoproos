@@ -95,13 +95,35 @@ enum ActivityType {
 }
 
 enum NotificationType {
+  // Payments
   payment_received
+  payment_failed
+  // Galleries
   gallery_viewed
-  contract_signed
+  gallery_delivered
+  // Bookings
+  booking_created
   booking_confirmed
+  booking_cancelled
+  booking_reminder
+  // Contracts
+  contract_sent
+  contract_signed
+  // Invoices
+  invoice_sent
+  invoice_paid
   invoice_overdue
+  // Questionnaires
+  questionnaire_assigned
+  questionnaire_completed
+  questionnaire_reminder
+  // Leads & Clients
+  lead_received
+  client_added
+  // Referrals
   referral_signup
   referral_conversion
+  // System
   system
 }
 

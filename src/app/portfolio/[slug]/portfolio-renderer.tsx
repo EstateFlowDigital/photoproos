@@ -24,6 +24,7 @@ import { TextSection } from "./sections/text-section";
 import { ImageSection } from "./sections/image-section";
 import { VideoSection } from "./sections/video-section";
 import { SpacerSection } from "./sections/spacer-section";
+import { AwardsSection } from "./sections/awards-section";
 import { ShareButtons } from "./components/share-buttons";
 import { CommentsSection } from "./comments-section";
 
@@ -468,8 +469,7 @@ function SectionRenderer({
       // Skip custom_html for security
       return null;
     case "awards":
-      // TODO: Implement awards section
-      return null;
+      return <AwardsSection config={config} templateConfig={templateConfig} />;
     default:
       return null;
   }

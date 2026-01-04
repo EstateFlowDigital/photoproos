@@ -10,6 +10,7 @@ import {
   sendReferralSignupNotificationEmail,
   sendReferralRewardEarnedEmail,
 } from "@/lib/email/send";
+import { requireAdmin } from "@/lib/actions/auth-helper";
 
 // ============================================================================
 // TYPES
@@ -794,6 +795,9 @@ export async function applyReward(
  */
 export async function getPlatformReferralSettings(): Promise<ActionResult<Awaited<ReturnType<typeof getPlatformSettings>>>> {
   try {
+    // Require admin/owner role to view platform settings
+    await requireAdmin();
+
     const settings = await getPlatformSettings();
     return { success: true, data: settings };
   } catch (error) {
@@ -818,7 +822,8 @@ export async function updatePlatformReferralSettings(
   }
 ): Promise<ActionResult> {
   try {
-    // TODO: Add admin check here
+    // Require admin/owner role to update platform settings
+    await requireAdmin();
 
     await prisma.platformReferralSettings.upsert({
       where: { id: "default" },

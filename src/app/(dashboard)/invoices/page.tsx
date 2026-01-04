@@ -147,13 +147,13 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">Pending</p>
-          <p className="mt-2 text-2xl font-semibold text-blue-400">
+          <p className="mt-2 text-2xl font-semibold text-[var(--primary)]">
             {statusCounts.sent}
           </p>
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">Overdue</p>
-          <p className="mt-2 text-2xl font-semibold text-red-400">
+          <p className="mt-2 text-2xl font-semibold text-[var(--error)]">
             {statusCounts.overdue}
           </p>
         </div>
@@ -311,7 +311,7 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
                         <p className="text-foreground">{formatDate(invoice.issueDate)}</p>
                         <p className={cn(
                           "text-xs",
-                          isOverdue ? "text-red-400" : "text-foreground-muted"
+                          isOverdue ? "text-[var(--error)]" : "text-foreground-muted"
                         )}>
                           Due {formatDate(invoice.dueDate)}
                         </p>

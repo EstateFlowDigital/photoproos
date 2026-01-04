@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { updateOrderStatus } from "@/lib/actions/orders";
+import { updateOrder, cancelOrder } from "@/lib/actions/orders";
 import { useToast } from "@/components/ui/toast";
 
 type OrderStatus = "cart" | "pending" | "paid" | "processing" | "completed" | "cancelled";
@@ -52,7 +52,12 @@ export function OrderActions({
     setMenuOpen(false);
     startTransition(async () => {
       try {
-        const result = await updateOrderStatus(orderId, newStatus);
+        let result;
+        if (newStatus === "cancelled") {
+          result = await cancelOrder(orderId);
+        } else {
+          result = await updateOrder({ id: orderId, status: newStatus });
+        }
         if (result.success) {
           showToast(`Order ${orderNumber} updated to ${newStatus}`, "success");
           router.refresh();
