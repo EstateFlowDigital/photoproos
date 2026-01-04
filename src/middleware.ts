@@ -34,6 +34,12 @@ const isPublicRoute = createRouteMatcher([
   "/portal(.*)",
   "/api/auth/client(.*)",
 
+  // Contract signing (public for signers)
+  "/sign/(.*)",
+
+  // Public form submissions
+  "/f/(.*)",
+
   // Webhooks (Stripe, Clerk, etc.)
   "/api/webhooks/(.*)",
 

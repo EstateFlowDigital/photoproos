@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Contract Edit Page with Signer Management**
+  - Full contract edit page at `/contracts/[id]/edit`
+  - Two-tab interface: Content and Signers
+  - Add signers by email with optional name
+  - Quick add client as signer button
+  - Remove signers (before signing)
+  - Resend invitation to pending signers
+  - Save contract and send for signing actions
+  - Signer status display (pending/signed)
+
+### Fixed
+- **Contract Signing 404 Error**
+  - Added `/sign/(.*)` to public routes in middleware
+  - Added `/f/(.*)` for public form submissions
+  - Signers can now access signing pages without authentication
+
+### Added
 - **Awards Section Configuration** (Portfolio Builder)
   - Full configuration form for the Awards section
   - Add/edit/remove awards, certifications, and recognitions
