@@ -74,7 +74,7 @@ export default function ContractsFeaturePage() {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
-                href="/signup"
+                href="/sign-up"
                 className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
               >
                 Join waitlist
@@ -209,7 +209,7 @@ export default function ContractsFeaturePage() {
             Join the waitlist to be notified when Contracts & E-Sign launches.
           </p>
           <Link
-            href="/signup"
+            href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
           >
             Join waitlist

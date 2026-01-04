@@ -128,7 +128,7 @@ export default function ChangelogPage() {
             Subscribe to our newsletter to get notified about new features.
           </p>
           <Link
-            href="/signup"
+            href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
           >
             Get started free

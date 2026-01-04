@@ -28,7 +28,7 @@ export default function EventsIndustryPage() {
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">Events & Corporate</h1>
             <p className="mb-8 text-lg text-foreground-secondary">Conferences, galas, and corporate event coverage with easy attendee access.</p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">Start free trial</Link>
+              <Link href="/sign-up" className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">Start free trial</Link>
               <Link href="/pricing" className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">View pricing</Link>
             </div>
           </div>
@@ -53,7 +53,7 @@ export default function EventsIndustryPage() {
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
           <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">Ready to streamline your event photography?</h2>
           <p className="mb-8 text-foreground-secondary">Join professional event photographers using PhotoProOS.</p>
-          <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">Start free trial</Link>
+          <Link href="/sign-up" className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">Start free trial</Link>
         </div>
       </section>
     </main>

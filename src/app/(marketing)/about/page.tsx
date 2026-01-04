@@ -200,7 +200,7 @@ export default function AboutPage() {
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
-                  href="/signup"
+                  href="/sign-up"
                   className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-[#0A0A0A] transition-colors hover:bg-white/90"
                 >
                   Start free trial

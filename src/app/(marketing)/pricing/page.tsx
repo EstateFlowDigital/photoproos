@@ -21,7 +21,7 @@ const plans = [
       "PhotoProOS branding",
     ],
     cta: "Get started free",
-    href: "/signup",
+    href: "/sign-up",
     highlighted: false,
   },
   {
@@ -41,7 +41,7 @@ const plans = [
       "Analytics dashboard",
     ],
     cta: "Start free trial",
-    href: "/signup?plan=pro",
+    href: "/sign-up?plan=pro",
     highlighted: true,
     badge: "Most Popular",
   },
@@ -63,7 +63,7 @@ const plans = [
       "Dedicated account manager",
     ],
     cta: "Start free trial",
-    href: "/signup?plan=studio",
+    href: "/sign-up?plan=studio",
     highlighted: false,
   },
   {
@@ -291,7 +291,7 @@ export default function PricingPage() {
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="/signup"
+              href="/sign-up"
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
             >
               Start free trial

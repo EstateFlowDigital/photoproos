@@ -72,7 +72,7 @@ export default function RealEstateIndustryPage() {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
-                href="/signup"
+                href="/sign-up"
                 className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
               >
                 Start free trial
@@ -186,7 +186,7 @@ export default function RealEstateIndustryPage() {
             Join thousands of real estate photographers using PhotoProOS.
           </p>
           <Link
-            href="/signup"
+            href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
           >
             Start free trial

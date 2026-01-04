@@ -324,7 +324,7 @@ export async function getMyReferralLink(): Promise<ActionResult<string>> {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://photoproos.com";
-    const referralLink = `${baseUrl}/signup?ref=${profileResult.data.referralCode}`;
+    const referralLink = `${baseUrl}/sign-up?ref=${profileResult.data.referralCode}`;
 
     return { success: true, data: referralLink };
   } catch (error) {
