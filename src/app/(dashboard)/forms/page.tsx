@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getForms } from "@/lib/actions/custom-forms";
 import { FormsPageClient } from "./forms-page-client";
 
