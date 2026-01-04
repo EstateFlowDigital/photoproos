@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Awards Section Configuration** (Portfolio Builder)
+  - Full configuration form for the Awards section
+  - Add/edit/remove awards, certifications, and recognitions
+  - Fields: title, issuer, year, logo URL
+  - Reorder awards with up/down buttons
+  - Helpful tips for empty state
+
+- **Investor Proposal Document**
+  - Comprehensive investment proposal at `INVESTOR_PROPOSAL.md`
+  - Complete application architecture analysis
+  - Feature breakdown by module (16 modules documented)
+  - Development journey timeline (Q3 2024 - present)
+  - Technology stack documentation
+  - Future roadmap with 8 phases (Q1 2025 - 2026+)
+  - Market opportunity analysis
+  - Business model and pricing strategy
+  - Use of funds breakdown
+
 - **Invoice Split UI Integration**
   - Split section added to invoice detail page sidebar
   - Three split modes: Single (no split), Percentage Split, Dual Invoices

@@ -19,6 +19,7 @@ import { TextConfigForm } from "./configs/text-config";
 import { ImageConfigForm } from "./configs/image-config";
 import { VideoConfigForm } from "./configs/video-config";
 import { SpacerConfigForm } from "./configs/spacer-config";
+import { AwardsConfigForm } from "./configs/awards-config";
 
 // ============================================================================
 // TYPES
@@ -203,11 +204,7 @@ function ConfigForm({
     case "spacer":
       return <SpacerConfigForm config={config} updateConfig={updateConfig} />;
     case "awards":
-      return (
-        <div className="text-sm text-foreground-muted">
-          Awards section configuration coming soon.
-        </div>
-      );
+      return <AwardsConfigForm config={config} updateConfig={updateConfig} />;
     case "custom_html":
       return (
         <div className="text-sm text-foreground-muted">
