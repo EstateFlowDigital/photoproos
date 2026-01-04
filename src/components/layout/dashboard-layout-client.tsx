@@ -6,6 +6,7 @@ import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
 import { MobileNav, MobileMenuButton } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
+import { getFilteredNavigation } from "@/lib/modules/gating";
 import { ResponsiveTester } from "@/components/dev/responsive-tester";
 
 interface DashboardLayoutClientProps {
@@ -24,6 +25,7 @@ export function DashboardLayoutClient({
   const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [navMode, setNavMode] = useState<"sidebar" | "top">("sidebar");
 
   const handleOpenMenu = useCallback(() => {
     setMobileMenuOpen(true);
@@ -44,17 +46,34 @@ export function DashboardLayoutClient({
     }
   }, [enabledModules, industries, pathname, router]);
 
+  // Persist nav mode preference
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? window.localStorage.getItem("ppos-nav-mode") : null;
+    if (stored === "top" || stored === "sidebar") {
+      setNavMode(stored);
+    }
+  }, []);
+
+  const handleNavModeChange = (mode: "sidebar" | "top") => {
+    setNavMode(mode);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ppos-nav-mode", mode);
+    }
+  };
+
   return (
     <ResponsiveTester>
       <div className="shell-container flex h-screen bg-[var(--background)]">
-        {/* Desktop Sidebar - hidden on mobile */}
-        <div className="shell-sidebar hidden lg:block">
-          <DashboardSidebar
-            enabledModules={enabledModules}
-            industries={industries}
-            notificationCount={unreadNotificationCount}
-          />
-        </div>
+        {/* Desktop Sidebar - hidden on mobile or when in top-nav mode */}
+        {navMode !== "top" && (
+          <div className="shell-sidebar hidden lg:block">
+            <DashboardSidebar
+              enabledModules={enabledModules}
+              industries={industries}
+              notificationCount={unreadNotificationCount}
+            />
+          </div>
+        )}
 
         {/* Mobile Navigation */}
         <MobileNav
@@ -74,7 +93,12 @@ export function DashboardLayoutClient({
 
             {/* Desktop topbar content */}
             <div className="flex-1 min-w-0">
-              <DashboardTopbar className="h-full border-0 px-0" />
+              <DashboardTopbar
+                className="h-full border-0 px-0"
+                navLinks={getFilteredNavigation({ enabledModules, industries })}
+                navMode={navMode}
+                onNavModeChange={handleNavModeChange}
+              />
             </div>
           </header>
 

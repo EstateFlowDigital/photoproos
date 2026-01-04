@@ -392,7 +392,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col density-gap-section">
       <Suspense fallback={null}>
         <TourStarter />
       </Suspense>
@@ -440,20 +440,20 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="space-y-4">
+      <div className="flex flex-col density-gap">
         <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
         <QuickActions />
       </div>
 
       {/* Unified Scheduler */}
-      <div className="space-y-4">
+      <div className="flex flex-col density-gap">
         <DashboardCalendar events={calendarEvents} />
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid density-gap-section lg:grid-cols-3">
         {/* Recent Galleries */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 flex flex-col density-gap">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-foreground">Recent Galleries</h2>
             <Link
@@ -486,9 +486,9 @@ export default async function DashboardPage() {
         </div>
 
         {/* Right Sidebar - Upcoming Bookings & Recent Activity */}
-        <div className="space-y-6">
+        <div className="flex flex-col density-gap-section">
           {/* Upcoming Bookings */}
-          <div className="space-y-4">
+          <div className="flex flex-col density-gap">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-semibold text-foreground">Upcoming Bookings</h2>
               <Link
@@ -502,7 +502,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Recent Activity */}
-          <div className="space-y-4">
+          <div className="flex flex-col density-gap">
             <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
               {recentActivity.length > 0 ? (

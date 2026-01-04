@@ -4,6 +4,7 @@ import {
   Page,
   View,
   Text,
+  Image,
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
@@ -43,6 +44,12 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     alignItems: "flex-end",
+  },
+  logo: {
+    width: 120,
+    maxHeight: 60,
+    objectFit: "contain",
+    marginBottom: 8,
   },
   title: {
     fontSize: 28,
@@ -253,6 +260,7 @@ export interface InvoicePdfProps {
   businessEmail: string | null;
   businessPhone: string | null;
   businessAddress: string | null;
+  logoUrl: string | null;
   lineItems: InvoiceLineItem[];
   subtotalCents: number;
   discountCents: number;
@@ -311,6 +319,7 @@ export function InvoicePdf({
   businessEmail,
   businessPhone,
   businessAddress,
+  logoUrl,
   lineItems,
   subtotalCents,
   discountCents,
@@ -332,6 +341,9 @@ export function InvoicePdf({
             <Text style={styles.invoiceNumber}>{invoiceNumber}</Text>
           </View>
           <View style={styles.headerRight}>
+            {logoUrl && (
+              <Image src={logoUrl} style={styles.logo} />
+            )}
             <Text style={{ fontSize: 16, fontWeight: 700, color: "#0a0a0a" }}>
               {businessName}
             </Text>

@@ -32,7 +32,7 @@ export function EmptyState({
     <div
       className={cn(
         "rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] text-center",
-        isCompact ? "p-6" : "p-8",
+        isCompact ? "density-padding-sm" : "density-padding-lg",
         className
       )}
     >

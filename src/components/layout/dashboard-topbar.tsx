@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
@@ -18,6 +18,13 @@ import { QuickActions, QUICK_ACTIONS } from "@/components/dashboard/quick-action
 
 interface DashboardTopbarProps {
   className?: string;
+  navLinks?: {
+    id: string;
+    label: string;
+    href: string;
+  }[];
+  navMode?: "sidebar" | "top";
+  onNavModeChange?: (mode: "sidebar" | "top") => void;
 }
 
 // Notification type for UI display
@@ -81,8 +88,9 @@ interface SearchResult {
   url: string;
 }
 
-export function DashboardTopbar({ className }: DashboardTopbarProps) {
+export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar", onNavModeChange }: DashboardTopbarProps) {
   const router = useRouter();
+  const pathname = usePathname() || "";
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -93,6 +101,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [navModeState, setNavModeState] = useState<"sidebar" | "top">(navMode);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
 
@@ -101,6 +110,7 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   const notificationsRef = useRef<HTMLDivElement>(null);
   const helpRef = useRef<HTMLDivElement>(null);
   const quickActionsRef = useRef<HTMLDivElement>(null);
+  const navToggleRef = useRef<HTMLDivElement>(null);
 
   // Fetch notifications on mount
   useEffect(() => {
@@ -260,7 +270,8 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
         searchRef.current?.contains(e.target as Node) ||
         quickActionsRef.current?.contains(e.target as Node) ||
         notificationsRef.current?.contains(e.target as Node) ||
-        helpRef.current?.contains(e.target as Node)
+        helpRef.current?.contains(e.target as Node) ||
+        navToggleRef.current?.contains(e.target as Node)
       ) {
         return;
       }
@@ -429,6 +440,24 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
           )}
         </div>
 
+        {/* Nav layout toggle */}
+        <div ref={navToggleRef} className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              const nextMode = navModeState === "sidebar" ? "top" : "sidebar";
+              setNavModeState(nextMode);
+              onNavModeChange?.(nextMode);
+            }}
+            className="hidden sm:flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+          >
+            <LayoutIcon className="h-4 w-4" />
+            <span className="hidden md:inline">
+              {navModeState === "sidebar" ? "Top nav" : "Sidebar"}
+            </span>
+          </button>
+        </div>
+
         {/* Notifications */}
         <div ref={notificationsRef} className="relative">
           <button
@@ -566,6 +595,29 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
         </div>
       </div>
 
+      {/* Top navigation bar (optional) */}
+      {navModeState === "top" && navLinks.length > 0 && (
+        <div className="order-3 w-full overflow-x-auto pb-1 -mb-1 flex gap-2 border-t border-[var(--card-border)] pt-2">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-[var(--primary)] text-white"
+                    : "bg-[var(--background)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal
         isOpen={shortcutsOpen}
@@ -686,6 +738,14 @@ function KeyboardIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function LayoutIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 0 0 2 4.25v11.5A2.25 2.25 0 0 0 4.25 18h11.5A2.25 2.25 0 0 0 18 15.75V4.25A2.25 2.25 0 0 0 15.75 2H4.25ZM3.5 4.25a.75.75 0 0 1 .75-.75h11.5a.75.75 0 0 1 .75.75v11.5a.75.75 0 0 1-.75.75H4.25a.75.75 0 0 1-.75-.75V4.25Zm5.75 3.25a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 1.5 0v-5Zm4.25-.75a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
     </svg>
   );
 }

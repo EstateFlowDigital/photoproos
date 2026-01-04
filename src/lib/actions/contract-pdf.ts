@@ -49,6 +49,9 @@ export async function generateContractPdf(contractId: string): Promise<{
             name: true,
             publicName: true,
             publicEmail: true,
+            logoUrl: true,
+            logoLightUrl: true,
+            invoiceLogoUrl: true,
           },
         },
       },
@@ -67,6 +70,12 @@ export async function generateContractPdf(contractId: string): Promise<{
       }).format(date);
     };
 
+    // Determine logo URL (prefer invoice-specific, then light variant, then default)
+    const logoUrl = contract.organization?.invoiceLogoUrl
+      || contract.organization?.logoLightUrl
+      || contract.organization?.logoUrl
+      || null;
+
     // Generate the PDF
     const pdfBuffer = await renderToBuffer(
       createPdfElement(
@@ -78,6 +87,7 @@ export async function generateContractPdf(contractId: string): Promise<{
           signedAt: contract.signedAt ? formatDate(contract.signedAt) : null,
           businessName: contract.organization?.publicName || contract.organization?.name || "Your Business",
           businessEmail: contract.organization?.publicEmail || null,
+          logoUrl,
           clientName: contract.client?.fullName || null,
           clientEmail: contract.client?.email || null,
           clientCompany: contract.client?.company || null,

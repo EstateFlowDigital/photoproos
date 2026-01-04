@@ -8,12 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gallery Slideshow Mode**
+  - Fullscreen slideshow presentation for client galleries
+  - Auto-advance with configurable timing (2s, 3s, 4s, 5s, 8s intervals)
+  - Play/pause controls with visual feedback
+  - Keyboard navigation (← → arrows, Space for next, P for play/pause, ESC to exit)
+  - Progress bar showing position in gallery
+  - Photo counter (e.g., "3 / 45")
+  - Current filename display
+  - Respects favorites filter (show only favorited photos in slideshow)
+  - Slideshow button in gallery header for easy access
+
 - **Dashboard Appearance Customization**
   - Font customization with 6 font options (System, Inter, Plus Jakarta, DM Sans, Space Grotesk, JetBrains Mono)
+  - Google Fonts loading for all custom font options
   - Content density settings (Compact, Comfortable, Spacious) for adjustable spacing
+  - Density-aware CSS variables (`--card-padding`, `--section-gap`, `--item-gap`) applied to dashboard components
   - Quick theme switcher in sidebar for fast accent color changes
+  - Full keyboard navigation for theme switcher (arrow keys, Home/End, Escape to close)
   - Live preview mode for theme/font/density changes before saving
   - Preview banner with reset option for unsaved changes
+  - Reset to defaults button to restore all appearance settings
+  - Smooth CSS transitions for theme, color, and density changes
+  - Respects `prefers-reduced-motion` for users who prefer no animations
   - User preferences stored in database and applied via CSS custom properties
 
 - **Invoice PDF Generation**

@@ -55,7 +55,7 @@ export function StatCard({ label, value, change, positive, className, href, icon
   );
 
   const cardClasses = cn(
-    "rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 lg:p-5",
+    "rounded-xl border border-[var(--card-border)] bg-[var(--card)] density-padding",
     href && "group cursor-pointer transition-all hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]",
     className
   );

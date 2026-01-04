@@ -4,6 +4,7 @@ import {
   Page,
   View,
   Text,
+  Image,
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
@@ -46,6 +47,12 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     alignItems: "flex-end",
+  },
+  logo: {
+    width: 120,
+    maxHeight: 60,
+    objectFit: "contain",
+    marginBottom: 8,
   },
   title: {
     fontSize: 28,
@@ -202,6 +209,7 @@ export interface ReceiptPdfProps {
   businessName: string;
   businessEmail: string | null;
   businessPhone: string | null;
+  logoUrl: string | null;
   description: string;
   amountCents: number;
   transactionId: string | null;
@@ -225,6 +233,7 @@ export function ReceiptPdf({
   businessName,
   businessEmail,
   businessPhone,
+  logoUrl,
   description,
   amountCents,
   transactionId,
@@ -239,6 +248,9 @@ export function ReceiptPdf({
             <Text style={styles.receiptNumber}>{receiptNumber}</Text>
           </View>
           <View style={styles.headerRight}>
+            {logoUrl && (
+              <Image src={logoUrl} style={styles.logo} />
+            )}
             <Text style={{ fontSize: 16, fontWeight: 700, color: "#0a0a0a" }}>
               {businessName}
             </Text>

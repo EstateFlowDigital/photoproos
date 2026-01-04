@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, type AppearancePreferences } from "@/lib/appearance-types";
+import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, DEFAULT_APPEARANCE, type AppearancePreferences } from "@/lib/appearance-types";
 
 /**
  * Get user's appearance preferences
@@ -139,4 +139,37 @@ export async function applyThemePreset(
     dashboardTheme: presetId,
     dashboardAccent: preset.accent,
   });
+}
+
+/**
+ * Reset all appearance preferences to defaults
+ */
+export async function resetAppearancePreferences(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    await prisma.user.update({
+      where: { clerkUserId: userId },
+      data: {
+        dashboardTheme: DEFAULT_APPEARANCE.dashboardTheme,
+        dashboardAccent: DEFAULT_APPEARANCE.dashboardAccent,
+        sidebarCompact: DEFAULT_APPEARANCE.sidebarCompact,
+        fontFamily: DEFAULT_APPEARANCE.fontFamily,
+        density: DEFAULT_APPEARANCE.density,
+      },
+    });
+
+    revalidatePath("/settings/appearance");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("Error resetting appearance preferences:", error);
+    return { success: false, error: "Failed to reset preferences" };
+  }
 }

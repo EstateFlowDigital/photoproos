@@ -40,6 +40,9 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
             publicEmail: true,
             publicPhone: true,
             website: true,
+            logoUrl: true,
+            logoLightUrl: true,
+            invoiceLogoUrl: true,
           },
         },
       },
@@ -67,6 +70,12 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
     // Build payment URL if exists
     const paymentUrl = invoice.paymentLinkUrl || null;
 
+    // Determine logo URL (prefer invoice-specific, then light variant, then default)
+    const logoUrl = invoice.organization?.invoiceLogoUrl
+      || invoice.organization?.logoLightUrl
+      || invoice.organization?.logoUrl
+      || null;
+
     // Generate the PDF
     const pdfBuffer = await renderToBuffer(
       createPdfElement(
@@ -82,6 +91,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
           businessEmail: invoice.organization?.publicEmail || null,
           businessPhone: invoice.organization?.publicPhone || null,
           businessAddress: null, // No address field in Organization model
+          logoUrl,
           lineItems: invoice.lineItems.map((item) => ({
             description: item.description,
             itemType: item.itemType,

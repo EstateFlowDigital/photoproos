@@ -62,6 +62,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isDownloadingZip, setIsDownloadingZip] = useState(false);
 
+  // Slideshow state
+  const [slideshowActive, setSlideshowActive] = useState(false);
+  const [slideshowIndex, setSlideshowIndex] = useState(0);
+  const [slideshowPlaying, setSlideshowPlaying] = useState(true);
+  const [slideshowInterval, setSlideshowInterval] = useState(4000); // 4 seconds default
+
   // Comments state
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [photoComments, setPhotoComments] = useState<Comment[]>([]);
@@ -355,6 +361,88 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     }
   }, [gallery.id, gallery.name, gallery.photos, isDownloadingZip]);
 
+  // Get photos for slideshow (respects favorites filter)
+  const slideshowPhotos = showFavoritesOnly
+    ? gallery.photos.filter((p) => favoriteAssetIds.has(p.id))
+    : gallery.photos;
+
+  // Slideshow handlers
+  const startSlideshow = useCallback((startIndex: number = 0) => {
+    if (slideshowPhotos.length === 0) return;
+    setSlideshowIndex(startIndex);
+    setSlideshowActive(true);
+    setSlideshowPlaying(true);
+  }, [slideshowPhotos.length]);
+
+  const stopSlideshow = useCallback(() => {
+    setSlideshowActive(false);
+    setSlideshowPlaying(false);
+  }, []);
+
+  const nextSlide = useCallback(() => {
+    setSlideshowIndex((prev) => (prev + 1) % slideshowPhotos.length);
+  }, [slideshowPhotos.length]);
+
+  const prevSlide = useCallback(() => {
+    setSlideshowIndex((prev) => (prev - 1 + slideshowPhotos.length) % slideshowPhotos.length);
+  }, [slideshowPhotos.length]);
+
+  const toggleSlideshowPlayPause = useCallback(() => {
+    setSlideshowPlaying((prev) => !prev);
+  }, []);
+
+  // Slideshow keyboard navigation
+  useEffect(() => {
+    if (!slideshowActive) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Escape":
+          stopSlideshow();
+          break;
+        case "ArrowRight":
+        case " ": // Space bar
+          e.preventDefault();
+          nextSlide();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          prevSlide();
+          break;
+        case "p":
+        case "P":
+          toggleSlideshowPlayPause();
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [slideshowActive, stopSlideshow, nextSlide, prevSlide, toggleSlideshowPlayPause]);
+
+  // Slideshow auto-advance
+  useEffect(() => {
+    if (!slideshowActive || !slideshowPlaying) return;
+
+    const timer = setInterval(() => {
+      nextSlide();
+    }, slideshowInterval);
+
+    return () => clearInterval(timer);
+  }, [slideshowActive, slideshowPlaying, slideshowInterval, nextSlide]);
+
+  // Prevent body scroll when slideshow is active
+  useEffect(() => {
+    if (slideshowActive) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [slideshowActive]);
+
   const getThemeColors = () => {
     if (resolvedTheme === "light") {
       return {
@@ -416,6 +504,21 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
             {/* Actions */}
             <div className="flex items-center gap-3">
+              {/* Slideshow Button */}
+              {displayedPhotos.length > 0 && (
+                <button
+                  onClick={() => startSlideshow(0)}
+                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    backgroundColor: colors.cardBg,
+                    color: colors.textColor,
+                  }}
+                  title="Start slideshow"
+                >
+                  <PlayIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Slideshow</span>
+                </button>
+              )}
               {gallery.allowFavorites && (
                 <button
                   onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
@@ -822,6 +925,101 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         </div>
       )}
 
+      {/* Slideshow Modal */}
+      {slideshowActive && slideshowPhotos.length > 0 && (
+        <div className="fixed inset-0 z-[70] bg-black">
+          {/* Current Photo */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <img
+              src={slideshowPhotos[slideshowIndex]?.originalUrl || slideshowPhotos[slideshowIndex]?.url}
+              alt={slideshowPhotos[slideshowIndex]?.filename}
+              className="max-h-full max-w-full object-contain transition-opacity duration-500"
+            />
+          </div>
+
+          {/* Top Controls */}
+          <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
+            <div className="text-white text-sm font-medium">
+              {slideshowIndex + 1} / {slideshowPhotos.length}
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Speed Controls */}
+              <select
+                value={slideshowInterval}
+                onChange={(e) => setSlideshowInterval(Number(e.target.value))}
+                className="rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                title="Slide duration"
+              >
+                <option value={2000}>2s</option>
+                <option value={3000}>3s</option>
+                <option value={4000}>4s</option>
+                <option value={5000}>5s</option>
+                <option value={8000}>8s</option>
+              </select>
+              <button
+                onClick={stopSlideshow}
+                className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+                title="Exit slideshow (ESC)"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom Controls */}
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-4 p-6 bg-gradient-to-t from-black/60 to-transparent">
+            {/* Previous */}
+            <button
+              onClick={prevSlide}
+              className="rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors"
+              title="Previous (←)"
+            >
+              <ChevronLeftIcon className="h-6 w-6" />
+            </button>
+
+            {/* Play/Pause */}
+            <button
+              onClick={toggleSlideshowPlayPause}
+              className="rounded-full bg-white/20 p-4 text-white hover:bg-white/30 transition-colors"
+              title={slideshowPlaying ? "Pause (P)" : "Play (P)"}
+            >
+              {slideshowPlaying ? (
+                <GalleryPauseIcon className="h-8 w-8" />
+              ) : (
+                <PlayIcon className="h-8 w-8" />
+              )}
+            </button>
+
+            {/* Next */}
+            <button
+              onClick={nextSlide}
+              className="rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors"
+              title="Next (→)"
+            >
+              <ChevronRightIcon className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+            <div
+              className="h-full bg-white/60 transition-all duration-300"
+              style={{ width: `${((slideshowIndex + 1) / slideshowPhotos.length) * 100}%` }}
+            />
+          </div>
+
+          {/* Photo filename */}
+          <div className="absolute bottom-20 left-0 right-0 text-center">
+            <p className="text-white/70 text-sm">{slideshowPhotos[slideshowIndex]?.filename}</p>
+          </div>
+
+          {/* Keyboard hints */}
+          <div className="absolute bottom-4 right-4 text-white/40 text-xs hidden sm:block">
+            ← → Navigate • Space Next • P Play/Pause • ESC Exit
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <footer
         className="border-t py-8 transition-colors duration-300"
@@ -936,6 +1134,38 @@ function PrintIcon({ className, style }: { className?: string; style?: React.CSS
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
       <path fillRule="evenodd" d="M5 2.75C5 1.784 5.784 1 6.75 1h6.5c.966 0 1.75.784 1.75 1.75v3.552c.377.046.752.097 1.126.153A2.212 2.212 0 0 1 18 8.653v4.097A2.25 2.25 0 0 1 15.75 15h-.241l.305 1.984A1.75 1.75 0 0 1 14.084 19H5.915a1.75 1.75 0 0 1-1.73-2.016L4.492 15H4.25A2.25 2.25 0 0 1 2 12.75V8.653c0-1.082.775-2.034 1.874-2.198.374-.056.749-.107 1.126-.153V2.75Zm1.5 0v3.37a42.21 42.21 0 0 1 7 0V2.75a.25.25 0 0 0-.25-.25h-6.5a.25.25 0 0 0-.25.25Zm-1.274 8.5H4.25a.75.75 0 0 1-.75-.75V8.653c0-.339.239-.639.577-.694a40.726 40.726 0 0 1 11.846 0c.338.055.577.355.577.694v1.847a.75.75 0 0 1-.75.75h-.974l-.25 1.622a40.702 40.702 0 0 1-9.452 0l-.25-1.622Zm.855 2.078a39.14 39.14 0 0 0 7.838 0l.42 2.734a.25.25 0 0 1-.247.288H5.915a.25.25 0 0 1-.247-.288l.413-2.734Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PlayIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M6.3 2.841A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.269l9.344-5.89a1.5 1.5 0 0 0 0-2.538L6.3 2.84Z" />
+    </svg>
+  );
+}
+
+function GalleryPauseIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M5.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75A.75.75 0 0 0 7.25 3h-1.5ZM12.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75a.75.75 0 0 0-.75-.75h-1.5Z" />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
     </svg>
   );
 }

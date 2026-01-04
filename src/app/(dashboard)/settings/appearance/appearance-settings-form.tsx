@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils";
 import {
   updateAppearancePreferences,
   applyThemePreset,
+  resetAppearancePreferences,
 } from "@/lib/actions/appearance";
+import { DEFAULT_APPEARANCE } from "@/lib/appearance-types";
 import type { AppearancePreferences, ThemePreset, FontOption, DensityOption } from "@/lib/appearance-types";
 import { useToast } from "@/components/ui/toast";
 
@@ -207,6 +209,21 @@ export function AppearanceSettingsForm({
         showToast(`Density saved: ${density.name}`, "success");
       } else {
         showToast(result.error || "Failed to save density", "error");
+      }
+    });
+  };
+
+  const handleResetToDefaults = () => {
+    startTransition(async () => {
+      const result = await resetAppearancePreferences();
+      if (result.success) {
+        setPreferences(DEFAULT_APPEARANCE);
+        setCustomColor("#3b82f6");
+        setPreview({ accentColor: null, fontFamily: null, density: null });
+        showToast("Settings reset to defaults", "success");
+        window.location.reload();
+      } else {
+        showToast(result.error || "Failed to reset settings", "error");
       }
     });
   };
@@ -630,6 +647,32 @@ export function AppearanceSettingsForm({
               across sessions.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Reset to Defaults */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Reset to Defaults
+            </h2>
+            <p className="text-sm text-foreground-muted mt-1">
+              Restore all appearance settings to their original values
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleResetToDefaults}
+            disabled={isPending}
+            className={cn(
+              "rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors",
+              "hover:bg-[var(--error)]/20",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
+            )}
+          >
+            {isPending ? "Resetting..." : "Reset All"}
+          </button>
         </div>
       </div>
     </div>

@@ -44,6 +44,9 @@ export async function generateReceiptPdf(paymentId: string): Promise<{
             publicName: true,
             publicEmail: true,
             publicPhone: true,
+            logoUrl: true,
+            logoLightUrl: true,
+            invoiceLogoUrl: true,
           },
         },
       },
@@ -69,6 +72,12 @@ export async function generateReceiptPdf(paymentId: string): Promise<{
     // Generate receipt number if not exists
     const receiptNumber = `REC-${payment.id.slice(0, 8).toUpperCase()}`;
 
+    // Determine logo URL (prefer invoice-specific, then light variant, then default)
+    const logoUrl = payment.organization?.invoiceLogoUrl
+      || payment.organization?.logoLightUrl
+      || payment.organization?.logoUrl
+      || null;
+
     // Generate the PDF
     const pdfBuffer = await renderToBuffer(
       createPdfElement(
@@ -81,6 +90,7 @@ export async function generateReceiptPdf(paymentId: string): Promise<{
           businessName: payment.organization?.publicName || payment.organization?.name || "Your Business",
           businessEmail: payment.organization?.publicEmail || null,
           businessPhone: payment.organization?.publicPhone || null,
+          logoUrl,
           description: payment.description || "Payment",
           amountCents: payment.amountCents,
           transactionId: payment.stripePaymentIntentId || null,

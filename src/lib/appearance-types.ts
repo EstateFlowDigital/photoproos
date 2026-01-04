@@ -214,3 +214,14 @@ export const THEME_PRESETS: ThemePreset[] = [
     },
   },
 ];
+
+/**
+ * Default appearance preferences
+ */
+export const DEFAULT_APPEARANCE: AppearancePreferences = {
+  dashboardTheme: "default",
+  dashboardAccent: "#3b82f6",
+  sidebarCompact: false,
+  fontFamily: "system",
+  density: "comfortable",
+};

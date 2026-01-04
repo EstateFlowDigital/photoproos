@@ -4,6 +4,7 @@ import {
   Page,
   View,
   Text,
+  Image,
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
@@ -36,10 +37,24 @@ const styles = StyleSheet.create({
     lineHeight: 1.6,
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 30,
     borderBottomWidth: 2,
     borderBottomColor: "#0a0a0a",
     paddingBottom: 20,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    alignItems: "flex-end",
+  },
+  logo: {
+    width: 120,
+    maxHeight: 60,
+    objectFit: "contain",
+    marginBottom: 8,
   },
   title: {
     fontSize: 24,
@@ -199,6 +214,7 @@ export interface ContractPdfProps {
   signedAt: string | null;
   businessName: string;
   businessEmail: string | null;
+  logoUrl: string | null;
   clientName: string | null;
   clientEmail: string | null;
   clientCompany: string | null;
@@ -267,6 +283,7 @@ export function ContractPdf({
   signedAt,
   businessName,
   businessEmail,
+  logoUrl,
   clientName,
   clientEmail,
   clientCompany,
@@ -281,21 +298,34 @@ export function ContractPdf({
       <Page size="LETTER" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>{contractName}</Text>
-          <Text style={styles.subtitle}>
-            Created: {createdAt}
-            {sentAt && ` • Sent: ${sentAt}`}
-            {signedAt && ` • Fully Signed: ${signedAt}`}
-          </Text>
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: statusColors.bg },
-            ]}
-          >
-            <Text style={[styles.statusText, { color: statusColors.text }]}>
-              {formatStatusLabel(status)}
+          <View style={styles.headerLeft}>
+            <Text style={styles.title}>{contractName}</Text>
+            <Text style={styles.subtitle}>
+              Created: {createdAt}
+              {sentAt && ` • Sent: ${sentAt}`}
+              {signedAt && ` • Fully Signed: ${signedAt}`}
             </Text>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: statusColors.bg },
+              ]}
+            >
+              <Text style={[styles.statusText, { color: statusColors.text }]}>
+                {formatStatusLabel(status)}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.headerRight}>
+            {logoUrl && (
+              <Image src={logoUrl} style={styles.logo} />
+            )}
+            <Text style={{ fontSize: 12, fontWeight: 600, color: "#0a0a0a" }}>
+              {businessName}
+            </Text>
+            {businessEmail && (
+              <Text style={{ fontSize: 10, color: "#6b7280" }}>{businessEmail}</Text>
+            )}
           </View>
         </View>
 
