@@ -119,14 +119,14 @@ export class DropboxClient {
    * Get current account information
    */
   async getAccountInfo(): Promise<DropboxAccountInfo> {
-    return this.request<DropboxAccountInfo>("/users/get_current_account");
+    return this.request<DropboxAccountInfo>("/users/get_current_account", {});
   }
 
   /**
    * Get space usage information
    */
   async getSpaceUsage(): Promise<DropboxSpaceUsage> {
-    return this.request<DropboxSpaceUsage>("/users/get_space_usage");
+    return this.request<DropboxSpaceUsage>("/users/get_space_usage", {});
   }
 
   /**
