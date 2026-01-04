@@ -289,6 +289,83 @@
 }
 
 /* ============================================
+   LIGHT MODE THEME
+   ============================================ */
+[data-theme="light"] {
+  /* --- Backgrounds --- */
+  --background: #ffffff;
+  --background-secondary: #f9fafb;
+  --background-tertiary: #f3f4f6;
+  --background-elevated: #ffffff;
+  --background-overlay: #ffffff;
+  --background-interactive: #f9fafb;
+  --background-hover: #f3f4f6;
+  --background-active: #e5e7eb;
+  --background-selected: #dbeafe;
+
+  /* --- Foreground (Text) --- */
+  --foreground: #111827;
+  --foreground-secondary: #4b5563;
+  --foreground-muted: #6b7280;
+  --foreground-disabled: #9ca3af;
+  --muted-foreground: #6b7280;
+
+  /* --- Surfaces (Cards & Containers) --- */
+  --muted: #f3f4f6;
+  --muted-hover: #e5e7eb;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --card-foreground-secondary: #4b5563;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --card-border-hover: rgba(0, 0, 0, 0.12);
+
+  /* --- Interactive Elements --- */
+  --secondary: #f3f4f6;
+  --secondary-hover: #e5e7eb;
+  --secondary-active: #d1d5db;
+  --secondary-foreground: #111827;
+  --secondary-border: rgba(0, 0, 0, 0.08);
+
+  --ghost-hover: #f3f4f6;
+  --ghost-active: #e5e7eb;
+
+  --accent: #f9fafb;
+  --accent-foreground: #111827;
+
+  /* --- Borders --- */
+  --border: rgba(0, 0, 0, 0.08);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-emphasis: rgba(0, 0, 0, 0.12);
+  --border-visible: #d1d5db;
+  --border-hover: rgba(0, 0, 0, 0.12);
+  --input-border: rgba(0, 0, 0, 0.12);
+  --input-border-focus: rgba(0, 0, 0, 0.20);
+
+  /* --- Focus & Ring --- */
+  --ring-offset: var(--background);
+
+  /* --- Status Colors (adjusted for light backgrounds) --- */
+  --destructive-muted: rgba(239, 68, 68, 0.10);
+  --success-muted: rgba(34, 197, 94, 0.10);
+  --success-text: #16a34a;
+  --warning-muted: rgba(249, 115, 22, 0.10);
+  --warning-text: #ea580c;
+  --error-muted: rgba(239, 68, 68, 0.10);
+  --error-text: #dc2626;
+  --ai-muted: rgba(139, 92, 246, 0.10);
+  --ai-text: #7c3aed;
+
+  /* --- Shadows (lighter for light mode) --- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 16px 48px rgba(0, 0, 0, 0.15);
+  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.10);
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 

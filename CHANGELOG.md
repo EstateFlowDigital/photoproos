@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Dark/Light Mode Toggle**
+  - Theme provider with system preference detection
+  - Persistent theme preference stored in localStorage
+  - Toggle in dashboard sidebar (Light, Dark, System options)
+  - Full light mode CSS variables for all design tokens
+  - Flash prevention script to avoid FOUC on page load
+
 - **Late Payment Reminders System**
   - Automated invoice payment reminders for overdue invoices
   - Email template with escalating urgency messaging (1-7 days, 7-14 days, 14+ days)

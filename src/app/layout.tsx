@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { clerkAppearance } from "@/lib/clerk-theme";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -98,22 +99,42 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-theme="dark">
+    <html lang="en" data-theme="dark" data-scroll-theme="dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Inline script to prevent flash of wrong theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('photoproos-theme');
+                  var resolved = theme;
+                  if (!theme || theme === 'system') {
+                    resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
+                  document.documentElement.setAttribute('data-theme', resolved);
+                  document.documentElement.setAttribute('data-scroll-theme', resolved);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
-        <ClerkProvider appearance={clerkAppearance}>
-          {/* Skip to main content link for accessibility */}
-          <a
-            href="#main-content"
-            className="skip-to-main-content"
-          >
-            Skip to main content
-          </a>
-          {children}
-        </ClerkProvider>
+        <ThemeProvider>
+          <ClerkProvider appearance={clerkAppearance}>
+            {/* Skip to main content link for accessibility */}
+            <a
+              href="#main-content"
+              className="skip-to-main-content"
+            >
+              Skip to main content
+            </a>
+            {children}
+          </ClerkProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

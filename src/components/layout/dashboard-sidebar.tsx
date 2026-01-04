@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { getFilteredNavigation } from "@/lib/modules/gating";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface NavItem {
   label: string;
@@ -214,6 +215,7 @@ export function DashboardSidebar({
             <div className="flex-1 min-w-0 hidden sm:block">
               <p className="truncate text-xs text-foreground-muted">Signed in</p>
             </div>
+            <ThemeToggle />
           </div>
 
           <div className="px-3 pb-3">
