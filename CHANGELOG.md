@@ -51,6 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Professional formatting with party information
   - Download button available on all contract detail pages
 
+- **Company Logo on PDFs**
+  - Organization logo now displayed on Invoice, Receipt, and Contract PDFs
+  - Uses logo priority: Invoice-specific logo → Light variant → Default logo
+  - Consistent branding across all downloadable documents
+  - Two-column header layout for contracts showing logo and business info
+
 ### Fixed
 - **Missing Email Send Functions**
   - Added `sendPaymentReminderEmail()` for gallery payment reminders
