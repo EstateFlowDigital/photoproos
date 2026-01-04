@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 const MAIN_DOMAINS = [
   "localhost",
   "127.0.0.1",
+  "app.photoproos.com",
   "photoproos.com",
   "www.photoproos.com",
 ];
