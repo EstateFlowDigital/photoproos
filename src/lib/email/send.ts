@@ -40,6 +40,9 @@ import { QuestionnaireCompletedEmail } from "@/emails/questionnaire-completed";
 import { PhotographerDigestEmail } from "@/emails/photographer-digest";
 import { PortfolioContactEmail } from "@/emails/portfolio-contact";
 import { BookingFormSubmittedEmail } from "@/emails/booking-form-submitted";
+import { ReferralInviteEmail } from "@/emails/referral-invite";
+import { ReferralSignupNotificationEmail } from "@/emails/referral-signup-notification";
+import { ReferralRewardEarnedEmail } from "@/emails/referral-reward-earned";
 
 /**
  * Send gallery delivered notification to client
@@ -821,5 +824,120 @@ export async function sendBookingFormSubmittedEmail(params: {
       notes,
     }),
     replyTo: photographerEmail,
+  });
+}
+
+// =============================================================================
+// Platform Referral Emails
+// =============================================================================
+
+/**
+ * Send referral invite email to a potential user
+ *
+ * Triggered by: sendReferralInvite() action
+ * Location: src/lib/actions/platform-referrals.ts
+ */
+export async function sendReferralInviteEmail(params: {
+  to: string;
+  inviteeName?: string;
+  referrerName: string;
+  referralUrl: string;
+  trialDays?: number;
+  discountPercent?: number;
+}) {
+  const {
+    to,
+    inviteeName = "there",
+    referrerName,
+    referralUrl,
+    trialDays = 21,
+    discountPercent = 20,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `${referrerName} invited you to try ListingLens - Get ${discountPercent}% off!`,
+    react: ReferralInviteEmail({
+      inviteeName,
+      referrerName,
+      referralUrl,
+      trialDays,
+      discountPercent,
+    }),
+  });
+}
+
+/**
+ * Notify referrer when someone signs up using their link
+ *
+ * Triggered by: processReferralSignup() action
+ * Location: src/lib/actions/platform-referrals.ts
+ */
+export async function sendReferralSignupNotificationEmail(params: {
+  to: string;
+  referrerName: string;
+  referredName?: string;
+  referredEmail: string;
+  referralDashboardUrl?: string;
+  rewardAmount?: number;
+}) {
+  const {
+    to,
+    referrerName,
+    referredName,
+    referredEmail,
+    referralDashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/settings/my-referrals`,
+    rewardAmount = 25,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `${referredName || referredEmail} signed up using your referral link!`,
+    react: ReferralSignupNotificationEmail({
+      referrerName,
+      referredName: referredName || referredEmail.split("@")[0],
+      referredEmail,
+      referralDashboardUrl,
+      rewardAmount,
+    }),
+  });
+}
+
+/**
+ * Notify referrer when they earn a reward (referred user subscribed)
+ *
+ * Triggered by: processReferralConversion() action
+ * Location: src/lib/actions/platform-referrals.ts
+ */
+export async function sendReferralRewardEarnedEmail(params: {
+  to: string;
+  referrerName: string;
+  referredName: string;
+  rewardAmount: number;
+  totalEarned: number;
+  totalReferrals: number;
+  referralDashboardUrl?: string;
+}) {
+  const {
+    to,
+    referrerName,
+    referredName,
+    rewardAmount,
+    totalEarned,
+    totalReferrals,
+    referralDashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/settings/my-referrals`,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `You earned $${rewardAmount}! ${referredName} subscribed to ListingLens`,
+    react: ReferralRewardEarnedEmail({
+      referrerName,
+      referredName,
+      rewardAmount,
+      totalEarned,
+      totalReferrals,
+      referralDashboardUrl,
+    }),
   });
 }

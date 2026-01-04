@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
-import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist } from "@/components/dashboard";
+import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist, ReferralWidget } from "@/components/dashboard";
 import { getChecklistItems } from "@/lib/utils/checklist-items";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { TourStarter } from "@/components/tour";
@@ -160,6 +160,7 @@ export default async function DashboardPage() {
     calendarTasks,
     calendarBookings,
     calendarOpenHouses,
+    platformReferrer,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -306,6 +307,20 @@ export default async function DashboardPage() {
         project: { select: { id: true, name: true } },
       },
       orderBy: { openHouseDate: "asc" },
+    }),
+
+    // Platform referrer data for the current user
+    prisma.platformReferrer.findUnique({
+      where: { userId: auth.userId },
+      select: {
+        referralCode: true,
+        successfulReferrals: true,
+        totalEarnedCents: true,
+        referrals: {
+          where: { status: "signed_up" },
+          select: { id: true },
+        },
+      },
     }),
   ]);
 
@@ -515,6 +530,14 @@ export default async function DashboardPage() {
               )}
             </div>
           </div>
+
+          {/* Referral Widget */}
+          <ReferralWidget
+            referralCode={platformReferrer?.referralCode || null}
+            successfulReferrals={platformReferrer?.successfulReferrals || 0}
+            totalEarnedCents={platformReferrer?.totalEarnedCents || 0}
+            pendingReferrals={platformReferrer?.referrals?.length || 0}
+          />
         </div>
       </div>
     </div>

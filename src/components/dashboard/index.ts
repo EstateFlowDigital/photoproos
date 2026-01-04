@@ -66,3 +66,4 @@ export { OnboardingChecklist } from "./onboarding-checklist";
 export { RelatedItems } from "./related-items";
 export { Breadcrumb } from "./breadcrumb";
 export { getChecklistItems } from "@/lib/utils/checklist-items";
+export { ReferralWidget } from "./referral-widget";

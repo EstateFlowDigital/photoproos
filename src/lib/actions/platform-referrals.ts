@@ -5,6 +5,11 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
 import { PlatformReferralStatus, PlatformRewardType } from "@prisma/client";
+import {
+  sendReferralInviteEmail,
+  sendReferralSignupNotificationEmail,
+  sendReferralRewardEarnedEmail,
+} from "@/lib/email/send";
 
 // ============================================================================
 // TYPES
@@ -406,10 +411,30 @@ export async function sendReferralInvite(
       data: { totalReferrals: { increment: 1 } },
     });
 
-    // TODO: Send the actual email with the referral link
-    // For now, we'll just create the referral record
+    // Get referrer details for the email
+    const referrerUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { fullName: true, email: true },
+    });
 
-    revalidatePath("/settings/referrals");
+    // Send the invite email
+    const referralUrl = `${process.env.NEXT_PUBLIC_APP_URL}/r/${profileResult.data.referralCode}`;
+    try {
+      await sendReferralInviteEmail({
+        to: email,
+        inviteeName: name || undefined,
+        referrerName: referrerUser?.fullName || "A ListingLens user",
+        referralUrl,
+        trialDays: settings.referredTrialDays,
+        discountPercent: settings.referredDiscountPercent || undefined,
+      });
+      console.log(`[PlatformReferrals] Sent invite email to ${email}`);
+    } catch (emailError) {
+      console.error("[PlatformReferrals] Failed to send invite email:", emailError);
+      // Don't fail the action if email fails - referral is still created
+    }
+
+    revalidatePath("/settings/my-referrals");
 
     return { success: true, data: { referralId: referral.id } };
   } catch (error) {
@@ -525,6 +550,27 @@ export async function processReferralSignup(
       });
     }
 
+    // Send notification email to the referrer
+    const referrerUser = await prisma.user.findUnique({
+      where: { id: referrer.userId },
+      select: { email: true, fullName: true },
+    });
+
+    if (referrerUser) {
+      try {
+        await sendReferralSignupNotificationEmail({
+          to: referrerUser.email,
+          referrerName: referrerUser.fullName || "there",
+          referredName: newUser.fullName || undefined,
+          referredEmail: newUser.email,
+          rewardAmount: settings.referrerRewardValue / 100,
+        });
+        console.log(`[PlatformReferrals] Sent signup notification to ${referrerUser.email}`);
+      } catch (emailError) {
+        console.error("[PlatformReferrals] Failed to send signup notification:", emailError);
+      }
+    }
+
     return { success: true, data: undefined };
   } catch (error) {
     console.error("[PlatformReferrals] Error processing signup:", error);
@@ -579,11 +625,12 @@ export async function processReferralConversion(
     });
 
     // Update referrer stats
-    await prisma.platformReferrer.update({
+    const updatedReferrer = await prisma.platformReferrer.update({
       where: { id: referral.referrerId },
       data: {
         successfulReferrals: { increment: 1 },
         pendingCreditCents: { increment: settings.referrerRewardValue },
+        totalEarnedCents: { increment: settings.referrerRewardValue },
       },
     });
 
@@ -592,6 +639,28 @@ export async function processReferralConversion(
       where: { id: "default" },
       data: { totalConversions: { increment: 1 } },
     });
+
+    // Send reward notification email to the referrer
+    const referrerUser = await prisma.user.findUnique({
+      where: { id: referral.referrer.userId },
+      select: { email: true, fullName: true },
+    });
+
+    if (referrerUser) {
+      try {
+        await sendReferralRewardEarnedEmail({
+          to: referrerUser.email,
+          referrerName: referrerUser.fullName || "there",
+          referredName: referral.referredName || referral.referredEmail.split("@")[0],
+          rewardAmount: settings.referrerRewardValue / 100,
+          totalEarned: updatedReferrer.totalEarnedCents / 100,
+          totalReferrals: updatedReferrer.successfulReferrals,
+        });
+        console.log(`[PlatformReferrals] Sent reward notification to ${referrerUser.email}`);
+      } catch (emailError) {
+        console.error("[PlatformReferrals] Failed to send reward notification:", emailError);
+      }
+    }
 
     return { success: true, data: undefined };
   } catch (error) {

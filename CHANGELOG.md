@@ -8,6 +8,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Platform Referral System Optimizations**
+  - **Referral Email Templates** (React Email):
+    - `referral-invite.tsx` - Invitation email with exclusive offer (21-day trial + 20% off)
+    - `referral-signup-notification.tsx` - Notify referrer when someone signs up using their link
+    - `referral-reward-earned.tsx` - Celebration email when referrer earns reward
+  - **Automated Email Notifications**:
+    - Send invite emails when sharing referral links via email
+    - Notify referrer when referred user signs up
+    - Send reward notification when referred user converts to paid
+  - **Gamification with Milestones**:
+    - 5 milestone levels: First Referral, Rising Star, Referral Pro, Ambassador, Legend
+    - Visual progress bar showing advancement to next milestone
+    - Milestone badges with icons showing completed/current/upcoming
+    - Pro tips section for maximizing referrals
+  - **Dashboard Referral Widget**:
+    - Shows referral stats (earnings, referrals, pending) on main dashboard
+    - Progress bar to next milestone
+    - One-click copy referral code
+    - Direct link to full referral dashboard
+  - **Enhanced My Referrals Page**:
+    - Gradient hero section with animated backgrounds
+    - WhatsApp sharing button in addition to Twitter/X and LinkedIn
+    - Improved stats cards with gradient icons
+    - Better empty states for referral tables
+    - Loading spinner component for async actions
+
+- **Custom Domain Support for Portfolios**
+  - Connect custom domains to portfolio websites for professional branding
+  - **Database schema**:
+    - `customDomain` - The custom domain (e.g., portfolio.yourcompany.com)
+    - `customDomainVerified` - Verification status
+    - `customDomainVerificationToken` - DNS TXT record value for verification
+    - `customDomainVerifiedAt` - Timestamp of verification
+    - `customDomainSslStatus` - SSL certificate status (pending, active, error)
+  - **DNS TXT Record Verification**:
+    - Auto-generates unique verification token on domain add
+    - Users add TXT record at `_listinglens-verify.{domain}`
+    - Server-side DNS lookup to verify ownership
+  - **Server actions**:
+    - `addCustomDomain()` - Add a domain and generate verification token
+    - `verifyCustomDomain()` - Check DNS TXT record for verification
+    - `removeCustomDomain()` - Remove domain configuration
+    - `getCustomDomainStatus()` - Get current domain status
+    - `getPortfolioByCustomDomain()` - Find portfolio by verified domain
+  - **Settings UI in portfolio editor**:
+    - Add/remove custom domain
+    - View DNS setup instructions
+    - One-click verification check
+    - SSL status indicator
+    - Verified domain badge
+  - **Middleware routing**:
+    - Detects requests from custom domains
+    - Routes to portfolio renderer via `_custom-domain` handler
+    - Excludes main app domains and Railway preview URLs
+
 - **Portfolio Website Enhancements**
   - **QR Code Generator**: Generate and download QR codes for portfolio URLs
     - Modal with canvas-based QR code rendering
@@ -158,6 +213,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Uploaded files displayed with icons, names, and sizes
   - Remove individual files before submission
   - File data stored in submission JSON for review
+
+- **Booking Form Submission Detail Modal**
+  - Full-featured modal for viewing booking form submissions
+  - Displays all form fields with values in organized layout
+  - File upload preview with image thumbnails for image files
+  - Download links for all uploaded files
+  - Reject submission with optional notes
+  - Convert submission to booking with date/time/duration picker
+  - Status indicators and submission metadata
+
+- **Portfolio Contact Form Integration**
+  - `PortfolioInquiry` database model for storing contact form submissions
+  - Contact form on portfolio websites now saves to database
+  - Email notification sent to portfolio owner on new inquiry
+  - Status tracking (new, contacted, qualified, closed)
+  - Notes field for internal tracking
+  - Source tracking and metadata (user agent, IP)
+  - Server actions: `submitPortfolioInquiry()`, `getPortfolioInquiries()`, `updatePortfolioInquiryStatus()`
+  - Form UI improvements: loading states, success confirmation, error handling
+
+- **Website Chat Widget Backend**
+  - `WebsiteChatInquiry` database model for marketing website chat messages
+  - Chat widget now stores messages in database for dashboard review
+  - Optional email collection for follow-up replies
+  - Auto-categorization (pricing, features, trial, other)
+  - Page URL tracking for context
+  - Loading state during submission
+  - Server actions: `submitChatInquiry()`, `getChatInquiries()`, `updateChatInquiryStatus()`, `getChatInquiryStats()`
 
 - **Subscription Plans Management** (Developer Tools)
   - New subscription plan management system for application pricing tiers (Pro, Studio, Enterprise)
