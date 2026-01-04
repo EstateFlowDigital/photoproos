@@ -167,7 +167,7 @@ export async function createRecurringInvoice(
         dayOfWeek: input.dayOfWeek,
         anchorDate: input.anchorDate,
         nextRunDate,
-        lineItems: input.lineItems as unknown as Record<string, unknown>[],
+        lineItems: JSON.parse(JSON.stringify(input.lineItems)),
         notes: input.notes,
         terms: input.terms,
         dueDays: input.dueDays ?? 30,
@@ -264,7 +264,7 @@ export async function updateRecurringInvoice(
         taxRate
       );
 
-      updateData.lineItems = input.lineItems as unknown as Record<string, unknown>[];
+      updateData.lineItems = JSON.parse(JSON.stringify(input.lineItems));
       updateData.subtotalCents = subtotalCents;
       updateData.taxCents = taxCents;
       updateData.totalCents = totalCents;
@@ -657,7 +657,7 @@ export async function createInvoiceFromRecurring(
       where: { organizationId: recurring.organizationId },
       orderBy: { invoiceNumber: "desc" },
     });
-    const invoiceNumber = (lastInvoice?.invoiceNumber ?? 0) + 1;
+    const invoiceNumber = String((parseInt(lastInvoice?.invoiceNumber ?? "0", 10) || 0) + 1);
 
     // Create the invoice
     const invoice = await prisma.invoice.create({

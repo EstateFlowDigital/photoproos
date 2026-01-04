@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
+import { ChevronDown } from "lucide-react";
 import {
   getNotifications,
   markNotificationAsRead,
@@ -13,6 +14,7 @@ import {
   type NotificationData,
 } from "@/lib/actions/notifications";
 import { globalSearch, type SearchResult as GlobalSearchResult } from "@/lib/actions/search";
+import { QuickActions, QUICK_ACTIONS } from "@/components/dashboard/quick-actions";
 
 interface DashboardTopbarProps {
   className?: string;
@@ -91,12 +93,14 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const helpRef = useRef<HTMLDivElement>(null);
+  const quickActionsRef = useRef<HTMLDivElement>(null);
 
   // Fetch notifications on mount
   useEffect(() => {
@@ -248,15 +252,18 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setSearchOpen(false);
+      if (
+        searchRef.current?.contains(e.target as Node) ||
+        quickActionsRef.current?.contains(e.target as Node) ||
+        notificationsRef.current?.contains(e.target as Node) ||
+        helpRef.current?.contains(e.target as Node)
+      ) {
+        return;
       }
-      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
-        setNotificationsOpen(false);
-      }
-      if (helpRef.current && !helpRef.current.contains(e.target as Node)) {
-        setHelpOpen(false);
-      }
+      setSearchOpen(false);
+      setQuickActionsOpen(false);
+      setNotificationsOpen(false);
+      setHelpOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -395,14 +402,28 @@ export function DashboardTopbar({ className }: DashboardTopbarProps) {
 
       {/* Right side - Actions */}
       <div className="order-1 flex items-center gap-2 sm:order-2">
-        {/* Quick create button */}
-        <Link
-          href="/create"
-          className="hidden h-9 items-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 lg:flex"
-        >
-          <PlusIcon className="h-4 w-4" />
-          <span className="hidden xl:inline">New Project</span>
-        </Link>
+        {/* Quick actions popup */}
+        <div ref={quickActionsRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setQuickActionsOpen((prev) => !prev)}
+            className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+          >
+            <PlusIcon className="h-4 w-4" />
+            <span className="hidden lg:inline">Quick Actions</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform",
+                quickActionsOpen ? "rotate-180" : "rotate-0"
+              )}
+            />
+          </button>
+          {quickActionsOpen && (
+            <div className="absolute right-0 top-full mt-2 w-[320px] max-w-full rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50">
+              <QuickActions className="grid grid-cols-1 gap-2" actions={QUICK_ACTIONS} />
+            </div>
+          )}
+        </div>
 
         {/* Notifications */}
         <div ref={notificationsRef} className="relative">

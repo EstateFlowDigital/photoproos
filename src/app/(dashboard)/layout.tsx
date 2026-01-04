@@ -55,6 +55,12 @@ export default async function DashboardLayout({
     },
   });
 
+  // Get user's appearance preferences
+  const userAppearance = {
+    dashboardAccent: user.dashboardAccent || "#3b82f6",
+    sidebarCompact: user.sidebarCompact || false,
+  };
+
   // Check if user has an organization
   let organization;
   if (user.memberships.length === 0) {
@@ -138,6 +144,17 @@ export default async function DashboardLayout({
       <TourProvider organizationId={organization.id}>
         <CommandPaletteProvider>
           <ReferralProcessor />
+          {/* Apply user's custom accent color */}
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+                :root, [data-theme="dark"], [data-theme="light"] {
+                  --primary: ${userAppearance.dashboardAccent};
+                  --primary-hover: ${userAppearance.dashboardAccent}e6;
+                }
+              `,
+            }}
+          />
           <DashboardLayoutClient
             enabledModules={enabledModules}
             industries={organizationIndustries}

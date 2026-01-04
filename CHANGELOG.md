@@ -21,6 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Live preview showing selected color on avatar and button
   - Color saved to organization.primaryColor during onboarding
 
+- **Dashboard Appearance Customization**
+  - New Settings > Appearance page for personal dashboard theming
+  - 9 color theme presets: Classic Blue, Midnight, Forest, Sunset, Ocean, Lavender, Rose, Ember, Slate
+  - Custom color picker for any accent color
+  - Live preview of buttons, badges, and links
+  - Compact sidebar mode toggle (coming soon)
+  - Per-user preferences stored in database
+  - User accent color applied across entire dashboard
+
 - **Late Payment Reminders System**
   - Automated invoice payment reminders for overdue invoices
   - Email template with escalating urgency messaging (1-7 days, 7-14 days, 14+ days)

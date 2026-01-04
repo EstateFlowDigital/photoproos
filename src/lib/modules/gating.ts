@@ -160,9 +160,11 @@ export function getFilteredNavigation(context: GatingContext) {
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((m) => ({
       id: m.id,
+      moduleId: m.id,
       label: m.name,
       href: m.href,
       icon: m.icon,
+      category: m.category,
       badge: undefined as number | undefined,
     }));
 }

@@ -60,6 +60,7 @@ export default async function SettingsPage() {
       {/* Quick Navigation */}
       <PageContextNav
         items={[
+          { label: "Appearance", href: "/settings/appearance", icon: <QuickSparklesIcon className="h-4 w-4" /> },
           { label: "Profile", href: "/settings/profile", icon: <QuickUserIcon className="h-4 w-4" /> },
           { label: "Billing", href: "/settings/billing", icon: <QuickCardIcon className="h-4 w-4" /> },
           { label: "Team", href: "/settings/team", icon: <QuickTeamIcon className="h-4 w-4" /> },
@@ -71,6 +72,12 @@ export default async function SettingsPage() {
       />
 
       <div className="grid gap-4 md:grid-cols-2">
+        <SettingCard
+          title="Appearance"
+          description="Personalize your dashboard theme and colors"
+          href="/settings/appearance"
+          icon={<SparklesIcon className="h-5 w-5" />}
+        />
         <SettingCard
           title="Profile"
           description="Update your personal information and avatar"
@@ -305,6 +312,22 @@ function QuickPaletteIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16ZM6.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm0 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM10 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm3.5 2a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm0 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 1a.75.75 0 01.65.375l1.533 2.695 2.695 1.533a.75.75 0 010 1.3L12.183 8.43 10.65 11.125a.75.75 0 01-1.3 0L7.817 8.43 5.122 6.903a.75.75 0 010-1.3l2.695-1.533L9.35 1.375A.75.75 0 0110 1zM5.428 11.191a.75.75 0 011.019.266l.918 1.541 1.541.918a.75.75 0 010 1.262l-1.541.918-.918 1.541a.75.75 0 01-1.262 0l-.918-1.541-1.541-.918a.75.75 0 010-1.262l1.541-.918.918-1.541a.75.75 0 01.243-.266zm9.144 0a.75.75 0 011.019.266l.918 1.541 1.541.918a.75.75 0 010 1.262l-1.541.918-.918 1.541a.75.75 0 01-1.262 0l-.918-1.541-1.541-.918a.75.75 0 010-1.262l1.541-.918.918-1.541a.75.75 0 01.243-.266z" />
+    </svg>
+  );
+}
+
+function QuickSparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 1a.75.75 0 01.65.375l1.533 2.695 2.695 1.533a.75.75 0 010 1.3L12.183 8.43 10.65 11.125a.75.75 0 01-1.3 0L7.817 8.43 5.122 6.903a.75.75 0 010-1.3l2.695-1.533L9.35 1.375A.75.75 0 0110 1zM5.428 11.191a.75.75 0 011.019.266l.918 1.541 1.541.918a.75.75 0 010 1.262l-1.541.918-.918 1.541a.75.75 0 01-1.262 0l-.918-1.541-1.541-.918a.75.75 0 010-1.262l1.541-.918.918-1.541a.75.75 0 01.243-.266zm9.144 0a.75.75 0 011.019.266l.918 1.541 1.541.918a.75.75 0 010 1.262l-1.541.918-.918 1.541a.75.75 0 01-1.262 0l-.918-1.541-1.541-.918a.75.75 0 010-1.262l1.541-.918.918-1.541a.75.75 0 01.243-.266z" />
     </svg>
   );
 }

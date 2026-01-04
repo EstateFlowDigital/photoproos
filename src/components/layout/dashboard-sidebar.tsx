@@ -3,32 +3,21 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface NavItem {
-  label: string;
+  id: string;
+  name?: string; // From ModuleDefinition
+  label?: string; // For compatibility
   href: string;
   icon: React.FC<{ className?: string }>;
   badge?: number;
-  moduleId: string; // Module ID for gating
+  category?: string;
 }
-
-const allNavItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: DashboardIcon, moduleId: "dashboard" },
-  { label: "Projects", href: "/projects", icon: ProjectsIcon, moduleId: "projects" },
-  { label: "Galleries", href: "/galleries", icon: GalleryIcon, moduleId: "galleries" },
-  { label: "Properties", href: "/properties", icon: PropertyIcon, moduleId: "properties" },
-  { label: "Services", href: "/services", icon: ServicesIcon, moduleId: "services" },
-  { label: "Clients", href: "/clients", icon: ClientsIcon, moduleId: "clients" },
-  { label: "Contracts", href: "/contracts", icon: ContractsIcon, moduleId: "contracts" },
-  { label: "Orders", href: "/orders", icon: OrdersIcon, moduleId: "invoices" }, // Orders are part of invoices module
-  { label: "Invoices", href: "/invoices", icon: InvoiceIcon, moduleId: "invoices" },
-  { label: "Payments", href: "/payments", icon: PaymentsIcon, moduleId: "invoices" }, // Payments is part of invoices module
-  { label: "Scheduling", href: "/scheduling", icon: CalendarIcon, moduleId: "scheduling" },
-];
 
 const bottomNavItems: NavItem[] = [];
 
@@ -52,20 +41,75 @@ export function DashboardSidebar({
     industries,
   });
 
-  // Add Payments link when invoices module is enabled
   const paymentsVisible = navItems.some((item) => item.id === "invoices");
   const sidebarNav = paymentsVisible
     ? [
         ...navItems,
         {
           id: "payments",
-          label: "Payments",
+          name: "Payments",
           href: "/payments",
           icon: PaymentsIcon,
           badge: undefined as number | undefined,
+          category: "operations",
         },
       ]
     : navItems;
+
+  const corePrimaryIds = ["dashboard", "projects", "clients", "scheduling"];
+  const coreNav = sidebarNav.filter((item) => corePrimaryIds.includes(item.id));
+  const workspaceNav = sidebarNav.filter(
+    (item) => !corePrimaryIds.includes(item.id) && item.category !== "advanced"
+  );
+  const advancedNav = sidebarNav.filter((item) => item.category === "advanced");
+  const [sectionState, setSectionState] = React.useState({
+    workspaces: true,
+    advanced: false,
+  });
+
+  const renderNavItem = (item: NavItem) => {
+    const isActive =
+      pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
+    const IconComponent = item.icon;
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={cn(
+          "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          isActive
+            ? "bg-[var(--primary)] text-white"
+            : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+        )}
+      >
+        <IconComponent
+          className={cn(
+            "h-5 w-5 shrink-0 transition-colors",
+            isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+          )}
+        />
+        <span className="flex-1">{item.name || item.label}</span>
+        {item.badge !== undefined && item.badge > 0 && (
+          <span
+            className={cn(
+              "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
+              isActive
+                ? "bg-white/20 text-white"
+                : "bg-[var(--primary)]/10 text-[var(--primary)]"
+            )}
+          >
+            {item.badge}
+          </span>
+        )}
+      </Link>
+    );
+  };
+
+  const toggleSection = (key: "workspaces" | "advanced") => {
+    setSectionState((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
 
   return (
     <aside
@@ -83,44 +127,56 @@ export function DashboardSidebar({
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 min-h-0 space-y-2 overflow-y-auto px-4 pb-6 pt-4">
-        {sidebarNav.map((item) => {
-          const isActive = pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
-          const IconComponent = item.icon;
+      <nav className="flex-1 min-h-0 overflow-y-auto px-4 pb-6 pt-4">
+        <div className="space-y-2">
+          {coreNav.map((item) => renderNavItem(item))}
+        </div>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-[var(--primary)] text-white"
-                  : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-              )}
+        {workspaceNav.length > 0 && (
+          <div className="mt-4 space-y-2 rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-3">
+            <button
+              type="button"
+              onClick={() => toggleSection("workspaces")}
+              className="flex w-full items-center justify-between text-sm font-semibold text-foreground"
             >
-              <IconComponent
+              <span>Workspaces</span>
+              <ChevronDown
                 className={cn(
-                  "h-5 w-5 shrink-0 transition-colors",
-                  isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                  "h-4 w-4 transition-transform",
+                  sectionState.workspaces ? "rotate-180" : "rotate-0"
                 )}
               />
-              <span className="flex-1">{item.label}</span>
-              {item.badge !== undefined && item.badge > 0 && (
-                <span
-                  className={cn(
-                    "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-[var(--primary)]/10 text-[var(--primary)]"
-                  )}
-                >
-                  {item.badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+            </button>
+            {sectionState.workspaces && (
+              <div className="space-y-1 pt-2">
+                {workspaceNav.map((item) => renderNavItem(item))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {advancedNav.length > 0 && (
+          <div className="mt-4 space-y-2 rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-3">
+            <button
+              type="button"
+              onClick={() => toggleSection("advanced")}
+              className="flex w-full items-center justify-between text-sm font-semibold text-foreground"
+            >
+              <span>Advanced Tools</span>
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  sectionState.advanced ? "rotate-180" : "rotate-0"
+                )}
+              />
+            </button>
+            {sectionState.advanced && (
+              <div className="space-y-1 pt-2">
+                {advancedNav.map((item) => renderNavItem(item))}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Bottom Navigation */}

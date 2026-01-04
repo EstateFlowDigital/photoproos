@@ -65,12 +65,14 @@ const defaultActions: QuickAction[] = [
   },
 ];
 
+export const QUICK_ACTIONS = defaultActions;
+
 interface QuickActionsProps {
   actions?: QuickAction[];
   className?: string;
 }
 
-export function QuickActions({ actions = defaultActions, className }: QuickActionsProps) {
+export function QuickActions({ actions = QUICK_ACTIONS, className }: QuickActionsProps) {
   return (
     <div className={cn("auto-grid grid-min-220 grid-gap-3", className)}>
       {actions.map((action) => (
