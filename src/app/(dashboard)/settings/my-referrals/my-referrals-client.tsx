@@ -25,6 +25,15 @@ interface MyReferralsClientProps {
   referralLink: string | null;
 }
 
+// Milestone definitions
+const MILESTONES = [
+  { count: 1, reward: "$25", title: "First Referral", icon: "🎯" },
+  { count: 5, reward: "Free Month", title: "Rising Star", icon: "⭐" },
+  { count: 10, reward: "$50 Bonus", title: "Referral Pro", icon: "🚀" },
+  { count: 25, reward: "Exclusive Swag", title: "Ambassador", icon: "👑" },
+  { count: 50, reward: "Lifetime 20% Off", title: "Legend", icon: "🏆" },
+];
+
 // =============================================================================
 // Component
 // =============================================================================
@@ -114,11 +123,11 @@ export function MyReferralsClient({
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      pending: "bg-[var(--warning)]/10 text-[var(--warning)]",
-      signed_up: "bg-[var(--primary)]/10 text-[var(--primary)]",
-      subscribed: "bg-[var(--success)]/10 text-[var(--success)]",
-      churned: "bg-[var(--error)]/10 text-[var(--error)]",
-      expired: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]",
+      pending: "bg-[var(--warning)]/10 text-[var(--warning)] border-[var(--warning)]/20",
+      signed_up: "bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/20",
+      subscribed: "bg-[var(--success)]/10 text-[var(--success)] border-[var(--success)]/20",
+      churned: "bg-[var(--error)]/10 text-[var(--error)] border-[var(--error)]/20",
+      expired: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)] border-[var(--foreground-muted)]/20",
     };
     const labels: Record<string, string> = {
       pending: "Pending",
@@ -128,7 +137,7 @@ export function MyReferralsClient({
       expired: "Expired",
     };
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] || ""}`}>
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${styles[status] || ""}`}>
         {labels[status] || status}
       </span>
     );
@@ -136,6 +145,15 @@ export function MyReferralsClient({
 
   const pendingRewards = rewards.filter((r) => !r.isApplied);
   const appliedRewards = rewards.filter((r) => r.isApplied);
+  const successfulCount = stats?.subscribedReferrals || 0;
+
+  // Calculate current milestone progress
+  const currentMilestone = MILESTONES.find((m) => successfulCount < m.count);
+  const previousMilestone = MILESTONES.filter((m) => successfulCount >= m.count).pop();
+  const progressToNext = currentMilestone
+    ? ((successfulCount - (previousMilestone?.count || 0)) /
+       (currentMilestone.count - (previousMilestone?.count || 0))) * 100
+    : 100;
 
   return (
     <div className="space-y-6">
@@ -145,7 +163,7 @@ export function MyReferralsClient({
         actions={
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             Back to Settings
@@ -154,49 +172,65 @@ export function MyReferralsClient({
       />
 
       {/* Hero Section with Referral Link */}
-      <div className="rounded-xl border border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/10 to-[var(--primary)]/5 p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="rounded-xl border border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/10 via-[var(--primary)]/5 to-transparent p-6 relative overflow-hidden">
+        {/* Decorative gradient circles */}
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-[var(--primary)]/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[var(--success)]/10 rounded-full blur-3xl" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-foreground mb-1">
-              Share your referral link
-            </h2>
-            <p className="text-sm text-foreground-muted">
-              Earn <span className="font-medium text-[var(--success)]">$25</span> for every photographer who subscribes
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">🎁</span>
+              <h2 className="text-xl font-semibold text-foreground">
+                Share & Earn $25
+              </h2>
+            </div>
+            <p className="text-sm text-foreground-muted max-w-md">
+              Share your unique link. When they subscribe, you get{" "}
+              <span className="font-semibold text-[var(--success)]">$25 account credit</span>.
+              They get an extended trial + 20% off!
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="flex-1 md:flex-none">
-              <input
-                type="text"
-                readOnly
-                value={referralLink || ""}
-                className="w-full md:w-80 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm text-foreground font-mono"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  readOnly
+                  value={referralLink || ""}
+                  className="w-full md:w-80 rounded-lg border border-[var(--card-border)] bg-[var(--card)] pl-4 pr-12 py-2.5 text-sm text-foreground font-mono"
+                />
+                <button
+                  onClick={handleCopyLink}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-8 rounded-md bg-[var(--background-hover)] text-foreground-muted hover:text-foreground transition-colors"
+                >
+                  {copied ? <CheckIcon className="h-4 w-4 text-[var(--success)]" /> : <CopyIcon className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              className="hidden md:flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/25"
             >
-              {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
-              {copied ? "Copied!" : "Copy"}
+              {copied ? "Copied!" : "Copy Link"}
             </button>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-4 pt-4 border-t border-[var(--primary)]/20 flex flex-wrap gap-2">
+        <div className="relative mt-5 pt-5 border-t border-[var(--primary)]/20 flex flex-wrap gap-2">
           <button
             onClick={() => setShowInviteForm(true)}
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-[var(--card)] hover:shadow-md"
           >
             <MailIcon className="h-4 w-4" />
-            Send Email Invite
+            Email Invite
           </button>
           <a
-            href={`https://twitter.com/intent/tweet?text=I%20use%20ListingLens%20to%20run%20my%20photography%20business.%20Check%20it%20out!&url=${encodeURIComponent(referralLink || "")}`}
+            href={`https://twitter.com/intent/tweet?text=I%20use%20ListingLens%20to%20run%20my%20photography%20business%20-%20stunning%20galleries%2C%20automated%20payments%2C%20and%20more!%20Try%20it%20with%20my%20link%20for%2021%20days%20free%20%2B%2020%25%20off%3A&url=${encodeURIComponent(referralLink || "")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-[var(--card)] hover:shadow-md"
           >
             <TwitterIcon className="h-4 w-4" />
             Share on X
@@ -205,60 +239,86 @@ export function MyReferralsClient({
             href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralLink || "")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-[var(--card)] hover:shadow-md"
           >
             <LinkedInIcon className="h-4 w-4" />
-            Share on LinkedIn
+            LinkedIn
+          </a>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`Check out ListingLens - the all-in-one platform for photographers! Get 21 days free + 20% off with my link: ${referralLink}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)]/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-[var(--card)] hover:shadow-md"
+          >
+            <WhatsAppIcon className="h-4 w-4" />
+            WhatsApp
           </a>
         </div>
       </div>
 
       {/* Email Invite Modal */}
       {showInviteForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Send Referral Invite
-            </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+                <MailIcon className="h-5 w-5 text-[var(--primary)]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">
+                  Send Referral Invite
+                </h3>
+                <p className="text-xs text-foreground-muted">
+                  They&apos;ll receive a personalized email with your link
+                </p>
+              </div>
+            </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground-muted mb-1">
-                  Email Address *
+                <label className="block text-sm font-medium text-foreground-muted mb-1.5">
+                  Email Address <span className="text-[var(--error)]">*</span>
                 </label>
                 <input
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="photographer@example.com"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-foreground placeholder:text-foreground-muted"
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground-muted mb-1">
-                  Their Name (optional)
+                <label className="block text-sm font-medium text-foreground-muted mb-1.5">
+                  Their Name <span className="text-foreground-muted">(optional)</span>
                 </label>
                 <input
                   type="text"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   placeholder="John Smith"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-foreground placeholder:text-foreground-muted"
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
                 />
               </div>
             </div>
-            <div className="mt-6 flex gap-3 justify-end">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 onClick={() => setShowInviteForm(false)}
-                className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                className="inline-flex w-full items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendInvite}
-                disabled={isPending}
-                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                disabled={isPending || !inviteEmail}
+                className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/25 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
               >
-                {isPending ? "Sending..." : "Send Invite"}
+                {isPending ? (
+                  <span className="flex items-center gap-2">
+                    <LoadingSpinner className="h-4 w-4" />
+                    Sending...
+                  </span>
+                ) : (
+                  "Send Invite"
+                )}
               </button>
             </div>
           </div>
@@ -268,21 +328,21 @@ export function MyReferralsClient({
       {/* Stats Cards */}
       {stats && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:shadow-lg hover:shadow-[var(--primary)]/5 hover:border-[var(--primary)]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--primary)]/20 to-[var(--primary)]/10">
                 <UsersIcon className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{stats.totalReferrals}</p>
-                <p className="text-xs text-foreground-muted">Total Referrals</p>
+                <p className="text-xs text-foreground-muted">Total Invited</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:shadow-lg hover:shadow-[var(--success)]/5 hover:border-[var(--success)]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success)]/10">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--success)]/20 to-[var(--success)]/10">
                 <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />
               </div>
               <div>
@@ -292,23 +352,23 @@ export function MyReferralsClient({
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:shadow-lg hover:shadow-[var(--warning)]/5 hover:border-[var(--warning)]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--warning)]/10">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--warning)]/20 to-[var(--warning)]/10">
                 <CurrencyIcon className="h-5 w-5 text-[var(--warning)]" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(stats.pendingCreditCents)}
                 </p>
-                <p className="text-xs text-foreground-muted">Pending Credits</p>
+                <p className="text-xs text-foreground-muted">Available Credit</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:shadow-lg hover:shadow-[var(--ai)]/5 hover:border-[var(--ai)]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--ai)]/10">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--ai)]/20 to-[var(--ai)]/10">
                 <TrendingUpIcon className="h-5 w-5 text-[var(--ai)]" />
               </div>
               <div>
@@ -320,22 +380,92 @@ export function MyReferralsClient({
         </div>
       )}
 
+      {/* Milestone Progress */}
+      {currentMilestone && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{currentMilestone.icon}</span>
+              <div>
+                <h3 className="font-semibold text-foreground">Next Milestone: {currentMilestone.title}</h3>
+                <p className="text-sm text-foreground-muted">
+                  {currentMilestone.count - successfulCount} more referral{currentMilestone.count - successfulCount !== 1 ? "s" : ""} to unlock{" "}
+                  <span className="font-medium text-[var(--success)]">{currentMilestone.reward}</span>
+                </p>
+              </div>
+            </div>
+            <div className="sm:text-right">
+              <p className="text-2xl font-bold text-foreground">{successfulCount}/{currentMilestone.count}</p>
+              <p className="text-xs text-foreground-muted">Referrals</p>
+            </div>
+          </div>
+          <div className="relative h-3 rounded-full bg-[var(--background)] overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--success)] transition-all duration-500"
+              style={{ width: `${progressToNext}%` }}
+            />
+          </div>
+
+          {/* Milestone badges */}
+          <div className="mt-6 flex gap-3 overflow-x-auto pb-2">
+            {MILESTONES.map((milestone) => {
+              const isCompleted = successfulCount >= milestone.count;
+              const isCurrent = milestone === currentMilestone;
+              return (
+                <div
+                  key={milestone.count}
+                  className={`flex-shrink-0 flex flex-col items-center p-3 rounded-lg border transition-all ${
+                    isCompleted
+                      ? "border-[var(--success)]/30 bg-[var(--success)]/5"
+                      : isCurrent
+                        ? "border-[var(--primary)]/30 bg-[var(--primary)]/5"
+                        : "border-[var(--card-border)] bg-[var(--background)] opacity-50"
+                  }`}
+                >
+                  <span className={`text-xl ${isCompleted ? "" : "grayscale"}`}>
+                    {isCompleted ? "✅" : milestone.icon}
+                  </span>
+                  <p className={`text-xs font-medium mt-1 ${isCompleted ? "text-[var(--success)]" : "text-foreground-muted"}`}>
+                    {milestone.count} referrals
+                  </p>
+                  <p className={`text-[10px] ${isCompleted ? "text-[var(--success)]/70" : "text-foreground-muted"}`}>
+                    {milestone.reward}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-        <div className="flex gap-1 p-1 border-b border-[var(--card-border)] bg-[var(--background)]">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+        <div className="flex gap-0 border-b border-[var(--card-border)] bg-[var(--background)]">
           {(["overview", "referrals", "rewards"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-all relative ${
                 activeTab === tab
-                  ? "bg-[var(--card)] text-foreground shadow-sm"
-                  : "text-foreground-muted hover:text-foreground"
+                  ? "text-foreground bg-[var(--card)]"
+                  : "text-foreground-muted hover:text-foreground hover:bg-[var(--card)]/50"
               }`}
             >
-              {tab === "overview" && "Overview"}
-              {tab === "referrals" && `Referrals (${referrals.length})`}
-              {tab === "rewards" && `Rewards (${pendingRewards.length})`}
+              {tab === "overview" && "How It Works"}
+              {tab === "referrals" && `Your Referrals (${referrals.length})`}
+              {tab === "rewards" && (
+                <span className="flex items-center justify-center gap-2">
+                  Rewards
+                  {pendingRewards.length > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--success)] px-1.5 text-[10px] font-bold text-white">
+                      {pendingRewards.length}
+                    </span>
+                  )}
+                </span>
+              )}
+              {activeTab === tab && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary)]" />
+              )}
             </button>
           ))}
         </div>
@@ -344,46 +474,81 @@ export function MyReferralsClient({
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div className="space-y-6">
-              <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">How It Works</h3>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold mb-3">
-                      1
-                    </div>
-                    <h4 className="font-medium text-foreground mb-1">Share Your Link</h4>
-                    <p className="text-sm text-foreground-muted">
-                      Send your unique referral link to photographers you know
-                    </p>
+              {/* How It Works Steps */}
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--primary)]/30 transition-all">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] mb-4 group-hover:scale-110 transition-transform">
+                    <ShareIcon className="h-6 w-6" />
                   </div>
-                  <div className="text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold mb-3">
-                      2
-                    </div>
-                    <h4 className="font-medium text-foreground mb-1">They Sign Up</h4>
-                    <p className="text-sm text-foreground-muted">
-                      They get an extended 21-day trial and 20% off their first month
-                    </p>
+                  <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
+                    1
                   </div>
-                  <div className="text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--success)]/10 text-[var(--success)] text-lg font-bold mb-3">
-                      3
-                    </div>
-                    <h4 className="font-medium text-foreground mb-1">You Earn $25</h4>
-                    <p className="text-sm text-foreground-muted">
-                      When they subscribe, you get $25 credit towards your subscription
-                    </p>
+                  <h4 className="font-semibold text-foreground mb-2">Share Your Link</h4>
+                  <p className="text-sm text-foreground-muted leading-relaxed">
+                    Send your unique referral link to photographers you know via email, social media, or messaging.
+                  </p>
+                </div>
+                <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--warning)]/30 transition-all">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--warning)]/10 text-[var(--warning)] mb-4 group-hover:scale-110 transition-transform">
+                    <UserPlusIcon className="h-6 w-6" />
                   </div>
+                  <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
+                    2
+                  </div>
+                  <h4 className="font-semibold text-foreground mb-2">They Sign Up</h4>
+                  <p className="text-sm text-foreground-muted leading-relaxed">
+                    They get an extended 21-day trial (vs 14 days) plus 20% off their first month when they subscribe.
+                  </p>
+                </div>
+                <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--success)]/30 transition-all">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--success)]/10 text-[var(--success)] mb-4 group-hover:scale-110 transition-transform">
+                    <GiftIcon className="h-6 w-6" />
+                  </div>
+                  <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
+                    3
+                  </div>
+                  <h4 className="font-semibold text-foreground mb-2">You Earn $25</h4>
+                  <p className="text-sm text-foreground-muted leading-relaxed">
+                    When they subscribe to any paid plan, you instantly earn $25 in account credit. No limits!
+                  </p>
                 </div>
               </div>
 
-              {/* Your Code */}
+              {/* Your Code Display */}
               {profile && (
-                <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-6">
-                  <h3 className="text-sm font-medium text-foreground-muted mb-2">Your Referral Code</h3>
-                  <p className="text-2xl font-bold font-mono text-foreground">{profile.referralCode}</p>
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium text-foreground-muted mb-1">Your Referral Code</h3>
+                      <p className="text-3xl font-bold font-mono text-foreground tracking-wide">{profile.referralCode}</p>
+                    </div>
+                    <div className="sm:text-right">
+                      <p className="text-sm text-foreground-muted">Short Link</p>
+                      <p className="text-sm font-mono text-[var(--primary)]">
+                        listinglens.com/r/{profile.referralCode}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {/* Tips */}
+              <div className="rounded-xl border border-[var(--warning)]/20 bg-[var(--warning)]/5 p-5">
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0">
+                    <LightbulbIcon className="h-5 w-5 text-[var(--warning)]" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-foreground mb-1">Pro Tips for More Referrals</h4>
+                    <ul className="text-sm text-foreground-muted space-y-1">
+                      <li>Share in photography Facebook groups and communities</li>
+                      <li>Mention it when networking with other photographers</li>
+                      <li>Add your referral link to your email signature</li>
+                      <li>Create a quick video showing how you use ListingLens</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -391,45 +556,70 @@ export function MyReferralsClient({
           {activeTab === "referrals" && (
             <div>
               {referrals.length === 0 ? (
-                <div className="text-center py-12">
-                  <UsersIcon className="mx-auto h-12 w-12 text-foreground-muted opacity-50" />
-                  <p className="mt-4 text-foreground-muted">No referrals yet</p>
-                  <p className="text-sm text-foreground-muted mt-1">
-                    Start sharing your link to see referrals here
+                <div className="text-center py-16">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background)] mb-4">
+                    <UsersIcon className="h-8 w-8 text-foreground-muted" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1">No referrals yet</h3>
+                  <p className="text-sm text-foreground-muted max-w-sm mx-auto mb-6">
+                    Start sharing your referral link to see your invites and their status here.
                   </p>
+                  <button
+                    onClick={() => setShowInviteForm(true)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90"
+                  >
+                    <MailIcon className="h-4 w-4" />
+                    Send Your First Invite
+                  </button>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                <div className="overflow-x-auto -mx-6">
+                  <table className="w-full min-w-[640px]">
                     <thead>
                       <tr className="border-b border-[var(--card-border)]">
-                        <th className="text-left text-sm font-medium text-foreground-muted px-4 py-3">Person</th>
-                        <th className="text-left text-sm font-medium text-foreground-muted px-4 py-3">Status</th>
-                        <th className="text-left text-sm font-medium text-foreground-muted px-4 py-3">Signed Up</th>
-                        <th className="text-left text-sm font-medium text-foreground-muted px-4 py-3">Subscribed</th>
-                        <th className="text-left text-sm font-medium text-foreground-muted px-4 py-3">Expires</th>
+                        <th className="text-left text-xs font-medium text-foreground-muted uppercase tracking-wider px-6 py-3">Person</th>
+                        <th className="text-left text-xs font-medium text-foreground-muted uppercase tracking-wider px-6 py-3">Status</th>
+                        <th className="text-left text-xs font-medium text-foreground-muted uppercase tracking-wider px-6 py-3">Signed Up</th>
+                        <th className="text-left text-xs font-medium text-foreground-muted uppercase tracking-wider px-6 py-3">Subscribed</th>
+                        <th className="text-left text-xs font-medium text-foreground-muted uppercase tracking-wider px-6 py-3">Reward</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--card-border)]">
                       {referrals.map((referral) => (
-                        <tr key={referral.id} className="hover:bg-[var(--background)]">
-                          <td className="px-4 py-3">
-                            <p className="font-medium text-foreground">
-                              {referral.referredName || "—"}
-                            </p>
-                            <p className="text-sm text-foreground-muted">{referral.referredEmail}</p>
+                        <tr key={referral.id} className="hover:bg-[var(--background)] transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--background-hover)] text-sm font-medium text-foreground">
+                                {(referral.referredName || referral.referredEmail)[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-medium text-foreground">
+                                  {referral.referredName || "—"}
+                                </p>
+                                <p className="text-sm text-foreground-muted">{referral.referredEmail}</p>
+                              </div>
+                            </div>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-6 py-4">
                             {getStatusBadge(referral.status)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-foreground-muted">
+                          <td className="px-6 py-4 text-sm text-foreground-muted">
                             {formatDate(referral.signedUpAt)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-foreground-muted">
+                          <td className="px-6 py-4 text-sm text-foreground-muted">
                             {formatDate(referral.subscribedAt)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-foreground-muted">
-                            {formatDate(referral.expiresAt)}
+                          <td className="px-6 py-4">
+                            {referral.status === "subscribed" ? (
+                              <span className="inline-flex items-center gap-1 text-sm font-medium text-[var(--success)]">
+                                <CheckCircleIcon className="h-4 w-4" />
+                                $25 earned
+                              </span>
+                            ) : referral.status === "signed_up" ? (
+                              <span className="text-sm text-foreground-muted">Pending subscription</span>
+                            ) : (
+                              <span className="text-sm text-foreground-muted">—</span>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -446,33 +636,43 @@ export function MyReferralsClient({
               {/* Pending Rewards */}
               {pendingRewards.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-foreground-muted mb-3">
-                    Pending Rewards ({pendingRewards.length})
+                  <h3 className="text-sm font-medium text-foreground-muted mb-4 flex items-center gap-2">
+                    <SparklesIcon className="h-4 w-4 text-[var(--success)]" />
+                    Available to Apply ({pendingRewards.length})
                   </h3>
-                  <div className="space-y-3">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     {pendingRewards.map((reward) => (
                       <div
                         key={reward.id}
-                        className="flex items-center justify-between p-4 rounded-lg border border-[var(--success)]/30 bg-[var(--success)]/5"
+                        className="relative overflow-hidden rounded-xl border border-[var(--success)]/30 bg-gradient-to-br from-[var(--success)]/10 to-transparent p-5"
                       >
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {formatCurrency(reward.valueCents)} Account Credit
-                          </p>
-                          <p className="text-sm text-foreground-muted">{reward.description}</p>
+                        <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[var(--success)]/10 blur-2xl" />
+                        <div className="relative">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <p className="text-2xl font-bold text-foreground">
+                                {formatCurrency(reward.valueCents)}
+                              </p>
+                              <p className="text-sm text-foreground-muted">Account Credit</p>
+                            </div>
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--success)]/20 text-lg">
+                              💰
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground-muted mb-4">{reward.description}</p>
                           {reward.expiresAt && (
-                            <p className="text-xs text-foreground-muted mt-1">
+                            <p className="text-xs text-foreground-muted mb-4">
                               Expires {formatDate(reward.expiresAt)}
                             </p>
                           )}
+                          <button
+                            onClick={() => handleApplyReward(reward.id)}
+                            disabled={isPending}
+                            className="w-full rounded-lg bg-[var(--success)] py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--success)]/90 hover:shadow-lg hover:shadow-[var(--success)]/25 disabled:opacity-50"
+                          >
+                            {isPending ? "Applying..." : "Apply Credit"}
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleApplyReward(reward.id)}
-                          disabled={isPending}
-                          className="rounded-lg bg-[var(--success)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--success)]/90 disabled:opacity-50"
-                        >
-                          Apply
-                        </button>
                       </div>
                     ))}
                   </div>
@@ -482,23 +682,26 @@ export function MyReferralsClient({
               {/* Applied Rewards */}
               {appliedRewards.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-foreground-muted mb-3">
+                  <h3 className="text-sm font-medium text-foreground-muted mb-4">
                     Applied Rewards ({appliedRewards.length})
                   </h3>
                   <div className="space-y-2">
                     {appliedRewards.map((reward) => (
                       <div
                         key={reward.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-[var(--background)]"
+                        className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between"
                       >
-                        <div>
-                          <p className="text-sm text-foreground">
-                            {formatCurrency(reward.valueCents)} Credit Applied
-                          </p>
-                          <p className="text-xs text-foreground-muted">{reward.description}</p>
+                        <div className="flex items-center gap-3">
+                          <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              {formatCurrency(reward.valueCents)} Credit Applied
+                            </p>
+                            <p className="text-xs text-foreground-muted">{reward.description}</p>
+                          </div>
                         </div>
-                        <p className="text-xs text-foreground-muted">
-                          Applied {formatDate(reward.appliedAt)}
+                        <p className="text-xs text-foreground-muted sm:text-right">
+                          {formatDate(reward.appliedAt)}
                         </p>
                       </div>
                     ))}
@@ -507,11 +710,13 @@ export function MyReferralsClient({
               )}
 
               {pendingRewards.length === 0 && appliedRewards.length === 0 && (
-                <div className="text-center py-12">
-                  <GiftIcon className="mx-auto h-12 w-12 text-foreground-muted opacity-50" />
-                  <p className="mt-4 text-foreground-muted">No rewards yet</p>
-                  <p className="text-sm text-foreground-muted mt-1">
-                    Rewards appear here when your referrals subscribe
+                <div className="text-center py-16">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background)] mb-4">
+                    <GiftIcon className="h-8 w-8 text-foreground-muted" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1">No rewards yet</h3>
+                  <p className="text-sm text-foreground-muted max-w-sm mx-auto">
+                    When your referrals subscribe to a paid plan, you&apos;ll see your $25 rewards here.
                   </p>
                 </div>
               )}
@@ -526,6 +731,15 @@ export function MyReferralsClient({
 // =============================================================================
 // Icons
 // =============================================================================
+
+function LoadingSpinner({ className }: { className?: string }) {
+  return (
+    <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  );
+}
 
 function ArrowLeftIcon({ className }: { className?: string }) {
   return (
@@ -577,6 +791,14 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
+function WhatsAppIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+    </svg>
+  );
+}
+
 function UsersIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
@@ -613,8 +835,39 @@ function TrendingUpIcon({ className }: { className?: string }) {
 function GiftIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M13.75 3A2.75 2.75 0 0 0 11 5.75c0 .463.116.898.32 1.28l-1.32-.013-.003-.001a.75.75 0 0 0 0 1.5h3.75a1.5 1.5 0 0 0 0-3H13.5a1.25 1.25 0 1 1 0-2.5h.25a.75.75 0 0 0 0-1.5h-.25a2.73 2.73 0 0 0-.75.103ZM6.5 8.511V8.5a.75.75 0 0 1 0 .011ZM9.978 7.016H9.75a1.25 1.25 0 0 1 0-2.5h.25a.75.75 0 0 1 0 1.5H9.75a.25.25 0 0 0 0 .5h.228v.5ZM5.25 8.5A1.5 1.5 0 0 1 6.75 7h2.5a.75.75 0 0 1 0 1.5h-2.5a.25.25 0 0 0 0 .5h2.5a.75.75 0 0 1 0 1.5h-2.5a1.5 1.5 0 0 1 0-3V7Z" clipRule="evenodd" />
-      <path d="M2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10ZM2.75 12.75a.75.75 0 0 0-.75.75v3.5c0 .414.336.75.75.75h14.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75H2.75Z" />
+      <path fillRule="evenodd" d="M6 5v1H4.667a1.75 1.75 0 0 0-1.743 1.598l-.826 9.5A1.75 1.75 0 0 0 3.84 19H16.16a1.75 1.75 0 0 0 1.743-1.902l-.826-9.5A1.75 1.75 0 0 0 15.333 6H14V5a4 4 0 0 0-8 0Zm4-2.5A2.5 2.5 0 0 0 7.5 5v1h5V5A2.5 2.5 0 0 0 10 2.5ZM9.25 12a.75.75 0 0 0-1.5 0v2.25H5.5a.75.75 0 0 0 0 1.5h2.25v2.25a.75.75 0 0 0 1.5 0v-2.25h2.25a.75.75 0 0 0 0-1.5H9.25V12Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ShareIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M13 4.5a2.5 2.5 0 1 1 .702 1.737L6.97 9.604a2.518 2.518 0 0 1 0 .792l6.733 3.367a2.5 2.5 0 1 1-.671 1.341l-6.733-3.367a2.5 2.5 0 1 1 0-3.474l6.733-3.367A2.52 2.52 0 0 1 13 4.5Z" />
+    </svg>
+  );
+}
+
+function UserPlusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 8 18a9.953 9.953 0 0 1-5.385-1.572ZM16.25 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z" />
+    </svg>
+  );
+}
+
+function LightbulbIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 1a6 6 0 0 0-3.815 10.631C7.237 12.5 8 13.443 8 14.456v.644a.75.75 0 0 0 .75.75h2.5a.75.75 0 0 0 .75-.75v-.644c0-1.013.762-1.957 1.815-2.825A6 6 0 0 0 10 1ZM8.863 17.414a.75.75 0 0 0-.226 1.483 9.066 9.066 0 0 0 2.726 0 .75.75 0 0 0-.226-1.483 7.553 7.553 0 0 1-2.274 0Z" />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" />
     </svg>
   );
 }
