@@ -72,16 +72,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Reorder awards with up/down buttons
   - Helpful tips for empty state
 
-- **Investor Proposal Document**
-  - Comprehensive investment proposal at `INVESTOR_PROPOSAL.md`
-  - Complete application architecture analysis
-  - Feature breakdown by module (16 modules documented)
-  - Development journey timeline (Q3 2024 - present)
-  - Technology stack documentation
-  - Future roadmap with 8 phases (Q1 2025 - 2026+)
-  - Market opportunity analysis
-  - Business model and pricing strategy
-  - Use of funds breakdown
+- **Investor Proposal Document (v2.0)**
+  - Comprehensive 3,600+ line investment proposal at `INVESTOR_PROPOSAL.md`
+  - 15-part structured document with detailed table of contents
+  - Complete analysis of all 16 platform modules with 500+ features documented
+  - Technical architecture diagrams and database schema overview
+  - Development history timeline from Q3 2024 to present
+  - 8-phase future roadmap (Q1 2025 - 2026+) with effort estimates
+  - Market analysis, competitive landscape, and business model
+  - 5-year financial projections and investment opportunity details
 
 - **Invoice Split UI Integration**
   - Split section added to invoice detail page sidebar

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { useUser } from "@clerk/nextjs";
-import { X, Monitor, Tablet, Smartphone, Maximize2, Settings2 } from "lucide-react";
+import { X, Monitor, Tablet, Smartphone, Maximize2, Settings2, RotateCcw } from "lucide-react";
 
 // Only this email can see dev tools
 const DEV_EMAIL = "cameron@houseandhomephoto.com";
@@ -27,12 +27,26 @@ const VIEWPORT_PRESETS: ViewportPreset[] = [
   { name: "2K Display", width: 2560, height: 1440, icon: <Monitor className="w-4 h-4" /> },
 ];
 
-export function ResponsiveTester() {
+// Context for sharing viewport state
+interface ViewportContextType {
+  viewport: { width: number; height: number } | null;
+  scale: number;
+}
+
+const ViewportContext = createContext<ViewportContextType>({ viewport: null, scale: 1 });
+
+export function useViewport() {
+  return useContext(ViewportContext);
+}
+
+export function ResponsiveTester({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useUser();
   const [isEnabled, setIsEnabled] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<ViewportPreset | null>(null);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
+  const [scale, setScale] = useState(1);
+  const [autoScale, setAutoScale] = useState(true);
 
   // Check localStorage for dev tools state
   useEffect(() => {
@@ -51,10 +65,6 @@ export function ResponsiveTester() {
       (e) => e.emailAddress?.toLowerCase() === DEV_EMAIL.toLowerCase()
     );
 
-  if (!isDeveloper) {
-    return null;
-  }
-
   const toggleDevTools = () => {
     const newState = !isEnabled;
     setIsEnabled(newState);
@@ -72,6 +82,7 @@ export function ResponsiveTester() {
 
   const clearPreset = () => {
     setSelectedPreset(null);
+    setScale(1);
   };
 
   const getViewportDimensions = () => {
@@ -83,8 +94,64 @@ export function ResponsiveTester() {
 
   const dimensions = getViewportDimensions();
 
+  // Calculate auto-scale to fit viewport in window
+  useEffect(() => {
+    if (!dimensions || !autoScale) {
+      setScale(1);
+      return;
+    }
+
+    const updateScale = () => {
+      const availableWidth = window.innerWidth - 48; // padding
+      const availableHeight = window.innerHeight - 120; // space for controls
+
+      const scaleX = availableWidth / dimensions.width;
+      const scaleY = availableHeight / dimensions.height;
+      const newScale = Math.min(scaleX, scaleY, 1); // Never scale up, only down
+
+      setScale(newScale);
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, [dimensions, autoScale]);
+
+  // If not developer, just render children normally
+  if (!isDeveloper) {
+    return <>{children}</>;
+  }
+
+  const isViewportActive = isEnabled && selectedPreset && dimensions;
+
   return (
-    <>
+    <ViewportContext.Provider value={{ viewport: dimensions, scale }}>
+      {/* Main Content - constrained when viewport is active */}
+      {isViewportActive ? (
+        <div className="fixed inset-0 bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
+          {/* Viewport Frame */}
+          <div
+            className="relative bg-[var(--background)] overflow-auto border-2 border-[var(--primary)] shadow-2xl"
+            style={{
+              width: dimensions.width,
+              height: dimensions.height,
+              transform: `scale(${scale})`,
+              transformOrigin: "center center",
+            }}
+          >
+            {children}
+          </div>
+
+          {/* Viewport Label */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-[var(--primary)] text-white text-sm font-medium rounded-lg shadow-lg z-[9999]">
+            {selectedPreset.name} — {dimensions.width}×{dimensions.height}
+            {scale < 1 && <span className="ml-2 opacity-70">({Math.round(scale * 100)}%)</span>}
+          </div>
+        </div>
+      ) : (
+        children
+      )}
+
       {/* Dev Tools Toggle Button - Always visible for developer */}
       <button
         onClick={toggleDevTools}
@@ -128,10 +195,29 @@ export function ResponsiveTester() {
             {selectedPreset && (
               <button
                 onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")}
-                className="px-3 py-2 rounded-lg bg-[#1a1a1a] text-white text-sm hover:bg-[#252525] transition-colors"
+                className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                  orientation === "landscape"
+                    ? "bg-[var(--primary)]/20 text-[var(--primary)]"
+                    : "bg-[#1a1a1a] text-white hover:bg-[#252525]"
+                }`}
                 title={`Switch to ${orientation === "portrait" ? "landscape" : "portrait"}`}
               >
-                {orientation === "portrait" ? "↕️" : "↔️"}
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Auto Scale Toggle */}
+            {selectedPreset && (
+              <button
+                onClick={() => setAutoScale(!autoScale)}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  autoScale
+                    ? "bg-[var(--primary)]/20 text-[var(--primary)]"
+                    : "bg-[#1a1a1a] text-[#7c7c7c] hover:text-white hover:bg-[#252525]"
+                }`}
+                title={autoScale ? "Disable auto-scale" : "Enable auto-scale"}
+              >
+                {autoScale ? "Auto" : "1:1"}
               </button>
             )}
 
@@ -147,9 +233,7 @@ export function ResponsiveTester() {
             )}
 
             {/* Current window size indicator */}
-            <div className="px-3 py-2 text-xs text-[#7c7c7c] border-l border-[rgba(255,255,255,0.08)]">
-              Window: {typeof window !== "undefined" ? `${window.innerWidth}×${window.innerHeight}` : "..."}
-            </div>
+            <WindowSizeIndicator />
           </div>
 
           {/* Viewport Preset Panel */}
@@ -211,14 +295,9 @@ export function ResponsiveTester() {
               </div>
             </div>
           )}
-
-          {/* Viewport Constraint Overlay */}
-          {selectedPreset && dimensions && (
-            <ViewportOverlay width={dimensions.width} height={dimensions.height} />
-          )}
         </>
       )}
-    </>
+    </ViewportContext.Provider>
   );
 }
 
@@ -249,97 +328,21 @@ function PresetButton({
   );
 }
 
-function ViewportOverlay({ width, height }: { width: number; height: number }) {
-  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+function WindowSizeIndicator() {
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const updateSize = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      setSize({ width: window.innerWidth, height: window.innerHeight });
     };
     updateSize();
     window.addEventListener("resize", updateSize);
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // Calculate the visible area dimensions
-  const availableHeight = windowSize.height - 80; // Account for control bar
-  const availableWidth = windowSize.width;
-
-  // Check if viewport fits
-  const fitsWidth = width <= availableWidth;
-  const fitsHeight = height <= availableHeight;
-
-  // Calculate overlay positions
-  const leftOverlayWidth = Math.max(0, (availableWidth - width) / 2);
-  const rightOverlayWidth = leftOverlayWidth;
-  const topOverlayHeight = Math.max(0, (availableHeight - height) / 2);
-  const bottomOverlayHeight = topOverlayHeight;
-
   return (
-    <>
-      {/* Left Overlay */}
-      {fitsWidth && leftOverlayWidth > 0 && (
-        <div
-          className="fixed top-0 left-0 bg-black/80 z-[9990] pointer-events-none"
-          style={{ width: leftOverlayWidth, height: availableHeight }}
-        />
-      )}
-
-      {/* Right Overlay */}
-      {fitsWidth && rightOverlayWidth > 0 && (
-        <div
-          className="fixed top-0 right-0 bg-black/80 z-[9990] pointer-events-none"
-          style={{ width: rightOverlayWidth, height: availableHeight }}
-        />
-      )}
-
-      {/* Top Overlay */}
-      {fitsHeight && topOverlayHeight > 0 && (
-        <div
-          className="fixed top-0 bg-black/80 z-[9990] pointer-events-none"
-          style={{
-            left: leftOverlayWidth,
-            width: width,
-            height: topOverlayHeight,
-          }}
-        />
-      )}
-
-      {/* Bottom Overlay */}
-      {fitsHeight && bottomOverlayHeight > 0 && (
-        <div
-          className="fixed bg-black/80 z-[9990] pointer-events-none"
-          style={{
-            left: leftOverlayWidth,
-            top: topOverlayHeight + height,
-            width: width,
-            height: bottomOverlayHeight,
-          }}
-        />
-      )}
-
-      {/* Viewport Frame Border */}
-      <div
-        className="fixed border-2 border-[var(--primary)] border-dashed z-[9991] pointer-events-none"
-        style={{
-          left: fitsWidth ? leftOverlayWidth : 0,
-          top: fitsHeight ? topOverlayHeight : 0,
-          width: Math.min(width, availableWidth),
-          height: Math.min(height, availableHeight),
-        }}
-      >
-        {/* Size indicator */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-2 py-1 bg-[var(--primary)] text-white text-xs rounded">
-          {width}×{height}
-        </div>
-      </div>
-
-      {/* Warning if viewport is larger than window */}
-      {(!fitsWidth || !fitsHeight) && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 bg-[var(--warning)] text-black text-sm rounded-lg font-medium">
-          Viewport ({width}×{height}) is larger than your window. Resize your browser or use a smaller preset.
-        </div>
-      )}
-    </>
+    <div className="px-3 py-2 text-xs text-[#7c7c7c] border-l border-[rgba(255,255,255,0.08)]">
+      Window: {size.width}×{size.height}
+    </div>
   );
 }
