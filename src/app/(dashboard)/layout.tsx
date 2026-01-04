@@ -15,7 +15,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { userId: clerkUserId } = await auth();
+  const { userId: clerkUserId, orgId } = await auth();
 
   // Not authenticated - redirect to sign-in
   if (!clerkUserId) {
@@ -67,6 +67,7 @@ export default async function DashboardLayout({
         industries: ["real_estate"],
         primaryIndustry: "real_estate",
         enabledModules: defaultModules,
+        clerkOrganizationId: orgId || null,
       },
       include: {
         onboardingProgress: true,
@@ -96,17 +97,24 @@ export default async function DashboardLayout({
 
   // Ensure onboarding progress record exists
   if (!organization.onboardingProgress) {
-    organization = await prisma.organization.update({
-      where: { id: organization.id },
-      data: {
-        onboardingProgress: {
-          create: { currentStep: 1 },
-        },
+    await prisma.onboardingProgress.upsert({
+      where: { organizationId: organization.id },
+      update: {},
+      create: {
+        organizationId: organization.id,
+        currentStep: 1,
       },
+    });
+
+    const refreshedOrganization = await prisma.organization.findUnique({
+      where: { id: organization.id },
       include: {
         onboardingProgress: true,
       },
     });
+    if (refreshedOrganization) {
+      organization = refreshedOrganization;
+    }
   }
 
   // Redirect users with incomplete onboarding to the onboarding flow

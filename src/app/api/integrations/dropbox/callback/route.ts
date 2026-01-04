@@ -75,15 +75,43 @@ export async function GET(request: NextRequest) {
     }
 
     // Look up the organization by Clerk ID
-    const organization = await prisma.organization.findUnique({
+    let organization = await prisma.organization.findUnique({
       where: { clerkOrganizationId: orgId },
     });
 
     if (!organization) {
-      console.error("Organization not found for Clerk ID:", orgId);
-      return NextResponse.redirect(
-        new URL("/settings/dropbox?error=org_not_found", request.url)
-      );
+      const user = await prisma.user.findUnique({
+        where: { clerkUserId: userId },
+        include: {
+          memberships: {
+            include: {
+              organization: true,
+            },
+          },
+        },
+      });
+
+      const fallbackOrg = user?.memberships.find(
+        (membership) =>
+          membership.organization.clerkOrganizationId === orgId ||
+          !membership.organization.clerkOrganizationId
+      )?.organization;
+
+      if (!fallbackOrg) {
+        console.error("Organization not found for Clerk ID:", orgId);
+        return NextResponse.redirect(
+          new URL("/settings/dropbox?error=org_not_found", request.url)
+        );
+      }
+
+      organization = fallbackOrg;
+    }
+
+    if (!organization.clerkOrganizationId) {
+      organization = await prisma.organization.update({
+        where: { id: organization.id },
+        data: { clerkOrganizationId: orgId },
+      });
     }
 
     // Get code verifier from cookie

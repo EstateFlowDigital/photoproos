@@ -95,15 +95,23 @@ export default async function OnboardingPage() {
   }
 
   if (organization && !organization.onboardingProgress) {
-    organization = await prisma.organization.update({
-      where: { id: organization.id },
-      data: {
-        onboardingProgress: {
-          create: { currentStep: 1 },
-        },
+    await prisma.onboardingProgress.upsert({
+      where: { organizationId: organization.id },
+      update: {},
+      create: {
+        organizationId: organization.id,
+        currentStep: 1,
       },
+    });
+
+    const refreshedOrganization = await prisma.organization.findUnique({
+      where: { id: organization.id },
       include: { onboardingProgress: true },
     });
+
+    if (refreshedOrganization) {
+      organization = refreshedOrganization;
+    }
   }
 
   // If onboarding is already completed, redirect to dashboard

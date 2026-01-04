@@ -402,17 +402,44 @@ export async function acceptInvitation(
 
     // Find or create the user
     let user = await prisma.user.findUnique({
-      where: { email: userData.email },
+      where: { clerkUserId: userData.clerkUserId },
     });
 
     if (!user) {
-      user = await prisma.user.create({
+      user = await prisma.user.findUnique({
+        where: { email: userData.email },
+      });
+    }
+
+    if (user) {
+      user = await prisma.user.update({
+        where: { id: user.id },
         data: {
           clerkUserId: userData.clerkUserId,
           email: userData.email,
-          fullName: userData.fullName,
+          fullName: userData.fullName || user.fullName,
         },
       });
+    } else {
+      try {
+        user = await prisma.user.create({
+          data: {
+            clerkUserId: userData.clerkUserId,
+            email: userData.email,
+            fullName: userData.fullName,
+          },
+        });
+      } catch (error) {
+        const existingByClerk = await prisma.user.findUnique({
+          where: { clerkUserId: userData.clerkUserId },
+        });
+
+        if (!existingByClerk) {
+          throw error;
+        }
+
+        user = existingByClerk;
+      }
     }
 
     // Check if already a member
