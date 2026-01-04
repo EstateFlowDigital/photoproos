@@ -9,7 +9,14 @@ import { logActivity } from "@/lib/utils/activity";
 import { Resend } from "resend";
 import { InvoiceReminderEmail } from "@/emails/invoice-reminder";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialize Resend to avoid build errors
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+}
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -661,7 +668,7 @@ export async function sendInvoiceReminder(
       `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoiceId}`;
 
     // Send email
-    const emailResult = await resend.emails.send({
+    const emailResult = await getResend().emails.send({
       from: process.env.EMAIL_FROM || "PhotoProOS <noreply@photoproos.com>",
       to: clientEmail,
       subject: isOverdue
@@ -866,7 +873,7 @@ export async function sendBatchInvoiceReminders(
         const paymentUrl = invoice.paymentLinkUrl ||
           `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoice.id}`;
 
-        const emailResult = await resend.emails.send({
+        const emailResult = await getResend().emails.send({
           from: process.env.EMAIL_FROM || "PhotoProOS <noreply@photoproos.com>",
           to: clientEmail,
           subject: isOverdue

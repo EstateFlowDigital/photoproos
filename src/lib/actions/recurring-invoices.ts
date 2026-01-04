@@ -5,14 +5,14 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
-import type { RecurringFrequency } from "@prisma/client";
+import type { RecurringFrequency, LineItemType } from "@prisma/client";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
 export interface RecurringInvoiceLineItem {
-  itemType: "service" | "product" | "addon" | "custom";
+  itemType: LineItemType;
   description: string;
   quantity: number;
   unitCents: number;
@@ -101,6 +101,19 @@ function calculateNextRunDate(
   }
 
   return nextDate;
+}
+
+/**
+ * Map recurring invoice item type to Prisma LineItemType
+ */
+function mapToLineItemType(itemType: string): LineItemType {
+  const mapping: Record<string, LineItemType> = {
+    service: "service",
+    product: "service", // Map product to service
+    addon: "service", // Map addon to service
+    custom: "custom",
+  };
+  return mapping[itemType] || "service";
 }
 
 /**
@@ -673,12 +686,16 @@ export async function createInvoiceFromRecurring(
         notes: recurring.notes,
         terms: recurring.terms,
         dueDate,
-        lineItems: lineItems.map((item) => ({
-          itemType: item.itemType,
-          description: item.description,
-          quantity: item.quantity,
-          unitCents: item.unitCents,
-        })),
+        lineItems: {
+          create: lineItems.map((item, index) => ({
+            itemType: mapToLineItemType(item.itemType),
+            description: item.description,
+            quantity: item.quantity,
+            unitCents: item.unitCents,
+            totalCents: item.quantity * item.unitCents,
+            sortOrder: index,
+          })),
+        },
       },
     });
 

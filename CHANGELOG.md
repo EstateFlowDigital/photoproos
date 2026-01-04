@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **TypeScript Build Errors**
+  - Fixed `invoiceNumber` type conversion in recurring invoice processing (String to number and back)
+  - Fixed `NavItem` interface in dashboard sidebar to match `ModuleDefinition` structure
+  - Fixed onClick handlers for collapsible sections (wrapped in arrow functions)
+  - Fixed `lineItems` Prisma nested create syntax in invoice generation
+  - Added `mapToLineItemType` helper to convert recurring invoice item types to Prisma `LineItemType` enum
+
 ### Added
 - **Dark/Light Mode Toggle**
   - Theme provider with system preference detection
