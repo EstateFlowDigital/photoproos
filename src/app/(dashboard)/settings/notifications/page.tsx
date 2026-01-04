@@ -179,7 +179,7 @@ export default function NotificationsSettingsPage() {
         actions={
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             Back to Settings
@@ -320,7 +320,7 @@ export default function NotificationsSettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           {hasChanges && (
             <span className="flex items-center text-sm text-foreground-muted">
               <span className="mr-2 h-2 w-2 rounded-full bg-[var(--warning)]" />
@@ -330,7 +330,7 @@ export default function NotificationsSettingsPage() {
           <button
             onClick={handleSave}
             disabled={isSaving || !hasChanges}
-            className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
             {isSaving ? "Saving..." : "Save Preferences"}
           </button>
