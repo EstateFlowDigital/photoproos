@@ -77,6 +77,8 @@ function slugify(value: string) {
     .slice(0, 60);
 }
 
+const toInputJsonValue = (value: unknown): Prisma.InputJsonValue => value as Prisma.InputJsonValue;
+
 async function getUniqueSlug(base: string, excludeId?: string) {
   let slug = base || "form";
   let counter = 1;
@@ -186,10 +188,12 @@ export async function createForm(input: CreateFormInput) {
             maxLength: field.maxLength,
             pattern: field.pattern,
             patternError: field.patternError,
-            options: field.options as Prisma.InputJsonValue | undefined,
+            options: field.options !== undefined ? toInputJsonValue(field.options) : undefined,
             position: field.position ?? index,
             width: field.width || "full",
-            conditionalLogic: field.conditionalLogic as Prisma.InputJsonValue | undefined,
+            conditionalLogic: field.conditionalLogic !== undefined
+              ? toInputJsonValue(field.conditionalLogic)
+              : undefined,
           })),
         } : undefined,
       },
@@ -307,10 +311,14 @@ export async function duplicateForm(formId: string) {
             maxLength: field.maxLength,
             pattern: field.pattern,
             patternError: field.patternError,
-            options: (field.options ?? undefined) as Prisma.InputJsonValue | undefined,
+            options: field.options !== null && field.options !== undefined
+              ? toInputJsonValue(field.options)
+              : undefined,
             position: field.position,
             width: field.width,
-            conditionalLogic: (field.conditionalLogic ?? undefined) as Prisma.InputJsonValue | undefined,
+            conditionalLogic: field.conditionalLogic !== null && field.conditionalLogic !== undefined
+              ? toInputJsonValue(field.conditionalLogic)
+              : undefined,
           })),
         },
       },
@@ -357,10 +365,12 @@ export async function addFormField(formId: string, field: FormFieldInput) {
         maxLength: field.maxLength,
         pattern: field.pattern,
         patternError: field.patternError,
-        options: field.options as Prisma.InputJsonValue | undefined,
+        options: field.options !== undefined ? toInputJsonValue(field.options) : undefined,
         position: field.position ?? lastPosition + 1,
         width: field.width || "full",
-        conditionalLogic: field.conditionalLogic as Prisma.InputJsonValue | undefined,
+        conditionalLogic: field.conditionalLogic !== undefined
+          ? toInputJsonValue(field.conditionalLogic)
+          : undefined,
       },
     });
 
@@ -389,11 +399,9 @@ export async function updateFormField(fieldId: string, updates: Partial<FormFiel
     // Transform updates to handle JSON fields properly
     const data: Prisma.CustomFormFieldUpdateInput = {
       ...updates,
-      options: updates.options !== undefined
-        ? (updates.options as unknown as Prisma.InputJsonValue)
-        : undefined,
+      options: updates.options !== undefined ? toInputJsonValue(updates.options) : undefined,
       conditionalLogic: updates.conditionalLogic !== undefined
-        ? (updates.conditionalLogic as unknown as Prisma.InputJsonValue)
+        ? toInputJsonValue(updates.conditionalLogic)
         : undefined,
     };
 
@@ -568,7 +576,7 @@ export async function submitForm(
     const submission = await prisma.formSubmission.create({
       data: {
         formId: form.id,
-        data: data as Prisma.InputJsonValue,
+        data: toInputJsonValue(data),
         visitorId: metadata?.visitorId,
         ipAddress: metadata?.ipAddress,
         userAgent: metadata?.userAgent,
