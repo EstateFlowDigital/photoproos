@@ -198,6 +198,23 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: "#9ca3af",
   },
+  watermarkContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: -1,
+  },
+  watermark: {
+    fontSize: 72,
+    fontWeight: 700,
+    opacity: 0.08,
+    transform: "rotate(-45deg)",
+    textTransform: "uppercase",
+  },
 });
 
 interface ContractSigner {
@@ -233,6 +250,19 @@ function getStatusColor(status: string): { bg: string; text: string } {
       return { bg: "#fee2e2", text: "#991b1b" };
     default:
       return { bg: "#f3f4f6", text: "#374151" };
+  }
+}
+
+function getWatermarkConfig(status: string): { text: string; color: string } | null {
+  switch (status.toLowerCase()) {
+    case "signed":
+      return { text: "SIGNED", color: "#22c55e" };
+    case "expired":
+      return { text: "EXPIRED", color: "#ef4444" };
+    case "cancelled":
+      return { text: "CANCELLED", color: "#6b7280" };
+    default:
+      return null; // No watermark for draft/sent status
   }
 }
 
@@ -291,11 +321,21 @@ export function ContractPdf({
   signers,
 }: ContractPdfProps) {
   const statusColors = getStatusColor(status);
+  const watermarkConfig = getWatermarkConfig(status);
   const plainContent = stripHtml(content);
 
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
+        {/* Status Watermark */}
+        {watermarkConfig && (
+          <View style={styles.watermarkContainer}>
+            <Text style={[styles.watermark, { color: watermarkConfig.color }]}>
+              {watermarkConfig.text}
+            </Text>
+          </View>
+        )}
+
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>

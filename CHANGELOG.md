@@ -72,6 +72,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enables faster mobile payments by scanning with phone camera
   - Fallback to text URL when QR code generation fails
 
+- **Status Watermarks on PDFs**
+  - Diagonal watermark overlay showing document status
+  - Invoice watermarks: PAID (green), OVERDUE (red), CANCELLED (gray)
+  - Receipt watermarks: PAID (green) - always shown since receipts are for paid payments
+  - Contract watermarks: SIGNED (green), EXPIRED (red), CANCELLED (gray)
+  - Subtle 8% opacity to not interfere with document readability
+  - No watermark shown for draft/sent statuses to keep pending documents clean
+
 ### Fixed
 - **Missing Email Send Functions**
   - Added `sendPaymentReminderEmail()` for gallery payment reminders

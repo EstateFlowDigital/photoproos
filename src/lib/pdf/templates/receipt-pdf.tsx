@@ -198,6 +198,24 @@ const styles = StyleSheet.create({
     color: "#374151",
     fontFamily: "Courier",
   },
+  watermarkContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: -1,
+  },
+  watermark: {
+    fontSize: 72,
+    fontWeight: 700,
+    color: "#22c55e",
+    opacity: 0.08,
+    transform: "rotate(-45deg)",
+    textTransform: "uppercase",
+  },
 });
 
 export interface ReceiptPdfProps {
@@ -241,6 +259,11 @@ export function ReceiptPdf({
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
+        {/* Paid Watermark */}
+        <View style={styles.watermarkContainer}>
+          <Text style={styles.watermark}>PAID</Text>
+        </View>
+
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>

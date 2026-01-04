@@ -271,6 +271,23 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: "#6b7280",
   },
+  watermarkContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: -1,
+  },
+  watermark: {
+    fontSize: 72,
+    fontWeight: 700,
+    opacity: 0.08,
+    transform: "rotate(-45deg)",
+    textTransform: "uppercase",
+  },
 });
 
 interface InvoiceLineItem {
@@ -329,6 +346,19 @@ function getStatusColor(status: string): { bg: string; text: string } {
   }
 }
 
+function getWatermarkConfig(status: string): { text: string; color: string } | null {
+  switch (status.toLowerCase()) {
+    case "paid":
+      return { text: "PAID", color: "#22c55e" };
+    case "overdue":
+      return { text: "OVERDUE", color: "#ef4444" };
+    case "cancelled":
+      return { text: "CANCELLED", color: "#6b7280" };
+    default:
+      return null; // No watermark for draft/sent status
+  }
+}
+
 function formatStatusLabel(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 }
@@ -365,10 +395,20 @@ export function InvoicePdf({
   qrCodeDataUrl,
 }: InvoicePdfProps) {
   const statusColors = getStatusColor(status);
+  const watermarkConfig = getWatermarkConfig(status);
 
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
+        {/* Status Watermark */}
+        {watermarkConfig && (
+          <View style={styles.watermarkContainer}>
+            <Text style={[styles.watermark, { color: watermarkConfig.color }]}>
+              {watermarkConfig.text}
+            </Text>
+          </View>
+        )}
+
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
