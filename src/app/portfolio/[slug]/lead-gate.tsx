@@ -81,7 +81,7 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-[#A7A7A7]">
-                Email <span className="text-red-400">*</span>
+                Email <span className="text-[var(--error)]">*</span>
               </label>
               <input
                 type="email"
@@ -95,7 +95,7 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
             </div>
 
             {error && (
-              <p className="text-sm text-red-400">{error}</p>
+              <p className="text-sm text-[var(--error)]">{error}</p>
             )}
 
             <button

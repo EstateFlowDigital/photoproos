@@ -242,7 +242,7 @@ export default function HelpPage() {
                 Contact Support
               </Link>
               <Link
-                href="#"
+                href="/contact?subject=live-chat"
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
               >
                 <MessageIcon className="h-4 w-4" />

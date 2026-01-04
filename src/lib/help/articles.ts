@@ -1062,6 +1062,154 @@ Improve download speeds:
 - Contact support for CDN issues
 `,
   },
+  // Clients
+  {
+    slug: "add",
+    category: "Clients & CRM",
+    categorySlug: "clients",
+    title: "Adding Clients",
+    description: "Create client records and keep your CRM organized.",
+    relatedArticles: ["portal", "tags", "communication"],
+    content: `
+## Add a New Client
+
+Create a client profile so every gallery, invoice, and booking stays connected.
+
+### From the Clients Page
+
+1. Go to **Clients** in the sidebar.
+2. Click **Add Client**.
+3. Enter name, email, and phone (optional).
+4. Add company, address, and notes if needed.
+5. Click **Save**.
+
+### From a Gallery or Booking
+
+You can also create a client while creating a gallery or booking:
+
+1. Start the gallery or booking flow.
+2. Choose **Create new client**.
+3. Fill in the client details.
+4. Continue the flow.
+
+## Required Fields
+
+- **Name** (first + last)
+- **Email** (used for portal access and notifications)
+
+## Tips for Clean Data
+
+- Use consistent formatting for company names.
+- Add phone numbers for SMS reminders.
+- Keep notes short and actionable.
+`,
+  },
+  {
+    slug: "portal",
+    category: "Clients & CRM",
+    categorySlug: "clients",
+    title: "Client Portal Access",
+    description: "Invite clients into their portal and manage access.",
+    relatedArticles: ["add", "communication", "tags"],
+    content: `
+## Client Portal Access
+
+The client portal is where clients see their galleries, invoices, and bookings.
+
+## Invite a Client
+
+1. Open a client profile.
+2. Click **Portal**.
+3. Send the invite email or copy the portal link.
+4. The client sets a password to log in.
+
+## What Clients See
+
+- Shared galleries and download status
+- Open invoices and payment history
+- Upcoming bookings and details
+- Messages or notes you share
+
+## Resend or Revoke Access
+
+- Resend an invite from the client profile.
+- Revoke access to remove portal visibility.
+
+## Troubleshooting
+
+- Confirm the client email address is correct.
+- Ask the client to check spam or promotions folders.
+- Re-send the invite if they did not receive it.
+`,
+  },
+  {
+    slug: "tags",
+    category: "Clients & CRM",
+    categorySlug: "clients",
+    title: "Tags and Organization",
+    description: "Segment clients with tags, filters, and saved views.",
+    relatedArticles: ["add", "communication", "portal"],
+    content: `
+## Organize with Tags
+
+Tags make it easy to segment your client list by type, location, or status.
+
+## Create Tags
+
+1. Go to **Clients**.
+2. Select one or more clients.
+3. Choose **Add Tag**.
+4. Enter a tag name (e.g., "Real Estate", "VIP", "Retainer").
+
+## Use Tags to Filter
+
+- Filter the list by one or more tags.
+- Save views for repeat workflows.
+- Combine tags with status and date filters.
+
+## Best Practices
+
+- Keep tags short and consistent.
+- Use a few core tags instead of dozens.
+- Review tags quarterly and merge duplicates.
+`,
+  },
+  {
+    slug: "communication",
+    category: "Clients & CRM",
+    categorySlug: "clients",
+    title: "Communication History",
+    description: "Track notes, emails, and activity in one timeline.",
+    relatedArticles: ["add", "portal", "tags"],
+    content: `
+## Communication History
+
+Every client profile includes a timeline of activity so you never lose context.
+
+## What Gets Logged
+
+- Notes you add manually
+- Booking and gallery activity
+- Invoice events and payments
+- Client portal access
+
+## Add Internal Notes
+
+1. Open a client profile.
+2. Click **Add Note**.
+3. Save key details or next steps.
+
+## Email and Notification Tracking
+
+You can see when reminders or delivery messages were sent. Use the timeline to confirm if a client was notified.
+
+## Tips
+
+- Keep notes specific and time-bound.
+- Record key preferences (turnaround time, delivery format).
+- Log follow-ups to avoid missed steps.
+`,
+  },
   // Payments
   {
     slug: "stripe-setup",
@@ -2629,6 +2777,45 @@ If tax-exempt:
 1. Contact support
 2. Provide exemption certificate
 3. Tax removed from billing
+`,
+  },
+  {
+    slug: "data-export",
+    category: "Account & Billing",
+    categorySlug: "account",
+    title: "Exporting Your Data",
+    description: "Download your client, gallery, and billing data.",
+    relatedArticles: ["billing", "cancellation"],
+    content: `
+## Export Your Data
+
+Download a copy of your account data for backups or audits.
+
+## What You Can Export
+
+- Client records
+- Gallery metadata
+- Invoices and payments
+- Bookings and reminders
+- Activity logs
+
+## How to Export
+
+1. Go to **Settings > Account**.
+2. Click **Export Data**.
+3. Choose the data types to include.
+4. Click **Generate Export**.
+
+## Delivery
+
+- Large exports may take a few minutes.
+- You will receive an email with a download link.
+- Links expire after 24 hours for security.
+
+## Tips
+
+- Export before you cancel your subscription.
+- Store the file in a secure location.
 `,
   },
   {

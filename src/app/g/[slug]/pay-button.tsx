@@ -61,7 +61,7 @@ export function PayButton({ galleryId, price, primaryColor, variant = "header", 
             <>Pay {formatCurrency(price)}</>
           )}
         </button>
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-[var(--error)]">{error}</p>}
       </div>
     );
   }
@@ -88,7 +88,7 @@ export function PayButton({ galleryId, price, primaryColor, variant = "header", 
           )
         )}
       </button>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-[var(--error)]">{error}</p>}
     </div>
   );
 }

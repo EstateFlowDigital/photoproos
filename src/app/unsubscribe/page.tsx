@@ -129,8 +129,8 @@ function UnsubscribeContent() {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-6">
-            <AlertIcon className="h-12 w-12 mx-auto text-red-500" />
+          <div className="rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/10 p-6">
+            <AlertIcon className="h-12 w-12 mx-auto text-[var(--error)]" />
             <h1 className="mt-4 text-xl font-semibold text-white">Invalid Link</h1>
             <p className="mt-2 text-white/60">{error}</p>
             <p className="mt-4 text-sm text-white/40">
@@ -147,8 +147,8 @@ function UnsubscribeContent() {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-6">
-            <CheckIcon className="h-12 w-12 mx-auto text-green-500" />
+          <div className="rounded-xl border border-[var(--success)]/20 bg-[var(--success)]/10 p-6">
+            <CheckIcon className="h-12 w-12 mx-auto text-[var(--success)]" />
             <h1 className="mt-4 text-xl font-semibold text-white">Preferences Updated</h1>
             <p className="mt-2 text-white/60">
               Your email preferences have been saved successfully.
@@ -165,7 +165,7 @@ function UnsubscribeContent() {
       <div className="max-w-md w-full">
         <div className="rounded-xl border border-white/10 bg-[#141414] p-6">
           <div className="text-center mb-6">
-            <MailIcon className="h-12 w-12 mx-auto text-blue-500" />
+            <MailIcon className="h-12 w-12 mx-auto text-[var(--primary)]" />
             <h1 className="mt-4 text-xl font-semibold text-white">Email Preferences</h1>
             <p className="mt-2 text-sm text-white/60">
               Manage your email notification settings
@@ -176,7 +176,7 @@ function UnsubscribeContent() {
           </div>
 
           {error && (
-            <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
+            <div className="mb-4 rounded-lg border border-[var(--error)]/20 bg-[var(--error)]/10 p-3 text-sm text-[var(--error)]">
               {error}
             </div>
           )}

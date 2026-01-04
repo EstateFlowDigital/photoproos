@@ -89,7 +89,7 @@ function ClientPortalLoginContent() {
                 </div>
 
                 {error && (
-                  <div className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{error}</div>
+                  <div className="rounded-lg bg-[var(--error)]/10 p-3 text-sm text-[var(--error)]">{error}</div>
                 )}
 
                 <button
