@@ -8,6 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Client Comments/Feedback System**
+  - Public comment submission on portfolios (requires moderation)
+  - Optional email requirement for commenters
+  - Comment moderation actions: approve, hide, delete
+  - Server actions for managing comments
+  - CommentsSection component for portfolio pages
+
+- **Portfolio A/B Testing**
+  - Create and manage A/B tests for portfolios
+  - Test different hero titles, subtitles, colors, and templates
+  - Configurable traffic split between control and variant
+  - Automatic visitor assignment with consistent experience
+  - Conversion tracking and statistical significance calculation
+  - Test status management: draft, running, paused, completed
+  - Server actions for full test lifecycle management
+
+- **Custom Form Builder**
+  - Create custom forms with drag-and-drop field management
+  - 18 field types: text, email, phone, number, textarea, select, multiselect, radio, checkbox, date, time, datetime, url, file, hidden, heading, paragraph, divider
+  - Field validation: required, min/max length, regex patterns
+  - Conditional logic for showing/hiding fields
+  - Form submission tracking with geolocation
+  - Submission management: read/unread status, archiving
+  - Per-user submission limits
+  - Email notifications on submissions
+  - Form duplication and statistics
+
 - **Bundle Pricing Methods** (Square Footage & Tiered Pricing)
   - **Pricing Method Options**:
     - Fixed pricing (traditional single price)

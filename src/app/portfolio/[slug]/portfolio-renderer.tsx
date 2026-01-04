@@ -25,6 +25,7 @@ import { ImageSection } from "./sections/image-section";
 import { VideoSection } from "./sections/video-section";
 import { SpacerSection } from "./sections/spacer-section";
 import { ShareButtons } from "./components/share-buttons";
+import { CommentsSection } from "./comments-section";
 
 // ============================================================================
 // TYPES
@@ -80,6 +81,9 @@ export interface PortfolioWebsiteData {
   customCss?: string | null;
   enableAnimations?: boolean;
   allowDownloads?: boolean;
+  // Comments
+  allowComments?: boolean;
+  requireCommentEmail?: boolean;
   // Relations
   sections: PortfolioSection[];
   projects: { project: PortfolioProject }[];
@@ -327,6 +331,25 @@ export function PortfolioRenderer({ website }: PortfolioRendererProps) {
             <LegacyRenderer website={website} projects={projects} templateConfig={templateConfig} />
           )}
         </main>
+
+        {/* Comments Section */}
+        {website.allowComments && (
+          <section
+            className="border-t"
+            style={{
+              backgroundColor: templateConfig.colors.background,
+              borderColor: templateConfig.colors.cardBorder,
+            }}
+          >
+            <div className="mx-auto max-w-4xl px-6 py-12">
+              <CommentsSection
+                slug={website.slug}
+                requireEmail={website.requireCommentEmail ?? true}
+                primaryColor={website.primaryColor}
+              />
+            </div>
+          </section>
+        )}
 
         {/* Footer */}
         <footer

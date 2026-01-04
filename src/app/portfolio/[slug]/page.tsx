@@ -6,6 +6,7 @@ import { getPortfolioWebsiteBySlug } from "@/lib/actions/portfolio-websites";
 import { PortfolioRenderer } from "./portfolio-renderer";
 import { PasswordGate } from "./password-gate";
 import { ExpiredNotice } from "./expired-notice";
+import { LeadGate } from "./lead-gate";
 
 export default async function PortfolioPublicPage({
   params,
@@ -35,6 +36,23 @@ export default async function PortfolioPublicPage({
 
     if (!accessCookie || accessCookie.value !== "granted") {
       return <PasswordGate slug={website.slug} websiteName={website.name} />;
+    }
+  }
+
+  // Check if lead capture is required
+  if (website.requireLeadCapture) {
+    const cookieStore = await cookies();
+    const leadCookie = cookieStore.get(`portfolio-lead-${website.slug}`);
+
+    if (!leadCookie || leadCookie.value !== "granted") {
+      return (
+        <LeadGate
+          slug={website.slug}
+          websiteName={website.name}
+          message={website.leadCaptureMessage}
+          primaryColor={website.primaryColor}
+        />
+      );
     }
   }
 

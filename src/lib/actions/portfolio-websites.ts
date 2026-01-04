@@ -1124,6 +1124,9 @@ export async function trackPortfolioView(
     pagePath?: string;
     referrer?: string;
     userAgent?: string;
+    ipAddress?: string;
+    country?: string;
+    city?: string;
   }
 ): Promise<{ success: boolean; viewId?: string; error?: string }> {
   try {
@@ -1153,6 +1156,9 @@ export async function trackPortfolioView(
         pagePath: data.pagePath,
         referrer: data.referrer,
         userAgent: data.userAgent,
+        ipAddress: data.ipAddress,
+        country: data.country,
+        city: data.city,
       },
     });
 
@@ -1198,12 +1204,16 @@ export async function getPortfolioAnalytics(
     avgScrollDepth: number;
     viewsByDate: { date: string; views: number }[];
     topReferrers: { referrer: string; count: number }[];
+    topCountries: { country: string; count: number }[];
+    topCities: { city: string; country: string; count: number }[];
     recentViews: {
       id: string;
       visitorId: string | null;
       pagePath: string | null;
       referrer: string | null;
       duration: number | null;
+      country: string | null;
+      city: string | null;
       createdAt: Date;
     }[];
   };
@@ -1281,6 +1291,40 @@ export async function getPortfolioAnalytics(
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
+    // Top countries
+    const countryMap = new Map<string, number>();
+    views.forEach((view) => {
+      if (view.country) {
+        countryMap.set(view.country, (countryMap.get(view.country) || 0) + 1);
+      }
+    });
+    const topCountries = Array.from(countryMap.entries())
+      .map(([country, count]) => ({ country, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Top cities
+    const cityMap = new Map<string, { count: number; country: string }>();
+    views.forEach((view) => {
+      if (view.city && view.country) {
+        const key = `${view.city}|${view.country}`;
+        const existing = cityMap.get(key);
+        if (existing) {
+          existing.count++;
+        } else {
+          cityMap.set(key, { count: 1, country: view.country });
+        }
+      }
+    });
+    const topCities = Array.from(cityMap.entries())
+      .map(([key, data]) => ({
+        city: key.split("|")[0],
+        country: data.country,
+        count: data.count,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
     // Recent views
     const recentViews = views.slice(0, 20).map((v) => ({
       id: v.id,
@@ -1288,6 +1332,8 @@ export async function getPortfolioAnalytics(
       pagePath: v.pagePath,
       referrer: v.referrer,
       duration: v.duration,
+      country: v.country,
+      city: v.city,
       createdAt: v.createdAt,
     }));
 
@@ -1300,6 +1346,8 @@ export async function getPortfolioAnalytics(
         avgScrollDepth: Math.round(avgScrollDepth),
         viewsByDate,
         topReferrers,
+        topCountries,
+        topCities,
         recentViews,
       },
     };

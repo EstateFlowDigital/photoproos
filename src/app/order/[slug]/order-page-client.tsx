@@ -6,12 +6,24 @@ import Link from "next/link";
 import type { Testimonial } from "@/lib/validations/order-pages";
 import { CheckoutModal } from "@/components/order/checkout-modal";
 
+// Pricing tier type
+interface PricingTier {
+  id: string;
+  minSqft: number;
+  maxSqft: number | null;
+  priceCents: number;
+  tierName: string | null;
+}
+
 // Cart item types
 interface CartBundle {
   type: "bundle";
   id: string;
   name: string;
   priceCents: number;
+  sqft?: number;
+  pricingTierId?: string;
+  pricingTierName?: string | null;
 }
 
 interface CartService {
@@ -35,10 +47,17 @@ interface Bundle {
   name: string;
   description: string | null;
   priceCents: number;
+  bundleType: string;
+  pricingMethod: string;
+  pricePerSqftCents: number | null;
+  minSqft: number | null;
+  maxSqft: number | null;
+  sqftIncrements: number | null;
   imageUrl: string | null;
   badgeText: string | null;
   originalPriceCents: number | null;
   savingsPercent: number | null;
+  pricingTiers: PricingTier[];
   services: BundleService[];
 }
 
@@ -106,6 +125,48 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  // Sqft input modal state
+  const [showSqftModal, setShowSqftModal] = useState(false);
+  const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null);
+  const [sqftInput, setSqftInput] = useState("");
+
+  // Helper to check if bundle requires sqft input
+  const requiresSqftInput = (bundle: Bundle) => {
+    return bundle.pricingMethod === "per_sqft" || bundle.pricingMethod === "tiered";
+  };
+
+  // Calculate price for sqft-based bundle
+  const calculateSqftPrice = (bundle: Bundle, sqft: number): { priceCents: number; tier?: PricingTier } => {
+    if (bundle.pricingMethod === "per_sqft") {
+      const pricePerSqft = bundle.pricePerSqftCents || 0;
+      const minSqft = bundle.minSqft || 0;
+      const maxSqft = bundle.maxSqft;
+      const increments = bundle.sqftIncrements || 1;
+
+      let adjustedSqft = Math.max(sqft, minSqft);
+      if (maxSqft) {
+        adjustedSqft = Math.min(adjustedSqft, maxSqft);
+      }
+      adjustedSqft = Math.ceil(adjustedSqft / increments) * increments;
+
+      return { priceCents: adjustedSqft * pricePerSqft };
+    }
+
+    if (bundle.pricingMethod === "tiered" && bundle.pricingTiers.length > 0) {
+      const tier = bundle.pricingTiers.find(
+        (t) => sqft >= t.minSqft && (t.maxSqft === null || sqft <= t.maxSqft)
+      );
+      if (tier) {
+        return { priceCents: tier.priceCents, tier };
+      }
+      // Use highest tier if no match
+      const highestTier = bundle.pricingTiers[bundle.pricingTiers.length - 1];
+      return { priceCents: highestTier.priceCents, tier: highestTier };
+    }
+
+    return { priceCents: bundle.priceCents };
+  };
 
   // Cart calculations
   const cartTotals = useMemo(() => {

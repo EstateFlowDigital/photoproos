@@ -718,6 +718,16 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
                   },
                   orderBy: { sortOrder: "asc" },
                 },
+                pricingTiers: {
+                  orderBy: { sortOrder: "asc" },
+                  select: {
+                    id: true,
+                    minSqft: true,
+                    maxSqft: true,
+                    priceCents: true,
+                    tierName: true,
+                  },
+                },
               },
             },
           },
@@ -760,11 +770,24 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
         name: string;
         description: string | null;
         priceCents: number;
+        bundleType: string;
+        pricingMethod: string;
+        pricePerSqftCents: number | null;
+        minSqft: number | null;
+        maxSqft: number | null;
+        sqftIncrements: number | null;
         imageUrl: string | null;
         badgeText: string | null;
         originalPriceCents: number | null;
         savingsPercent: number | null;
         isActive: boolean;
+        pricingTiers: Array<{
+          id: string;
+          minSqft: number;
+          maxSqft: number | null;
+          priceCents: number;
+          tierName: string | null;
+        }>;
         services: Array<{
           quantity: number;
           isRequired: boolean;
@@ -817,10 +840,23 @@ export async function getOrderPageBySlug(slug: string, orgSlug?: string) {
           name: b.bundle.name,
           description: b.bundle.description,
           priceCents: b.bundle.priceCents,
+          bundleType: b.bundle.bundleType,
+          pricingMethod: b.bundle.pricingMethod,
+          pricePerSqftCents: b.bundle.pricePerSqftCents,
+          minSqft: b.bundle.minSqft,
+          maxSqft: b.bundle.maxSqft,
+          sqftIncrements: b.bundle.sqftIncrements,
           imageUrl: b.bundle.imageUrl,
           badgeText: b.bundle.badgeText,
           originalPriceCents: b.bundle.originalPriceCents,
           savingsPercent: b.bundle.savingsPercent,
+          pricingTiers: b.bundle.pricingTiers?.map((t) => ({
+            id: t.id,
+            minSqft: t.minSqft,
+            maxSqft: t.maxSqft,
+            priceCents: t.priceCents,
+            tierName: t.tierName,
+          })) || [],
           services: b.bundle.services.map((s) => ({
             id: s.service.id,
             name: s.service.name,
