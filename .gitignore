@@ -48,7 +48,6 @@ coverage
 
 # Slack integration (schema mismatch - needs migration)
 src/app/(dashboard)/settings/slack
-src/lib/actions/slack.ts
 src/app/api/integrations/slack
 
 # clerk configuration (can include secrets)
