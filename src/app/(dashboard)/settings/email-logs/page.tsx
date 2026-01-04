@@ -316,9 +316,9 @@ export default function EmailLogsPage() {
       )}
 
       {/* Filters and Actions */}
-      <div className="flex flex-wrap items-end gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
         {/* Search */}
-        <div className="flex-1 min-w-[200px] max-w-md">
+        <div className="w-full sm:flex-1 sm:min-w-[200px] sm:max-w-md">
           <label className="block text-xs font-medium text-foreground-muted mb-1.5">Search</label>
           <div className="relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
@@ -335,7 +335,7 @@ export default function EmailLogsPage() {
           </div>
         </div>
 
-        <div>
+        <div className="w-full sm:w-auto">
           <label className="block text-xs font-medium text-foreground-muted mb-1.5">Status</label>
           <select
             value={statusFilter}
@@ -343,7 +343,7 @@ export default function EmailLogsPage() {
               setStatusFilter(e.target.value as EmailStatus | "all");
               setPage(1);
             }}
-            className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground"
+            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground sm:w-auto"
           >
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
@@ -354,7 +354,7 @@ export default function EmailLogsPage() {
           </select>
         </div>
 
-        <div>
+        <div className="w-full sm:w-auto">
           <label className="block text-xs font-medium text-foreground-muted mb-1.5">Type</label>
           <select
             value={typeFilter}
@@ -362,7 +362,7 @@ export default function EmailLogsPage() {
               setTypeFilter(e.target.value as EmailType | "all");
               setPage(1);
             }}
-            className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground"
+            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground sm:w-auto"
           >
             <option value="all">All Types</option>
             {Object.entries(emailTypeLabels).map(([value, label]) => (
@@ -378,7 +378,7 @@ export default function EmailLogsPage() {
             setSearchQuery("");
             setPage(1);
           }}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground-muted hover:text-foreground transition-colors"
+          className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground-muted transition-colors hover:text-foreground sm:w-auto"
         >
           Clear
         </button>
@@ -386,7 +386,7 @@ export default function EmailLogsPage() {
         <button
           onClick={handleExport}
           disabled={exporting || logs.length === 0}
-          className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] transition-colors disabled:opacity-50"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 sm:w-auto"
         >
           {exporting ? <LoadingSpinner className="h-4 w-4" /> : <DownloadIcon className="h-4 w-4" />}
           Export CSV
@@ -395,7 +395,7 @@ export default function EmailLogsPage() {
 
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-4 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3">
+        <div className="flex flex-col gap-3 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3 sm:flex-row sm:items-center">
           <span className="text-sm text-foreground">
             {selectedIds.size} email{selectedIds.size > 1 ? "s" : ""} selected
           </span>
@@ -420,7 +420,7 @@ export default function EmailLogsPage() {
 
       {/* Client Filter Notice */}
       {clientIdFromUrl && (
-        <div className="flex items-center gap-2 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3">
+        <div className="flex flex-col gap-2 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 px-4 py-3 sm:flex-row sm:items-center">
           <span className="text-sm text-foreground">Showing emails for specific client</span>
           <Link
             href="/settings/email-logs"
@@ -565,22 +565,22 @@ export default function EmailLogsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--card-border)]">
+              <div className="flex flex-col gap-3 border-t border-[var(--card-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-foreground-muted">
                   Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} emails
                 </p>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
-                    className="rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     Next
                   </button>
