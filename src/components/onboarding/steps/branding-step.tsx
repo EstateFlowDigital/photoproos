@@ -49,6 +49,7 @@ export function BrandingStep({
         publicEmail: formData.publicEmail,
         publicPhone: formData.publicPhone,
         website: formData.website,
+        primaryColor: formData.primaryColor,
       });
       onNext();
     } catch (error) {
@@ -73,6 +74,7 @@ export function BrandingStep({
         publicEmail: formData.publicEmail || "",
         publicPhone: formData.publicPhone || "",
         website: formData.website || "",
+        primaryColor: formData.primaryColor || "#3b82f6",
       });
       onNext();
     } catch (error) {
@@ -261,11 +263,99 @@ export function BrandingStep({
           />
         </div>
 
+        {/* Brand Color */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-[var(--foreground)]">
+            Brand Color
+          </label>
+          <p className="text-xs text-[var(--foreground-muted)]">
+            Used for buttons and highlights on your client-facing pages
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { color: "#3b82f6", name: "Blue" },
+              { color: "#8b5cf6", name: "Purple" },
+              { color: "#22c55e", name: "Green" },
+              { color: "#f97316", name: "Orange" },
+              { color: "#ef4444", name: "Red" },
+              { color: "#ec4899", name: "Pink" },
+              { color: "#14b8a6", name: "Teal" },
+              { color: "#000000", name: "Black" },
+            ].map((preset) => (
+              <button
+                key={preset.color}
+                type="button"
+                onClick={() => updateFormData({ primaryColor: preset.color })}
+                className={cn(
+                  "w-10 h-10 rounded-lg border-2 transition-all relative",
+                  formData.primaryColor === preset.color
+                    ? "border-[var(--foreground)] scale-110"
+                    : "border-transparent hover:scale-105"
+                )}
+                style={{ backgroundColor: preset.color }}
+                title={preset.name}
+              >
+                {formData.primaryColor === preset.color && (
+                  <svg
+                    className="absolute inset-0 m-auto w-5 h-5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2.5}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  </svg>
+                )}
+              </button>
+            ))}
+            <div className="relative">
+              <input
+                type="color"
+                value={formData.primaryColor}
+                onChange={(e) => updateFormData({ primaryColor: e.target.value })}
+                className="absolute inset-0 opacity-0 cursor-pointer w-10 h-10"
+                title="Custom color"
+              />
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-lg border-2 flex items-center justify-center transition-all",
+                  !["#3b82f6", "#8b5cf6", "#22c55e", "#f97316", "#ef4444", "#ec4899", "#14b8a6", "#000000"].includes(formData.primaryColor)
+                    ? "border-[var(--foreground)]"
+                    : "border-[var(--border)]"
+                )}
+                style={{
+                  backgroundColor: !["#3b82f6", "#8b5cf6", "#22c55e", "#f97316", "#ef4444", "#ec4899", "#14b8a6", "#000000"].includes(formData.primaryColor)
+                    ? formData.primaryColor
+                    : "transparent"
+                }}
+              >
+                <svg
+                  className={cn(
+                    "w-5 h-5",
+                    !["#3b82f6", "#8b5cf6", "#22c55e", "#f97316", "#ef4444", "#ec4899", "#14b8a6", "#000000"].includes(formData.primaryColor)
+                      ? "text-white"
+                      : "text-[var(--foreground-muted)]"
+                  )}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Preview Card */}
         <div className="p-4 rounded-xl bg-[var(--card)] border border-[var(--card-border)]">
           <p className="text-xs text-[var(--foreground-muted)] mb-3">Preview</p>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-bold text-lg">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white"
+              style={{ backgroundColor: formData.primaryColor }}
+            >
               {formData.publicName?.charAt(0)?.toUpperCase() || "?"}
             </div>
             <div>
@@ -277,6 +367,13 @@ export function BrandingStep({
               </div>
             </div>
           </div>
+          <button
+            type="button"
+            className="mt-4 w-full py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90"
+            style={{ backgroundColor: formData.primaryColor }}
+          >
+            Sample Button
+          </button>
         </div>
       </div>
 

@@ -32,6 +32,7 @@ export interface OnboardingData {
   publicEmail: string;
   publicPhone: string;
   website: string;
+  primaryColor: string;
 
   // Step 4: Industries
   industries: string[];
@@ -96,6 +97,7 @@ export function OnboardingWizard({
     publicEmail: organization?.publicEmail || user?.email || "",
     publicPhone: organization?.publicPhone || "",
     website: organization?.website || "",
+    primaryColor: organization?.primaryColor || "#3b82f6",
 
     // Industries
     industries: organization?.industries?.map(String) || ["real_estate"],

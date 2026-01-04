@@ -100,6 +100,7 @@ export async function saveOnboardingStep(
               publicEmail: publicEmail || null,
               publicPhone: data.publicPhone as string,
               website: data.website as string,
+              primaryColor: (data.primaryColor as string) || "#3b82f6",
             },
           }),
           prisma.onboardingProgress.upsert({

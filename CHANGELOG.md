@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full light mode CSS variables for all design tokens
   - Flash prevention script to avoid FOUC on page load
 
+- **Brand Color Customization in Onboarding**
+  - Added color picker to onboarding branding step
+  - 8 preset brand colors plus custom color picker
+  - Live preview showing selected color on avatar and button
+  - Color saved to organization.primaryColor during onboarding
+
 - **Late Payment Reminders System**
   - Automated invoice payment reminders for overdue invoices
   - Email template with escalating urgency messaging (1-7 days, 7-14 days, 14+ days)
@@ -43,6 +49,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Download template CSV
   - Import progress tracking
   - Client import UI at `/clients/import`
+
+- **Recurring Invoices (Subscription/Retainer Billing)**
+  - Create recurring invoice templates for clients
+  - Frequency options: weekly, bi-weekly, monthly, quarterly, yearly
+  - Configurable day of month for monthly/quarterly schedules
+  - Customizable line items with quantities and prices
+  - Automatic invoice generation on schedule
+  - Pause/resume recurring invoices
+  - End date and max invoice limits
+  - Estimated monthly revenue calculation
+  - Invoices created counter per template
+  - Cron endpoint at `/api/cron/recurring-invoices` for automated generation
+  - Recurring invoices UI at `/invoices/recurring`
+  - Navigation link added to invoices page context nav
 
 - **Developer Responsive Tester**
   - Overlay component for testing responsive layouts

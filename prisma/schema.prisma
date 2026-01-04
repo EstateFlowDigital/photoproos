@@ -607,6 +607,9 @@ model Organization {
   // Platform Referral System
   referredByPlatform PlatformReferral[] @relation("ReferredOrgByPlatform")
 
+  // Recurring Invoices
+  recurringInvoices RecurringInvoice[]
+
   @@index([slug])
   @@index([plan])
 }
@@ -770,6 +773,9 @@ model Client {
 
   // Phase 2: Client Questionnaire System
   questionnaires ClientQuestionnaire[]
+
+  // Recurring Invoices
+  recurringInvoices RecurringInvoice[]
 
   // Phase 3: SMS Integration
   smsLogs SMSLog[]
@@ -1393,6 +1399,67 @@ model InvoiceLineItem {
   @@index([invoiceId])
   @@index([bookingId])
   @@index([itemType])
+}
+
+// Recurring Invoice Template - for subscription/retainer billing
+model RecurringInvoice {
+  id             String @id @default(cuid())
+  organizationId String
+  clientId       String
+
+  // Schedule
+  frequency   RecurringFrequency @default(monthly)
+  dayOfMonth  Int?               @default(1) // 1-28 for monthly
+  dayOfWeek   Int? // 0-6 for weekly (0 = Sunday)
+  anchorDate  DateTime // Start date for the recurring schedule
+  nextRunDate DateTime // Next scheduled invoice creation
+
+  // Status
+  isActive  Boolean @default(true)
+  isPaused  Boolean @default(false)
+  pausedAt  DateTime?
+  pauseUntil DateTime? // Resume date if paused temporarily
+
+  // Invoice template
+  subtotalCents Int    @default(0)
+  taxCents      Int    @default(0)
+  totalCents    Int    @default(0)
+  currency      String @default("USD")
+  notes         String?
+  terms         String?
+  dueDays       Int    @default(30) // Days after creation until due
+
+  // Line items stored as JSON (template for each invoice)
+  lineItems Json // Array of { itemType, description, quantity, unitCents }
+
+  // Tracking
+  invoicesCreated Int       @default(0)
+  lastInvoiceAt   DateTime?
+  lastInvoiceId   String? // Reference to last created invoice
+
+  // End conditions (optional)
+  endDate       DateTime? // Stop after this date
+  maxInvoices   Int? // Stop after this many invoices
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([isActive])
+  @@index([nextRunDate])
+}
+
+enum RecurringFrequency {
+  weekly
+  biweekly
+  monthly
+  quarterly
+  yearly
 }
 
 // ============================================================================
