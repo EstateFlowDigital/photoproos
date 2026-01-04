@@ -1,4 +1,5 @@
 import { Resend, CreateEmailOptions } from "resend";
+import { render } from "@react-email/render";
 
 // Lazy initialization to avoid build-time errors when env vars are not set
 let _resend: Resend | null = null;
@@ -59,7 +60,9 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
       emailOptions.text = text;
     }
 
-    const { data, error } = await getResend().emails.send(emailOptions as CreateEmailOptions);
+    const { data, error } = await getResend().emails.send(
+      emailOptions as CreateEmailOptions
+    );
 
     if (error) {
       console.error("Error sending email:", error);
@@ -68,6 +71,45 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
 
     return { success: true, resendId: data?.id };
   } catch (err) {
+    if (react) {
+      try {
+        const html = render(react);
+        const fallbackOptions: {
+          from: string;
+          to: string[];
+          subject: string;
+          html: string;
+          replyTo?: string;
+        } = {
+          from,
+          to: Array.isArray(to) ? to : [to],
+          subject,
+          html,
+          replyTo,
+        };
+
+        const { data, error } = await getResend().emails.send(
+          fallbackOptions as CreateEmailOptions
+        );
+
+        if (error) {
+          console.error("Error sending email:", error);
+          return { success: false, error: error.message };
+        }
+
+        return { success: true, resendId: data?.id };
+      } catch (fallbackError) {
+        console.error("Failed to send email:", fallbackError);
+        return {
+          success: false,
+          error:
+            fallbackError instanceof Error
+              ? fallbackError.message
+              : "Unknown error",
+        };
+      }
+    }
+
     console.error("Failed to send email:", err);
     return {
       success: false,
