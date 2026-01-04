@@ -196,7 +196,7 @@ export function FeaturesSettingsForm({
                       <IconComponent className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-medium text-foreground">{industry.name}</h3>
                         {isPrimary && isSelected && (
                           <span className="flex items-center gap-1 rounded-full bg-[var(--warning)]/10 px-2 py-0.5 text-xs font-medium text-[var(--warning)]">
@@ -293,11 +293,11 @@ export function FeaturesSettingsForm({
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+          className="inline-flex w-full items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
         >
           Cancel
         </button>
@@ -305,7 +305,7 @@ export function FeaturesSettingsForm({
           type="button"
           onClick={handleSave}
           disabled={isPending || selectedIndustries.length === 0}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
         >
           {isPending ? (
             <>
