@@ -104,11 +104,11 @@ export function ClearDataButton() {
           <p className="text-sm font-medium text-[var(--error)] mb-3">
             Are you sure? This will permanently delete ALL data in your organization.
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <button
               onClick={handleClear}
               disabled={isLoading}
-              className="flex-1 rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+              className="w-full rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50 sm:flex-1"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -122,7 +122,7 @@ export function ClearDataButton() {
             <button
               onClick={() => setShowConfirm(false)}
               disabled={isLoading}
-              className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:flex-1"
             >
               Cancel
             </button>

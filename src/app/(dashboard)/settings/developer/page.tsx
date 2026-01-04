@@ -33,7 +33,7 @@ export default async function DeveloperSettingsPage() {
         actions={
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             Back to Settings
