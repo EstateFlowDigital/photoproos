@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { CreateClientModal } from "@/components/modals/create-client-modal";
+import { useToast } from "@/components/ui/toast";
+import { impersonateClientPortal } from "@/lib/actions/clients";
 import { ClientSearch } from "./client-search";
 import { PageHeader, PageContextNav, UsersIcon, TagIcon } from "@/components/dashboard";
 
@@ -65,10 +67,32 @@ interface ClientsPageClientProps {
 
 export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTagId }: ClientsPageClientProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
 
   const handleClientCreated = (client: { id: string }) => {
     router.refresh();
+  };
+
+  const handleImpersonate = async (clientId: string) => {
+    setImpersonatingId(clientId);
+    try {
+      const result = await impersonateClientPortal(clientId);
+      if (result.success) {
+        const portalUrl = result.data.portalUrl || "/portal";
+        const newWindow = window.open(portalUrl, "_blank", "noopener,noreferrer");
+        if (!newWindow) {
+          window.location.href = portalUrl;
+        }
+      } else {
+        showToast(result.error || "Unable to open client portal", "error");
+      }
+    } catch {
+      showToast("Unable to open client portal", "error");
+    } finally {
+      setImpersonatingId(null);
+    }
   };
 
   return (
@@ -217,7 +241,17 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="relative z-10 pointer-events-none">
+                    <div className="relative z-10 flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleImpersonate(client.id)}
+                        disabled={impersonatingId === client.id}
+                        className="inline-flex items-center gap-1 rounded-md border border-[var(--card-border)] px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+                        aria-label={`View ${client.fullName || client.email} portal`}
+                      >
+                        <PortalIcon className="h-3.5 w-3.5 text-foreground-muted" />
+                        {impersonatingId === client.id ? "Opening..." : "Portal"}
+                      </button>
                       <ChevronRightIcon className="h-4 w-4 text-foreground-muted group-hover:text-foreground transition-colors" />
                     </div>
                   </td>
@@ -265,6 +299,14 @@ function ChevronRightIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PortalIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-6 16a6 6 0 0 1 12 0 .75.75 0 0 1-1.5 0 4.5 4.5 0 0 0-9 0 .75.75 0 0 1-1.5 0Z" clipRule="evenodd" />
     </svg>
   );
 }

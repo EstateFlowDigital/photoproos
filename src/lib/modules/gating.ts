@@ -133,8 +133,19 @@ export function getRedirectForDisabledModule(
     return null;
   }
 
-  // Return redirect to dashboard
-  return "/dashboard";
+  const params = new URLSearchParams();
+  params.set("module", module.id);
+
+  if (!isModuleAvailable(context.industries, module.id)) {
+    params.set("unavailable", "1");
+  }
+
+  if (attemptedPath) {
+    params.set("from", attemptedPath);
+  }
+
+  // Redirect to features settings so the user can enable or unlock the module.
+  return `/settings/features?${params.toString()}`;
 }
 
 /**

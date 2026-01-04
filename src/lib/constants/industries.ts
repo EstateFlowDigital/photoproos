@@ -64,6 +64,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
       "leads",
       "services",
       "contracts",
+      "licensing",
       "portfolio_websites",
       "questionnaires",
     ],

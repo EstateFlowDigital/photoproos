@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { updateIndustries, updateModules } from "@/lib/actions/onboarding";
@@ -60,6 +60,7 @@ export function FeaturesSettingsForm({
   allModules,
 }: FeaturesSettingsFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -67,11 +68,41 @@ export function FeaturesSettingsForm({
   const [primaryIndustry, setPrimaryIndustry] = useState<string>(initialPrimaryIndustry);
   const [enabledModules, setEnabledModules] = useState<string[]>(initialEnabledModules);
 
+  const highlightModuleId = (searchParams.get("module") || "").trim();
+  const highlightFromPath = (searchParams.get("from") || "").trim();
+  const highlightedModule = highlightModuleId
+    ? allModules.find((module) => module.id === highlightModuleId)
+    : null;
+
   // Get available modules based on selected industries
   const availableModules = allModules.filter((module) => {
     if (module.industries.includes("*")) return true;
     return module.industries.some((ind) => selectedIndustries.includes(ind));
   });
+
+  const highlightAvailable = highlightedModule
+    ? availableModules.some((module) => module.id === highlightedModule.id)
+    : false;
+  const highlightIndustryNames = highlightedModule
+    ? highlightedModule.industries
+        .filter((industryId) => industryId !== "*")
+        .map((industryId) => allIndustries.find((ind) => ind.id === industryId)?.name)
+        .filter((name): name is string => Boolean(name))
+    : [];
+
+  useEffect(() => {
+    if (!highlightModuleId || !highlightedModule) return;
+    const label = highlightedModule.name;
+    const message = highlightAvailable
+      ? `Enable "${label}" to access that module.`
+      : `"${label}" isn't available for your current industries.`;
+    showToast(message, "info");
+
+    const target = document.getElementById(`module-${highlightModuleId}`);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightAvailable, highlightModuleId, highlightedModule, showToast]);
 
   // Get modules grouped by category
   const modulesByCategory = availableModules.reduce(
@@ -241,6 +272,27 @@ export function FeaturesSettingsForm({
           Enable or disable features based on your workflow needs. Available options depend on your selected industries.
         </p>
 
+        {highlightedModule && (
+          <div className="mb-4 rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4 text-sm text-foreground">
+            <p className="font-medium">
+              {highlightAvailable
+                ? `Enable "${highlightedModule.name}" to access this module.`
+                : `"${highlightedModule.name}" isn't available for your current industries.`}
+            </p>
+            {highlightAvailable ? (
+              <p className="mt-1 text-xs text-foreground-muted">
+                Toggle it on below, save changes, and return to {highlightFromPath || "the module"}.
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-foreground-muted">
+                {highlightIndustryNames.length > 0
+                  ? `Add one of these industries to unlock it: ${highlightIndustryNames.join(", ")}.`
+                  : "Add the relevant industry to unlock it."}
+              </p>
+            )}
+          </div>
+        )}
+
         {Object.entries(modulesByCategory).map(([category, modules]) => (
           <div key={category} className="mb-6 last:mb-0">
             <h3 className="text-sm font-medium text-foreground-muted mb-3">
@@ -249,14 +301,17 @@ export function FeaturesSettingsForm({
             <div className="grid gap-3 sm:grid-cols-2">
               {modules.map((module) => {
                 const isEnabled = enabledModules.includes(module.id);
+                const isHighlighted = module.id === highlightModuleId;
 
                 return (
                   <button
                     key={module.id}
                     type="button"
+                    id={`module-${module.id}`}
                     onClick={() => handleModuleToggle(module.id)}
                     className={cn(
                       "flex items-center gap-3 rounded-lg border p-4 text-left transition-all",
+                      isHighlighted && "ring-2 ring-[var(--primary)]/40 border-[var(--primary)]/60",
                       isEnabled
                         ? "border-[var(--primary)] bg-[var(--primary)]/5"
                         : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
