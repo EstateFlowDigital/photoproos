@@ -138,7 +138,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
         {!isCreating && !editingTag && (
           <button
             onClick={() => setIsCreating(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
           >
             <PlusIcon className="h-4 w-4" />
             Create Tag
@@ -215,18 +215,18 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 sm:w-auto"
               >
                 {isSubmitting ? "Saving..." : editingTag ? "Save Changes" : "Create Tag"}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                className="inline-flex w-full items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
               >
                 Cancel
               </button>
@@ -246,7 +246,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
           {!isCreating && (
             <button
               onClick={() => setIsCreating(true)}
-              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
             >
               <PlusIcon className="h-4 w-4" />
               Create Your First Tag
