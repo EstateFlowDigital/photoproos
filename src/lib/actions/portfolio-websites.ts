@@ -1943,13 +1943,13 @@ export async function convertPortfolioInquiryToClient(
     });
 
     // Log activity
-    const { logActivity } = await import("@/lib/actions/activity");
-    await logActivity(
+    const { logActivity } = await import("@/lib/utils/activity");
+    await logActivity({
       organizationId,
-      "client_added",
-      `Client "${inquiry.name}" was created from portfolio inquiry`,
-      { clientId: client.id }
-    );
+      type: "client_added",
+      description: `Client "${inquiry.name}" was created from portfolio inquiry`,
+      clientId: client.id,
+    });
 
     revalidatePath("/leads");
     revalidatePath("/clients");

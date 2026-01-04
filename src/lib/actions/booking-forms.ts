@@ -1222,13 +1222,13 @@ export async function convertBookingSubmissionToClient(
     });
 
     // Log activity
-    const { logActivity } = await import("@/lib/actions/activity");
-    await logActivity(
+    const { logActivity } = await import("@/lib/utils/activity");
+    await logActivity({
       organizationId,
-      "client_added",
-      `Client "${submission.clientName || submission.clientEmail}" was created from booking form`,
-      { clientId: client.id }
-    );
+      type: "client_added",
+      description: `Client "${submission.clientName || submission.clientEmail}" was created from booking form`,
+      clientId: client.id,
+    });
 
     revalidatePath("/leads");
     revalidatePath("/clients");

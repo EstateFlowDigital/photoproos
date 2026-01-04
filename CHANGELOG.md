@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Leads Dashboard Enhancements**
+  - **Convert Lead to Client** functionality:
+    - One-click conversion from portfolio inquiries, chat messages, and booking form submissions
+    - Automatic duplicate detection - links to existing client if email matches
+    - Success state with direct link to view the newly created client
+    - Activity logging for client creation from leads
+  - **Booking Form Submissions in Leads**:
+    - Booking form submissions now appear alongside portfolio and chat leads
+    - New "Booking" type filter and stat card
+    - Preferred date/time display for booking requests
+    - Link to view booking if submission was converted to a booking
+  - **Unified Lead Management**:
+    - Combined view of Portfolio Inquiries, Chat Messages, and Booking Submissions
+    - Type-specific icons and color coding (purple for portfolio, cyan for chat, orange for booking)
+    - Status tracking with appropriate states for each lead type
+  - **Server Actions**:
+    - `convertPortfolioInquiryToClient()` - Convert portfolio inquiry to client
+    - `convertChatInquiryToClient()` - Convert chat inquiry to client
+    - `convertBookingSubmissionToClient()` - Convert booking submission to client
+
 - **Platform Referral System Optimizations**
   - **Referral Email Templates** (React Email):
     - `referral-invite.tsx` - Invitation email with exclusive offer (21-day trial + 20% off)
@@ -33,6 +53,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Improved stats cards with gradient icons
     - Better empty states for referral tables
     - Loading spinner component for async actions
+  - **QR Code Generator**:
+    - Generate QR codes for referral links
+    - Adjustable size (128px, 200px, 300px)
+    - Download QR code as PNG image
+    - Perfect for printing on business cards or marketing materials
+  - **Referral Leaderboard**:
+    - Top 10 referrers displayed with rankings
+    - Medal icons for top 3 positions (gold, silver, bronze)
+    - Shows successful referrals and total earnings
+    - "Your Stats" section showing current user's rank and earnings
+    - New "Leaderboard" tab in My Referrals page
+  - **In-App Notifications**:
+    - Notification when someone signs up using your referral link
+    - Notification when a referral converts to paid subscriber
+    - Links directly to My Referrals page
+    - Added referral_signup and referral_conversion notification types to schema
 
 - **Custom Domain Support for Portfolios**
   - Connect custom domains to portfolio websites for professional branding

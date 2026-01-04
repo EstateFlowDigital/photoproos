@@ -192,13 +192,13 @@ export async function convertChatInquiryToClient(
     });
 
     // Log activity
-    const { logActivity } = await import("@/lib/actions/activity");
-    await logActivity(
+    const { logActivity } = await import("@/lib/utils/activity");
+    await logActivity({
       organizationId,
-      "client_added",
-      `Client "${inquiry.name || email}" was created from chat inquiry`,
-      { clientId: client.id }
-    );
+      type: "client_added",
+      description: `Client "${inquiry.name || email}" was created from chat inquiry`,
+      clientId: client.id,
+    });
 
     revalidatePath("/leads");
     revalidatePath("/clients");

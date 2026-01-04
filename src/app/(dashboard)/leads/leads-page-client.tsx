@@ -47,7 +47,7 @@ interface BookingSubmission {
     name: string;
     slug: string;
   };
-  data: Record<string, unknown>;
+  data: unknown; // JSON data from form submission
   clientName: string | null;
   clientEmail: string | null;
   clientPhone: string | null;
@@ -108,6 +108,7 @@ export function LeadsPageClient({
   const [isPending, startTransition] = useTransition();
   const [typeFilter, setTypeFilter] = useState<InquiryType>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedInquiry, setSelectedInquiry] = useState<
     | (PortfolioInquiry & { type: "portfolio" })
     | (ChatInquiry & { type: "chat" })
@@ -126,6 +127,24 @@ export function LeadsPageClient({
   const filteredInquiries = allInquiries.filter((inquiry) => {
     if (typeFilter !== "all" && inquiry.type !== typeFilter) return false;
     if (statusFilter !== "all" && inquiry.status !== statusFilter) return false;
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const name = inquiry.type === "booking"
+        ? (inquiry as BookingSubmission & { type: "booking" }).clientName
+        : (inquiry as PortfolioInquiry | ChatInquiry).name;
+      const email = inquiry.type === "booking"
+        ? (inquiry as BookingSubmission & { type: "booking" }).clientEmail
+        : (inquiry as PortfolioInquiry | ChatInquiry).email;
+      const message = inquiry.type === "booking"
+        ? ""
+        : (inquiry as PortfolioInquiry | ChatInquiry).message;
+
+      const searchableText = [name, email, message].filter(Boolean).join(" ").toLowerCase();
+      if (!searchableText.includes(query)) return false;
+    }
+
     return true;
   });
 
@@ -188,8 +207,28 @@ export function LeadsPageClient({
         <StatCard label="Booking" value={stats.booking} />
       </div>
 
-      {/* Filters */}
+      {/* Search and Filters */}
       <div className="flex flex-wrap items-center gap-4">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+          <input
+            type="text"
+            placeholder="Search by name, email, or message..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground"
+            >
+              <CloseIcon className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         <div className="flex items-center gap-2">
           <span className="text-sm text-foreground-muted">Type:</span>
           <div className="flex rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-1">
@@ -474,36 +513,36 @@ function InquiryDetailModal({
               <label className="text-xs font-medium uppercase text-foreground-muted">
                 Name
               </label>
-              <p className="mt-1 text-foreground">{inquiry.name || "Anonymous"}</p>
+              <p className="mt-1 text-foreground">{name || "Anonymous"}</p>
             </div>
             <div>
               <label className="text-xs font-medium uppercase text-foreground-muted">
                 Email
               </label>
               <p className="mt-1 text-foreground">
-                {inquiry.email ? (
+                {email ? (
                   <a
-                    href={`mailto:${inquiry.email}`}
+                    href={`mailto:${email}`}
                     className="text-[var(--primary)] hover:underline"
                   >
-                    {inquiry.email}
+                    {email}
                   </a>
                 ) : (
                   "Not provided"
                 )}
               </p>
             </div>
-            {inquiry.phone && (
+            {phone && (
               <div>
                 <label className="text-xs font-medium uppercase text-foreground-muted">
                   Phone
                 </label>
                 <p className="mt-1 text-foreground">
                   <a
-                    href={`tel:${inquiry.phone}`}
+                    href={`tel:${phone}`}
                     className="text-[var(--primary)] hover:underline"
                   >
-                    {inquiry.phone}
+                    {phone}
                   </a>
                 </p>
               </div>
@@ -531,46 +570,101 @@ function InquiryDetailModal({
             </label>
             <p className="mt-1 text-foreground-secondary">
               {inquiry.type === "portfolio" && "portfolioWebsite" in inquiry
-                ? inquiry.portfolioWebsite.name
-                : inquiry.type === "chat" && "category" in inquiry && inquiry.category
-                ? `Chat - ${inquiry.category}`
-                : inquiry.source || "Unknown"}
+                ? (inquiry as PortfolioInquiry & { type: "portfolio" }).portfolioWebsite.name
+                : inquiry.type === "chat" && "category" in inquiry
+                ? `Chat - ${(inquiry as ChatInquiry & { type: "chat" }).category || "General"}`
+                : inquiry.type === "booking" && "bookingForm" in inquiry
+                ? (inquiry as BookingSubmission & { type: "booking" }).bookingForm.name
+                : "Unknown"}
             </p>
           </div>
 
-          {/* Message */}
-          <div>
-            <label className="text-xs font-medium uppercase text-foreground-muted">
-              Message
-            </label>
-            <div className="mt-1 rounded-lg bg-[var(--background-elevated)] p-4">
-              <p className="whitespace-pre-wrap text-foreground">{inquiry.message}</p>
+          {/* Booking-specific details */}
+          {inquiry.type === "booking" && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(inquiry as BookingSubmission & { type: "booking" }).preferredDate && (
+                <div>
+                  <label className="text-xs font-medium uppercase text-foreground-muted">
+                    Preferred Date
+                  </label>
+                  <p className="mt-1 text-foreground">
+                    {new Date((inquiry as BookingSubmission & { type: "booking" }).preferredDate!).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+              )}
+              {(inquiry as BookingSubmission & { type: "booking" }).preferredTime && (
+                <div>
+                  <label className="text-xs font-medium uppercase text-foreground-muted">
+                    Preferred Time
+                  </label>
+                  <p className="mt-1 text-foreground">
+                    {(inquiry as BookingSubmission & { type: "booking" }).preferredTime}
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
-          {/* Status Actions */}
-          <div>
-            <label className="text-xs font-medium uppercase text-foreground-muted">
-              Update Status
-            </label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {(["new", "contacted", "qualified", "closed"] as const).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => onStatusChange(status)}
-                  disabled={isPending || inquiry.status === status}
-                  className={cn(
-                    "rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50",
-                    inquiry.status === status
-                      ? "bg-[var(--primary)] text-white"
-                      : "border border-[var(--card-border)] bg-[var(--background-elevated)] text-foreground hover:bg-[var(--background-hover)]"
-                  )}
-                >
-                  {STATUS_LABELS[status]}
-                </button>
-              ))}
+          {/* Message (only for portfolio/chat) */}
+          {inquiry.type !== "booking" && (
+            <div>
+              <label className="text-xs font-medium uppercase text-foreground-muted">
+                Message
+              </label>
+              <div className="mt-1 rounded-lg bg-[var(--background-elevated)] p-4">
+                <p className="whitespace-pre-wrap text-foreground">
+                  {(inquiry as PortfolioInquiry | ChatInquiry).message}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Status Actions (only for portfolio/chat) */}
+          {inquiry.type !== "booking" && (
+            <div>
+              <label className="text-xs font-medium uppercase text-foreground-muted">
+                Update Status
+              </label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {(["new", "contacted", "qualified", "closed"] as const).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => onStatusChange(status)}
+                    disabled={isPending || inquiry.status === status}
+                    className={cn(
+                      "rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50",
+                      inquiry.status === status
+                        ? "bg-[var(--primary)] text-white"
+                        : "border border-[var(--card-border)] bg-[var(--background-elevated)] text-foreground hover:bg-[var(--background-hover)]"
+                    )}
+                  >
+                    {STATUS_LABELS[status]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Booking status info */}
+          {inquiry.type === "booking" && (inquiry as BookingSubmission & { type: "booking" }).booking && (
+            <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4">
+              <p className="text-sm font-medium text-green-500">Converted to Booking</p>
+              <p className="mt-1 text-sm text-foreground-muted">
+                This submission has been converted to a booking.
+              </p>
+              <Link
+                href={`/scheduling?booking=${(inquiry as BookingSubmission & { type: "booking" }).booking!.id}`}
+                className="mt-2 inline-flex text-sm font-medium text-[var(--primary)] hover:underline"
+              >
+                View Booking →
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -587,12 +681,12 @@ function InquiryDetailModal({
                   View Client →
                 </Link>
               </div>
-            ) : inquiry.status !== "closed" ? (
+            ) : !isClosed ? (
               <button
                 onClick={onConvertToClient}
-                disabled={isPending || (!inquiry.email && inquiry.type === "chat")}
+                disabled={isPending || !email}
                 className="inline-flex items-center gap-2 rounded-lg border border-green-500/50 bg-green-500/10 px-4 py-2 text-sm font-medium text-green-500 transition-colors hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                title={!inquiry.email && inquiry.type === "chat" ? "Email required to convert" : undefined}
+                title={!email ? "Email required to convert" : undefined}
               >
                 <UserPlusIcon className="h-4 w-4" />
                 {isPending ? "Converting..." : "Convert to Client"}
@@ -600,9 +694,9 @@ function InquiryDetailModal({
             ) : null}
           </div>
           <div className="flex items-center gap-3">
-            {inquiry.email && (
+            {email && (
               <a
-                href={`mailto:${inquiry.email}?subject=Re: Your inquiry`}
+                href={`mailto:${email}?subject=Re: Your inquiry`}
                 className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
               >
                 <MailIcon className="h-4 w-4" />
@@ -671,6 +765,23 @@ function ChatIcon({ className }: { className?: string }) {
       <path
         fillRule="evenodd"
         d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 001.28.53l3.58-3.579a.78.78 0 01.527-.224 41.202 41.202 0 005.183-.5c1.437-.232 2.43-1.49 2.43-2.903V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0010 2zm0 7a1 1 0 100-2 1 1 0 000 2zM7 9a1 1 0 11-2 0 1 1 0 012 0zm7-1a1 1 0 100-2 1 1 0 000 2z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z"
         clipRule="evenodd"
       />
     </svg>
