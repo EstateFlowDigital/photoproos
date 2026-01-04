@@ -296,6 +296,85 @@ export function AppearanceSettingsForm({
     });
   };
 
+  const handleExportSettings = () => {
+    const exportData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      preferences: {
+        dashboardTheme: preferences.dashboardTheme,
+        dashboardAccent: preferences.dashboardAccent,
+        sidebarCompact: preferences.sidebarCompact,
+        fontFamily: preferences.fontFamily,
+        density: preferences.density,
+        fontSize: preferences.fontSize,
+        highContrast: preferences.highContrast,
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `appearance-settings-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Settings exported successfully", "success");
+  };
+
+  const handleImportSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const importData = JSON.parse(content);
+
+        // Validate the imported data
+        if (!importData.version || !importData.preferences) {
+          showToast("Invalid settings file format", "error");
+          return;
+        }
+
+        const { preferences: importedPrefs } = importData;
+
+        // Validate each field before applying
+        startTransition(async () => {
+          const result = await updateAppearancePreferences({
+            dashboardTheme: importedPrefs.dashboardTheme,
+            dashboardAccent: importedPrefs.dashboardAccent,
+            sidebarCompact: importedPrefs.sidebarCompact,
+            fontFamily: importedPrefs.fontFamily,
+            density: importedPrefs.density,
+            fontSize: importedPrefs.fontSize,
+            highContrast: importedPrefs.highContrast,
+          });
+
+          if (result.success) {
+            setPreferences({
+              ...preferences,
+              ...importedPrefs,
+            });
+            setCustomColor(importedPrefs.dashboardAccent || "#3b82f6");
+            showToast("Settings imported successfully", "success");
+            window.location.reload();
+          } else {
+            showToast(result.error || "Failed to import settings", "error");
+          }
+        });
+      } catch {
+        showToast("Failed to parse settings file", "error");
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset the input so the same file can be selected again
+    event.target.value = "";
+  };
+
   // Get current preview values
   const currentAccentColor = preview.accentColor || preferences.dashboardAccent;
   const currentFontId = preview.fontFamily || preferences.fontFamily;
@@ -820,6 +899,48 @@ export function AppearanceSettingsForm({
         </div>
       </div>
 
+      {/* Export/Import Settings */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">
+          Backup & Restore
+        </h2>
+        <p className="text-sm text-foreground-muted mb-6">
+          Export your settings to a file or import from a previous backup
+        </p>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleExportSettings}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors",
+              "hover:bg-[var(--background-hover)] hover:border-[var(--border-hover)]"
+            )}
+          >
+            <DownloadIcon className="h-4 w-4" />
+            Export Settings
+          </button>
+
+          <label
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors cursor-pointer",
+              "hover:bg-[var(--background-hover)] hover:border-[var(--border-hover)]",
+              isPending && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <UploadIcon className="h-4 w-4" />
+            Import Settings
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportSettings}
+              disabled={isPending}
+              className="sr-only"
+            />
+          </label>
+        </div>
+      </div>
+
       {/* Reset to Defaults */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex items-center justify-between">
@@ -897,6 +1018,34 @@ function EyeIcon({ className }: { className?: string }) {
         d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
         clipRule="evenodd"
       />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+      <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+    </svg>
+  );
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.636l2.955 3.129a.75.75 0 0 0 1.09-1.03l-4.25-4.5a.75.75 0 0 0-1.09 0l-4.25 4.5a.75.75 0 1 0 1.09 1.03L9.25 4.636v8.614Z" />
+      <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
     </svg>
   );
 }

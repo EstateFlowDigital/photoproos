@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Smooth CSS transitions for theme, color, and density changes
   - Respects `prefers-reduced-motion` for users who prefer no animations
   - **Theme sync across browser tabs** - changing theme in one tab updates all tabs
+  - **Export/Import settings** - backup and restore appearance preferences as JSON files
   - User preferences stored in database and applied via CSS custom properties
 
 - **Invoice PDF Generation**
