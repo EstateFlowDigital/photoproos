@@ -9,12 +9,18 @@ import {
   duplicateBundleSchema,
   bundleServicesSchema,
   reorderBundleItemsSchema,
+  createPricingTiersSchema,
+  updatePricingTierSchema,
+  calculateBundlePriceSchema,
   type CreateBundleInput,
   type UpdateBundleInput,
   type BundleFilters,
   type BundleServicesInput,
+  type CreatePricingTiersInput,
+  type UpdatePricingTierInput,
+  type CalculateBundlePriceInput,
 } from "@/lib/validations/bundles";
-import type { BundleType } from "@prisma/client";
+import type { BundleType, BundlePricingMethod } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import {
   syncBundleToStripe,
@@ -803,6 +809,11 @@ export async function getBundle(id: string) {
       description: bundle.description,
       priceCents: bundle.priceCents,
       bundleType: bundle.bundleType,
+      pricingMethod: bundle.pricingMethod,
+      pricePerSqftCents: bundle.pricePerSqftCents,
+      minSqft: bundle.minSqft,
+      maxSqft: bundle.maxSqft,
+      sqftIncrements: bundle.sqftIncrements,
       imageUrl: bundle.imageUrl,
       badgeText: bundle.badgeText,
       originalPriceCents: bundle.originalPriceCents,
@@ -891,6 +902,392 @@ export async function getBundleBySlug(orgSlug: string, bundleSlug: string) {
     };
   } catch (error) {
     console.error("Error fetching bundle by slug:", error);
+    return null;
+  }
+}
+
+// =============================================================================
+// PRICING TIERS (for tiered_sqft bundles - BICEP pricing)
+// =============================================================================
+
+/**
+ * Set pricing tiers for a bundle (replaces all existing)
+ */
+export async function setBundlePricingTiers(
+  input: CreatePricingTiersInput
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    const validated = createPricingTiersSchema.parse(input);
+    const organizationId = await getOrganizationId();
+
+    // Verify bundle exists and belongs to organization
+    const bundle = await prisma.serviceBundle.findFirst({
+      where: {
+        id: validated.bundleId,
+        organizationId,
+      },
+    });
+
+    if (!bundle) {
+      return { success: false, error: "Bundle not found" };
+    }
+
+    // Validate tier ranges don't overlap
+    const sortedTiers = [...validated.tiers].sort((a, b) => a.minSqft - b.minSqft);
+    for (let i = 0; i < sortedTiers.length - 1; i++) {
+      const currentTier = sortedTiers[i];
+      const nextTier = sortedTiers[i + 1];
+      if (currentTier.maxSqft && currentTier.maxSqft >= nextTier.minSqft) {
+        return {
+          success: false,
+          error: `Tier ranges overlap: ${currentTier.minSqft}-${currentTier.maxSqft} and ${nextTier.minSqft}-${nextTier.maxSqft}`,
+        };
+      }
+    }
+
+    // Replace all pricing tiers
+    await prisma.$transaction([
+      // Delete existing
+      prisma.bundlePricingTier.deleteMany({
+        where: { bundleId: validated.bundleId },
+      }),
+      // Create new
+      prisma.bundlePricingTier.createMany({
+        data: validated.tiers.map((tier, index) => ({
+          bundleId: validated.bundleId,
+          minSqft: tier.minSqft,
+          maxSqft: tier.maxSqft,
+          priceCents: tier.priceCents,
+          tierName: tier.tierName,
+          sortOrder: tier.sortOrder ?? index,
+        })),
+      }),
+      // Update bundle type to tiered_sqft and pricing method to tiered
+      prisma.serviceBundle.update({
+        where: { id: validated.bundleId },
+        data: {
+          bundleType: "tiered_sqft",
+          pricingMethod: "tiered",
+        },
+      }),
+    ]);
+
+    revalidatePath("/services/bundles");
+    revalidatePath(`/services/bundles/${validated.bundleId}`);
+
+    return { success: true, data: { count: validated.tiers.length } };
+  } catch (error) {
+    console.error("Error setting bundle pricing tiers:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to set pricing tiers" };
+  }
+}
+
+/**
+ * Get pricing tiers for a bundle
+ */
+export async function getBundlePricingTiers(bundleId: string) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const bundle = await prisma.serviceBundle.findFirst({
+      where: { id: bundleId, organizationId },
+      include: {
+        pricingTiers: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    if (!bundle) {
+      return null;
+    }
+
+    return bundle.pricingTiers.map((tier) => ({
+      id: tier.id,
+      minSqft: tier.minSqft,
+      maxSqft: tier.maxSqft,
+      priceCents: tier.priceCents,
+      tierName: tier.tierName,
+      sortOrder: tier.sortOrder,
+    }));
+  } catch (error) {
+    console.error("Error fetching bundle pricing tiers:", error);
+    return null;
+  }
+}
+
+/**
+ * Delete a pricing tier
+ */
+export async function deletePricingTier(id: string): Promise<ActionResult> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify tier exists and bundle belongs to organization
+    const tier = await prisma.bundlePricingTier.findFirst({
+      where: { id },
+      include: {
+        bundle: {
+          select: { organizationId: true, id: true },
+        },
+      },
+    });
+
+    if (!tier || tier.bundle.organizationId !== organizationId) {
+      return { success: false, error: "Pricing tier not found" };
+    }
+
+    await prisma.bundlePricingTier.delete({
+      where: { id },
+    });
+
+    revalidatePath("/services/bundles");
+    revalidatePath(`/services/bundles/${tier.bundle.id}`);
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error deleting pricing tier:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete pricing tier" };
+  }
+}
+
+// =============================================================================
+// SQFT PRICE CALCULATION
+// =============================================================================
+
+export type BundlePriceResult = {
+  priceCents: number;
+  pricingMethod: BundlePricingMethod;
+  appliedTier?: {
+    id: string;
+    name: string | null;
+    minSqft: number;
+    maxSqft: number | null;
+  };
+  sqftUsed: number;
+};
+
+/**
+ * Calculate the price for a bundle based on square footage
+ * Supports: fixed, per_sqft, and tiered pricing methods
+ */
+export async function calculateBundlePrice(
+  input: CalculateBundlePriceInput
+): Promise<ActionResult<BundlePriceResult>> {
+  try {
+    const validated = calculateBundlePriceSchema.parse(input);
+
+    const bundle = await prisma.serviceBundle.findUnique({
+      where: { id: validated.bundleId },
+      include: {
+        pricingTiers: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    if (!bundle) {
+      return { success: false, error: "Bundle not found" };
+    }
+
+    const sqft = validated.sqft;
+
+    // Handle based on pricing method
+    switch (bundle.pricingMethod) {
+      case "fixed": {
+        // Fixed pricing - sqft doesn't matter
+        return {
+          success: true,
+          data: {
+            priceCents: bundle.priceCents,
+            pricingMethod: "fixed",
+            sqftUsed: sqft,
+          },
+        };
+      }
+
+      case "per_sqft": {
+        // Price per square foot calculation
+        const pricePerSqft = bundle.pricePerSqftCents || 0;
+        const minSqft = bundle.minSqft || 0;
+        const maxSqft = bundle.maxSqft;
+        const increments = bundle.sqftIncrements || 1;
+
+        // Apply min/max bounds
+        let adjustedSqft = Math.max(sqft, minSqft);
+        if (maxSqft) {
+          adjustedSqft = Math.min(adjustedSqft, maxSqft);
+        }
+
+        // Round to nearest increment
+        adjustedSqft = Math.ceil(adjustedSqft / increments) * increments;
+
+        const priceCents = adjustedSqft * pricePerSqft;
+
+        return {
+          success: true,
+          data: {
+            priceCents,
+            pricingMethod: "per_sqft",
+            sqftUsed: adjustedSqft,
+          },
+        };
+      }
+
+      case "tiered": {
+        // Tiered pricing (BICEP-style)
+        if (bundle.pricingTiers.length === 0) {
+          return {
+            success: false,
+            error: "No pricing tiers configured for this bundle",
+          };
+        }
+
+        // Find the applicable tier
+        const applicableTier = bundle.pricingTiers.find((tier) => {
+          const inMinRange = sqft >= tier.minSqft;
+          const inMaxRange = tier.maxSqft === null || sqft <= tier.maxSqft;
+          return inMinRange && inMaxRange;
+        });
+
+        if (!applicableTier) {
+          // If no tier matches, use the highest tier (for properties larger than defined tiers)
+          const highestTier = bundle.pricingTiers[bundle.pricingTiers.length - 1];
+          return {
+            success: true,
+            data: {
+              priceCents: highestTier.priceCents,
+              pricingMethod: "tiered",
+              appliedTier: {
+                id: highestTier.id,
+                name: highestTier.tierName,
+                minSqft: highestTier.minSqft,
+                maxSqft: highestTier.maxSqft,
+              },
+              sqftUsed: sqft,
+            },
+          };
+        }
+
+        return {
+          success: true,
+          data: {
+            priceCents: applicableTier.priceCents,
+            pricingMethod: "tiered",
+            appliedTier: {
+              id: applicableTier.id,
+              name: applicableTier.tierName,
+              minSqft: applicableTier.minSqft,
+              maxSqft: applicableTier.maxSqft,
+            },
+            sqftUsed: sqft,
+          },
+        };
+      }
+
+      default:
+        return { success: false, error: "Invalid pricing method" };
+    }
+  } catch (error) {
+    console.error("Error calculating bundle price:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to calculate bundle price" };
+  }
+}
+
+/**
+ * Get a bundle with full pricing information (for order pages)
+ */
+export async function getBundleWithPricing(bundleId: string) {
+  try {
+    const bundle = await prisma.serviceBundle.findUnique({
+      where: { id: bundleId },
+      include: {
+        services: {
+          include: {
+            service: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                priceCents: true,
+                category: true,
+                duration: true,
+                deliverables: true,
+              },
+            },
+          },
+          orderBy: { sortOrder: "asc" },
+        },
+        pricingTiers: {
+          orderBy: { sortOrder: "asc" },
+        },
+        organization: {
+          select: {
+            name: true,
+            slug: true,
+            logoUrl: true,
+            primaryColor: true,
+          },
+        },
+      },
+    });
+
+    if (!bundle) {
+      return null;
+    }
+
+    return {
+      id: bundle.id,
+      name: bundle.name,
+      slug: bundle.slug,
+      description: bundle.description,
+      bundleType: bundle.bundleType,
+      pricingMethod: bundle.pricingMethod,
+
+      // Fixed pricing
+      priceCents: bundle.priceCents,
+
+      // Per-sqft pricing
+      pricePerSqftCents: bundle.pricePerSqftCents,
+      minSqft: bundle.minSqft,
+      maxSqft: bundle.maxSqft,
+      sqftIncrements: bundle.sqftIncrements,
+
+      // Display
+      imageUrl: bundle.imageUrl,
+      badgeText: bundle.badgeText,
+      originalPriceCents: bundle.originalPriceCents,
+      savingsPercent: bundle.savingsPercent,
+
+      // Related data
+      services: bundle.services.map((item) => ({
+        service: item.service,
+        isRequired: item.isRequired,
+        quantity: item.quantity,
+      })),
+      pricingTiers: bundle.pricingTiers.map((tier) => ({
+        id: tier.id,
+        minSqft: tier.minSqft,
+        maxSqft: tier.maxSqft,
+        priceCents: tier.priceCents,
+        tierName: tier.tierName,
+      })),
+      organization: bundle.organization,
+
+      isActive: bundle.isActive,
+      isPublic: bundle.isPublic,
+    };
+  } catch (error) {
+    console.error("Error fetching bundle with pricing:", error);
     return null;
   }
 }

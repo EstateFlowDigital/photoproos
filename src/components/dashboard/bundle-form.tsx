@@ -19,7 +19,12 @@ interface BundleFormData {
   slug: string;
   description: string;
   priceCents: number;
-  bundleType: "fixed" | "tiered" | "custom";
+  bundleType: "fixed" | "tiered" | "custom" | "sqft_based" | "tiered_sqft";
+  pricingMethod: "fixed" | "per_sqft" | "tiered";
+  pricePerSqftCents: number;
+  minSqft: number;
+  maxSqft: number | null;
+  sqftIncrements: number;
   imageUrl: string;
   badgeText: string;
   isActive: boolean;
@@ -56,6 +61,11 @@ const defaultFormData: BundleFormData = {
   description: "",
   priceCents: 0,
   bundleType: "fixed",
+  pricingMethod: "fixed",
+  pricePerSqftCents: 0,
+  minSqft: 0,
+  maxSqft: null,
+  sqftIncrements: 500,
   imageUrl: "",
   badgeText: "",
   isActive: true,
@@ -66,6 +76,8 @@ const bundleTypes = [
   { value: "fixed", label: "Fixed Price", description: "Single price for all included services" },
   { value: "tiered", label: "Tiered", description: "Multiple pricing tiers with different options" },
   { value: "custom", label: "Custom", description: "Client can customize their selection" },
+  { value: "sqft_based", label: "Per Sqft", description: "Price based on property square footage" },
+  { value: "tiered_sqft", label: "Tiered Sqft", description: "Tiered pricing by square footage ranges" },
 ];
 
 function formatCurrency(cents: number): string {
@@ -242,6 +254,11 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
           description: formData.description || null,
           priceCents: formData.priceCents,
           bundleType: formData.bundleType,
+          pricingMethod: formData.pricingMethod,
+          pricePerSqftCents: formData.pricePerSqftCents || null,
+          minSqft: formData.minSqft || null,
+          maxSqft: formData.maxSqft,
+          sqftIncrements: formData.sqftIncrements || null,
           imageUrl: formData.imageUrl || null,
           badgeText: formData.badgeText || null,
           isActive: formData.isActive,
@@ -275,6 +292,11 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
           description: formData.description || null,
           priceCents: formData.priceCents,
           bundleType: formData.bundleType,
+          pricingMethod: formData.pricingMethod,
+          pricePerSqftCents: formData.pricePerSqftCents || null,
+          minSqft: formData.minSqft || null,
+          maxSqft: formData.maxSqft,
+          sqftIncrements: formData.sqftIncrements || null,
           imageUrl: formData.imageUrl || null,
           badgeText: formData.badgeText || null,
           isActive: formData.isActive,

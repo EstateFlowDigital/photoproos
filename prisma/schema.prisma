@@ -522,6 +522,10 @@ model Organization {
   projects           Project[]
   portfolioWebsites  PortfolioWebsite[]
   portfolioInquiries PortfolioInquiry[]
+  portfolioLeads     PortfolioLead[]
+  portfolioComments  PortfolioComment[]
+  portfolioABTests   PortfolioABTest[]
+  customForms        CustomForm[]
   clients            Client[]
   payments           Payment[]
   bookings           Booking[]
@@ -621,8 +625,8 @@ model User {
   crewAssignments     BookingCrew[]           @relation("BookingCrewAssignments")
 
   // Platform Referral System
-  platformReferrer    PlatformReferrer?
-  referredByPlatform  PlatformReferral[]      @relation("ReferredByPlatform")
+  platformReferrer   PlatformReferrer?
+  referredByPlatform PlatformReferral[] @relation("ReferredByPlatform")
 
   @@index([email])
   @@index([clerkUserId])
@@ -1980,13 +1984,18 @@ model PortfolioWebsite {
   // Custom Domain
   customDomain                  String?   @unique
   customDomainVerified          Boolean   @default(false)
-  customDomainVerificationToken String?   // DNS TXT record value for verification
+  customDomainVerificationToken String? // DNS TXT record value for verification
   customDomainVerifiedAt        DateTime?
-  customDomainSslStatus         String?   // pending, active, error
+  customDomainSslStatus         String? // pending, active, error
 
   // Password Protection
   isPasswordProtected Boolean @default(false)
   password            String? // Hashed password
+
+  // Lead Capture Gate
+  requireLeadCapture Boolean @default(false)
+  leadCaptureMessage String? @db.Text // Custom message shown on gate
+  leadCaptureFields  Json? // Array of field configs: [{ name, label, type, required }]
 
   // Expiration
   expiresAt DateTime?
@@ -2004,16 +2013,24 @@ model PortfolioWebsite {
   // Scroll Animations
   enableAnimations Boolean @default(true)
 
+  // Comments
+  allowComments       Boolean @default(false)
+  requireCommentEmail Boolean @default(true) // Require email to leave comment
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   publishedAt DateTime?
 
   // Relations
-  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  projects     PortfolioWebsiteProject[]
-  sections     PortfolioWebsiteSection[]
-  views        PortfolioWebsiteView[]
-  inquiries    PortfolioInquiry[]
+  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projects          PortfolioWebsiteProject[]
+  sections          PortfolioWebsiteSection[]
+  views             PortfolioWebsiteView[]
+  inquiries         PortfolioInquiry[]
+  leads    PortfolioLead[]
+  comments    PortfolioComment[]
+  abTests     PortfolioABTest[]
+  customForms CustomForm[]
 
   @@index([organizationId])
   @@index([slug])
@@ -2169,6 +2186,289 @@ model PortfolioWebsiteView {
   @@index([createdAt])
   @@index([visitorId])
   @@index([sessionId])
+}
+
+model PortfolioLead {
+  id                 String @id @default(cuid())
+  portfolioWebsiteId String
+  organizationId     String
+
+  // Lead Info
+  email     String
+  name      String?
+  phone     String?
+  company   String?
+  message   String? @db.Text
+  extraData Json? // Additional custom field data
+
+  // Source tracking
+  visitorId String?
+  referrer  String?
+  country   String?
+  city      String?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioWebsiteId])
+  @@index([organizationId])
+  @@index([email])
+  @@index([createdAt])
+}
+
+model PortfolioComment {
+  id                 String @id @default(cuid())
+  portfolioWebsiteId String
+  organizationId     String
+
+  // Comment Content
+  content   String  @db.Text
+  sectionId String? // Optional: which section the comment is on
+  projectId String? // Optional: which project/image the comment is on
+
+  // Commenter Info (anonymous)
+  authorName  String?
+  authorEmail String?
+
+  // Moderation
+  isApproved Boolean @default(false)
+  isHidden   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([portfolioWebsiteId])
+  @@index([organizationId])
+  @@index([isApproved])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// PORTFOLIO A/B TESTING
+// ============================================================================
+
+model PortfolioABTest {
+  id                 String @id @default(cuid())
+  portfolioWebsiteId String
+  organizationId     String
+
+  // Test Configuration
+  name        String
+  description String? @db.Text
+  status      PortfolioABTestStatus @default(draft)
+
+  // Traffic Split (percentages, must add up to 100)
+  controlTrafficPercent Int @default(50)
+  variantTrafficPercent Int @default(50)
+
+  // Variant Settings (what's different in the variant)
+  variantHeroTitle    String? @db.Text
+  variantHeroSubtitle String? @db.Text
+  variantPrimaryColor String?
+  variantTemplate     PortfolioTemplate?
+
+  // Goals
+  goalType        ABTestGoalType @default(views)
+  targetMetric    Int?     // Target number to reach
+  confidenceLevel Float    @default(0.95) // Statistical confidence required
+
+  // Timing
+  startDate DateTime?
+  endDate   DateTime?
+
+  // Results (cached for performance)
+  controlViews      Int @default(0)
+  controlConversions Int @default(0)
+  variantViews      Int @default(0)
+  variantConversions Int @default(0)
+  winningVariant    String? // "control" or "variant" once determined
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignments      ABTestAssignment[]
+
+  @@index([portfolioWebsiteId])
+  @@index([organizationId])
+  @@index([status])
+}
+
+model ABTestAssignment {
+  id        String @id @default(cuid())
+  testId    String
+  visitorId String
+
+  // Assignment
+  variant   String // "control" or "variant"
+  converted Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  convertedAt DateTime?
+
+  // Relations
+  test PortfolioABTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, visitorId])
+  @@index([testId])
+  @@index([visitorId])
+}
+
+enum PortfolioABTestStatus {
+  draft
+  running
+  paused
+  completed
+}
+
+enum ABTestGoalType {
+  views           // Total page views
+  unique_visitors // Unique visitor count
+  time_on_page    // Average time spent
+  scroll_depth    // Average scroll depth
+  inquiries       // Contact form submissions
+  leads           // Lead captures
+}
+
+// ============================================================================
+// CUSTOM FORM BUILDER
+// ============================================================================
+
+model CustomForm {
+  id                 String  @id @default(cuid())
+  portfolioWebsiteId String?
+  organizationId     String
+
+  // Form Settings
+  name        String
+  description String? @db.Text
+  slug        String  @unique // URL-friendly identifier
+
+  // Appearance
+  submitButtonText   String  @default("Submit")
+  successMessage     String  @default("Thank you for your submission!")
+  redirectUrl        String? // Optional redirect after submission
+
+  // Behavior
+  isActive           Boolean @default(true)
+  requiresAuth       Boolean @default(false)
+  maxSubmissions     Int?    // Limit total submissions
+  submissionsPerUser Int?    // Limit per visitor
+
+  // Notifications
+  sendEmailOnSubmission Boolean @default(true)
+  notificationEmails    String? @db.Text // Comma-separated emails
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  portfolioWebsite PortfolioWebsite? @relation(fields: [portfolioWebsiteId], references: [id], onDelete: SetNull)
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fields           CustomFormField[]
+  submissions      FormSubmission[]
+
+  @@index([portfolioWebsiteId])
+  @@index([organizationId])
+  @@index([slug])
+  @@index([isActive])
+}
+
+model CustomFormField {
+  id     String @id @default(cuid())
+  formId String
+
+  // Field Configuration
+  name        String              // Internal field name
+  label       String              // Display label
+  type        CustomFormFieldType
+  placeholder String?
+  helpText    String?
+
+  // Validation
+  isRequired    Boolean @default(false)
+  minLength     Int?
+  maxLength     Int?
+  pattern       String? // Regex pattern for validation
+  patternError  String? // Custom error message for pattern mismatch
+
+  // Options (for select, radio, checkbox)
+  options Json? // Array of { label: string, value: string }
+
+  // Layout
+  position Int    @default(0)
+  width    String @default("full") // "full", "half", "third"
+
+  // Conditional Logic
+  conditionalLogic Json? // { showWhen: { field: string, operator: string, value: string } }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  form CustomForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId])
+  @@index([position])
+}
+
+model FormSubmission {
+  id     String @id @default(cuid())
+  formId String
+
+  // Submission Data
+  data      Json   // All field values
+  ipAddress String?
+  userAgent String?
+  visitorId String?
+
+  // Geolocation
+  country String?
+  city    String?
+
+  // Status
+  isRead     Boolean   @default(false)
+  isArchived Boolean   @default(false)
+  readAt     DateTime?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  form CustomForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId])
+  @@index([isRead])
+  @@index([isArchived])
+  @@index([createdAt])
+}
+
+enum CustomFormFieldType {
+  text
+  email
+  phone
+  number
+  textarea
+  select
+  multiselect
+  radio
+  checkbox
+  date
+  time
+  datetime
+  url
+  file
+  hidden
+  heading      // Display-only heading
+  paragraph    // Display-only text
+  divider      // Visual separator
 }
 
 // ============================================================================
@@ -3060,9 +3360,17 @@ enum OrderStatus {
 }
 
 enum BundleType {
-  fixed // Fixed set of services
+  fixed // Fixed set of services at fixed price
   tiered // Pick X services from a group
   custom // Build your own
+  sqft_based // Price based on square footage (price per sqft)
+  tiered_sqft // Tiered pricing by square footage ranges (BICEP pricing)
+}
+
+enum BundlePricingMethod {
+  fixed // Single fixed price
+  per_sqft // Price per square foot
+  tiered // Price based on sqft tiers
 }
 
 enum AddonTrigger {
@@ -3083,8 +3391,17 @@ model ServiceBundle {
   name        String
   slug        String
   description String?    @db.Text
-  priceCents  Int // Bundle price
+  priceCents  Int // Bundle price (for fixed pricing)
   bundleType  BundleType @default(fixed)
+
+  // Pricing method (allows user to choose between pricing strategies)
+  pricingMethod BundlePricingMethod @default(fixed)
+
+  // Square footage pricing (for sqft_based and tiered_sqft bundles)
+  pricePerSqftCents Int? @default(0) // Price per sqft for sqft_based pricing
+  minSqft           Int? @default(0) // Minimum sqft (floor for pricing)
+  maxSqft           Int? // Maximum sqft (optional ceiling)
+  sqftIncrements    Int? @default(500) // Round to nearest X sqft (e.g., 500)
 
   // Display
   imageUrl  String?
@@ -3110,6 +3427,7 @@ model ServiceBundle {
   // Relations
   organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   services     ServiceBundleItem[] // Services included in bundle
+  pricingTiers BundlePricingTier[] // Tiered pricing tiers (for tiered_sqft)
   orderPages   OrderPageBundle[] // Order pages featuring this bundle
   orderItems   OrderItem[]
 
@@ -3135,6 +3453,28 @@ model ServiceBundleItem {
   @@unique([bundleId, serviceId])
   @@index([bundleId])
   @@index([serviceId])
+}
+
+// Pricing tiers for tiered_sqft bundles (BICEP-style pricing)
+model BundlePricingTier {
+  id       String @id @default(cuid())
+  bundleId String
+
+  // Tier range (e.g., 0-2000 sqft, 2001-3500 sqft, etc.)
+  minSqft Int // Minimum sqft for this tier (inclusive)
+  maxSqft Int? // Maximum sqft for this tier (null = unlimited)
+
+  // Tier pricing
+  priceCents Int // Fixed price for this tier
+  tierName   String? // Optional display name (e.g., "Small Home", "Medium Home")
+
+  sortOrder Int @default(0)
+
+  // Relations
+  bundle ServiceBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  @@unique([bundleId, minSqft])
+  @@index([bundleId])
 }
 
 // ============================================================================
@@ -3374,6 +3714,11 @@ model OrderItem {
   quantity    Int     @default(1)
   unitCents   Int
   totalCents  Int
+
+  // Square footage (for sqft-based bundle pricing)
+  sqft            Int? // Square footage entered by client
+  pricingTierId   String? // Which pricing tier was applied (for tiered_sqft)
+  pricingTierName String? // Tier name at time of order (snapshot)
 
   sortOrder Int @default(0)
 
@@ -4298,25 +4643,25 @@ model PlatformReferralSettings {
   id String @id @default("default")
 
   // Program settings
-  isActive Boolean @default(true)
-  referralLinkValidDays Int @default(30) // How long referral links are valid
+  isActive              Boolean @default(true)
+  referralLinkValidDays Int     @default(30) // How long referral links are valid
 
   // Referrer rewards (when referred user subscribes)
-  referrerRewardType PlatformRewardType @default(account_credit)
-  referrerRewardValue Int @default(2500) // $25 credit or 25 days, etc.
+  referrerRewardType         PlatformRewardType @default(account_credit)
+  referrerRewardValue        Int                @default(2500) // $25 credit or 25 days, etc.
   referrerMaxRewardsPerMonth Int? // Cap monthly rewards
 
   // Referred user benefits
-  referredTrialDays Int @default(21) // Extended trial (vs default 14)
+  referredTrialDays       Int  @default(21) // Extended trial (vs default 14)
   referredDiscountPercent Int? // First month discount
-  referredDiscountMonths Int @default(1) // How many months discount applies
+  referredDiscountMonths  Int  @default(1) // How many months discount applies
 
   // Reward expiration
   rewardExpirationDays Int? // How long until reward expires after issue
 
   // Tracking
-  totalReferrals Int @default(0)
-  totalConversions Int @default(0)
+  totalReferrals          Int @default(0)
+  totalConversions        Int @default(0)
   totalRewardsIssuedCents Int @default(0)
 
   createdAt DateTime @default(now())
@@ -4329,14 +4674,14 @@ model PlatformReferrer {
   userId String @unique
 
   // Referral code (unique, shareable)
-  referralCode String @unique
-  referralUrl String? // Custom vanity URL if allowed
+  referralCode String  @unique
+  referralUrl  String? // Custom vanity URL if allowed
 
   // Stats
-  totalReferrals Int @default(0)
+  totalReferrals      Int @default(0)
   successfulReferrals Int @default(0) // Converted to paid
-  totalEarnedCents Int @default(0)
-  pendingCreditCents Int @default(0) // Credited but not yet applied
+  totalEarnedCents    Int @default(0)
+  pendingCreditCents  Int @default(0) // Credited but not yet applied
 
   // Status
   isActive Boolean @default(true)
@@ -4346,9 +4691,9 @@ model PlatformReferrer {
   updatedAt DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   referrals PlatformReferral[]
-  rewards PlatformReferralReward[]
+  rewards   PlatformReferralReward[]
 
   @@index([referralCode])
   @@index([userId])
@@ -4356,39 +4701,39 @@ model PlatformReferrer {
 
 // Individual referral tracking
 model PlatformReferral {
-  id String @id @default(cuid())
+  id         String @id @default(cuid())
   referrerId String
 
   // Referred person (before they become a user)
   referredEmail String
-  referredName String?
+  referredName  String?
 
   // Tracking
-  status PlatformReferralStatus @default(pending)
-  referredUserId String? // Set when they sign up
+  status                 PlatformReferralStatus @default(pending)
+  referredUserId         String? // Set when they sign up
   referredOrganizationId String? // Set when org created
 
   // Attribution
-  source String? // Where link was shared (email, social, etc.)
+  source      String? // Where link was shared (email, social, etc.)
   landingPage String? // Which page they landed on
   utmCampaign String?
-  utmSource String?
-  utmMedium String?
+  utmSource   String?
+  utmMedium   String?
 
   // Timestamps
-  clickedAt DateTime? // When they clicked the link
-  signedUpAt DateTime? // When they created account
+  clickedAt    DateTime? // When they clicked the link
+  signedUpAt   DateTime? // When they created account
   subscribedAt DateTime? // When they started paid subscription
-  expiresAt DateTime // When referral link expires
+  expiresAt    DateTime // When referral link expires
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  referrer PlatformReferrer @relation(fields: [referrerId], references: [id], onDelete: Cascade)
-  referredUser User? @relation("ReferredByPlatform", fields: [referredUserId], references: [id], onDelete: SetNull)
-  referredOrganization Organization? @relation("ReferredOrgByPlatform", fields: [referredOrganizationId], references: [id], onDelete: SetNull)
-  rewards PlatformReferralReward[]
+  referrer             PlatformReferrer         @relation(fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser         User?                    @relation("ReferredByPlatform", fields: [referredUserId], references: [id], onDelete: SetNull)
+  referredOrganization Organization?            @relation("ReferredOrgByPlatform", fields: [referredOrganizationId], references: [id], onDelete: SetNull)
+  rewards              PlatformReferralReward[]
 
   @@index([referrerId])
   @@index([referredEmail])
@@ -4399,23 +4744,23 @@ model PlatformReferral {
 
 // Rewards issued for platform referrals
 model PlatformReferralReward {
-  id String @id @default(cuid())
+  id         String @id @default(cuid())
   referrerId String
   referralId String
 
   // Reward details
-  rewardType PlatformRewardType
-  valueCents Int // Dollar value or days
+  rewardType  PlatformRewardType
+  valueCents  Int // Dollar value or days
   description String?
 
   // Status
-  isApplied Boolean @default(false) // Has it been used?
+  isApplied Boolean   @default(false) // Has it been used?
   appliedAt DateTime?
   expiresAt DateTime? // Rewards can expire
 
   // Stripe integration
   stripePromotionCodeId String? // If using Stripe promo codes
-  stripeCouponId String?
+  stripeCouponId        String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4740,10 +5085,10 @@ model PricingExperiment {
   landingPagePaths String[] // e.g., ["/pricing", "/enterprise"] - which pages to run on
 
   // Results tracking
-  controlConversions      Int    @default(0)
-  controlImpressions      Int    @default(0)
-  variantConversions      Int    @default(0)
-  variantImpressions      Int    @default(0)
+  controlConversions      Int     @default(0)
+  controlImpressions      Int     @default(0)
+  variantConversions      Int     @default(0)
+  variantImpressions      Int     @default(0)
   winningVariantId        String?
   statisticalSignificance Float?
 

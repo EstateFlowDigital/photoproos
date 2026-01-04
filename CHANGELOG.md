@@ -8,7 +8,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Bundle Pricing Methods** (Square Footage & Tiered Pricing)
+  - **Pricing Method Options**:
+    - Fixed pricing (traditional single price)
+    - Per square foot pricing (price × sqft)
+    - Tiered pricing (BICEP-style ranges with different prices per tier)
+  - **Bundle Types Extended**:
+    - `sqft_based` - Price calculated based on property square footage
+    - `tiered_sqft` - Tiered pricing ranges (e.g., 0-2000 sqft = $X, 2001-4000 sqft = $Y)
+  - **Pricing Tier Management**:
+    - Create multiple pricing tiers per bundle
+    - Set min/max sqft ranges with custom tier names
+    - Automatic tier matching based on input sqft
+    - Validation for overlapping ranges
+  - **Price Calculation Functions**:
+    - `calculateBundlePrice()` - Calculate price based on sqft input
+    - `getBundleWithPricing()` - Fetch bundle with all pricing data
+    - `setBundlePricingTiers()` - Manage pricing tier configurations
+  - **Order Integration**:
+    - Track sqft on order items
+    - Store applied pricing tier on orders
+    - Support for sqft-based checkout
+
 - **Leads Dashboard Enhancements**
+  - **Search Functionality**:
+    - Real-time search across all leads by name, email, and message content
+    - Search input with clear button and visual feedback
+    - Filters work in combination with type and status filters
+  - **Lead Notes Editing**:
+    - Add and edit internal notes on portfolio and chat leads
+    - Inline editing with save/cancel buttons
+    - Notes displayed in lead detail modal
+  - **CSV Export**:
+    - Export filtered leads to CSV file
+    - Includes all lead fields: type, name, email, phone, message, source, status, date, notes
+    - Properly escapes special characters for CSV compatibility
+    - Respects current search and filter selections
   - **Convert Lead to Client** functionality:
     - One-click conversion from portfolio inquiries, chat messages, and booking form submissions
     - Automatic duplicate detection - links to existing client if email matches
@@ -27,6 +62,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `convertPortfolioInquiryToClient()` - Convert portfolio inquiry to client
     - `convertChatInquiryToClient()` - Convert chat inquiry to client
     - `convertBookingSubmissionToClient()` - Convert booking submission to client
+
+- **Client Questionnaire System** (Phase 2 Complete)
+  - **Industry-Specific Templates**:
+    - Pre-built questionnaire templates for each photography industry
+    - Real Estate: Property details, agent information, access requirements
+    - Wedding/Events: Couple details, timeline, family info
+    - Portrait/Headshot: Individual and corporate team questionnaires
+    - Commercial/Brand: Brand briefs and campaign questionnaires
+    - Food/Product: Restaurant menu and product photography briefs
+    - Legal agreements attached to each template type
+  - **Template Management**:
+    - Create custom questionnaire templates
+    - Duplicate and customize system templates
+    - Drag-and-drop field ordering with sections
+    - Field types: text, textarea, email, phone, date, time, select, multiselect, checkbox, radio, file, address, url
+    - Conditional field visibility
+    - Field validation rules
+  - **Legal Agreements**:
+    - Attach legal agreements to templates (model release, property release, liability waiver, etc.)
+    - Signature capture with drawn, typed, or uploaded options
+    - Audit trail with IP address and user agent
+  - **Client Portal Integration**:
+    - Questionnaires tab in client portal with pending count badge
+    - Auto-save progress every 30 seconds
+    - Submit questionnaire with required field validation
+    - View completed questionnaires
+  - **Assignment & Tracking**:
+    - Assign questionnaires to clients with optional booking/project link
+    - Due date with overdue tracking
+    - Email notifications on assignment
+    - Automated reminders via cron job
+    - Stats dashboard: total, pending, in-progress, completed, overdue
+  - **Response Viewer**:
+    - View submitted questionnaire responses
+    - See signed legal agreements with signature preview
+    - Approve/reject questionnaire responses
+    - Internal notes for photographer
+  - **Server Actions**:
+    - Template CRUD: `createQuestionnaireTemplate()`, `updateQuestionnaireTemplate()`, `duplicateQuestionnaireTemplate()`
+    - Field management: `updateQuestionnaireFields()`, `reorderQuestionnaireFields()`
+    - Agreement management: `updateQuestionnaireAgreements()`
+    - Assignment: `assignQuestionnaireToClient()`, `getClientQuestionnaires()`
+    - Portal: `getQuestionnaireForCompletion()`, `submitQuestionnaireResponses()`, `saveQuestionnaireProgress()`
+  - **API Endpoints**:
+    - `/api/admin/seed-questionnaire-templates` - Seed system templates
+    - `/api/cron/questionnaire-reminders` - Send automated reminder emails
 
 - **Platform Referral System Optimizations**
   - **Referral Email Templates** (React Email):
