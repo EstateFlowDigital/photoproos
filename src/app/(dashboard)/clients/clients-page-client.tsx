@@ -80,7 +80,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
         actions={
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
           >
             <PlusIcon className="h-4 w-4" />
             Add Client
@@ -235,7 +235,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
           </p>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90 sm:w-auto"
           >
             <PlusIcon className="h-4 w-4" />
             Add Client
