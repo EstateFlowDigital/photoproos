@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useLayoutEffect, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import {
   toggleSectionVisibility,
@@ -126,6 +126,9 @@ export function DashboardCustomizePanel({
   const [localConfig, setLocalConfig] = useState(config);
   const [isPending, startTransition] = useTransition();
   const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [popoverStyle, setPopoverStyle] = useState<CSSProperties | undefined>(undefined);
 
   // Close panel when clicking outside
   useEffect(() => {
@@ -139,6 +142,55 @@ export function DashboardCustomizePanel({
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
+  }, [isOpen]);
+
+  // Clamp popover to the viewport (prevents off-screen overflow on mobile)
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      setPopoverStyle(undefined);
+      return;
+    }
+
+    const margin = 8;
+    const update = () => {
+      if (!triggerRef.current || !popoverRef.current) return;
+
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const popoverRect = popoverRef.current.getBoundingClientRect();
+
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      const width = Math.min(popoverRect.width, viewportWidth - margin * 2);
+      const height = popoverRect.height;
+
+      // Default: align popover's right edge with trigger's right edge.
+      let left = triggerRect.right - width;
+      left = Math.max(margin, Math.min(left, viewportWidth - margin - width));
+
+      let top = triggerRect.bottom + 8;
+      const wouldOverflowBottom = top + height > viewportHeight - margin;
+      if (wouldOverflowBottom) {
+        top = Math.max(margin, triggerRect.top - 8 - height);
+      }
+
+      setPopoverStyle({
+        position: "fixed",
+        left,
+        top,
+        width,
+        maxWidth: viewportWidth - margin * 2,
+        zIndex: 50,
+      });
+    };
+
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
   }, [isOpen]);
 
   // Sync local config with prop changes
@@ -185,6 +237,7 @@ export function DashboardCustomizePanel({
   return (
     <div className="relative" ref={panelRef}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
@@ -202,11 +255,14 @@ export function DashboardCustomizePanel({
 
       {isOpen && (
         <div
+          ref={popoverRef}
           className={cn(
             "absolute right-0 top-full z-50 mt-2 w-72",
+            "max-w-[calc(100vw-2rem)]",
             "rounded-xl border border-[var(--card-border)] bg-[var(--card)]",
             "shadow-lg"
           )}
+          style={popoverStyle}
         >
           <div className="border-b border-[var(--card-border)] px-4 py-3">
             <h3 className="text-sm font-semibold text-foreground">

@@ -87,6 +87,33 @@ function isSameMonth(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 }
 
+function formatWeekLabel(start: Date, end: Date) {
+  const sameMonth = isSameMonth(start, end);
+  const sameYear = start.getFullYear() === end.getFullYear();
+
+  const startLabel = start.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" as const }),
+  });
+
+  const endLabel = end.toLocaleDateString("en-US", {
+    month: sameMonth ? undefined : "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  return `${startLabel} – ${endLabel}`;
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M7.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L10.94 10 7.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
 export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[] }) {
   const now = new Date();
   const [currentMonth, setCurrentMonth] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
@@ -167,6 +194,13 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
     };
   }, [selectedDate]);
 
+  const headerLabel = useMemo(() => {
+    if (viewMode === "week") {
+      return formatWeekLabel(weekRange.start, weekRange.end);
+    }
+    return monthLabel;
+  }, [monthLabel, viewMode, weekRange.end, weekRange.start]);
+
   const listEvents = useMemo(() => {
     if (viewMode === "week") {
       return normalizedEvents.filter(
@@ -209,16 +243,30 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
     setSelectedDate(today);
   };
 
-  const handlePrevMonth = () => {
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
-    );
+  const handlePrevPeriod = () => {
+    if (viewMode === "week") {
+      const next = addDays(selectedDate, -7);
+      setSelectedDate(next);
+      setCurrentMonth(new Date(next.getFullYear(), next.getMonth(), 1));
+      return;
+    }
+
+    const next = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+    setCurrentMonth(next);
+    setSelectedDate(next);
   };
 
-  const handleNextMonth = () => {
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
-    );
+  const handleNextPeriod = () => {
+    if (viewMode === "week") {
+      const next = addDays(selectedDate, 7);
+      setSelectedDate(next);
+      setCurrentMonth(new Date(next.getFullYear(), next.getMonth(), 1));
+      return;
+    }
+
+    const next = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+    setCurrentMonth(next);
+    setSelectedDate(next);
   };
 
   const toggleFilter = (filter: DashboardEventType) => {
@@ -234,11 +282,11 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
       <div className="flex flex-col gap-3 border-b border-[var(--card-border)] p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-3">
-          <h3 className="text-lg font-semibold text-foreground">{monthLabel}</h3>
+          <h3 className="text-lg font-semibold text-foreground">{headerLabel}</h3>
           <button
             type="button"
             onClick={handleToday}
-            className="rounded-lg px-2.5 py-1 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20"
+            className="rounded-lg border border-[var(--primary)]/25 bg-[var(--primary)]/10 px-2.5 py-1 text-xs font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20"
           >
             Today
           </button>
@@ -264,9 +312,9 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
           <div className="flex gap-1">
             <button
               type="button"
-              onClick={handlePrevMonth}
+              onClick={handlePrevPeriod}
               className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
-              aria-label="Previous month"
+              aria-label={viewMode === "week" ? "Previous week" : "Previous month"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                 <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
@@ -274,9 +322,9 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
             </button>
             <button
               type="button"
-              onClick={handleNextMonth}
+              onClick={handleNextPeriod}
               className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
-              aria-label="Next month"
+              aria-label={viewMode === "week" ? "Next week" : "Next month"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                 <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
@@ -423,13 +471,22 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
                               <div className="text-xs text-foreground-muted">{event.subtitle}</div>
                             )}
                           </div>
-                          <div className="text-xs text-foreground-muted sm:ml-auto">{timeLabel}</div>
+                          <div className="flex items-center gap-2 text-xs text-foreground-muted sm:ml-auto">
+                            <span>{timeLabel}</span>
+                            {event.href && (
+                              <ChevronRightIcon className="h-4 w-4 opacity-60 transition-opacity group-hover:opacity-100" />
+                            )}
+                          </div>
                         </div>
                       );
 
                       if (event.href) {
                         return (
-                          <Link key={event.id} href={event.href} className="block hover:bg-[var(--background-hover)]">
+                          <Link
+                            key={event.id}
+                            href={event.href}
+                            className="group block hover:bg-[var(--background-hover)]"
+                          >
                             {content}
                           </Link>
                         );

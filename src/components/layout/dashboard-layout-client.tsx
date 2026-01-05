@@ -171,19 +171,19 @@ export function DashboardLayoutClient({
         {/* Main content area */}
         <div className="shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {/* Topbar with mobile menu button */}
-          <header className="flex h-16 items-center border-b border-[var(--card-border)] bg-[var(--card)] px-4 lg:px-6">
-            {/* Mobile menu button */}
-            <MobileMenuButton onClick={handleOpenMenu} className="mr-3 shell-mobile-trigger" />
+          <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]">
+            <div className="flex items-center gap-3 px-4 py-3 sm:h-16 sm:py-0 lg:px-6">
+              <MobileMenuButton onClick={handleOpenMenu} className="shell-mobile-trigger shrink-0" />
 
-            {/* Desktop topbar content */}
-            <div className="flex-1 min-w-0">
-              <DashboardTopbar
-                className="h-full border-0 px-0"
-                navLinks={getFilteredNavigation({ enabledModules, industries })}
-                navMode={effectiveNavMode}
-                navAutoForced={forcedTop}
-                onNavModeChange={handleNavModeChange}
-              />
+              <div className="flex-1 min-w-0">
+                <DashboardTopbar
+                  className="border-0 px-0 py-0"
+                  navLinks={getFilteredNavigation({ enabledModules, industries })}
+                  navMode={effectiveNavMode}
+                  navAutoForced={forcedTop}
+                  onNavModeChange={handleNavModeChange}
+                />
+              </div>
             </div>
           </header>
 

@@ -588,8 +588,9 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         </div>
 
         {/* Top nav hamburger (when top mode is active) */}
+        {/* On mobile/tablet we already provide MobileNav, so keep this desktop-only to avoid duplicate menus. */}
         {navModeState === "top" && navLinks.length > 0 && (
-          <div ref={topNavRef} className="relative">
+          <div ref={topNavRef} className="relative hidden lg:block">
             <button
               type="button"
               onClick={() => setTopNavOpen((prev) => !prev)}

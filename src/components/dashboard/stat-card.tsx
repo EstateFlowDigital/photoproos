@@ -28,7 +28,7 @@ export function StatCard({ label, value, change, positive, className, href, icon
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
             fill="currentColor"
-            className="h-4 w-4 text-foreground-muted opacity-0 transition-opacity group-hover:opacity-100"
+            className="h-4 w-4 text-foreground-muted opacity-60 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
           >
             <path
               fillRule="evenodd"

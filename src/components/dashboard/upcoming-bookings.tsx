@@ -64,6 +64,14 @@ function LocationIcon({ className }: { className?: string }) {
   );
 }
 
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M7.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L10.94 10 7.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
 export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps) {
   if (bookings.length === 0) {
     return (
@@ -89,7 +97,7 @@ export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps)
         <Link
           key={booking.id}
           href={`/scheduling/${booking.id}`}
-          className="block p-4 transition-colors hover:bg-[var(--background-hover)]"
+          className="group block p-4 transition-colors hover:bg-[var(--background-hover)]"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -133,6 +141,9 @@ export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps)
                 )}
               </div>
             </div>
+            <ChevronRightIcon
+              className="mt-1 h-4 w-4 text-foreground-muted opacity-60 transition-opacity group-hover:opacity-100"
+            />
           </div>
 
           {booking.serviceType && (

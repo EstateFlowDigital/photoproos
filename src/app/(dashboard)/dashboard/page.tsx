@@ -418,6 +418,16 @@ export default async function DashboardPage() {
         <DashboardCustomizePanel config={dashboardConfig} />
       </div>
 
+      {/* Referral Program (highlight) */}
+      {isSectionVisible(dashboardConfig, "referral-widget") && (
+        <ReferralWidget
+          referralCode={platformReferrer?.referralCode || null}
+          successfulReferrals={platformReferrer?.successfulReferrals || 0}
+          totalEarnedCents={platformReferrer?.totalEarnedCents || 0}
+          pendingReferrals={platformReferrer?.referrals?.length || 0}
+        />
+      )}
+
       {/* Onboarding Checklist */}
       {showChecklist && (
         <OnboardingChecklist
@@ -577,16 +587,6 @@ export default async function DashboardPage() {
                 )}
               </div>
             </CollapsibleSection>
-          )}
-
-          {/* Referral Widget */}
-          {isSectionVisible(dashboardConfig, "referral-widget") && (
-            <ReferralWidget
-              referralCode={platformReferrer?.referralCode || null}
-              successfulReferrals={platformReferrer?.successfulReferrals || 0}
-              totalEarnedCents={platformReferrer?.totalEarnedCents || 0}
-              pendingReferrals={platformReferrer?.referrals?.length || 0}
-            />
           )}
         </div>
       </div>
