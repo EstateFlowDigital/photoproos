@@ -41,11 +41,11 @@ interface AvailabilityPageClientProps {
 }
 
 const BLOCK_TYPE_COLORS: Record<string, string> = {
-  time_off: "#ef4444",
-  holiday: "#f97316",
-  personal: "#8b5cf6",
-  maintenance: "#3b82f6",
-  other: "#6b7280",
+  time_off: "var(--error)",
+  holiday: "var(--warning)",
+  personal: "var(--ai)",
+  maintenance: "var(--primary)",
+  other: "var(--foreground-muted)",
 };
 
 const BLOCK_TYPE_LABELS: Record<string, string> = {
@@ -375,14 +375,14 @@ export function AvailabilityPageClient({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Availability</h1>
-          <p className="text-[#7c7c7c] mt-1">
+          <p className="text-[var(--foreground-muted)] mt-1">
             Manage your time off, holidays, and booking settings
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setShowBufferModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg text-white hover:bg-[#313131] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg text-white hover:bg-[var(--background-hover)] transition-colors"
           >
             <Settings className="w-4 h-4" />
             Buffer Settings
@@ -399,13 +399,13 @@ export function AvailabilityPageClient({
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Calendar */}
-        <div className="lg:col-span-2 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
+        <div className="lg:col-span-2 bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
           {/* Calendar Header */}
-          <div className="flex flex-col gap-3 px-6 py-4 border-b border-[rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 px-6 py-4 border-b border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={prevMonth}
-                className="p-2 hover:bg-[#1e1e1e] rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--background-hover)] rounded-lg transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 text-white" />
               </button>
@@ -417,7 +417,7 @@ export function AvailabilityPageClient({
               </h2>
               <button
                 onClick={nextMonth}
-                className="p-2 hover:bg-[#1e1e1e] rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--background-hover)] rounded-lg transition-colors"
               >
                 <ChevronRight className="w-5 h-5 text-white" />
               </button>
@@ -437,7 +437,7 @@ export function AvailabilityPageClient({
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                 <div
                   key={day}
-                  className="text-center text-xs font-medium text-[#7c7c7c] py-2"
+                  className="text-center text-xs font-medium text-[var(--foreground-muted)] py-2"
                 >
                   {day}
                 </div>
@@ -455,13 +455,13 @@ export function AvailabilityPageClient({
                     key={i}
                     className={`min-h-[80px] p-2 rounded-lg border transition-colors ${
                       isCurrentMonth
-                        ? "bg-[#1a1a1a] border-[rgba(255,255,255,0.04)]"
-                        : "bg-[#0d0d0d] border-transparent"
-                    } ${isToday ? "ring-2 ring-blue-500" : ""}`}
+                        ? "bg-[var(--background-tertiary)] border-[var(--border)]"
+                        : "bg-[var(--background)] border-transparent"
+                    } ${isToday ? "ring-2 ring-[var(--primary)]" : ""}`}
                   >
                     <span
                       className={`text-sm ${
-                        isCurrentMonth ? "text-white" : "text-[#4a4a4a]"
+                        isCurrentMonth ? "text-white" : "text-[var(--foreground-muted)]"
                       } ${isToday ? "font-bold" : ""}`}
                     >
                       {date.getDate()}
@@ -480,7 +480,7 @@ export function AvailabilityPageClient({
                         </div>
                       ))}
                       {dateBlocks.length > 2 && (
-                        <span className="text-xs text-[#7c7c7c]">
+                        <span className="text-xs text-[var(--foreground-muted)]">
                           +{dateBlocks.length - 2} more
                         </span>
                       )}
@@ -495,8 +495,8 @@ export function AvailabilityPageClient({
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Upcoming Blocks */}
-          <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
-            <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.08)]">
+          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+            <div className="px-4 py-3 border-b border-[var(--card-border)]">
               <h3 className="text-white font-medium flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Upcoming Blocks
@@ -515,7 +515,7 @@ export function AvailabilityPageClient({
                       />
                       <div>
                         <p className="text-white font-medium">{block.title}</p>
-                        <p className="text-[#7c7c7c] text-sm">
+                        <p className="text-[var(--foreground-muted)] text-sm">
                           {block.startDate.toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -534,14 +534,14 @@ export function AvailabilityPageClient({
                     </div>
                     <button
                       onClick={() => handleDeleteBlock(block.originalBlockId, block.isRecurring)}
-                      className="p-1.5 text-[#7c7c7c] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                      className="p-1.5 text-[var(--foreground-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
               {upcomingDisplayBlocks.length === 0 && (
-                <div className="p-4 text-center text-[#7c7c7c] text-sm">
+                <div className="p-4 text-center text-[var(--foreground-muted)] text-sm">
                   No upcoming blocks
                 </div>
               )}
@@ -549,8 +549,8 @@ export function AvailabilityPageClient({
           </div>
 
           {/* Buffer Settings Preview */}
-          <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
-            <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.08)]">
+          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+            <div className="px-4 py-3 border-b border-[var(--card-border)]">
               <h3 className="text-white font-medium flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Booking Buffer
@@ -558,19 +558,19 @@ export function AvailabilityPageClient({
             </div>
             <div className="p-4 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[#7c7c7c] text-sm">Before booking</span>
+                <span className="text-[var(--foreground-muted)] text-sm">Before booking</span>
                 <span className="text-white text-sm">
                   {bufferSettings.bufferBefore} min
                 </span>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[#7c7c7c] text-sm">After booking</span>
+                <span className="text-[var(--foreground-muted)] text-sm">After booking</span>
                 <span className="text-white text-sm">
                   {bufferSettings.bufferAfter} min
                 </span>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[#7c7c7c] text-sm">Min. advance notice</span>
+                <span className="text-[var(--foreground-muted)] text-sm">Min. advance notice</span>
                 <span className="text-white text-sm">
                   {bufferSettings.minAdvanceHours} hours
                 </span>
@@ -580,8 +580,8 @@ export function AvailabilityPageClient({
 
           {/* Calendar Integrations */}
           {calendarIntegrations.length > 0 && (
-            <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.08)]">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+              <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <h3 className="text-white font-medium flex items-center gap-2">
                   <CalendarDays className="w-4 h-4" />
                   Connected Calendars
@@ -597,7 +597,7 @@ export function AvailabilityPageClient({
                       />
                       <div>
                         <p className="text-white text-sm font-medium">{integration.name}</p>
-                        <p className="text-[#7c7c7c] text-xs capitalize">
+                        <p className="text-[var(--foreground-muted)] text-xs capitalize">
                           {integration.provider}
                         </p>
                       </div>
@@ -605,7 +605,7 @@ export function AvailabilityPageClient({
                     <button
                       onClick={() => handleSync(integration.id)}
                       disabled={isSyncing}
-                      className="p-2 text-[#7c7c7c] hover:text-white transition-colors disabled:opacity-50"
+                      className="p-2 text-[var(--foreground-muted)] hover:text-white transition-colors disabled:opacity-50"
                     >
                       <RefreshCw
                         className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`}
@@ -618,7 +618,7 @@ export function AvailabilityPageClient({
           )}
 
           {/* Legend */}
-          <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] p-4">
+          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] p-4">
             <h3 className="text-white font-medium mb-3">Legend</h3>
             <div className="space-y-2">
               {Object.entries(BLOCK_TYPE_LABELS).map(([key, label]) => (
@@ -627,7 +627,7 @@ export function AvailabilityPageClient({
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: BLOCK_TYPE_COLORS[key] }}
                   />
-                  <span className="text-[#a7a7a7] text-sm">{label}</span>
+                  <span className="text-[var(--foreground-secondary)] text-sm">{label}</span>
                 </div>
               ))}
             </div>
@@ -638,33 +638,33 @@ export function AvailabilityPageClient({
       {/* Add Block Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] w-full max-w-md">
-            <div className="flex flex-col gap-3 px-6 py-4 border-b border-[rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] w-full max-w-md">
+            <div className="flex flex-col gap-3 px-6 py-4 border-b border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-white">Add Availability Block</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-2 hover:bg-[#1e1e1e] rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--background-hover)] rounded-lg transition-colors"
               >
-                <X className="w-4 h-4 text-[#7c7c7c]" />
+                <X className="w-4 h-4 text-[var(--foreground-muted)]" />
               </button>
             </div>
             <form onSubmit={handleAddBlock} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   Title
                 </label>
                 <input
                   type="text"
                   value={newBlock.title}
                   onChange={(e) => setNewBlock({ ...newBlock, title: e.target.value })}
-                  className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                   placeholder="e.g., Vacation, Doctor's Appointment"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   Type
                 </label>
                 <select
@@ -672,7 +672,7 @@ export function AvailabilityPageClient({
                   onChange={(e) =>
                     setNewBlock({ ...newBlock, blockType: e.target.value as typeof newBlock.blockType })
                   }
-                  className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                 >
                   {Object.entries(BLOCK_TYPE_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>
@@ -688,14 +688,14 @@ export function AvailabilityPageClient({
                   checked={newBlock.isRecurring}
                   onCheckedChange={(checked) => setNewBlock({ ...newBlock, isRecurring: checked === true })}
                 />
-                <label htmlFor="recurring" className="text-sm text-[#a7a7a7]">
+                <label htmlFor="recurring" className="text-sm text-[var(--foreground-secondary)]">
                   Repeat weekly
                 </label>
               </div>
 
               {newBlock.isRecurring ? (
                 <div>
-                  <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                     Day of Week
                   </label>
                   <select
@@ -703,7 +703,7 @@ export function AvailabilityPageClient({
                     onChange={(e) =>
                       setNewBlock({ ...newBlock, recurrenceDay: parseInt(e.target.value) })
                     }
-                    className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value={0}>Sunday</option>
                     <option value={1}>Monday</option>
@@ -717,26 +717,26 @@ export function AvailabilityPageClient({
               ) : (
                 <div className="auto-grid grid-min-200 grid-gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                       Start Date
                     </label>
                     <input
                       type="date"
                       value={newBlock.startDate}
                       onChange={(e) => setNewBlock({ ...newBlock, startDate: e.target.value })}
-                      className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                    <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                       End Date
                     </label>
                     <input
                       type="date"
                       value={newBlock.endDate}
                       onChange={(e) => setNewBlock({ ...newBlock, endDate: e.target.value })}
-                      className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                       required
                     />
                   </div>
@@ -747,7 +747,7 @@ export function AvailabilityPageClient({
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 text-[#a7a7a7] hover:text-white transition-colors"
+                  className="px-4 py-2 text-[var(--foreground-secondary)] hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -767,19 +767,19 @@ export function AvailabilityPageClient({
       {/* Buffer Settings Modal */}
       {showBufferModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] w-full max-w-md">
-            <div className="flex flex-col gap-3 px-6 py-4 border-b border-[rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] w-full max-w-md">
+            <div className="flex flex-col gap-3 px-6 py-4 border-b border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-white">Booking Buffer Settings</h2>
               <button
                 onClick={() => setShowBufferModal(false)}
-                className="p-2 hover:bg-[#1e1e1e] rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--background-hover)] rounded-lg transition-colors"
               >
-                <X className="w-4 h-4 text-[#7c7c7c]" />
+                <X className="w-4 h-4 text-[var(--foreground-muted)]" />
               </button>
             </div>
             <form onSubmit={handleSaveBuffer} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   Buffer Before Booking (minutes)
                 </label>
                 <input
@@ -789,15 +789,15 @@ export function AvailabilityPageClient({
                   onChange={(e) =>
                     setBufferSettings({ ...bufferSettings, bufferBefore: parseInt(e.target.value) })
                   }
-                  className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                 />
-                <p className="text-xs text-[#7c7c7c] mt-1">
+                <p className="text-xs text-[var(--foreground-muted)] mt-1">
                   Setup time before each booking
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   Buffer After Booking (minutes)
                 </label>
                 <input
@@ -807,15 +807,15 @@ export function AvailabilityPageClient({
                   onChange={(e) =>
                     setBufferSettings({ ...bufferSettings, bufferAfter: parseInt(e.target.value) })
                   }
-                  className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                 />
-                <p className="text-xs text-[#7c7c7c] mt-1">
+                <p className="text-xs text-[var(--foreground-muted)] mt-1">
                   Teardown/travel time after each booking
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   Minimum Advance Notice (hours)
                 </label>
                 <input
@@ -828,15 +828,15 @@ export function AvailabilityPageClient({
                       minAdvanceHours: e.target.value ? parseInt(e.target.value) : 0,
                     })
                   }
-                  className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                 />
-                <p className="text-xs text-[#7c7c7c] mt-1">
+                <p className="text-xs text-[var(--foreground-muted)] mt-1">
                   Clients must book at least this many hours in advance
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#a7a7a7] mb-1">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-1">
                   Maximum Advance Booking (days)
                 </label>
                 <input
@@ -849,9 +849,9 @@ export function AvailabilityPageClient({
                       maxAdvanceDays: e.target.value ? parseInt(e.target.value) : 90,
                     })
                   }
-                  className="w-full bg-[#1e1e1e] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--background-elevated)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                 />
-                <p className="text-xs text-[#7c7c7c] mt-1">
+                <p className="text-xs text-[var(--foreground-muted)] mt-1">
                   Maximum days in advance clients can book
                 </p>
               </div>
@@ -860,7 +860,7 @@ export function AvailabilityPageClient({
                 <button
                   type="button"
                   onClick={() => setShowBufferModal(false)}
-                  className="px-4 py-2 text-[#a7a7a7] hover:text-white transition-colors"
+                  className="px-4 py-2 text-[var(--foreground-secondary)] hover:text-white transition-colors"
                 >
                   Cancel
                 </button>

@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Design System Compliance - Scheduling Availability** - Updated availability page to use CSS variables
+  - Updated `availability-page-client.tsx` with comprehensive design token usage
+  - Block type colors now use semantic tokens: error (time off), warning (holiday), ai (personal), primary (maintenance)
+  - Calendar UI uses background, card, border, and text color tokens
+  - Form elements use elevated backgrounds and proper border tokens
+
 - **Design System Compliance - Gallery Public Pages** - Updated gallery components to use CSS variables for semantic colors
   - Updated `gallery-client.tsx` with success, error, warning, primary tokens for status indicators
   - Updated expiration countdown colors to use `var(--error)`, `var(--warning)`, `var(--primary)`
