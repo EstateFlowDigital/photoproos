@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Server actions now use session-based authentication internally
 
 ### Fixed
+- **Upload Abort Bug** - Fixed uploads being immediately aborted due to React useEffect re-running
+  - Used refs for callback functions to prevent queue recreation
+  - Upload modal no longer aborts files when component re-renders
+
 - **Time-Off Integration** - Team availability now includes time-off data from AvailabilityBlock model
   - `getTeamAvailability()` - Returns time-off slots for each team member
   - `getDailyTeamSummary()` - Factors approved time-off into availability calculations
