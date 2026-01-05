@@ -410,12 +410,12 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-3 border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3 sm:h-16 sm:flex-nowrap sm:py-0 lg:px-6",
+        "flex flex-wrap items-center justify-between gap-3 border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3 sm:min-h-[64px] sm:flex-nowrap sm:py-0 lg:px-6",
         className
       )}
     >
-      {/* Left side - Search */}
-      <div className="order-2 flex w-full flex-1 items-center gap-4 sm:order-1 sm:w-auto">
+      {/* Left side - Search + top nav pills */}
+      <div className="order-2 flex w-full flex-1 flex-col gap-2 sm:order-1 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
         <div ref={searchRef} className="relative w-full max-w-none flex-1 sm:max-w-md">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted pointer-events-none z-10" />
           <input
@@ -523,6 +523,29 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
             </div>
           )}
         </div>
+
+        {navModeState === "top" && navLinks.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                    isActive
+                      ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                      : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:border-[var(--primary)]/60"
+                  )}
+                  onClick={() => setTopNavOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Right side - Actions */}

@@ -23,6 +23,7 @@ import { BookingStatus, type RecurrencePattern } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { nanoid } from "nanoid";
+import { rrulestr } from "rrule";
 import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import { logActivity } from "@/lib/utils/activity";
 import { sendSMSToClient } from "@/lib/sms/send";
@@ -38,6 +39,42 @@ async function getOrganizationId(): Promise<string> {
   return requireOrganizationId();
 }
 
+async function getOrganizationTimezone(organizationId: string) {
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { timezone: true },
+  });
+
+  return org?.timezone || "America/New_York";
+}
+
+async function getBookingBufferSettings(organizationId: string, serviceId?: string) {
+  // Try service-specific buffer first
+  let buffer = await prisma.bookingBuffer.findFirst({
+    where: {
+      organizationId,
+      serviceId: serviceId ?? null,
+    },
+  });
+
+  // Fallback to org-wide default
+  if (!buffer) {
+    buffer = await prisma.bookingBuffer.findFirst({
+      where: {
+        organizationId,
+        serviceId: null,
+      },
+    });
+  }
+
+  return {
+    bufferBefore: buffer?.bufferBefore ?? 0,
+    bufferAfter: buffer?.bufferAfter ?? 0,
+    minAdvanceHours: buffer?.minAdvanceHours ?? null,
+    maxAdvanceDays: buffer?.maxAdvanceDays ?? null,
+  };
+}
+
 // Input types
 export interface CreateBookingInput {
   title: string;
@@ -47,12 +84,14 @@ export interface CreateBookingInput {
   startTime: Date;
   endTime: Date;
   timezone?: string;
+  assignedUserId?: string;
   location?: string;
   locationNotes?: string;
   notes?: string;
   clientName?: string;
   clientEmail?: string;
   clientPhone?: string;
+  allowConflicts?: boolean;
   // Recurrence options
   isRecurring?: boolean;
   recurrencePattern?: RecurrencePattern;
@@ -72,12 +111,14 @@ export interface UpdateBookingInput {
   startTime?: Date;
   endTime?: Date;
   timezone?: string;
+  assignedUserId?: string | null;
   location?: string;
   locationNotes?: string;
   notes?: string;
   clientName?: string;
   clientEmail?: string;
   clientPhone?: string;
+  allowConflicts?: boolean;
 }
 
 /**
@@ -182,6 +223,25 @@ export async function createBooking(
   try {
     const organizationId = await getOrganizationId();
     const auth = await getAuthContext();
+    const timezone = input.timezone || await getOrganizationTimezone(organizationId);
+
+    const validation = await validateBookingTime({
+      startTime: input.startTime,
+      endTime: input.endTime,
+      bookingId: undefined,
+      userId: input.assignedUserId,
+      serviceId: input.serviceId,
+      allowConflicts: input.allowConflicts,
+      organizationId,
+    });
+
+    if (!validation.success) {
+      return { success: false, error: validation.error || "Failed to validate booking time" };
+    }
+
+    if (!validation.data.valid) {
+      return { success: false, error: validation.data.message || "This time is not available" };
+    }
 
     const booking = await prisma.booking.create({
       data: {
@@ -192,7 +252,8 @@ export async function createBooking(
         serviceId: input.serviceId,
         startTime: input.startTime,
         endTime: input.endTime,
-        timezone: input.timezone || "America/New_York",
+        timezone,
+        assignedUserId: input.assignedUserId,
         location: input.location,
         locationNotes: input.locationNotes,
         notes: input.notes,
@@ -269,6 +330,37 @@ export async function updateBooking(
 
     const { id, ...updateData } = input;
 
+    const nextStartTime = updateData.startTime ?? existing.startTime;
+    const nextEndTime = updateData.endTime ?? existing.endTime;
+    const nextAssignedUserId = updateData.assignedUserId ?? existing.assignedUserId ?? undefined;
+    const nextServiceId = updateData.serviceId ?? existing.serviceId ?? undefined;
+
+    const shouldValidate =
+      updateData.startTime !== undefined ||
+      updateData.endTime !== undefined ||
+      updateData.serviceId !== undefined ||
+      updateData.assignedUserId !== undefined;
+
+    if (shouldValidate) {
+      const validation = await validateBookingTime({
+        startTime: nextStartTime,
+        endTime: nextEndTime,
+        bookingId: id,
+        userId: nextAssignedUserId || undefined,
+        serviceId: nextServiceId || undefined,
+        allowConflicts: updateData.allowConflicts,
+        organizationId,
+      });
+
+      if (!validation.success) {
+        return { success: false, error: validation.error || "Failed to validate booking time" };
+      }
+
+      if (!validation.data.valid) {
+        return { success: false, error: validation.data.message || "This time is not available" };
+      }
+    }
+
     const booking = await prisma.booking.update({
       where: { id },
       data: {
@@ -280,6 +372,7 @@ export async function updateBooking(
         ...(updateData.startTime && { startTime: updateData.startTime }),
         ...(updateData.endTime && { endTime: updateData.endTime }),
         ...(updateData.timezone && { timezone: updateData.timezone }),
+        ...(updateData.assignedUserId !== undefined && { assignedUserId: updateData.assignedUserId || null }),
         ...(updateData.location !== undefined && { location: updateData.location }),
         ...(updateData.locationNotes !== undefined && { locationNotes: updateData.locationNotes }),
         ...(updateData.notes !== undefined && { notes: updateData.notes }),
@@ -926,6 +1019,7 @@ export async function createRecurringBooking(
 ): Promise<ActionResult<{ id: string; seriesId: string; count: number }>> {
   try {
     const organizationId = await getOrganizationId();
+    const timezone = input.timezone || await getOrganizationTimezone(organizationId);
 
     if (!input.isRecurring || !input.recurrencePattern) {
       return { success: false, error: "Recurrence pattern is required" };
@@ -947,6 +1041,26 @@ export async function createRecurringBooking(
       input.recurrenceDaysOfWeek
     );
 
+    for (const date of dates) {
+      const validation = await validateBookingTime({
+        startTime: date,
+        endTime: new Date(date.getTime() + duration),
+        bookingId: undefined,
+        userId: input.assignedUserId,
+        serviceId: input.serviceId,
+        allowConflicts: input.allowConflicts,
+        organizationId,
+      });
+
+      if (!validation.success) {
+        return { success: false, error: validation.error || "Failed to validate booking time" };
+      }
+
+      if (!validation.data.valid) {
+        return { success: false, error: validation.data.message || "This time is not available" };
+      }
+    }
+
     // Create the parent booking (first occurrence)
     const parentBooking = await prisma.booking.create({
       data: {
@@ -957,7 +1071,8 @@ export async function createRecurringBooking(
         serviceId: input.serviceId,
         startTime: dates[0],
         endTime: new Date(dates[0].getTime() + duration),
-        timezone: input.timezone || "America/New_York",
+        timezone,
+        assignedUserId: input.assignedUserId,
         location: input.location,
         locationNotes: input.locationNotes,
         notes: input.notes,
@@ -986,7 +1101,8 @@ export async function createRecurringBooking(
         serviceId: input.serviceId,
         startTime: date,
         endTime: new Date(date.getTime() + duration),
-        timezone: input.timezone || "America/New_York",
+        timezone,
+        assignedUserId: input.assignedUserId,
         location: input.location,
         locationNotes: input.locationNotes,
         notes: input.notes,
@@ -2078,10 +2194,11 @@ export async function checkBookingConflicts(params: {
   excludeBookingId?: string;
   userId?: string;
   serviceId?: string;
+  organizationId?: string;
   includeBuffers?: boolean;
 }): Promise<ActionResult<ConflictCheckResult>> {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = params.organizationId ?? await getOrganizationId();
 
     const {
       startTime,
@@ -2093,35 +2210,9 @@ export async function checkBookingConflicts(params: {
     } = params;
 
     // Get buffer times if configured
-    let bufferBefore = 0;
-    let bufferAfter = 0;
-
-    if (includeBuffers && serviceId) {
-      const buffer = await prisma.bookingBuffer.findFirst({
-        where: {
-          organizationId,
-          serviceId,
-        },
-      });
-      if (buffer) {
-        bufferBefore = buffer.bufferBefore;
-        bufferAfter = buffer.bufferAfter;
-      }
-    }
-
-    // If no service-specific buffer, check org-wide defaults
-    if (includeBuffers && bufferBefore === 0 && bufferAfter === 0) {
-      const orgBuffer = await prisma.bookingBuffer.findFirst({
-        where: {
-          organizationId,
-          serviceId: null,
-        },
-      });
-      if (orgBuffer) {
-        bufferBefore = orgBuffer.bufferBefore;
-        bufferAfter = orgBuffer.bufferAfter;
-      }
-    }
+    const { bufferBefore, bufferAfter } = includeBuffers
+      ? await getBookingBufferSettings(organizationId, serviceId)
+      : { bufferBefore: 0, bufferAfter: 0 };
 
     // Adjust times with buffers (in minutes)
     const bufferedStart = new Date(startTime.getTime() - bufferBefore * 60 * 1000);
@@ -2339,6 +2430,87 @@ export async function getConflictsInRange(params: {
   }
 }
 
+async function findAvailabilityConflict(params: {
+  organizationId: string;
+  startTime: Date;
+  endTime: Date;
+  userId?: string;
+}) {
+  const blocks = await prisma.availabilityBlock.findMany({
+    where: {
+      organizationId: params.organizationId,
+      AND: [
+        {
+          OR: [
+            { userId: null },
+            ...(params.userId ? [{ userId: params.userId }] : []),
+          ],
+        },
+        {
+          OR: [
+            {
+              isRecurring: false,
+              startDate: { lt: params.endTime },
+              endDate: { gt: params.startTime },
+            },
+            {
+              isRecurring: true,
+              startDate: { lte: params.endTime },
+              OR: [
+                { recurrenceEnd: null },
+                { recurrenceEnd: { gte: params.startTime } },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  for (const block of blocks) {
+    if (!block.isRecurring || !block.recurrenceRule) {
+      const overlaps =
+        (block.startDate <= params.startTime && block.endDate > params.startTime) ||
+        (block.startDate < params.endTime && block.endDate >= params.endTime) ||
+        (block.startDate >= params.startTime && block.endDate <= params.endTime);
+
+      if (overlaps) {
+        return {
+          title: block.title,
+          startDate: block.startDate,
+          endDate: block.endDate,
+        };
+      }
+    } else {
+      try {
+        const rule = rrulestr(block.recurrenceRule, { dtstart: block.startDate });
+        const duration = block.endDate.getTime() - block.startDate.getTime();
+        const occurrences = rule.between(params.startTime, params.endTime, true);
+
+        for (const occurrence of occurrences) {
+          const occurrenceEnd = new Date(occurrence.getTime() + duration);
+          const overlaps =
+            (occurrence <= params.startTime && occurrenceEnd > params.startTime) ||
+            (occurrence < params.endTime && occurrenceEnd >= params.endTime) ||
+            (occurrence >= params.startTime && occurrenceEnd <= params.endTime);
+
+          if (overlaps) {
+            return {
+              title: block.title,
+              startDate: occurrence,
+              endDate: occurrenceEnd,
+            };
+          }
+        }
+      } catch (err) {
+        console.error("[Bookings] Failed to expand availability block", err);
+      }
+    }
+  }
+
+  return null;
+}
+
 /**
  * Validate a booking before creation/update for conflicts
  */
@@ -2349,12 +2521,62 @@ export async function validateBookingTime(params: {
   userId?: string;
   serviceId?: string;
   allowConflicts?: boolean;
+  organizationId?: string;
 }): Promise<ActionResult<{ valid: boolean; message?: string; conflicts?: BookingConflict[] }>> {
   try {
+    const organizationId = params.organizationId ?? await getOrganizationId();
     const { allowConflicts = false, ...checkParams } = params;
+
+    const bufferSettings = await getBookingBufferSettings(organizationId, params.serviceId);
+
+    const now = new Date();
+
+    if (bufferSettings.minAdvanceHours !== null) {
+      const earliestAllowed = new Date(now.getTime() + bufferSettings.minAdvanceHours * 60 * 60 * 1000);
+      if (params.startTime < earliestAllowed) {
+        return {
+          success: true,
+          data: {
+            valid: false,
+            message: `Bookings must be scheduled at least ${bufferSettings.minAdvanceHours} hours in advance.`,
+          },
+        };
+      }
+    }
+
+    if (bufferSettings.maxAdvanceDays !== null) {
+      const latestAllowed = new Date(now.getTime() + bufferSettings.maxAdvanceDays * 24 * 60 * 60 * 1000);
+      if (params.startTime > latestAllowed) {
+        return {
+          success: true,
+          data: {
+            valid: false,
+            message: `Bookings cannot be scheduled more than ${bufferSettings.maxAdvanceDays} days out.`,
+          },
+        };
+      }
+    }
+
+    const availabilityConflict = await findAvailabilityConflict({
+      organizationId,
+      startTime: params.startTime,
+      endTime: params.endTime,
+      userId: params.userId,
+    });
+
+    if (availabilityConflict) {
+      return {
+        success: true,
+        data: {
+          valid: false,
+          message: `This time conflicts with "${availabilityConflict.title}"`,
+        },
+      };
+    }
 
     const result = await checkBookingConflicts({
       ...checkParams,
+      organizationId,
       excludeBookingId: params.bookingId,
     });
 

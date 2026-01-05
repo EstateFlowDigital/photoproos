@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { createBooking } from "@/lib/actions/bookings";
+import { combineDateAndTime } from "@/lib/dates";
 
 interface Client {
   id: string;
@@ -58,6 +59,8 @@ export function CreateBookingModal({
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [allowConflicts, setAllowConflicts] = useState(false);
+  const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
   const handleBlur = (field: string, value: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -100,7 +103,7 @@ export function CreateBookingModal({
     }
 
     // Parse date and time
-    const startDateTime = new Date(`${date}T${startTime}`);
+    const startDateTime = combineDateAndTime(date, startTime);
     const endDateTime = new Date(startDateTime);
     endDateTime.setHours(endDateTime.getHours() + parseFloat(duration));
 
@@ -117,6 +120,8 @@ export function CreateBookingModal({
           startTime: startDateTime,
           endTime: endDateTime,
           location: location.trim() || undefined,
+          timezone,
+          allowConflicts,
         });
 
         if (result.success) {
@@ -286,6 +291,19 @@ export function CreateBookingModal({
                 className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
               />
             </div>
+
+            <label className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[var(--primary)]"
+                checked={allowConflicts}
+                onChange={(e) => setAllowConflicts(e.target.checked)}
+              />
+              <div>
+                <p className="text-sm font-medium text-foreground">Allow conflict override</p>
+                <p className="text-xs text-foreground-muted">Create even if another booking overlaps</p>
+              </div>
+            </label>
           </DialogBody>
 
           <DialogFooter>

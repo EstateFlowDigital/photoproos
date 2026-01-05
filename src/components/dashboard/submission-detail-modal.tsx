@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { convertSubmissionToBooking, rejectSubmission } from "@/lib/actions/booking-forms";
 import type { BookingFormSubmissionStatus } from "@prisma/client";
+import { combineDateAndTime } from "@/lib/dates";
 
 // =============================================================================
 // Types
@@ -64,6 +65,8 @@ export function SubmissionDetailModal({
   const [convertTime, setConvertTime] = useState("09:00");
   const [convertDuration, setConvertDuration] = useState("60");
   const [error, setError] = useState<string | null>(null);
+  const [allowConflicts, setAllowConflicts] = useState(false);
+  const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
   const handleReject = () => {
     setError(null);
@@ -91,7 +94,7 @@ export function SubmissionDetailModal({
 
     setError(null);
     startTransition(async () => {
-      const startTime = new Date(`${convertDate}T${convertTime}`);
+      const startTime = combineDateAndTime(convertDate, convertTime);
       const endTime = new Date(startTime.getTime() + parseInt(convertDuration) * 60000);
 
       const result = await convertSubmissionToBooking({
@@ -100,6 +103,8 @@ export function SubmissionDetailModal({
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
           serviceId: submission.serviceId || undefined,
+          timezone,
+          allowConflicts,
         },
       });
 
@@ -434,6 +439,18 @@ export function SubmissionDetailModal({
                     <option value="180">3 hours</option>
                     <option value="240">4 hours</option>
                   </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-[var(--primary)]"
+                  checked={allowConflicts}
+                  onChange={(e) => setAllowConflicts(e.target.checked)}
+                />
+                <div>
+                  <p className="text-sm text-foreground">Allow conflict override</p>
+                  <p className="text-xs text-foreground-muted">Create even if another booking overlaps (timezone: {timezone})</p>
                 </div>
               </div>
               <div className="flex gap-2">

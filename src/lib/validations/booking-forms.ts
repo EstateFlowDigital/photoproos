@@ -195,6 +195,8 @@ export const convertSubmissionSchema = z.object({
     endTime: z.string().datetime(),
     serviceId: z.string().cuid().optional(),
     assignedUserId: z.string().cuid().optional(),
+    timezone: z.string().optional(),
+    allowConflicts: z.boolean().optional(),
     notes: z.string().optional(),
   }),
 });

@@ -10,6 +10,7 @@ import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboar
 import { Select } from "@/components/ui/select";
 import { updateBooking } from "@/lib/actions/bookings";
 import { getServiceById, type ServiceType } from "@/lib/services";
+import { combineDateAndTime } from "@/lib/dates";
 
 // Union type for selected service (can be static or database service)
 type SelectedService = ServiceType | DatabaseServiceType | null;
@@ -39,6 +40,7 @@ interface BookingEditFormProps {
     depositPaid: boolean;
     serviceId?: string;
     serviceDescription?: string;
+    timezone: string;
   };
   clients: { id: string; name: string }[];
 }
@@ -58,6 +60,7 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
   const [selectedService, setSelectedService] = useState<SelectedService>(initialService || null);
   const [price, setPrice] = useState(booking.price);
   const [description, setDescription] = useState(booking.serviceDescription || "");
+  const [allowConflicts, setAllowConflicts] = useState(false);
 
   const handleBlur = (field: string, value: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -118,8 +121,8 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
     }
 
     // Create Date objects from date and time
-    const startDateTime = new Date(`${date}T${startTime}:00`);
-    const endDateTime = new Date(`${date}T${endTime}:00`);
+    const startDateTime = combineDateAndTime(date, startTime);
+    const endDateTime = combineDateAndTime(date, endTime);
 
     if (endDateTime <= startDateTime) {
       setError("End time must be after start time");
@@ -135,9 +138,11 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
         serviceId: selectedService?.id || undefined,
         startTime: startDateTime,
         endTime: endDateTime,
+        timezone: booking.timezone,
         location: address,
         locationNotes: locationNotes || undefined,
         notes: notes || undefined,
+        allowConflicts,
       });
 
       if (result.success) {
@@ -377,6 +382,20 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
             These notes are visible only to you and your team
           </p>
         </div>
+      </div>
+
+      {/* Conflict Override */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <Checkbox
+            checked={allowConflicts}
+            onCheckedChange={(checked) => setAllowConflicts(checked === true)}
+          />
+          <div>
+            <span className="text-sm font-medium text-foreground">Allow conflict override</span>
+            <p className="text-xs text-foreground-muted">Save even if this overlaps another booking</p>
+          </div>
+        </label>
       </div>
 
       {/* Form Actions */}

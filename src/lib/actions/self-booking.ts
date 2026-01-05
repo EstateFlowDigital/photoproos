@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { combineDateAndTime } from "@/lib/dates";
+import { validateBookingTime } from "./bookings";
 
 // ============================================================================
 // TYPES
@@ -23,6 +25,7 @@ export type AvailableSlot = {
   date: string;
   time: string;
   datetime: Date;
+  timezone: string;
 };
 
 export type BookingSubmission = {
@@ -68,6 +71,7 @@ export async function getPublicOrganization(slug: string): Promise<
         logoUrl: true,
         primaryColor: true,
         slug: true,
+        timezone: true,
       },
     });
 
@@ -137,32 +141,10 @@ export async function getAvailableSlots(
       return { success: false, error: "Organization not found" };
     }
 
+    const timezone = org.timezone || "America/New_York";
+
     // Suppress unused variable warning
     void serviceId;
-
-    // Get existing bookings in the date range
-    const existingBookings = await prisma.booking.findMany({
-      where: {
-        organizationId: org.id,
-        startTime: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
-        },
-        status: { in: ["confirmed", "pending"] },
-      },
-      select: {
-        startTime: true,
-      },
-    });
-
-    // Build set of booked slots
-    const bookedSlots = new Set(
-      existingBookings.map((b) => {
-        const date = b.startTime.toISOString().split("T")[0];
-        const time = b.startTime.toTimeString().slice(0, 5);
-        return date + "-" + time;
-      })
-    );
 
     // Generate available slots (9am - 5pm, hourly)
     const slots: AvailableSlot[] = [];
@@ -178,14 +160,27 @@ export async function getAvailableSlots(
       const dateStr = date.toISOString().split("T")[0];
 
       for (const time of times) {
-        const slotKey = dateStr + "-" + time;
-        if (!bookedSlots.has(slotKey)) {
-          slots.push({
-            date: dateStr,
-            time,
-            datetime: new Date(dateStr + "T" + time + ":00"),
-          });
+        const slotStart = combineDateAndTime(dateStr, time);
+        const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+
+        const validation = await validateBookingTime({
+          startTime: slotStart,
+          endTime: slotEnd,
+          serviceId,
+          organizationId: org.id,
+          allowConflicts: false,
+        });
+
+        if (!validation.success || !validation.data.valid) {
+          continue;
         }
+
+        slots.push({
+          date: dateStr,
+          time,
+          datetime: slotStart,
+          timezone,
+        });
       }
     }
 
@@ -207,6 +202,10 @@ export async function submitBooking(
     const org = await prisma.organization.findFirst({
       where: {
         OR: [{ slug: data.organizationSlug }, { id: data.organizationSlug }],
+      },
+      select: {
+        id: true,
+        timezone: true,
       },
     });
 
@@ -247,8 +246,24 @@ export async function submitBooking(
     }
 
     // Parse scheduled date and time into startTime and endTime
-    const startTime = new Date(data.scheduledDate + "T" + data.scheduledTime + ":00");
+    const startTime = combineDateAndTime(data.scheduledDate, data.scheduledTime);
     const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour later
+
+    const validation = await validateBookingTime({
+      startTime,
+      endTime,
+      serviceId: data.serviceId,
+      organizationId: org.id,
+      allowConflicts: false,
+    });
+
+    if (!validation.success) {
+      return { success: false, error: validation.error || "Failed to validate booking" };
+    }
+
+    if (!validation.data.valid) {
+      return { success: false, error: validation.data.message || "This time is not available" };
+    }
 
     // Create booking
     const booking = await prisma.booking.create({
@@ -260,6 +275,7 @@ export async function submitBooking(
         endTime,
         location: data.address,
         description: data.notes || null,
+        timezone: org.timezone || "America/New_York",
         status: "pending",
       },
     });

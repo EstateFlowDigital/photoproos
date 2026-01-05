@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
@@ -10,7 +10,7 @@ import { TeamMemberSelector } from "@/components/dashboard/team-member-selector"
 import { Select } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createBooking, createRecurringBooking, createBookingReminders, type ReminderInput } from "@/lib/actions/bookings";
-import { formatDateInputValue, parseLocalDate } from "@/lib/dates";
+import { combineDateAndTime, formatDateInputValue, parseLocalDate } from "@/lib/dates";
 import { getRecurrenceSummary } from "@/lib/utils/bookings";
 import { calculateTravelPreview } from "@/lib/actions/locations";
 import type { ServiceType } from "@/lib/services";
@@ -79,6 +79,8 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
   const [assignedMemberId, setAssignedMemberId] = useState<string | undefined>(undefined);
+  const [allowConflicts, setAllowConflicts] = useState(false);
+  const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
   // Location state
   const [locationData, setLocationData] = useState<LocationData | null>(null);
@@ -175,8 +177,8 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
     }
 
     // Create Date objects from date and time
-    const startDateTime = new Date(`${date}T${startTime}:00`);
-    const endDateTime = new Date(`${date}T${endTime}:00`);
+    const startDateTime = combineDateAndTime(date, startTime);
+    const endDateTime = combineDateAndTime(date, endTime);
 
     if (endDateTime <= startDateTime) {
       setError("End time must be after start time");
@@ -190,9 +192,12 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
         serviceId: selectedService?.id || undefined,
         startTime: startDateTime,
         endTime: endDateTime,
+        assignedUserId: assignedMemberId,
+        timezone,
         location: address,
         locationNotes: locationNotes || undefined,
         notes: notes || undefined,
+        allowConflicts,
       };
 
       // Build reminders array
@@ -224,6 +229,9 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
             : undefined,
           recurrenceCount: recurrenceEndType === "count" ? recurrenceCount : undefined,
           recurrenceDaysOfWeek: recurrencePattern === "custom" ? recurrenceDaysOfWeek : undefined,
+          assignedUserId: assignedMemberId,
+          timezone,
+          allowConflicts,
         });
 
         if (result.success) {
@@ -766,6 +774,20 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Conflict Override */}
+          <div className="pt-3 border-t border-[var(--card-border)]">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <Checkbox
+                checked={allowConflicts}
+                onCheckedChange={(checked) => setAllowConflicts(checked === true)}
+              />
+              <div>
+                <span className="text-sm font-medium text-foreground">Allow conflict override</span>
+                <p className="text-xs text-foreground-muted">Save even if this overlaps another booking</p>
+              </div>
+            </label>
           </div>
 
           {/* Calendar */}

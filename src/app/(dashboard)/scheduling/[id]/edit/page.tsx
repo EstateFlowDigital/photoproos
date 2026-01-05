@@ -74,6 +74,7 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
     depositPaid: false,
     serviceId: booking.service?.id,
     serviceDescription: booking.service?.description || "",
+    timezone: timeZone,
   };
 
   // Map clients for dropdown

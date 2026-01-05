@@ -55,3 +55,20 @@ export function formatTimeInputValueInTimeZone(date: Date, timeZone: string): st
   const minute = parts.find((p) => p.type === "minute")?.value ?? String(date.getMinutes()).padStart(2, "0");
   return `${hour}:${minute}`;
 }
+
+/**
+ * Combine a calendar date (YYYY-MM-DD) and time (HH:mm) into a Date object.
+ * Uses local timezone to avoid UTC parsing quirks and off-by-one-day errors.
+ */
+export function combineDateAndTime(dateString: string, timeString: string): Date {
+  const date = parseLocalDate(dateString);
+  const [hourStr, minuteStr] = timeString.split(":");
+  const hour = Number(hourStr);
+  const minute = Number(minuteStr);
+
+  if (Number.isFinite(hour) && Number.isFinite(minute)) {
+    date.setHours(hour, minute, 0, 0);
+  }
+
+  return date;
+}

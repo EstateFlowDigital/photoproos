@@ -36,7 +36,17 @@ export function BulkUploadModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const completedAssetsRef = useRef<Array<{ id: string; url: string; filename: string }>>([]);
 
-  // Initialize queue
+  // Use refs for callbacks to prevent effect re-runs
+  const onUploadCompleteRef = useRef(onUploadComplete);
+  const showToastRef = useRef(showToast);
+
+  // Keep refs up to date
+  useEffect(() => {
+    onUploadCompleteRef.current = onUploadComplete;
+    showToastRef.current = showToast;
+  }, [onUploadComplete, showToast]);
+
+  // Initialize queue - only recreate when isOpen or galleryId changes
   useEffect(() => {
     if (!isOpen) return;
 
@@ -92,8 +102,8 @@ export function BulkUploadModal({
       },
       onAllComplete: () => {
         const completedCount = completedAssetsRef.current.length;
-        showToast(`Successfully uploaded ${completedCount} ${completedCount === 1 ? 'photo' : 'photos'}`, "success");
-        onUploadComplete?.(completedAssetsRef.current);
+        showToastRef.current?.(`Successfully uploaded ${completedCount} ${completedCount === 1 ? 'photo' : 'photos'}`, "success");
+        onUploadCompleteRef.current?.(completedAssetsRef.current);
       },
     });
 
@@ -106,7 +116,7 @@ export function BulkUploadModal({
         (t) => t.status !== "completed"
       );
       if (incompleteTasks.length > 0) {
-        showToast(
+        showToastRef.current?.(
           `Found ${incompleteTasks.length} incomplete ${incompleteTasks.length === 1 ? 'upload' : 'uploads'}. Click Resume to continue.`,
           "info"
         );
@@ -116,7 +126,7 @@ export function BulkUploadModal({
     return () => {
       uploadQueue.pause();
     };
-  }, [isOpen, galleryId, onUploadComplete, showToast]);
+  }, [isOpen, galleryId]);
 
   // Handle file selection
   const handleFileSelect = async (files: FileList) => {

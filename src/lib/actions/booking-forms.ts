@@ -26,6 +26,8 @@ import {
   type BookingFormField,
 } from "@/lib/validations/booking-forms";
 import { requireOrganizationId } from "./auth-helper";
+import { validateBookingTime } from "@/lib/actions/bookings";
+import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import type { Industry, FormFieldType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 
@@ -919,7 +921,18 @@ export async function convertSubmissionToBooking(
         },
       },
       include: {
-        bookingForm: true,
+        bookingForm: {
+          include: {
+            organization: {
+              select: {
+                name: true,
+                publicEmail: true,
+                publicPhone: true,
+                timezone: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -931,6 +944,35 @@ export async function convertSubmissionToBooking(
       return { success: false, error: "Submission has already been converted to a booking" };
     }
 
+    const startTime = new Date(validated.bookingData.startTime);
+    const endTime = new Date(validated.bookingData.endTime);
+    const timezone = validated.bookingData.timezone
+      || submission.bookingForm.organization?.timezone
+      || "America/New_York";
+    const serviceId = validated.bookingData.serviceId || submission.serviceId || undefined;
+    const submissionData = (submission.data as Record<string, unknown> | null) || undefined;
+    const submissionAddress = submissionData?.address;
+
+    const validation = await validateBookingTime({
+      startTime,
+      endTime,
+      bookingId: undefined,
+      userId: validated.bookingData.assignedUserId,
+      serviceId,
+      allowConflicts: validated.bookingData.allowConflicts,
+      organizationId,
+    });
+
+    if (!validation.success) {
+      return { success: false, error: validation.error || "Failed to validate booking" };
+    }
+
+    if (!validation.data.valid) {
+      return { success: false, error: validation.data.message || "This time is not available" };
+    }
+
+    const status = submission.bookingForm.requireApproval ? "pending" : "confirmed";
+
     // Create booking
     const booking = await prisma.booking.create({
       data: {
@@ -939,12 +981,13 @@ export async function convertSubmissionToBooking(
         clientName: submission.clientName,
         clientEmail: submission.clientEmail,
         clientPhone: submission.clientPhone,
-        startTime: new Date(validated.bookingData.startTime),
-        endTime: new Date(validated.bookingData.endTime),
-        serviceId: validated.bookingData.serviceId || submission.serviceId,
+        startTime,
+        endTime,
+        serviceId,
         assignedUserId: validated.bookingData.assignedUserId,
         notes: validated.bookingData.notes,
-        status: "confirmed",
+        status,
+        timezone,
         industry: submission.bookingForm.industry,
       },
     });
@@ -958,6 +1001,29 @@ export async function convertSubmissionToBooking(
         convertedAt: new Date(),
       },
     });
+
+    if (status === "confirmed" && submission.clientEmail) {
+      try {
+        await sendBookingConfirmationEmail({
+          to: submission.clientEmail,
+          clientName: submission.clientName || "there",
+          bookingTitle: booking.title,
+          bookingDate: booking.startTime,
+          bookingTime: booking.startTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          location: typeof submissionAddress === "string" ? submissionAddress : undefined,
+          photographerName: submission.bookingForm.organization?.name || "Your Photographer",
+          photographerEmail: submission.bookingForm.organization?.publicEmail || undefined,
+          photographerPhone: submission.bookingForm.organization?.publicPhone || undefined,
+          notes: booking.notes || undefined,
+        });
+      } catch (error) {
+        console.error("[BookingForms] Failed to send confirmation email:", error);
+      }
+    }
 
     revalidatePath("/scheduling/booking-forms");
     revalidatePath("/scheduling");

@@ -48,6 +48,7 @@ export function DashboardSidebar({
   const [navOrder, setNavOrder] = React.useState<string[]>([]);
   const [draggingNavId, setDraggingNavId] = React.useState<string | null>(null);
   const [hiddenIds, setHiddenIds] = React.useState<string[]>([]);
+  const [pinnedIds, setPinnedIds] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -70,12 +71,27 @@ export function DashboardSidebar({
         setHiddenIds([]);
       }
     }
+    const storedPinned = typeof window !== "undefined" ? window.localStorage.getItem("ppos_nav_pinned") : null;
+    if (storedPinned) {
+      try {
+        const parsedPinned = JSON.parse(storedPinned) as string[];
+        const availableIds = navItems.map((n) => n.id);
+        setPinnedIds(parsedPinned.filter((id) => availableIds.includes(id)));
+      } catch {
+        setPinnedIds([]);
+      }
+    }
   }, [navItems]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("ppos_nav_hidden", JSON.stringify(hiddenIds));
   }, [hiddenIds]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ppos_nav_pinned", JSON.stringify(pinnedIds));
+  }, [pinnedIds]);
 
   // Listen for external edit-mode toggle (from topbar)
   React.useEffect(() => {
@@ -138,6 +154,7 @@ export function DashboardSidebar({
       }
       return next;
     });
+    setPinnedIds((prev) => prev.filter((id) => available.includes(id)));
   }, [sidebarNav]);
 
   React.useEffect(() => {
@@ -153,6 +170,8 @@ export function DashboardSidebar({
       (a, b) => (orderMap.get(a.id) ?? fallbackIndex) - (orderMap.get(b.id) ?? fallbackIndex)
     );
   };
+
+  const pinnedNav = sortByNavOrder(visibleNav).filter((item) => pinnedIds.includes(item.id));
 
   const categoryLabels: Record<string, { title: string; defaultOpen: boolean }> = {
     core: { title: "Workspace", defaultOpen: true },
@@ -195,6 +214,7 @@ export function DashboardSidebar({
       pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
     const IconComponent = item.icon;
     const canDrag = options?.draggable && editMode;
+    const isPinned = pinnedIds.includes(item.id);
 
     const linkContent = (
       <Link
@@ -237,21 +257,40 @@ export function DashboardSidebar({
           </span>
         )}
         {editMode && (
-          <label className="flex items-center gap-2 text-xs text-foreground-muted">
-            <input
-              type="checkbox"
-              className="h-3 w-3 accent-[var(--primary)]"
-              checked={!hiddenIds.includes(item.id)}
-              onChange={(e) => {
-                const visible = e.target.checked;
-                setHiddenIds((prev) => {
-                  const next = visible ? prev.filter((id) => id !== item.id) : [...prev, item.id];
-                  return next;
-                });
+          <div className="flex items-center gap-2 text-xs text-foreground-muted">
+            <label className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                className="h-3 w-3 accent-[var(--primary)]"
+                checked={!hiddenIds.includes(item.id)}
+                onChange={(e) => {
+                  const visible = e.target.checked;
+                  setHiddenIds((prev) => {
+                    const next = visible ? prev.filter((id) => id !== item.id) : [...prev, item.id];
+                    return next;
+                  });
+                }}
+              />
+              Show
+            </label>
+            <button
+              type="button"
+              className={cn(
+                "rounded-full p-1 transition-colors",
+                isPinned ? "text-[var(--primary)]" : "text-foreground-muted hover:text-foreground"
+              )}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setPinnedIds((prev) =>
+                  isPinned ? prev.filter((id) => id !== item.id) : [...prev, item.id]
+                );
               }}
-            />
-            Show
-          </label>
+              title={isPinned ? "Unpin" : "Pin to quick access"}
+            >
+              {isPinned ? <StarFilledIcon className="h-4 w-4" /> : <StarIcon className="h-4 w-4" />}
+            </button>
+          </div>
         )}
       </Link>
     );
@@ -333,6 +372,39 @@ export function DashboardSidebar({
         {editMode && (
           <div className="mb-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs text-foreground-muted">
             Drag to reorder or hide links. Hidden links stay available below while editing.
+          </div>
+        )}
+
+        {pinnedNav.length > 0 && (
+          <div className="mb-4 space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+              <span>Pinned</span>
+              <span className="rounded-full bg-[var(--background-secondary)] px-2 py-0.5 text-[10px] text-foreground-secondary">
+                {pinnedNav.length}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {pinnedNav.map((item) => {
+                const isActive =
+                  pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
+                const IconComponent = item.icon;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+                      isActive
+                        ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                        : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:border-[var(--primary)]/60 hover:text-foreground"
+                    )}
+                  >
+                    <IconComponent className={cn("h-4 w-4", isActive ? "text-white" : "text-foreground-muted")} />
+                    <span className="truncate max-w-[140px]">{item.name || item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
 
