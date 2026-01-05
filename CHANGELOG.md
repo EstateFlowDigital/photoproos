@@ -57,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Tabs navigation now scrolls horizontally with hidden scrollbar on mobile
   - Photo toolbar (Reorder, Select, View All, Comments) now scrolls horizontally on mobile
   - Stats cards now display in 2-column grid on mobile instead of overflowing
+  - Photo grid now displays 2 columns on mobile, 3 columns on md+ screens
   - Added `scrollbar-hide` utility class for hidden scrollable areas
 
 - **Duplicate Upload Entries** - Fixed files showing twice in upload queue
