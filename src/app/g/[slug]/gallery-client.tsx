@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { PayButton } from "./pay-button";
+import { SlideshowViewer } from "@/components/gallery/slideshow-viewer";
 
 interface ExifData {
   camera?: string;
@@ -2088,6 +2089,20 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* Slideshow Modal */}
       {slideshowActive && slideshowPhotos.length > 0 && (
+        <SlideshowViewer
+          photos={slideshowPhotos}
+          initialIndex={slideshowIndex}
+          isPlaying={slideshowPlaying}
+          interval={slideshowInterval}
+          onClose={stopSlideshow}
+          onIndexChange={setSlideshowIndex}
+          onPlayingChange={setSlideshowPlaying}
+          onIntervalChange={setSlideshowInterval}
+        />
+      )}
+
+      {/* OLD SLIDESHOW IMPLEMENTATION - DISABLED */}
+      {false && (
         <div
           className="fixed inset-0 z-[70] bg-black"
           onTouchStart={handleTouchStart}

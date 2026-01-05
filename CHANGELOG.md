@@ -8,6 +8,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Slideshow Mode: Full-Featured Photo Presentation** - Professional slideshow viewer with advanced controls and mobile optimization
+  - **Core Features:**
+    - Full-screen slideshow mode using Fullscreen API
+    - Auto-advance with configurable speed (2s, 4s, 8s intervals)
+    - Manual navigation via arrow buttons, keyboard shortcuts, or swipe gestures
+    - Real-time progress indicator showing current position (e.g., "5/47")
+    - Progress bar showing completion percentage
+    - Play/pause toggle with visual feedback
+  - **Keyboard Shortcuts:**
+    - `Space`: Play/pause slideshow
+    - `←/→`: Navigate to previous/next photo
+    - `F`: Toggle fullscreen mode
+    - `T`: Toggle thumbnail strip visibility
+    - `I`: Toggle photo information overlay
+    - `Esc`: Exit slideshow
+  - **Visual Controls:**
+    - Toggleable thumbnail strip at bottom with current photo highlight
+    - Photo information overlay showing EXIF data (camera, lens, aperture, shutter, ISO, focal length)
+    - Settings panel for adjusting playback speed
+    - Auto-hiding controls during playback (3-second inactivity timeout)
+    - Smooth transitions and fade effects
+  - **Mobile Optimization:**
+    - Swipe left/right gestures for photo navigation (50px threshold)
+    - Double-tap to toggle fullscreen
+    - Touch-optimized control sizes
+    - Responsive layout adapting to screen size
+    - Thumbnail strip automatically adjusts for mobile screens
+  - **Performance:**
+    - Preloads adjacent images for smooth transitions
+    - Optimized Image component with priority loading
+    - Prevents screen sleep during slideshow
+    - Efficient re-rendering with React hooks
+  - **Files Created:**
+    - Created `/src/components/gallery/slideshow-viewer.tsx` - Comprehensive slideshow component (500+ lines)
+  - **Files Modified:**
+    - Modified `/src/app/g/[slug]/gallery-client.tsx` - Integrated SlideshowViewer component
+
 - **Bulk Upload v2: Parallel Photo Uploads** - Revolutionary upload system with 5x faster uploads
   - Created UploadQueue class with 5 concurrent upload limit for parallel processing
   - Real-time per-file progress tracking with visual progress bars
