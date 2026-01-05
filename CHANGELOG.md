@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Design System Compliance - Client Portal** - Replaced all hardcoded hex colors with CSS variables
+  - Updated `portal-client.tsx`, `portal-header.tsx`, `portal-stats.tsx`, `portal-tabs.tsx`, `portal-footer.tsx`
+  - Updated all portal tab components: `properties-tab.tsx`, `galleries-tab.tsx`, `downloads-tab.tsx`, `invoices-tab.tsx`, `questionnaires-tab.tsx`
+  - Updated `questionnaire-form.tsx` with comprehensive design token usage
+  - Updated `portal/login/page.tsx` and `portal/loading.tsx` with design variables
+  - Updated `agreement-signature.tsx` component with primary, success, error tokens
+  - All components now use semantic tokens: `--background`, `--card`, `--card-border`, `--primary`, `--success`, `--warning`, `--error`, `--foreground-muted`, `--foreground-secondary`
+
 ### Added
 - **Shared Icon Library Expansion** - Extended `components/ui/icons.tsx` with commonly used icons
   - Added `PhoneIcon`, `EmailIcon`, `ClockIcon`, `QuoteIcon`, `PackageIcon` (filled variants)

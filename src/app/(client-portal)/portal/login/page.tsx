@@ -55,19 +55,19 @@ function ClientPortalLoginContent() {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3b82f6]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--primary)]">
             <CameraIcon className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-semibold text-white">PhotoProOS</span>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-[#262626] bg-[#141414] p-8">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8">
           {!emailSent ? (
             <>
               <div className="mb-6 text-center">
                 <h1 className="text-2xl font-bold text-white">Client Portal</h1>
-                <p className="mt-2 text-[#a7a7a7]">
+                <p className="mt-2 text-[var(--foreground-secondary)]">
                   Access your galleries, property websites, and downloads
                 </p>
               </div>
@@ -84,7 +84,7 @@ function ClientPortalLoginContent() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
                     required
-                    className="h-11 w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 text-white placeholder:text-[#7c7c7c] focus:border-[#3b82f6] focus:outline-none focus:ring-1 focus:ring-[#3b82f6]"
+                    className="h-11 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
                 </div>
 
@@ -95,7 +95,7 @@ function ClientPortalLoginContent() {
                 <button
                   type="submit"
                   disabled={isLoading || !email}
-                  className="h-11 w-full rounded-lg bg-[#3b82f6] font-medium text-white transition-colors hover:bg-[#3b82f6]/90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 w-full rounded-lg bg-[var(--primary)] font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -108,25 +108,25 @@ function ClientPortalLoginContent() {
                 </button>
               </form>
 
-              <p className="mt-4 text-center text-sm text-[#7c7c7c]">
+              <p className="mt-4 text-center text-sm text-[var(--foreground-muted)]">
                 We'll send you a secure link to access your portal
               </p>
             </>
           ) : (
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#22c55e]/10">
-                <MailIcon className="h-8 w-8 text-[#22c55e]" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--success)]/10">
+                <MailIcon className="h-8 w-8 text-[var(--success)]" />
               </div>
               <h2 className="text-xl font-bold text-white">Check your email</h2>
-              <p className="mt-2 text-[#a7a7a7]">
+              <p className="mt-2 text-[var(--foreground-secondary)]">
                 We've sent a magic link to <span className="font-medium text-white">{email}</span>
               </p>
-              <p className="mt-4 text-sm text-[#7c7c7c]">
+              <p className="mt-4 text-sm text-[var(--foreground-muted)]">
                 Click the link in the email to access your client portal
               </p>
               <button
                 onClick={() => setEmailSent(false)}
-                className="mt-6 text-sm font-medium text-[#3b82f6] hover:underline"
+                className="mt-6 text-sm font-medium text-[var(--primary)] hover:underline"
               >
                 Use a different email
               </button>
@@ -135,9 +135,9 @@ function ClientPortalLoginContent() {
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-sm text-[#7c7c7c]">
+        <p className="mt-8 text-center text-sm text-[var(--foreground-muted)]">
           Powered by{" "}
-          <Link href="/" className="font-medium text-[#3b82f6] hover:underline">
+          <Link href="/" className="font-medium text-[var(--primary)] hover:underline">
             PhotoProOS
           </Link>
         </p>
@@ -150,12 +150,12 @@ function LoginPageLoading() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-[#262626] bg-[#141414] p-8">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8">
           <div className="animate-pulse space-y-4">
-            <div className="mx-auto h-10 w-10 rounded-xl bg-[#262626]" />
-            <div className="mx-auto h-6 w-32 rounded bg-[#262626]" />
-            <div className="h-11 w-full rounded-lg bg-[#262626]" />
-            <div className="h-11 w-full rounded-lg bg-[#262626]" />
+            <div className="mx-auto h-10 w-10 rounded-xl bg-[var(--card-border)]" />
+            <div className="mx-auto h-6 w-32 rounded bg-[var(--card-border)]" />
+            <div className="h-11 w-full rounded-lg bg-[var(--card-border)]" />
+            <div className="h-11 w-full rounded-lg bg-[var(--card-border)]" />
           </div>
         </div>
       </div>

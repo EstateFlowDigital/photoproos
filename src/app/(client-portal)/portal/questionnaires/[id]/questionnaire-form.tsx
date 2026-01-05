@@ -239,19 +239,19 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-6">
         <div className="max-w-md text-center">
-          <div className="mx-auto h-16 w-16 rounded-full bg-[#22c55e]/20 flex items-center justify-center mb-6">
-            <CheckIcon className="h-8 w-8 text-[#22c55e]" />
+          <div className="mx-auto h-16 w-16 rounded-full bg-[var(--success)]/20 flex items-center justify-center mb-6">
+            <CheckIcon className="h-8 w-8 text-[var(--success)]" />
           </div>
           <h1 className="text-2xl font-bold text-white">Questionnaire Submitted</h1>
-          <p className="mt-3 text-[#a7a7a7]">
+          <p className="mt-3 text-[var(--foreground-secondary)]">
             Thank you for completing the questionnaire. Your photographer will review your
             responses and reach out if they have any questions.
           </p>
           <Link
             href="/portal"
-            className="mt-6 inline-block rounded-lg bg-[#3b82f6] px-6 py-3 text-sm font-medium text-white hover:bg-[#3b82f6]/90"
+            className="mt-6 inline-block rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
           >
             Return to Portal
           </Link>
@@ -261,15 +261,15 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-[#262626] bg-[#141414]">
+      <header className="sticky top-0 z-10 border-b border-[var(--card-border)] bg-[var(--card)]">
         <div className="mx-auto max-w-4xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <Link
                 href="/portal"
-                className="text-sm text-[#7c7c7c] hover:text-white transition-colors"
+                className="text-sm text-[var(--foreground-muted)] hover:text-white transition-colors"
               >
                 &larr; Back to Portal
               </Link>
@@ -281,14 +281,14 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
               <div className="text-right">
                 <p className="text-sm text-white">{progress}% complete</p>
                 {lastSaved && (
-                  <p className="text-xs text-[#7c7c7c]">
+                  <p className="text-xs text-[var(--foreground-muted)]">
                     {isSaving ? "Saving..." : `Saved ${formatTime(lastSaved)}`}
                   </p>
                 )}
               </div>
-              <div className="h-2 w-32 rounded-full bg-[#262626] overflow-hidden">
+              <div className="h-2 w-32 rounded-full bg-[var(--card-border)] overflow-hidden">
                 <div
-                  className="h-full bg-[#3b82f6] transition-all duration-300"
+                  className="h-full bg-[var(--primary)] transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -300,10 +300,10 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
       <main className="mx-auto max-w-4xl px-6 py-8">
         {/* Booking info */}
         {questionnaire.booking && (
-          <div className="mb-8 rounded-xl border border-[#262626] bg-[#141414] p-4">
-            <p className="text-sm text-[#7c7c7c]">This questionnaire is for:</p>
+          <div className="mb-8 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+            <p className="text-sm text-[var(--foreground-muted)]">This questionnaire is for:</p>
             <p className="text-lg font-medium text-white">{questionnaire.booking.title}</p>
-            <p className="text-sm text-[#7c7c7c]">
+            <p className="text-sm text-[var(--foreground-muted)]">
               {new Date(questionnaire.booking.startTime).toLocaleDateString("en-US", {
                 weekday: "long",
                 month: "long",
@@ -315,7 +315,7 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
         )}
 
         {error && (
-          <div className="mb-6 rounded-lg bg-[#ef4444]/10 border border-[#ef4444]/20 px-4 py-3 text-sm text-[#ef4444]">
+          <div className="mb-6 rounded-lg bg-[var(--error)]/10 border border-[var(--error)]/20 px-4 py-3 text-sm text-[var(--error)]">
             {error}
           </div>
         )}
@@ -329,8 +329,8 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
           className="space-y-8"
         >
           {Object.entries(sections).map(([sectionName, fields]) => (
-            <section key={sectionName} className="rounded-xl border border-[#262626] bg-[#141414]">
-              <div className="border-b border-[#262626] px-6 py-4">
+            <section key={sectionName} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+              <div className="border-b border-[var(--card-border)] px-6 py-4">
                 <h2 className="text-lg font-medium text-white">{sectionName}</h2>
               </div>
               <div className="p-6 space-y-6">
@@ -348,10 +348,10 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
 
           {/* Legal Agreements */}
           {questionnaire.template.legalAgreements.length > 0 && (
-            <section className="rounded-xl border border-[#262626] bg-[#141414]">
-              <div className="border-b border-[#262626] px-6 py-4">
+            <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+              <div className="border-b border-[var(--card-border)] px-6 py-4">
                 <h2 className="text-lg font-medium text-white">Legal Agreements</h2>
-                <p className="text-sm text-[#7c7c7c]">
+                <p className="text-sm text-[var(--foreground-muted)]">
                   Please review and accept the following agreements
                 </p>
               </div>
@@ -369,8 +369,8 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
                   return (
                     <div
                       key={legalAgreement.id}
-                      className={`space-y-4 pb-6 border-b border-[#262626] last:border-0 last:pb-0 ${
-                        legalAgreement.requiresSignature ? "bg-[#0a0a0a] -mx-6 px-6 py-6 first:-mt-2" : ""
+                      className={`space-y-4 pb-6 border-b border-[var(--card-border)] last:border-0 last:pb-0 ${
+                        legalAgreement.requiresSignature ? "bg-[var(--background)] -mx-6 px-6 py-6 first:-mt-2" : ""
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -378,18 +378,18 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
                           <h3 className="font-medium text-white">
                             {legalAgreement.title}
                             {legalAgreement.isRequired && (
-                              <span className="ml-1 text-[#ef4444]">*</span>
+                              <span className="ml-1 text-[var(--error)]">*</span>
                             )}
                           </h3>
                           {legalAgreement.requiresSignature && (
-                            <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f97316]">
+                            <span className="inline-flex items-center gap-1 mt-1 text-xs text-[var(--warning)]">
                               <SignatureRequiredIcon className="w-3 h-3" />
                               Signature required
                             </span>
                           )}
                         </div>
                         {isAccepted && (
-                          <span className="rounded-full bg-[#22c55e]/20 px-2 py-0.5 text-xs text-[#22c55e] flex items-center gap-1">
+                          <span className="rounded-full bg-[var(--success)]/20 px-2 py-0.5 text-xs text-[var(--success)] flex items-center gap-1">
                             <CheckSmallIcon className="w-3 h-3" />
                             Accepted & Signed
                           </span>
@@ -397,7 +397,7 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
                       </div>
 
                       {/* Agreement Content */}
-                      <div className="max-h-48 overflow-y-auto rounded-lg border border-[#262626] bg-[#141414] p-4 text-sm text-[#a7a7a7]">
+                      <div className="max-h-48 overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 text-sm text-[var(--foreground-secondary)]">
                         <div
                           dangerouslySetInnerHTML={{
                             __html: legalAgreement.content.replace(/\n/g, "<br />"),
@@ -423,15 +423,15 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
                       {/* Show stored signature if already signed */}
                       {legalAgreement.requiresSignature && isAccepted && hasSignature && (
                         <div className="pt-2">
-                          <p className="text-sm text-[#7c7c7c] mb-2">Your signature:</p>
-                          <div className="bg-white rounded-lg p-3 inline-block border border-[#262626]">
+                          <p className="text-sm text-[var(--foreground-muted)] mb-2">Your signature:</p>
+                          <div className="bg-white rounded-lg p-3 inline-block border border-[var(--card-border)]">
                             <img
                               src={sigState.signatureData!}
                               alt="Your signature"
                               className="h-16 w-auto"
                             />
                           </div>
-                          <p className="text-xs text-[#7c7c7c] mt-2">
+                          <p className="text-xs text-[var(--foreground-muted)] mt-2">
                             Signed on{" "}
                             {agreement.acceptedAt
                               ? new Date(agreement.acceptedAt).toLocaleDateString("en-US", {
@@ -477,26 +477,26 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
           )}
 
           {/* Submit button */}
-          <div className="flex items-center justify-between rounded-xl border border-[#262626] bg-[#141414] p-6">
+          <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div>
               {isComplete ? (
-                <p className="text-sm text-[#22c55e]">
+                <p className="text-sm text-[var(--success)]">
                   All required fields and agreements completed
                 </p>
               ) : (
                 <div className="space-y-1">
                   {requiredFields.length - completedRequired.length > 0 && (
-                    <p className="text-sm text-[#7c7c7c]">
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       {requiredFields.length - completedRequired.length} required field{requiredFields.length - completedRequired.length !== 1 ? 's' : ''} remaining
                     </p>
                   )}
                   {requiredAgreements.length - acceptedRequiredAgreements.length > 0 && (
-                    <p className="text-sm text-[#7c7c7c]">
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       {requiredAgreements.length - acceptedRequiredAgreements.length} agreement{requiredAgreements.length - acceptedRequiredAgreements.length !== 1 ? 's' : ''} require acceptance
                     </p>
                   )}
                   {agreementsNeedingSignature.length > 0 && (
-                    <p className="text-sm text-[#f97316]">
+                    <p className="text-sm text-[var(--warning)]">
                       {agreementsNeedingSignature.length} agreement{agreementsNeedingSignature.length !== 1 ? 's' : ''} need{agreementsNeedingSignature.length === 1 ? 's' : ''} your signature
                     </p>
                   )}
@@ -506,7 +506,7 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
             <button
               type="submit"
               disabled={!isComplete || isSubmitting}
-              className="flex items-center gap-2 rounded-lg bg-[#3b82f6] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#3b82f6]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -535,16 +535,16 @@ function FormField({
   onChange: (value: string | string[] | boolean) => void;
 }) {
   const baseInputClass =
-    "w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-[#7c7c7c] focus:border-[#3b82f6] focus:outline-none focus:ring-1 focus:ring-[#3b82f6]";
+    "w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]";
 
   return (
     <div>
       <label className="block text-sm font-medium text-white mb-2">
         {field.label}
-        {field.isRequired && <span className="ml-1 text-[#ef4444]">*</span>}
+        {field.isRequired && <span className="ml-1 text-[var(--error)]">*</span>}
       </label>
       {field.helpText && (
-        <p className="mb-2 text-xs text-[#7c7c7c]">{field.helpText}</p>
+        <p className="mb-2 text-xs text-[var(--foreground-muted)]">{field.helpText}</p>
       )}
 
       {field.type === "text" && (
@@ -636,7 +636,7 @@ function FormField({
             checked={(value as boolean) || false}
             onCheckedChange={(checked) => onChange(checked === true)}
           />
-          <span className="text-sm text-[#a7a7a7]">{field.placeholder || "Yes"}</span>
+          <span className="text-sm text-[var(--foreground-secondary)]">{field.placeholder || "Yes"}</span>
         </label>
       )}
 
@@ -652,7 +652,7 @@ function FormField({
                 onChange={(e) => onChange(e.target.value)}
                 className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
               />
-              <span className="text-sm text-[#a7a7a7]">{opt}</span>
+              <span className="text-sm text-[var(--foreground-secondary)]">{opt}</span>
             </label>
           ))}
         </div>

@@ -2,9 +2,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PortalLoading() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Header Skeleton */}
-      <header className="border-b border-[#262626] bg-[#141414]">
+      <header className="border-b border-[var(--card-border)] bg-[var(--card)]">
         <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -33,7 +33,7 @@ export default function PortalLoading() {
         {/* Stats Skeleton */}
         <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-xl border border-[#262626] bg-[#141414] p-4">
+            <div key={i} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
               <Skeleton variant="text" className="h-4 w-16" />
               <Skeleton variant="text" className="mt-2 h-8 w-12" />
             </div>
@@ -41,7 +41,7 @@ export default function PortalLoading() {
         </div>
 
         {/* Tabs Skeleton */}
-        <div className="mb-6 flex items-center gap-2 border-b border-[#262626] pb-3">
+        <div className="mb-6 flex items-center gap-2 border-b border-[var(--card-border)] pb-3">
           {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} variant="default" className="h-8 w-24 rounded-md" />
           ))}
@@ -50,7 +50,7 @@ export default function PortalLoading() {
         {/* Content Skeleton - Property cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="overflow-hidden rounded-xl border border-[#262626] bg-[#141414]">
+            <div key={i} className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
               <Skeleton variant="image" className="aspect-video w-full" />
               <div className="p-4">
                 <Skeleton variant="text" className="h-5 w-24" />
@@ -69,7 +69,7 @@ export default function PortalLoading() {
       </div>
 
       {/* Footer Skeleton */}
-      <footer className="mt-auto border-t border-[#262626] py-6">
+      <footer className="mt-auto border-t border-[var(--card-border)] py-6">
         <div className="mx-auto max-w-7xl px-6">
           <Skeleton variant="text" className="mx-auto h-4 w-32" />
         </div>
