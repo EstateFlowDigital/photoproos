@@ -6,9 +6,39 @@ import { GalleryEditForm } from "./gallery-edit-form";
 import { getGallery } from "@/lib/actions/galleries";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
+import type { DatabaseServiceType } from "@/components/dashboard/service-selector";
 
 interface EditGalleryPageProps {
   params: Promise<{ id: string }>;
+}
+
+async function getOrganizationServices(organizationId: string): Promise<DatabaseServiceType[]> {
+  try {
+    const services = await prisma.service.findMany({
+      where: {
+        organizationId,
+        isActive: true,
+      },
+      orderBy: {
+        sortOrder: "asc",
+      },
+    });
+
+    return services.map((service) => ({
+      id: service.id,
+      name: service.name,
+      category: service.category,
+      description: service.description,
+      priceCents: service.priceCents,
+      duration: service.duration,
+      deliverables: service.deliverables,
+      isActive: service.isActive,
+      isDefault: service.isDefault,
+    }));
+  } catch (error) {
+    console.error("Error fetching organization services:", error);
+    return [];
+  }
 }
 
 async function getClients(organizationId: string) {
@@ -45,9 +75,10 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
 
   const { id } = await params;
 
-  const [gallery, clients] = await Promise.all([
+  const [gallery, clients, services] = await Promise.all([
     getGallery(id),
     getClients(auth.organizationId),
+    getOrganizationServices(auth.organizationId),
   ]);
 
   if (!gallery) {
@@ -95,7 +126,7 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
         <div className="lg:col-span-2">
-          <GalleryEditForm gallery={mappedGallery} clients={clients} />
+          <GalleryEditForm gallery={mappedGallery} clients={clients} services={services} />
         </div>
 
         {/* Sidebar */}

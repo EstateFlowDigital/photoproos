@@ -372,6 +372,240 @@
 }
 
 /* ============================================
+   GALLERY THEME UTILITIES
+   Dynamic theming for client-facing galleries
+   Set --gallery-* variables on container element
+   ============================================ */
+
+/* Gallery Theme Container - sets scope for gallery theming */
+.gallery-theme {
+  /* Default gallery theme (dark) - override via style attribute */
+  --gallery-bg: #0a0a0a;
+  --gallery-text: #ffffff;
+  --gallery-muted: #a7a7a7;
+  --gallery-card-bg: #141414;
+  --gallery-border: rgba(255, 255, 255, 0.1);
+  --gallery-primary: #3b82f6;
+  --gallery-accent: #3b82f6;
+}
+
+/* Gallery Utility Classes */
+.gallery-bg { background-color: var(--gallery-bg); }
+.gallery-text { color: var(--gallery-text); }
+.gallery-muted { color: var(--gallery-muted); }
+.gallery-card-bg { background-color: var(--gallery-card-bg); }
+.gallery-border { border-color: var(--gallery-border); }
+.gallery-primary { color: var(--gallery-primary); }
+.gallery-primary-bg { background-color: var(--gallery-primary); }
+.gallery-accent { color: var(--gallery-accent); }
+.gallery-accent-bg { background-color: var(--gallery-accent); }
+
+/* Gallery Button Variants */
+.gallery-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all 150ms ease;
+  cursor: pointer;
+  border: none;
+}
+
+.gallery-btn-primary {
+  background-color: var(--gallery-accent);
+  color: white;
+}
+
+.gallery-btn-primary:hover {
+  opacity: 0.9;
+}
+
+.gallery-btn-secondary {
+  background-color: var(--gallery-card-bg);
+  color: var(--gallery-text);
+}
+
+.gallery-btn-secondary:hover {
+  background-color: var(--gallery-border);
+}
+
+.gallery-btn-ghost {
+  background-color: transparent;
+  color: var(--gallery-text);
+}
+
+.gallery-btn-ghost:hover {
+  background-color: var(--gallery-card-bg);
+}
+
+/* Gallery Card */
+.gallery-card {
+  background-color: var(--gallery-card-bg);
+  border: 1px solid var(--gallery-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: border-color 150ms ease;
+}
+
+.gallery-card:hover {
+  border-color: var(--gallery-primary);
+}
+
+/* Gallery Header */
+.gallery-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: var(--gallery-bg);
+  border-bottom: 1px solid var(--gallery-border);
+}
+
+.gallery-header-preview {
+  top: 36px; /* Account for preview banner */
+}
+
+/* Gallery Photo Grid */
+.gallery-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.gallery-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.gallery-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.gallery-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.gallery-grid-5 { grid-template-columns: repeat(5, 1fr); }
+
+@media (max-width: 1280px) {
+  .gallery-grid-5 { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .gallery-grid-4, .gallery-grid-5 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .gallery-grid-3, .gallery-grid-4, .gallery-grid-5 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .gallery-grid-2, .gallery-grid-3, .gallery-grid-4, .gallery-grid-5 { grid-template-columns: 1fr; }
+}
+
+/* Gallery Photo Card */
+.gallery-photo-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  aspect-ratio: 4/3;
+  background-color: var(--gallery-card-bg);
+}
+
+.gallery-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.gallery-photo-card:hover img {
+  transform: scale(1.02);
+}
+
+/* Gallery Photo Overlay */
+.gallery-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.gallery-photo-card:hover .gallery-photo-overlay {
+  opacity: 1;
+}
+
+/* Gallery Lightbox */
+.gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background-color: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-lightbox-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Gallery Selection Checkbox */
+.gallery-checkbox {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.375rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.gallery-checkbox:hover {
+  border-color: white;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.gallery-checkbox.selected {
+  background-color: var(--gallery-primary);
+  border-color: var(--gallery-primary);
+}
+
+/* Gallery Favorite Button */
+.gallery-favorite {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 9999px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.gallery-favorite:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.gallery-favorite.active {
+  color: #ef4444;
+}
+
+.gallery-favorite.active svg {
+  fill: currentColor;
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 

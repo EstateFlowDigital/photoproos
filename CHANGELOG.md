@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Gallery Optimization Infrastructure** - Foundation for large-scale component refactoring
+  - **GalleryContext** (`src/contexts/gallery-context.tsx`) - Centralized state management
+    - Consolidated 47 useState hooks into single useReducer pattern
+    - Type-safe action creators for all gallery operations
+    - Selector hooks for performance (useLightbox, useSlideshow, useSelection, useFavorites, useCompare)
+    - Computed values (selectedCount, favoriteCount, etc.)
+  - **Gallery CSS Utilities** (`src/app/globals.css`) - Theme-aware utility classes
+    - CSS custom properties for dynamic theming (`--gallery-bg`, `--gallery-text`, etc.)
+    - Pre-built component classes (`.gallery-card`, `.gallery-btn`, `.gallery-photo-card`)
+    - Responsive grid system (`.gallery-grid-2` through `.gallery-grid-5`)
+    - Lightbox, selection, and favorite styling
+  - **Component Optimization Playbook** (`docs/COMPONENT_OPTIMIZATION_PLAYBOOK.md`)
+    - Step-by-step guide for refactoring large React components
+    - State consolidation patterns
+    - CSS custom properties migration guide
+    - Component extraction strategies
+
 ### Changed
 - **gallery-client.tsx Code Optimization** - Reduced file size from 3,239 to 2,997 lines (~242 lines removed)
   - Removed old disabled slideshow implementation (replaced by SlideshowViewer component)

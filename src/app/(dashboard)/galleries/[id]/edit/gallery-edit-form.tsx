@@ -46,14 +46,17 @@ interface GalleryData {
 interface GalleryEditFormProps {
   gallery: GalleryData;
   clients: Client[];
+  services?: DatabaseServiceType[];
 }
 
-export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
+export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
 
   // Service & pricing state
-  const initialService = gallery.serviceId ? getServiceById(gallery.serviceId) : null;
+  const dbService = services?.find((service) => service.id === gallery.serviceId);
+  const staticService = gallery.serviceId ? getServiceById(gallery.serviceId) : null;
+  const initialService = dbService || staticService || null;
   const [selectedService, setSelectedService] = useState<SelectedService>(initialService || null);
   const [price, setPrice] = useState(gallery.priceCents);
   const [serviceDescription, setServiceDescription] = useState(gallery.serviceDescription || "");
@@ -275,6 +278,7 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
         </p>
 
         <ServiceSelector
+          services={services}
           selectedServiceId={selectedService?.id}
           customPrice={price}
           customDescription={serviceDescription}
