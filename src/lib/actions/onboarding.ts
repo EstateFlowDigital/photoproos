@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getDefaultModulesForIndustries, getModulesForIndustries } from "@/lib/constants/industries";
+import { Industry } from "@prisma/client";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -124,8 +125,8 @@ export async function saveOnboardingStep(
           prisma.organization.update({
             where: { id: organizationId },
             data: {
-              industries: industries as any,
-              primaryIndustry: data.primaryIndustry as any,
+              industries: industries as Industry[],
+              primaryIndustry: data.primaryIndustry as Industry,
               // Set default modules based on industries
               enabledModules: getDefaultModulesForIndustries(industries),
             },
@@ -320,8 +321,8 @@ export async function updateIndustries(
     await prisma.organization.update({
       where: { id: organizationId },
       data: {
-        industries: industries as any,
-        primaryIndustry: primaryIndustry as any,
+        industries: industries as Industry[],
+        primaryIndustry: primaryIndustry as Industry,
         enabledModules: filteredModules,
       },
     });

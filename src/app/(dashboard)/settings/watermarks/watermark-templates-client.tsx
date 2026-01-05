@@ -50,6 +50,8 @@ const POSITIONS = [
   { value: "center", label: "Center" },
 ] as const;
 
+type WatermarkPosition = typeof POSITIONS[number]["value"];
+
 export function WatermarkTemplatesClient({ templates: initialTemplates }: WatermarkTemplatesClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -93,7 +95,7 @@ export function WatermarkTemplatesClient({ templates: initialTemplates }: Waterm
         watermarkType: template.watermarkType as "text" | "image",
         watermarkText: template.watermarkText ?? "",
         watermarkImageUrl: template.watermarkImageUrl,
-        watermarkPosition: template.watermarkPosition as any,
+        watermarkPosition: template.watermarkPosition as WatermarkPosition,
         watermarkOpacity: template.watermarkOpacity,
         watermarkScale: template.watermarkScale,
         isDefault: template.isDefault,
@@ -406,7 +408,7 @@ export function WatermarkTemplatesClient({ templates: initialTemplates }: Waterm
                 <label className="text-sm font-medium text-foreground">Position</label>
                 <select
                   value={formData.watermarkPosition}
-                  onChange={(e) => setFormData({ ...formData, watermarkPosition: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, watermarkPosition: e.target.value as WatermarkPosition })}
                   className="w-full rounded-lg border border-[var(--input-border)] bg-[var(--input)] px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   required
                 >
