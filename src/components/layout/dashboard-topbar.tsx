@@ -408,144 +408,61 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
       : searchResults;
 
   return (
-    <div
-      className={cn(
-        "flex flex-wrap items-center justify-between gap-3 border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3 sm:min-h-[64px] sm:flex-nowrap sm:py-0 lg:px-6",
-        className
-      )}
-    >
-      {/* Left side - Search + top nav pills */}
-      <div className="order-2 flex w-full flex-1 flex-col gap-2 sm:order-1 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
-        <div ref={searchRef} className="relative w-full max-w-none flex-1 sm:max-w-md">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted pointer-events-none z-10" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search galleries, clients, invoices..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            onFocus={() => setSearchOpen(true)}
-            className="h-10 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-10 pr-16 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
-          />
-          <kbd
-            onClick={() => {
-              setSearchOpen(true);
-              searchInputRef.current?.focus();
-            }}
-            className="absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-[var(--card-border)] bg-[var(--background-secondary)] px-1.5 py-0.5 text-xs text-foreground-muted lg:inline-flex cursor-pointer hover:bg-[var(--background-hover)]"
-          >
-            ⌘K
-          </kbd>
-
-          {/* Search results dropdown */}
-          {searchOpen && (searchQuery.trim() !== "" || searchResults.length > 0 || isSearching || recentResults.length > 0) && (
-            <div className="absolute top-full left-0 right-0 mt-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
-              <div className="flex flex-wrap items-center gap-2 border-b border-[var(--card-border)] px-3 py-2">
-                {["gallery","client","payment","property","service","invoice","booking"].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => toggleType(type as SearchResult["type"])}
-                    className={cn(
-                      "rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors",
-                      activeTypes.includes(type as SearchResult["type"])
-                        ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
-                        : "border-[var(--card-border)] text-foreground-muted hover:text-foreground hover:border-[var(--primary)]/40"
-                    )}
-                  >
-                    {type}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setActiveTypes([])}
-                  className="ml-auto text-xs text-[var(--primary)] hover:underline"
-                >
-                  Clear
-                </button>
-              </div>
-              {isSearching ? (
-                <div className="px-4 py-8 text-center">
-                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
-                  <p className="mt-2 text-xs text-foreground-muted">Searching...</p>
-                </div>
-              ) : filteredResults.length > 0 ? (
-                <div className="max-h-80 overflow-y-auto">
-                  {filteredResults.map((result) => (
-                    <button
-                      key={result.id}
-                      onClick={() => handleSearchSelect(result)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--background-hover)] transition-colors"
-                    >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
-                        {getResultIcon(result.type)}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate" title={result.title}>
-                          {result.title}
-                        </p>
-                        <p className="text-xs text-foreground-muted truncate" title={result.subtitle}>
-                          {result.subtitle}
-                        </p>
-                      </div>
-                      <span className="text-xs text-foreground-muted capitalize">{result.type}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : searchQuery.trim() !== "" ? (
-                <div className="px-4 py-8 text-center">
-                  <SearchIcon className="h-8 w-8 text-foreground-muted mx-auto mb-2" />
-                  <p className="text-sm text-foreground-muted">No results found for &quot;{searchQuery}&quot;</p>
-                </div>
-              ) : recentResults.length > 0 ? (
-                <div className="max-h-80 overflow-y-auto">
-                  <div className="px-4 py-3 text-xs uppercase tracking-wide text-foreground-muted">Recent</div>
-                  {recentResults.map((result) => (
-                    <button
-                      key={`${result.type}-${result.id}`}
-                      onClick={() => handleSearchSelect(result)}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-[var(--background-hover)] transition-colors"
-                    >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
-                        {getResultIcon(result.type)}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate" title={result.title}>
-                          {result.title}
-                        </p>
-                        <p className="text-xs text-foreground-muted truncate" title={result.subtitle}>
-                          {result.subtitle}
-                        </p>
-                      </div>
-                      <span className="text-xs text-foreground-muted capitalize">{result.type}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          )}
-        </div>
-
+    <>
+      <div
+        className={cn(
+          "flex flex-wrap items-center justify-between gap-3 border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3 sm:min-h-[64px] sm:flex-nowrap sm:py-0 lg:px-6",
+          className
+        )}
+      >
+      {/* Left side - nav toggle (when top mode) and search icon */}
+      <div className="order-2 flex w-full flex-1 items-center gap-2 sm:order-1 sm:w-auto">
         {navModeState === "top" && navLinks.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
-                    isActive
-                      ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                      : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:border-[var(--primary)]/60"
-                  )}
-                  onClick={() => setTopNavOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+          <div ref={topNavRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setTopNavOpen((prev) => !prev)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+              aria-label="Open navigation"
+            >
+              <MenuIcon className="h-5 w-5" />
+            </button>
+            {topNavOpen && (
+              <div className="absolute left-0 top-full mt-2 w-[min(320px,calc(100vw-16px))] max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-xl z-50">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-[var(--primary)] text-white"
+                          : "text-foreground hover:bg-[var(--background-hover)]"
+                      )}
+                      onClick={() => setTopNavOpen(false)}
+                    >
+                      <span className="truncate">{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={() => {
+            setSearchOpen(true);
+            setTimeout(() => searchInputRef.current?.focus(), 0);
+          }}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground transition-colors hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+          aria-label="Search"
+        >
+          <SearchIcon className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Right side - Actions */}
@@ -629,7 +546,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
               />
             </button>
             {topNavOpen && (
-              <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-xl z-50">
+              <div className="absolute left-0 top-full mt-2 w-[min(320px,calc(100vw-16px))] max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-xl z-50">
                 {navLinks.map((link) => {
                   const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
                   return (
@@ -670,7 +587,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
             />
           </button>
           {quickActionsOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50">
+            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] max-w-[calc(100vw-16px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50">
               <QuickActions className="grid grid-cols-1 gap-2" actions={QUICK_ACTIONS} />
             </div>
           )}
@@ -734,7 +651,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
             />
           </button>
           {workspaceOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-visible">
+            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] max-w-[calc(100vw-16px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-visible">
               <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <p className="text-sm font-semibold text-foreground truncate">
                   {organization?.name || user?.fullName || "Workspace"}
@@ -930,7 +847,134 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         isOpen={shortcutsOpen}
         onClose={() => setShortcutsOpen(false)}
       />
-    </div>
+      </div>
+
+      {/* Search modal */}
+      {searchOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 sm:p-8"
+          onClick={() => {
+            setSearchOpen(false);
+            setSearchQuery("");
+            setSearchResults([]);
+          }}
+        >
+          <div
+            className="w-full max-w-2xl rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 border-b border-[var(--card-border)] px-4 py-3">
+              <SearchIcon className="h-5 w-5 text-foreground-muted" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search galleries, clients, invoices..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="h-10 flex-1 bg-transparent text-sm text-foreground placeholder:text-foreground-muted focus:outline-none"
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  setSearchOpen(false);
+                  setSearchQuery("");
+                  setSearchResults([]);
+                }}
+                className="rounded-lg px-2 py-1 text-sm text-foreground-muted hover:bg-[var(--background-hover)]"
+              >
+                Esc
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 border-b border-[var(--card-border)] px-4 py-2">
+              {["gallery","client","payment","property","service","invoice","booking"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => toggleType(type as SearchResult["type"])}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors",
+                    activeTypes.includes(type as SearchResult["type"])
+                      ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+                      : "border-[var(--card-border)] text-foreground-muted hover:text-foreground hover:border-[var(--primary)]/40"
+                  )}
+                >
+                  {type}
+                </button>
+              ))}
+              <button
+                onClick={() => setActiveTypes([])}
+                className="ml-auto text-xs text-[var(--primary)] hover:underline"
+              >
+                Clear
+              </button>
+            </div>
+
+            {isSearching ? (
+              <div className="px-4 py-8 text-center">
+                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
+                <p className="mt-2 text-xs text-foreground-muted">Searching...</p>
+              </div>
+            ) : filteredResults.length > 0 ? (
+              <div className="max-h-[60vh] overflow-y-auto">
+                {filteredResults.map((result) => (
+                  <button
+                    key={result.id}
+                    onClick={() => handleSearchSelect(result)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--background-hover)] transition-colors"
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
+                      {getResultIcon(result.type)}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate" title={result.title}>
+                        {result.title}
+                      </p>
+                      <p className="text-xs text-foreground-muted truncate" title={result.subtitle}>
+                        {result.subtitle}
+                      </p>
+                    </div>
+                    <span className="text-xs text-foreground-muted capitalize">{result.type}</span>
+                  </button>
+                ))}
+              </div>
+            ) : searchQuery.trim() !== "" ? (
+              <div className="px-4 py-8 text-center">
+                <SearchIcon className="h-8 w-8 text-foreground-muted mx-auto mb-2" />
+                <p className="text-sm text-foreground-muted">No results found for &quot;{searchQuery}&quot;</p>
+              </div>
+            ) : recentResults.length > 0 ? (
+              <div className="max-h-[60vh] overflow-y-auto">
+                <div className="px-4 py-3 text-xs uppercase tracking-wide text-foreground-muted">Recent</div>
+                {recentResults.map((result) => (
+                  <button
+                    key={`${result.type}-${result.id}`}
+                    onClick={() => handleSearchSelect(result)}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-[var(--background-hover)] transition-colors"
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
+                      {getResultIcon(result.type)}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate" title={result.title}>
+                        {result.title}
+                      </p>
+                      <p className="text-xs text-foreground-muted truncate" title={result.subtitle}>
+                        {result.subtitle}
+                      </p>
+                    </div>
+                    <span className="text-xs text-foreground-muted capitalize">{result.type}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-4 py-8 text-center text-sm text-foreground-muted">
+                Start typing to search across the workspace.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

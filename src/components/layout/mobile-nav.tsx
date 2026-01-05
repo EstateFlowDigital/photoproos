@@ -174,9 +174,9 @@ export function MobileNav({
           </button>
         </div>
 
-        {/* Navigation */}
+      {/* Navigation */}
         <nav
-          className="flex-1 space-y-1 p-4 overflow-y-auto"
+          className="flex-1 space-y-3 p-4 overflow-y-auto"
           style={{
             maxHeight: "calc(var(--mobile-vh, 1vh) * 100 - 8rem)",
             WebkitMaskImage:
@@ -185,40 +185,50 @@ export function MobileNav({
               "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
           }}
         >
-          {/* New Project */}
-          <Link
-            href="/create"
-            onClick={onClose}
-            className="flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            New Project
-          </Link>
-
-          {orderedNav.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const IconComponent = item.icon;
-
+          {["core", "operations", "client", "advanced"].map((category) => {
+            const items = orderedNav.filter(
+              (item) => "category" in item && (item as { category?: string }).category === category
+            );
+            if (!items.length) return null;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-[var(--primary)] text-white"
-                    : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-                )}
-              >
-                <IconComponent
-                  className={cn(
-                    "h-5 w-5 shrink-0",
-                    isActive ? "text-white" : "text-foreground-muted"
-                  )}
-                />
-                <span>{item.label}</span>
-              </Link>
+              <div key={category} className="space-y-2">
+                <p className="px-1 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+                  {category === "core"
+                    ? "Workspace"
+                    : category === "operations"
+                      ? "Operations"
+                      : category === "client"
+                        ? "Clients"
+                        : "Advanced"}
+                </p>
+                <div className="space-y-1">
+                  {items.map((item) => {
+                    const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                    const IconComponent = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onClose}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200",
+                          isActive
+                            ? "bg-[var(--primary)] text-white"
+                            : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                        )}
+                      >
+                        <IconComponent
+                          className={cn(
+                            "h-5 w-5 shrink-0",
+                            isActive ? "text-white" : "text-foreground-muted"
+                          )}
+                        />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
 

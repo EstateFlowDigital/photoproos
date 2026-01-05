@@ -50,6 +50,7 @@ export function DashboardSidebar({
   const [hiddenIds, setHiddenIds] = React.useState<string[]>([]);
   const [pinnedIds, setPinnedIds] = React.useState<string[]>([]);
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
+  const [identityOpen, setIdentityOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -564,23 +565,12 @@ export function DashboardSidebar({
         </div>
 
         {/* Identity / org card */}
-        <div className="mt-4 space-y-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
-              <OrganizationSwitcher
-                appearance={{
-                  elements: {
-                    rootBox: "w-full",
-                    organizationSwitcherTrigger:
-                      "w-full justify-between rounded-md border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm font-semibold text-foreground",
-                    organizationSwitcherTriggerIcon: "text-foreground-muted",
-                    organizationSwitcherOrganizationName: "text-sm font-semibold truncate",
-                  },
-                }}
-                afterSelectOrganizationUrl="/dashboard"
-                afterCreateOrganizationUrl="/dashboard"
-              />
-            </div>
+        <div className="mt-4 space-y-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2">
+          <button
+            type="button"
+            onClick={() => setIdentityOpen((o) => !o)}
+            className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left hover:bg-[var(--background-hover)]"
+          >
             <UserButton
               appearance={{
                 elements: {
@@ -589,74 +579,83 @@ export function DashboardSidebar({
               }}
               afterSignOutUrl="/"
             />
-          </div>
-
-          <div className="flex items-center gap-3 rounded-md border border-[var(--card-border)] bg-[var(--card)] px-3 py-2">
-            <div className="flex flex-col overflow-hidden">
-              <span className="truncate text-sm font-semibold text-foreground">
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-semibold text-foreground">
                 {user?.fullName || user?.username || "Signed in"}
-              </span>
-              <span className="truncate text-xs text-foreground-muted">
+              </p>
+              <p className="truncate text-xs text-foreground-muted">
                 {organization?.name || user?.primaryEmailAddress?.emailAddress || "Workspace"}
-              </span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {typeof organization?.publicMetadata?.plan === "string" && (
-                  <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-[11px] font-medium text-[var(--primary)]">
-                    {organization.publicMetadata.plan}
-                  </span>
-                )}
-                {typeof organization?.publicMetadata?.role === "string" && (
-                  <span className="rounded-full bg-[var(--background-hover)] px-2 py-0.5 text-[11px] font-medium text-foreground-secondary">
-                    {organization.publicMetadata.role}
-                  </span>
-                )}
+              </p>
+            </div>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 text-foreground-muted transition-transform",
+                identityOpen ? "rotate-180" : "rotate-0"
+              )}
+            />
+          </button>
+
+          {identityOpen && (
+            <div className="space-y-3 rounded-md border border-[var(--card-border)] bg-[var(--card)] p-3">
+              <OrganizationSwitcher
+                appearance={{
+                  elements: {
+                    rootBox: "w-full",
+                    organizationSwitcherTrigger:
+                      "w-full justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-semibold text-foreground",
+                    organizationSwitcherTriggerIcon: "text-foreground-muted",
+                    organizationSwitcherOrganizationName: "text-sm font-semibold truncate",
+                  },
+                }}
+                afterSelectOrganizationUrl="/dashboard"
+                afterCreateOrganizationUrl="/dashboard"
+              />
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <Link
+                  href="/settings"
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold transition-colors",
+                    pathname.startsWith("/settings")
+                      ? "border-transparent bg-[var(--primary)] text-white"
+                      : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                  )}
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                  Settings
+                </Link>
+                <Link
+                  href="/settings/team?invite=1"
+                  className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                >
+                  <InviteIcon className="h-4 w-4" />
+                  Invite
+                </Link>
+                <Link
+                  href="/settings/billing"
+                  className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
+                >
+                  <PaymentsIcon className="h-4 w-4" />
+                  Billing
+                </Link>
+                <Link
+                  href="/portal"
+                  className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
+                >
+                  <EyeIcon className="h-4 w-4" />
+                  View as client
+                </Link>
+              </div>
+
+              <div className="flex items-center justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2">
+                <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
+                <div className="flex items-center gap-2">
+                  <QuickThemeSwitcher />
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <Link
-              href="/settings"
-              className={cn(
-                "flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold transition-colors",
-                pathname.startsWith("/settings")
-                  ? "border-transparent bg-[var(--primary)] text-white"
-                  : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-              )}
-            >
-              <SettingsIcon className="h-4 w-4" />
-              Settings
-            </Link>
-            <Link
-              href="/settings/team?invite=1"
-              className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
-            >
-              <InviteIcon className="h-4 w-4" />
-              Invite
-            </Link>
-            <Link
-              href="/settings/billing"
-              className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
-            >
-              <PaymentsIcon className="h-4 w-4" />
-              Billing
-            </Link>
-            <Link
-              href="/portal"
-              className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
-            >
-              <EyeIcon className="h-4 w-4" />
-              View as client
-            </Link>
-          </div>
-
-          <div className="flex items-center justify-between rounded-md border border-[var(--card-border)] bg-[var(--card)] px-3 py-2">
-            <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
-            <div className="flex items-center gap-2">
-              <QuickThemeSwitcher />
-              <ThemeToggle />
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </aside>
