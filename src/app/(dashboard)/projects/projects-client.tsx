@@ -478,6 +478,7 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
                   </div>
                   <button
                     onClick={() => setShowAddTask(showAddTask === column.id ? null : column.id)}
+                    aria-label={`Add task to ${column.name}`}
                     className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
                   >
                     <PlusIcon className="h-4 w-4" />
@@ -989,17 +990,23 @@ function TaskDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative max-h-[80vh] w-full max-w-2xl overflow-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="task-modal-title"
+        className="relative max-h-[80vh] w-full max-w-2xl overflow-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl"
+      >
         {/* Header */}
         <div className="flex flex-col gap-3 border-b border-[var(--card-border)] p-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <PriorityBadge priority={task.priority} />
             </div>
-            <h2 className="mt-2 text-lg font-semibold text-foreground">{task.title}</h2>
+            <h2 id="task-modal-title" className="mt-2 text-lg font-semibold text-foreground">{task.title}</h2>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close task details"
             className="self-end rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground sm:self-auto"
           >
             <XIcon className="h-5 w-5" />
