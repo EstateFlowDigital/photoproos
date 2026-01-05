@@ -45,24 +45,12 @@ export function DashboardSidebar({
   });
 
   const [editMode, setEditMode] = React.useState(false);
-  const [pinnedIds, setPinnedIds] = React.useState<string[]>([]);
-  const [draggingPinnedId, setDraggingPinnedId] = React.useState<string | null>(null);
   const [navOrder, setNavOrder] = React.useState<string[]>([]);
   const [draggingNavId, setDraggingNavId] = React.useState<string | null>(null);
   const [hiddenIds, setHiddenIds] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("ppos_pinned_nav");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as string[];
-        const availableIds = navItems.map((n) => n.id);
-        setPinnedIds(parsed.filter((id) => availableIds.includes(id)));
-      } catch {
-        setPinnedIds([]);
-      }
-    }
     const storedOrder = window.localStorage.getItem("ppos_nav_order");
     if (storedOrder) {
       try {
@@ -86,23 +74,31 @@ export function DashboardSidebar({
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem("ppos_pinned_nav", JSON.stringify(pinnedIds));
-  }, [pinnedIds]);
-
-  React.useEffect(() => {
-    setPinnedIds((prev) => prev.filter((id) => !hiddenIds.includes(id)));
-  }, [hiddenIds]);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
     window.localStorage.setItem("ppos_nav_hidden", JSON.stringify(hiddenIds));
   }, [hiddenIds]);
 
-  const togglePin = (id: string) => {
-    setPinnedIds((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
-  };
+  // Listen for external edit-mode toggle (from topbar)
+  React.useEffect(() => {
+    const toggle = (event: Event) => {
+      const detail = (event as CustomEvent<boolean>).detail;
+      setEditMode((prev) => (typeof detail === "boolean" ? detail : !prev));
+    };
+    const stored = typeof window !== "undefined" ? window.localStorage.getItem("ppos_nav_edit_mode") : null;
+    if (stored) {
+      try {
+        setEditMode(JSON.parse(stored));
+      } catch {
+        setEditMode(false);
+      }
+    }
+    window.addEventListener("ppos-nav-edit", toggle as EventListener);
+    return () => window.removeEventListener("ppos-nav-edit", toggle as EventListener);
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ppos_nav_edit_mode", JSON.stringify(editMode));
+  }, [editMode]);
 
   const paymentsVisible = navItems.some((item) => item.id === "invoices");
   const sidebarNav = paymentsVisible
@@ -150,12 +146,11 @@ export function DashboardSidebar({
   };
 
   const corePrimaryIds = ["dashboard", "projects", "clients", "scheduling"];
-  const pinnedNav = visibleNav.filter((item) => pinnedIds.includes(item.id));
-  const coreNav = sortByNavOrder(visibleNav).filter((item) => corePrimaryIds.includes(item.id) && !pinnedIds.includes(item.id));
+  const coreNav = sortByNavOrder(visibleNav).filter((item) => corePrimaryIds.includes(item.id));
   const workspaceNav = sortByNavOrder(visibleNav).filter(
-    (item) => !corePrimaryIds.includes(item.id) && item.category !== "advanced" && !pinnedIds.includes(item.id)
+    (item) => !corePrimaryIds.includes(item.id) && item.category !== "advanced"
   );
-  const advancedNav = sortByNavOrder(visibleNav).filter((item) => item.category === "advanced" && !pinnedIds.includes(item.id));
+  const advancedNav = sortByNavOrder(visibleNav).filter((item) => item.category === "advanced");
   const [sectionState, setSectionState] = React.useState({
     workspaces: true,
     advanced: false,
@@ -180,27 +175,27 @@ export function DashboardSidebar({
     const isActive =
       pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
     const IconComponent = item.icon;
-    const isPinned = pinnedIds.includes(item.id);
-    const canDrag = options?.draggable && !isPinned;
+    const canDrag = options?.draggable;
 
     const linkContent = (
       <Link
         key={item.href}
-        href={editMode ? "#" : item.href}
-        onClick={(e) => {
-          if (editMode) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }}
+        href={item.href}
         className={cn(
           "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
           isActive
             ? "bg-[var(--primary)] text-white"
             : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground",
           canDrag && "cursor-move",
-          editMode && "pointer-events-auto"
+          editMode && "pointer-events-auto",
+          hiddenIds.includes(item.id) && editMode && "opacity-70 line-through"
         )}
+        onClick={(e) => {
+          if (editMode) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
       >
         <IconComponent
           className={cn(
@@ -221,27 +216,8 @@ export function DashboardSidebar({
             {item.badge}
           </span>
         )}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            togglePin(item.id);
-          }}
-          className={cn(
-            "h-6 w-6 shrink-0 rounded-md border border-transparent text-foreground-muted transition-colors hover:border-[var(--card-border)] hover:text-foreground",
-            isPinned && (isActive ? "text-white" : "text-[var(--primary)]")
-          )}
-          title={isPinned ? "Unpin" : "Pin"}
-        >
-          {isPinned ? (
-            <StarFilledIcon className="h-4 w-4" />
-          ) : (
-            <StarIcon className="h-4 w-4 opacity-50" />
-          )}
-        </button>
         {editMode && (
-          <label className="flex items-center gap-1 text-xs text-foreground-muted">
+          <label className="flex items-center gap-2 text-xs text-foreground-muted">
             <input
               type="checkbox"
               className="h-3 w-3 accent-[var(--primary)]"
@@ -250,9 +226,6 @@ export function DashboardSidebar({
                 const visible = e.target.checked;
                 setHiddenIds((prev) => {
                   const next = visible ? prev.filter((id) => id !== item.id) : [...prev, item.id];
-                  if (!visible) {
-                    setPinnedIds((p) => p.filter((id) => id !== item.id));
-                  }
                   return next;
                 });
               }}
@@ -295,44 +268,31 @@ export function DashboardSidebar({
   };
 
   const resetNav = () => {
-    setPinnedIds([]);
     setHiddenIds([]);
     const ids = sidebarNav.map((item) => item.id);
     setNavOrder(ids);
     if (typeof window !== "undefined") {
-      window.localStorage.removeItem("ppos_pinned_nav");
       window.localStorage.removeItem("ppos_nav_order");
       window.localStorage.removeItem("ppos_nav_hidden");
     }
   };
 
-  const handlePinnedReorder = (fromId: string, toId: string) => {
-    if (fromId === toId) return;
-    setPinnedIds((prev) => {
-      const fromIdx = prev.indexOf(fromId);
-      const toIdx = prev.indexOf(toId);
-      if (fromIdx === -1 || toIdx === -1) return prev;
-      const next = [...prev];
-      next.splice(fromIdx, 1);
-      next.splice(toIdx, 0, fromId);
-      return next;
-    });
-  };
+  const handlePinnedReorder = () => {};
 
 
   return (
     <aside
       className={cn(
-        "flex h-full w-[280px] flex-col border-r border-[var(--card-border)] bg-[var(--card)]",
+        "flex h-screen max-h-screen min-h-0 w-full sm:w-[260px] lg:w-[280px] flex-col border-r border-[var(--card-border)] bg-[var(--card)] overflow-hidden",
         className
       )}
     >
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-[var(--card-border)] px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)]">
-          <CameraIcon className="h-4 w-4 text-white" />
-        </div>
-        <span className="text-lg font-semibold text-foreground">PhotoProOS</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)]">
+            <CameraIcon className="h-4 w-4 text-white" />
+          </div>
+          <span className="text-lg font-semibold text-foreground">PhotoProOS</span>
         <button
           type="button"
           onClick={() => setEditMode((v) => !v)}
@@ -355,51 +315,6 @@ export function DashboardSidebar({
             Drag to reorder, toggle favorites, and choose which links are visible. Hidden links stay available here but won’t show in the main nav.
           </div>
         )}
-        {pinnedNav.length > 0 && (
-          <div className="mb-4 space-y-2 rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-3">
-            <div className="flex items-center justify-between text-sm font-semibold text-foreground">
-              <span>Pinned</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-foreground-muted">{pinnedNav.length} items</span>
-                <button
-                  type="button"
-                  onClick={resetNav}
-                  className="text-xs text-foreground-muted hover:text-foreground transition-colors"
-                  title="Reset ordering and pins"
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
-            <div className="space-y-1">
-              {pinnedNav.map((item) => (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={() => setDraggingPinnedId(item.id)}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    if (draggingPinnedId && draggingPinnedId !== item.id) {
-                      handlePinnedReorder(draggingPinnedId, item.id);
-                    }
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setDraggingPinnedId(null);
-                  }}
-                  onDragEnd={() => setDraggingPinnedId(null)}
-                  className={cn(
-                    "rounded-lg border border-transparent transition-colors",
-                    draggingPinnedId === item.id && "border-[var(--primary)]/50 bg-[var(--background-hover)]"
-                  )}
-                >
-                  {renderNavItem(item)}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div className="space-y-2">
           {coreNav.map((item) => renderNavItem(item, { draggable: true }))}
         </div>
@@ -468,7 +383,7 @@ export function DashboardSidebar({
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="border-t border-[var(--card-border)] p-4">
+      <div className="sticky bottom-0 border-t border-[var(--card-border)] p-4 bg-[var(--card)]">
         <div className="space-y-2">
           {/* Notifications Link */}
           {(() => {

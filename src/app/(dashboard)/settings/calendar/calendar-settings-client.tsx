@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { useToast } from "@/components/ui/toast";
 import type { GoogleCalendarConfig } from "@/lib/actions/google-calendar";
 import {
   updateGoogleCalendarSettings,
@@ -21,6 +22,8 @@ interface CalendarSettingsClientProps {
 export function CalendarSettingsClient({
   initialConfig,
 }: CalendarSettingsClientProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [config, setConfig] = useState<GoogleCalendarConfig | null>(initialConfig);
   const [syncDirection, setSyncDirection] = useState<SyncDirection>(
@@ -40,12 +43,8 @@ export function CalendarSettingsClient({
     const error = searchParams?.get("error");
 
     if (success === "connected") {
-      setMessage({
-        type: "success",
-        text: "Successfully connected to Google Calendar!",
-      });
-      // Refresh page after connection
-      window.location.reload();
+      showToast("Successfully connected to Google Calendar!", "success");
+      router.refresh();
     } else if (error) {
       const errorMessages: Record<string, string> = {
         not_configured: "Google Calendar is not configured. Please contact support.",
@@ -60,12 +59,9 @@ export function CalendarSettingsClient({
         callback_failed: "Authorization callback failed. Please try again.",
         access_denied: "You denied access to Google Calendar.",
       };
-      setMessage({
-        type: "error",
-        text: errorMessages[error] || `Error: ${error}`,
-      });
+      showToast(errorMessages[error] || `Error: ${error}`, "error");
     }
-  }, [searchParams]);
+  }, [searchParams, router, showToast]);
 
   const handleConnect = () => {
     // Redirect to OAuth authorization endpoint

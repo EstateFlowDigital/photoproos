@@ -1,15 +1,19 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { applyThemePreset } from "@/lib/actions/appearance";
 import { THEME_PRESETS } from "@/lib/appearance-types";
+import { useToast } from "@/components/ui/toast";
 
 interface QuickThemeSwitcherProps {
   className?: string;
 }
 
 export function QuickThemeSwitcher({ className }: QuickThemeSwitcherProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const [isOpen, setIsOpen] = React.useState(false);
   const [isPending, setIsPending] = React.useState(false);
   const [focusedIndex, setFocusedIndex] = React.useState(0);
@@ -115,7 +119,10 @@ export function QuickThemeSwitcher({ className }: QuickThemeSwitcherProps) {
 
     if (result.success) {
       setIsOpen(false);
-      window.location.reload();
+      showToast("Theme updated successfully", "success");
+      router.refresh();
+    } else {
+      showToast(result.error || "Failed to update theme", "error");
     }
   };
 

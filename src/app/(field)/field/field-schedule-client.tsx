@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { FieldBooking } from "@/lib/actions/field-operations";
 import { checkIn, checkOut } from "@/lib/actions/field-operations";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { Calendar, Clock, MapPin, Phone, Camera, CheckCircle } from "lucide-react";
 
 interface FieldScheduleClientProps {
@@ -25,6 +27,8 @@ function formatDate(date: Date): string {
 }
 
 function BookingCard({ booking, showDate = false }: { booking: FieldBooking; showDate?: boolean }) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCheckIn = async () => {
@@ -38,21 +42,25 @@ function BookingCard({ booking, showDate = false }: { booking: FieldBooking; sho
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
             });
+            showToast("Checked in successfully", "success");
             setIsLoading(false);
-            window.location.reload();
+            router.refresh();
           },
           async () => {
             await checkIn({ bookingId: booking.id });
+            showToast("Checked in successfully", "success");
             setIsLoading(false);
-            window.location.reload();
+            router.refresh();
           }
         );
       } else {
         await checkIn({ bookingId: booking.id });
+        showToast("Checked in successfully", "success");
         setIsLoading(false);
-        window.location.reload();
+        router.refresh();
       }
-    } catch {
+    } catch (error) {
+      showToast("Failed to check in", "error");
       setIsLoading(false);
     }
   };
@@ -68,21 +76,25 @@ function BookingCard({ booking, showDate = false }: { booking: FieldBooking; sho
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
             });
+            showToast("Booking completed successfully", "success");
             setIsLoading(false);
-            window.location.reload();
+            router.refresh();
           },
           async () => {
             await checkOut({ bookingId: booking.id });
+            showToast("Booking completed successfully", "success");
             setIsLoading(false);
-            window.location.reload();
+            router.refresh();
           }
         );
       } else {
         await checkOut({ bookingId: booking.id });
+        showToast("Booking completed successfully", "success");
         setIsLoading(false);
-        window.location.reload();
+        router.refresh();
       }
-    } catch {
+    } catch (error) {
+      showToast("Failed to complete booking", "error");
       setIsLoading(false);
     }
   };

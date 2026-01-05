@@ -1,24 +1,28 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { setLocale } from "@/lib/actions/locale";
 import { locales, localeNames, Locale } from "@/i18n/config";
 import { Globe } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 
 interface LocaleSwitcherProps {
   className?: string;
 }
 
 export function LocaleSwitcher({ className }: LocaleSwitcherProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const currentLocale = useLocale() as Locale;
 
   const handleChange = (newLocale: Locale) => {
     startTransition(async () => {
       await setLocale(newLocale);
-      // Reload to apply new locale
-      window.location.reload();
+      showToast("Language updated", "success");
+      router.refresh();
     });
   };
 
@@ -44,13 +48,16 @@ export function LocaleSwitcher({ className }: LocaleSwitcherProps) {
 }
 
 export function LocaleSwitcherDropdown({ className }: LocaleSwitcherProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const currentLocale = useLocale() as Locale;
 
   const handleChange = (newLocale: Locale) => {
     startTransition(async () => {
       await setLocale(newLocale);
-      window.location.reload();
+      showToast("Language updated", "success");
+      router.refresh();
     });
   };
 

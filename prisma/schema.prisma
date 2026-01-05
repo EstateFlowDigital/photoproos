@@ -557,23 +557,24 @@ model Organization {
   portfolioInquiries PortfolioInquiry[]
   portfolioLeads     PortfolioLead[]
   portfolioComments  PortfolioComment[]
-  portfolioABTests   PortfolioABTest[]
-  customForms        CustomForm[]
-  clients            Client[]
-  payments           Payment[]
-  galleryFeedback    GalleryFeedback[]
-  bookings           Booking[]
-  bookingTypes       BookingType[]
-  invoices           Invoice[]
-  contracts          Contract[]
-  contractTemplates  ContractTemplate[]
-  activityLogs       ActivityLog[]
-  notifications      Notification[]
-  usageMeters        UsageMeter[]
-  onboardingProgress OnboardingProgress?
-  services           Service[]
-  locations          Location[]
-  equipment          Equipment[]
+  portfolioABTests     PortfolioABTest[]
+  customForms          CustomForm[]
+  clients              Client[]
+  payments             Payment[]
+  galleryFeedback      GalleryFeedback[]
+  bookings             Booking[]
+  bookingTypes         BookingType[]
+  invoices             Invoice[]
+  contracts            Contract[]
+  contractTemplates    ContractTemplate[]
+  activityLogs         ActivityLog[]
+  notifications        Notification[]
+  usageMeters          UsageMeter[]
+  onboardingProgress   OnboardingProgress?
+  services             Service[]
+  locations            Location[]
+  equipment            Equipment[]
+  watermarkTemplates   WatermarkTemplate[]
   homeBaseLocation   Location?            @relation("OrgHomeBase", fields: [homeBaseLocationId], references: [id])
   taskBoards         TaskBoard[]
   tasks              Task[]
@@ -1033,6 +1034,31 @@ model GalleryTemplate {
 
   @@index([organizationId])
   @@index([serviceId])
+}
+
+// Watermark Templates - Reusable watermark presets
+model WatermarkTemplate {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String // Template name (e.g., "Full Signature", "Corner Logo")
+
+  // Watermark configuration
+  watermarkType     String  // "text" | "image"
+  watermarkText     String? // Text content for text watermarks
+  watermarkImageUrl String? // Image URL for image watermarks
+  watermarkPosition String  // "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"
+  watermarkOpacity  Float   @default(0.5) // 0.0 to 1.0
+  watermarkScale    Float   @default(1.0) // Scale multiplier
+
+  // Metadata
+  isDefault Boolean  @default(false) // Mark as default template
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
 }
 
 // Gallery Collections - Sub-albums within a gallery

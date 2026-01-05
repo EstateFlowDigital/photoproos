@@ -110,6 +110,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [navModeState, setNavModeState] = useState<"sidebar" | "top">(navMode);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [displayOpen, setDisplayOpen] = useState(false);
   const [topNavOpen, setTopNavOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
@@ -121,6 +122,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   const notificationsRef = useRef<HTMLDivElement>(null);
   const helpRef = useRef<HTMLDivElement>(null);
   const quickActionsRef = useRef<HTMLDivElement>(null);
+  const displayRef = useRef<HTMLDivElement>(null);
   const navToggleRef = useRef<HTMLDivElement>(null);
   const topNavRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -314,6 +316,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
       if (
         searchRef.current?.contains(e.target as Node) ||
         quickActionsRef.current?.contains(e.target as Node) ||
+        displayRef.current?.contains(e.target as Node) ||
         notificationsRef.current?.contains(e.target as Node) ||
         helpRef.current?.contains(e.target as Node) ||
         navToggleRef.current?.contains(e.target as Node) ||
@@ -324,6 +327,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
       }
       setSearchOpen(false);
       setQuickActionsOpen(false);
+      setDisplayOpen(false);
       setNotificationsOpen(false);
       setHelpOpen(false);
       setTopNavOpen(false);
@@ -523,6 +527,61 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
 
       {/* Right side - Actions */}
       <div className="order-1 flex items-center gap-2 sm:order-2">
+        {/* Display / layout dropdown */}
+        <div ref={displayRef} className="relative hidden sm:block">
+          <button
+            type="button"
+            onClick={() => {
+              setDisplayOpen((prev) => !prev);
+              setQuickActionsOpen(false);
+              setNotificationsOpen(false);
+              setWorkspaceOpen(false);
+              setTopNavOpen(false);
+            }}
+            className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+            title="Display & navigation"
+          >
+            <LayoutIcon className="h-4 w-4" />
+            <span className="hidden md:inline">Display</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform",
+                displayOpen ? "rotate-180" : "rotate-0"
+              )}
+            />
+          </button>
+          {displayOpen && (
+            <div className="absolute right-0 top-full mt-2 w-[clamp(240px,60vw,360px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50 space-y-2">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-[var(--background-hover)]"
+                onClick={() => {
+                  const nextMode = navModeState === "sidebar" ? "top" : "sidebar";
+                  setNavModeState(nextMode);
+                  onNavModeChange?.(nextMode);
+                  setDisplayOpen(false);
+                  setTopNavOpen(false);
+                }}
+              >
+                <span>{navModeState === "sidebar" ? "Switch to top navigation" : "Switch to sidebar navigation"}</span>
+                <span className="text-xs text-foreground-muted">Layout</span>
+              </button>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-[var(--background-hover)]"
+                onClick={() => {
+                  const event = new CustomEvent("ppos-nav-edit", { detail: true });
+                  window.dispatchEvent(event);
+                  setDisplayOpen(false);
+                }}
+              >
+                <span>Customize navigation</span>
+                <span className="text-xs text-foreground-muted">Reorder / hide</span>
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Top nav hamburger (when top mode is active) */}
         {navModeState === "top" && navLinks.length > 0 && (
           <div ref={topNavRef} className="relative">

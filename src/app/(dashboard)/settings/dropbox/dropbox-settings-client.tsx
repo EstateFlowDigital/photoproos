@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/toast";
 import type { DropboxConfig } from "@/lib/actions/dropbox";
 import {
   updateDropboxSettings,
@@ -21,6 +22,8 @@ interface DropboxSettingsClientProps {
 export function DropboxSettingsClient({
   initialConfig,
 }: DropboxSettingsClientProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [config, setConfig] = useState<DropboxConfig | null>(initialConfig);
   const [syncFolder, setSyncFolder] = useState(
@@ -39,12 +42,9 @@ export function DropboxSettingsClient({
     const error = searchParams?.get("error");
 
     if (success === "connected") {
-      setMessage({
-        type: "success",
-        text: "Successfully connected to Dropbox!",
-      });
+      showToast("Successfully connected to Dropbox!", "success");
       // Refresh config after connection
-      window.location.reload();
+      router.refresh();
     } else if (error) {
       const errorMessages: Record<string, string> = {
         not_configured: "Dropbox integration is not configured. Please contact support.",
@@ -58,12 +58,9 @@ export function DropboxSettingsClient({
         callback_failed: "Authorization callback failed. Please try again.",
         access_denied: "You denied access to Dropbox.",
       };
-      setMessage({
-        type: "error",
-        text: errorMessages[error] || `Error: ${error}`,
-      });
+      showToast(errorMessages[error] || `Error: ${error}`, "error");
     }
-  }, [searchParams]);
+  }, [searchParams, router, showToast]);
 
   const handleConnect = () => {
     // Redirect to OAuth authorization endpoint
