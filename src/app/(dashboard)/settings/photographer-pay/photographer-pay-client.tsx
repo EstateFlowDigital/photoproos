@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { upsertPhotographerRate, deletePhotographerRate } from "@/lib/actions/photographer-pay";
 import type { PhotographerRateWithRelations } from "@/lib/actions/photographer-pay";

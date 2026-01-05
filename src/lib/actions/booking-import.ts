@@ -242,7 +242,6 @@ const VALID_STATUSES: BookingStatus[] = [
   "confirmed",
   "completed",
   "cancelled",
-  "no_show",
 ];
 
 async function validateRow(

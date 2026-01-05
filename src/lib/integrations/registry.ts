@@ -503,7 +503,6 @@ export const INTEGRATIONS: Integration[] = [
       },
     ],
     requiredEnvVars: [],
-    comingSoon: true,
   },
 ];
 

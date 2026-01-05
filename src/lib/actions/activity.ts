@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import type { ActivityData } from "@/lib/utils/activity";
-import { ActivityType } from "@prisma/client";
+import { ActivityType, Prisma } from "@prisma/client";
 
 // Note: Types can be re-exported but functions cannot from "use server" files
 // Import getActivityLinkUrl and getActivityIcon directly from "@/lib/utils/activity"
@@ -107,7 +107,7 @@ export async function getActivityFeed(
     const offset = pagination?.offset || 0;
 
     // Build where clause
-    const where: Parameters<typeof prisma.activityLog.findMany>[0]["where"] = {
+    const where: Prisma.ActivityLogWhereInput = {
       organizationId,
     };
 

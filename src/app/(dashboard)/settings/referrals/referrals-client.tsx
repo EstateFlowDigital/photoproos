@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ReferralProgram,
   Referrer,
@@ -186,15 +187,12 @@ export function ReferralsClient({
             </div>
 
             <form action={handleSaveProgram} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Program Name</label>
-                <input
-                  name="name"
-                  type="text"
-                  defaultValue={program?.name || "Referral Program"}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground"
-                />
-              </div>
+              <Input
+                label="Program Name"
+                name="name"
+                type="text"
+                defaultValue={program?.name || "Referral Program"}
+              />
 
               <Select
                 label="Reward Type"
@@ -208,15 +206,12 @@ export function ReferralsClient({
                 ]}
               />
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Reward Value</label>
-                <input
-                  name="rewardValue"
-                  type="number"
-                  defaultValue={program?.rewardValue || 10}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground"
-                />
-              </div>
+              <Input
+                label="Reward Value"
+                name="rewardValue"
+                type="number"
+                defaultValue={program?.rewardValue || 10}
+              />
 
               <Button
                 type="submit"

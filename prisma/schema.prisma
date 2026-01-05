@@ -1391,6 +1391,9 @@ model Booking {
   // Phase 3: SMS Integration
   smsLogs SMSLog[]
 
+  // Waitlist conversion (booking created from waitlist)
+  convertedFromWaitlist BookingWaitlist? @relation("WaitlistConversion")
+
 
   @@index([organizationId])
   @@index([multiDayParentId])

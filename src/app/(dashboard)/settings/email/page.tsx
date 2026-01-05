@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input, Textarea } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
@@ -146,53 +147,32 @@ export default function EmailSettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                Sender Name
-              </label>
-              <input
-                type="text"
-                value={settings.emailSenderName || ""}
-                onChange={(e) => handleChange("emailSenderName", e.target.value)}
-                placeholder="Your organization name"
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
-              />
-              <p className="mt-1 text-xs text-foreground-muted">
-                This name will appear in the "From" field of emails
-              </p>
-            </div>
+            <Input
+              label="Sender Name"
+              type="text"
+              value={settings.emailSenderName || ""}
+              onChange={(e) => handleChange("emailSenderName", e.target.value)}
+              placeholder="Your organization name"
+              helperText='This name will appear in the "From" field of emails'
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                Reply-To Email
-              </label>
-              <input
-                type="email"
-                value={settings.emailReplyTo || ""}
-                onChange={(e) => handleChange("emailReplyTo", e.target.value)}
-                placeholder="your-email@example.com"
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
-              />
-              <p className="mt-1 text-xs text-foreground-muted">
-                Replies to your emails will be sent to this address
-              </p>
-            </div>
+            <Input
+              label="Reply-To Email"
+              type="email"
+              value={settings.emailReplyTo || ""}
+              onChange={(e) => handleChange("emailReplyTo", e.target.value)}
+              placeholder="your-email@example.com"
+              helperText="Replies to your emails will be sent to this address"
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                Email Signature
-              </label>
-              <textarea
-                value={settings.emailSignature || ""}
-                onChange={(e) => handleChange("emailSignature", e.target.value)}
-                placeholder="Best regards,&#10;Your Name&#10;Your Company"
-                rows={4}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none resize-none"
-              />
-              <p className="mt-1 text-xs text-foreground-muted">
-                This signature will be added to the end of certain emails
-              </p>
-            </div>
+            <Textarea
+              label="Email Signature"
+              value={settings.emailSignature || ""}
+              onChange={(e) => handleChange("emailSignature", e.target.value)}
+              placeholder="Best regards,&#10;Your Name&#10;Your Company"
+              rows={4}
+              helperText="This signature will be added to the end of certain emails"
+            />
           </div>
         </div>
 
@@ -272,14 +252,15 @@ export default function EmailSettingsPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <input
-              type="email"
-              value={testEmail}
-              onChange={(e) => setTestEmail(e.target.value)}
-              placeholder="Enter email address"
-              className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
-            />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="flex-1">
+              <Input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="Enter email address"
+              />
+            </div>
             <Button
               variant="secondary"
               onClick={handleSendTest}

@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/toast";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LoadingSpinner, MoonIcon, SunIcon, LockIcon, CheckCircleIcon, ArrowRightIcon } from "@/components/ui/settings-icons";
 
 interface BrandingSettingsFormProps {
@@ -692,12 +693,13 @@ export function BrandingSettingsForm({
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Subdomain</label>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <input
-                    type="text"
-                    defaultValue={settings.slug}
-                    disabled
-                    className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
-                  />
+                  <div className="flex-1">
+                    <Input
+                      type="text"
+                      defaultValue={settings.slug}
+                      disabled
+                    />
+                  </div>
                   <span className="text-sm text-foreground-muted">.photoproos.app</span>
                 </div>
                 <p className="mt-1.5 text-xs text-foreground-muted">
@@ -706,25 +708,14 @@ export function BrandingSettingsForm({
               </div>
 
               <div className="pt-4 border-t border-[var(--card-border)]">
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Custom Domain{" "}
-                  {!isPaidPlan && <span className="text-foreground-muted">(Pro plan required)</span>}
-                </label>
-                <input
+                <Input
+                  label={isPaidPlan ? "Custom Domain" : "Custom Domain (Pro plan required)"}
                   type="text"
                   placeholder="gallery.yourdomain.com"
                   defaultValue={settings.customDomain || ""}
                   disabled={!isPaidPlan}
-                  className={cn(
-                    "w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground",
-                    !isPaidPlan && "opacity-50 cursor-not-allowed"
-                  )}
+                  helperText={isPaidPlan ? "Contact support to configure your custom domain" : undefined}
                 />
-                {isPaidPlan && (
-                  <p className="mt-1.5 text-xs text-foreground-muted">
-                    Contact support to configure your custom domain
-                  </p>
-                )}
               </div>
             </div>
           </div>

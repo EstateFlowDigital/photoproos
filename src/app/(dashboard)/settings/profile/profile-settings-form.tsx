@@ -5,6 +5,7 @@ import Image from "next/image";
 import { updateUserProfile, updateOrganizationProfile } from "@/lib/actions/settings";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { TIMEZONE_GROUPS } from "@/lib/constants/timezones";
 
 interface ProfileSettingsFormProps {
@@ -208,48 +209,30 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
         <h2 className="text-lg font-semibold text-foreground mb-4">Personal Information</h2>
 
         <div className="space-y-4">
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-1.5">
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="fullName"
-              name="fullName"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            />
-          </div>
+          <Input
+            label="Full Name"
+            type="text"
+            name="fullName"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={user.email}
-              disabled
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground-muted cursor-not-allowed"
-            />
-            <p className="mt-1 text-xs text-foreground-muted">Email cannot be changed here. Contact support if needed.</p>
-          </div>
+          <Input
+            label="Email Address"
+            type="email"
+            name="email"
+            value={user.email}
+            disabled
+            helperText="Email cannot be changed here. Contact support if needed."
+          />
 
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-1.5">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            />
-          </div>
+          <Input
+            label="Phone Number"
+            type="tel"
+            name="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
         </div>
       </div>
 
@@ -258,19 +241,13 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
         <h2 className="text-lg font-semibold text-foreground mb-4">Business Information</h2>
 
         <div className="space-y-4">
-          <div>
-            <label htmlFor="businessName" className="block text-sm font-medium text-foreground mb-1.5">
-              Business Name
-            </label>
-            <input
-              type="text"
-              id="businessName"
-              name="businessName"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-            />
-          </div>
+          <Input
+            label="Business Name"
+            type="text"
+            name="businessName"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+          />
 
           <div>
             <label htmlFor="timezone" className="block text-sm font-medium text-foreground mb-1.5">

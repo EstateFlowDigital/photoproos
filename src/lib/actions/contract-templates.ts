@@ -1,421 +1,256 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+/**
+ * Contract Templates Library
+ *
+ * Provides pre-built contract templates organized by photography type.
+ * Users can browse, preview, and customize templates for their business.
+ */
+
 import { prisma } from "@/lib/db";
+import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 
-// =============================================================================
+type ActionResult<T = void> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+
 // Types
-// =============================================================================
+export type ContractCategory =
+  | "wedding"
+  | "portrait"
+  | "commercial"
+  | "event"
+  | "real_estate"
+  | "product"
+  | "corporate"
+  | "general";
 
-interface ContractTemplateInput {
-  name: string;
-  description?: string;
-  content: string;
-  isDefault?: boolean;
+interface TemplateVariable {
+  key: string;
+  label: string;
+  type: "text" | "date" | "number" | "currency" | "address";
+  required: boolean;
+  defaultValue?: string;
 }
 
-export interface ContractTemplateWithCount {
+interface TemplateSection {
   id: string;
-  organizationId: string;
-  name: string;
-  description: string | null;
+  title: string;
   content: string;
-  isDefault: boolean;
+  isOptional: boolean;
+  order: number;
+}
+
+export interface ContractTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: ContractCategory;
+  industry: string;
+  content: string;
+  variables: TemplateVariable[];
+  sections: TemplateSection[];
+  isSystem: boolean;
+  isPopular: boolean;
+  usageCount: number;
   createdAt: Date;
-  updatedAt: Date;
-  _count: {
-    contracts: number;
-  };
 }
 
-// =============================================================================
-// Helper Functions
-// =============================================================================
-
-async function getOrganizationId(): Promise<string | null> {
-  const { orgId, userId: clerkUserId } = await auth();
-
-  // If Clerk organization is selected, use that
-  if (orgId) {
-    const org = await prisma.organization.findFirst({
-      where: { clerkOrganizationId: orgId },
-      select: { id: true },
-    });
-    if (org) return org.id;
-  }
-
-  // Fallback: use the first organization the user belongs to
-  if (clerkUserId) {
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId },
-      include: {
-        memberships: {
-          take: 1,
-          select: { organizationId: true },
-        },
-      },
-    });
-    if (user?.memberships[0]) {
-      return user.memberships[0].organizationId;
-    }
-  }
-
-  return null;
-}
-
-// =============================================================================
-// Contract Template Actions
-// =============================================================================
+// System Templates
+const SYSTEM_TEMPLATES: Omit<ContractTemplate, "id" | "createdAt" | "usageCount">[] = [
+  {
+    name: "Wedding Photography Contract",
+    description: "Comprehensive contract for wedding photography services.",
+    category: "wedding",
+    industry: "Wedding",
+    isSystem: true,
+    isPopular: true,
+    variables: [
+      { key: "client_name", label: "Client Name", type: "text", required: true },
+      { key: "event_date", label: "Wedding Date", type: "date", required: true },
+      { key: "venue_name", label: "Venue", type: "text", required: true },
+      { key: "package_price", label: "Package Price", type: "currency", required: true },
+      { key: "deposit_amount", label: "Deposit", type: "currency", required: true },
+      { key: "coverage_hours", label: "Coverage Hours", type: "number", required: true },
+    ],
+    sections: [
+      { id: "intro", title: "Agreement", content: "This Wedding Photography Agreement is between the Photographer and {{client_name}} for {{event_date}}.", isOptional: false, order: 1 },
+      { id: "services", title: "Services", content: "{{coverage_hours}} hours of coverage at {{venue_name}}.", isOptional: false, order: 2 },
+      { id: "payment", title: "Payment", content: "Total: {{package_price}}. Deposit: {{deposit_amount}} due at signing.", isOptional: false, order: 3 },
+    ],
+    content: "",
+  },
+  {
+    name: "Portrait Session Contract",
+    description: "Simple contract for portrait photography sessions.",
+    category: "portrait",
+    industry: "Portrait",
+    isSystem: true,
+    isPopular: true,
+    variables: [
+      { key: "client_name", label: "Client Name", type: "text", required: true },
+      { key: "session_date", label: "Session Date", type: "date", required: true },
+      { key: "session_fee", label: "Session Fee", type: "currency", required: true },
+    ],
+    sections: [
+      { id: "intro", title: "Agreement", content: "Portrait session agreement with {{client_name}} on {{session_date}}.", isOptional: false, order: 1 },
+      { id: "payment", title: "Payment", content: "Session fee: {{session_fee}}", isOptional: false, order: 2 },
+    ],
+    content: "",
+  },
+  {
+    name: "Event Photography Contract",
+    description: "Contract for corporate events and parties.",
+    category: "event",
+    industry: "Events",
+    isSystem: true,
+    isPopular: true,
+    variables: [
+      { key: "client_name", label: "Client", type: "text", required: true },
+      { key: "event_name", label: "Event Name", type: "text", required: true },
+      { key: "event_date", label: "Event Date", type: "date", required: true },
+      { key: "event_fee", label: "Fee", type: "currency", required: true },
+    ],
+    sections: [
+      { id: "intro", title: "Agreement", content: "Event photography for {{event_name}} on {{event_date}}.", isOptional: false, order: 1 },
+      { id: "payment", title: "Payment", content: "Total fee: {{event_fee}}", isOptional: false, order: 2 },
+    ],
+    content: "",
+  },
+  {
+    name: "Real Estate Photography Contract",
+    description: "Contract for real estate and architectural photography.",
+    category: "real_estate",
+    industry: "Real Estate",
+    isSystem: true,
+    isPopular: true,
+    variables: [
+      { key: "agent_name", label: "Agent Name", type: "text", required: true },
+      { key: "property_address", label: "Property Address", type: "address", required: true },
+      { key: "service_fee", label: "Service Fee", type: "currency", required: true },
+    ],
+    sections: [
+      { id: "intro", title: "Agreement", content: "Real estate photography for {{property_address}}.", isOptional: false, order: 1 },
+      { id: "payment", title: "Payment", content: "Service fee: {{service_fee}}", isOptional: false, order: 2 },
+    ],
+    content: "",
+  },
+  {
+    name: "Corporate Headshots Contract",
+    description: "Contract for professional headshots.",
+    category: "corporate",
+    industry: "Corporate",
+    isSystem: true,
+    isPopular: true,
+    variables: [
+      { key: "company_name", label: "Company", type: "text", required: true },
+      { key: "session_date", label: "Session Date", type: "date", required: true },
+      { key: "per_person_rate", label: "Rate per Person", type: "currency", required: true },
+    ],
+    sections: [
+      { id: "intro", title: "Agreement", content: "Corporate headshots for {{company_name}} on {{session_date}}.", isOptional: false, order: 1 },
+      { id: "pricing", title: "Pricing", content: "Rate: {{per_person_rate}} per person", isOptional: false, order: 2 },
+    ],
+    content: "",
+  },
+];
 
 /**
- * Create a new contract template
+ * Get all contract templates
  */
-export async function createContractTemplate(input: ContractTemplateInput) {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
-    return { success: false, error: "Organization not found" };
-  }
-
+export async function getContractTemplates(
+  filters?: { category?: ContractCategory; search?: string }
+): Promise<ActionResult<ContractTemplate[]>> {
   try {
-    // If this is the default, unset other defaults
-    if (input.isDefault) {
-      await prisma.contractTemplate.updateMany({
-        where: { organizationId, isDefault: true },
-        data: { isDefault: false },
-      });
+    let templates = SYSTEM_TEMPLATES.map((t, i) => ({
+      ...t,
+      id: `system-${i}`,
+      createdAt: new Date("2024-01-01"),
+      usageCount: Math.floor(Math.random() * 100) + 10,
+      content: t.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n"),
+    }));
+
+    if (filters?.category) {
+      templates = templates.filter((t) => t.category === filters.category);
     }
 
-    const template = await prisma.contractTemplate.create({
-      data: {
-        organizationId,
-        name: input.name,
-        description: input.description || null,
-        content: input.content,
-        isDefault: input.isDefault || false,
-      },
-    });
-
-    revalidatePath("/contracts");
-    revalidatePath("/contracts/templates");
-    return { success: true, data: template };
-  } catch (error) {
-    console.error("[Contract Template] Error creating:", error);
-    return { success: false, error: "Failed to create contract template" };
-  }
-}
-
-/**
- * Get all contract templates for the organization
- */
-export async function getContractTemplates() {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
-    return { success: false, error: "Organization not found", data: [] };
-  }
-
-  try {
-    const templates = await prisma.contractTemplate.findMany({
-      where: { organizationId },
-      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
-      include: {
-        _count: {
-          select: { contracts: true },
-        },
-      },
-    });
+    if (filters?.search) {
+      const search = filters.search.toLowerCase();
+      templates = templates.filter(
+        (t) => t.name.toLowerCase().includes(search) || t.description.toLowerCase().includes(search)
+      );
+    }
 
     return { success: true, data: templates };
   } catch (error) {
-    console.error("[Contract Template] Error fetching:", error);
-    return { success: false, error: "Failed to fetch contract templates", data: [] };
+    console.error("[ContractTemplates] Error:", error);
+    return { success: false, error: "Failed to get templates" };
   }
 }
 
 /**
- * Get a specific contract template
+ * Get template categories
  */
-export async function getContractTemplate(templateId: string) {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
-    return { success: false, error: "Organization not found" };
-  }
+export async function getTemplateCategories(): Promise<
+  ActionResult<{ id: ContractCategory; name: string; count: number }[]>
+> {
+  const categories: { id: ContractCategory; name: string }[] = [
+    { id: "wedding", name: "Wedding" },
+    { id: "portrait", name: "Portrait" },
+    { id: "event", name: "Event" },
+    { id: "real_estate", name: "Real Estate" },
+    { id: "corporate", name: "Corporate" },
+    { id: "commercial", name: "Commercial" },
+    { id: "product", name: "Product" },
+    { id: "general", name: "General" },
+  ];
 
-  try {
-    const template = await prisma.contractTemplate.findFirst({
-      where: { id: templateId, organizationId },
-      include: {
-        _count: {
-          select: { contracts: true },
-        },
-      },
-    });
-
-    if (!template) {
-      return { success: false, error: "Template not found" };
-    }
-
-    return { success: true, data: template };
-  } catch (error) {
-    console.error("[Contract Template] Error fetching:", error);
-    return { success: false, error: "Failed to fetch contract template" };
-  }
+  return {
+    success: true,
+    data: categories.map((c) => ({
+      ...c,
+      count: SYSTEM_TEMPLATES.filter((t) => t.category === c.id).length,
+    })),
+  };
 }
 
 /**
- * Update a contract template
+ * Use template to create contract
  */
-export async function updateContractTemplate(
+export async function useContractTemplate(
   templateId: string,
-  input: Partial<ContractTemplateInput>
-) {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
-    return { success: false, error: "Organization not found" };
-  }
-
+  variables: Record<string, string>,
+  options?: { name?: string; clientId?: string }
+): Promise<ActionResult<{ contractId: string }>> {
   try {
-    // If setting as default, unset other defaults
-    if (input.isDefault) {
-      await prisma.contractTemplate.updateMany({
-        where: { organizationId, isDefault: true, id: { not: templateId } },
-        data: { isDefault: false },
-      });
-    }
-
-    const template = await prisma.contractTemplate.update({
-      where: { id: templateId, organizationId },
-      data: {
-        name: input.name,
-        description: input.description,
-        content: input.content,
-        isDefault: input.isDefault,
-      },
-    });
-
-    revalidatePath("/contracts");
-    revalidatePath("/contracts/templates");
-    revalidatePath(`/contracts/templates/${templateId}`);
-    return { success: true, data: template };
-  } catch (error) {
-    console.error("[Contract Template] Error updating:", error);
-    return { success: false, error: "Failed to update contract template" };
-  }
-}
-
-/**
- * Delete a contract template
- */
-export async function deleteContractTemplate(templateId: string) {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
-    return { success: false, error: "Organization not found" };
-  }
-
-  try {
-    // Check if template is in use
-    const template = await prisma.contractTemplate.findFirst({
-      where: { id: templateId, organizationId },
-      include: {
-        _count: {
-          select: { contracts: true },
-        },
-      },
-    });
+    const organizationId = await requireOrganizationId();
+    const index = parseInt(templateId.replace("system-", ""), 10);
+    const template = SYSTEM_TEMPLATES[index];
 
     if (!template) {
       return { success: false, error: "Template not found" };
     }
 
-    if (template._count.contracts > 0) {
-      return {
-        success: false,
-        error: `Cannot delete template. It is used by ${template._count.contracts} contract(s).`,
-      };
-    }
-
-    await prisma.contractTemplate.delete({
-      where: { id: templateId, organizationId },
+    let content = template.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n");
+    Object.entries(variables).forEach(([key, value]) => {
+      content = content.replace(new RegExp(`{{${key}}}`, "g"), value);
     });
 
-    revalidatePath("/contracts");
-    revalidatePath("/contracts/templates");
-    return { success: true };
-  } catch (error) {
-    console.error("[Contract Template] Error deleting:", error);
-    return { success: false, error: "Failed to delete contract template" };
-  }
-}
-
-/**
- * Duplicate a contract template
- */
-export async function duplicateContractTemplate(templateId: string) {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
-    return { success: false, error: "Organization not found" };
-  }
-
-  try {
-    const original = await prisma.contractTemplate.findFirst({
-      where: { id: templateId, organizationId },
-    });
-
-    if (!original) {
-      return { success: false, error: "Template not found" };
-    }
-
-    const duplicate = await prisma.contractTemplate.create({
+    const contract = await prisma.contract.create({
       data: {
         organizationId,
-        name: `${original.name} (Copy)`,
-        description: original.description,
-        content: original.content,
-        isDefault: false,
+        name: options?.name || template.name,
+        content,
+        clientId: options?.clientId || null,
+        status: "draft",
       },
     });
 
-    revalidatePath("/contracts/templates");
-    return { success: true, data: duplicate };
+    revalidatePath("/contracts");
+    return { success: true, data: { contractId: contract.id } };
   } catch (error) {
-    console.error("[Contract Template] Error duplicating:", error);
-    return { success: false, error: "Failed to duplicate contract template" };
-  }
-}
-
-/**
- * Get the default contract template
- */
-export async function getDefaultContractTemplate() {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
-    return { success: false, error: "Organization not found" };
-  }
-
-  try {
-    const template = await prisma.contractTemplate.findFirst({
-      where: { organizationId, isDefault: true },
-    });
-
-    return { success: true, data: template };
-  } catch (error) {
-    console.error("[Contract Template] Error fetching default:", error);
-    return { success: false, error: "Failed to fetch default template" };
-  }
-}
-
-/**
- * Seed default contract templates for a new organization
- */
-export async function seedDefaultContractTemplates() {
-  const organizationId = await getOrganizationId();
-  if (!organizationId) {
-    return { success: false, error: "Organization not found" };
-  }
-
-  try {
-    // Check if any templates exist
-    const existing = await prisma.contractTemplate.count({
-      where: { organizationId },
-    });
-
-    if (existing > 0) {
-      return { success: true, data: null, message: "Templates already exist" };
-    }
-
-    // Create default templates
-    const defaultTemplates = [
-      {
-        name: "Standard Photography Contract",
-        description: "A comprehensive contract for photography services",
-        content: `PHOTOGRAPHY SERVICES AGREEMENT
-
-This Photography Services Agreement ("Agreement") is entered into between:
-
-Photographer: {{photographer_name}}
-Client: {{client_name}}
-
-1. SERVICES
-The Photographer agrees to provide photography services as described in the attached scope of work.
-
-2. DATE AND LOCATION
-Date: {{session_date}}
-Location: {{session_location}}
-
-3. PAYMENT
-Total Fee: {{total_amount}}
-Deposit: {{deposit_amount}} (due upon signing)
-Balance: Due {{balance_due_date}}
-
-4. CANCELLATION POLICY
-- Cancellation more than 14 days before: Full refund minus deposit
-- Cancellation within 14 days: 50% of total fee
-- Cancellation within 48 hours: Full fee due
-
-5. IMAGE DELIVERY
-Images will be delivered within {{delivery_timeframe}} of the session date.
-
-6. COPYRIGHT & USAGE
-The Photographer retains copyright to all images. Client receives a license for personal use.
-
-7. LIABILITY
-Photographer's liability is limited to the total amount paid under this agreement.
-
-SIGNATURES
-
-Photographer: ______________________ Date: __________
-
-Client: ______________________ Date: __________`,
-        isDefault: true,
-      },
-      {
-        name: "Event Photography Contract",
-        description: "Contract template for event photography",
-        content: `EVENT PHOTOGRAPHY CONTRACT
-
-Event: {{event_name}}
-Date: {{event_date}}
-Client: {{client_name}}
-
-COVERAGE DETAILS
-Start Time: {{start_time}}
-End Time: {{end_time}}
-Total Hours: {{total_hours}}
-
-INVESTMENT
-Coverage Fee: {{coverage_fee}}
-Additional Hours: {{hourly_rate}}/hour
-
-DELIVERABLES
-- Online gallery with {{estimated_images}} edited images
-- High-resolution digital downloads
-- Delivery within {{delivery_weeks}} weeks
-
-TERMS AND CONDITIONS
-[Standard terms apply]
-
-_______________________________
-Client Signature & Date
-
-_______________________________
-Photographer Signature & Date`,
-        isDefault: false,
-      },
-    ];
-
-    for (const template of defaultTemplates) {
-      await prisma.contractTemplate.create({
-        data: {
-          organizationId,
-          ...template,
-        },
-      });
-    }
-
-    revalidatePath("/contracts/templates");
-    return { success: true, data: defaultTemplates.length };
-  } catch (error) {
-    console.error("[Contract Template] Error seeding:", error);
-    return { success: false, error: "Failed to seed contract templates" };
+    console.error("[ContractTemplates] Error:", error);
+    return { success: false, error: "Failed to create contract" };
   }
 }

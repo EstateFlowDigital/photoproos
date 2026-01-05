@@ -8,6 +8,113 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Revenue Forecasting** - Predict future revenue based on bookings and historical trends
+  - Added `getRevenueForecast` - predictive revenue modeling with seasonal adjustments
+  - Added `getHistoricalTrends` - analyze revenue trends over time
+  - Added `getSeasonalPatterns` - calculate seasonal indices by month
+  - Added `getRevenueGoals` - set and track revenue goals with progress
+  - Added `getRevenueInsights` - AI-powered actionable business insights
+  - Confidence levels and optimistic/pessimistic projections
+
+- **Contract Templates Library** - Pre-built contract templates by photography type
+  - System templates for Wedding, Portrait, Event, Real Estate, and Corporate photography
+  - Added `getContractTemplates` - browse templates with category and search filters
+  - Added `getTemplateCategories` - get template categories with counts
+  - Added `useContractTemplate` - create contracts from templates with variable substitution
+  - Template sections with customizable content and variables
+
+- **Team Availability Calendar** - Visual calendar showing team member availability
+  - Added `getTeamAvailability` - get availability for date range with booking details
+  - Added `getDailyTeamSummary` - daily availability summary by team member
+  - Added `findAvailableTeamMembers` - find available members for a specific time slot
+  - Added `getTeamUtilization` - utilization metrics and analytics
+  - Added `getSuggestedBookingTimes` - AI-like smart booking time suggestions
+  - Supports working hours and booking overlap detection
+
+- **Waitlist Management** - Handle booking waitlists when preferred slots are unavailable
+  - Added BookingWaitlist model with status tracking (pending, notified, booked, expired, cancelled)
+  - Added `addToWaitlist` - add clients to waitlist with preferred/alternate dates
+  - Added `notifyWaitlistClient` - notify when slot becomes available
+  - Added `convertWaitlistToBooking` - convert waitlist entry to confirmed booking
+  - Added `getWaitlistStats` - analytics and metrics for waitlist management
+  - Added `getWaitlistMatches` - find matching open slots for waitlist entries
+  - Priority-based positioning and expiration handling
+
+- **Service Package Builder** - Enhanced package creation with analytics and recommendations
+  - Added `getPackageAnalytics` - performance metrics for all packages
+  - Added `getPackageRecommendations` - AI-like recommendations based on booking patterns
+  - Added `createPackageFromRecommendation` - quick package creation from recommendations
+  - Added `getPackageTemplates` - industry-specific pre-defined package templates
+  - Revenue tracking and popularity rankings
+
+- **Bulk Booking Import** - Import bookings from CSV/spreadsheet files
+  - Added `previewBookingImport` - validate CSV and preview import results
+  - Added `importBookings` - import validated bookings to database
+  - Added `getBookingImportTemplate` - downloadable CSV template with headers
+  - Flexible header mapping (client_name, title, service, date, time, etc.)
+  - Comprehensive validation with error and warning reporting
+  - Supports multiple date/time formats
+
+- **Client Portal Notifications** - Real-time notifications for the client portal
+  - Added ClientNotification model with notification types (gallery, invoice, payment, contract, booking, questionnaire)
+  - Added `getClientNotifications` - paginated notifications with read/unread filtering
+  - Added `markClientNotificationAsRead` and `markAllClientNotificationsAsRead`
+  - Added notification helpers: `notifyGalleryReady`, `notifyInvoiceSent`, `notifyPaymentConfirmed`, `notifyContractReady`, `notifyBookingConfirmed`, `notifyBookingReminder`
+  - Token-based access for unauthenticated client portal access
+
+- **Automated Follow-ups** - Send automated follow-up emails after bookings complete
+  - Added BookingFollowupEmail template with three types: thank_you, review_request, rebook_reminder
+  - Added `sendBookingFollowupEmail` function to email service
+  - Added cron endpoint for automated follow-up scheduling (`api/cron/booking-followups`)
+  - Follow-ups sent at 1 day (thank you), 3 days (review request), 30/60/90 days (rebook reminders)
+  - Added `completedAt` and `followupsSent` fields to Booking model
+  - Prevents duplicate follow-up emails
+
+- **Mailchimp Integration Settings Page** - Dedicated settings page for Mailchimp email marketing integration
+  - New page at `/settings/mailchimp` for managing Mailchimp integration
+  - Connection status card with API key input field
+  - Audience/list selection dropdown for syncing contacts
+  - Contact sync settings with auto-sync toggle for new clients
+  - Sync existing clients button for bulk synchronization
+  - Tag mapping section to map client types (Real Estate, Commercial, Portrait, Events, Architecture) to Mailchimp tags
+  - Marketing preferences with default opt-in status and welcome email trigger toggles
+  - Sync history section showing recent sync activity
+  - Step-by-step setup instructions for obtaining Mailchimp API key
+  - "Coming Soon" banner indicating full functionality is under development
+  - Feature preview section describing upcoming capabilities
+
+- **Zapier Integration Settings Page** - Dedicated settings page for Zapier automation integration
+  - New page at `/settings/zapier` for managing Zapier integration
+  - Connection status card showing API key readiness status
+  - API key display and generation for Zapier authentication
+  - Available triggers list: new booking, payment received, gallery delivered, client message, booking cancelled
+  - Available actions list: create booking, update client, send notification
+  - Step-by-step setup instructions for connecting with Zapier
+  - Popular automation ideas section with common Zap templates
+  - Documentation links to Zapier developer docs and help center
+  - Removed "coming soon" flag from Zapier integration in registry
+
+- **QuickBooks Integration Settings Page** - Dedicated settings page for QuickBooks Online integration
+  - New page at `/settings/quickbooks` for managing QuickBooks integration
+  - Connection status card showing company info and realm ID when connected
+  - "Coming Soon" banner indicating OAuth functionality is under development
+  - Invoice sync settings with auto-sync toggle, frequency selection, and income account mapping
+  - Tax tracking toggle for including tax information in synced invoices
+  - Customer sync settings with auto-create customers toggle
+  - Field mapping table showing PhotoProOS to QuickBooks field relationships
+  - Sync history section for viewing recent sync activity
+  - Manual sync button for on-demand synchronization
+  - Step-by-step setup instructions for OAuth connection
+  - Documentation links to QuickBooks API and support resources
+
+- **Calendly Integration Settings Page** - Dedicated settings page for Calendly integration
+  - New page at `/settings/calendly` for managing Calendly integration (coming soon)
+  - Personal access token input field with secure password field toggle
+  - Event type mapping section to map Calendly events to PhotoProOS services
+  - Sync settings for auto-creating bookings and notification preferences
+  - Step-by-step setup instructions for getting Calendly API token
+  - Coming soon banner indicating full functionality is in development
+
 - **Custom Confirm Dialog Component** - Replaced native browser confirm() with styled dialog
   - Created `ConfirmDialog` component with `useConfirm` hook (`components/ui/confirm-dialog.tsx`)
   - Added `ConfirmProvider` to dashboard layout
@@ -28,6 +135,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated referrals page with Select component for reward type
   - Updated calendar settings with Select component for sync direction
   - Updated photographer pay settings with Select component for team member, service, and rate type selections
+- **Consolidate inline icons with shared icon library** - Reduced code duplication across settings pages
+  - Replaced inline icon definitions with imports from `@/components/ui/settings-icons`
+  - Updated email, email-logs, notifications, profile, gallery-templates, and my-referrals pages
+  - Removed ~50+ duplicate SVG icon definitions across settings files
 
 ### Added
 - **Slack Integration Settings Page** - Dedicated settings page for Slack notifications
