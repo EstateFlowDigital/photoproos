@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Settings Input Standardization** - Replaced raw `<input>` elements with design system Input component across settings pages
+  - Updated profile-settings-form.tsx with Input component for Full Name, Email, Phone, and Business Name fields
+  - Updated branding-settings-form.tsx with Input component for Subdomain and Custom Domain fields
+  - Updated email/page.tsx with Input and Textarea components for Sender Name, Reply-To Email, Email Signature, and Test Email fields
+  - Updated referrals-client.tsx with Input component for Program Name and Reward Value fields
+  - Updated photographer-pay-client.tsx with Input component for Rate Value, Minimum Pay, and Maximum Pay fields
+  - Improves UI consistency and accessibility across all settings forms
+
 ### Added
 - **Revenue Forecasting** - Predict future revenue based on bookings and historical trends
   - Added `getRevenueForecast` - predictive revenue modeling with seasonal adjustments

@@ -190,44 +190,35 @@ export function PhotographerPayClient({
                 ]}
               />
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Rate Value</label>
-                <input
-                  type="number"
-                  name="rateValue"
-                  required
-                  step="0.01"
-                  min="0"
-                  placeholder="e.g., 40 for 40% or $40"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
-                />
-              </div>
+              <Input
+                label="Rate Value"
+                type="number"
+                name="rateValue"
+                required
+                step="0.01"
+                min="0"
+                placeholder="e.g., 40 for 40% or $40"
+              />
             </div>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Minimum Pay (optional)</label>
-                <input
-                  type="number"
-                  name="minPay"
-                  step="0.01"
-                  min="0"
-                  placeholder="e.g., 50 for $50 minimum"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
-                />
-              </div>
+              <Input
+                label="Minimum Pay (optional)"
+                type="number"
+                name="minPay"
+                step="0.01"
+                min="0"
+                placeholder="e.g., 50 for $50 minimum"
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Maximum Pay (optional)</label>
-                <input
-                  type="number"
-                  name="maxPay"
-                  step="0.01"
-                  min="0"
-                  placeholder="e.g., 500 for $500 cap"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
-                />
-              </div>
+              <Input
+                label="Maximum Pay (optional)"
+                type="number"
+                name="maxPay"
+                step="0.01"
+                min="0"
+                placeholder="e.g., 500 for $500 cap"
+              />
             </div>
 
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
