@@ -8,6 +8,7 @@ import { MobileNav, MobileMenuButton } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { ResponsiveTester } from "@/components/dev/responsive-tester";
+import { BugProbe } from "@/components/dev/bug-probe";
 import { useTheme } from "@/components/theme-provider";
 
 interface AutoThemeConfig {
@@ -105,6 +106,7 @@ export function DashboardLayoutClient({
 
   return (
     <ResponsiveTester>
+      <BugProbe />
       <div
         ref={shellRef}
         className={`shell-container flex min-h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
