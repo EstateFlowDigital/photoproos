@@ -51,9 +51,8 @@ export default async function EditContractTemplatePage({ params }: Props) {
           id: template.id,
           name: template.name,
           description: template.description,
-          content: template.content,
-          isDefault: template.isDefault,
-          _count: template._count,
+          content: template.content || "",
+          category: template.category,
         }}
       />
     </div>
