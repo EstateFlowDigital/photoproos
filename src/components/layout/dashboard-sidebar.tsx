@@ -194,7 +194,7 @@ export function DashboardSidebar({
     const isActive =
       pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
     const IconComponent = item.icon;
-    const canDrag = options?.draggable;
+    const canDrag = options?.draggable && editMode;
 
     const linkContent = (
       <Link
@@ -205,7 +205,7 @@ export function DashboardSidebar({
           isActive
             ? "bg-[var(--primary)] text-white"
             : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground",
-          canDrag && "cursor-move",
+          canDrag && editMode && "cursor-move",
           hiddenIds.includes(item.id) && editMode && "opacity-70 line-through"
         )}
         onClick={(e) => {
@@ -260,7 +260,7 @@ export function DashboardSidebar({
 
     return (
       <div
-        draggable
+        draggable={editMode}
         onDragStart={() => setDraggingNavId(item.id)}
         onDragOver={(e) => {
           e.preventDefault();

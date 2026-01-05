@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **gallery-client.tsx Code Optimization** - Reduced file size from 3,239 to 2,997 lines (~242 lines removed)
+  - Removed old disabled slideshow implementation (replaced by SlideshowViewer component)
+  - Removed orphaned slideshow touch handlers (`handleTouchStart`, `handleTouchMove`, `handleTouchEnd`)
+  - Removed orphaned slideshow keyboard navigation effect
+  - Removed orphaned auto-advance timer effect
+  - Removed unused slideshow navigation functions (`nextSlide`, `prevSlide`, `goToSlide`, `toggleSlideshowPlayPause`)
+  - Removed unused state variables (`showThumbnails`, `touchStart`, `touchEnd`)
+  - All slideshow functionality now handled by dedicated SlideshowViewer component
+
 ### Added
 - **Slideshow Mode: Full-Featured Photo Presentation** - Professional slideshow viewer with advanced controls and mobile optimization
   - **Core Features:**

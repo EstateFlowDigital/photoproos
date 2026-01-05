@@ -81,9 +81,6 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [slideshowPlaying, setSlideshowPlaying] = useState(true);
   const [slideshowInterval, setSlideshowInterval] = useState(4000); // 4 seconds default
-  const [showThumbnails, setShowThumbnails] = useState(true);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Comments state
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
@@ -844,62 +841,6 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     setSlideshowPlaying(false);
   }, []);
 
-  const nextSlide = useCallback(() => {
-    setSlideshowIndex((prev) => (prev + 1) % slideshowPhotos.length);
-  }, [slideshowPhotos.length]);
-
-  const prevSlide = useCallback(() => {
-    setSlideshowIndex((prev) => (prev - 1 + slideshowPhotos.length) % slideshowPhotos.length);
-  }, [slideshowPhotos.length]);
-
-  const toggleSlideshowPlayPause = useCallback(() => {
-    setSlideshowPlaying((prev) => !prev);
-  }, []);
-
-  // Slideshow keyboard navigation
-  useEffect(() => {
-    if (!slideshowActive) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case "Escape":
-          stopSlideshow();
-          break;
-        case "ArrowRight":
-        case " ": // Space bar
-          e.preventDefault();
-          nextSlide();
-          break;
-        case "ArrowLeft":
-          e.preventDefault();
-          prevSlide();
-          break;
-        case "p":
-        case "P":
-          toggleSlideshowPlayPause();
-          break;
-        case "t":
-        case "T":
-          setShowThumbnails((prev) => !prev);
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slideshowActive, stopSlideshow, nextSlide, prevSlide, toggleSlideshowPlayPause]);
-
-  // Slideshow auto-advance
-  useEffect(() => {
-    if (!slideshowActive || !slideshowPlaying) return;
-
-    const timer = setInterval(() => {
-      nextSlide();
-    }, slideshowInterval);
-
-    return () => clearInterval(timer);
-  }, [slideshowActive, slideshowPlaying, slideshowInterval, nextSlide]);
-
   // Prevent body scroll when slideshow is active
   useEffect(() => {
     if (slideshowActive) {
@@ -916,28 +857,6 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const minSwipeDistance = 50;
   const [modalTouchStart, setModalTouchStart] = useState<number | null>(null);
   const [modalTouchEnd, setModalTouchEnd] = useState<number | null>(null);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      nextSlide();
-    } else if (isRightSwipe) {
-      prevSlide();
-    }
-  }, [touchStart, touchEnd, nextSlide, prevSlide]);
 
   // Modal touch handlers for swipe navigation
   const handleModalTouchStart = useCallback((e: React.TouchEvent) => {
@@ -998,11 +917,6 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     preloadImage((slideshowIndex + 2) % slideshowPhotos.length);
   }, [slideshowActive, slideshowIndex, slideshowPhotos]);
 
-  // Jump to specific slide from thumbnail
-  const goToSlide = useCallback((index: number) => {
-    setSlideshowIndex(index);
-    setSlideshowPlaying(false); // Pause when manually selecting
-  }, []);
 
   // Copy gallery link to clipboard
   const handleCopyLink = useCallback(async () => {
@@ -2101,162 +2015,6 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         />
       )}
 
-      {/* OLD SLIDESHOW IMPLEMENTATION - DISABLED */}
-      {false && (
-        <div
-          className="fixed inset-0 z-[70] bg-black"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Current Photo */}
-          <div className={cn(
-            "absolute inset-0 flex items-center justify-center transition-all duration-300",
-            showThumbnails ? "bottom-24" : "bottom-0"
-          )}>
-            <img
-              src={slideshowPhotos[slideshowIndex]?.originalUrl || slideshowPhotos[slideshowIndex]?.url}
-              alt={slideshowPhotos[slideshowIndex]?.filename}
-              className="max-h-full max-w-full object-contain transition-opacity duration-500"
-            />
-          </div>
-
-          {/* Top Controls */}
-          <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
-            <div className="text-white text-sm font-medium">
-              {slideshowIndex + 1} / {slideshowPhotos.length}
-            </div>
-            <div className="flex items-center gap-2">
-              {/* Thumbnail Toggle */}
-              <button
-                onClick={() => setShowThumbnails(!showThumbnails)}
-                className={cn(
-                  "rounded-lg p-2 text-white transition-colors",
-                  showThumbnails ? "bg-white/20" : "bg-white/10 hover:bg-white/20"
-                )}
-                title="Toggle thumbnails (T)"
-              >
-                <GridIcon className="h-5 w-5" />
-              </button>
-              {/* Speed Controls */}
-              <select
-                value={slideshowInterval}
-                onChange={(e) => setSlideshowInterval(Number(e.target.value))}
-                className="rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
-                title="Slide duration"
-              >
-                <option value={2000}>2s</option>
-                <option value={3000}>3s</option>
-                <option value={4000}>4s</option>
-                <option value={5000}>5s</option>
-                <option value={8000}>8s</option>
-              </select>
-              <button
-                onClick={stopSlideshow}
-                className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
-                title="Exit slideshow (ESC)"
-              >
-                <CloseIcon className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Bottom Controls */}
-          <div className={cn(
-            "absolute left-0 right-0 flex items-center justify-center gap-4 p-6 bg-gradient-to-t from-black/60 to-transparent transition-all duration-300",
-            showThumbnails ? "bottom-24" : "bottom-0"
-          )}>
-            {/* Previous */}
-            <button
-              onClick={prevSlide}
-              className="rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors"
-              title="Previous (←)"
-            >
-              <ChevronLeftIcon className="h-6 w-6" />
-            </button>
-
-            {/* Play/Pause */}
-            <button
-              onClick={toggleSlideshowPlayPause}
-              className="rounded-full bg-white/20 p-4 text-white hover:bg-white/30 transition-colors"
-              title={slideshowPlaying ? "Pause (P)" : "Play (P)"}
-            >
-              {slideshowPlaying ? (
-                <GalleryPauseIcon className="h-8 w-8" />
-              ) : (
-                <PlayIcon className="h-8 w-8" />
-              )}
-            </button>
-
-            {/* Next */}
-            <button
-              onClick={nextSlide}
-              className="rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors"
-              title="Next (→)"
-            >
-              <ChevronRightIcon className="h-6 w-6" />
-            </button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className={cn(
-            "absolute left-0 right-0 h-1 bg-white/10 transition-all duration-300",
-            showThumbnails ? "bottom-24" : "bottom-0"
-          )}>
-            <div
-              className="h-full bg-white/60 transition-all duration-300"
-              style={{ width: `${((slideshowIndex + 1) / slideshowPhotos.length) * 100}%` }}
-            />
-          </div>
-
-          {/* Photo filename */}
-          <div className={cn(
-            "absolute left-0 right-0 text-center transition-all duration-300",
-            showThumbnails ? "bottom-[7.5rem]" : "bottom-20"
-          )}>
-            <p className="text-white/70 text-sm">{slideshowPhotos[slideshowIndex]?.filename}</p>
-          </div>
-
-          {/* Thumbnail Strip */}
-          {showThumbnails && (
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-black/80 backdrop-blur-sm border-t border-white/10">
-              <div className="h-full flex items-center overflow-x-auto px-4 gap-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-                {slideshowPhotos.map((photo, index) => (
-                  <button
-                    key={photo.id}
-                    onClick={() => goToSlide(index)}
-                    className={cn(
-                      "flex-shrink-0 h-16 w-24 rounded-lg overflow-hidden transition-all duration-200",
-                      index === slideshowIndex
-                        ? "ring-2 ring-white ring-offset-2 ring-offset-black opacity-100"
-                        : "opacity-50 hover:opacity-80"
-                    )}
-                  >
-                    <img
-                      src={photo.url}
-                      alt={photo.filename}
-                      className="h-full w-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Keyboard hints */}
-          <div className={cn(
-            "absolute right-4 text-white/40 text-xs hidden sm:block transition-all duration-300",
-            showThumbnails ? "bottom-28" : "bottom-4"
-          )}>
-            ← → Navigate • Space Next • P Play/Pause • T Thumbnails • ESC Exit
-          </div>
-
-          {/* Swipe hint for mobile */}
-          <div className="absolute bottom-28 left-4 text-white/40 text-xs sm:hidden">
-            Swipe to navigate
-          </div>
-        </div>
-      )}
 
       {/* QR Code Modal */}
       {showQRModal && (
