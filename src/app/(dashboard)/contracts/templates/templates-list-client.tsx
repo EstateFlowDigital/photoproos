@@ -129,7 +129,7 @@ export function TemplatesListClient({ templates }: TemplatesListClientProps) {
                   {template._count.contracts} contract{template._count.contracts !== 1 ? "s" : ""}
                 </span>
                 <span>
-                  Updated {formatDate(template.updatedAt)}
+                  Updated {formatDate(template.updatedAt ?? new Date())}
                 </span>
               </div>
 

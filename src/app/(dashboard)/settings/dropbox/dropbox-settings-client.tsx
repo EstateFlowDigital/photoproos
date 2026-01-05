@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import type { DropboxConfig } from "@/lib/actions/dropbox";
 import {
   updateDropboxSettings,
@@ -301,25 +303,13 @@ export function DropboxSettingsClient({
           </h2>
 
           <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="syncFolder"
-                className="block text-sm font-medium text-foreground mb-1.5"
-              >
-                Sync Folder
-              </label>
-              <input
-                id="syncFolder"
-                type="text"
-                value={syncFolder}
-                onChange={(e) => setSyncFolder(e.target.value)}
-                placeholder="/PhotoProOS"
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              />
-              <p className="mt-1.5 text-xs text-foreground-muted">
-                Root folder in Dropbox where all files will be synced
-              </p>
-            </div>
+            <Input
+              label="Sync Folder"
+              value={syncFolder}
+              onChange={(e) => setSyncFolder(e.target.value)}
+              placeholder="/PhotoProOS"
+              helperText="Root folder in Dropbox where all files will be synced"
+            />
 
             <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -328,20 +318,10 @@ export function DropboxSettingsClient({
                   Automatically sync files when changes are detected
                 </p>
               </div>
-              <button
-                onClick={() => setAutoSync(!autoSync)}
-                className={cn(
-                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors",
-                  autoSync ? "bg-[var(--primary)]" : "bg-[var(--background-secondary)]"
-                )}
-              >
-                <span
-                  className={cn(
-                    "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform",
-                    autoSync ? "translate-x-6" : "translate-x-1"
-                  )}
-                />
-              </button>
+              <Switch
+                checked={autoSync}
+                onCheckedChange={setAutoSync}
+              />
             </div>
 
             <Button

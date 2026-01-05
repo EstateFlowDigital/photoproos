@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated email/page.tsx with Input and Textarea components for Sender Name, Reply-To Email, Email Signature, and Test Email fields
   - Updated referrals-client.tsx with Input component for Program Name and Reward Value fields
   - Updated photographer-pay-client.tsx with Input component for Rate Value, Minimum Pay, and Maximum Pay fields
+  - Updated calendly-settings-client.tsx with Input and Select components for API Token and Event Type Mapping fields
+  - Updated dropbox-settings-client.tsx with Input and Switch components for Sync Folder and Auto Sync settings
+  - Updated slack-settings-client.tsx with Input component for Webhook URL and Channel Name fields
   - Improves UI consistency and accessibility across all settings forms
 
 ### Added

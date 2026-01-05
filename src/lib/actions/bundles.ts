@@ -1348,7 +1348,11 @@ export async function getPackageAnalytics(
                 },
               }
             : undefined,
-          include: {
+          select: {
+            totalCents: true,
+            unitCents: true,
+            quantity: true,
+            createdAt: true,
             order: {
               select: {
                 status: true,
@@ -1369,7 +1373,7 @@ export async function getPackageAnalytics(
         (item) => item.order.status === "completed" || item.order.paidAt
       );
       const totalRevenue = completedOrders.reduce(
-        (sum, item) => sum + item.priceCents * item.quantity,
+        (sum, item) => sum + item.totalCents,
         0
       );
       const lastOrder = completedOrders.sort(

@@ -4,6 +4,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   CalendlyIcon,
   CheckIcon,
@@ -244,43 +246,40 @@ export function CalendlySettingsClient({
 
         {/* API Token Input */}
         <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="apiToken"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
-              Personal Access Token
-            </label>
-            <div className="relative">
-              <input
-                id="apiToken"
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <Input
+                label="Personal Access Token"
                 type={showToken ? "text" : "password"}
                 value={apiToken}
                 onChange={(e) => setApiToken(e.target.value)}
                 placeholder="Enter your Calendly API token"
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-10 pr-12 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                leftIcon={<KeyIcon className="h-4 w-4" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowToken(!showToken)}
+                    className="text-sm text-foreground-muted hover:text-foreground"
+                  >
+                    {showToken ? "Hide" : "Show"}
+                  </button>
+                }
+                helperText={
+                  <>
+                    Get your token from{" "}
+                    <a
+                      href="https://calendly.com/integrations/api_webhooks"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--primary)] hover:underline inline-flex items-center gap-1"
+                    >
+                      Calendly API Settings
+                      <ExternalLinkIcon className="h-3 w-3" />
+                    </a>
+                  </>
+                }
               />
-              <KeyIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted" />
-              <button
-                type="button"
-                onClick={() => setShowToken(!showToken)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-foreground-muted hover:text-foreground"
-              >
-                {showToken ? "Hide" : "Show"}
-              </button>
             </div>
-            <p className="mt-1.5 text-xs text-foreground-muted">
-              Get your token from{" "}
-              <a
-                href="https://calendly.com/integrations/api_webhooks"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[var(--primary)] hover:underline inline-flex items-center gap-1"
-              >
-                Calendly API Settings
-                <ExternalLinkIcon className="h-3 w-3" />
-              </a>
-            </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
@@ -327,11 +326,8 @@ export function CalendlySettingsClient({
                 className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center"
               >
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-foreground-muted mb-1">
-                    Calendly Event Type
-                  </label>
-                  <input
-                    type="text"
+                  <Input
+                    label="Calendly Event Type"
                     value={mapping.calendlyEventType}
                     onChange={(e) =>
                       updateServiceMapping(
@@ -341,10 +337,9 @@ export function CalendlySettingsClient({
                       )
                     }
                     placeholder="e.g., 30-minute-consultation"
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
                 </div>
-                <div className="flex items-center justify-center text-foreground-muted sm:px-2">
+                <div className="flex items-center justify-center text-foreground-muted sm:px-2 sm:mt-6">
                   <svg
                     className="h-4 w-4 rotate-90 sm:rotate-0"
                     fill="none"
@@ -360,10 +355,8 @@ export function CalendlySettingsClient({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-foreground-muted mb-1">
-                    PhotoProOS Service
-                  </label>
-                  <select
+                  <Select
+                    label="PhotoProOS Service"
                     value={mapping.photoProOSService}
                     onChange={(e) =>
                       updateServiceMapping(
@@ -372,19 +365,16 @@ export function CalendlySettingsClient({
                         e.target.value
                       )
                     }
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  >
-                    <option value="">Select a service...</option>
-                    {MOCK_SERVICES.map((service) => (
-                      <option key={service.value} value={service.value}>
-                        {service.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      { value: "", label: "Select a service..." },
+                      ...MOCK_SERVICES,
+                    ]}
+                  />
                 </div>
                 <button
                   onClick={() => removeServiceMapping(mapping.id)}
-                  className="self-end rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-[var(--error)] sm:self-center"
+                  className="self-end rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-[var(--error)] sm:self-center sm:mt-6"
+                  aria-label="Remove mapping"
                 >
                   <svg
                     className="h-4 w-4"

@@ -79,13 +79,13 @@ export function TemplateFormClient({ mode, initialData }: TemplateFormClientProp
         mode === "create"
           ? await createContractTemplate({
               name: formData.name,
-              description: formData.description || undefined,
+              description: formData.description || "",
               content: formData.content,
               isDefault: formData.isDefault,
             })
           : await updateContractTemplate(initialData!.id, {
               name: formData.name,
-              description: formData.description || undefined,
+              description: formData.description || "",
               content: formData.content,
               isDefault: formData.isDefault,
             });

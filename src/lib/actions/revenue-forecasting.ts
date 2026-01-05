@@ -72,7 +72,7 @@ export async function getRevenueForecast(
     const historicalPayments = await prisma.payment.findMany({
       where: {
         organizationId,
-        status: "completed",
+        status: "paid",
         paidAt: { gte: historicalStart },
       },
       select: {
@@ -300,7 +300,7 @@ export async function getHistoricalTrends(
     const payments = await prisma.payment.findMany({
       where: {
         organizationId,
-        status: "completed",
+        status: "paid",
         paidAt: { gte: startDate },
       },
       select: {
@@ -386,7 +386,7 @@ export async function getSeasonalPatterns(): Promise<
     const payments = await prisma.payment.findMany({
       where: {
         organizationId,
-        status: "completed",
+        status: "paid",
         paidAt: { not: null },
       },
       select: {
@@ -473,7 +473,7 @@ export async function getRevenueGoals(
     const lastYearPayments = await prisma.payment.findMany({
       where: {
         organizationId,
-        status: "completed",
+        status: "paid",
         paidAt: { gte: lastYearStart, lte: lastYearEnd },
       },
       select: { amountCents: true },
@@ -498,7 +498,7 @@ export async function getRevenueGoals(
     const currentPayments = await prisma.payment.findMany({
       where: {
         organizationId,
-        status: "completed",
+        status: "paid",
         paidAt: { gte: yearStart, lte: now },
       },
       select: { amountCents: true, paidAt: true },

@@ -414,7 +414,7 @@ export async function previewBookingImport(
 
       headerMapping.forEach((field, index) => {
         if (row[index] !== undefined) {
-          (bookingData as Record<string, string>)[field] = row[index];
+          (bookingData as unknown as Record<string, string>)[field] = row[index];
         }
       });
 

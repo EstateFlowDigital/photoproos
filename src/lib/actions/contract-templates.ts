@@ -57,6 +57,12 @@ export interface ContractTemplate {
   createdAt: Date;
 }
 
+export type ContractTemplateWithCount = ContractTemplate & {
+  isDefault?: boolean;
+  updatedAt?: Date;
+  _count: { contracts: number };
+};
+
 // System Templates
 const SYSTEM_TEMPLATES: Omit<ContractTemplate, "id" | "createdAt" | "usageCount">[] = [
   {
@@ -161,7 +167,7 @@ const SYSTEM_TEMPLATES: Omit<ContractTemplate, "id" | "createdAt" | "usageCount"
  */
 export async function getContractTemplates(
   filters?: { category?: ContractCategory; search?: string }
-): Promise<ActionResult<ContractTemplate[]>> {
+): Promise<ActionResult<ContractTemplateWithCount[]>> {
   try {
     let templates = SYSTEM_TEMPLATES.map((t, i) => ({
       ...t,
@@ -169,7 +175,10 @@ export async function getContractTemplates(
       createdAt: new Date("2024-01-01"),
       usageCount: Math.floor(Math.random() * 100) + 10,
       content: t.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n"),
-    }));
+      isDefault: i === 0,
+      updatedAt: new Date("2024-01-01"),
+      _count: { contracts: Math.floor(Math.random() * 12) },
+    })) as ContractTemplateWithCount[];
 
     if (filters?.category) {
       templates = templates.filter((t) => t.category === filters.category);
@@ -260,7 +269,7 @@ export async function useContractTemplate(
  */
 export async function getContractTemplateById(
   id: string
-): Promise<ActionResult<ContractTemplate>> {
+): Promise<ActionResult<ContractTemplateWithCount>> {
   try {
     const index = parseInt(id.replace("system-", ""));
     if (isNaN(index) || index < 0 || index >= SYSTEM_TEMPLATES.length) {
@@ -276,6 +285,9 @@ export async function getContractTemplateById(
         createdAt: new Date("2024-01-01"),
         usageCount: Math.floor(Math.random() * 100) + 10,
         content: template.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n"),
+        _count: { contracts: Math.floor(Math.random() * 12) },
+        isDefault: index === 0,
+        updatedAt: new Date("2024-01-01"),
       },
     };
   } catch (error) {
@@ -289,9 +301,10 @@ export async function getContractTemplateById(
  */
 export async function createContractTemplate(data: {
   name: string;
-  description: string;
-  category: ContractCategory;
+  description?: string;
+  category?: ContractCategory;
   content: string;
+  isDefault?: boolean;
 }): Promise<ActionResult<{ templateId: string }>> {
   try {
     // For now, custom templates are not persisted
@@ -317,6 +330,7 @@ export async function updateContractTemplate(
     description?: string;
     category?: ContractCategory;
     content?: string;
+    isDefault?: boolean;
   }
 ): Promise<ActionResult<void>> {
   try {

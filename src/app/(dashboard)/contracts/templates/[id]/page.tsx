@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav, DocumentIcon } from "@/components/dashboard";
 import { TemplateFormClient } from "../template-form-client";
 import Link from "next/link";
-import { getContractTemplateById } from "@/lib/actions/contract-templates";
+import { getContractTemplates } from "@/lib/actions/contract-templates";
 import { notFound } from "next/navigation";
 
 interface Props {
@@ -12,13 +12,12 @@ interface Props {
 
 export default async function EditContractTemplatePage({ params }: Props) {
   const { id } = await params;
-  const result = await getContractTemplateById(id);
+  const result = await getContractTemplates();
+  const template = result.success ? result.data.find((t) => t.id === id) : null;
 
-  if (!result.success || !result.data) {
+  if (!template) {
     notFound();
   }
-
-  const template = result.data;
 
   return (
     <div className="space-y-6">
@@ -52,7 +51,7 @@ export default async function EditContractTemplatePage({ params }: Props) {
           name: template.name,
           description: template.description,
           content: template.content || "",
-          category: template.category,
+          isDefault: false,
         }}
       />
     </div>

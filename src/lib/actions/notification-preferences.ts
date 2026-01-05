@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 
 // Types for notification preferences
 export interface NotificationPreferences {
@@ -125,7 +126,7 @@ export async function getNotificationPreferences(): Promise<{
     // Parse notification preferences from JSON or use defaults
     const preferences: NotificationPreferences =
       organization.notificationPreferences
-        ? (organization.notificationPreferences as NotificationPreferences)
+        ? (organization.notificationPreferences as unknown as NotificationPreferences)
         : defaultNotificationPreferences;
 
     // Build digest settings
@@ -168,7 +169,7 @@ export async function updateNotificationPreferences(
     await prisma.organization.update({
       where: { id: auth.organizationId },
       data: {
-        notificationPreferences: preferences,
+        notificationPreferences: preferences as unknown as Prisma.InputJsonValue,
       },
     });
 
@@ -256,7 +257,7 @@ export async function updateAllNotificationSettings(data: {
     await prisma.organization.update({
       where: { id: auth.organizationId },
       data: {
-        notificationPreferences: data.preferences,
+        notificationPreferences: data.preferences as unknown as Prisma.InputJsonValue,
         enableDigestEmails: data.digest.enabled,
         digestEmailFrequency: data.digest.frequency,
         digestEmailTime: data.digest.time,
@@ -318,7 +319,7 @@ export async function shouldSendNotification(
     }
 
     // Check notification preferences
-    const preferences = organization.notificationPreferences as NotificationPreferences | null;
+    const preferences = organization.notificationPreferences as unknown as NotificationPreferences | null;
     if (!preferences) return true; // Default to sending if no preferences set
 
     return preferences[channel]?.[type] ?? true;
