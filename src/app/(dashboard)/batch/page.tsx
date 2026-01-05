@@ -41,17 +41,17 @@ export default async function BatchProcessingPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/galleries"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] md:px-4"
             >
               <GalleryIcon className="h-4 w-4" />
-              View Galleries
+              <span className="hidden md:inline">View Galleries</span>
             </Link>
             <Link
               href="/galleries/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 md:px-4"
             >
               <PlusIcon className="h-4 w-4" />
-              New Gallery
+              <span className="hidden md:inline">New Gallery</span>
             </Link>
           </div>
         }

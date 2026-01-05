@@ -51,10 +51,10 @@ export default async function BrokeragesPage({ searchParams }: BrokeragesPagePro
         actions={
           <Link
             href="/brokerages/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 md:px-4"
           >
             <PlusIcon className="h-4 w-4" />
-            Add Brokerage
+            <span className="hidden md:inline">Add Brokerage</span>
           </Link>
         }
       />

@@ -23,17 +23,17 @@ export default async function MiniSessionsPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/scheduling/booking-forms"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] md:px-4"
             >
               <FormIcon className="h-4 w-4" />
-              Manage Forms
+              <span className="hidden md:inline">Manage Forms</span>
             </Link>
             <Link
               href="/scheduling/availability"
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 md:px-4"
             >
               <CalendarIcon className="h-4 w-4" />
-              Set Availability
+              <span className="hidden md:inline">Set Availability</span>
             </Link>
           </div>
         }

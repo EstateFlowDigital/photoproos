@@ -111,10 +111,10 @@ export default async function ContractsPage({ searchParams }: PageProps) {
             <BulkExportButton statusFilter={statusFilter} contractCount={contracts.length} />
             <Link
               href="/contracts/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 md:px-4"
             >
               <PlusIcon className="h-4 w-4" />
-              Create Contract
+              <span className="hidden md:inline">Create Contract</span>
             </Link>
           </div>
         }

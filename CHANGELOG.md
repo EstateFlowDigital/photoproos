@@ -73,6 +73,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Analytics view: reduced gap and hid progress bars on smaller screens (`md:` instead of `sm:`)
   - Services page: action buttons now icon-only on mobile with titles
 
+- **Header Action Button Mobile Responsiveness** - Multiple pages now have icon-only action buttons on mobile
+  - Order Pages: "Create Order Page" button shows only icon on mobile
+  - Portfolios: "Create Portfolio" button shows only icon on mobile
+  - Batch Processing: "View Galleries" and "New Gallery" buttons icon-only on mobile
+  - Invoices: "Create Invoice" button shows only icon on mobile
+  - Licensing: "View Contracts" and "New Template" buttons icon-only on mobile
+  - Mini Sessions: "Manage Forms" and "Set Availability" buttons icon-only on mobile
+  - Booking Hub: "Manage Forms" and "New Booking Form" buttons icon-only on mobile
+  - Contracts: "Create Contract" button shows only icon on mobile
+  - Brokerages: "Add Brokerage" button shows only icon on mobile
+  - Contract Templates: "Create Template" button shows only icon on mobile
+  - Pattern: `p-2.5 md:px-4` for padding with `hidden md:inline` for text labels
+
 ### Changed
 - **Design System Consistency Improvements** - Standardized UI patterns across dashboard
   - Replaced hardcoded avatar gradient colors with `avatar-gradient` class in 10 files
