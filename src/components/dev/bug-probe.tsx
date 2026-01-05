@@ -40,8 +40,15 @@ export function BugProbe() {
   const [listening, setListening] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
   const recognitionRef = useRef<RecognitionInstance | null>(null);
-  const sessionIdRef = useRef<string>(crypto.randomUUID());
+  const sessionIdRef = useRef<string>("");
   const prevPathRef = useRef<string | null>(null);
+
+  // Generate session ID on client only to avoid hydration mismatch
+  useEffect(() => {
+    if (!sessionIdRef.current) {
+      sessionIdRef.current = crypto.randomUUID();
+    }
+  }, []);
 
   const isDeveloper =
     isLoaded &&
