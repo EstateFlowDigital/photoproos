@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Page Reload Elimination** - Replaced 19 jarring `window.location.reload()` calls with smooth `router.refresh()` across the application
+  - **Settings Pages Fixed:**
+    - `availability-page-client.tsx` - 3 instances (recurring blocks add/delete)
+    - `payments-settings-client.tsx` - 2 instances (Stripe connection flow)
+    - `my-referrals-client.tsx` - 2 instances (send invite, apply reward)
+    - `appearance-settings-form.tsx` - 2 instances (reset to defaults, import settings)
+    - `integrations-client.tsx` - 1 instance (API key/webhook refresh)
+    - `subscription-plans.tsx` - 12 instances (plan/feature/experiment CRUD operations)
+  - All actions now provide instant feedback via toast notifications
+  - Data refreshes seamlessly without page flash or scroll position loss
+  - Maintains React state while updating server data
+
 - **Gallery UX Polish** - Critical fixes for gallery viewer experience
   - **Empty Gallery State** - Added visual placeholder for galleries with no photos yet
     - Shows photo icon, heading, and explanatory text

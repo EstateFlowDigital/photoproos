@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -39,6 +40,7 @@ export function AppearanceSettingsForm({
   fontSizeOptions,
   sidebarPositionOptions,
 }: AppearanceSettingsFormProps) {
+  const router = useRouter();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [preferences, setPreferences] = useState(initialPreferences);
@@ -296,7 +298,7 @@ export function AppearanceSettingsForm({
         setCustomColor("#3b82f6");
         setPreview({ accentColor: null, fontFamily: null, density: null, fontSize: null, highContrast: null, reduceMotion: null, sidebarPosition: null });
         showToast("Settings reset to defaults", "success");
-        window.location.reload();
+        router.refresh();
       } else {
         showToast(result.error || "Failed to reset settings", "error");
       }
@@ -435,7 +437,7 @@ export function AppearanceSettingsForm({
             });
             setCustomColor(importedPrefs.dashboardAccent || "#3b82f6");
             showToast("Settings imported successfully", "success");
-            window.location.reload();
+            router.refresh();
           } else {
             showToast(result.error || "Failed to import settings", "error");
           }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -137,6 +138,7 @@ export function SubscriptionPlansSection({
   initialPlans,
   initialExperiments,
 }: SubscriptionPlansProps) {
+  const router = useRouter();
   const { showToast } = useToast();
   const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
@@ -232,7 +234,7 @@ export function SubscriptionPlansSection({
             trialDays: "14",
           });
           // Refresh the page to get updated data
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to create plan", "error");
         }
@@ -248,7 +250,7 @@ export function SubscriptionPlansSection({
         const result = await syncPlanToStripe(planId);
         if (result.success) {
           showToast(`${planName} synced to Stripe`, "success");
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to sync plan", "error");
         }
@@ -269,7 +271,7 @@ export function SubscriptionPlansSection({
           } else {
             showToast(`All ${synced} plans synced to Stripe`, "success");
           }
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to sync plans", "error");
         }
@@ -306,7 +308,7 @@ export function SubscriptionPlansSection({
             category: "Core",
             tooltip: "",
           });
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to add feature", "error");
         }
@@ -330,7 +332,7 @@ export function SubscriptionPlansSection({
         const result = await deletePlanFeature(featureId);
         if (result.success) {
           showToast("Feature deleted", "success");
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to delete feature", "error");
         }
@@ -370,7 +372,7 @@ export function SubscriptionPlansSection({
             trafficPercent: "50",
             landingPagePaths: "",
           });
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to create experiment", "error");
         }
@@ -386,7 +388,7 @@ export function SubscriptionPlansSection({
         const result = await updateExperimentStatus(experimentId, status);
         if (result.success) {
           showToast(`Experiment ${status}`, "success");
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to update experiment", "error");
         }
@@ -407,7 +409,7 @@ export function SubscriptionPlansSection({
           } else {
             showToast(`Created ${created} plans${skipped > 0 ? `, ${skipped} skipped` : ""}`, "success");
           }
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to seed plans", "error");
         }
@@ -423,7 +425,7 @@ export function SubscriptionPlansSection({
         const result = await cloneSubscriptionPlan(planId);
         if (result.success) {
           showToast(`${planName} cloned successfully`, "success");
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to clone plan", "error");
         }
@@ -447,7 +449,7 @@ export function SubscriptionPlansSection({
         const result = await deleteSubscriptionPlan(planId);
         if (result.success) {
           showToast(`${planName} deleted`, "success");
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to delete plan", "error");
         }
@@ -488,7 +490,7 @@ export function SubscriptionPlansSection({
             yearlyPrice: "",
             trialDays: "",
           });
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to create variant", "error");
         }
@@ -512,7 +514,7 @@ export function SubscriptionPlansSection({
         const result = await deletePricingVariant(variantId);
         if (result.success) {
           showToast("Variant deleted", "success");
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error || "Failed to delete variant", "error");
         }

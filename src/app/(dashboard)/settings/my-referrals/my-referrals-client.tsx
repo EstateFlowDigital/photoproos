@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/dashboard";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,7 @@ export function MyReferralsClient({
   referralLink,
   leaderboard,
 }: MyReferralsClientProps) {
+  const router = useRouter();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"overview" | "referrals" | "rewards" | "leaderboard">("overview");
@@ -111,7 +113,7 @@ export function MyReferralsClient({
           setInviteEmail("");
           setInviteName("");
           setShowInviteForm(false);
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error, "error");
         }
@@ -127,7 +129,7 @@ export function MyReferralsClient({
         const result = await applyReward(rewardId);
         if (result.success) {
           showToast("Reward applied to your account!", "success");
-          window.location.reload();
+          router.refresh();
         } else {
           showToast(result.error, "error");
         }

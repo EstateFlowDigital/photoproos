@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Calendar,
   Plus,
@@ -14,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { AvailabilityBlock, BookingBuffer, CalendarProvider } from "@prisma/client";
 import {
@@ -21,9 +23,10 @@ import {
   deleteAvailabilityBlock,
   upsertBookingBuffer,
   addWeeklyRecurringBlock,
-  addHolidayBlock,
 } from "@/lib/actions/availability";
 import { syncGoogleCalendar } from "@/lib/integrations/google-calendar";
+import { rrulestr } from "rrule";
+import { parseLocalDate } from "@/lib/dates";
 
 interface AvailabilityPageClientProps {
   availabilityBlocks: AvailabilityBlock[];
@@ -53,11 +56,88 @@ const BLOCK_TYPE_LABELS: Record<string, string> = {
   other: "Other",
 };
 
+type AvailabilityDisplayBlock = {
+  id: string;
+  originalBlockId: string;
+  title: string;
+  blockType: string;
+  startDate: Date;
+  endDate: Date;
+  allDay: boolean;
+  isRecurring: boolean;
+  isOccurrence: boolean;
+};
+
+function toDate(value: unknown): Date {
+  return value instanceof Date ? value : new Date(String(value));
+}
+
+function expandBlocksForRange(
+  rawBlocks: AvailabilityBlock[],
+  rangeStart: Date,
+  rangeEnd: Date
+): AvailabilityDisplayBlock[] {
+  const expanded: AvailabilityDisplayBlock[] = [];
+
+  for (const block of rawBlocks) {
+    const blockStart = toDate(block.startDate);
+    const blockEnd = toDate(block.endDate);
+
+    if (!block.isRecurring || !block.recurrenceRule) {
+      if (blockStart <= rangeEnd && blockEnd >= rangeStart) {
+        expanded.push({
+          id: block.id,
+          originalBlockId: block.id,
+          title: block.title,
+          blockType: block.blockType,
+          startDate: blockStart,
+          endDate: blockEnd,
+          allDay: block.allDay,
+          isRecurring: false,
+          isOccurrence: false,
+        });
+      }
+      continue;
+    }
+
+    try {
+      const rule = rrulestr(block.recurrenceRule, { dtstart: blockStart });
+      const durationMs = blockEnd.getTime() - blockStart.getTime();
+      const occurrenceRangeEnd = block.recurrenceEnd
+        ? new Date(Math.min(toDate(block.recurrenceEnd).getTime(), rangeEnd.getTime()))
+        : rangeEnd;
+      const occurrenceRangeStart = new Date(rangeStart.getTime() - durationMs);
+      const occurrences = rule.between(occurrenceRangeStart, occurrenceRangeEnd, true);
+
+      for (const occurrence of occurrences) {
+        expanded.push({
+          id: `${block.id}-${occurrence.getTime()}`,
+          originalBlockId: block.id,
+          title: block.title,
+          blockType: block.blockType,
+          startDate: occurrence,
+          endDate: new Date(occurrence.getTime() + durationMs),
+          allDay: block.allDay,
+          isRecurring: true,
+          isOccurrence: true,
+        });
+      }
+    } catch {
+      // Ignore malformed RRULE strings
+    }
+  }
+
+  expanded.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+  return expanded;
+}
+
 export function AvailabilityPageClient({
   availabilityBlocks: initialBlocks,
   defaultBuffer,
   calendarIntegrations,
 }: AvailabilityPageClientProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const confirm = useConfirm();
   const [blocks, setBlocks] = useState(initialBlocks);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -83,6 +163,19 @@ export function AvailabilityPageClient({
     minAdvanceHours: defaultBuffer?.minAdvanceHours || 24,
     maxAdvanceDays: defaultBuffer?.maxAdvanceDays || 90,
   });
+
+  useEffect(() => {
+    setBlocks(initialBlocks);
+  }, [initialBlocks]);
+
+  useEffect(() => {
+    setBufferSettings({
+      bufferBefore: defaultBuffer?.bufferBefore || 0,
+      bufferAfter: defaultBuffer?.bufferAfter || 0,
+      minAdvanceHours: defaultBuffer?.minAdvanceHours || 24,
+      maxAdvanceDays: defaultBuffer?.maxAdvanceDays || 90,
+    });
+  }, [defaultBuffer]);
 
   // Calendar navigation
   const prevMonth = () => {
@@ -123,13 +216,29 @@ export function AvailabilityPageClient({
     return days;
   };
 
-  const calendarDays = generateCalendarDays();
+  const calendarDays = useMemo(() => generateCalendarDays(), [currentMonth]);
+
+  const calendarRangeStart = useMemo(() => {
+    const start = new Date(calendarDays[0].date);
+    start.setHours(0, 0, 0, 0);
+    return start;
+  }, [calendarDays]);
+
+  const calendarRangeEnd = useMemo(() => {
+    const end = new Date(calendarDays[calendarDays.length - 1].date);
+    end.setHours(23, 59, 59, 999);
+    return end;
+  }, [calendarDays]);
+
+  const calendarDisplayBlocks = useMemo(() => {
+    return expandBlocksForRange(blocks, calendarRangeStart, calendarRangeEnd);
+  }, [blocks, calendarRangeStart, calendarRangeEnd]);
 
   // Get blocks for a specific date
   const getBlocksForDate = (date: Date) => {
-    return blocks.filter((block) => {
-      const blockStart = new Date(block.startDate);
-      const blockEnd = new Date(block.endDate);
+    return calendarDisplayBlocks.filter((block) => {
+      const blockStart = block.startDate;
+      const blockEnd = block.endDate;
       const dateStart = new Date(date);
       dateStart.setHours(0, 0, 0, 0);
       const dateEnd = new Date(date);
@@ -152,31 +261,42 @@ export function AvailabilityPageClient({
           newBlock.blockType
         );
         if (result.success) {
-          window.location.reload();
+          showToast("Recurring block added successfully", "success");
+          setShowAddModal(false);
+          router.refresh();
+        } else {
+          showToast(result.error || "Failed to add block", "error");
         }
       } else {
         const result = await createAvailabilityBlock({
           title: newBlock.title,
           blockType: newBlock.blockType,
-          startDate: new Date(newBlock.startDate),
-          endDate: new Date(newBlock.endDate),
+          startDate: parseLocalDate(newBlock.startDate),
+          endDate: parseLocalDate(newBlock.endDate, { endOfDay: true }),
           allDay: newBlock.allDay,
         });
         if (result.success) {
-          window.location.reload();
+          showToast("Availability block added successfully", "success");
+          setShowAddModal(false);
+          router.refresh();
+        } else {
+          showToast(result.error || "Failed to add block", "error");
         }
       }
     } catch (error) {
       console.error("Error adding block:", error);
+      showToast("An error occurred while adding the block", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteBlock = async (blockId: string) => {
+  const handleDeleteBlock = async (blockId: string, isRecurring?: boolean) => {
     const confirmed = await confirm({
       title: "Delete availability block",
-      description: "Are you sure you want to delete this availability block?",
+      description: isRecurring
+        ? "This is a recurring block. Deleting it will remove the entire series."
+        : "Are you sure you want to delete this availability block?",
       confirmText: "Delete",
       variant: "destructive",
     });
@@ -185,10 +305,14 @@ export function AvailabilityPageClient({
     try {
       const result = await deleteAvailabilityBlock(blockId);
       if (result.success) {
-        setBlocks(blocks.filter((b) => b.id !== blockId));
+        setBlocks((prev) => prev.filter((b) => b.id !== blockId));
+        showToast("Availability block deleted", "success");
+      } else {
+        showToast(result.error || "Failed to delete block", "error");
       }
     } catch (error) {
       console.error("Error deleting block:", error);
+      showToast("An error occurred while deleting the block", "error");
     }
   };
 
@@ -205,9 +329,14 @@ export function AvailabilityPageClient({
       });
       if (result.success) {
         setShowBufferModal(false);
+        showToast("Booking buffer updated", "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to update booking buffer", "error");
       }
     } catch (error) {
       console.error("Error saving buffer:", error);
+      showToast("An error occurred while saving buffer settings", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -217,16 +346,28 @@ export function AvailabilityPageClient({
     setIsSyncing(true);
     try {
       await syncGoogleCalendar(integrationId);
-      window.location.reload();
+      showToast("Calendar synced successfully", "success");
+      router.refresh();
     } catch (error) {
       console.error("Error syncing:", error);
+      showToast("Failed to sync calendar", "error");
     } finally {
       setIsSyncing(false);
     }
   };
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+
+  const upcomingDisplayBlocks = useMemo(() => {
+    const upcomingEnd = new Date(today);
+    upcomingEnd.setDate(today.getDate() + 60);
+    upcomingEnd.setHours(23, 59, 59, 999);
+    return expandBlocksForRange(blocks, today, upcomingEnd).slice(0, 20);
+  }, [blocks, today]);
 
   return (
     <div className="space-y-6">
@@ -362,10 +503,7 @@ export function AvailabilityPageClient({
               </h3>
             </div>
             <div className="divide-y divide-[rgba(255,255,255,0.04)]">
-              {blocks
-                .filter((b) => new Date(b.startDate) >= today)
-                .slice(0, 5)
-                .map((block) => (
+              {upcomingDisplayBlocks.slice(0, 5).map((block) => (
                   <div
                     key={block.id}
                     className="p-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between group"
@@ -378,13 +516,13 @@ export function AvailabilityPageClient({
                       <div>
                         <p className="text-white font-medium">{block.title}</p>
                         <p className="text-[#7c7c7c] text-sm">
-                          {new Date(block.startDate).toLocaleDateString("en-US", {
+                          {block.startDate.toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
                           })}
                           {block.allDay
                             ? ""
-                            : ` at ${new Date(block.startDate).toLocaleTimeString("en-US", {
+                            : ` at ${block.startDate.toLocaleTimeString("en-US", {
                                 hour: "numeric",
                                 minute: "2-digit",
                               })}`}
@@ -395,14 +533,14 @@ export function AvailabilityPageClient({
                       </div>
                     </div>
                     <button
-                      onClick={() => handleDeleteBlock(block.id)}
+                      onClick={() => handleDeleteBlock(block.originalBlockId, block.isRecurring)}
                       className="p-1.5 text-[#7c7c7c] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
-              {blocks.filter((b) => new Date(b.startDate) >= today).length === 0 && (
+              {upcomingDisplayBlocks.length === 0 && (
                 <div className="p-4 text-center text-[#7c7c7c] text-sm">
                   No upcoming blocks
                 </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import type { ConnectAccountDetails } from "@/lib/actions/stripe-connect";
 import {
   createConnectAccount,
@@ -26,6 +27,8 @@ export function PaymentsSettingsClient({
   initialStatus,
   initialTaxSettings,
 }: PaymentsSettingsClientProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<ConnectAccountDetails | null>(initialStatus);
   const [loading, setLoading] = useState(false);
@@ -49,15 +52,12 @@ export function PaymentsSettingsClient({
     const refresh = searchParams?.get("refresh");
 
     if (success === "true") {
-      setMessage({
-        type: "success",
-        text: "Stripe account connected successfully!",
-      });
+      showToast("Stripe account connected successfully!", "success");
       // Refresh to get updated status
-      window.location.reload();
+      router.refresh();
     } else if (refresh === "true") {
       // User returned from onboarding without completing - refresh status
-      window.location.reload();
+      router.refresh();
     }
   }, [searchParams]);
 

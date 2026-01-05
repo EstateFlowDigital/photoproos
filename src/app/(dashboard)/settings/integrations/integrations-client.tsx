@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,6 +65,7 @@ export function IntegrationsClient({
   apiKeys: initialApiKeys,
   webhooks: initialWebhooks,
 }: IntegrationsClientProps) {
+  const router = useRouter();
   const [connectedIntegrations, setConnectedIntegrations] = React.useState(initialConnectedIntegrations);
   const [apiKeys, setApiKeys] = React.useState(initialApiKeys);
   const [webhooks, setWebhooks] = React.useState(initialWebhooks);
@@ -99,9 +101,8 @@ export function IntegrationsClient({
 
   // Refresh data
   const handleRefresh = async () => {
-    // In a real implementation, this would fetch fresh data from the server
-    // For now, we trigger a page refresh
-    window.location.reload();
+    // Trigger a soft refresh to get updated data from the server
+    router.refresh();
   };
 
   // Handle connect (redirect to settings page or OAuth flow)
