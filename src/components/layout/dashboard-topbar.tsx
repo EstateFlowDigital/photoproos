@@ -127,6 +127,24 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   const topNavRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<HTMLDivElement>(null);
 
+  const closeAllPopovers = useCallback(() => {
+    setSearchOpen(false);
+    setTopNavOpen(false);
+    setWorkspaceOpen(false);
+    setQuickActionsOpen(false);
+    setNotificationsOpen(false);
+    setHelpOpen(false);
+    setShortcutsOpen(false);
+    setDisplayOpen(false);
+  }, []);
+
+  // Close all popovers when route changes to avoid stale overlays blocking clicks
+  useEffect(() => {
+    closeAllPopovers();
+    setSearchQuery("");
+    setSearchResults([]);
+  }, [closeAllPopovers, pathname]);
+
   // Fetch notifications on mount
   useEffect(() => {
     async function fetchNotifications() {
@@ -310,9 +328,9 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns when clicking/tapping outside
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handlePointerDown = (e: PointerEvent) => {
       if (
         searchRef.current?.contains(e.target as Node) ||
         quickActionsRef.current?.contains(e.target as Node) ||
@@ -325,17 +343,18 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
       ) {
         return;
       }
-      setSearchOpen(false);
-      setQuickActionsOpen(false);
-      setDisplayOpen(false);
-      setNotificationsOpen(false);
-      setHelpOpen(false);
-      setTopNavOpen(false);
-      setWorkspaceOpen(false);
+      closeAllPopovers();
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [closeAllPopovers]);
+
+  // Close popovers when the user scrolls the page to avoid invisible overlays blocking clicks
+  useEffect(() => {
+    const handleScroll = () => closeAllPopovers();
+    window.addEventListener("scroll", handleScroll, true);
+    return () => window.removeEventListener("scroll", handleScroll, true);
+  }, [closeAllPopovers]);
 
   const markAllAsRead = async () => {
     // Optimistically update UI
@@ -490,8 +509,8 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
               )}
             />
           </button>
-          {displayOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[clamp(240px,60vw,360px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50 space-y-2">
+            {displayOpen && (
+            <div className="absolute top-full left-1/2 mt-2 w-[min(360px,calc(100vw-16px))] -translate-x-1/2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50 space-y-2 sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[clamp(240px,60vw,360px)]">
               <button
                 type="button"
                 className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-[var(--background-hover)]"
@@ -587,7 +606,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
             />
           </button>
           {quickActionsOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] max-w-[calc(100vw-16px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50">
+            <div className="absolute top-full left-1/2 mt-2 w-[min(440px,calc(100vw-16px))] -translate-x-1/2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50 sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[clamp(260px,70vw,440px)]">
               <QuickActions className="grid grid-cols-1 gap-2" actions={QUICK_ACTIONS} />
             </div>
           )}
@@ -651,7 +670,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
             />
           </button>
           {workspaceOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] max-w-[calc(100vw-16px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-visible">
+            <div className="absolute top-full left-1/2 mt-2 w-[min(440px,calc(100vw-16px))] -translate-x-1/2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-visible sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[clamp(260px,70vw,440px)]">
               <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <p className="text-sm font-semibold text-foreground truncate">
                   {organization?.name || user?.fullName || "Workspace"}
@@ -722,7 +741,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
 
           {/* Notifications dropdown */}
           {notificationsOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] max-h-[70vh] overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50">
+            <div className="absolute top-full left-1/2 mt-2 w-[min(440px,calc(100vw-16px))] -translate-x-1/2 max-h-[70vh] overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[clamp(260px,70vw,440px)]">
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
                 <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                 {unreadCount > 0 && (
@@ -797,7 +816,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
 
           {/* Help dropdown */}
           {helpOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[min(320px,90vw)] rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
+            <div className="absolute top-full left-1/2 mt-2 w-[min(320px,calc(100vw-16px))] -translate-x-1/2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden sm:left-auto sm:right-0 sm:translate-x-0">
               <div className="py-1">
                 <a
                   href="https://docs.example.com"
@@ -860,6 +879,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
           }}
         >
           <div
+            ref={searchRef}
             className="w-full max-w-2xl rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
