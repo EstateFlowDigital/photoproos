@@ -40,6 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improves UI consistency and accessibility across all settings forms
 
 ### Added
+- **Sidebar Customization** - Users can now personalize their navigation sidebar
+  - "Customize" toggle in sidebar header enters edit mode
+  - Hide/show navigation links with checkbox toggles
+  - Hidden links persist to localStorage and remain accessible in edit mode
+  - Auto-unpins items when they are hidden
+  - Reset button restores all defaults (pins, order, visibility)
+
 - **Form Validation Utilities** - Comprehensive form validation library for consistent validation
   - Created `lib/validation.ts` with common validators (required, email, phone, URL, dates, etc.)
   - Created `hooks/use-form-validation.ts` hook for declarative form validation
