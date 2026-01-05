@@ -7,8 +7,6 @@ import { DashboardTopbar } from "./dashboard-topbar";
 import { MobileNav, MobileMenuButton } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { getFilteredNavigation } from "@/lib/modules/gating";
-import { ResponsiveTester } from "@/components/dev/responsive-tester";
-import { BugProbe } from "@/components/dev/bug-probe";
 import { useTheme } from "@/components/theme-provider";
 
 interface AutoThemeConfig {
@@ -105,54 +103,51 @@ export function DashboardLayoutClient({
   }, [autoTheme, setResolvedThemeOverride, theme]);
 
   return (
-    <ResponsiveTester>
-      <BugProbe />
-      <div
-        ref={shellRef}
-        className={`shell-container flex min-h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
-      >
-        {/* Desktop Sidebar */}
-        <div className="shell-sidebar hidden lg:block">
-          <DashboardSidebar
-            enabledModules={enabledModules}
-            industries={industries}
-            notificationCount={unreadNotificationCount}
-          />
-        </div>
-
-        {/* Mobile Navigation */}
-        <MobileNav
-          isOpen={mobileMenuOpen}
-          onClose={handleCloseMenu}
+    <div
+      ref={shellRef}
+      className={`shell-container flex min-h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
+    >
+      {/* Desktop Sidebar */}
+      <div className="shell-sidebar hidden lg:block">
+        <DashboardSidebar
           enabledModules={enabledModules}
           industries={industries}
           notificationCount={unreadNotificationCount}
         />
-
-        {/* Main content area */}
-        <div className="shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          {/* Topbar with mobile menu button */}
-          <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]">
-            <div className="flex items-center gap-3 px-4 py-3 sm:h-16 sm:py-0 lg:px-6">
-              <MobileMenuButton onClick={handleOpenMenu} className="shell-mobile-trigger shrink-0" />
-
-              <div className="flex-1 min-w-0">
-                <DashboardTopbar
-                  className="border-0 px-0 py-0"
-                  navLinks={getFilteredNavigation({ enabledModules, industries })}
-                  navMode="sidebar"
-                  navAutoForced={false}
-                />
-              </div>
-            </div>
-          </header>
-
-          {/* Page content */}
-          <main className="flex-1 min-h-0 min-w-0 overflow-y-auto bg-[var(--background)] p-4 sm:p-6 lg:p-8">
-            {children}
-          </main>
-        </div>
       </div>
-    </ResponsiveTester>
+
+      {/* Mobile Navigation */}
+      <MobileNav
+        isOpen={mobileMenuOpen}
+        onClose={handleCloseMenu}
+        enabledModules={enabledModules}
+        industries={industries}
+        notificationCount={unreadNotificationCount}
+      />
+
+      {/* Main content area */}
+      <div className="shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Topbar with mobile menu button */}
+        <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]">
+          <div className="flex items-center gap-3 px-4 py-3 sm:h-16 sm:py-0 lg:px-6">
+            <MobileMenuButton onClick={handleOpenMenu} className="shell-mobile-trigger shrink-0" />
+
+            <div className="flex-1 min-w-0">
+              <DashboardTopbar
+                className="border-0 px-0 py-0"
+                navLinks={getFilteredNavigation({ enabledModules, industries })}
+                navMode="sidebar"
+                navAutoForced={false}
+              />
+            </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 min-h-0 min-w-0 overflow-y-auto bg-[var(--background)] p-4 sm:p-6 lg:p-8">
+          {children}
+        </main>
+      </div>
+    </div>
   );
 }
