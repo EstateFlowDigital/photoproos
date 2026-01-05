@@ -8,6 +8,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Photo Download Receipts** - Email receipts when clients download photos
+  - Added DownloadReceiptEmail template (`emails/download-receipt.tsx`)
+  - Added `sendDownloadReceiptEmail` function to email service
+  - Enhanced `logDownload` action with optional receipt sending
+  - Added `sendReceiptForDownload` for manual receipt delivery
+  - Professional email template with gallery details and download summary
+
+- **Gallery Expiration Warnings** - Automated email warnings before galleries expire
+  - Added cron endpoint (`api/cron/gallery-expiration/route.ts`)
+  - Sends warnings at 7, 3, and 1 days before expiration
+  - Added `expirationWarningsSent` field to track sent warnings
+  - Prevents duplicate warning emails
+
+- **Booking Conflict Detection** - Detect scheduling conflicts with buffer times
+  - Added `checkBookingConflicts` - check for conflicts before creating/updating bookings
+  - Added `getConflictsInRange` - find all conflicts within a date range for calendar display
+  - Added `validateBookingTime` - validation helper for booking forms
+  - Supports configurable buffer times between bookings
+  - Conflict types: full overlap, partial start/end overlap, contained
+
+- **Client Acquisition Tracking** - Track and analyze how clients find your business
+  - Added `ACQUISITION_SOURCES` constant with predefined sources (Referral, Organic, Google Ads, Social Media, etc.)
+  - Added `updateClientSource` - update client acquisition source
+  - Added `getAcquisitionAnalytics` - comprehensive acquisition analytics with revenue breakdown
+  - Added `getClientsBySource` - list clients by acquisition source
+  - Added `getSourcePerformance` - ROI and performance metrics by source
+  - Tracks conversion rates, revenue per source, and trends
+
+- **iCal Feed Export** - Subscribe to bookings from external calendar apps
+  - Added iCal feed API endpoint (`api/calendar/ical/[token]/route.ts`)
+  - Added CalendarFeed model with token-based authentication
+  - Created calendar feed management actions (`lib/actions/calendar-feeds.ts`)
+  - Supports Google Calendar, Apple Calendar, Outlook subscriptions
+  - Personal feeds (user-specific) and organization-wide feeds
+  - Token regeneration for security
+  - Tracks access count and last accessed timestamp
+
+- **Enhanced Activity Feed** - Advanced activity filtering and analytics
+  - Added `ActivityFeedFilters` interface for filtering by type, user, client, project, booking, date range
+  - Added `getActivityFeed` - paginated activity feed with advanced filtering
+  - Added `getActivitySummary` - activity statistics (total, today, week, by type, top users)
+  - Added `getActivityTimeline` - activities grouped by date for timeline display
+  - Added `searchActivities` - search activities by description
+  - Added `getEntityActivities` - get activities for specific entities (client, project, booking, invoice, contract)
+
 - **Global Keyboard Shortcuts** - Navigate the dashboard faster with keyboard shortcuts
   - Added KeyboardShortcutsProvider component (`components/keyboard-shortcuts-provider.tsx`)
   - Platform-aware shortcuts display (⌘ on Mac, Ctrl on Windows/Linux)

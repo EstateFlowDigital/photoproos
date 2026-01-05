@@ -618,6 +618,9 @@ model Organization {
   webhookEndpoints WebhookEndpoint[]
   integrationLogs  IntegrationLog[]
 
+  // iCal Feed Exports
+  calendarFeeds CalendarFeed[]
+
   @@index([slug])
   @@index([plan])
 }
@@ -680,6 +683,9 @@ model User {
   // Platform Referral System
   platformReferrer   PlatformReferrer?
   referredByPlatform PlatformReferral[] @relation("ReferredByPlatform")
+
+  // iCal Feed Exports
+  calendarFeeds CalendarFeed[] @relation("UserCalendarFeeds")
 
   @@index([email])
   @@index([clerkUserId])
@@ -3590,6 +3596,36 @@ model CalendarEvent {
   @@index([calendarIntegrationId])
   @@index([bookingId])
   @@index([startTime])
+}
+
+// iCal feed export for external calendar subscriptions
+model CalendarFeed {
+  id             String  @id @default(cuid())
+  organizationId String
+  userId         String? // User-specific feed (null = org-wide)
+
+  // Feed identification
+  token    String @unique // Unique token for feed URL
+  name     String @default("Bookings") // Display name for the feed
+  timezone String @default("America/New_York")
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Access tracking
+  lastAccessedAt DateTime?
+  accessCount    Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation("UserCalendarFeeds", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([token])
 }
 
 // ============================================================================

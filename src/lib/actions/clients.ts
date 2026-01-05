@@ -495,3 +495,393 @@ export async function deleteClient(
     return { success: false, error: "Failed to delete client" };
   }
 }
+
+// =============================================================================
+// Client Acquisition Tracking
+// =============================================================================
+
+// Standard acquisition sources
+export const ACQUISITION_SOURCES = {
+  REFERRAL: "REFERRAL",
+  ORGANIC: "ORGANIC",
+  GOOGLE_ADS: "GOOGLE_ADS",
+  FACEBOOK_ADS: "FACEBOOK_ADS",
+  INSTAGRAM_ADS: "INSTAGRAM_ADS",
+  SOCIAL_ORGANIC: "SOCIAL_ORGANIC",
+  DIRECTORY: "DIRECTORY",
+  REPEAT: "REPEAT",
+  PORTFOLIO: "PORTFOLIO",
+  BOOKING_FORM: "BOOKING_FORM",
+  ORDER_PAGE: "ORDER_PAGE",
+  OTHER: "OTHER",
+} as const;
+
+export type AcquisitionSource = keyof typeof ACQUISITION_SOURCES;
+
+export interface AcquisitionStats {
+  source: string;
+  clientCount: number;
+  totalRevenue: number;
+  averageRevenue: number;
+  conversionRate: number;
+  repeatRate: number;
+}
+
+export interface AcquisitionOverview {
+  totalClients: number;
+  totalRevenue: number;
+  bySource: AcquisitionStats[];
+  topSources: { source: string; count: number }[];
+  monthlyTrend: { month: string; clients: number; revenue: number }[];
+  conversionFunnel: {
+    leads: number;
+    contacted: number;
+    booked: number;
+    completed: number;
+    repeat: number;
+  };
+}
+
+/**
+ * Update client acquisition source
+ */
+export async function updateClientSource(
+  clientId: string,
+  source: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    await prisma.client.update({
+      where: {
+        id: clientId,
+        organizationId,
+      },
+      data: {
+        source,
+      },
+    });
+
+    revalidatePath("/clients");
+    revalidatePath(`/clients/${clientId}`);
+
+    return { success: true, data: { id: clientId } };
+  } catch (error) {
+    console.error("Error updating client source:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update client source" };
+  }
+}
+
+/**
+ * Get acquisition analytics for the organization
+ */
+export async function getAcquisitionAnalytics(options?: {
+  startDate?: Date;
+  endDate?: Date;
+}): Promise<ActionResult<AcquisitionOverview>> {
+  try {
+    const organizationId = await getOrganizationId();
+    const { startDate, endDate } = options || {};
+
+    const dateFilter = {
+      ...(startDate && { gte: startDate }),
+      ...(endDate && { lte: endDate }),
+    };
+
+    // Get all clients with their revenue
+    const clients = await prisma.client.findMany({
+      where: {
+        organizationId,
+        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
+      },
+      select: {
+        id: true,
+        source: true,
+        lifetimeRevenueCents: true,
+        totalProjects: true,
+        createdAt: true,
+        _count: {
+          select: {
+            bookings: true,
+            projects: true,
+          },
+        },
+      },
+    });
+
+    // Calculate totals
+    const totalClients = clients.length;
+    const totalRevenue = clients.reduce(
+      (sum, c) => sum + c.lifetimeRevenueCents,
+      0
+    );
+
+    // Group by source
+    const sourceMap = new Map<
+      string,
+      {
+        clients: typeof clients;
+        revenue: number;
+      }
+    >();
+
+    clients.forEach((client) => {
+      const source = client.source || "UNKNOWN";
+      const existing = sourceMap.get(source) || { clients: [], revenue: 0 };
+      existing.clients.push(client);
+      existing.revenue += client.lifetimeRevenueCents;
+      sourceMap.set(source, existing);
+    });
+
+    // Calculate stats by source
+    const bySource: AcquisitionStats[] = Array.from(sourceMap.entries()).map(
+      ([source, data]) => {
+        const clientCount = data.clients.length;
+        const hasBookings = data.clients.filter(
+          (c) => c._count.bookings > 0
+        ).length;
+        const hasMultipleProjects = data.clients.filter(
+          (c) => c.totalProjects > 1
+        ).length;
+
+        return {
+          source,
+          clientCount,
+          totalRevenue: data.revenue,
+          averageRevenue: clientCount > 0 ? data.revenue / clientCount : 0,
+          conversionRate: clientCount > 0 ? (hasBookings / clientCount) * 100 : 0,
+          repeatRate:
+            clientCount > 0 ? (hasMultipleProjects / clientCount) * 100 : 0,
+        };
+      }
+    );
+
+    // Sort by client count
+    bySource.sort((a, b) => b.clientCount - a.clientCount);
+
+    // Top sources
+    const topSources = bySource.slice(0, 5).map((s) => ({
+      source: s.source,
+      count: s.clientCount,
+    }));
+
+    // Monthly trend (last 12 months)
+    const monthlyTrend: { month: string; clients: number; revenue: number }[] =
+      [];
+    const now = new Date();
+
+    for (let i = 11; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const monthClients = clients.filter(
+        (c) => c.createdAt >= monthStart && c.createdAt <= monthEnd
+      );
+
+      monthlyTrend.push({
+        month: monthStart.toISOString().slice(0, 7),
+        clients: monthClients.length,
+        revenue: monthClients.reduce(
+          (sum, c) => sum + c.lifetimeRevenueCents,
+          0
+        ),
+      });
+    }
+
+    // Conversion funnel
+    const leads = clients.filter(
+      (c) => c._count.bookings === 0 && c._count.projects === 0
+    ).length;
+    const contacted = clients.filter(
+      (c) => c._count.bookings > 0 || c._count.projects > 0
+    ).length;
+    const booked = clients.filter((c) => c._count.bookings > 0).length;
+    const completed = clients.filter((c) => c._count.projects > 0).length;
+    const repeat = clients.filter((c) => c.totalProjects > 1).length;
+
+    return {
+      success: true,
+      data: {
+        totalClients,
+        totalRevenue,
+        bySource,
+        topSources,
+        monthlyTrend,
+        conversionFunnel: {
+          leads,
+          contacted,
+          booked,
+          completed,
+          repeat,
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Error getting acquisition analytics:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get acquisition analytics" };
+  }
+}
+
+/**
+ * Get clients by acquisition source
+ */
+export async function getClientsBySource(
+  source: string,
+  options?: { limit?: number; offset?: number }
+): Promise<
+  ActionResult<{
+    clients: Array<{
+      id: string;
+      fullName: string | null;
+      email: string;
+      company: string | null;
+      lifetimeRevenueCents: number;
+      totalProjects: number;
+      createdAt: Date;
+    }>;
+    total: number;
+  }>
+> {
+  try {
+    const organizationId = await getOrganizationId();
+    const limit = options?.limit || 50;
+    const offset = options?.offset || 0;
+
+    const [clients, total] = await Promise.all([
+      prisma.client.findMany({
+        where: {
+          organizationId,
+          source,
+        },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          company: true,
+          lifetimeRevenueCents: true,
+          totalProjects: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.client.count({
+        where: {
+          organizationId,
+          source,
+        },
+      }),
+    ]);
+
+    return {
+      success: true,
+      data: { clients, total },
+    };
+  } catch (error) {
+    console.error("Error getting clients by source:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get clients by source" };
+  }
+}
+
+/**
+ * Get source performance comparison
+ */
+export async function getSourcePerformance(
+  dateRange?: { startDate: Date; endDate: Date }
+): Promise<
+  ActionResult<{
+    sources: Array<{
+      source: string;
+      newClients: number;
+      totalRevenue: number;
+      avgRevenuePerClient: number;
+      projectsCompleted: number;
+      clientRetention: number;
+    }>;
+  }>
+> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const dateFilter = dateRange
+      ? {
+          createdAt: {
+            gte: dateRange.startDate,
+            lte: dateRange.endDate,
+          },
+        }
+      : {};
+
+    // Get all clients grouped by source
+    const clients = await prisma.client.groupBy({
+      by: ["source"],
+      where: {
+        organizationId,
+        ...dateFilter,
+      },
+      _count: {
+        id: true,
+      },
+      _sum: {
+        lifetimeRevenueCents: true,
+        totalProjects: true,
+      },
+    });
+
+    // Get repeat client counts by source
+    const repeatClients = await prisma.client.groupBy({
+      by: ["source"],
+      where: {
+        organizationId,
+        totalProjects: { gt: 1 },
+        ...dateFilter,
+      },
+      _count: {
+        id: true,
+      },
+    });
+
+    const repeatMap = new Map(
+      repeatClients.map((r) => [r.source || "UNKNOWN", r._count.id])
+    );
+
+    const sources = clients.map((c) => {
+      const source = c.source || "UNKNOWN";
+      const newClients = c._count.id;
+      const totalRevenue = c._sum.lifetimeRevenueCents || 0;
+      const repeatCount = repeatMap.get(source) || 0;
+
+      return {
+        source,
+        newClients,
+        totalRevenue,
+        avgRevenuePerClient: newClients > 0 ? totalRevenue / newClients : 0,
+        projectsCompleted: c._sum.totalProjects || 0,
+        clientRetention: newClients > 0 ? (repeatCount / newClients) * 100 : 0,
+      };
+    });
+
+    // Sort by revenue
+    sources.sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+    return {
+      success: true,
+      data: { sources },
+    };
+  } catch (error) {
+    console.error("Error getting source performance:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get source performance" };
+  }
+}
