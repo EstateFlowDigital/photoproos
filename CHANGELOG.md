@@ -27,6 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improves UI consistency and accessibility across all settings forms
 
 ### Added
+- **Form Validation Utilities** - Comprehensive form validation library for consistent validation
+  - Created `lib/validation.ts` with common validators (required, email, phone, URL, dates, etc.)
+  - Created `hooks/use-form-validation.ts` hook for declarative form validation
+  - Added FieldError component for accessible error display
+  - Added CharacterCount component for text field limits
+  - Added currency formatting and parsing utilities
+  - Validators include: minLength, maxLength, positiveNumber, futureDate, hexColor, password strength
+
 - **Enhanced Keyboard Shortcuts** - Improved keyboard navigation across the dashboard
   - Added Cmd/Ctrl+/ to open keyboard shortcuts modal from anywhere
   - Added Escape key to go back to parent page (context-aware)
