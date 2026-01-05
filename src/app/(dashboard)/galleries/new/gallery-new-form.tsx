@@ -71,6 +71,16 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
   const [showWatermark, setShowWatermark] = useState(defaultTemplate?.showWatermark ?? false);
   const [sendNotifications, setSendNotifications] = useState(defaultTemplate?.sendNotifications ?? true);
 
+  // Expiration settings
+  const [expirationType, setExpirationType] = useState<"never" | "30days" | "60days" | "90days" | "custom">(
+    defaultTemplate?.expirationDays ? (
+      defaultTemplate.expirationDays === 30 ? "30days" :
+      defaultTemplate.expirationDays === 60 ? "60days" :
+      defaultTemplate.expirationDays === 90 ? "90days" : "custom"
+    ) : "never"
+  );
+  const [customExpirationDate, setCustomExpirationDate] = useState("");
+
   // Form submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -118,6 +128,21 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
     setIsSubmitting(true);
 
     try {
+      // Calculate expiresAt based on expiration type
+      let expiresAt: Date | null = null;
+      if (expirationType === "30days") {
+        expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
+      } else if (expirationType === "60days") {
+        expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 60);
+      } else if (expirationType === "90days") {
+        expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 90);
+      } else if (expirationType === "custom" && customExpirationDate) {
+        expiresAt = new Date(customExpirationDate);
+      }
+
       const result = await createGallery({
         name: name.trim(),
         description: galleryDescription.trim() || null,
@@ -129,7 +154,7 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         currency: "USD",
         coverImageUrl: null,
         password: accessType === "password" ? galleryPassword : null,
-        expiresAt: null,
+        expiresAt,
         allowDownloads,
         showWatermark,
         allowFavorites,
@@ -435,6 +460,102 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
             checked={sendNotifications}
             onChange={setSendNotifications}
           />
+        </div>
+      </div>
+
+      {/* Gallery Expiration Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">Gallery Expiration</h2>
+        <p className="text-sm text-foreground-muted mb-4">
+          Set when this gallery should expire and become inaccessible
+        </p>
+
+        <div className="space-y-3">
+          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
+            <input
+              type="radio"
+              name="expirationType"
+              checked={expirationType === "never"}
+              onChange={() => setExpirationType("never")}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-foreground">Never Expires</div>
+              <div className="text-xs text-foreground-muted mt-0.5">
+                Gallery stays accessible indefinitely
+              </div>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
+            <input
+              type="radio"
+              name="expirationType"
+              checked={expirationType === "30days"}
+              onChange={() => setExpirationType("30days")}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-foreground">30 Days After Creation</div>
+              <div className="text-xs text-foreground-muted mt-0.5">
+                Gallery expires in 30 days
+              </div>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
+            <input
+              type="radio"
+              name="expirationType"
+              checked={expirationType === "60days"}
+              onChange={() => setExpirationType("60days")}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-foreground">60 Days After Creation</div>
+              <div className="text-xs text-foreground-muted mt-0.5">
+                Gallery expires in 60 days
+              </div>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
+            <input
+              type="radio"
+              name="expirationType"
+              checked={expirationType === "90days"}
+              onChange={() => setExpirationType("90days")}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-foreground">90 Days After Creation</div>
+              <div className="text-xs text-foreground-muted mt-0.5">
+                Gallery expires in 90 days
+              </div>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
+            <input
+              type="radio"
+              name="expirationType"
+              checked={expirationType === "custom"}
+              onChange={() => setExpirationType("custom")}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-foreground mb-2">Custom Date</div>
+              {expirationType === "custom" && (
+                <input
+                  type="date"
+                  value={customExpirationDate}
+                  onChange={(e) => setCustomExpirationDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full rounded-lg border border-[var(--input-border)] bg-[var(--input)] px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                />
+              )}
+            </div>
+          </label>
         </div>
       </div>
 
