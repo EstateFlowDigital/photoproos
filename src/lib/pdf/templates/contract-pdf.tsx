@@ -165,9 +165,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   signedIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
     marginTop: 8,
+  },
+  signatureImage: {
+    width: 150,
+    height: 50,
+    objectFit: "contain",
+    marginBottom: 4,
   },
   signedText: {
     fontSize: 10,
@@ -221,6 +225,7 @@ interface ContractSigner {
   name: string | null;
   email: string;
   signedAt: Date | null;
+  signatureUrl: string | null;
 }
 
 export interface ContractPdfProps {
@@ -237,6 +242,7 @@ export interface ContractPdfProps {
   clientCompany: string | null;
   content: string;
   signers: ContractSigner[];
+  accentColor: string;
 }
 
 function getStatusColor(status: string): { bg: string; text: string } {
@@ -319,6 +325,7 @@ export function ContractPdf({
   clientCompany,
   content,
   signers,
+  accentColor,
 }: ContractPdfProps) {
   const statusColors = getStatusColor(status);
   const watermarkConfig = getWatermarkConfig(status);
@@ -337,9 +344,9 @@ export function ContractPdf({
         )}
 
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: accentColor }]}>
           <View style={styles.headerLeft}>
-            <Text style={styles.title}>{contractName}</Text>
+            <Text style={[styles.title, { color: accentColor }]}>{contractName}</Text>
             <Text style={styles.subtitle}>
               Created: {createdAt}
               {sentAt && ` • Sent: ${sentAt}`}
@@ -418,7 +425,12 @@ export function ContractPdf({
                   )}
                   {signer.signedAt ? (
                     <View style={styles.signedIndicator}>
-                      <Text style={styles.signedText}>Signed electronically</Text>
+                      {signer.signatureUrl && (
+                        <Image src={signer.signatureUrl} style={styles.signatureImage} />
+                      )}
+                      <Text style={styles.signedText}>
+                        {signer.signatureUrl ? "Signed" : "Signed electronically"}
+                      </Text>
                       <Text style={styles.signedDate}>
                         {new Date(signer.signedAt).toLocaleDateString("en-US", {
                           month: "long",
@@ -441,19 +453,17 @@ export function ContractPdf({
           </View>
         )}
 
-        {/* Footer */}
-        <View style={styles.footer}>
+        {/* Footer with Page Numbers */}
+        <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
             This document was generated electronically.
           </Text>
-          <Text style={styles.footerText}>
-            Generated on{" "}
-            {new Date().toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </Text>
+          <Text
+            style={styles.pageNumber}
+            render={({ pageNumber, totalPages }) =>
+              `Page ${pageNumber} of ${totalPages}`
+            }
+          />
         </View>
       </Page>
     </Document>

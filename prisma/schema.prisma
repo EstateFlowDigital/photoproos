@@ -553,6 +553,7 @@ model Organization {
   customForms        CustomForm[]
   clients            Client[]
   payments           Payment[]
+  galleryFeedback    GalleryFeedback[]
   bookings           Booking[]
   bookingTypes       BookingType[]
   invoices           Invoice[]
@@ -643,6 +644,9 @@ model User {
   autoThemeEnabled   Boolean @default(false) // Auto switch theme based on time
   autoThemeDarkStart String  @default("18:00") // When to switch to dark mode (HH:MM)
   autoThemeDarkEnd   String  @default("06:00") // When to switch to light mode (HH:MM)
+
+  // Dashboard customization
+  dashboardConfig    Json?   // JSON config for widget visibility, collapsed sections, order
 
   // Home base location (overrides org default for travel calculations)
   homeBaseLocationId String?
@@ -913,6 +917,7 @@ model Project {
   payments          Payment[]
   favorites         GalleryFavorite[]
   comments          GalleryComment[]
+  feedback          GalleryFeedback[]
   propertyWebsite   PropertyWebsite?
   portfolioWebsites PortfolioWebsiteProject[]
   tasks             Task[]
@@ -1041,6 +1046,32 @@ model GalleryComment {
   @@index([projectId])
   @@index([assetId])
   @@index([sessionId])
+}
+
+model GalleryFeedback {
+  id             String  @id @default(cuid())
+  projectId      String
+  organizationId String
+  type           String  // "feedback", "feature", "issue"
+  message        String
+  clientName     String?
+  clientEmail    String?
+  ipAddress      String?
+  userAgent      String?
+  isRead         Boolean @default(false)
+  isResolved     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([type])
+  @@index([isRead])
 }
 
 // ============================================================================

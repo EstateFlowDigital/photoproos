@@ -84,6 +84,21 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [showLinkCopied, setShowLinkCopied] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
 
+  // Photo zoom state
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Feedback widget state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackType, setFeedbackType] = useState<"feedback" | "feature" | "issue">("feedback");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackName, setFeedbackName] = useState("");
+  const [feedbackEmail, setFeedbackEmail] = useState("");
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
   useEffect(() => {
     // Check system preference
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -167,7 +182,115 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     setSelectedPhoto(null);
     setPhotoComments([]);
     setNewComment("");
+    // Reset zoom state
+    setZoomLevel(1);
+    setPanPosition({ x: 0, y: 0 });
   }, []);
+
+  // Zoom handlers
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel((prev) => Math.min(prev + 0.5, 4));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel((prev) => {
+      const newZoom = Math.max(prev - 0.5, 1);
+      if (newZoom === 1) {
+        setPanPosition({ x: 0, y: 0 });
+      }
+      return newZoom;
+    });
+  }, []);
+
+  const handleResetZoom = useCallback(() => {
+    setZoomLevel(1);
+    setPanPosition({ x: 0, y: 0 });
+  }, []);
+
+  const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (zoomLevel === 1) {
+      // Zoom in to 2x at click position
+      setZoomLevel(2);
+    } else {
+      // Reset zoom
+      setZoomLevel(1);
+      setPanPosition({ x: 0, y: 0 });
+    }
+  }, [zoomLevel]);
+
+  // Pan handlers for dragging when zoomed
+  const handlePanStart = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (zoomLevel > 1) {
+      e.preventDefault();
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y });
+    }
+  }, [zoomLevel, panPosition]);
+
+  const handlePanMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDragging && zoomLevel > 1) {
+      const newX = e.clientX - dragStart.x;
+      const newY = e.clientY - dragStart.y;
+      // Limit pan to reasonable bounds
+      const maxPan = (zoomLevel - 1) * 200;
+      setPanPosition({
+        x: Math.max(-maxPan, Math.min(maxPan, newX)),
+        y: Math.max(-maxPan, Math.min(maxPan, newY)),
+      });
+    }
+  }, [isDragging, zoomLevel, dragStart]);
+
+  const handlePanEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Handle wheel zoom
+  const handleWheelZoom = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.2 : 0.2;
+    setZoomLevel((prev) => {
+      const newZoom = Math.max(1, Math.min(4, prev + delta));
+      if (newZoom === 1) {
+        setPanPosition({ x: 0, y: 0 });
+      }
+      return newZoom;
+    });
+  }, []);
+
+  // Submit feedback
+  const handleSubmitFeedback = useCallback(async () => {
+    if (!feedbackMessage.trim()) return;
+
+    setIsSubmittingFeedback(true);
+    try {
+      const response = await fetch("/api/gallery/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          galleryId: gallery.id,
+          type: feedbackType,
+          message: feedbackMessage.trim(),
+          clientName: feedbackName.trim() || null,
+          clientEmail: feedbackEmail.trim() || null,
+        }),
+      });
+
+      if (response.ok) {
+        setFeedbackSubmitted(true);
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setShowFeedbackModal(false);
+          setFeedbackSubmitted(false);
+          setFeedbackMessage("");
+          setFeedbackType("feedback");
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Failed to submit feedback:", error);
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  }, [gallery.id, feedbackType, feedbackMessage, feedbackName, feedbackEmail]);
 
   // Submit a new comment
   const handleSubmitComment = useCallback(async () => {
@@ -915,13 +1038,66 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               <CloseIcon className="h-5 w-5" />
             </button>
 
-            {/* Photo */}
-            <div className="relative flex flex-1 items-center justify-center bg-black/20 p-4">
+            {/* Photo with Zoom */}
+            <div
+              className="relative flex flex-1 items-center justify-center bg-black/20 p-4 overflow-hidden"
+              onDoubleClick={handleDoubleClick}
+              onMouseDown={handlePanStart}
+              onMouseMove={handlePanMove}
+              onMouseUp={handlePanEnd}
+              onMouseLeave={handlePanEnd}
+              onWheel={handleWheelZoom}
+              style={{ cursor: zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in" }}
+            >
               <img
-                src={selectedPhoto.url}
+                src={selectedPhoto.originalUrl || selectedPhoto.url}
                 alt={selectedPhoto.filename}
-                className="max-h-full max-w-full object-contain"
+                className="max-h-full max-w-full object-contain transition-transform duration-200"
+                style={{
+                  transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
+                  pointerEvents: "none",
+                }}
+                draggable={false}
               />
+
+              {/* Zoom Controls */}
+              <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg p-1.5" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
+                  disabled={zoomLevel <= 1}
+                  className="rounded p-1.5 text-white transition-colors hover:bg-white/20 disabled:opacity-40"
+                  title="Zoom out"
+                >
+                  <ZoomOutIcon className="h-4 w-4" />
+                </button>
+                <span className="text-white text-xs font-medium min-w-[40px] text-center">
+                  {Math.round(zoomLevel * 100)}%
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
+                  disabled={zoomLevel >= 4}
+                  className="rounded p-1.5 text-white transition-colors hover:bg-white/20 disabled:opacity-40"
+                  title="Zoom in"
+                >
+                  <ZoomInIcon className="h-4 w-4" />
+                </button>
+                {zoomLevel > 1 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleResetZoom(); }}
+                    className="rounded p-1.5 text-white transition-colors hover:bg-white/20 ml-1 border-l border-white/20 pl-2"
+                    title="Reset zoom"
+                  >
+                    <ResetIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Zoom hint */}
+              {zoomLevel === 1 && (
+                <div className="absolute top-4 left-4 text-white/50 text-xs hidden sm:block">
+                  Double-click or scroll to zoom
+                </div>
+              )}
             </div>
 
             {/* Comments Panel */}
@@ -940,30 +1116,48 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               <div className="border-b p-4" style={{ borderColor: colors.borderColor }}>
                 <div className="flex items-center gap-2 mb-3">
                   <PrintIcon className="h-4 w-4" style={{ color: primaryColor }} />
-                  <span className="text-sm font-medium">Print Ready</span>
+                  <span className="text-sm font-medium">Print Sizes</span>
                 </div>
-                <div className="space-y-2 text-xs" style={{ color: colors.mutedColor }}>
-                  {getPrintSizes(selectedPhoto.width, selectedPhoto.height).map((size) => (
-                    <div key={size.label} className="flex items-center justify-between">
-                      <span>{size.label}</span>
-                      <span
-                        className={cn(
-                          "rounded px-1.5 py-0.5",
-                          size.quality === "excellent"
-                            ? "bg-[var(--success)]/10 text-[var(--success)]"
-                            : size.quality === "good"
-                            ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-                            : "bg-[var(--warning)]/10 text-[var(--warning)]"
-                        )}
-                      >
-                        {size.quality === "excellent" ? "Excellent" : size.quality === "good" ? "Good" : "Fair"}
+                {getPrintSizes(selectedPhoto.width, selectedPhoto.height).length > 0 ? (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      {getPrintSizes(selectedPhoto.width, selectedPhoto.height).map((size) => {
+                        const qualityColors = {
+                          excellent: { bg: "rgba(34, 197, 94, 0.15)", text: "#22c55e", label: "★" },
+                          good: { bg: "rgba(59, 130, 246, 0.15)", text: "#3b82f6", label: "●" },
+                          fair: { bg: "rgba(249, 115, 22, 0.15)", text: "#f97316", label: "○" },
+                        };
+                        const colors = qualityColors[size.quality];
+                        return (
+                          <span
+                            key={size.label}
+                            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
+                            style={{ backgroundColor: colors.bg, color: colors.text }}
+                            title={`${size.quality.charAt(0).toUpperCase() + size.quality.slice(1)} quality at ${size.effectiveDpi} DPI`}
+                          >
+                            <span>{colors.label}</span>
+                            {size.label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-3 flex items-center gap-4 text-[10px]" style={{ color: colors.mutedColor }}>
+                      <span className="flex items-center gap-1">
+                        <span style={{ color: "#22c55e" }}>★</span> Excellent (300+ DPI)
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span style={{ color: "#3b82f6" }}>●</span> Good (200+ DPI)
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span style={{ color: "#f97316" }}>○</span> Fair (100+ DPI)
                       </span>
                     </div>
-                  ))}
-                </div>
-                <p className="mt-2 text-xs" style={{ color: colors.mutedColor }}>
-                  Based on 300 DPI for photo-quality prints
-                </p>
+                  </>
+                ) : (
+                  <p className="text-xs" style={{ color: colors.mutedColor }}>
+                    Resolution too low for standard print sizes
+                  </p>
+                )}
               </div>
 
               {/* Comments Header */}
@@ -1257,7 +1451,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
             {/* Copy Link Button */}
             <button
               onClick={handleCopyLink}
-              className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors mb-4"
               style={{
                 backgroundColor: showLinkCopied ? "#22c55e" : primaryColor,
                 color: "#fff",
@@ -1275,6 +1469,243 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 </>
               )}
             </button>
+
+            {/* Social Sharing */}
+            <div className="border-t pt-4" style={{ borderColor: colors.borderColor }}>
+              <p className="text-xs text-center mb-3" style={{ color: colors.mutedColor }}>
+                Share via
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                {/* Facebook */}
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getGalleryUrl())}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:opacity-80"
+                  style={{ backgroundColor: "#1877F2" }}
+                  title="Share on Facebook"
+                >
+                  <FacebookIcon className="h-5 w-5 text-white" />
+                </a>
+
+                {/* Twitter/X */}
+                <a
+                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(getGalleryUrl())}&text=${encodeURIComponent(`Check out this photo gallery: ${gallery.name}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:opacity-80"
+                  style={{ backgroundColor: "#000000" }}
+                  title="Share on X (Twitter)"
+                >
+                  <XIcon className="h-5 w-5 text-white" />
+                </a>
+
+                {/* Pinterest */}
+                <a
+                  href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(getGalleryUrl())}&description=${encodeURIComponent(`${gallery.name} by ${gallery.photographer.name}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:opacity-80"
+                  style={{ backgroundColor: "#E60023" }}
+                  title="Share on Pinterest"
+                >
+                  <PinterestIcon className="h-5 w-5 text-white" />
+                </a>
+
+                {/* Email */}
+                <a
+                  href={`mailto:?subject=${encodeURIComponent(`Photo Gallery: ${gallery.name}`)}&body=${encodeURIComponent(`Check out this photo gallery by ${gallery.photographer.name}:\n\n${getGalleryUrl()}`)}`}
+                  className="flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:opacity-80"
+                  style={{ backgroundColor: colors.mutedColor }}
+                  title="Share via Email"
+                >
+                  <EmailIcon className="h-5 w-5 text-white" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Feedback Button */}
+      <button
+        onClick={() => setShowFeedbackModal(true)}
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium text-white shadow-lg transition-all hover:scale-105"
+        style={{ backgroundColor: primaryColor }}
+        title="Send feedback"
+      >
+        <FeedbackIcon className="h-5 w-5" />
+        <span className="hidden sm:inline">Feedback</span>
+      </button>
+
+      {/* Feedback Modal */}
+      {showFeedbackModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => {
+              if (!feedbackSubmitted) {
+                setShowFeedbackModal(false);
+              }
+            }}
+          />
+
+          {/* Modal Content */}
+          <div
+            className="relative z-10 w-full max-w-md mx-4 rounded-2xl p-6 shadow-2xl"
+            style={{ backgroundColor: colors.cardBg }}
+          >
+            {feedbackSubmitted ? (
+              // Success State
+              <div className="text-center py-8">
+                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)" }}>
+                  <CheckIcon className="h-8 w-8" style={{ color: "#22c55e" }} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: colors.textColor }}>
+                  Thank you!
+                </h3>
+                <p className="text-sm" style={{ color: colors.mutedColor }}>
+                  Your feedback has been sent to the photographer.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Close button */}
+                <button
+                  onClick={() => setShowFeedbackModal(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                  aria-label="Close feedback form"
+                >
+                  <CloseIcon className="h-6 w-6" />
+                </button>
+
+                {/* Header */}
+                <div className="mb-6">
+                  <h3 className="text-xl font-semibold" style={{ color: colors.textColor }}>
+                    Send Feedback
+                  </h3>
+                  <p className="text-sm mt-1" style={{ color: colors.mutedColor }}>
+                    Share your thoughts with {gallery.photographer.name}
+                  </p>
+                </div>
+
+                {/* Feedback Type */}
+                <div className="mb-4">
+                  <label className="text-sm font-medium block mb-2" style={{ color: colors.textColor }}>
+                    Type
+                  </label>
+                  <div className="flex gap-2">
+                    {[
+                      { value: "feedback", label: "Feedback", icon: "💬" },
+                      { value: "feature", label: "Feature Request", icon: "✨" },
+                      { value: "issue", label: "Report Issue", icon: "🐛" },
+                    ].map((type) => (
+                      <button
+                        key={type.value}
+                        onClick={() => setFeedbackType(type.value as typeof feedbackType)}
+                        className={cn(
+                          "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                          feedbackType === type.value
+                            ? "ring-2 ring-offset-2"
+                            : "opacity-70 hover:opacity-100"
+                        )}
+                        style={{
+                          backgroundColor: feedbackType === type.value ? primaryColor : colors.bgColor,
+                          color: feedbackType === type.value ? "#fff" : colors.textColor,
+                          borderColor: colors.borderColor,
+                          ["--tw-ring-color" as string]: primaryColor,
+                        }}
+                      >
+                        <span className="mr-1">{type.icon}</span>
+                        <span className="hidden sm:inline">{type.label}</span>
+                        <span className="sm:hidden">{type.value === "feature" ? "Feature" : type.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Name and Email (optional) */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <label className="text-xs font-medium block mb-1" style={{ color: colors.mutedColor }}>
+                      Name (optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={feedbackName}
+                      onChange={(e) => setFeedbackName(e.target.value)}
+                      className="w-full rounded-lg border px-3 py-2 text-sm"
+                      style={{
+                        backgroundColor: colors.bgColor,
+                        borderColor: colors.borderColor,
+                        color: colors.textColor,
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium block mb-1" style={{ color: colors.mutedColor }}>
+                      Email (optional)
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={feedbackEmail}
+                      onChange={(e) => setFeedbackEmail(e.target.value)}
+                      className="w-full rounded-lg border px-3 py-2 text-sm"
+                      style={{
+                        backgroundColor: colors.bgColor,
+                        borderColor: colors.borderColor,
+                        color: colors.textColor,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Message */}
+                <div className="mb-4">
+                  <label className="text-sm font-medium block mb-2" style={{ color: colors.textColor }}>
+                    Message
+                  </label>
+                  <textarea
+                    placeholder={
+                      feedbackType === "feedback"
+                        ? "Share your thoughts about this gallery..."
+                        : feedbackType === "feature"
+                        ? "What feature would you like to see?"
+                        : "Describe the issue you encountered..."
+                    }
+                    value={feedbackMessage}
+                    onChange={(e) => setFeedbackMessage(e.target.value)}
+                    rows={4}
+                    className="w-full resize-none rounded-lg border px-3 py-2 text-sm"
+                    style={{
+                      backgroundColor: colors.bgColor,
+                      borderColor: colors.borderColor,
+                      color: colors.textColor,
+                    }}
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  onClick={handleSubmitFeedback}
+                  disabled={isSubmittingFeedback || !feedbackMessage.trim()}
+                  className="w-full rounded-lg px-4 py-3 text-sm font-medium text-white disabled:opacity-50 transition-all"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {isSubmittingFeedback ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <LoadingSpinner className="h-4 w-4 animate-spin" />
+                      Sending...
+                    </span>
+                  ) : (
+                    "Send Feedback"
+                  )}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -1479,6 +1910,74 @@ function QRCodeSVG({
       height={size}
       style={{ display: "block" }}
     />
+  );
+}
+
+// Social Media Icons
+function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function PinterestIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
+    </svg>
+  );
+}
+
+function EmailIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
+      <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
+    </svg>
+  );
+}
+
+function ZoomInIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" />
+      <path d="M9 5.75a.75.75 0 0 1 .75.75v2h2a.75.75 0 0 1 0 1.5h-2v2a.75.75 0 0 1-1.5 0v-2h-2a.75.75 0 0 1 0-1.5h2v-2A.75.75 0 0 1 9 5.75Z" />
+    </svg>
+  );
+}
+
+function ZoomOutIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" />
+      <path d="M6.25 8.5a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5h-5.5Z" />
+    </svg>
+  );
+}
+
+function ResetIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.389Zm-11.23-3.461a.75.75 0 0 0 1.449.388 5.5 5.5 0 0 1 9.201-2.466l.311.311H12.61a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .75-.75V2.704a.75.75 0 0 0-1.5 0v2.43l-.311-.31a7 7 0 0 0-11.712 3.139Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function FeedbackIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902 1.168.188 2.352.327 3.55.414.28.02.521.18.642.413l1.713 3.293a.75.75 0 0 0 1.33 0l1.713-3.293a.783.783 0 0 1 .642-.413 41.102 41.102 0 0 0 3.55-.414c1.437-.231 2.43-1.49 2.43-2.902V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0 0 10 2ZM6.75 6a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 2.5a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5h-3.5Z" clipRule="evenodd" />
+    </svg>
   );
 }
 

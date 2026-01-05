@@ -5,6 +5,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { QuickThemeSwitcher } from "@/components/ui/quick-theme-switcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
 import { ChevronDown } from "lucide-react";
 import {
@@ -15,6 +17,7 @@ import {
 } from "@/lib/actions/notifications";
 import { globalSearch, type SearchResult as GlobalSearchResult } from "@/lib/actions/search";
 import { QuickActions, QUICK_ACTIONS } from "@/components/dashboard/quick-actions";
+import { useOrganization, useUser } from "@clerk/nextjs";
 
 interface DashboardTopbarProps {
   className?: string;
@@ -104,7 +107,10 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   const [navModeState, setNavModeState] = useState<"sidebar" | "top">(navMode);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [topNavOpen, setTopNavOpen] = useState(false);
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+  const { user } = useUser();
+  const { organization } = useOrganization();
 
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -113,6 +119,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   const quickActionsRef = useRef<HTMLDivElement>(null);
   const navToggleRef = useRef<HTMLDivElement>(null);
   const topNavRef = useRef<HTMLDivElement>(null);
+  const workspaceRef = useRef<HTMLDivElement>(null);
 
   // Fetch notifications on mount
   useEffect(() => {
@@ -144,6 +151,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
   useEffect(() => {
     setNavModeState(navMode);
     setTopNavOpen(false);
+    setWorkspaceOpen(false);
   }, [navMode]);
 
   // Debounce search query
@@ -267,6 +275,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         setQuickActionsOpen(false);
         setShortcutsOpen(false);
         setTopNavOpen(false);
+        setWorkspaceOpen(false);
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -282,7 +291,8 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         notificationsRef.current?.contains(e.target as Node) ||
         helpRef.current?.contains(e.target as Node) ||
         navToggleRef.current?.contains(e.target as Node) ||
-        topNavRef.current?.contains(e.target as Node)
+        topNavRef.current?.contains(e.target as Node) ||
+        workspaceRef.current?.contains(e.target as Node)
       ) {
         return;
       }
@@ -291,6 +301,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
       setNotificationsOpen(false);
       setHelpOpen(false);
       setTopNavOpen(false);
+      setWorkspaceOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -503,6 +514,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
               setNavModeState(nextMode);
               onNavModeChange?.(nextMode);
               setTopNavOpen(false);
+              setWorkspaceOpen(false);
             }}
             className="hidden sm:flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
           >
@@ -511,6 +523,77 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
               {navModeState === "sidebar" ? "Top nav" : "Sidebar"}
             </span>
           </button>
+        </div>
+
+        {/* Workspace / account dropdown */}
+        <div ref={workspaceRef} className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              setWorkspaceOpen((prev) => !prev);
+              setQuickActionsOpen(false);
+              setNotificationsOpen(false);
+              setHelpOpen(false);
+              setTopNavOpen(false);
+            }}
+            className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+          >
+            <UserIcon className="h-4 w-4" />
+            <span className="hidden md:inline truncate max-w-[160px]">
+              {organization?.name || user?.fullName || "Workspace"}
+            </span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform",
+                workspaceOpen ? "rotate-180" : "rotate-0"
+              )}
+            />
+          </button>
+          {workspaceOpen && (
+            <div className="absolute right-0 top-full mt-2 w-[min(360px,90vw)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
+              <div className="px-4 py-3 border-b border-[var(--card-border)]">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {organization?.name || user?.fullName || "Workspace"}
+                </p>
+                <p className="text-xs text-foreground-muted truncate">
+                  {organization?.slug || user?.primaryEmailAddress?.emailAddress || "Signed in"}
+                </p>
+              </div>
+              <div className="p-2 space-y-1">
+                <Link
+                  href="/settings"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] transition-colors"
+                  onClick={() => setWorkspaceOpen(false)}
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                  Settings
+                </Link>
+                <Link
+                  href="/settings/billing"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] transition-colors"
+                  onClick={() => setWorkspaceOpen(false)}
+                >
+                  <PaymentIcon className="h-4 w-4" />
+                  Billing & plan
+                </Link>
+                <Link
+                  href="/settings/team?invite=1"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] transition-colors"
+                  onClick={() => setWorkspaceOpen(false)}
+                >
+                  <UserPlusIcon className="h-4 w-4" />
+                  Invite team
+                </Link>
+                <div className="mt-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
+                  <div className="flex items-center gap-2">
+                    <QuickThemeSwitcher />
+                    <ThemeToggle />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Notifications */}
@@ -786,6 +869,14 @@ function LayoutIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 0 0 2 4.25v11.5A2.25 2.25 0 0 0 4.25 18h11.5A2.25 2.25 0 0 0 18 15.75V4.25A2.25 2.25 0 0 0 15.75 2H4.25ZM3.5 4.25a.75.75 0 0 1 .75-.75h11.5a.75.75 0 0 1 .75.75v11.5a.75.75 0 0 1-.75.75H4.25a.75.75 0 0 1-.75-.75V4.25Zm5.75 3.25a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 1.5 0v-5Zm4.25-.75a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M7.84 1.804A1 1 0 0 1 8.82 1h2.36a1 1 0 0 1 .98.804l.331 1.652a6.993 6.993 0 0 1 1.929 1.115l1.598-.54a1 1 0 0 1 1.186.447l1.18 2.044a1 1 0 0 1-.205 1.251l-1.267 1.113a7.047 7.047 0 0 1 0 2.228l1.267 1.113a1 1 0 0 1 .206 1.25l-1.18 2.045a1 1 0 0 1-1.187.447l-1.598-.54a6.993 6.993 0 0 1-1.929 1.115l-.33 1.652a1 1 0 0 1-.98.804H8.82a1 1 0 0 1-.98-.804l-.331-1.652a6.993 6.993 0 0 1-1.929-1.115l-1.598.54a1 1 0 0 1-1.186-.447l-1.18-2.044a1 1 0 0 1 .205-1.251l1.267-1.114a7.05 7.05 0 0 1 0-2.227L1.821 7.773a1 1 0 0 1-.206-1.25l1.18-2.045a1 1 0 0 1 1.187-.447l1.598.54A6.992 6.992 0 0 1 7.51 3.456l.33-1.652ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clipRule="evenodd" />
     </svg>
   );
 }

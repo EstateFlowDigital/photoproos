@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
-import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist, ReferralWidget } from "@/components/dashboard";
+import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist, ReferralWidget, CollapsibleSection, DashboardCustomizePanel } from "@/components/dashboard";
 import { getChecklistItems } from "@/lib/utils/checklist-items";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { TourStarter } from "@/components/tour";
@@ -9,6 +9,8 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { DashboardCalendar, DashboardCalendarEvent } from "@/components/dashboard/dashboard-calendar";
+import { getDashboardConfig } from "@/lib/actions/dashboard";
+import { isSectionVisible, isSectionCollapsed, type DashboardConfig } from "@/lib/dashboard-types";
 
 // Icons
 function PaymentIcon({ className }: { className?: string }) {
@@ -161,6 +163,7 @@ export default async function DashboardPage() {
     calendarBookings,
     calendarOpenHouses,
     platformReferrer,
+    dashboardConfigResult,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -322,11 +325,15 @@ export default async function DashboardPage() {
         },
       },
     }),
+
+    // Dashboard config
+    getDashboardConfig(),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
   const lastMonthRevenueValue = lastMonthRevenue._sum.totalCents || 0;
   const pendingInvoicesValue = pendingInvoices._sum.totalCents || 0;
+  const dashboardConfig = dashboardConfigResult.data!;
 
   // Calculate changes for stats
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
@@ -396,10 +403,13 @@ export default async function DashboardPage() {
       <Suspense fallback={null}>
         <TourStarter />
       </Suspense>
-      <PageHeader
-        title="Dashboard"
-        subtitle={`Welcome back! Here's what's happening with ${organization.name}.`}
-      />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <PageHeader
+          title="Dashboard"
+          subtitle={`Welcome back! Here's what's happening with ${organization.name}.`}
+        />
+        <DashboardCustomizePanel config={dashboardConfig} />
+      </div>
 
       {/* Onboarding Checklist */}
       {showChecklist && (
@@ -440,104 +450,134 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="flex flex-col density-gap">
-        <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
-        <QuickActions />
-      </div>
+      {isSectionVisible(dashboardConfig, "quick-actions") && (
+        <CollapsibleSection
+          sectionId="quick-actions"
+          title="Quick Actions"
+          defaultCollapsed={isSectionCollapsed(dashboardConfig, "quick-actions")}
+        >
+          <QuickActions />
+        </CollapsibleSection>
+      )}
 
       {/* Unified Scheduler */}
-      <div className="flex flex-col density-gap">
-        <DashboardCalendar events={calendarEvents} />
-      </div>
+      {isSectionVisible(dashboardConfig, "calendar") && (
+        <CollapsibleSection
+          sectionId="calendar"
+          title="Calendar"
+          defaultCollapsed={isSectionCollapsed(dashboardConfig, "calendar")}
+        >
+          <DashboardCalendar events={calendarEvents} />
+        </CollapsibleSection>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid density-gap-section lg:grid-cols-3">
         {/* Recent Galleries */}
-        <div className="lg:col-span-2 flex flex-col density-gap">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-foreground">Recent Galleries</h2>
-            <Link
-              href="/galleries"
-              className="text-sm font-medium text-[var(--primary)] hover:underline"
+        {isSectionVisible(dashboardConfig, "recent-galleries") && (
+          <div className="lg:col-span-2">
+            <CollapsibleSection
+              sectionId="recent-galleries"
+              title="Recent Galleries"
+              defaultCollapsed={isSectionCollapsed(dashboardConfig, "recent-galleries")}
+              titleAction={
+                <Link
+                  href="/galleries"
+                  className="text-sm font-medium text-[var(--primary)] hover:underline"
+                >
+                  View all
+                </Link>
+              }
             >
-              View all
-            </Link>
+              <div className="auto-grid grid-min-240 grid-gap-4">
+                {recentGalleries.map((gallery) => (
+                  <GalleryCard
+                    key={gallery.id}
+                    id={gallery.id}
+                    title={gallery.name}
+                    client={gallery.client?.company || gallery.client?.fullName || "No client"}
+                    photos={gallery._count.assets}
+                    status={gallery.status as "delivered" | "pending" | "draft"}
+                    revenue={gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : undefined}
+                    thumbnailUrl={
+                      gallery.coverImageUrl ||
+                      gallery.assets[0]?.thumbnailUrl ||
+                      gallery.assets[0]?.originalUrl ||
+                      undefined
+                    }
+                  />
+                ))}
+              </div>
+              {recentGalleries.length === 0 && <EmptyGalleries />}
+            </CollapsibleSection>
           </div>
-          <div className="auto-grid grid-min-240 grid-gap-4">
-            {recentGalleries.map((gallery) => (
-              <GalleryCard
-                key={gallery.id}
-                id={gallery.id}
-                title={gallery.name}
-                client={gallery.client?.company || gallery.client?.fullName || "No client"}
-                photos={gallery._count.assets}
-                status={gallery.status as "delivered" | "pending" | "draft"}
-                revenue={gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : undefined}
-                thumbnailUrl={
-                  gallery.coverImageUrl ||
-                  gallery.assets[0]?.thumbnailUrl ||
-                  gallery.assets[0]?.originalUrl ||
-                  undefined
-                }
-              />
-            ))}
-          </div>
-          {recentGalleries.length === 0 && <EmptyGalleries />}
-        </div>
+        )}
 
         {/* Right Sidebar - Upcoming Bookings & Recent Activity */}
         <div className="flex flex-col density-gap-section">
           {/* Upcoming Bookings */}
-          <div className="flex flex-col density-gap">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold text-foreground">Upcoming Bookings</h2>
-              <Link
-                href="/scheduling"
-                className="text-sm font-medium text-[var(--primary)] hover:underline"
-              >
-                View all
-              </Link>
-            </div>
-            <UpcomingBookings bookings={formattedBookings} />
-          </div>
+          {isSectionVisible(dashboardConfig, "upcoming-bookings") && (
+            <CollapsibleSection
+              sectionId="upcoming-bookings"
+              title="Upcoming Bookings"
+              defaultCollapsed={isSectionCollapsed(dashboardConfig, "upcoming-bookings")}
+              titleAction={
+                <Link
+                  href="/scheduling"
+                  className="text-sm font-medium text-[var(--primary)] hover:underline"
+                >
+                  View all
+                </Link>
+              }
+            >
+              <UpcomingBookings bookings={formattedBookings} />
+            </CollapsibleSection>
+          )}
 
           {/* Recent Activity */}
-          <div className="flex flex-col density-gap">
-            <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-              {recentActivity.length > 0 ? (
-                <div className="divide-y divide-[var(--card-border)]">
-                  {recentActivity.map((activity) => (
-                    <ActivityItem
-                      key={activity.id}
-                      icon={getActivityIcon(activity.type)}
-                      text={activity.description}
-                      time={formatRelativeTime(activity.createdAt)}
-                      highlight={activity.type === "payment_received"}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="p-6 text-center">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-secondary)]">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-foreground-muted">
-                      <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clipRule="evenodd" />
-                    </svg>
+          {isSectionVisible(dashboardConfig, "recent-activity") && (
+            <CollapsibleSection
+              sectionId="recent-activity"
+              title="Recent Activity"
+              defaultCollapsed={isSectionCollapsed(dashboardConfig, "recent-activity")}
+            >
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+                {recentActivity.length > 0 ? (
+                  <div className="divide-y divide-[var(--card-border)]">
+                    {recentActivity.map((activity) => (
+                      <ActivityItem
+                        key={activity.id}
+                        icon={getActivityIcon(activity.type)}
+                        text={activity.description}
+                        time={formatRelativeTime(activity.createdAt)}
+                        highlight={activity.type === "payment_received"}
+                      />
+                    ))}
                   </div>
-                  <p className="mt-2 text-sm font-medium text-foreground">No recent activity</p>
-                  <p className="mt-1 text-xs text-foreground-muted">Activity will appear here as you work</p>
-                </div>
-              )}
-            </div>
-          </div>
+                ) : (
+                  <div className="p-6 text-center">
+                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-secondary)]">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-foreground-muted">
+                        <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-foreground">No recent activity</p>
+                    <p className="mt-1 text-xs text-foreground-muted">Activity will appear here as you work</p>
+                  </div>
+                )}
+              </div>
+            </CollapsibleSection>
+          )}
 
           {/* Referral Widget */}
-          <ReferralWidget
-            referralCode={platformReferrer?.referralCode || null}
-            successfulReferrals={platformReferrer?.successfulReferrals || 0}
-            totalEarnedCents={platformReferrer?.totalEarnedCents || 0}
-            pendingReferrals={platformReferrer?.referrals?.length || 0}
-          />
+          {isSectionVisible(dashboardConfig, "referral-widget") && (
+            <ReferralWidget
+              referralCode={platformReferrer?.referralCode || null}
+              successfulReferrals={platformReferrer?.successfulReferrals || 0}
+              totalEarnedCents={platformReferrer?.totalEarnedCents || 0}
+              pendingReferrals={platformReferrer?.referrals?.length || 0}
+            />
+          )}
         </div>
       </div>
     </div>

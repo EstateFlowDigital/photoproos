@@ -34,6 +34,16 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
         lineItems: {
           orderBy: { sortOrder: "asc" },
         },
+        payments: {
+          where: { status: "paid" },
+          select: {
+            id: true,
+            amountCents: true,
+            paidAt: true,
+            description: true,
+          },
+          orderBy: { paidAt: "asc" },
+        },
         organization: {
           select: {
             name: true,
@@ -44,6 +54,8 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
             logoUrl: true,
             logoLightUrl: true,
             invoiceLogoUrl: true,
+            primaryColor: true,
+            accentColor: true,
           },
         },
       },
@@ -126,6 +138,14 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
           terms: invoice.terms,
           paymentUrl,
           qrCodeDataUrl,
+          currency: invoice.currency || "USD",
+          payments: invoice.payments.map((payment) => ({
+            id: payment.id,
+            amountCents: payment.amountCents,
+            paidAt: payment.paidAt ? formatDate(payment.paidAt) : null,
+            description: payment.description,
+          })),
+          accentColor: invoice.organization?.primaryColor || "#3b82f6",
         })
       )
     );

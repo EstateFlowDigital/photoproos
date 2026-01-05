@@ -288,6 +288,67 @@ const styles = StyleSheet.create({
     transform: "rotate(-45deg)",
     textTransform: "uppercase",
   },
+  paymentHistorySection: {
+    marginBottom: 30,
+    padding: 16,
+    backgroundColor: "#f0fdf4",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+  },
+  paymentHistoryTitle: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: "#166534",
+    marginBottom: 10,
+  },
+  paymentHistoryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: "#dcfce7",
+  },
+  paymentHistoryRowLast: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 4,
+  },
+  paymentHistoryDate: {
+    fontSize: 9,
+    color: "#166534",
+    flex: 1,
+  },
+  paymentHistoryDesc: {
+    fontSize: 9,
+    color: "#15803d",
+    flex: 2,
+  },
+  paymentHistoryAmount: {
+    fontSize: 9,
+    color: "#166534",
+    fontWeight: 600,
+    textAlign: "right",
+    flex: 1,
+  },
+  balanceDue: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 2,
+    borderTopColor: "#22c55e",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  balanceDueLabel: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#166534",
+  },
+  balanceDueAmount: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#166534",
+  },
 });
 
 interface InvoiceLineItem {
@@ -296,6 +357,13 @@ interface InvoiceLineItem {
   quantity: number;
   unitCents: number;
   totalCents: number;
+}
+
+interface InvoicePayment {
+  id: string;
+  amountCents: number;
+  paidAt: string | null;
+  description: string | null;
 }
 
 export interface InvoicePdfProps {
@@ -320,14 +388,30 @@ export interface InvoicePdfProps {
   terms: string | null;
   paymentUrl: string | null;
   qrCodeDataUrl: string | null;
+  currency: string;
+  payments: InvoicePayment[];
+  accentColor: string;
 }
 
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
+function formatCurrency(cents: number, currency: string = "USD"): string {
+  // Get locale based on currency for proper formatting
+  const localeMap: Record<string, string> = {
+    USD: "en-US",
+    EUR: "de-DE",
+    GBP: "en-GB",
+    CAD: "en-CA",
+    AUD: "en-AU",
+    JPY: "ja-JP",
+    CHF: "de-CH",
+    MXN: "es-MX",
+  };
+  const locale = localeMap[currency] || "en-US";
+
+  return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    currency,
+    minimumFractionDigits: currency === "JPY" ? 0 : 2,
+    maximumFractionDigits: currency === "JPY" ? 0 : 2,
   }).format(cents / 100);
 }
 
@@ -393,9 +477,16 @@ export function InvoicePdf({
   terms,
   paymentUrl,
   qrCodeDataUrl,
+  currency,
+  payments,
+  accentColor,
 }: InvoicePdfProps) {
   const statusColors = getStatusColor(status);
   const watermarkConfig = getWatermarkConfig(status);
+
+  // Calculate paid amount and balance due
+  const paidAmountCents = payments.reduce((sum, p) => sum + p.amountCents, 0);
+  const balanceDueCents = totalCents - paidAmountCents;
 
   return (
     <Document>
@@ -412,7 +503,7 @@ export function InvoicePdf({
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.title}>INVOICE</Text>
+            <Text style={[styles.title, { color: accentColor }]}>INVOICE</Text>
             <Text style={styles.invoiceNumber}>{invoiceNumber}</Text>
           </View>
           <View style={styles.headerRight}>
@@ -454,7 +545,15 @@ export function InvoicePdf({
           <View style={styles.infoBlock}>
             <Text style={styles.infoLabel}>Invoice Details</Text>
             <Text style={styles.infoText}>Issue Date: {issueDate}</Text>
-            <Text style={styles.infoText}>Due Date: {dueDate}</Text>
+            <Text
+              style={[
+                styles.infoText,
+                status === "overdue" ? { color: "#dc2626", fontWeight: 600 } : {},
+              ]}
+            >
+              Due Date: {dueDate}
+              {status === "overdue" && " (OVERDUE)"}
+            </Text>
           </View>
           {businessAddress && (
             <View style={styles.infoBlock}>
@@ -488,7 +587,7 @@ export function InvoicePdf({
 
         {/* Line Items Table */}
         <View style={styles.table}>
-          <View style={styles.tableHeader}>
+          <View style={[styles.tableHeader, { borderTopWidth: 3, borderTopColor: accentColor }]}>
             <View style={styles.colDescription}>
               <Text style={styles.tableHeaderText}>Description</Text>
             </View>
@@ -522,12 +621,12 @@ export function InvoicePdf({
               </View>
               <View style={styles.colRate}>
                 <Text style={styles.cellText}>
-                  {formatCurrency(item.unitCents)}
+                  {formatCurrency(item.unitCents, currency)}
                 </Text>
               </View>
               <View style={styles.colAmount}>
                 <Text style={styles.cellText}>
-                  {formatCurrency(item.totalCents)}
+                  {formatCurrency(item.totalCents, currency)}
                 </Text>
               </View>
             </View>
@@ -540,14 +639,14 @@ export function InvoicePdf({
             <View style={styles.totalsRow}>
               <Text style={styles.totalsLabel}>Subtotal</Text>
               <Text style={styles.totalsValue}>
-                {formatCurrency(subtotalCents)}
+                {formatCurrency(subtotalCents, currency)}
               </Text>
             </View>
             {discountCents > 0 && (
               <View style={styles.totalsRow}>
                 <Text style={styles.totalsLabel}>Discount</Text>
                 <Text style={[styles.totalsValue, { color: "#16a34a" }]}>
-                  -{formatCurrency(discountCents)}
+                  -{formatCurrency(discountCents, currency)}
                 </Text>
               </View>
             )}
@@ -555,18 +654,61 @@ export function InvoicePdf({
               <View style={styles.totalsRow}>
                 <Text style={styles.totalsLabel}>Tax</Text>
                 <Text style={styles.totalsValue}>
-                  {formatCurrency(taxCents)}
+                  {formatCurrency(taxCents, currency)}
                 </Text>
               </View>
             )}
-            <View style={styles.totalsRowFinal}>
-              <Text style={styles.totalsLabelFinal}>Total Due</Text>
-              <Text style={styles.totalsValueFinal}>
-                {formatCurrency(totalCents)}
+            <View style={[styles.totalsRowFinal, { borderTopColor: accentColor }]}>
+              <Text style={[styles.totalsLabelFinal, { color: accentColor }]}>Total Due</Text>
+              <Text style={[styles.totalsValueFinal, { color: accentColor }]}>
+                {formatCurrency(totalCents, currency)}
               </Text>
             </View>
           </View>
         </View>
+
+        {/* Payment History (only show if there are payments) */}
+        {payments.length > 0 && (
+          <View style={styles.paymentHistorySection}>
+            <Text style={styles.paymentHistoryTitle}>Payment History</Text>
+            {payments.map((payment, index) => (
+              <View
+                key={payment.id}
+                style={
+                  index === payments.length - 1
+                    ? styles.paymentHistoryRowLast
+                    : styles.paymentHistoryRow
+                }
+              >
+                <Text style={styles.paymentHistoryDate}>
+                  {payment.paidAt || "—"}
+                </Text>
+                <Text style={styles.paymentHistoryDesc}>
+                  {payment.description || "Payment received"}
+                </Text>
+                <Text style={styles.paymentHistoryAmount}>
+                  {formatCurrency(payment.amountCents, currency)}
+                </Text>
+              </View>
+            ))}
+            {balanceDueCents > 0 && (
+              <View style={styles.balanceDue}>
+                <Text style={styles.balanceDueLabel}>Balance Due</Text>
+                <Text style={styles.balanceDueAmount}>
+                  {formatCurrency(balanceDueCents, currency)}
+                </Text>
+              </View>
+            )}
+            {balanceDueCents <= 0 && (
+              <View style={styles.balanceDue}>
+                <Text style={styles.balanceDueLabel}>Paid in Full</Text>
+                <Text style={styles.balanceDueAmount}>
+                  {formatCurrency(0, currency)}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Notes */}
         {notes && (

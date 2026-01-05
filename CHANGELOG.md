@@ -29,6 +29,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Displays gallery name and photographer info in QR modal
   - Copy link button within QR modal for easy sharing
   - Clean, themed modal design matching gallery appearance
+  - **Social Media Sharing** - Share galleries directly to:
+    - Facebook - Share with custom link preview
+    - X (Twitter) - Tweet gallery with pre-filled message
+    - Pinterest - Pin gallery for visual discovery
+    - Email - Open email client with pre-filled subject and body
+
+- **Print Size Indicator**
+  - Shows recommended print sizes for each photo based on resolution
+  - Quality badges: ★ Excellent (300+ DPI), ● Good (200+ DPI), ○ Fair (100+ DPI)
+  - Displays in photo detail modal when clicking on a photo
+  - Supports standard sizes: 4×6", 5×7", 8×10", 11×14", 16×20", 20×24"
+  - Hover tooltip shows exact DPI for each size
+  - Helps clients understand which photos work best for prints
+
+- **Photo Zoom in Gallery Modal**
+  - Double-click to zoom in/out (up to 4x magnification)
+  - Scroll wheel zoom support for precise control
+  - Click and drag to pan when zoomed in
+  - Zoom controls: +/- buttons with percentage display
+  - Reset button to return to original view
+  - Visual hint for zoom instructions
+  - Smooth zoom transitions with cursor feedback
+
+- **Client Feedback Widget**
+  - Floating feedback button on gallery pages
+  - Three feedback types: General Feedback, Feature Request, Report Issue
+  - Optional name and email fields for follow-up
+  - Dynamic placeholder text based on feedback type
+  - Success confirmation with auto-close
+  - Rate-limited to prevent spam (10 requests/minute)
+  - Feedback stored in database for photographer review
+  - New `GalleryFeedback` model for tracking submissions
 
 - **Dashboard Appearance Customization**
   - Font customization with 6 font options (System, Inter, Plus Jakarta, DM Sans, Space Grotesk, JetBrains Mono)
@@ -50,6 +82,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Reduce motion** - toggle to minimize animations for accessibility
   - **Automatic theme switching** - schedule dark/light mode based on time of day
   - User preferences stored in database and applied via CSS custom properties
+
+- **Dashboard Layout Customization**
+  - **Collapsible sections** - collapse/expand dashboard sections to focus on what matters
+  - **Section visibility toggles** - hide sections you don't use (Quick Actions, Calendar, Recent Galleries, Upcoming Bookings, Recent Activity, Referral Widget)
+  - **Customize panel** - accessible from dashboard header, shows all available sections
+  - **Persistent preferences** - collapsed and visibility state saved per user
+  - **Optimistic UI updates** - instant feedback when toggling sections
+  - **Reset to defaults** - restore all sections to default visibility and expanded state
+  - Core sections (Statistics) always visible to ensure essential data is accessible
 
 - **Invoice PDF Generation**
   - Professional PDF export for invoices using @react-pdf/renderer
@@ -89,6 +130,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Contract watermarks: SIGNED (green), EXPIRED (red), CANCELLED (gray)
   - Subtle 8% opacity to not interfere with document readability
   - No watermark shown for draft/sent statuses to keep pending documents clean
+
+- **Page Numbers on Contract PDFs**
+  - "Page X of Y" footer on all contract PDF pages
+  - Fixed footer that appears on every page for multi-page contracts
+  - Professional document pagination
+
+- **Signature Images on Contract PDFs**
+  - Display actual signature images when signers have provided them
+  - Shows signature image above "Signed" text and date
+  - Falls back to "Signed electronically" when no signature image
+
+- **Due Date Emphasis on Invoice PDFs**
+  - Overdue invoices show due date in red with "(OVERDUE)" label
+  - Visual emphasis helps identify past-due invoices at a glance
+  - Bold red text for immediate attention
+
+- **Multi-Currency Support on Invoice PDFs**
+  - Invoices display amounts in the correct currency format
+  - Supports USD, EUR, GBP, CAD, AUD, JPY, CHF, MXN
+  - Proper locale-based formatting for each currency
+  - Japanese Yen displays without decimal places
+
+- **Payment History on Invoice PDFs**
+  - Show all payments made toward an invoice
+  - Green-themed payment history section with date, description, amount
+  - Displays remaining balance due or "Paid in Full" indicator
+  - Only shown when invoice has at least one payment
+
+- **Custom Accent Colors on PDFs**
+  - PDFs use the organization's primary color for branding
+  - Invoice: Title, table header border, and total section use accent color
+  - Receipt: Title, header border, watermark, and total section use accent color
+  - Contract: Title and header border use accent color
+  - Consistent branding across all downloadable documents
 
 ### Fixed
 - **Missing Email Send Functions**

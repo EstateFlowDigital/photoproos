@@ -42,6 +42,7 @@ export async function generateContractPdf(contractId: string): Promise<{
             name: true,
             email: true,
             signedAt: true,
+            signatureUrl: true,
           },
         },
         organization: {
@@ -52,6 +53,7 @@ export async function generateContractPdf(contractId: string): Promise<{
             logoUrl: true,
             logoLightUrl: true,
             invoiceLogoUrl: true,
+            primaryColor: true,
           },
         },
       },
@@ -96,7 +98,9 @@ export async function generateContractPdf(contractId: string): Promise<{
             name: signer.name,
             email: signer.email,
             signedAt: signer.signedAt,
+            signatureUrl: signer.signatureUrl,
           })),
+          accentColor: contract.organization?.primaryColor || "#3b82f6",
         })
       )
     );

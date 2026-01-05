@@ -47,6 +47,7 @@ export async function generateReceiptPdf(paymentId: string): Promise<{
             logoUrl: true,
             logoLightUrl: true,
             invoiceLogoUrl: true,
+            primaryColor: true,
           },
         },
       },
@@ -94,6 +95,7 @@ export async function generateReceiptPdf(paymentId: string): Promise<{
           description: payment.description || "Payment",
           amountCents: payment.amountCents,
           transactionId: payment.stripePaymentIntentId || null,
+          accentColor: payment.organization?.primaryColor || "#22c55e",
         })
       )
     );

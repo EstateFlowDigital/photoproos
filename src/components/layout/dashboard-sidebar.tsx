@@ -293,10 +293,6 @@ export function DashboardSidebar({
                   )}
                 </div>
               </div>
-              <div className="hidden sm:flex items-center gap-2">
-                <QuickThemeSwitcher />
-                <ThemeToggle />
-              </div>
             </div>
           </div>
 
@@ -328,6 +324,13 @@ export function DashboardSidebar({
                 <PaymentsIcon className="h-4 w-4" />
                 Billing & plan
               </Link>
+            </div>
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2">
+              <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
+              <div className="flex items-center gap-2">
+                <QuickThemeSwitcher />
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         </div>

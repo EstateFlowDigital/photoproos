@@ -231,6 +231,7 @@ export interface ReceiptPdfProps {
   description: string;
   amountCents: number;
   transactionId: string | null;
+  accentColor: string;
 }
 
 function formatCurrency(cents: number): string {
@@ -255,19 +256,20 @@ export function ReceiptPdf({
   description,
   amountCents,
   transactionId,
+  accentColor,
 }: ReceiptPdfProps) {
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
         {/* Paid Watermark */}
         <View style={styles.watermarkContainer}>
-          <Text style={styles.watermark}>PAID</Text>
+          <Text style={[styles.watermark, { color: accentColor }]}>PAID</Text>
         </View>
 
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: accentColor }]}>
           <View style={styles.headerLeft}>
-            <Text style={styles.title}>RECEIPT</Text>
+            <Text style={[styles.title, { color: accentColor }]}>RECEIPT</Text>
             <Text style={styles.receiptNumber}>{receiptNumber}</Text>
           </View>
           <View style={styles.headerRight}>
@@ -324,7 +326,7 @@ export function ReceiptPdf({
         </View>
 
         {/* Total Amount */}
-        <View style={styles.totalSection}>
+        <View style={[styles.totalSection, { backgroundColor: accentColor }]}>
           <Text style={styles.totalLabel}>Amount Paid</Text>
           <Text style={styles.totalAmount}>{formatCurrency(amountCents)}</Text>
         </View>

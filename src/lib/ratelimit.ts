@@ -70,6 +70,16 @@ export const magicLinkRatelimit = redis
     })
   : null;
 
+// Gallery feedback: 10 requests per minute per IP
+export const feedbackRatelimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, "60 s"),
+      analytics: true,
+      prefix: "ratelimit:feedback",
+    })
+  : null;
+
 /**
  * Helper to check rate limit and return appropriate response
  * Returns null if allowed, or a Response object if rate limited
