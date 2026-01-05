@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Global Keyboard Shortcuts** - Navigate the dashboard faster with keyboard shortcuts
+  - Added KeyboardShortcutsProvider component (`components/keyboard-shortcuts-provider.tsx`)
+  - Platform-aware shortcuts display (⌘ on Mac, Ctrl on Windows/Linux)
+  - Navigation shortcuts: Cmd/Ctrl+Shift+D (Dashboard), G (Galleries), C (Clients), P (Payments), S (Scheduling), I (Invoices), O (Contracts), R (Properties), V (Services), A (Analytics), T (Settings)
+  - Cmd/Ctrl+Shift+N to create new item based on context
+  - Cmd/Ctrl+/ to open keyboard shortcuts modal
+  - Updated KeyboardShortcutsModal with platform detection
+
 - **Gallery QR Codes** - Generate QR codes for delivered galleries
   - Added QRCodeDisplay and QRCodeModal components (`components/ui/qr-code.tsx`)
   - Canvas-based QR code rendering with customizable size and colors
