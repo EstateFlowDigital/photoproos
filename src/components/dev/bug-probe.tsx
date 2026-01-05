@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   X,
@@ -55,6 +55,7 @@ interface Entry {
 export function BugProbe() {
   const { user, isLoaded } = useUser();
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [note, setNote] = useState("");
@@ -71,6 +72,10 @@ export function BugProbe() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const recordTimeoutRef = useRef<number | null>(null);
+  const routeEventRef = useRef<{ startedAt: number | null; completedAt: number | null }>({
+    startedAt: null,
+    completedAt: null,
+  });
 
   // Generate session ID on client only to avoid hydration mismatch
   useEffect(() => {
@@ -576,6 +581,38 @@ export function BugProbe() {
               ) : (
                 <p className="text-[11px] text-[#9ca3af]">Voice notes not supported in this browser.</p>
               )}
+            </div>
+            {/* Router diagnostic */}
+            <div className="flex items-center gap-2 border-t border-[rgba(255,255,255,0.08)] pt-2 mt-2">
+              <button
+                onClick={() => {
+                  addEntry("nav", "Testing router.push(/dashboard)...");
+                  try {
+                    router.push("/dashboard");
+                    setTimeout(() => {
+                      if (window.location.pathname !== "/dashboard") {
+                        addEntry("error", "router.push() did not navigate!");
+                      } else {
+                        addEntry("nav", "router.push() succeeded!");
+                      }
+                    }, 1000);
+                  } catch (err) {
+                    addEntry("error", `router.push() threw: ${err}`);
+                  }
+                }}
+                className="flex-1 rounded-lg bg-[var(--warning)]/15 px-3 py-2 text-xs font-semibold text-[var(--warning)] hover:bg-[var(--warning)]/25"
+              >
+                Test Router
+              </button>
+              <button
+                onClick={() => {
+                  addEntry("nav", "Testing window.location...");
+                  window.location.href = "/dashboard";
+                }}
+                className="flex-1 rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10"
+              >
+                Test Location
+              </button>
             </div>
           </div>
         </div>

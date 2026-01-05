@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **BugProbe Router Diagnostics** - Added diagnostic buttons to test navigation
+  - "Test Router" button tests `router.push()` directly
+  - "Test Location" button tests `window.location.href` as fallback
+  - Helps diagnose Next.js router issues when link navigation fails
+
+
 - **Avatar Gradient Design Tokens** - Consistent avatar styling across the app
   - Added `--avatar-gradient-start`, `--avatar-gradient-end`, and `--avatar-gradient` CSS variables
   - Added `.avatar-gradient` utility class for easy application
