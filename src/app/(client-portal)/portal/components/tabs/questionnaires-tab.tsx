@@ -12,10 +12,10 @@ interface QuestionnairesTabProps {
 export function QuestionnairesTab({ questionnaires }: QuestionnairesTabProps) {
   if (questionnaires.length === 0) {
     return (
-      <div className="rounded-xl border border-[#262626] bg-[#141414] p-12 text-center">
-        <ClipboardIcon className="mx-auto h-12 w-12 text-[#7c7c7c]" />
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
+        <ClipboardIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
         <p className="mt-4 text-lg font-medium text-white">No questionnaires yet</p>
-        <p className="mt-2 text-sm text-[#7c7c7c]">
+        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
           Your photographer will send you questionnaires to complete before your shoot
         </p>
       </div>
@@ -44,7 +44,7 @@ export function QuestionnairesTab({ questionnaires }: QuestionnairesTabProps) {
 function PendingQuestionnairesSection({ questionnaires }: { questionnaires: QuestionnaireData[] }) {
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-[#a7a7a7]">Requires your attention</h3>
+      <h3 className="text-sm font-medium text-[var(--foreground-secondary)]">Requires your attention</h3>
       {questionnaires.map((q) => (
         <PendingQuestionnaireCard key={q.id} questionnaire={q} />
       ))}
@@ -54,22 +54,22 @@ function PendingQuestionnairesSection({ questionnaires }: { questionnaires: Ques
 
 function PendingQuestionnaireCard({ questionnaire: q }: { questionnaire: QuestionnaireData }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-[#262626] bg-[#141414] p-4">
+    <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#f97316]/20">
-          <ClipboardIcon className="h-5 w-5 text-[#f97316]" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--warning)]/20">
+          <ClipboardIcon className="h-5 w-5 text-[var(--warning)]" />
         </div>
         <div>
           <h3 className="font-medium text-white">{q.templateName}</h3>
-          <p className="text-sm text-[#7c7c7c]">
+          <p className="text-sm text-[var(--foreground-muted)]">
             {q.bookingTitle && `For: ${q.bookingTitle}`}
             {q.bookingDate && ` • ${formatDate(q.bookingDate)}`}
             {q.isRequired && (
-              <span className="ml-2 text-[#f97316]">Required</span>
+              <span className="ml-2 text-[var(--warning)]">Required</span>
             )}
           </p>
           {q.dueDate && (
-            <p className="text-xs text-[#7c7c7c]">
+            <p className="text-xs text-[var(--foreground-muted)]">
               Due: {formatDate(q.dueDate)}
             </p>
           )}
@@ -79,7 +79,7 @@ function PendingQuestionnaireCard({ questionnaire: q }: { questionnaire: Questio
         <QuestionnaireStatusBadge status={q.status} />
         <Link
           href={`/portal/questionnaires/${q.id}`}
-          className="flex items-center gap-2 rounded-lg bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#3b82f6]/90"
+          className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
         >
           {q.status === "in_progress" ? "Continue" : "Start"}
           <ChevronRightIcon className="h-4 w-4" />
@@ -92,7 +92,7 @@ function PendingQuestionnaireCard({ questionnaire: q }: { questionnaire: Questio
 function CompletedQuestionnairesSection({ questionnaires }: { questionnaires: QuestionnaireData[] }) {
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-[#a7a7a7]">Completed</h3>
+      <h3 className="text-sm font-medium text-[var(--foreground-secondary)]">Completed</h3>
       {questionnaires.map((q) => (
         <CompletedQuestionnaireCard key={q.id} questionnaire={q} />
       ))}
@@ -102,20 +102,20 @@ function CompletedQuestionnairesSection({ questionnaires }: { questionnaires: Qu
 
 function CompletedQuestionnaireCard({ questionnaire: q }: { questionnaire: QuestionnaireData }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-[#262626] bg-[#141414] p-4">
+    <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#22c55e]/20">
-          <CheckCircleIcon className="h-5 w-5 text-[#22c55e]" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--success)]/20">
+          <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />
         </div>
         <div>
           <h3 className="font-medium text-white">{q.templateName}</h3>
-          <p className="text-sm text-[#7c7c7c]">
+          <p className="text-sm text-[var(--foreground-muted)]">
             {q.bookingTitle && `For: ${q.bookingTitle}`}
             {q.completedAt && ` • Completed ${formatDate(q.completedAt)}`}
           </p>
         </div>
       </div>
-      <span className="rounded-full bg-[#22c55e]/20 px-2.5 py-1 text-xs font-medium text-[#22c55e]">
+      <span className="rounded-full bg-[var(--success)]/20 px-2.5 py-1 text-xs font-medium text-[var(--success)]">
         {q.status === "approved" ? "Approved" : "Submitted"}
       </span>
     </div>
@@ -124,8 +124,8 @@ function CompletedQuestionnaireCard({ questionnaire: q }: { questionnaire: Quest
 
 function QuestionnaireStatusBadge({ status }: { status: string }) {
   const statusStyles = {
-    in_progress: "bg-[#8b5cf6]/20 text-[#8b5cf6]",
-    pending: "bg-[#f97316]/20 text-[#f97316]",
+    in_progress: "bg-[var(--ai)]/20 text-[var(--ai)]",
+    pending: "bg-[var(--warning)]/20 text-[var(--warning)]",
   };
 
   const style = statusStyles[status as keyof typeof statusStyles] || statusStyles.pending;

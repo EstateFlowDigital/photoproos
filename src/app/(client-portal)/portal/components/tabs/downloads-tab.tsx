@@ -29,11 +29,11 @@ export function DownloadsTab({
   if (downloadableGalleries.length === 0) {
     return (
       <div className="space-y-6">
-        <p className="text-[#a7a7a7]">Download all your photos and marketing materials</p>
-        <div className="rounded-xl border border-[#262626] bg-[#141414] p-12 text-center">
-          <DownloadIcon className="mx-auto h-12 w-12 text-[#7c7c7c]" />
+        <p className="text-[var(--foreground-secondary)]">Download all your photos and marketing materials</p>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
+          <DownloadIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
           <p className="mt-4 text-lg font-medium text-white">No downloads available</p>
-          <p className="mt-2 text-sm text-[#7c7c7c]">
+          <p className="mt-2 text-sm text-[var(--foreground-muted)]">
             Downloads will be available once your galleries are delivered
           </p>
         </div>
@@ -43,7 +43,7 @@ export function DownloadsTab({
 
   return (
     <div className="space-y-6">
-      <p className="text-[#a7a7a7]">Download all your photos and marketing materials</p>
+      <p className="text-[var(--foreground-secondary)]">Download all your photos and marketing materials</p>
       {downloadableGalleries.map((gallery) => (
         <DownloadCard
           key={gallery.id}
@@ -82,9 +82,9 @@ function DownloadCard({
   const isDownloading = downloadingGallery === gallery.id;
 
   return (
-    <div className="rounded-xl border border-[#262626] bg-[#141414] p-6">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
       <h3 className="text-lg font-semibold text-white">{gallery.name}</h3>
-      <p className="mt-1 text-sm text-[#7c7c7c]">{gallery.photoCount} photos available</p>
+      <p className="mt-1 text-sm text-[var(--foreground-muted)]">{gallery.photoCount} photos available</p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <DownloadButton
@@ -128,7 +128,7 @@ function DownloadButton({ label, icon, isLoading, onClick }: DownloadButtonProps
     <button
       onClick={onClick}
       disabled={isLoading}
-      className="flex items-center justify-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626] disabled:opacity-50"
+      className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--card-border)] disabled:opacity-50"
     >
       {isLoading ? <LoadingSpinner className="h-4 w-4" /> : icon}
       {label}

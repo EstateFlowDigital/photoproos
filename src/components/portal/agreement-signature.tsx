@@ -162,8 +162,8 @@ export function AgreementSignature({
           disabled={disabled}
           className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors ${
             signatureMode === "draw"
-              ? "bg-[#3b82f6]/10 border-[#3b82f6] text-[#3b82f6]"
-              : "border-[#262626] text-[#7c7c7c] hover:text-white hover:border-[#454545]"
+              ? "bg-[var(--primary)]/10 border-[var(--primary)] text-[var(--primary)]"
+              : "border-[var(--card-border)] text-[var(--foreground-muted)] hover:text-white hover:border-[var(--border-visible)]"
           } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <PenIcon className="w-4 h-4" />
@@ -175,8 +175,8 @@ export function AgreementSignature({
           disabled={disabled}
           className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors ${
             signatureMode === "type"
-              ? "bg-[#3b82f6]/10 border-[#3b82f6] text-[#3b82f6]"
-              : "border-[#262626] text-[#7c7c7c] hover:text-white hover:border-[#454545]"
+              ? "bg-[var(--primary)]/10 border-[var(--primary)] text-[var(--primary)]"
+              : "border-[var(--card-border)] text-[var(--foreground-muted)] hover:text-white hover:border-[var(--border-visible)]"
           } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <TypeIcon className="w-4 h-4" />
@@ -186,7 +186,7 @@ export function AgreementSignature({
 
       {/* Signature Input */}
       {signatureMode === "draw" ? (
-        <div className="relative bg-white rounded-lg overflow-hidden border border-[#262626]">
+        <div className="relative bg-white rounded-lg overflow-hidden border border-[var(--card-border)]">
           <canvas
             ref={canvasRef}
             className={`w-full cursor-crosshair ${disabled ? "pointer-events-none opacity-50" : ""}`}
@@ -206,7 +206,7 @@ export function AgreementSignature({
             onChange={(e) => setTypedSignature(e.target.value)}
             placeholder="Type your full legal name"
             disabled={disabled}
-            className="w-full bg-white text-black px-4 py-4 rounded-lg text-center text-2xl italic border border-[#262626] placeholder:text-[#999] disabled:opacity-50"
+            className="w-full bg-white text-black px-4 py-4 rounded-lg text-center text-2xl italic border border-[var(--card-border)] placeholder:text-[var(--foreground-muted)] disabled:opacity-50"
             style={{ fontFamily: "'Dancing Script', cursive, Georgia, serif" }}
           />
         </div>
@@ -218,12 +218,12 @@ export function AgreementSignature({
           type="button"
           onClick={clearSignature}
           disabled={disabled || !hasSignature}
-          className="text-sm text-[#7c7c7c] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-sm text-[var(--foreground-muted)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Clear signature
         </button>
         {hasSignature && (
-          <span className="text-xs text-[#22c55e] flex items-center gap-1">
+          <span className="text-xs text-[var(--success)] flex items-center gap-1">
             <CheckIcon className="w-3 h-3" />
             Signature captured
           </span>

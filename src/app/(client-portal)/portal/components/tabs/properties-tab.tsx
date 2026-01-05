@@ -13,10 +13,10 @@ interface PropertiesTabProps {
 export function PropertiesTab({ properties }: PropertiesTabProps) {
   if (properties.length === 0) {
     return (
-      <div className="col-span-full rounded-xl border border-[#262626] bg-[#141414] p-12 text-center">
-        <HomeIcon className="mx-auto h-12 w-12 text-[#7c7c7c]" />
+      <div className="col-span-full rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
+        <HomeIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
         <p className="mt-4 text-lg font-medium text-white">No property websites yet</p>
-        <p className="mt-2 text-sm text-[#7c7c7c]">
+        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
           Property websites will appear here once created by your photographer
         </p>
       </div>
@@ -34,8 +34,8 @@ export function PropertiesTab({ properties }: PropertiesTabProps) {
 
 function PropertyCard({ property }: { property: PropertyData }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-[#262626] bg-[#141414]">
-      <div className="relative aspect-video bg-[#191919]">
+    <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+      <div className="relative aspect-video bg-[var(--background-tertiary)]">
         {property.thumbnailUrl ? (
           <Image
             src={property.thumbnailUrl}
@@ -45,15 +45,15 @@ function PropertyCard({ property }: { property: PropertyData }) {
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <HomeIcon className="h-12 w-12 text-[#7c7c7c]" />
+            <HomeIcon className="h-12 w-12 text-[var(--foreground-muted)]" />
           </div>
         )}
         <div className="absolute left-3 top-3">
           <span
             className={`rounded-full px-2.5 py-1 text-xs font-medium ${
               property.status === "published"
-                ? "bg-[#22c55e]/20 text-[#22c55e]"
-                : "bg-[#7c7c7c]/20 text-[#a7a7a7]"
+                ? "bg-[var(--success)]/20 text-[var(--success)]"
+                : "bg-[var(--foreground-muted)]/20 text-[var(--foreground-secondary)]"
             }`}
           >
             {property.status}
@@ -65,10 +65,10 @@ function PropertyCard({ property }: { property: PropertyData }) {
           <p className="font-bold text-white">{formatPrice(property.price)}</p>
         )}
         <p className="mt-1 font-medium text-white">{property.address}</p>
-        <p className="text-sm text-[#7c7c7c]">
+        <p className="text-sm text-[var(--foreground-muted)]">
           {property.city}, {property.state} {property.zipCode}
         </p>
-        <div className="mt-4 flex items-center gap-4 text-xs text-[#7c7c7c]">
+        <div className="mt-4 flex items-center gap-4 text-xs text-[var(--foreground-muted)]">
           <span>{property.viewCount.toLocaleString()} views</span>
           <span>{property.leadCount} leads</span>
           <span>{property.photoCount} photos</span>
@@ -77,7 +77,7 @@ function PropertyCard({ property }: { property: PropertyData }) {
           <Link
             href={`/p/${property.slug}`}
             target="_blank"
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#3b82f6] py-2 text-sm font-medium text-white transition-colors hover:bg-[#3b82f6]/90"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
           >
             View Website
             <ExternalLinkIcon className="h-4 w-4" />

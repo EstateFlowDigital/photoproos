@@ -21,10 +21,10 @@ export function InvoicesTab({
 }: InvoicesTabProps) {
   if (invoices.length === 0) {
     return (
-      <div className="rounded-xl border border-[#262626] bg-[#141414] p-12 text-center">
-        <ReceiptIcon className="mx-auto h-12 w-12 text-[#7c7c7c]" />
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
+        <ReceiptIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
         <p className="mt-4 text-lg font-medium text-white">No invoices yet</p>
-        <p className="mt-2 text-sm text-[#7c7c7c]">
+        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
           Your invoices will appear here
         </p>
       </div>
@@ -57,14 +57,14 @@ interface InvoiceCardProps {
 
 function InvoiceCard({ invoice, isPaying, isDownloading, onPayment, onPdfDownload }: InvoiceCardProps) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-[#262626] bg-[#141414] p-4">
+    <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#191919]">
-          <ReceiptIcon className="h-5 w-5 text-[#7c7c7c]" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--background-tertiary)]">
+          <ReceiptIcon className="h-5 w-5 text-[var(--foreground-muted)]" />
         </div>
         <div>
           <h3 className="font-medium text-white">{invoice.invoiceNumber}</h3>
-          <p className="text-sm text-[#7c7c7c]">
+          <p className="text-sm text-[var(--foreground-muted)]">
             {invoice.dueDate && `Due ${formatDate(invoice.dueDate)}`}
             {invoice.paidAt && ` • Paid ${formatDate(invoice.paidAt)}`}
           </p>
@@ -76,7 +76,7 @@ function InvoiceCard({ invoice, isPaying, isDownloading, onPayment, onPdfDownloa
         <button
           onClick={onPdfDownload}
           disabled={isDownloading}
-          className="flex items-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#262626] disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--card-border)] disabled:opacity-50"
           title="Download PDF"
         >
           {isDownloading ? (
@@ -89,7 +89,7 @@ function InvoiceCard({ invoice, isPaying, isDownloading, onPayment, onPdfDownloa
           <button
             onClick={onPayment}
             disabled={isPaying}
-            className="flex items-center gap-2 rounded-lg bg-[#22c55e] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#22c55e]/90 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-[var(--success)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--success)]/90 disabled:opacity-50"
           >
             {isPaying ? (
               <LoadingSpinner className="h-4 w-4" />
@@ -106,9 +106,9 @@ function InvoiceCard({ invoice, isPaying, isDownloading, onPayment, onPdfDownloa
 
 function InvoiceStatusBadge({ status }: { status: string }) {
   const statusStyles = {
-    paid: "bg-[#22c55e]/20 text-[#22c55e]",
-    overdue: "bg-[#ef4444]/20 text-[#ef4444]",
-    default: "bg-[#f97316]/20 text-[#f97316]",
+    paid: "bg-[var(--success)]/20 text-[var(--success)]",
+    overdue: "bg-[var(--error)]/20 text-[var(--error)]",
+    default: "bg-[var(--warning)]/20 text-[var(--warning)]",
   };
 
   const style = statusStyles[status as keyof typeof statusStyles] || statusStyles.default;
