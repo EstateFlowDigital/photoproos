@@ -3,6 +3,15 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
+import {
+  ServiceCategory,
+  ActivityType,
+  NotificationType,
+  EquipmentCategory,
+  AvailabilityBlockType,
+  TaskStatus,
+  TaskPriority,
+} from "@prisma/client";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -113,7 +122,7 @@ export async function seedDatabase(): Promise<ActionResult<{ counts: Record<stri
             name: service.name,
             description: service.description,
             priceCents: service.basePrice,
-            category: service.category as any,
+            category: service.category as ServiceCategory,
             isActive: true,
           },
           select: { id: true, name: true, priceCents: true },
@@ -139,7 +148,7 @@ export async function seedDatabase(): Promise<ActionResult<{ counts: Record<stri
             email: client.email,
             phone: client.phone,
             company: client.company,
-            source: client.source as any,
+            source: client.source,
             isVIP: client.isVIP || false,
             notes: `Sample client created for testing. Original source: ${client.source}`,
             lastActivityAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date in last 30 days
@@ -395,7 +404,7 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
         data: {
           organizationId,
           userId,
-          type: activityType.type as any,
+          type: activityType.type as ActivityType,
           description: activityType.description(descriptionArg),
           createdAt: new Date(Date.now() - i * 4 * 60 * 60 * 1000), // Spread over 40 hours
         },
@@ -446,7 +455,7 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
       await prisma.notification.create({
         data: {
           organizationId,
-          type: notifType.type as any,
+          type: notifType.type as NotificationType,
           title: notifType.title,
           message,
           read: !isUnread,
@@ -665,7 +674,7 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
           data: {
             organizationId,
             name: equip.name,
-            category: equip.category as any,
+            category: equip.category as EquipmentCategory,
             description: equip.description,
             serialNumber: equip.serial,
             valueCents: equip.value,
@@ -701,7 +710,7 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
             organizationId,
             userId: null, // Org-wide block
             title: block.title,
-            blockType: block.blockType as any,
+            blockType: block.blockType as AvailabilityBlockType,
             startDate,
             endDate,
             allDay: true,
@@ -790,8 +799,8 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
             columnId: column.id,
             title: task.title,
             description: `Task related to ${project?.name || "general work"}`,
-            status: task.status as any,
-            priority: task.priority as any,
+            status: task.status as TaskStatus,
+            priority: task.priority as TaskPriority,
             position: taskCount,
             clientId: client?.id,
             projectId: project?.id,
