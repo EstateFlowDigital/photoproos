@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 interface KeyboardShortcutsProviderProps {
@@ -10,21 +10,11 @@ interface KeyboardShortcutsProviderProps {
 /**
  * Global keyboard shortcuts provider
  * Implements navigation and action shortcuts across the dashboard
+ * Uses Cmd/Ctrl+Shift+key combinations for navigation
  */
 export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const pendingKeyRef = useRef<string | null>(null);
-  const pendingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Clear pending key after timeout
-  const clearPendingKey = useCallback(() => {
-    if (pendingTimeoutRef.current) {
-      clearTimeout(pendingTimeoutRef.current);
-      pendingTimeoutRef.current = null;
-    }
-    pendingKeyRef.current = null;
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,15 +27,12 @@ export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProvide
 
       if (isTyping) return;
 
-      // Skip if modifier keys are pressed (except for Cmd+K which is handled elsewhere)
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-
       const key = e.key.toLowerCase();
+      const isMod = e.metaKey || e.ctrlKey;
+      const isShift = e.shiftKey;
 
-      // Two-key navigation shortcuts (G + letter)
-      if (pendingKeyRef.current === "g") {
-        clearPendingKey();
-
+      // Cmd/Ctrl+Shift+key navigation shortcuts
+      if (isMod && isShift) {
         switch (key) {
           case "d":
             e.preventDefault();
@@ -91,43 +78,24 @@ export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProvide
             e.preventDefault();
             router.push("/settings");
             break;
+          case "n":
+            // New item based on context
+            e.preventDefault();
+            if (pathname === "/scheduling" || pathname?.startsWith("/scheduling")) {
+              router.push("/scheduling/new");
+            } else {
+              router.push("/galleries/new");
+            }
+            break;
         }
-        return;
-      }
-
-      // Start two-key sequence
-      if (key === "g") {
-        e.preventDefault();
-        pendingKeyRef.current = "g";
-        pendingTimeoutRef.current = setTimeout(clearPendingKey, 1000);
-        return;
-      }
-
-      // Single-key shortcuts
-      switch (key) {
-        // "N" for new gallery (only from galleries or dashboard page)
-        case "n":
-          if (pathname === "/dashboard" || pathname === "/galleries" || pathname?.startsWith("/galleries")) {
-            e.preventDefault();
-            router.push("/galleries/new");
-          }
-          break;
-        // "B" for new booking (only from scheduling pages)
-        case "b":
-          if (pathname === "/scheduling" || pathname?.startsWith("/scheduling")) {
-            e.preventDefault();
-            router.push("/scheduling/new");
-          }
-          break;
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      clearPendingKey();
     };
-  }, [router, pathname, clearPendingKey]);
+  }, [router, pathname]);
 
   return <>{children}</>;
 }

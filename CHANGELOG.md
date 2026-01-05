@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Added `border-2 border-[var(--card-border)]` to icon containers in settings pages for visual consistency:
+  - settings/page.tsx (settings card icons)
+  - settings/email/page.tsx (Sender Information, Email Notifications, Test Email icons)
+  - settings/notifications/page.tsx (Email, Push, Quiet Hours icons)
+  - settings/integrations/integrations-client.tsx (API Access, Webhooks icons)
+  - settings/developer/page.tsx (Seed Database, Clear Data icons)
+  - appearance-settings-form.tsx (Theme Mode Reminder info icon)
+  - sms-settings-client.tsx (About SMS Notifications info icon)
+  - features-settings-form.tsx (industry selection icons)
+  - email-logs/page.tsx (StatCard icons)
+  - my-referrals-client.tsx (Email Invite, QR Code modals, and How It Works step icons)
+  - stripe-products.tsx (Stripe Products header icon)
+  - subscription-plans.tsx (Subscription Plans header icon)
+  - payments-settings-client.tsx (Tax Settings header icon)
+- Added `border-2 border-[var(--card-border)]` to avatar containers for visual consistency:
+  - team/team-page-client.tsx (team member avatars)
+  - payouts/payouts-page-client.tsx (photographer avatars)
+  - photographer-pay/photographer-pay-client.tsx (team member avatars)
+  - team/[id]/capabilities/capabilities-form.tsx (user header avatar)
+
 ### Added
 - **Settings Area Comprehensive Overhaul**
   - **Settings Sidebar Navigation** - New 260px sidebar with collapsible category sections and active state highlighting
@@ -106,6 +127,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatic filename generation based on filter and date
   - Limits to 100 invoices per export to prevent timeout
 
+- **Bulk PDF Export for Payments (Receipts)**
+  - Export multiple payment receipts as a ZIP file
+  - New API route `POST /api/payments/bulk-pdf`
+  - "Export Receipts" button in payments page header
+  - Generates professional receipt PDFs with transaction IDs
+  - Limits to 100 receipts per export
+
+- **Bulk PDF Export for Contracts**
+  - Export multiple contracts as a ZIP file
+  - Filter by status (draft, sent, signed, expired) or export all
+  - New API route `POST /api/contracts/bulk-pdf`
+  - "Export PDFs" button in contracts page header
+  - Limits to 50 contracts per export (larger content)
+
 - **Dashboard Layout Customization**
   - **Collapsible Sections** - Dashboard sections can now be collapsed/expanded with smooth animations
   - **Section Visibility Toggle** - Show/hide dashboard sections based on user preference
@@ -117,13 +152,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New server actions: `getDashboardConfig`, `updateDashboardConfig`, `toggleSectionVisibility`, `toggleSectionCollapsed`, `resetDashboardConfig`
 
 - **Global Keyboard Shortcuts**
-  - **Navigation shortcuts** - Press G followed by a letter to navigate (G+D Dashboard, G+G Galleries, G+C Clients, etc.)
+  - **Navigation shortcuts** - Cmd/Ctrl+Shift+letter to navigate (⌘⇧D Dashboard, ⌘⇧G Galleries, ⌘⇧C Clients, etc.)
   - **Command palette** - Cmd/Ctrl+K opens the command palette for global search
-  - **Quick actions** - N for new gallery (from galleries), B for new booking (from scheduling)
+  - **Quick create** - Cmd/Ctrl+Shift+N creates new item (gallery or booking based on context)
   - **Help shortcut** - Press ? to view all keyboard shortcuts
   - Full support for 11 navigation destinations: Dashboard, Galleries, Clients, Payments, Scheduling, Invoices, Contracts, Properties, Services, Analytics, Settings
   - Context-aware shortcuts that only trigger when not typing in input fields
-  - Two-key sequences with 1-second timeout for comfortable input
 
 - **Settings Area Comprehensive Overhaul**
   - **Settings Sidebar Navigation** - Collapsible sidebar with grouped categories for all settings sub-pages
@@ -274,6 +308,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Photographer branding in gate UI
   - API endpoint for password verification
   - Preview mode bypasses password for photographers
+
+- **Photo Ratings System**
+  - 5-star rating system for gallery photos
+  - Interactive star buttons with hover effects
+  - Displays user's own rating and average rating
+  - Rating count per photo
+  - Session-based rating tracking (one rating per user per photo)
+  - API endpoint for rating management
+  - Database model for storing ratings
+
+- **Lightbox Filmstrip Navigation**
+  - Thumbnail strip at bottom of photo modal
+  - Click any thumbnail to jump to that photo
+  - Current photo highlighted with ring indicator
+  - Horizontal scrolling for large galleries
+  - Left/right arrow buttons for navigation
+  - Keyboard navigation (arrow keys) in modal
+  - Escape to close modal
+
+- **Touch Gestures for Mobile**
+  - Swipe left/right to navigate between photos in modal
+  - Touch gesture detection with minimum swipe distance
+  - Gestures disabled when zoomed in (to allow panning)
+  - Works with both photo modal and slideshow
+  - Smooth navigation transitions
+
+- **Mobile-Optimized Photo Grid**
+  - 2-column grid on mobile devices
+  - Smaller gaps (2) on mobile, normal gaps (4) on larger screens
+  - Responsive breakpoints: 2 cols (mobile), 3 cols (md), 4 cols (lg), 5 cols (xl)
+  - Improved photo visibility on small screens
+  - Touch-friendly photo selection
+
+- **PWA Support**
+  - Web app manifest for installable app
+  - App shortcuts for Dashboard, Galleries, Scheduling
+  - Standalone display mode
+  - Theme color configuration
+  - iOS and Android home screen icons
+  - Proper viewport and scaling settings
 
 - **Photo Zoom in Gallery Modal**
   - Double-click to zoom in/out (up to 4x magnification)
