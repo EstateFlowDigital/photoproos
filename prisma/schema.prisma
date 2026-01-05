@@ -409,6 +409,18 @@ enum EmailStatus {
   bounced
 }
 
+// Email provider for connected accounts (unified inbox)
+enum EmailProvider {
+  GMAIL
+  OUTLOOK
+}
+
+// Direction of email message in unified inbox
+enum EmailDirection {
+  INBOUND
+  OUTBOUND
+}
+
 enum LegalAgreementType {
   terms_of_service
   licensing_agreement
@@ -557,24 +569,24 @@ model Organization {
   portfolioInquiries PortfolioInquiry[]
   portfolioLeads     PortfolioLead[]
   portfolioComments  PortfolioComment[]
-  portfolioABTests     PortfolioABTest[]
-  customForms          CustomForm[]
-  clients              Client[]
-  payments             Payment[]
-  galleryFeedback      GalleryFeedback[]
-  bookings             Booking[]
-  bookingTypes         BookingType[]
-  invoices             Invoice[]
-  contracts            Contract[]
-  contractTemplates    ContractTemplate[]
-  activityLogs         ActivityLog[]
-  notifications        Notification[]
-  usageMeters          UsageMeter[]
-  onboardingProgress   OnboardingProgress?
-  services             Service[]
-  locations            Location[]
-  equipment            Equipment[]
-  watermarkTemplates   WatermarkTemplate[]
+  portfolioABTests   PortfolioABTest[]
+  customForms        CustomForm[]
+  clients            Client[]
+  payments           Payment[]
+  galleryFeedback    GalleryFeedback[]
+  bookings           Booking[]
+  bookingTypes       BookingType[]
+  invoices           Invoice[]
+  contracts          Contract[]
+  contractTemplates  ContractTemplate[]
+  activityLogs       ActivityLog[]
+  notifications      Notification[]
+  usageMeters        UsageMeter[]
+  onboardingProgress OnboardingProgress?
+  services           Service[]
+  locations          Location[]
+  equipment          Equipment[]
+  watermarkTemplates WatermarkTemplate[]
   homeBaseLocation   Location?            @relation("OrgHomeBase", fields: [homeBaseLocationId], references: [id])
   taskBoards         TaskBoard[]
   tasks              Task[]
@@ -631,6 +643,10 @@ model Organization {
 
   // Booking Waitlist
   waitlistEntries BookingWaitlist[]
+
+  // Unified Email Inbox
+  emailAccounts EmailAccount[]
+  emailThreads  EmailThread[]
 
   @@index([slug])
   @@index([plan])
@@ -831,6 +847,9 @@ model Client {
   // Booking Waitlist
   waitlistEntries BookingWaitlist[]
 
+  // Unified Email Inbox (threads linked to this client)
+  emailThreads EmailThread[] @relation("ClientEmailThreads")
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([email])
@@ -940,10 +959,10 @@ model Project {
   downloadCount Int       @default(0)
 
   // Reminder tracking
-  lastReminderSentAt       DateTime? // When last reminder was sent
-  reminderCount            Int       @default(0) // Number of reminders sent
-  reminderEnabled          Boolean   @default(true) // Allow reminders for this gallery
-  expirationWarningsSent   Int[]     @default([]) // Days before expiration when warnings were sent (e.g., [7, 3, 1])
+  lastReminderSentAt     DateTime? // When last reminder was sent
+  reminderCount          Int       @default(0) // Number of reminders sent
+  reminderEnabled        Boolean   @default(true) // Allow reminders for this gallery
+  expirationWarningsSent Int[]     @default([]) // Days before expiration when warnings were sent (e.g., [7, 3, 1])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1023,10 +1042,10 @@ model GalleryTemplate {
   expirationDays Int? // Number of days until expiration (null = never)
 
   // Metadata
-  isDefault Boolean  @default(false) // Mark as default template
-  usageCount Int     @default(0) // Track how often template is used
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isDefault  Boolean  @default(false) // Mark as default template
+  usageCount Int      @default(0) // Track how often template is used
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -1038,15 +1057,15 @@ model GalleryTemplate {
 
 // Watermark Templates - Reusable watermark presets
 model WatermarkTemplate {
-  id             String   @id @default(cuid())
+  id             String @id @default(cuid())
   organizationId String
   name           String // Template name (e.g., "Full Signature", "Corner Logo")
 
   // Watermark configuration
-  watermarkType     String  // "text" | "image"
+  watermarkType     String // "text" | "image"
   watermarkText     String? // Text content for text watermarks
   watermarkImageUrl String? // Image URL for image watermarks
-  watermarkPosition String  // "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"
+  watermarkPosition String // "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"
   watermarkOpacity  Float   @default(0.5) // 0.0 to 1.0
   watermarkScale    Float   @default(1.0) // Scale multiplier
 
@@ -1063,12 +1082,12 @@ model WatermarkTemplate {
 
 // Gallery Collections - Sub-albums within a gallery
 model GalleryCollection {
-  id          String  @id @default(cuid())
-  projectId   String
-  name        String
-  description String?
+  id           String  @id @default(cuid())
+  projectId    String
+  name         String
+  description  String?
   coverAssetId String? // Cover photo for the collection
-  sortOrder   Int     @default(0)
+  sortOrder    Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1186,7 +1205,7 @@ model PhotoRating {
   id        String @id @default(cuid())
   projectId String
   assetId   String
-  rating    Int    // 1-5 stars
+  rating    Int // 1-5 stars
   sessionId String // Track who rated for updates
 
   createdAt DateTime @default(now())
@@ -1420,7 +1439,6 @@ model Booking {
   // Waitlist conversion (booking created from waitlist)
   convertedFromWaitlist BookingWaitlist? @relation("WaitlistConversion")
 
-
   @@index([organizationId])
   @@index([multiDayParentId])
   @@index([clientId])
@@ -1439,7 +1457,7 @@ model Booking {
 // ============================================================================
 
 model BookingWaitlist {
-  id             String          @id @default(cuid())
+  id             String @id @default(cuid())
   organizationId String
 
   // Client info (can be existing client or new inquiry)
@@ -1449,19 +1467,19 @@ model BookingWaitlist {
   clientPhone String?
 
   // Desired booking details
-  serviceId   String?
-  preferredDate     DateTime // Preferred date/time
-  alternateDate     DateTime? // Alternate date if available
-  flexibleDates     Boolean   @default(false) // Willing to take any available slot
-  notes             String? // Special requests
+  serviceId     String?
+  preferredDate DateTime // Preferred date/time
+  alternateDate DateTime? // Alternate date if available
+  flexibleDates Boolean   @default(false) // Willing to take any available slot
+  notes         String? // Special requests
 
   // Waitlist status
-  status            WaitlistStatus @default(pending)
-  priority          Int            @default(0) // Higher = more priority
-  position          Int? // Position in queue (calculated)
-  notifiedAt        DateTime? // When client was notified of availability
-  expiresAt         DateTime? // When the offer expires
-  convertedBookingId String? @unique // If converted to booking
+  status             WaitlistStatus @default(pending)
+  priority           Int            @default(0) // Higher = more priority
+  position           Int? // Position in queue (calculated)
+  notifiedAt         DateTime? // When client was notified of availability
+  expiresAt          DateTime? // When the offer expires
+  convertedBookingId String?        @unique // If converted to booking
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1481,12 +1499,12 @@ model BookingWaitlist {
 }
 
 enum WaitlistStatus {
-  pending       // Waiting for availability
-  notified      // Client notified of availability
-  accepted      // Client accepted and booking created
-  declined      // Client declined the offer
-  expired       // Offer expired without response
-  cancelled     // Client cancelled from waitlist
+  pending // Waiting for availability
+  notified // Client notified of availability
+  accepted // Client accepted and booking created
+  declined // Client declined the offer
+  expired // Offer expired without response
+  cancelled // Client cancelled from waitlist
 }
 
 // ============================================================================
@@ -1881,13 +1899,13 @@ model Notification {
 
 // Client Portal Notifications (for clients in their portal)
 model ClientNotification {
-  id       String                   @id @default(cuid())
+  id       String                 @id @default(cuid())
   clientId String
   type     ClientNotificationType
   title    String
   message  String
   linkUrl  String?
-  read     Boolean                  @default(false)
+  read     Boolean                @default(false)
   readAt   DateTime?
 
   createdAt DateTime @default(now())
@@ -1901,20 +1919,20 @@ model ClientNotification {
 }
 
 enum ClientNotificationType {
-  gallery_ready        // Gallery is ready for viewing
-  gallery_expiring     // Gallery is about to expire
-  invoice_sent         // New invoice received
-  invoice_reminder     // Payment reminder
-  payment_confirmed    // Payment was successful
-  contract_ready       // Contract needs signature
-  contract_signed      // Contract was signed successfully
-  booking_confirmed    // Booking was confirmed
-  booking_reminder     // Upcoming booking reminder
-  questionnaire_ready  // Questionnaire needs completion
-  message_received     // New message from photographer
-  photos_downloaded    // Download receipt
-  favorites_saved      // Favorites were saved
-  system               // System notification
+  gallery_ready // Gallery is ready for viewing
+  gallery_expiring // Gallery is about to expire
+  invoice_sent // New invoice received
+  invoice_reminder // Payment reminder
+  payment_confirmed // Payment was successful
+  contract_ready // Contract needs signature
+  contract_signed // Contract was signed successfully
+  booking_confirmed // Booking was confirmed
+  booking_reminder // Upcoming booking reminder
+  questionnaire_ready // Questionnaire needs completion
+  message_received // New message from photographer
+  photos_downloaded // Download receipt
+  favorites_saved // Favorites were saved
+  system // System notification
 }
 
 // ============================================================================
@@ -5742,4 +5760,156 @@ model IntegrationLog {
   @@index([organizationId])
   @@index([organizationId, provider])
   @@index([createdAt])
+}
+
+// ============================================================================
+// UNIFIED EMAIL INBOX (Gmail/Outlook Integration)
+// ============================================================================
+
+// Connected email accounts for unified inbox
+model EmailAccount {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Provider info
+  provider EmailProvider // GMAIL or OUTLOOK
+  email    String // User's email address
+
+  // OAuth tokens (encrypted in application layer)
+  accessToken  String   @db.Text
+  refreshToken String   @db.Text
+  tokenExpiry  DateTime
+
+  // Sync state
+  syncCursor  String? // For incremental sync (Gmail historyId or Outlook deltaLink)
+  lastSyncAt  DateTime?
+  syncEnabled Boolean   @default(true)
+
+  // Status
+  isActive     Boolean @default(true)
+  errorMessage String? // Last sync error if any
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  threads      EmailThread[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([provider])
+  @@index([isActive])
+}
+
+// Email conversations (threads) - groups related messages together
+model EmailThread {
+  id             String @id @default(cuid())
+  organizationId String
+  emailAccountId String
+
+  // Thread metadata
+  subject           String
+  snippet           String   @db.Text // Preview text of latest message
+  participantEmails String[] // All email addresses in the thread
+
+  // Client linking (auto-matched or manually linked)
+  clientId String?
+
+  // Status flags
+  isRead     Boolean @default(false)
+  isStarred  Boolean @default(false)
+  isArchived Boolean @default(false)
+  isDraft    Boolean @default(false)
+
+  // Provider IDs for sync
+  providerThreadId String // Gmail thread ID or Outlook conversation ID
+
+  // Timestamps
+  lastMessageAt DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  emailAccount EmailAccount   @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client?        @relation("ClientEmailThreads", fields: [clientId], references: [id], onDelete: SetNull)
+  messages     EmailMessage[]
+
+  @@unique([emailAccountId, providerThreadId])
+  @@index([organizationId])
+  @@index([emailAccountId])
+  @@index([clientId])
+  @@index([isRead])
+  @@index([isArchived])
+  @@index([lastMessageAt])
+}
+
+// Individual email messages within a thread
+model EmailMessage {
+  id       String @id @default(cuid())
+  threadId String
+
+  // Provider ID for sync
+  providerMessageId String // Gmail message ID or Outlook message ID
+
+  // Message headers
+  fromEmail  String
+  fromName   String?
+  toEmails   String[]
+  toNames    String[]
+  ccEmails   String[]
+  bccEmails  String[]
+  replyTo    String?
+  subject    String
+  inReplyTo  String? // Message-ID of parent message
+  references String[] // Message-ID chain for threading
+
+  // Message body
+  bodyHtml String? @db.Text
+  bodyText String? @db.Text
+
+  // Direction
+  direction EmailDirection // INBOUND or OUTBOUND
+
+  // Status
+  isRead Boolean @default(false)
+
+  // Attachments
+  hasAttachments Boolean @default(false)
+
+  // Timestamps
+  sentAt    DateTime
+  createdAt DateTime @default(now())
+
+  thread      EmailThread       @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  attachments EmailAttachment[]
+
+  @@unique([threadId, providerMessageId])
+  @@index([threadId])
+  @@index([direction])
+  @@index([sentAt])
+  @@index([fromEmail])
+}
+
+// Email attachments stored in S3/Cloudflare R2
+model EmailAttachment {
+  id        String @id @default(cuid())
+  messageId String
+
+  // File info
+  filename    String
+  contentType String
+  size        Int // Size in bytes
+
+  // Storage
+  storageKey String // S3/R2 key for the file
+  storageUrl String? // Pre-signed URL (temporary) or public URL
+
+  // Provider ID for sync
+  providerAttachmentId String?
+
+  createdAt DateTime @default(now())
+
+  message EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
 }

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
-import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist, ReferralWidget, CollapsibleSection, DashboardCustomizePanel } from "@/components/dashboard";
+import nextDynamic from "next/dynamic";
+import { StatCard, ActivityItem, PageHeader, EmptyGalleries, ReferralWidget, CollapsibleSection, QuickActionsSkeleton, UpcomingBookingsSkeleton } from "@/components/dashboard";
 import { ExpiringGalleriesWidget } from "@/components/dashboard/expiring-galleries-widget";
 import { getChecklistItems } from "@/lib/utils/checklist-items";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
@@ -8,11 +9,44 @@ import { TourStarter } from "@/components/tour";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { DashboardCalendar, DashboardCalendarEvent } from "@/components/dashboard/dashboard-calendar";
+import type { DashboardCalendarEvent } from "@/components/dashboard/dashboard-calendar";
 import { getDashboardConfig } from "@/lib/actions/dashboard";
 import { getExpiringSoonGalleries } from "@/lib/actions/gallery-expiration";
 import { isSectionVisible, isSectionCollapsed, type DashboardConfig } from "@/lib/dashboard-types";
+import Link from "next/link";
+
+const OnboardingFallback = () => (
+  <div className="h-[260px] rounded-xl border border-[var(--card-border)] bg-[var(--card)]" aria-hidden />
+);
+
+const CustomizeFallback = () => (
+  <div className="h-[220px] rounded-xl border border-[var(--card-border)] bg-[var(--card)]" aria-hidden />
+);
+
+const QuickActions = nextDynamic(
+  () => import("@/components/dashboard/quick-actions").then((m) => m.QuickActions),
+  { loading: () => <QuickActionsSkeleton /> }
+);
+
+const UpcomingBookings = nextDynamic(
+  () => import("@/components/dashboard/upcoming-bookings").then((m) => m.UpcomingBookings),
+  { loading: () => <UpcomingBookingsSkeleton /> }
+);
+
+const DashboardCalendar = nextDynamic(
+  () => import("@/components/dashboard/dashboard-calendar").then((m) => m.DashboardCalendar),
+  { loading: () => <div className="h-72 rounded-xl border border-[var(--card-border)] bg-[var(--card)]" /> }
+);
+
+const OnboardingChecklist = nextDynamic(
+  () => import("@/components/dashboard/onboarding-checklist").then((m) => m.OnboardingChecklist),
+  { loading: () => <OnboardingFallback /> }
+);
+
+const DashboardCustomizePanel = nextDynamic(
+  () => import("@/components/dashboard/dashboard-customize-panel").then((m) => m.DashboardCustomizePanel),
+  { loading: () => <CustomizeFallback /> }
+);
 
 // Icons
 function PaymentIcon({ className }: { className?: string }) {
