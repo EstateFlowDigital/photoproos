@@ -102,6 +102,79 @@ export function DashboardLayoutClient({
     return () => clearInterval(interval);
   }, [autoTheme, setResolvedThemeOverride, theme]);
 
+  // Opt-in navigation debug logger (set localStorage ppos_nav_debug = "true")
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const enabled = window.localStorage.getItem("ppos_nav_debug") === "true";
+    if (!enabled) return;
+
+    const clickHandler = (evt: MouseEvent) => {
+      const target = evt.target as HTMLElement | null;
+      const anchor = target?.closest("a");
+      const top = document.elementFromPoint(evt.clientX, evt.clientY) as HTMLElement | null;
+      // eslint-disable-next-line no-console
+      console.log("[nav-debug click]", {
+        href: anchor?.getAttribute("href"),
+        defaultPrevented: evt.defaultPrevented,
+        targetTag: target?.tagName,
+        targetId: target?.id,
+        targetClass: target?.className,
+        topTag: top?.tagName,
+        topId: top?.id,
+        topClass: top?.className,
+        point: { x: evt.clientX, y: evt.clientY },
+        path: window.location.pathname,
+      });
+    };
+
+    const origPush = window.history.pushState;
+    const origReplace = window.history.replaceState;
+
+    function wrapHistory(
+      original: typeof window.history.pushState,
+      label: "pushState" | "replaceState"
+    ) {
+      return function wrapped(this: History, ...args: Parameters<typeof window.history.pushState>) {
+        // eslint-disable-next-line no-console
+        console.log(`[nav-debug ${label}]`, {
+          from: window.location.href,
+          to: args[2],
+          path: window.location.pathname,
+        });
+        return original.apply(this, args);
+      };
+    }
+
+    window.history.pushState = wrapHistory(origPush, "pushState");
+    window.history.replaceState = wrapHistory(origReplace, "replaceState");
+
+    const popHandler = () => {
+      // eslint-disable-next-line no-console
+      console.log("[nav-debug popstate]", { path: window.location.pathname });
+    };
+
+    document.addEventListener("click", clickHandler, true);
+    window.addEventListener("popstate", popHandler);
+
+    // eslint-disable-next-line no-console
+    console.log("[nav-debug enabled]", { path: window.location.pathname });
+
+    return () => {
+      document.removeEventListener("click", clickHandler, true);
+      window.removeEventListener("popstate", popHandler);
+      window.history.pushState = origPush;
+      window.history.replaceState = origReplace;
+    };
+  }, []);
+
+  // Log route updates when debug is enabled
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.localStorage.getItem("ppos_nav_debug") !== "true") return;
+    // eslint-disable-next-line no-console
+    console.log("[nav-debug route]", { path: pathname });
+  }, [pathname]);
+
   return (
     <div
       ref={shellRef}
