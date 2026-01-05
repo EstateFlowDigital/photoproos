@@ -47,15 +47,17 @@ function getShortcutGroups(isMac: boolean): ShortcutGroup[] {
         { keys: [mod, "⇧", "V"], description: "Go to Services" },
         { keys: [mod, "⇧", "A"], description: "Go to Analytics" },
         { keys: [mod, "⇧", "T"], description: "Go to Settings" },
+        { keys: [mod, "⇧", "F"], description: "Go to Forms" },
+        { keys: [mod, "⇧", "J"], description: "Go to Projects" },
       ],
     },
     {
       title: "Global",
       shortcuts: [
         { keys: [mod, "K"], description: "Open command palette" },
-        { keys: [mod, "⇧", "N"], description: "Create new item" },
+        { keys: [mod, "⇧", "N"], description: "Create new item (context-aware)" },
         { keys: [mod, "/"], description: "Open keyboard shortcuts" },
-        { keys: ["Esc"], description: "Close modal / Cancel" },
+        { keys: ["Esc"], description: "Go back / Close modal" },
       ],
     },
     {

@@ -27,6 +27,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improves UI consistency and accessibility across all settings forms
 
 ### Added
+- **Enhanced Keyboard Shortcuts** - Improved keyboard navigation across the dashboard
+  - Added Cmd/Ctrl+/ to open keyboard shortcuts modal from anywhere
+  - Added Escape key to go back to parent page (context-aware)
+  - Added Cmd/Ctrl+Shift+F for Forms navigation
+  - Added Cmd/Ctrl+Shift+J for Projects navigation
+  - Enhanced Cmd/Ctrl+Shift+N to create new items based on current context (clients, invoices, scheduling)
+  - Integrated keyboard shortcuts modal directly into the provider
+
+- **Portal Loading Skeleton** - Added loading.tsx with skeleton loaders for client portal page
+
 - **Revenue Forecasting** - Predict future revenue based on bookings and historical trends
   - Added `getRevenueForecast` - predictive revenue modeling with seasonal adjustments
   - Added `getHistoricalTrends` - analyze revenue trends over time
