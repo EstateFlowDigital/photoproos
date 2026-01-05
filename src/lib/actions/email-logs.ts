@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { EmailType, EmailStatus } from "@prisma/client";
+import { EmailType, EmailStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 // ============================================================================
@@ -118,27 +118,22 @@ export async function getEmailLogs(options?: {
   }
 
   try {
-    // Build the where clause
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {
+    // Build the where clause with proper Prisma typing
+    const where: Prisma.EmailLogWhereInput = {
       organizationId: organization.id,
+      ...(options?.clientId && { clientId: options.clientId }),
+      ...(options?.emailType && { emailType: options.emailType }),
+      ...(options?.status && { status: options.status }),
+      ...(options?.search && {
+        OR: [
+          { toEmail: { contains: options.search.trim(), mode: "insensitive" as const } },
+          { toName: { contains: options.search.trim(), mode: "insensitive" as const } },
+          { subject: { contains: options.search.trim(), mode: "insensitive" as const } },
+          { client: { fullName: { contains: options.search.trim(), mode: "insensitive" as const } } },
+          { client: { email: { contains: options.search.trim(), mode: "insensitive" as const } } },
+        ],
+      }),
     };
-
-    if (options?.clientId) where.clientId = options.clientId;
-    if (options?.emailType) where.emailType = options.emailType;
-    if (options?.status) where.status = options.status;
-
-    // Add search filter
-    if (options?.search) {
-      const searchTerm = options.search.trim();
-      where.OR = [
-        { toEmail: { contains: searchTerm, mode: "insensitive" } },
-        { toName: { contains: searchTerm, mode: "insensitive" } },
-        { subject: { contains: searchTerm, mode: "insensitive" } },
-        { client: { fullName: { contains: searchTerm, mode: "insensitive" } } },
-        { client: { email: { contains: searchTerm, mode: "insensitive" } } },
-      ];
-    }
 
     const [logs, total] = await Promise.all([
       prisma.emailLog.findMany({
