@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { WatermarkPosition } from "@prisma/client";
 
 export type WatermarkTemplateInput = {
   name: string;
@@ -423,12 +424,12 @@ export async function applyTemplateToOrganization(templateId: string) {
     }
 
     // Map template position format to organization settings format
-    const positionMap: Record<string, string> = {
+    const positionMap: Record<string, WatermarkPosition> = {
       "top-left": "top_left",
       "top-right": "top_right",
       "bottom-left": "bottom_left",
       "bottom-right": "bottom_right",
-      "center": "center",
+      center: "center",
     };
 
     // Update organization's watermark settings
@@ -439,7 +440,10 @@ export async function applyTemplateToOrganization(templateId: string) {
         watermarkType: template.watermarkType,
         watermarkText: template.watermarkText,
         watermarkImageUrl: template.watermarkImageUrl,
-        watermarkPosition: positionMap[template.watermarkPosition] || "bottom_right",
+        watermarkPosition:
+          positionMap[template.watermarkPosition] ??
+          template.watermarkPosition ??
+          "bottom_right",
         watermarkOpacity: template.watermarkOpacity,
         watermarkScale: template.watermarkScale,
       },
