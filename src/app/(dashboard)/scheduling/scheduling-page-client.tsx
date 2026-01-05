@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { CreateBookingModal } from "@/components/modals/create-booking-modal";
 import { updateBookingStatus } from "@/lib/actions/bookings";
+import { parseLocalDate } from "@/lib/dates";
 import {
   PageHeader,
   PageContextNav,
@@ -126,6 +127,13 @@ function isSameDay(date1: Date, date2: Date): boolean {
   );
 }
 
+function getDayKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 // Helper to check if date is tomorrow
 function isTomorrow(date: Date): boolean {
   const tomorrow = new Date();
@@ -171,7 +179,11 @@ function getMonthLabel(date: Date): string {
 }
 
 // Generate calendar days for a month
-function generateMonthDays(year: number, month: number, bookings: Booking[]): CalendarDay[][] {
+function generateMonthDays(
+  year: number,
+  month: number,
+  bookingCountByDayKey: Map<string, number>
+): CalendarDay[][] {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const startPadding = firstDay.getDay();
@@ -196,15 +208,15 @@ function generateMonthDays(year: number, month: number, bookings: Booking[]): Ca
   // Add all days of the month
   for (let day = 1; day <= totalDays; day++) {
     const date = new Date(year, month, day);
-    const dayBookings = bookings.filter((b) => isSameDay(new Date(b.startTime), date));
+    const bookingCount = bookingCountByDayKey.get(getDayKey(date)) ?? 0;
 
     currentWeek.push({
       date,
       dayName: new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date),
       dayNumber: day,
       isToday: isToday(date),
-      hasBooking: dayBookings.length > 0,
-      bookingCount: dayBookings.length,
+      hasBooking: bookingCount > 0,
+      bookingCount,
     });
 
     if (currentWeek.length === 7) {
@@ -234,7 +246,10 @@ function generateMonthDays(year: number, month: number, bookings: Booking[]): Ca
 }
 
 // Generate week days
-function generateWeekDays(weekOffset: number, bookings: Booking[]): CalendarDay[] {
+function generateWeekDays(
+  weekOffset: number,
+  bookingCountByDayKey: Map<string, number>
+): CalendarDay[] {
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const today = new Date();
   const startOfWeek = new Date(today);
@@ -243,14 +258,14 @@ function generateWeekDays(weekOffset: number, bookings: Booking[]): CalendarDay[
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
-    const dayBookings = bookings.filter((b) => isSameDay(new Date(b.startTime), date));
+    const bookingCount = bookingCountByDayKey.get(getDayKey(date)) ?? 0;
     return {
       date,
       dayName: weekDays[i],
       dayNumber: date.getDate(),
       isToday: isToday(date),
-      hasBooking: dayBookings.length > 0,
-      bookingCount: dayBookings.length,
+      hasBooking: bookingCount > 0,
+      bookingCount,
     };
   });
 }
@@ -333,13 +348,6 @@ export function SchedulingPageClient({
     return () => window.removeEventListener("resize", handleResize);
   }, [lastDesktopView]);
 
-  // Generate calendar data
-  const weekDays = useMemo(() => generateWeekDays(weekOffset, bookings), [weekOffset, bookings]);
-  const monthWeeks = useMemo(
-    () => generateMonthDays(currentMonth.year, currentMonth.month, bookings),
-    [currentMonth.year, currentMonth.month, bookings]
-  );
-
   // Filter bookings
   const filteredBookings = useMemo(() => {
     return bookings.filter((booking) => {
@@ -356,10 +364,38 @@ export function SchedulingPageClient({
     }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
   }, [bookings, statusFilter, searchQuery]);
 
+  const { bookingsByDayKey, bookingCountByDayKey } = useMemo(() => {
+    const byDayKey = new Map<string, Booking[]>();
+    const countByDayKey = new Map<string, number>();
+
+    for (const booking of filteredBookings) {
+      const startTime = new Date(booking.startTime);
+      const dayKey = getDayKey(startTime);
+      const existing = byDayKey.get(dayKey);
+      if (existing) {
+        existing.push(booking);
+      } else {
+        byDayKey.set(dayKey, [booking]);
+      }
+      countByDayKey.set(dayKey, (countByDayKey.get(dayKey) ?? 0) + 1);
+    }
+
+    return { bookingsByDayKey: byDayKey, bookingCountByDayKey: countByDayKey };
+  }, [filteredBookings]);
+
+  // Generate calendar data (counts match current filters)
+  const weekDays = useMemo(
+    () => generateWeekDays(weekOffset, bookingCountByDayKey),
+    [weekOffset, bookingCountByDayKey]
+  );
+  const monthWeeks = useMemo(
+    () => generateMonthDays(currentMonth.year, currentMonth.month, bookingCountByDayKey),
+    [currentMonth.year, currentMonth.month, bookingCountByDayKey]
+  );
+
   // Get bookings for a specific date
   const getBookingsForDate = (date: Date) => {
-    return filteredBookings.filter((b) => isSameDay(new Date(b.startTime), date))
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    return bookingsByDayKey.get(getDayKey(date)) ?? [];
   };
 
   // Get time-off blocks for a specific date
@@ -383,7 +419,7 @@ export function SchedulingPageClient({
   const selectedDayBookings = useMemo(() => {
     if (!selectedDate) return [];
     return getBookingsForDate(selectedDate);
-  }, [selectedDate, filteredBookings]);
+  }, [selectedDate, bookingsByDayKey]);
 
   // Today's bookings
   const todaysBookings = useMemo(() => {
@@ -421,28 +457,28 @@ export function SchedulingPageClient({
   }, [bookings]);
 
   // Status counts
-  const statusCounts = useMemo(() => ({
-    all: bookings.length,
-    pending: bookings.filter((b) => b.status === "pending").length,
-    confirmed: bookings.filter((b) => b.status === "confirmed").length,
-    completed: bookings.filter((b) => b.status === "completed").length,
-    cancelled: bookings.filter((b) => b.status === "cancelled").length,
-  }), [bookings]);
+  const statusCounts = useMemo(() => {
+    const counts = {
+      all: bookings.length,
+      pending: 0,
+      confirmed: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+    for (const booking of bookings) {
+      if (booking.status === "pending") counts.pending++;
+      else if (booking.status === "confirmed") counts.confirmed++;
+      else if (booking.status === "completed") counts.completed++;
+      else if (booking.status === "cancelled") counts.cancelled++;
+    }
+    return counts;
+  }, [bookings]);
 
-  // Group bookings by day for list view
-  const bookingsByDay = useMemo(() => {
-    const grouped: Record<string, Booking[]> = {};
-    filteredBookings.forEach((booking) => {
-      const dayKey = new Date(booking.startTime).toDateString();
-      if (!grouped[dayKey]) grouped[dayKey] = [];
-      grouped[dayKey].push(booking);
-    });
-    return grouped;
-  }, [filteredBookings]);
-
-  const sortedDays = Object.keys(bookingsByDay).sort(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime()
-  );
+  const sortedDays = useMemo(() => {
+    return Array.from(bookingsByDayKey.keys()).sort(
+      (a, b) => parseLocalDate(a).getTime() - parseLocalDate(b).getTime()
+    );
+  }, [bookingsByDayKey]);
 
   // Quick action handlers
   const handleConfirm = async (bookingId: string, e: React.MouseEvent) => {
@@ -1003,21 +1039,24 @@ export function SchedulingPageClient({
           {calendarView === "list" && !selectedDate && (
             <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
               {sortedDays.length > 0 ? (
-                sortedDays.map((dayKey) => (
+                sortedDays.map((dayKey) => {
+                  const dayBookings = bookingsByDayKey.get(dayKey) ?? [];
+                  return (
                   <div key={dayKey}>
                     <div className="bg-[var(--background-secondary)] px-4 py-2 border-b border-[var(--card-border)]">
                       <span className="text-sm font-semibold text-foreground">
-                        {getRelativeDay(new Date(dayKey))}
+                        {getRelativeDay(parseLocalDate(dayKey))}
                       </span>
                       <span className="text-xs text-foreground-muted ml-2">
-                        {bookingsByDay[dayKey].length} booking{bookingsByDay[dayKey].length !== 1 ? "s" : ""}
+                        {dayBookings.length} booking{dayBookings.length !== 1 ? "s" : ""}
                       </span>
                     </div>
-                    {bookingsByDay[dayKey].map((booking) => (
+                    {dayBookings.map((booking) => (
                       <BookingRow key={booking.id} booking={booking} />
                     ))}
                   </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="py-12 text-center">
                   <CalendarIcon className="mx-auto h-10 w-10 text-foreground-muted" />

@@ -10,6 +10,7 @@ import { TeamMemberSelector } from "@/components/dashboard/team-member-selector"
 import { Select } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createBooking, createRecurringBooking, createBookingReminders, type ReminderInput } from "@/lib/actions/bookings";
+import { formatDateInputValue, parseLocalDate } from "@/lib/dates";
 import { getRecurrenceSummary } from "@/lib/utils/bookings";
 import { calculateTravelPreview } from "@/lib/actions/locations";
 import type { ServiceType } from "@/lib/services";
@@ -219,7 +220,7 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
           recurrencePattern,
           recurrenceInterval,
           recurrenceEndDate: recurrenceEndType === "date" && recurrenceEndDate
-            ? new Date(recurrenceEndDate)
+            ? parseLocalDate(recurrenceEndDate, { endOfDay: true })
             : undefined,
           recurrenceCount: recurrenceEndType === "count" ? recurrenceCount : undefined,
           recurrenceDaysOfWeek: recurrencePattern === "custom" ? recurrenceDaysOfWeek : undefined,
@@ -263,7 +264,7 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
 
   // Format preferred date for input
   const preferredDateValue = fromOrder?.preferredDate
-    ? new Date(fromOrder.preferredDate).toISOString().split("T")[0]
+    ? formatDateInputValue(fromOrder.preferredDate)
     : "";
 
   // Map preferred time to time slot value
@@ -555,7 +556,7 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
                 <span className="text-sm text-foreground">
                   {getRecurrenceSummary(recurrencePattern, recurrenceInterval, recurrencePattern === "custom" ? recurrenceDaysOfWeek : undefined)}
                   {recurrenceEndType === "count" && ` for ${recurrenceCount} sessions`}
-                  {recurrenceEndType === "date" && recurrenceEndDate && ` until ${new Date(recurrenceEndDate).toLocaleDateString()}`}
+                  {recurrenceEndType === "date" && recurrenceEndDate && ` until ${parseLocalDate(recurrenceEndDate).toLocaleDateString()}`}
                 </span>
               </div>
             </div>

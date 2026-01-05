@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { formatDateInputValueInTimeZone, formatTimeInputValueInTimeZone } from "@/lib/dates";
 import { BookingEditForm } from "./booking-edit-form";
 import { getBooking, getClientsForBooking, updateBookingStatus } from "@/lib/actions/bookings";
 import { redirect } from "next/navigation";
@@ -39,6 +40,8 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
     cancelled: { bg: "bg-[var(--error)]/10", text: "text-[var(--error)]", label: "Cancelled" },
   };
 
+  const timeZone = booking.timezone || "America/New_York";
+
   // Map booking to the format expected by the form
   const bookingForForm = {
     id: booking.id,
@@ -57,10 +60,10 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
           name: booking.clientName || "Unknown",
           email: booking.clientEmail || "",
           phone: booking.clientPhone || "",
-        },
-    date: booking.startTime.toISOString().split("T")[0],
-    startTime: booking.startTime.toTimeString().slice(0, 5),
-    endTime: booking.endTime.toTimeString().slice(0, 5),
+      },
+    date: formatDateInputValueInTimeZone(booking.startTime, timeZone),
+    startTime: formatTimeInputValueInTimeZone(booking.startTime, timeZone),
+    endTime: formatTimeInputValueInTimeZone(booking.endTime, timeZone),
     location: {
       address: booking.location || "",
       notes: booking.locationNotes || null,

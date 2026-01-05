@@ -18,6 +18,7 @@ import {
   rejectTimeOffRequest,
   cancelTimeOffRequest,
 } from "@/lib/actions/availability";
+import { parseLocalDate } from "@/lib/dates";
 import type { TimeOffRequestStatus, AvailabilityBlockType } from "@prisma/client";
 
 interface TimeOffRequest {
@@ -436,8 +437,8 @@ function TimeOffRequestModal({
       return;
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = parseLocalDate(startDate);
+    const end = parseLocalDate(endDate, { endOfDay: true });
 
     if (end < start) {
       setError("End date must be after start date");
