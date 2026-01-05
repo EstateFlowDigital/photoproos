@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Portal Client Component Refactoring** - Extracted portal-client.tsx (982 lines) into smaller, focused components
+  - Created modular component architecture in `portal/components/` directory
+  - Extracted PortalHeader, PortalStats, PortalTabs, PortalFooter layout components
+  - Extracted PropertiesTab, GalleriesTab, DownloadsTab, InvoicesTab, QuestionnairesTab components
+  - Separated icons into dedicated icons.tsx file (15 icon components)
+  - Added shared types.ts with all interface definitions
+  - Added utils.ts with formatPrice and formatDate utility functions
+  - Reduced main portal-client.tsx from 982 lines to ~290 lines (70% reduction)
+  - Improved code maintainability and separation of concerns
+
 - **Settings Input Standardization** - Replaced raw `<input>` elements with design system Input component across settings pages
   - Updated profile-settings-form.tsx with Input component for Full Name, Email, Phone, and Business Name fields
   - Updated branding-settings-form.tsx with Input component for Subdomain and Custom Domain fields
