@@ -119,6 +119,24 @@ export function MobileNav({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  // Track real viewport height for mobile browsers (avoids address-bar shrink)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const setViewportVar = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--mobile-vh", `${vh}px`);
+    };
+
+    setViewportVar();
+    window.addEventListener("resize", setViewportVar);
+    window.addEventListener("orientationchange", setViewportVar);
+    return () => {
+      window.removeEventListener("resize", setViewportVar);
+      window.removeEventListener("orientationchange", setViewportVar);
+    };
+  }, []);
+
   if (!isOpen) return null;
 
   return (
@@ -137,6 +155,7 @@ export function MobileNav({
           "transform transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
+        style={{ height: "calc(var(--mobile-vh, 1vh) * 100)" }}
       >
         {/* Header */}
         <div className="flex h-16 items-center justify-between border-b border-[var(--card-border)] px-4">
@@ -156,7 +175,10 @@ export function MobileNav({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
+        <nav
+          className="flex-1 space-y-1 p-4 overflow-y-auto"
+          style={{ maxHeight: "calc(var(--mobile-vh, 1vh) * 100 - 8rem)" }}
+        >
           {/* New Project */}
           <Link
             href="/create"
