@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -99,6 +99,106 @@ const STATUS_COLORS: Record<LeadStatus | BookingFormSubmissionStatus, string> = 
   expired: "bg-gray-500/10 text-gray-400",
 };
 
+// Union type for combined inquiries
+type CombinedInquiry =
+  | (PortfolioInquiry & { type: "portfolio" })
+  | (ChatInquiry & { type: "chat" })
+  | (BookingSubmission & { type: "booking" });
+
+// Memoized row component to prevent unnecessary re-renders in large lists
+interface LeadRowProps {
+  inquiry: CombinedInquiry;
+  onView: (inquiry: CombinedInquiry) => void;
+}
+
+const LeadRow = memo(function LeadRow({ inquiry, onView }: LeadRowProps) {
+  const name = inquiry.type === "booking"
+    ? (inquiry as BookingSubmission & { type: "booking" }).clientName || "Anonymous"
+    : (inquiry as PortfolioInquiry | ChatInquiry).name || "Anonymous";
+
+  const email = inquiry.type === "booking"
+    ? (inquiry as BookingSubmission & { type: "booking" }).clientEmail || "No email"
+    : (inquiry as PortfolioInquiry | ChatInquiry).email || "No email";
+
+  const messageOrDate = inquiry.type === "booking"
+    ? (inquiry as BookingSubmission & { type: "booking" }).preferredDate
+      ? `Preferred: ${new Date((inquiry as BookingSubmission & { type: "booking" }).preferredDate!).toLocaleDateString()}`
+      : "Booking request"
+    : (inquiry as PortfolioInquiry | ChatInquiry).message;
+
+  const source = inquiry.type === "portfolio" && "portfolioWebsite" in inquiry
+    ? (inquiry as PortfolioInquiry & { type: "portfolio" }).portfolioWebsite.name
+    : inquiry.type === "chat" && "category" in inquiry
+    ? (inquiry as ChatInquiry & { type: "chat" }).category || (inquiry as ChatInquiry & { type: "chat" }).source || "-"
+    : inquiry.type === "booking" && "bookingForm" in inquiry
+    ? (inquiry as BookingSubmission & { type: "booking" }).bookingForm.name
+    : "-";
+
+  return (
+    <tr className="border-b border-[var(--card-border)] last:border-0 hover:bg-[var(--background-hover)]">
+      <td className="px-4 py-3">
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
+            inquiry.type === "portfolio"
+              ? "bg-purple-500/10 text-purple-400"
+              : inquiry.type === "chat"
+              ? "bg-cyan-500/10 text-cyan-400"
+              : "bg-orange-500/10 text-orange-400"
+          )}
+        >
+          {inquiry.type === "portfolio" ? (
+            <GlobeIcon className="h-3 w-3" />
+          ) : inquiry.type === "chat" ? (
+            <ChatIcon className="h-3 w-3" />
+          ) : (
+            <CalendarIcon className="h-3 w-3" />
+          )}
+          {inquiry.type === "portfolio" ? "Portfolio" : inquiry.type === "chat" ? "Chat" : "Booking"}
+        </span>
+      </td>
+      <td className="px-4 py-3">
+        <div>
+          <p className="font-medium text-foreground">{name}</p>
+          <p className="text-xs text-foreground-muted">{email}</p>
+        </div>
+      </td>
+      <td className="max-w-[300px] px-4 py-3">
+        <p className="truncate text-foreground-secondary">{messageOrDate}</p>
+      </td>
+      <td className="px-4 py-3">
+        <p className="text-xs text-foreground-muted">{source}</p>
+      </td>
+      <td className="px-4 py-3">
+        <span
+          className={cn(
+            "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
+            STATUS_COLORS[inquiry.status]
+          )}
+        >
+          {STATUS_LABELS[inquiry.status]}
+        </span>
+      </td>
+      <td className="whitespace-nowrap px-4 py-3 text-foreground-muted">
+        {new Date(inquiry.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })}
+      </td>
+      <td className="px-4 py-3 text-right">
+        <button
+          onClick={() => onView(inquiry)}
+          className="text-sm text-[var(--primary)] hover:underline"
+        >
+          View
+        </button>
+      </td>
+    </tr>
+  );
+});
+
 export function LeadsPageClient({
   portfolioInquiries,
   chatInquiries,
@@ -158,6 +258,11 @@ export function LeadsPageClient({
   };
 
   const [convertedClientId, setConvertedClientId] = useState<string | null>(null);
+
+  // Memoized callback for viewing inquiries - prevents unnecessary re-renders of LeadRow
+  const handleViewInquiry = useCallback((inquiry: CombinedInquiry) => {
+    setSelectedInquiry(inquiry);
+  }, []);
 
   const handleStatusChange = async (
     inquiry: typeof selectedInquiry,
@@ -316,92 +421,11 @@ export function LeadsPageClient({
               </thead>
               <tbody>
                 {filteredInquiries.map((inquiry) => (
-                  <tr
+                  <LeadRow
                     key={`${inquiry.type}-${inquiry.id}`}
-                    className="border-b border-[var(--card-border)] last:border-0 hover:bg-[var(--background-hover)]"
-                  >
-                    <td className="px-4 py-3">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
-                          inquiry.type === "portfolio"
-                            ? "bg-purple-500/10 text-purple-400"
-                            : inquiry.type === "chat"
-                            ? "bg-cyan-500/10 text-cyan-400"
-                            : "bg-orange-500/10 text-orange-400"
-                        )}
-                      >
-                        {inquiry.type === "portfolio" ? (
-                          <GlobeIcon className="h-3 w-3" />
-                        ) : inquiry.type === "chat" ? (
-                          <ChatIcon className="h-3 w-3" />
-                        ) : (
-                          <CalendarIcon className="h-3 w-3" />
-                        )}
-                        {inquiry.type === "portfolio" ? "Portfolio" : inquiry.type === "chat" ? "Chat" : "Booking"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {inquiry.type === "booking"
-                            ? (inquiry as BookingSubmission & { type: "booking" }).clientName || "Anonymous"
-                            : (inquiry as PortfolioInquiry | ChatInquiry).name || "Anonymous"}
-                        </p>
-                        <p className="text-xs text-foreground-muted">
-                          {inquiry.type === "booking"
-                            ? (inquiry as BookingSubmission & { type: "booking" }).clientEmail || "No email"
-                            : (inquiry as PortfolioInquiry | ChatInquiry).email || "No email"}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="max-w-[300px] px-4 py-3">
-                      <p className="truncate text-foreground-secondary">
-                        {inquiry.type === "booking"
-                          ? (inquiry as BookingSubmission & { type: "booking" }).preferredDate
-                            ? `Preferred: ${new Date((inquiry as BookingSubmission & { type: "booking" }).preferredDate!).toLocaleDateString()}`
-                            : "Booking request"
-                          : (inquiry as PortfolioInquiry | ChatInquiry).message}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-xs text-foreground-muted">
-                        {inquiry.type === "portfolio" && "portfolioWebsite" in inquiry
-                          ? (inquiry as PortfolioInquiry & { type: "portfolio" }).portfolioWebsite.name
-                          : inquiry.type === "chat" && "category" in inquiry
-                          ? (inquiry as ChatInquiry & { type: "chat" }).category || (inquiry as ChatInquiry & { type: "chat" }).source || "-"
-                          : inquiry.type === "booking" && "bookingForm" in inquiry
-                          ? (inquiry as BookingSubmission & { type: "booking" }).bookingForm.name
-                          : "-"}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={cn(
-                          "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
-                          STATUS_COLORS[inquiry.status]
-                        )}
-                      >
-                        {STATUS_LABELS[inquiry.status]}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-foreground-muted">
-                      {new Date(inquiry.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setSelectedInquiry(inquiry)}
-                        className="text-sm text-[var(--primary)] hover:underline"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
+                    inquiry={inquiry}
+                    onView={handleViewInquiry}
+                  />
                 ))}
               </tbody>
             </table>

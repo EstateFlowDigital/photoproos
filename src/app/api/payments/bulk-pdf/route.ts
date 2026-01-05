@@ -7,10 +7,7 @@ import { ReceiptPdf } from "@/lib/pdf/templates/receipt-pdf";
 import React from "react";
 import JSZip from "jszip";
 import { format } from "date-fns";
-
-// Type assertion helper for react-pdf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createPdfElement = (component: any) => component as any;
+import { createPdfElement, generateReceiptNumber } from "@/lib/pdf/utils";
 
 /**
  * POST /api/payments/bulk-pdf
@@ -86,15 +83,15 @@ export async function POST(request: NextRequest) {
     // Generate PDFs for each payment
     for (const payment of payments) {
       try {
-        // Generate receipt number
-        const receiptNumber = `REC-${payment.id.substring(0, 8).toUpperCase()}`;
+        // Generate receipt number using shared utility
+        const receiptNumber = generateReceiptNumber(payment.id);
 
         // Format date
         const paidDate = payment.paidAt
           ? format(payment.paidAt, "MMMM d, yyyy")
           : format(new Date(), "MMMM d, yyyy");
 
-        // Determine logo URL
+        // Determine logo URL (payments don't use invoice-specific logo)
         const logoUrl = payment.organization?.logoLightUrl
           || payment.organization?.logoUrl
           || null;

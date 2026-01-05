@@ -135,6 +135,21 @@ export async function getCurrentUser() {
 }
 
 /**
+ * Get the current user's organization
+ * Returns the organization object or null if not authenticated/no organization
+ */
+export async function getUserOrganization() {
+  const context = await getAuthContext();
+  if (!context) return null;
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: context.organizationId },
+  });
+
+  return organization;
+}
+
+/**
  * Ensure the user exists in our database (create if needed)
  */
 export async function ensureUserExists(clerkUserId: string) {

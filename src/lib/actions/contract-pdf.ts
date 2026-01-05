@@ -4,14 +4,8 @@ import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { ContractPdf } from "@/lib/pdf/templates/contract-pdf";
-import React, { type ReactElement } from "react";
-
-/**
- * Type-safe wrapper for react-pdf's renderToBuffer.
- * react-pdf expects Document elements but React.createElement returns generic ReactElement.
- * This wrapper ensures type safety while allowing the conversion.
- */
-const createPdfElement = (component: ReactElement): ReactElement => component;
+import React from "react";
+import { createPdfElement, formatPdfDate, getOrganizationLogoUrl } from "@/lib/pdf/utils";
 
 /**
  * Generate a PDF for a contract
@@ -66,20 +60,8 @@ export async function generateContractPdf(contractId: string): Promise<{
       return { success: false, error: "Contract not found" };
     }
 
-    // Format dates
-    const formatDate = (date: Date): string => {
-      return new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }).format(date);
-    };
-
-    // Determine logo URL (prefer invoice-specific, then light variant, then default)
-    const logoUrl = contract.organization?.invoiceLogoUrl
-      || contract.organization?.logoLightUrl
-      || contract.organization?.logoUrl
-      || null;
+    // Determine logo URL using shared utility
+    const logoUrl = getOrganizationLogoUrl(contract.organization);
 
     // Generate the PDF
     const pdfBuffer = await renderToBuffer(
@@ -87,9 +69,9 @@ export async function generateContractPdf(contractId: string): Promise<{
         React.createElement(ContractPdf, {
           contractName: contract.name,
           status: contract.status,
-          createdAt: formatDate(contract.createdAt),
-          sentAt: contract.sentAt ? formatDate(contract.sentAt) : null,
-          signedAt: contract.signedAt ? formatDate(contract.signedAt) : null,
+          createdAt: formatPdfDate(contract.createdAt),
+          sentAt: contract.sentAt ? formatPdfDate(contract.sentAt) : null,
+          signedAt: contract.signedAt ? formatPdfDate(contract.signedAt) : null,
           businessName: contract.organization?.publicName || contract.organization?.name || "Your Business",
           businessEmail: contract.organization?.publicEmail || null,
           logoUrl,

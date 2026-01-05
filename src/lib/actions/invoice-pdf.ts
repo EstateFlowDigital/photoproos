@@ -4,15 +4,9 @@ import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoicePdf } from "@/lib/pdf/templates/invoice-pdf";
-import React, { type ReactElement } from "react";
+import React from "react";
 import QRCode from "qrcode";
-
-/**
- * Type-safe wrapper for react-pdf's renderToBuffer.
- * react-pdf expects Document elements but React.createElement returns generic ReactElement.
- * This wrapper ensures type safety while allowing the conversion.
- */
-const createPdfElement = (component: ReactElement): ReactElement => component;
+import { createPdfElement, formatPdfDate, getOrganizationLogoUrl } from "@/lib/pdf/utils";
 
 /**
  * Generate a PDF for an invoice
@@ -68,15 +62,6 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
       return { success: false, error: "Invoice not found" };
     }
 
-    // Format dates
-    const formatDate = (date: Date): string => {
-      return new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }).format(date);
-    };
-
     // Determine display status (check if overdue)
     let displayStatus = invoice.status;
     if (invoice.status === "sent" && new Date(invoice.dueDate) < new Date()) {
@@ -86,11 +71,8 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
     // Build payment URL if exists
     const paymentUrl = invoice.paymentLinkUrl || null;
 
-    // Determine logo URL (prefer invoice-specific, then light variant, then default)
-    const logoUrl = invoice.organization?.invoiceLogoUrl
-      || invoice.organization?.logoLightUrl
-      || invoice.organization?.logoUrl
-      || null;
+    // Determine logo URL using shared utility
+    const logoUrl = getOrganizationLogoUrl(invoice.organization);
 
     // Generate QR code for payment URL if available and invoice is not paid
     let qrCodeDataUrl: string | null = null;
@@ -116,8 +98,8 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
         React.createElement(InvoicePdf, {
           invoiceNumber: invoice.invoiceNumber,
           status: displayStatus,
-          issueDate: formatDate(invoice.issueDate),
-          dueDate: formatDate(invoice.dueDate),
+          issueDate: formatPdfDate(invoice.issueDate),
+          dueDate: formatPdfDate(invoice.dueDate),
           clientName: invoice.clientName || "Unknown Client",
           clientEmail: invoice.clientEmail,
           clientAddress: invoice.clientAddress,
@@ -145,7 +127,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
           payments: invoice.payments.map((payment) => ({
             id: payment.id,
             amountCents: payment.amountCents,
-            paidAt: payment.paidAt ? formatDate(payment.paidAt) : null,
+            paidAt: payment.paidAt ? formatPdfDate(payment.paidAt) : null,
             description: payment.description,
           })),
           accentColor: invoice.organization?.primaryColor || "#3b82f6",
@@ -226,15 +208,6 @@ export async function generateInvoicePdfBuffer(invoiceId: string): Promise<{
       return { success: false, error: "Invoice not found" };
     }
 
-    // Format dates
-    const formatDate = (date: Date): string => {
-      return new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }).format(date);
-    };
-
     // Determine display status (check if overdue)
     let displayStatus = invoice.status;
     if (invoice.status === "sent" && new Date(invoice.dueDate) < new Date()) {
@@ -244,11 +217,8 @@ export async function generateInvoicePdfBuffer(invoiceId: string): Promise<{
     // Build payment URL if exists
     const paymentUrl = invoice.paymentLinkUrl || null;
 
-    // Determine logo URL (prefer invoice-specific, then light variant, then default)
-    const logoUrl = invoice.organization?.invoiceLogoUrl
-      || invoice.organization?.logoLightUrl
-      || invoice.organization?.logoUrl
-      || null;
+    // Determine logo URL using shared utility
+    const logoUrl = getOrganizationLogoUrl(invoice.organization);
 
     // Generate QR code for payment URL if available and invoice is not paid
     let qrCodeDataUrl: string | null = null;
@@ -273,8 +243,8 @@ export async function generateInvoicePdfBuffer(invoiceId: string): Promise<{
         React.createElement(InvoicePdf, {
           invoiceNumber: invoice.invoiceNumber,
           status: displayStatus,
-          issueDate: formatDate(invoice.issueDate),
-          dueDate: formatDate(invoice.dueDate),
+          issueDate: formatPdfDate(invoice.issueDate),
+          dueDate: formatPdfDate(invoice.dueDate),
           clientName: invoice.clientName || "Unknown Client",
           clientEmail: invoice.clientEmail,
           clientAddress: invoice.clientAddress,
@@ -302,7 +272,7 @@ export async function generateInvoicePdfBuffer(invoiceId: string): Promise<{
           payments: invoice.payments.map((payment) => ({
             id: payment.id,
             amountCents: payment.amountCents,
-            paidAt: payment.paidAt ? formatDate(payment.paidAt) : null,
+            paidAt: payment.paidAt ? formatPdfDate(payment.paidAt) : null,
             description: payment.description,
           })),
           accentColor: invoice.organization?.primaryColor || "#3b82f6",

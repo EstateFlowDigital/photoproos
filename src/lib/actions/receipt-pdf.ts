@@ -4,14 +4,8 @@ import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { ReceiptPdf } from "@/lib/pdf/templates/receipt-pdf";
-import React, { type ReactElement } from "react";
-
-/**
- * Type-safe wrapper for react-pdf's renderToBuffer.
- * react-pdf expects Document elements but React.createElement returns generic ReactElement.
- * This wrapper ensures type safety while allowing the conversion.
- */
-const createPdfElement = (component: ReactElement): ReactElement => component;
+import React from "react";
+import { createPdfElement, formatPdfDate, getOrganizationLogoUrl, generateReceiptNumber } from "@/lib/pdf/utils";
 
 /**
  * Generate a PDF receipt for a payment
@@ -64,30 +58,18 @@ export async function generateReceiptPdf(paymentId: string): Promise<{
       return { success: false, error: "Payment has no paid date" };
     }
 
-    // Format date
-    const formatDate = (date: Date): string => {
-      return new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }).format(date);
-    };
+    // Generate receipt number using shared utility
+    const receiptNumber = generateReceiptNumber(payment.id);
 
-    // Generate receipt number if not exists
-    const receiptNumber = `REC-${payment.id.slice(0, 8).toUpperCase()}`;
-
-    // Determine logo URL (prefer invoice-specific, then light variant, then default)
-    const logoUrl = payment.organization?.invoiceLogoUrl
-      || payment.organization?.logoLightUrl
-      || payment.organization?.logoUrl
-      || null;
+    // Determine logo URL using shared utility
+    const logoUrl = getOrganizationLogoUrl(payment.organization);
 
     // Generate the PDF
     const pdfBuffer = await renderToBuffer(
       createPdfElement(
         React.createElement(ReceiptPdf, {
           receiptNumber,
-          paidDate: formatDate(payment.paidAt),
+          paidDate: formatPdfDate(payment.paidAt),
           clientName: payment.client?.fullName || "Unknown Client",
           clientEmail: payment.client?.email || null,
           clientCompany: payment.client?.company || null,

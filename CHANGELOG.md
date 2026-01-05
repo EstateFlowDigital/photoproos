@@ -8,6 +8,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Unified Email Inbox (Database Schema)** - Added foundation for Gmail/Outlook email integration
+  - `EmailAccount` model for storing connected email accounts with OAuth tokens
+  - `EmailThread` model for grouping email conversations with client auto-linking
+  - `EmailMessage` model for individual emails with full header and body support
+  - `EmailAttachment` model for storing email attachments in S3/R2
+  - `EmailProvider` enum (GMAIL, OUTLOOK) for provider identification
+  - `EmailDirection` enum (INBOUND, OUTBOUND) for message direction tracking
+  - Relations to Organization and Client models for seamless integration
+
+- **Unified Email Inbox (Dashboard UI)** - Added complete inbox interface for email management
+  - New `/inbox` route with responsive split-panel layout (thread list + conversation view)
+  - Thread list with search, filtering (All, Unread, Starred, Archived)
+  - Conversation view with message bubbles, attachment indicators, and reply box
+  - Compose modal for creating new emails
+  - Empty state UI for connecting Gmail/Outlook accounts
+  - Added inbox module to navigation system
+
+- **Gmail OAuth Integration** - Connect Gmail accounts for unified inbox sync
+  - OAuth 2.0 with PKCE security for Gmail authorization
+  - `/api/integrations/gmail/authorize` and `/api/integrations/gmail/callback` routes
+  - Automatic token refresh with secure storage
+  - Gmail utility library for API operations (list threads, send emails, archive, star)
+  - Email settings page updated with connected accounts management
+  - Server actions for connecting/disconnecting email accounts
+
+- **Email Sync Service** - Background sync for connected email accounts
+  - Core sync service (`email-sync.ts`) with incremental sync using Gmail historyId
+  - Automatic client auto-linking by matching email addresses to existing clients
+  - Cron job endpoint (`/api/cron/email-sync`) for scheduled sync every 5 minutes
+  - Server actions for manual sync, star/archive toggle, reply, and compose
+  - Full inbox UI integration with sync button, real-time state updates
+  - Toast notifications for sync progress and action feedback
+  - Thread selection fetches full conversation with all messages
+  - Auto-mark as read when opening a conversation
+  - Loading states for thread fetching and message sending
+  - Refresh thread view after sending replies to show new message
+  - Auto-scroll to latest message when opening conversations
+  - Keyboard shortcut (⌘/Ctrl+Enter) for sending replies and new emails
+  - Escape key and click-outside to close compose modal
+
 - **Gallery Icons Module** - Extracted 30+ icon components from `gallery-client.tsx`
   - New `src/app/g/[slug]/gallery-icons.tsx` file with all public gallery icons
   - Includes social icons (Facebook, X, Pinterest, Email)
@@ -38,6 +78,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Type Safety - PDF Helpers** - Replaced `any` types with proper typing
   - Updated `receipt-pdf.ts` with ReactElement type for createPdfElement helper
+
+- **Type Safety - Bulk PDF API Routes** - Removed `any` types from all bulk PDF routes
+  - Updated `invoices/bulk-pdf/route.ts` to use shared PDF utilities
+  - Updated `payments/bulk-pdf/route.ts` to use shared PDF utilities
+  - Updated `contracts/bulk-pdf/route.ts` to use shared PDF utilities
+
+- **PDF Utilities Module** - New `src/lib/pdf/utils.ts` centralizes PDF helpers
+  - Type-safe `createPdfElement` wrapper for react-pdf
+  - `formatPdfDate` for consistent date formatting in PDFs
+  - `getOrganizationLogoUrl` for logo priority selection
+  - `generateReceiptNumber` for receipt number generation
+  - `sanitizeFilename` for safe PDF filenames
+
+- **Action Result Types** - New `src/lib/types/action-result.ts` for server actions
+  - `ActionResult` base type for success/error responses
+  - `ActionResultWithData<T>` for actions that return data
+  - `ActionResultWithId` for create operations returning IDs
+  - `ActionResultWithUrl` for URL generation actions
+  - `ActionResultWithMessage` for user-facing message responses
+  - Helper functions `successResult()` and `errorResult()`
+  - Applied to `appearance.ts` as demonstration pattern
+
+- **Error Boundaries** - Added missing error.tsx files for route groups
+  - Added `(marketing)/error.tsx` for public pages
+  - Added `(auth)/error.tsx` for authentication pages
+  - Added `(onboarding)/error.tsx` for setup flow
+  - Added `(field)/error.tsx` for field worker app
+
+- **Performance - Leads Page** - Added memoization for list rendering
+  - Created memoized `LeadRow` component with React.memo
+  - Added `CombinedInquiry` type for better type inference
+  - Added `handleViewInquiry` with useCallback for stable callback reference
+  - Reduces unnecessary re-renders when filtering/searching large lead lists
+
+### Fixed
+- **Build Errors** - Fixed pre-existing type errors blocking builds
+  - Added missing `getUserOrganization` export to `@/lib/auth/clerk`
+  - Fixed nullable `searchParams` access in email settings page
+  - Fixed comment syntax in cron job route (escaped `*/5` pattern)
+  - Fixed duplicate `accountId` property spread order in email-sync cron
+  - Fixed `hasMessageAttachments` type signature for Gmail payload
+  - Fixed `sendNewEmail` call signature mismatch in inbox-page-client
   - Updated `invoice-pdf.ts` with ReactElement type for createPdfElement helper
   - Updated `contract-pdf.ts` with ReactElement type for createPdfElement helper
   - Added documentation explaining react-pdf type compatibility

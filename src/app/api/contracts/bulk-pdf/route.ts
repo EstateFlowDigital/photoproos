@@ -7,10 +7,7 @@ import { ContractPdf } from "@/lib/pdf/templates/contract-pdf";
 import React from "react";
 import JSZip from "jszip";
 import { format } from "date-fns";
-
-// Type assertion helper for react-pdf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createPdfElement = (component: any) => component as any;
+import { createPdfElement, getOrganizationLogoUrl } from "@/lib/pdf/utils";
 
 /**
  * POST /api/contracts/bulk-pdf
@@ -92,10 +89,8 @@ export async function POST(request: NextRequest) {
         const sentAt = contract.sentAt ? format(contract.sentAt, "MMMM d, yyyy") : null;
         const signedAt = contract.signedAt ? format(contract.signedAt, "MMMM d, yyyy") : null;
 
-        // Determine logo URL
-        const logoUrl = contract.organization?.logoLightUrl
-          || contract.organization?.logoUrl
-          || null;
+        // Determine logo URL using shared utility
+        const logoUrl = getOrganizationLogoUrl(contract.organization);
 
         // Generate PDF
         const pdfBuffer = await renderToBuffer(

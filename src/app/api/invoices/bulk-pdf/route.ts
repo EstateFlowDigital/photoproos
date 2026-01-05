@@ -7,10 +7,7 @@ import { InvoicePdf } from "@/lib/pdf/templates/invoice-pdf";
 import React from "react";
 import QRCode from "qrcode";
 import JSZip from "jszip";
-
-// Type assertion helper for react-pdf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createPdfElement = (component: any) => component as any;
+import { createPdfElement, formatPdfDate, getOrganizationLogoUrl } from "@/lib/pdf/utils";
 
 /**
  * POST /api/invoices/bulk-pdf
@@ -81,15 +78,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No invoices found" }, { status: 404 });
     }
 
-    // Format date helper
-    const formatDate = (date: Date): string => {
-      return new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }).format(date);
-    };
-
     // Create ZIP file
     const zip = new JSZip();
 
@@ -105,11 +93,8 @@ export async function POST(request: NextRequest) {
         // Build payment URL
         const paymentUrl = invoice.paymentLinkUrl || null;
 
-        // Determine logo URL
-        const logoUrl = invoice.organization?.invoiceLogoUrl
-          || invoice.organization?.logoLightUrl
-          || invoice.organization?.logoUrl
-          || null;
+        // Determine logo URL using shared utility
+        const logoUrl = getOrganizationLogoUrl(invoice.organization);
 
         // Generate QR code if needed
         let qrCodeDataUrl: string | null = null;
@@ -131,8 +116,8 @@ export async function POST(request: NextRequest) {
             React.createElement(InvoicePdf, {
               invoiceNumber: invoice.invoiceNumber,
               status: displayStatus,
-              issueDate: formatDate(invoice.issueDate),
-              dueDate: formatDate(invoice.dueDate),
+              issueDate: formatPdfDate(invoice.issueDate),
+              dueDate: formatPdfDate(invoice.dueDate),
               clientName: invoice.clientName || "Unknown Client",
               clientEmail: invoice.clientEmail,
               clientAddress: invoice.clientAddress,
@@ -160,7 +145,7 @@ export async function POST(request: NextRequest) {
               payments: invoice.payments.map((payment) => ({
                 id: payment.id,
                 amountCents: payment.amountCents,
-                paidAt: payment.paidAt ? formatDate(payment.paidAt) : null,
+                paidAt: payment.paidAt ? formatPdfDate(payment.paidAt) : null,
                 description: payment.description,
               })),
               accentColor: invoice.organization?.primaryColor || "#3b82f6",

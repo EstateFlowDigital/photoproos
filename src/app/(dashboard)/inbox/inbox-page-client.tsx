@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";
@@ -172,6 +172,15 @@ export function InboxPageClient({
       const result = await sendEmailReply(threadId, body);
       if (result.success) {
         showToast("Reply sent", "success");
+        // Refresh the thread to show the new message
+        const threadResult = await getEmailThread(threadId);
+        if (threadResult.success && threadResult.thread && selectedThread) {
+          setSelectedThread({
+            ...selectedThread,
+            messages: threadResult.thread.messages,
+            _count: { messages: threadResult.thread.messages.length },
+          });
+        }
         router.refresh();
       } else {
         showToast(result.error || "Failed to send reply", "error");
@@ -449,10 +458,15 @@ export function InboxPageClient({
         {/* Conversation View */}
         <div
           className={`flex flex-1 flex-col ${
-            selectedThread ? "flex" : "hidden lg:flex"
+            selectedThread || isLoadingThread ? "flex" : "hidden lg:flex"
           }`}
         >
-          {selectedThread ? (
+          {isLoadingThread && !selectedThread ? (
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <Loader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
+              <p className="mt-4 text-sm text-foreground-muted">Loading conversation...</p>
+            </div>
+          ) : selectedThread ? (
             <ConversationView
               thread={selectedThread}
               onBack={() => setSelectedThread(null)}
@@ -653,6 +667,14 @@ function ConversationView({
   isPending: boolean;
 }) {
   const [replyText, setReplyText] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when thread opens or new messages arrive
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [thread.messages.length]);
 
   const handleSendReply = () => {
     if (!replyText.trim()) return;
@@ -732,6 +754,7 @@ function ConversationView({
           {thread.messages.map((message) => (
             <MessageBubble key={message.id} message={message} formatTimeAgo={formatTimeAgo} />
           ))}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
@@ -741,7 +764,13 @@ function ConversationView({
           <textarea
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Type your reply..."
+            onKeyDown={(e) => {
+              if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && replyText.trim() && !isPending) {
+                e.preventDefault();
+                handleSendReply();
+              }
+            }}
+            placeholder="Type your reply... (⌘+Enter to send)"
             rows={3}
             className="w-full resize-none border-0 bg-transparent p-4 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-0"
           />
@@ -856,8 +885,26 @@ function ComposeModal({
     onSend(to, subject, body, fromAccountId);
   };
 
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isPending) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, isPending]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isPending) {
+          onClose();
+        }
+      }}
+    >
       <div className="w-full max-w-2xl rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
@@ -915,7 +962,13 @@ function ComposeModal({
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Type your message..."
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && to && subject && !isPending) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Type your message... (⌘+Enter to send)"
               rows={8}
               className="mt-1 w-full resize-none rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />

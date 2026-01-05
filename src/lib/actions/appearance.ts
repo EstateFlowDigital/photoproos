@@ -4,15 +4,12 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, FONT_SIZE_OPTIONS, SIDEBAR_POSITION_OPTIONS, DEFAULT_APPEARANCE, type AppearancePreferences } from "@/lib/appearance-types";
+import type { ActionResult, ActionResultWithData } from "@/lib/types/action-result";
 
 /**
  * Get user's appearance preferences
  */
-export async function getAppearancePreferences(): Promise<{
-  success: boolean;
-  data?: AppearancePreferences;
-  error?: string;
-}> {
+export async function getAppearancePreferences(): Promise<ActionResultWithData<AppearancePreferences>> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -69,7 +66,7 @@ export async function getAppearancePreferences(): Promise<{
  */
 export async function updateAppearancePreferences(
   preferences: Partial<AppearancePreferences>
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -189,7 +186,7 @@ export async function updateAppearancePreferences(
  */
 export async function applyThemePreset(
   presetId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionResult> {
   const preset = THEME_PRESETS.find((p) => p.id === presetId);
   if (!preset) {
     return { success: false, error: "Invalid theme preset" };
@@ -204,10 +201,7 @@ export async function applyThemePreset(
 /**
  * Reset all appearance preferences to defaults
  */
-export async function resetAppearancePreferences(): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+export async function resetAppearancePreferences(): Promise<ActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
