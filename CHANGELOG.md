@@ -37,6 +37,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `/src/app/(dashboard)/settings/watermarks/page.tsx` - Template settings page
   - Created `/src/app/(dashboard)/settings/watermarks/watermark-templates-client.tsx` - Template manager UI
 
+- **Gallery Expiration UI: Set and Manage Gallery Expiration Dates** - User-facing controls for gallery lifecycle
+  - Expiration picker in gallery creation form (never, 30/60/90 days, custom date)
+  - Expiration management in gallery edit form with smart detection of existing dates
+  - Calculate expiration dates automatically based on selected options
+  - Support for custom expiration dates with date picker
+  - Expiring galleries dashboard widget showing galleries expiring in next 7 days
+  - Color-coded urgency indicators (red for 1 day, yellow for 2-3 days, blue for 4-7 days)
+  - Direct links from dashboard widget to gallery pages
+  - Backend already complete with automated expiration emails and cron jobs
+  - Modified `/src/app/(dashboard)/galleries/new/gallery-new-form.tsx` - Add expiration picker
+  - Modified `/src/app/(dashboard)/galleries/[id]/edit/gallery-edit-form.tsx` - Add expiration management
+  - Created `/src/components/dashboard/expiring-galleries-widget.tsx` - Dashboard widget
+
 ### Fixed
 - **UX: Eliminated Page Reloads** - Replaced jarring full-page reloads with smooth React state updates
   - Fixed field app (mobile PWA) check-in/check-out actions - now uses router.refresh() with success toasts
