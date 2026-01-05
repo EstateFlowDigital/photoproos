@@ -112,6 +112,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `handleViewInquiry` with useCallback for stable callback reference
   - Reduces unnecessary re-renders when filtering/searching large lead lists
 
+- **Type Safety - Prisma Where Clauses** - Replaced `any` types with proper Prisma types
+  - Updated `integration-logs.ts` to use `Prisma.IntegrationLogWhereInput`
+  - Updated `email-logs.ts` to use `Prisma.EmailLogWhereInput`
+  - Improved type inference for dynamic filter building
+
+- **Type Safety - Enum Types** - Replaced `any` casts with proper enum types
+  - Updated `onboarding.ts` to use `Industry` enum from Prisma client
+  - Updated `watermark-templates-client.tsx` with `WatermarkPosition` type
+  - Updated `seed.ts` with proper Prisma enum imports:
+    - `ServiceCategory` for service categories
+    - `ActivityType` for activity logs
+    - `NotificationType` for notifications
+    - `EquipmentCategory` for equipment
+    - `AvailabilityBlockType` for availability blocks
+    - `TaskStatus` and `TaskPriority` for tasks
+  - Derived types from const arrays for better type safety
+
+- **Type Safety - PDF Actions** - Applied shared PDF utilities across all PDF actions
+  - Updated `analytics-report.ts` with `createPdfElement` utility
+  - Updated `marketing-assets.ts` with `createPdfElement` utility
+  - Updated `portal-downloads.ts` with `createPdfElement` utility
+
 ### Fixed
 - **Build Errors** - Fixed pre-existing type errors blocking builds
   - Added missing `getUserOrganization` export to `@/lib/auth/clerk`
