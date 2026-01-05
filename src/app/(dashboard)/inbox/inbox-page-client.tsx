@@ -355,6 +355,7 @@ export function InboxPageClient({
           </button>
           <Link
             href="/settings/email"
+            aria-label="Email settings"
             className="inline-flex items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
           >
             <Settings className="h-4 w-4" />
@@ -689,6 +690,7 @@ function ConversationView({
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
+            aria-label="Back to inbox"
             className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground lg:hidden"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -720,6 +722,7 @@ function ConversationView({
             disabled={isPending}
             className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
             title={thread.isStarred ? "Unstar" : "Star"}
+            aria-label={thread.isStarred ? "Remove star" : "Star conversation"}
           >
             {thread.isStarred ? (
               <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
@@ -732,6 +735,7 @@ function ConversationView({
             disabled={isPending}
             className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
             title={thread.isArchived ? "Unarchive" : "Archive"}
+            aria-label={thread.isArchived ? "Unarchive conversation" : "Archive conversation"}
           >
             {thread.isArchived ? (
               <ArchiveRestore className="h-5 w-5" />
@@ -742,6 +746,7 @@ function ConversationView({
           <button
             className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
             title="More actions"
+            aria-label="More actions"
           >
             <MoreHorizontal className="h-5 w-5" />
           </button>
@@ -776,10 +781,16 @@ function ConversationView({
           />
           <div className="flex items-center justify-between border-t border-[var(--card-border)] px-4 py-2">
             <div className="flex items-center gap-1">
-              <button className="rounded p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground">
+              <button
+                aria-label="Attach file"
+                className="rounded p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+              >
                 <Paperclip className="h-4 w-4" />
               </button>
-              <button className="rounded p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground">
+              <button
+                aria-label="Insert link"
+                className="rounded p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+              >
                 <Link2 className="h-4 w-4" />
               </button>
             </div>
@@ -905,15 +916,21 @@ function ComposeModal({
         }
       }}
     >
-      <div className="w-full max-w-2xl rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="compose-modal-title"
+        className="w-full max-w-2xl rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
-          <h2 className="font-medium text-foreground">New Message</h2>
+          <h2 id="compose-modal-title" className="font-medium text-foreground">New Message</h2>
           <button
             onClick={onClose}
+            aria-label="Close compose dialog"
             className="rounded-lg p-1 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -978,10 +995,16 @@ function ComposeModal({
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-[var(--card-border)] px-4 py-3">
           <div className="flex items-center gap-1">
-            <button className="rounded p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground">
+            <button
+              aria-label="Attach file"
+              className="rounded p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+            >
               <Paperclip className="h-5 w-5" />
             </button>
-            <button className="rounded p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground">
+            <button
+              aria-label="Insert link"
+              className="rounded p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+            >
               <Link2 className="h-5 w-5" />
             </button>
           </div>
