@@ -8,10 +8,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoicePdf } from "@/lib/pdf/templates/invoice-pdf";
 import React from "react";
 import QRCode from "qrcode";
-
-// Type assertion helper for react-pdf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createPdfElement = (component: any) => component as any;
+import { createPdfElement, formatPdfDate, getOrganizationLogoUrl } from "@/lib/pdf/utils";
 
 /**
  * Get a download URL for all photos in a gallery as a ZIP file

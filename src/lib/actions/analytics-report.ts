@@ -12,10 +12,7 @@ import {
   startOfYear,
   format,
 } from "date-fns";
-
-// Type assertion helper for react-pdf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createPdfElement = (component: any) => component as any;
+import { createPdfElement } from "@/lib/pdf/utils";
 
 async function getOrganizationWithDetails(): Promise<{
   id: string;

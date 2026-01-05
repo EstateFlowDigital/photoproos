@@ -6,10 +6,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { FlyerPortrait } from "@/lib/marketing/templates/flyer-portrait";
 import { SocialSquare } from "@/lib/marketing/templates/social-square";
 import React from "react";
-
-// Type assertion helper for react-pdf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createPdfElement = (component: any) => component as any;
+import { createPdfElement } from "@/lib/pdf/utils";
 
 export type MarketingAssetType =
   | "flyer_portrait"
