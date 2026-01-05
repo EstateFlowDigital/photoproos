@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import { StatCard, ActivityItem, PageHeader, QuickActions, UpcomingBookings, EmptyGalleries, OnboardingChecklist, ReferralWidget, CollapsibleSection, DashboardCustomizePanel } from "@/components/dashboard";
+import { ExpiringGalleriesWidget } from "@/components/dashboard/expiring-galleries-widget";
 import { getChecklistItems } from "@/lib/utils/checklist-items";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { TourStarter } from "@/components/tour";
@@ -10,6 +11,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { DashboardCalendar, DashboardCalendarEvent } from "@/components/dashboard/dashboard-calendar";
 import { getDashboardConfig } from "@/lib/actions/dashboard";
+import { getExpiringSoonGalleries } from "@/lib/actions/gallery-expiration";
 import { isSectionVisible, isSectionCollapsed, type DashboardConfig } from "@/lib/dashboard-types";
 
 // Icons
@@ -164,6 +166,7 @@ export default async function DashboardPage() {
     calendarOpenHouses,
     platformReferrer,
     dashboardConfigResult,
+    expiringGalleriesResult,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -328,12 +331,16 @@ export default async function DashboardPage() {
 
     // Dashboard config
     getDashboardConfig(),
+
+    // Expiring galleries
+    getExpiringSoonGalleries(),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
   const lastMonthRevenueValue = lastMonthRevenue._sum.totalCents || 0;
   const pendingInvoicesValue = pendingInvoices._sum.totalCents || 0;
   const dashboardConfig = dashboardConfigResult.data!;
+  const expiringGalleries = expiringGalleriesResult.data || [];
 
   // Calculate changes for stats
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
@@ -533,6 +540,9 @@ export default async function DashboardPage() {
               <UpcomingBookings bookings={formattedBookings} />
             </CollapsibleSection>
           )}
+
+          {/* Expiring Galleries */}
+          {expiringGalleries.length > 0 && <ExpiringGalleriesWidget galleries={expiringGalleries} />}
 
           {/* Recent Activity */}
           {isSectionVisible(dashboardConfig, "recent-activity") && (

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 import { addDays, differenceInDays } from "date-fns";
 
 // =============================================================================
@@ -255,6 +256,11 @@ export async function extendGalleryExpiration(
         await scheduleExpirationNotifications(projectId, client.email, newExpiry);
       }
     }
+
+    // Revalidate relevant pages
+    revalidatePath("/dashboard");
+    revalidatePath("/galleries");
+    revalidatePath(`/galleries/${projectId}`);
 
     return { success: true, data: { newExpiresAt: newExpiry } };
   } catch (error) {

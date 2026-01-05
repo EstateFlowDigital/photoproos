@@ -1345,40 +1345,124 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         <div
           className="border-b"
           style={{
-            backgroundColor: expirationCountdown.expired ? "rgba(239, 68, 68, 0.1)" : "rgba(249, 115, 22, 0.1)",
-            borderColor: expirationCountdown.expired ? "rgba(239, 68, 68, 0.3)" : "rgba(249, 115, 22, 0.3)",
+            backgroundColor: expirationCountdown.expired
+              ? "rgba(239, 68, 68, 0.1)"
+              : expirationCountdown.days <= 1
+              ? "rgba(239, 68, 68, 0.1)"
+              : expirationCountdown.days <= 3
+              ? "rgba(249, 115, 22, 0.1)"
+              : "rgba(59, 130, 246, 0.1)",
+            borderColor: expirationCountdown.expired
+              ? "rgba(239, 68, 68, 0.3)"
+              : expirationCountdown.days <= 1
+              ? "rgba(239, 68, 68, 0.3)"
+              : expirationCountdown.days <= 3
+              ? "rgba(249, 115, 22, 0.3)"
+              : "rgba(59, 130, 246, 0.3)",
           }}
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex items-center gap-3">
-              <ClockIcon
-                className={cn(
-                  "h-5 w-5",
-                  expirationCountdown.expired ? "text-red-500" : "text-orange-500"
-                )}
-              />
-              <div>
-                {expirationCountdown.expired ? (
-                  <p className="font-medium" style={{ color: "#ef4444" }}>
-                    This gallery has expired and downloads are no longer available.
-                  </p>
-                ) : (
-                  <>
-                    <p className="font-medium" style={{ color: "#f97316" }}>
-                      This gallery will expire soon!
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <ClockIcon
+                  className={cn(
+                    "h-5 w-5",
+                    expirationCountdown.expired || expirationCountdown.days <= 1
+                      ? "text-red-500"
+                      : expirationCountdown.days <= 3
+                      ? "text-orange-500"
+                      : "text-blue-500"
+                  )}
+                />
+                <div>
+                  {expirationCountdown.expired ? (
+                    <p className="font-medium" style={{ color: "#ef4444" }}>
+                      This gallery has expired and downloads are no longer available.
                     </p>
-                    <p className="text-sm" style={{ color: colors.mutedColor }}>
-                      Download your photos before{" "}
-                      {new Date(gallery.expiresAt!).toLocaleDateString(undefined, {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </>
-                )}
+                  ) : expirationCountdown.days === 0 ? (
+                    <>
+                      <p className="font-medium" style={{ color: "#ef4444" }}>
+                        This gallery expires today!
+                      </p>
+                      <p className="text-sm" style={{ color: colors.mutedColor }}>
+                        Download your photos before{" "}
+                        {new Date(gallery.expiresAt!).toLocaleDateString(undefined, {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </>
+                  ) : expirationCountdown.days === 1 ? (
+                    <>
+                      <p className="font-medium" style={{ color: "#ef4444" }}>
+                        This gallery expires tomorrow!
+                      </p>
+                      <p className="text-sm" style={{ color: colors.mutedColor }}>
+                        Download your photos before{" "}
+                        {new Date(gallery.expiresAt!).toLocaleDateString(undefined, {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </>
+                  ) : expirationCountdown.days <= 3 ? (
+                    <>
+                      <p className="font-medium" style={{ color: "#f97316" }}>
+                        This gallery expires in {expirationCountdown.days} days
+                      </p>
+                      <p className="text-sm" style={{ color: colors.mutedColor }}>
+                        Download your photos before{" "}
+                        {new Date(gallery.expiresAt!).toLocaleDateString(undefined, {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-medium" style={{ color: "#3b82f6" }}>
+                        This gallery expires in {expirationCountdown.days} days
+                      </p>
+                      <p className="text-sm" style={{ color: colors.mutedColor }}>
+                        Expires on{" "}
+                        {new Date(gallery.expiresAt!).toLocaleDateString(undefined, {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
+              {!gallery.isPaid && gallery.price > 0 && !expirationCountdown.expired && (
+                <button
+                  onClick={() => {
+                    const paymentSection = document.getElementById("payment-section");
+                    paymentSection?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    backgroundColor: primaryColor,
+                    color: "#ffffff",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = "0.9";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = "1";
+                  }}
+                >
+                  Purchase Now
+                </button>
+              )}
             </div>
           </div>
         </div>
