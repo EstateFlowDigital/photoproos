@@ -10,7 +10,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { WaitlistStatus } from "@prisma/client";
+import { WaitlistStatus, Prisma } from "@prisma/client";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -76,7 +76,7 @@ export async function getWaitlistEntries(
     const limit = options?.limit || 50;
     const offset = options?.offset || 0;
 
-    const where: Parameters<typeof prisma.bookingWaitlist.findMany>[0]["where"] = {
+    const where: Prisma.BookingWaitlistWhereInput = {
       organizationId,
     };
 
@@ -184,7 +184,7 @@ export async function addToWaitlist(
     await prisma.activityLog.create({
       data: {
         organizationId,
-        type: "lead_received",
+        type: "client_added",
         description: `${input.clientName} added to waitlist for ${input.preferredDate.toLocaleDateString()}`,
         clientId: input.clientId || null,
       },
@@ -682,7 +682,7 @@ export async function getWaitlistMatches(): Promise<
               gte: new Date(entry.preferredDate.setHours(0, 0, 0, 0)),
               lt: new Date(entry.preferredDate.setHours(23, 59, 59, 999)),
             },
-            status: { notIn: ["cancelled", "no_show"] },
+            status: { notIn: ["cancelled"] },
           },
         });
 

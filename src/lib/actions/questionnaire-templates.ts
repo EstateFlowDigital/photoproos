@@ -20,7 +20,11 @@ import {
   type QuestionnaireAgreement,
 } from "@/lib/validations/questionnaires";
 import { getAuthContext } from "@/lib/auth/clerk";
-import { Prisma, type Industry, type FormFieldType, type LegalAgreementType } from "@prisma/client";
+import { Prisma, Industry, LegalAgreementType } from "@prisma/client";
+import type { QuestionnaireTemplateWithRelations } from "./questionnaire-types";
+
+// Re-export the type for consumers who import from this file
+export type { QuestionnaireTemplateWithRelations } from "./questionnaire-types";
 
 // ============================================================================
 // TYPES
@@ -29,46 +33,6 @@ import { Prisma, type Industry, type FormFieldType, type LegalAgreementType } fr
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
-
-export type QuestionnaireTemplateWithRelations = {
-  id: string;
-  organizationId: string | null;
-  name: string;
-  slug: string;
-  description: string | null;
-  industry: Industry;
-  isSystemTemplate: boolean;
-  isActive: boolean;
-  usageCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-  fields: Array<{
-    id: string;
-    label: string;
-    type: FormFieldType;
-    placeholder: string | null;
-    helpText: string | null;
-    isRequired: boolean;
-    sortOrder: number;
-    section: string | null;
-    sectionOrder: number;
-    validation: unknown;
-    conditionalOn: string | null;
-    conditionalValue: string | null;
-  }>;
-  legalAgreements: Array<{
-    id: string;
-    agreementType: LegalAgreementType;
-    title: string;
-    content: string;
-    isRequired: boolean;
-    requiresSignature: boolean;
-    sortOrder: number;
-  }>;
-  _count: {
-    questionnaires: number;
-  };
-};
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -328,7 +292,7 @@ export async function updateQuestionnaireTemplate(
           data: fields.map((field, idx) => ({
             templateId: id,
             label: field.label,
-            type: field.type as FormFieldType,
+            type: field.type || "text",
             placeholder: field.placeholder ?? null,
             helpText: field.helpText ?? null,
             isRequired: field.isRequired ?? false,
@@ -580,7 +544,7 @@ export async function updateQuestionnaireFields(
           data: validated.fields.map((field, index) => ({
             templateId: validated.templateId,
             label: field.label,
-            type: field.type as FormFieldType,
+            type: field.type || "text",
             placeholder: field.placeholder,
             helpText: field.helpText,
             isRequired: field.isRequired,

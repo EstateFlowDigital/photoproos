@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Build Error Fix** - Fixed "use server" file export restrictions causing deployment failures
+  - Moved `ACQUISITION_SOURCES` constant and related types from `clients.ts` to new `lib/constants/acquisition-sources.ts`
+  - Server action files can only export async functions, not constants or objects
+  - Resolves Railway deployment build failures
+
 ### Changed
 - **Portal Client Component Refactoring** - Extracted portal-client.tsx (982 lines) into smaller, focused components
   - Created modular component architecture in `portal/components/` directory

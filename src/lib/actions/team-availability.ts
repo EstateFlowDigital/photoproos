@@ -511,7 +511,7 @@ export async function getTeamUtilization(
     });
 
     // Time-off tracking not yet implemented in schema; use empty set for now
-    const timeOff: { userId: string; startDate?: Date; endDate?: Date }[] = [];
+    const timeOff: { userId: string; startDate: Date; endDate: Date }[] = [];
 
     // Calculate per-member utilization
     const hoursPerDay = 8;
@@ -528,6 +528,7 @@ export async function getTeamUtilization(
       // Calculate capacity (working days minus time-off)
       const memberTimeOff = timeOff.filter((t) => t.userId === member.id);
       const timeOffDays = memberTimeOff.reduce((sum, t) => {
+        if (!t.startDate || !t.endDate) return sum;
         const start = new Date(Math.max(t.startDate.getTime(), startDate.getTime()));
         const end = new Date(Math.min(t.endDate.getTime(), endDate.getTime()));
         const days = Math.ceil(

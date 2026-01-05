@@ -6,11 +6,11 @@ import { getClient, updateClient, deleteClient } from "@/lib/actions/clients";
 import { ClientEditForm } from "./client-edit-form";
 
 interface ClientEditPageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default async function ClientEditPage({ params }: ClientEditPageProps) {
-  const { id } = await params;
+  const { id } = params;
   const client = await getClient(id);
 
   if (!client) {

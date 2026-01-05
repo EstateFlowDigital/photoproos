@@ -10,12 +10,15 @@ import {
   type SaveQuestionnaireProgressInput,
   type AcceptAgreementInput,
 } from "@/lib/validations/questionnaires";
-import type { ClientQuestionnaireStatus, LegalAgreementType, FormFieldType, SignatureType } from "@prisma/client";
 import { sendQuestionnaireCompletedEmail } from "@/lib/email/send";
 import {
   createEmailLog,
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
+import type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
+
+// Re-export the type for consumers who import from this file
+export type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
 
 // ============================================================================
 // TYPES
@@ -24,72 +27,6 @@ import {
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
-
-export type PortalQuestionnaireWithRelations = {
-  id: string;
-  templateId: string;
-  isRequired: boolean;
-  dueDate: Date | null;
-  status: ClientQuestionnaireStatus;
-  startedAt: Date | null;
-  completedAt: Date | null;
-  createdAt: Date;
-  template: {
-    id: string;
-    name: string;
-    description: string | null;
-    industry: string;
-    fields: Array<{
-      id: string;
-      label: string;
-      type: FormFieldType;
-      placeholder: string | null;
-      helpText: string | null;
-      isRequired: boolean;
-      sortOrder: number;
-      section: string | null;
-      sectionOrder: number;
-      validation: unknown;
-      conditionalOn: string | null;
-      conditionalValue: string | null;
-    }>;
-    legalAgreements: Array<{
-      id: string;
-      agreementType: LegalAgreementType;
-      title: string;
-      content: string;
-      isRequired: boolean;
-      requiresSignature: boolean;
-      sortOrder: number;
-    }>;
-  };
-  booking: {
-    id: string;
-    title: string;
-    startTime: Date;
-  } | null;
-  project: {
-    id: string;
-    name: string;
-  } | null;
-  responses: Array<{
-    id: string;
-    fieldLabel: string;
-    fieldType: string;
-    value: unknown;
-    createdAt: Date;
-  }>;
-  agreements: Array<{
-    id: string;
-    agreementType: LegalAgreementType;
-    title: string;
-    content: string;
-    accepted: boolean;
-    acceptedAt: Date | null;
-    signatureData: string | null;
-    signatureType: SignatureType | null;
-  }>;
-};
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -374,7 +311,7 @@ export async function acceptAgreement(
         accepted: true,
         acceptedAt: new Date(),
         signatureData: validated.signatureData,
-        signatureType: validated.signatureType as SignatureType | null,
+        signatureType: validated.signatureType ?? null,
         acceptedIp: ip,
         acceptedUserAgent: userAgent,
       },
