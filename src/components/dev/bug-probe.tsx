@@ -3,7 +3,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { X, Copy, Mic, MicOff, StickyNote, Bug, Loader2 } from "lucide-react";
+import {
+  X,
+  Copy,
+  Mic,
+  MicOff,
+  StickyNote,
+  Bug,
+  Loader2,
+  Camera,
+  Video,
+  StopCircle,
+  AlertTriangle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Only available for the developer account
@@ -20,7 +32,17 @@ type RecognitionInstance = {
   lang?: string;
 };
 
-type EntryType = "click" | "note" | "voice" | "error" | "route";
+type EntryType =
+  | "click"
+  | "note"
+  | "voice"
+  | "error"
+  | "route"
+  | "network"
+  | "nav"
+  | "overlay"
+  | "screenshot"
+  | "recording";
 
 interface Entry {
   id: string;
@@ -42,6 +64,13 @@ export function BugProbe() {
   const recognitionRef = useRef<RecognitionInstance | null>(null);
   const sessionIdRef = useRef<string>("");
   const prevPathRef = useRef<string | null>(null);
+  const navChecksRef = useRef<Array<{ timer: number; href: string }>>([]);
+  const [screenshotting, setScreenshotting] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const recordTimeoutRef = useRef<number | null>(null);
 
   // Generate session ID on client only to avoid hydration mismatch
   useEffect(() => {
@@ -80,13 +109,39 @@ export function BugProbe() {
         target.getAttribute("aria-label") ||
         target.getAttribute("data-testid") ||
         target.tagName;
-      addEntry(
-        "click",
-        label || "Unknown click",
-        anchor?.getAttribute("href")
-          ? { href: anchor.getAttribute("href") as string }
-          : undefined
-      );
+      const href = anchor?.getAttribute("href") || undefined;
+
+      // Overlay intercept detector: if something else is on top of the click target
+      const topElement = document.elementFromPoint(e.clientX, e.clientY);
+      if (
+        topElement &&
+        target &&
+        topElement !== target &&
+        !topElement.contains(target) &&
+        !target.contains(topElement)
+      ) {
+        addEntry("overlay", "Click intercepted by overlay", {
+          target: describeElement(target),
+          overlay: describeElement(topElement),
+        });
+      }
+
+      addEntry("click", label || "Unknown click", href ? { href } : undefined);
+
+      if (e.defaultPrevented && href) {
+        addEntry("nav", "Link click default prevented", { href });
+      }
+
+      // Check if navigation actually occurs within 2s
+      if (href && typeof window !== "undefined") {
+        const before = window.location.href;
+        const timer = window.setTimeout(() => {
+          if (window.location.href === before) {
+            addEntry("nav", "Navigation did not occur after click", { href });
+          }
+        }, 2000);
+        navChecksRef.current.push({ timer, href });
+      }
     };
     document.addEventListener("click", handleClick, true);
     return () => document.removeEventListener("click", handleClick, true);
@@ -115,8 +170,59 @@ export function BugProbe() {
     if (prevPathRef.current && prevPathRef.current !== pathname) {
       addEntry("route", `Navigated to ${pathname}`);
     }
+    // Clear pending nav timers on route change
+    navChecksRef.current.forEach(({ timer }) => window.clearTimeout(timer));
+    navChecksRef.current = [];
     prevPathRef.current = pathname;
   }, [isDeveloper, pathname]);
+
+  // Network monitoring (fetch + XHR)
+  useEffect(() => {
+    if (!isDeveloper) return;
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const started = Date.now();
+      try {
+        const res = await originalFetch(...args);
+        if (!res.ok) {
+          addEntry("network", `Fetch ${res.status} ${res.url}`, {
+            status: String(res.status),
+            duration: `${Date.now() - started}ms`,
+          });
+        }
+        return res;
+      } catch (err) {
+        addEntry("network", `Fetch failed: ${String(err)}`);
+        throw err;
+      }
+    };
+
+    const OriginalXHR = window.XMLHttpRequest;
+    function PatchedXHR(this: XMLHttpRequest) {
+      const xhr = new OriginalXHR();
+      let url = "";
+      const origOpen = xhr.open;
+      xhr.open = function (...openArgs: any) {
+        url = openArgs[1];
+        return origOpen.apply(xhr, openArgs as any);
+      };
+      xhr.addEventListener("loadend", function () {
+        if (xhr.status >= 400) {
+          addEntry("network", `XHR ${xhr.status} ${url}`, { status: String(xhr.status) });
+        }
+      });
+      xhr.addEventListener("error", function () {
+        addEntry("network", `XHR error ${url}`);
+      });
+      return xhr;
+    }
+    (window as any).XMLHttpRequest = PatchedXHR as any;
+
+    return () => {
+      window.fetch = originalFetch;
+      (window as any).XMLHttpRequest = OriginalXHR;
+    };
+  }, [isDeveloper]);
 
   // Speech recognition setup
   useEffect(() => {
@@ -175,17 +281,113 @@ export function BugProbe() {
     setNote("");
   };
 
+  const captureScreenshot = async () => {
+    if (screenshotting) return;
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      addEntry("error", "Screen capture not supported by this browser");
+      return;
+    }
+    setScreenshotting(true);
+    let stream: MediaStream | null = null;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const track = stream.getVideoTracks()[0];
+      const capture = (window as any).ImageCapture ? new (window as any).ImageCapture(track) : null;
+      let dataUrl = "";
+      if (capture?.grabFrame) {
+        const frame = await capture.grabFrame();
+        const canvas = document.createElement("canvas");
+        canvas.width = frame.width;
+        canvas.height = frame.height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(frame, 0, 0);
+          dataUrl = canvas.toDataURL("image/png");
+        }
+      } else {
+        const video = document.createElement("video");
+        video.srcObject = stream;
+        await video.play();
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(video, 0, 0);
+          dataUrl = canvas.toDataURL("image/png");
+        }
+        video.pause();
+      }
+      addEntry("screenshot", "Screenshot captured", dataUrl ? { screenshot: dataUrl } : undefined);
+    } catch (err) {
+      addEntry("error", `Screenshot failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      stream?.getTracks().forEach((t) => t.stop());
+      setScreenshotting(false);
+    }
+  };
+
+  const startRecording = async () => {
+    if (recording) return;
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      addEntry("error", "Screen recording not supported by this browser");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      recordedChunksRef.current = [];
+      const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        setRecordedUrl(url);
+        addEntry("recording", "Screen recording captured (webm)", { url });
+        stream.getTracks().forEach((t) => t.stop());
+        setRecording(false);
+        if (recordTimeoutRef.current) {
+          window.clearTimeout(recordTimeoutRef.current);
+          recordTimeoutRef.current = null;
+        }
+      };
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setRecording(true);
+      addEntry("recording", "Screen recording started");
+      recordTimeoutRef.current = window.setTimeout(() => {
+        stopRecording(true);
+      }, 30000);
+    } catch (err) {
+      addEntry("error", `Recording failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
+
+  const stopRecording = (auto = false) => {
+    if (mediaRecorderRef.current && recording) {
+      mediaRecorderRef.current.stop();
+      addEntry("recording", auto ? "Recording stopped (auto 30s)" : "Recording stopped");
+    }
+  };
+
   const copyLog = async () => {
     try {
-      const text = entries
-        .slice()
-        .reverse()
-        .map((entry) => {
-          const time = new Date(entry.ts).toLocaleTimeString();
-          const meta = entry.meta?.href ? ` (${entry.meta.href})` : "";
-          return `[${time}] ${entry.type.toUpperCase()}: ${entry.message}${meta}`;
-        })
-        .join("\n");
+      const headerInfo = `Session: ${sessionIdRef.current.slice(0, 8)} | Path: ${pathname} | Viewport: ${window.innerWidth}x${window.innerHeight}`;
+      const text = [
+        headerInfo,
+        ...entries
+          .slice()
+          .reverse()
+          .map((entry) => {
+            const time = new Date(entry.ts).toLocaleTimeString();
+            const metaHref = entry.meta?.href ? ` (${entry.meta.href})` : "";
+            const metaStatus = entry.meta?.status ? ` [${entry.meta.status}]` : "";
+            const marker =
+              entry.meta?.screenshot ? " [screenshot]" : entry.meta?.url ? " [recording]" : "";
+            return `[${time}] ${entry.type.toUpperCase()}: ${entry.message}${metaHref}${metaStatus}${marker}`;
+          }),
+      ].join("\n");
       await navigator.clipboard.writeText(text || "No entries yet.");
       setCopyState("copied");
       setTimeout(() => setCopyState("idle"), 1500);
@@ -215,6 +417,34 @@ export function BugProbe() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {recordedUrl && (
+                <a
+                  href={recordedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] text-[var(--primary)] hover:underline"
+                >
+                  Last recording
+                </a>
+              )}
+              <button
+                onClick={captureScreenshot}
+                className="flex h-8 w-8 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
+                title="Capture screenshot"
+                disabled={screenshotting}
+              >
+                {screenshotting ? <Loader2 className="h-4 w-4 animate-spin text-[var(--primary)]" /> : <Camera className="h-4 w-4" />}
+              </button>
+              <button
+                onClick={recording ? () => stopRecording(false) : startRecording}
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-md text-[#d1d5db] hover:bg-white/10",
+                  recording ? "bg-[var(--error)]/20 text-[var(--error)]" : "bg-white/5"
+                )}
+                title={recording ? "Stop recording" : "Start 30s screen record"}
+              >
+                {recording ? <StopCircle className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+              </button>
               <button
                 onClick={copyLog}
                 className="flex h-8 w-8 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
@@ -252,9 +482,14 @@ export function BugProbe() {
                           "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase",
                           entry.type === "error"
                             ? "bg-[var(--error)]/15 text-[var(--error)]"
-                            : entry.type === "note" || entry.type === "voice"
+                            : entry.type === "note" ||
+                                entry.type === "voice" ||
+                                entry.type === "screenshot" ||
+                                entry.type === "recording"
                               ? "bg-[var(--primary)]/15 text-[var(--primary)]"
-                              : "bg-white/10 text-white"
+                              : entry.type === "network" || entry.type === "nav" || entry.type === "overlay"
+                                ? "bg-[#f59e0b]/15 text-[#f59e0b]"
+                                : "bg-white/10 text-white"
                         )}
                       >
                         {entry.type}
@@ -266,7 +501,34 @@ export function BugProbe() {
                       {entry.meta?.href && (
                         <span className="ml-1 text-[11px] text-[#9ca3af]">{entry.meta.href}</span>
                       )}
+                      {entry.meta?.status && (
+                        <span className="ml-1 text-[11px] text-[#9ca3af]">({entry.meta.status})</span>
+                      )}
                     </p>
+                    {entry.meta?.screenshot && (
+                      <div className="overflow-hidden rounded-lg border border-[rgba(255,255,255,0.08)]">
+                        <img src={entry.meta.screenshot} alt="Screenshot" className="max-h-40 w-full object-contain" />
+                      </div>
+                    )}
+                    {entry.meta?.url && (
+                      <a
+                        href={entry.meta.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] text-[var(--primary)] hover:underline"
+                      >
+                        <Video className="h-3 w-3" /> Open recording
+                      </a>
+                    )}
+                    {entry.type === "overlay" && (
+                      <div className="flex items-start gap-2 rounded-md bg-white/5 p-2 text-[11px] text-[#d1d5db]">
+                        <AlertTriangle className="h-3 w-3 text-[var(--warning)] shrink-0" />
+                        <div className="space-y-1">
+                          {entry.meta?.target && <p>Target: {entry.meta.target}</p>}
+                          {entry.meta?.overlay && <p>Overlay: {entry.meta.overlay}</p>}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -328,4 +590,17 @@ export function BugProbe() {
       )}
     </div>
   );
+}
+
+function describeElement(el: Element): string {
+  const tag = el.tagName.toLowerCase();
+  const id = el.id ? `#${el.id}` : "";
+  const cls =
+    el.className && typeof el.className === "string"
+      ? `.${el.className
+          .split(" ")
+          .filter(Boolean)
+          .join(".")}`
+      : "";
+  return `${tag}${id}${cls}`;
 }
