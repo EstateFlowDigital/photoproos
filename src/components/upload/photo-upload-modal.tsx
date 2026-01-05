@@ -419,6 +419,7 @@ export function PhotoUploadModal({
             onClick={handleCancel}
             disabled={isUploading}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
+            aria-label="Close upload dialog"
           >
             <CloseIcon className="h-5 w-5" />
           </button>

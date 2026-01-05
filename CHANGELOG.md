@@ -7,7 +7,128 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Gallery QR Codes** - Generate QR codes for delivered galleries
+  - Added QRCodeDisplay and QRCodeModal components (`components/ui/qr-code.tsx`)
+  - Canvas-based QR code rendering with customizable size and colors
+  - Download QR code as PNG, copy gallery link to clipboard
+  - Integrated into gallery detail page actions
+
+- **Photo Proof Sheets (PDF)** - Generate printable proof sheets for galleries
+  - Added PDF generation API route (`api/gallery/[id]/proof-sheet/route.ts`)
+  - Professional PDF document with 9 photos per page (3x3 grid)
+  - Header with gallery name, photographer info, and client details
+  - Photo numbering and filename display
+  - Download button integrated into gallery actions
+
+- **Client Favorites Export** - Export client favorites in multiple formats
+  - Added favorites export API route (`api/gallery/[id]/favorites-export/route.ts`)
+  - Export formats: CSV (spreadsheet), JSON (data), ZIP (with images)
+  - Dropdown menu in gallery actions for format selection
+  - Includes photo metadata and favorited date
+
+- **Gallery Heat Maps** - Visualize photo engagement within galleries
+  - Added GalleryHeatMap component (`components/analytics/gallery-heat-map.tsx`)
+  - Heat level visualization (cold to hot) based on engagement
+  - Top performers list with engagement metrics
+  - Added `getGalleryHeatMapData` server action
+
+- **Equipment Usage Tracking** - Track equipment usage across bookings
+  - Added `getEquipmentUsageStats` - usage statistics with category breakdown
+  - Added `getEquipmentUsageTimeline` - timeline data for charts
+  - Added `getUpcomingEquipmentNeeds` - upcoming equipment requirements
+  - Most/least used equipment tracking, never-used equipment alerts
+
+- **Error Boundaries** - Added error.tsx files for graceful error handling in key sections
+  - Analytics section error boundary (`app/(dashboard)/analytics/error.tsx`)
+  - Contracts section error boundary (`app/(dashboard)/contracts/error.tsx`)
+  - Settings section error boundary (`app/(dashboard)/settings/error.tsx`)
+  - Client Portal error boundary (`app/(client-portal)/error.tsx`)
+
+- Added `danger` and `danger-outline` button variants to the Button component (components/ui/button.tsx)
+  - `danger`: solid red background with white text for destructive primary actions
+  - `danger-outline`: transparent with red border/text for secondary destructive actions
+
 ### Changed
+- **Toast Notifications** - Replaced all `alert()` calls with toast notifications for better UX
+  - Added ToastProvider to client portal layout
+  - Updated portal-client.tsx with showToast for all error/success messages
+  - Updated bulk-export-button.tsx (invoices) with toast notifications
+  - Updated bulk-export-button.tsx (contracts) with toast notifications
+  - Updated bulk-pdf-button.tsx (payments) with toast notifications
+  - Updated analytics-dashboard-client.tsx with toast notifications
+  - Updated tags-management-client.tsx with toast notifications
+  - Updated recurring-invoices-client.tsx with toast notifications
+  - Updated template-form-client.tsx with toast notifications
+  - Updated templates-list-client.tsx with toast notifications
+  - Updated equipment-list.tsx with toast notifications
+
+- **Accessibility Improvements** - Added ARIA labels to icon-only buttons
+  - tags-management-client.tsx - Edit/Delete tag buttons with descriptive labels
+  - templates-list-client.tsx - Duplicate/Delete template buttons with descriptive labels
+  - photo-upload-modal.tsx - Close dialog button with aria-label
+
+- Replaced inline secondary/outline button styling with Button component in settings pages:
+  - settings/features/features-settings-form.tsx (Cancel button)
+  - settings/settings-page-client.tsx (Restart Onboarding, Export All Data, Delete Account, Cancel buttons in modals)
+  - settings/photographer-pay/page.tsx (Back link as Button)
+  - settings/branding/page.tsx (Back to Settings link as Button)
+  - settings/profile/page.tsx (Back to Settings link as Button)
+  - settings/billing/page.tsx (Back to Settings link as Button variant="outline")
+  - settings/email/page.tsx (Back to Settings link as Button variant="outline", Send Test as Button variant="secondary", Save Settings as Button variant="primary")
+  - settings/payouts/page.tsx (Pay Rates link as Button variant="outline")
+  - settings/notifications/page.tsx (Back to Settings link as Button variant="outline")
+  - settings/travel/page.tsx (Back to Settings link as Button variant="outline")
+  - settings/equipment/page.tsx (Back link as Button variant="outline")
+  - settings/sms/page.tsx (Back link as Button variant="outline")
+  - settings/sms/templates/page.tsx (Back to SMS Settings link as Button variant="outline")
+  - settings/email-logs/page.tsx (Back to Settings link, Clear and Export CSV buttons, pagination buttons as Button variant="outline")
+  - settings/dropbox/page.tsx (Back to Integrations link as Button variant="outline")
+  - settings/sms/sms-settings-client.tsx (Create Default Templates, Manage Message Templates as Button variant="outline")
+  - settings/profile/profile-settings-form.tsx (Change Password as Button variant="outline")
+  - settings/my-referrals/my-referrals-client.tsx (Back to Settings link as Button variant="outline" with asChild)
+  - settings/payments/page.tsx (Back to Settings link as Button variant="outline" with asChild)
+  - settings/team/team-page-client.tsx (Back link as Button variant="outline" with asChild)
+  - settings/branding/branding-settings-form.tsx (Upload/Remove buttons for logo, light logo, favicon, and invoice logo as Button variant="outline")
+- Refactored gallery templates modal to use Dialog component instead of custom modal implementation (settings/gallery-templates/gallery-templates-client.tsx)
+  - Create/Edit Template modal now uses Dialog with DialogHeader, DialogTitle, DialogBody, and DialogFooter
+  - Cancel button replaced with Button variant="outline"
+  - Submit button replaced with Button variant="primary"
+  - Removed custom overlay and close button in favor of Dialog's built-in behavior
+- Refactored my-referrals page modals to use Dialog component instead of custom modal implementations (settings/my-referrals/my-referrals-client.tsx)
+  - Email Invite modal now uses Dialog with DialogHeader, DialogTitle, DialogDescription, DialogBody, and DialogFooter
+  - QR Code modal now uses Dialog with DialogHeader, DialogTitle, DialogDescription, DialogBody, and DialogFooter
+  - Cancel/Close buttons replaced with Button variant="outline"
+  - Removed unused XIcon component
+- Refactored territories settings modals to use Dialog component instead of custom modal implementations (settings/territories/territories-client.tsx)
+  - Add/Edit Territory modal now uses Dialog with proper DialogHeader and DialogTitle
+  - Delete Confirmation modal now uses Dialog with DialogTitle and DialogDescription
+  - Cancel buttons replaced with Button variant="outline"
+  - Delete button replaced with Button variant="destructive"
+  - Removed unused XIcon component
+- Refactored equipment settings modal to use Dialog component instead of custom modal implementation (settings/equipment/equipment-list.tsx)
+- Replaced inline primary button styling with Button component in settings pages:
+  - settings/billing/page.tsx (Upgrade Plan, Manage Subscription, Update payment, plan buttons)
+  - settings/payouts/payouts-page-client.tsx (Create Payout Batch button)
+  - settings/notifications/page.tsx (Enable push, Save Preferences buttons)
+  - settings/settings-page-client.tsx (Download Export button)
+  - settings/profile/profile-settings-form.tsx (Upload Photo, Save Changes buttons)
+  - settings/photographer-pay/photographer-pay-client.tsx (Add Rate, Save Rate, Cancel buttons)
+  - settings/my-referrals/my-referrals-client.tsx (Copy Link, Send Invite, Download QR Code, Send Your First Invite, Start Referring buttons)
+  - settings/calendar/calendar-settings-client.tsx (Sync Now, Test Connection, Reconnect, Disconnect, Save Settings buttons)
+  - settings/referrals/referrals-client.tsx (Save Settings button)
+  - settings/dropbox/dropbox-settings-client.tsx (Test Connection, Create Folder Structure, Reconnect, Disconnect, Save Settings buttons)
+  - settings/branding/branding-settings-form.tsx (Upload button, Save Changes button)
+  - settings/developer/stripe-products.tsx (Sync Pending Products, Create Service, Create Bundle, Sync All Products buttons)
+  - settings/payments/tax-settings-form.tsx (Save Tax Settings button)
+  - settings/developer/seed-buttons.tsx (Seed Database button)
+  - settings/sms/page.tsx (Manage Templates link as Button)
+  - settings/developer/subscription-plans.tsx (Sync All to Stripe, Add Feature, Create Experiment, Add Variant, Create Plan buttons)
+  - settings/equipment/equipment-list.tsx (Add Equipment, Add Your First Equipment, form submit buttons)
+  - settings/team/team-page-client.tsx (Invite Member button)
+  - settings/photographer-pay/page.tsx (Manage Payouts link as Button)
+  - settings/territories/territories-client.tsx (Add Territory, Add First Territory, form submit buttons)
+  - settings/features/features-settings-form.tsx (Save Changes button)
 - Added `border-2 border-[var(--card-border)]` to icon containers in settings pages for visual consistency:
   - settings/page.tsx (settings card icons)
   - settings/email/page.tsx (Sender Information, Email Notifications, Test Email icons)
@@ -29,6 +150,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - team/[id]/capabilities/capabilities-form.tsx (user header avatar)
 
 ### Added
+- **Client Activity Timeline** - Comprehensive activity timeline on client detail pages showing payments, galleries, emails, bookings, and communications with relative time formatting and status badges
+
+- **Gallery Templates** - Reusable preset system for gallery settings
+  - New settings page at `/settings/gallery-templates` for managing templates
+  - Template selector in gallery creation form
+  - Settings include: pricing, access control, watermarks, notifications, expiration
+  - Default template support with automatic pre-selection
+  - Usage tracking per template
+
+- **Automated Gallery Reminders** - Smart reminder system for unviewed/unpurchased galleries
+  - New email template for gallery reminders (`gallery-reminder.tsx`)
+  - Cron job endpoint at `/api/cron/gallery-reminders`
+  - Configurable reminder intervals (default: 2 days after delivery, then every 3 days)
+  - Maximum 3 reminders per gallery
+  - Per-gallery reminder enable/disable toggle
+  - Reminder type detection: "not viewed" vs "not paid"
+
+- **Gallery Collections/Sub-albums** - Organize photos within galleries
+  - New `GalleryCollection` model for grouping photos
+  - Asset collection assignment with `collectionId` field
+  - Server actions for CRUD operations on collections
+  - Collection reordering support
+  - Cover photo selection per collection
+
+- **Photo Ratings (5-star system)** - Client rating system for photos
+  - New `PhotoRating` model in database
+  - API endpoint at `/api/gallery/rating` with session-based tracking
+  - Rating UI in gallery view with hover states
+  - Average rating display with vote counts
+
+- **Enhanced Gallery Navigation**
+  - Lightbox filmstrip thumbnail strip for quick photo navigation
+  - Arrow navigation buttons in photo modal
+  - Keyboard navigation (arrow keys) in modal view
+  - Touch/swipe gesture support for mobile modal navigation
+
+- **Mobile-Optimized Photo Grid** - Responsive grid improvements
+  - 2-column grid on mobile with smaller gaps
+  - Progressive column increase for larger screens (2 → 3 → 4 → 5 columns)
+
+- **PWA Support** - Progressive Web App configuration
+  - Site manifest at `/public/site.webmanifest`
+  - App shortcuts for Dashboard, Galleries, and Scheduling
+  - Mobile field app manifest at `/public/manifest.json`
+
 - **Settings Area Comprehensive Overhaul**
   - **Settings Sidebar Navigation** - New 260px sidebar with collapsible category sections and active state highlighting
   - **Settings Mobile Navigation** - Slide-over drawer for mobile screens with backdrop blur and swipe-to-close
@@ -54,8 +220,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Design System Compliance**
   - **Checkbox Component** - New accessible Checkbox using Radix UI with proper dark mode contrast
+  - **Button Component** - Added `primary` variant with blue styling (`bg-[var(--primary)]`)
   - Replaced 8+ custom toggle implementations with standardized Switch component
+  - Replaced 40+ inline button stylings with Button component across settings files
   - Fixed checkbox visibility/contrast issues in dark mode across settings files
+  - Fixed radio button visibility/contrast issues in dark mode with `border-2 border-[var(--border-visible)]`
   - Replaced native checkboxes with Checkbox component in email-logs page (select all & individual row selection)
   - Replaced native checkbox with Checkbox component in territories-client.tsx (isActive toggle)
   - Replaced native checkbox with Checkbox component in payouts-page-client.tsx (photographer selection)
@@ -155,7 +324,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Navigation shortcuts** - Cmd/Ctrl+Shift+letter to navigate (⌘⇧D Dashboard, ⌘⇧G Galleries, ⌘⇧C Clients, etc.)
   - **Command palette** - Cmd/Ctrl+K opens the command palette for global search
   - **Quick create** - Cmd/Ctrl+Shift+N creates new item (gallery or booking based on context)
-  - **Help shortcut** - Press ? to view all keyboard shortcuts
+  - **Help shortcut** - Cmd/Ctrl+/ to view all keyboard shortcuts
+  - **Platform-aware display** - Shortcuts modal shows ⌘ on Mac, Ctrl on Windows/Linux
   - Full support for 11 navigation destinations: Dashboard, Galleries, Clients, Payments, Scheduling, Invoices, Contracts, Properties, Services, Analytics, Settings
   - Context-aware shortcuts that only trigger when not typing in input fields
 

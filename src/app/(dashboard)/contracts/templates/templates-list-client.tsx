@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import { duplicateContractTemplate, deleteContractTemplate } from "@/lib/actions/contract-templates";
 import type { ContractTemplateWithCount } from "@/lib/actions/contract-templates";
 
@@ -13,6 +14,7 @@ interface TemplatesListClientProps {
 
 export function TemplatesListClient({ templates }: TemplatesListClientProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
@@ -28,7 +30,10 @@ export function TemplatesListClient({ templates }: TemplatesListClientProps) {
     try {
       const result = await duplicateContractTemplate(templateId);
       if (result.success) {
+        showToast("Template duplicated successfully", "success");
         router.refresh();
+      } else {
+        showToast("Failed to duplicate template", "error");
       }
     } finally {
       setIsDuplicating(null);
@@ -42,9 +47,10 @@ export function TemplatesListClient({ templates }: TemplatesListClientProps) {
     try {
       const result = await deleteContractTemplate(templateId);
       if (result.success) {
+        showToast("Template deleted successfully", "success");
         router.refresh();
       } else {
-        alert(result.error || "Failed to delete template");
+        showToast(result.error || "Failed to delete template", "error");
       }
     } finally {
       setIsDeleting(null);
@@ -132,6 +138,7 @@ export function TemplatesListClient({ templates }: TemplatesListClientProps) {
                   disabled={isDuplicating === template.id}
                   className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
                   title="Duplicate"
+                  aria-label={`Duplicate ${template.name} template`}
                 >
                   {isDuplicating === template.id ? (
                     <LoadingIcon className="h-4 w-4 animate-spin" />
@@ -149,6 +156,7 @@ export function TemplatesListClient({ templates }: TemplatesListClientProps) {
                       : "text-foreground-muted hover:bg-[var(--error)]/10 hover:border-[var(--error)]/30 hover:text-[var(--error)]"
                   )}
                   title={template._count.contracts > 0 ? "Cannot delete: template in use" : "Delete"}
+                  aria-label={template._count.contracts > 0 ? `Cannot delete ${template.name}: template in use` : `Delete ${template.name} template`}
                 >
                   {isDeleting === template.id ? (
                     <LoadingIcon className="h-4 w-4 animate-spin" />

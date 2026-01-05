@@ -351,3 +351,117 @@ export async function getOrganizationDownloadStats(
     return { success: false, error: "Failed to fetch organization download stats" };
   }
 }
+
+/**
+ * Get gallery heat map data - photo engagement for visualization
+ */
+export async function getGalleryHeatMapData(projectId: string) {
+  const organizationId = await getOrganizationId();
+  if (!organizationId) {
+    return { success: false, error: "Organization not found" };
+  }
+
+  try {
+    // Verify gallery belongs to org
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, organizationId },
+      include: {
+        assets: {
+          select: {
+            id: true,
+            filename: true,
+            thumbnailUrl: true,
+            mediumUrl: true,
+          },
+        },
+        favorites: {
+          select: {
+            assetId: true,
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      return { success: false, error: "Gallery not found" };
+    }
+
+    // Get download counts by asset
+    const downloads = await prisma.downloadLog.findMany({
+      where: {
+        projectId,
+        assetId: { not: null },
+      },
+      select: {
+        assetId: true,
+      },
+    });
+
+    // Get ratings by asset
+    const ratings = await prisma.photoRating.findMany({
+      where: {
+        projectId,
+      },
+      select: {
+        assetId: true,
+        rating: true,
+      },
+    });
+
+    // Aggregate data per photo
+    const downloadCounts = new Map<string, number>();
+    downloads.forEach((d) => {
+      if (d.assetId) {
+        downloadCounts.set(d.assetId, (downloadCounts.get(d.assetId) || 0) + 1);
+      }
+    });
+
+    const favoriteCounts = new Map<string, number>();
+    project.favorites.forEach((f) => {
+      favoriteCounts.set(f.assetId, (favoriteCounts.get(f.assetId) || 0) + 1);
+    });
+
+    const ratingData = new Map<string, { sum: number; count: number }>();
+    ratings.forEach((r) => {
+      const existing = ratingData.get(r.assetId) || { sum: 0, count: 0 };
+      ratingData.set(r.assetId, {
+        sum: existing.sum + r.rating,
+        count: existing.count + 1,
+      });
+    });
+
+    // Build heat map data
+    const heatMapData = project.assets.map((asset) => {
+      const ratingInfo = ratingData.get(asset.id);
+      const avgRating = ratingInfo ? ratingInfo.sum / ratingInfo.count : null;
+
+      return {
+        id: asset.id,
+        filename: asset.filename,
+        thumbnailUrl: asset.thumbnailUrl || asset.mediumUrl || "",
+        views: 0, // Views aren't tracked per-photo currently
+        downloads: downloadCounts.get(asset.id) || 0,
+        favorites: favoriteCounts.get(asset.id) || 0,
+        comments: 0, // Comments not tracked per-asset
+        rating: avgRating,
+      };
+    });
+
+    return {
+      success: true,
+      data: {
+        galleryName: project.name,
+        photos: heatMapData,
+        summary: {
+          totalPhotos: project.assets.length,
+          totalDownloads: Array.from(downloadCounts.values()).reduce((a: number, b: number) => a + b, 0),
+          totalFavorites: project.favorites.length,
+          totalComments: 0, // Comments not tracked at project level
+        },
+      },
+    };
+  } catch (error) {
+    console.error("[Download Tracking] Error fetching heat map data:", error);
+    return { success: false, error: "Failed to fetch heat map data" };
+  }
+}

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import {
   createContractTemplate,
   updateContractTemplate,
@@ -42,6 +44,7 @@ const TEMPLATE_VARIABLES = [
 
 export function TemplateFormClient({ mode, initialData }: TemplateFormClientProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +106,7 @@ export function TemplateFormClient({ mode, initialData }: TemplateFormClientProp
 
     const contractCount = initialData._count?.contracts || 0;
     if (contractCount > 0) {
-      alert(`Cannot delete template. It is used by ${contractCount} contract(s).`);
+      showToast(`Cannot delete template. It is used by ${contractCount} contract(s).`, "error");
       return;
     }
 
@@ -190,12 +193,10 @@ export function TemplateFormClient({ mode, initialData }: TemplateFormClientProp
               </div>
 
               <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
+                <Checkbox
                   id="isDefault"
                   checked={formData.isDefault}
-                  onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
-                  className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  onCheckedChange={(checked) => setFormData({ ...formData, isDefault: checked === true })}
                 />
                 <label htmlFor="isDefault" className="text-sm text-foreground">
                   Set as default template

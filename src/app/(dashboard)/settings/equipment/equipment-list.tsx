@@ -2,6 +2,16 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   createEquipment,
   updateEquipment,
@@ -64,6 +74,7 @@ const CATEGORY_ICONS: Record<EquipmentCategory, React.ReactNode> = {
 
 export function EquipmentList({ initialEquipment }: EquipmentListProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
@@ -146,9 +157,10 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
     startTransition(async () => {
       const result = await deleteEquipment(id);
       if (result.success) {
+        showToast("Equipment deleted successfully", "success");
         router.refresh();
       } else {
-        alert(result.error);
+        showToast(result.error || "Failed to delete equipment", "error");
       }
     });
   };
@@ -160,13 +172,10 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
     <div className="space-y-6">
       {/* Add Equipment Button */}
       <div className="flex flex-col items-stretch sm:items-end">
-        <button
-          onClick={openAddModal}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
-        >
+        <Button variant="primary" onClick={openAddModal}>
           <PlusIcon className="h-4 w-4" />
           Add Equipment
-        </button>
+        </Button>
       </div>
 
       {/* Empty State */}
@@ -179,13 +188,10 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
           <p className="text-sm text-foreground-muted mb-6 max-w-sm mx-auto">
             Track your photography equipment, assign it to team members, and link it to service requirements.
           </p>
-          <button
-            onClick={openAddModal}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
+          <Button variant="primary" onClick={openAddModal}>
             <PlusIcon className="h-4 w-4" />
             Add Your First Equipment
-          </button>
+          </Button>
         </div>
       )}
 
@@ -264,33 +270,19 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
       )}
 
       {/* Add/Edit Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="equipment-modal-title"
-          onKeyDown={(e) => {
-            if (e.key === "Escape") setIsModalOpen(false);
-          }}
-        >
-          <div
-            className="fixed inset-0 bg-black/50"
-            onClick={() => setIsModalOpen(false)}
-            aria-hidden="true"
-          />
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-            <h2 id="equipment-modal-title" className="text-lg font-semibold text-foreground mb-4">
-              {editingEquipment ? "Edit Equipment" : "Add Equipment"}
-            </h2>
-
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>{editingEquipment ? "Edit Equipment" : "Add Equipment"}</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
             {error && (
               <div className="mb-4 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-3">
                 <p className="text-sm text-[var(--error)]">{error}</p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form id="equipment-form" onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="equipment-name" className="block text-sm font-medium text-foreground mb-1.5">
                   Name <span className="text-[var(--error)]">*</span>
@@ -358,27 +350,18 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
                   className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
                 />
               </div>
-
-              <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
-                >
-                  {isPending ? "Saving..." : editingEquipment ? "Save Changes" : "Add Equipment"}
-                </button>
-              </div>
             </form>
-          </div>
-        </div>
-      )}
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" form="equipment-form" disabled={isPending}>
+              {isPending ? "Saving..." : editingEquipment ? "Save Changes" : "Add Equipment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

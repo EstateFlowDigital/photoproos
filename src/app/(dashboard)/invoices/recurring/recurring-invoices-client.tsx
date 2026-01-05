@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import {
   getRecurringInvoices,
   createRecurringInvoice,
@@ -63,6 +64,7 @@ function formatFrequency(frequency: RecurringFrequency): string {
 }
 
 export function RecurringInvoicesClient() {
+  const { showToast } = useToast();
   const [recurring, setRecurring] = useState<RecurringInvoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,9 +103,10 @@ export function RecurringInvoicesClient() {
     setActionLoading(id);
     const result = await pauseRecurringInvoice(id);
     if (result.success) {
+      showToast("Recurring invoice paused", "success");
       await fetchData();
     } else {
-      alert(result.error);
+      showToast(result.error || "Failed to pause recurring invoice", "error");
     }
     setActionLoading(null);
   };
@@ -112,9 +115,10 @@ export function RecurringInvoicesClient() {
     setActionLoading(id);
     const result = await resumeRecurringInvoice(id);
     if (result.success) {
+      showToast("Recurring invoice resumed", "success");
       await fetchData();
     } else {
-      alert(result.error);
+      showToast(result.error || "Failed to resume recurring invoice", "error");
     }
     setActionLoading(null);
   };
@@ -124,9 +128,10 @@ export function RecurringInvoicesClient() {
     setActionLoading(id);
     const result = await deleteRecurringInvoice(id);
     if (result.success) {
+      showToast("Recurring invoice deleted", "success");
       await fetchData();
     } else {
-      alert(result.error);
+      showToast(result.error || "Failed to delete recurring invoice", "error");
     }
     setActionLoading(null);
   };
@@ -144,10 +149,11 @@ export function RecurringInvoicesClient() {
     });
 
     if (result.success) {
+      showToast("Recurring invoice created", "success");
       setShowCreateModal(false);
       await fetchData();
     } else {
-      alert(result.error);
+      showToast(result.error || "Failed to create recurring invoice", "error");
     }
   };
 

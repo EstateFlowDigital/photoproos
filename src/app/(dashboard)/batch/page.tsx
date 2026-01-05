@@ -29,8 +29,8 @@ export default async function BatchProcessingPage() {
     }),
   ]);
 
-  const totalAssets = recentGalleries.reduce((sum, gallery) => sum + gallery._count.assets, 0);
-  const totalDownloads = recentGalleries.reduce((sum, gallery) => sum + gallery.downloadCount, 0);
+  const totalAssets = recentGalleries.reduce((sum: number, gallery) => sum + gallery._count.assets, 0);
+  const totalDownloads = recentGalleries.reduce((sum: number, gallery) => sum + gallery.downloadCount, 0);
 
   return (
     <div className="space-y-6">

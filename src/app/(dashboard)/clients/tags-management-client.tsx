@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 import {
   createClientTag,
   updateClientTag,
@@ -37,6 +38,7 @@ const TAG_COLORS = [
 
 export function TagsManagementClient({ tags }: TagsManagementClientProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -116,12 +118,13 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
     try {
       const result = await deleteClientTag(tagId);
       if (result.success) {
+        showToast("Tag deleted successfully", "success");
         router.refresh();
       } else {
-        alert(result.error || "Failed to delete tag");
+        showToast(result.error || "Failed to delete tag", "error");
       }
     } catch {
-      alert("An unexpected error occurred");
+      showToast("An unexpected error occurred", "error");
     }
   };
 
@@ -284,6 +287,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
                     onClick={() => handleStartEdit(tag)}
                     className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
                     title="Edit"
+                    aria-label={`Edit ${tag.name} tag`}
                   >
                     <EditIcon className="h-4 w-4" />
                   </button>
@@ -291,6 +295,7 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
                     onClick={() => handleDelete(tag.id, tag.clientCount)}
                     className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
                     title="Delete"
+                    aria-label={`Delete ${tag.name} tag`}
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>

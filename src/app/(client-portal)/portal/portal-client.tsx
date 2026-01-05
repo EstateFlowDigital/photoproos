@@ -10,7 +10,9 @@ import {
   getHighResDownload,
   getMarketingKitDownload,
   getInvoicePaymentLink,
+  getInvoicePdfDownload,
 } from "@/lib/actions/portal-downloads";
+import { useToast } from "@/components/ui/toast";
 
 interface ClientData {
   id: string;
@@ -114,6 +116,7 @@ function formatDate(date: Date | string): string {
 }
 
 export function PortalClient({ client, stats, properties, galleries, invoices, questionnaires }: PortalClientProps) {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<"properties" | "galleries" | "downloads" | "invoices" | "questionnaires">(
     // Default to questionnaires if there are pending ones
     stats.pendingQuestionnaires > 0 ? "questionnaires" : "properties"
@@ -122,6 +125,7 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
   const [downloadingGallery, setDownloadingGallery] = useState<string | null>(null);
   const [downloadType, setDownloadType] = useState<string | null>(null);
   const [payingInvoice, setPayingInvoice] = useState<string | null>(null);
+  const [downloadingInvoicePdf, setDownloadingInvoicePdf] = useState<string | null>(null);
 
   // Handle nullable fullName
   const displayName = client.fullName || client.email.split("@")[0];
@@ -163,14 +167,14 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
         } else {
-          alert("Failed to download. Please try again.");
+          showToast("Failed to download. Please try again.", "error");
         }
       } else {
-        alert(result.error || "Failed to prepare download");
+        showToast(result.error || "Failed to prepare download", "error");
       }
     } catch (error) {
       console.error("Download error:", error);
-      alert("Download failed. Please try again.");
+      showToast("Download failed. Please try again.", "error");
     } finally {
       setDownloadingGallery(null);
       setDownloadType(null);
@@ -190,13 +194,13 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
             break; // Just open first one for now
           }
         }
-        alert(`${result.photos.length} web-sized photos available. Opening in new tabs.`);
+        showToast(`${result.photos.length} web-sized photos ready for download`, "success");
       } else {
-        alert(result.error || "Failed to prepare download");
+        showToast(result.error || "Failed to prepare download", "error");
       }
     } catch (error) {
       console.error("Download error:", error);
-      alert("Download failed. Please try again.");
+      showToast("Download failed. Please try again.", "error");
     } finally {
       setDownloadingGallery(null);
       setDownloadType(null);
@@ -232,15 +236,15 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
           } else {
-            alert("Failed to download. Please try again.");
+            showToast("Failed to download. Please try again.", "error");
           }
         }
       } else {
-        alert(result.error || "Failed to prepare download");
+        showToast(result.error || "Failed to prepare download", "error");
       }
     } catch (error) {
       console.error("Download error:", error);
-      alert("Download failed. Please try again.");
+      showToast("Download failed. Please try again.", "error");
     } finally {
       setDownloadingGallery(null);
       setDownloadType(null);
@@ -254,15 +258,15 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
       // Find the property associated with this gallery
       const gallery = galleries.find((g) => g.id === galleryId);
       if (!gallery) {
-        alert("Gallery not found");
+        showToast("Gallery not found", "error");
         return;
       }
 
       // For now, show a message - full implementation would bundle PDFs
-      alert("Marketing kit download coming soon! Please check the property page for available marketing assets.");
+      showToast("Marketing kit coming soon! Check the property page for marketing assets.", "info");
     } catch (error) {
       console.error("Download error:", error);
-      alert("Download failed. Please try again.");
+      showToast("Download failed. Please try again.", "error");
     } finally {
       setDownloadingGallery(null);
       setDownloadType(null);
@@ -276,13 +280,46 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
       if (result.success && result.paymentUrl) {
         window.location.href = result.paymentUrl;
       } else {
-        alert(result.error || "Payment not available");
+        showToast(result.error || "Payment not available", "error");
       }
     } catch (error) {
       console.error("Payment error:", error);
-      alert("Failed to process payment. Please try again.");
+      showToast("Failed to process payment. Please try again.", "error");
     } finally {
       setPayingInvoice(null);
+    }
+  };
+
+  const handleInvoicePdfDownload = async (invoiceId: string) => {
+    setDownloadingInvoicePdf(invoiceId);
+    try {
+      const result = await getInvoicePdfDownload(invoiceId);
+      if (result.success && result.pdfBuffer) {
+        // Convert base64 to blob and download
+        const byteCharacters = atob(result.pdfBuffer);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = result.filename || `invoice-${invoiceId.slice(0, 8)}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        showToast(result.error || "Failed to download invoice PDF", "error");
+      }
+    } catch (error) {
+      console.error("PDF download error:", error);
+      showToast("Failed to download invoice. Please try again.", "error");
+    } finally {
+      setDownloadingInvoicePdf(null);
     }
   };
 
@@ -667,6 +704,18 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
                     >
                       {invoice.status}
                     </span>
+                    <button
+                      onClick={() => handleInvoicePdfDownload(invoice.id)}
+                      disabled={downloadingInvoicePdf === invoice.id}
+                      className="flex items-center gap-2 rounded-lg border border-[#262626] bg-[#191919] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#262626] disabled:opacity-50"
+                      title="Download PDF"
+                    >
+                      {downloadingInvoicePdf === invoice.id ? (
+                        <LoadingSpinner className="h-4 w-4" />
+                      ) : (
+                        <DownloadIcon className="h-4 w-4" />
+                      )}
+                    </button>
                     {invoice.status !== "paid" && (
                       <button
                         onClick={() => handleInvoicePayment(invoice.id)}
