@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Design System Compliance - Unsubscribe & Order Pages** - Updated public pages to use CSS variables
+  - Updated `unsubscribe/page.tsx` with background, card, border, and primary button tokens
+  - Updated `order/[slug]/confirmation/page.tsx` loading state with semantic tokens
+  - Updated `(client-portal)/error.tsx` and `(client-portal)/layout.tsx` with design tokens
+
 - **Design System Compliance - Sign/Contract Pages** - Updated contract signing pages to use CSS variables
   - Updated `sign/[token]/page.tsx` with comprehensive design token usage
   - Updated `sign/[token]/complete/page.tsx` with semantic color tokens
