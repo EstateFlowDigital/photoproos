@@ -180,10 +180,10 @@ export default function ContractSigningPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)] mx-auto mb-4" />
-          <p className="text-[#a7a7a7]">Loading contract...</p>
+          <p className="text-[var(--foreground-secondary)]">Loading contract...</p>
         </div>
       </div>
     );
@@ -191,11 +191,11 @@ export default function ContractSigningPage() {
 
   if (error && !contractData) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
-        <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] p-8 max-w-md w-full text-center">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+        <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] p-8 max-w-md w-full text-center">
           <AlertCircle className="w-12 h-12 text-[var(--error)] mx-auto mb-4" />
           <h1 className="text-xl font-semibold text-white mb-2">Unable to Load Contract</h1>
-          <p className="text-[#a7a7a7]">{error}</p>
+          <p className="text-[var(--foreground-secondary)]">{error}</p>
         </div>
       </div>
     );
@@ -207,9 +207,9 @@ export default function ContractSigningPage() {
   const primaryColor = organization?.primaryColor || "#3b82f6";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <header className="bg-[#141414] border-b border-[rgba(255,255,255,0.08)] sticky top-0 z-50">
+      <header className="bg-[var(--card)] border-b border-[var(--card-border)] sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {organization?.logoUrl ? (
@@ -228,7 +228,7 @@ export default function ContractSigningPage() {
             )}
             <span className="text-white font-medium">{organization?.name}</span>
           </div>
-          <div className="text-sm text-[#7c7c7c]">
+          <div className="text-sm text-[var(--foreground-muted)]">
             Signing as: <span className="text-white">{signer.name || signer.email}</span>
           </div>
         </div>
@@ -238,21 +238,21 @@ export default function ContractSigningPage() {
         {/* Contract Info */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">{contract.name}</h1>
-          <p className="text-[#7c7c7c]">Please review and sign this document</p>
+          <p className="text-[var(--foreground-muted)]">Please review and sign this document</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Contract Content */}
           <div className="lg:col-span-2">
-            <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.08)]">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
                 <div className="flex items-center gap-2 text-white">
                   <FileText className="w-4 h-4" />
                   <span className="font-medium">Contract Document</span>
                 </div>
                 <button
                   onClick={() => setShowContract(!showContract)}
-                  className="text-sm text-[#7c7c7c] hover:text-white transition-colors"
+                  className="text-sm text-[var(--foreground-muted)] hover:text-white transition-colors"
                 >
                   {showContract ? "Collapse" : "Expand"}
                 </button>
@@ -266,8 +266,8 @@ export default function ContractSigningPage() {
             </div>
 
             {/* Signature Section */}
-            <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] mt-6 overflow-hidden">
-              <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.08)]">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] mt-6 overflow-hidden">
+              <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <h2 className="text-white font-medium">Your Signature</h2>
               </div>
               <div className="p-6">
@@ -281,7 +281,7 @@ export default function ContractSigningPage() {
                     className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors ${
                       signatureMode === "draw"
                         ? "bg-[var(--primary)]/10 border-[var(--primary)] text-[var(--primary)]"
-                        : "border-[rgba(255,255,255,0.08)] text-[#7c7c7c] hover:text-white"
+                        : "border-[var(--card-border)] text-[var(--foreground-muted)] hover:text-white"
                     }`}
                   >
                     <Pen className="w-4 h-4" />
@@ -295,7 +295,7 @@ export default function ContractSigningPage() {
                     className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors ${
                       signatureMode === "type"
                         ? "bg-[var(--primary)]/10 border-[var(--primary)] text-[var(--primary)]"
-                        : "border-[rgba(255,255,255,0.08)] text-[#7c7c7c] hover:text-white"
+                        : "border-[var(--card-border)] text-[var(--foreground-muted)] hover:text-white"
                     }`}
                   >
                     <Type className="w-4 h-4" />
@@ -326,20 +326,20 @@ export default function ContractSigningPage() {
 
                 <button
                   onClick={clearSignature}
-                  className="text-sm text-[#7c7c7c] hover:text-white transition-colors"
+                  className="text-sm text-[var(--foreground-muted)] hover:text-white transition-colors"
                 >
                   Clear signature
                 </button>
 
                 {/* Agreement Checkbox */}
-                <div className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.08)]">
+                <div className="mt-6 pt-6 border-t border-[var(--card-border)]">
                   <label className="flex items-start gap-3 cursor-pointer">
                     <Checkbox
                       checked={hasAgreed}
                       onCheckedChange={(checked) => setHasAgreed(checked === true)}
                       className="mt-1"
                     />
-                    <span className="text-sm text-[#a7a7a7]">
+                    <span className="text-sm text-[var(--foreground-secondary)]">
                       I agree to sign this document electronically and understand that my
                       electronic signature has the same legal effect as a handwritten signature.
                     </span>
@@ -357,7 +357,7 @@ export default function ContractSigningPage() {
                   onClick={handleSubmit}
                   disabled={isSubmitting || !hasAgreed}
                   className="mt-6 w-full py-3 rounded-lg font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: isSubmitting ? "#6366f1" : primaryColor }}
+                  style={{ backgroundColor: primaryColor, opacity: isSubmitting ? 0.7 : 1 }}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
@@ -375,22 +375,22 @@ export default function ContractSigningPage() {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             {/* Signers Status */}
-            <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.08)]">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+              <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <h2 className="text-white font-medium">Signers</h2>
               </div>
               <div className="p-4 space-y-3">
                 {signers.map((s) => (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-[#1a1a1a]"
+                    className="flex items-center justify-between p-3 rounded-lg bg-[var(--background-tertiary)]"
                   >
                     <div>
                       <p className="text-white text-sm font-medium">
                         {s.name || s.email}
                       </p>
                       {s.name && (
-                        <p className="text-[#7c7c7c] text-xs">{s.email}</p>
+                        <p className="text-[var(--foreground-muted)] text-xs">{s.email}</p>
                       )}
                     </div>
                     {s.hasSigned ? (
@@ -400,7 +400,7 @@ export default function ContractSigningPage() {
                         You
                       </span>
                     ) : (
-                      <span className="text-xs text-[#7c7c7c]">Pending</span>
+                      <span className="text-xs text-[var(--foreground-muted)]">Pending</span>
                     )}
                   </div>
                 ))}
@@ -408,9 +408,9 @@ export default function ContractSigningPage() {
             </div>
 
             {/* Security Info */}
-            <div className="mt-6 p-4 bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)]">
+            <div className="mt-6 p-4 bg-[var(--card)] rounded-xl border border-[var(--card-border)]">
               <h3 className="text-white text-sm font-medium mb-2">Secure Signing</h3>
-              <p className="text-[#7c7c7c] text-xs leading-relaxed">
+              <p className="text-[var(--foreground-muted)] text-xs leading-relaxed">
                 This document is encrypted and your signature will be securely stored.
                 Your IP address and timestamp will be recorded for verification.
               </p>

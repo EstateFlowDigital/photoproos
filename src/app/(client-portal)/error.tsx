@@ -14,25 +14,25 @@ export default function ClientPortalError({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] p-6">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] p-6">
       <div className="mx-auto max-w-md text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
-          <AlertIcon className="h-8 w-8 text-red-500" />
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--error)]/10">
+          <AlertIcon className="h-8 w-8 text-[var(--error)]" />
         </div>
         <h2 className="mb-2 text-xl font-semibold text-white">
           Something went wrong
         </h2>
-        <p className="mb-6 text-sm text-gray-400">
+        <p className="mb-6 text-sm text-[var(--foreground-muted)]">
           We encountered an unexpected error. Please try again.
         </p>
         {error.digest && (
-          <p className="mb-4 text-xs text-gray-500">
+          <p className="mb-4 text-xs text-[var(--foreground-muted)]">
             Error ID: {error.digest}
           </p>
         )}
         <button
           onClick={() => reset()}
-          className="rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black transition-colors hover:bg-gray-200"
+          className="rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black transition-colors hover:bg-white/90"
         >
           Try Again
         </button>

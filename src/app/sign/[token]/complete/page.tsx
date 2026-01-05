@@ -46,10 +46,10 @@ export default function SigningCompletePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)] mx-auto mb-4" />
-          <p className="text-[#a7a7a7]">Loading...</p>
+          <p className="text-[var(--foreground-secondary)]">Loading...</p>
         </div>
       </div>
     );
@@ -57,9 +57,9 @@ export default function SigningCompletePage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
-        <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] p-8 max-w-md w-full text-center">
-          <p className="text-[#a7a7a7]">{error || "Unable to load confirmation"}</p>
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+        <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] p-8 max-w-md w-full text-center">
+          <p className="text-[var(--foreground-secondary)]">{error || "Unable to load confirmation"}</p>
         </div>
       </div>
     );
@@ -75,10 +75,10 @@ export default function SigningCompletePage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
         {/* Success Card */}
-        <div className="bg-[#141414] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
+        <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-[var(--success)]/10 to-[var(--success)]/10 border-b border-[var(--success)]/20 p-8 text-center">
             <div className="w-16 h-16 bg-[var(--success)]/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -87,7 +87,7 @@ export default function SigningCompletePage() {
             <h1 className="text-2xl font-bold text-white mb-2">
               Document Signed Successfully
             </h1>
-            <p className="text-[#a7a7a7]">
+            <p className="text-[var(--foreground-secondary)]">
               Thank you for signing this document
             </p>
           </div>
@@ -95,16 +95,16 @@ export default function SigningCompletePage() {
           {/* Details */}
           <div className="p-6 space-y-4">
             {/* Document Info */}
-            <div className="flex items-start gap-4 p-4 bg-[#1a1a1a] rounded-lg">
+            <div className="flex items-start gap-4 p-4 bg-[var(--background-tertiary)] rounded-lg">
               <div className="w-10 h-10 bg-[var(--primary)]/10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <FileText className="w-5 h-5 text-[var(--primary)]" />
               </div>
               <div>
                 <p className="text-white font-medium">{data.contractName}</p>
-                <p className="text-[#7c7c7c] text-sm mt-1">
+                <p className="text-[var(--foreground-muted)] text-sm mt-1">
                   Signed by {data.signerName}
                 </p>
-                <p className="text-[#7c7c7c] text-sm">{signedDate}</p>
+                <p className="text-[var(--foreground-muted)] text-sm">{signedDate}</p>
               </div>
             </div>
 
@@ -127,8 +127,8 @@ export default function SigningCompletePage() {
 
             {/* Organization Contact */}
             {data.organization && (
-              <div className="pt-4 border-t border-[rgba(255,255,255,0.08)]">
-                <p className="text-[#7c7c7c] text-sm mb-3">
+              <div className="pt-4 border-t border-[var(--card-border)]">
+                <p className="text-[var(--foreground-muted)] text-sm mb-3">
                   This document was sent by:
                 </p>
                 <div className="flex items-center gap-3">
@@ -161,8 +161,8 @@ export default function SigningCompletePage() {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-[#0d0d0d] border-t border-[rgba(255,255,255,0.08)]">
-            <p className="text-[#7c7c7c] text-xs text-center">
+          <div className="px-6 py-4 bg-[var(--background)] border-t border-[var(--card-border)]">
+            <p className="text-[var(--foreground-muted)] text-xs text-center">
               A confirmation email has been sent to your email address.
               Please keep it for your records.
             </p>
@@ -171,7 +171,7 @@ export default function SigningCompletePage() {
 
         {/* Security Badge */}
         <div className="mt-6 text-center">
-          <p className="text-[#7c7c7c] text-xs">
+          <p className="text-[var(--foreground-muted)] text-xs">
             Secured by PhotoProOS
           </p>
         </div>

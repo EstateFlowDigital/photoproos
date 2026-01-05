@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Design System Compliance - Sign/Contract Pages** - Updated contract signing pages to use CSS variables
+  - Updated `sign/[token]/page.tsx` with comprehensive design token usage
+  - Updated `sign/[token]/complete/page.tsx` with semantic color tokens
+  - All card, background, border, and text colors now use design system tokens
+  - Status indicators use success, warning, error semantic tokens
+
+- **Design System Compliance - Portfolio Public Pages** - Updated portfolio gate and error pages to use CSS variables
+  - Updated `portfolio/[slug]/not-found.tsx` with semantic tokens for backgrounds, borders, and text
+  - Updated `portfolio/[slug]/expired-notice.tsx` with warning token and semantic colors
+  - Updated `portfolio/[slug]/password-gate.tsx` with primary, error, and form tokens
+  - Updated `portfolio/[slug]/lead-gate.tsx` with comprehensive design token usage
+  - Preserved portfolio theming system while standardizing UI element colors
+
 - **Design System Compliance - Questionnaire Preview** - Updated preview page to use CSS variables
   - Updated `preview-client.tsx` with comprehensive design token usage
   - All card, background, border, and text colors now use semantic tokens

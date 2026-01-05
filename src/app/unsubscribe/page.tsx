@@ -117,7 +117,7 @@ function UnsubscribeContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner className="h-8 w-8 mx-auto text-white" />
           <p className="mt-4 text-white/60">Loading preferences...</p>
@@ -128,7 +128,7 @@ function UnsubscribeContent() {
 
   if (error && !preferences) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
           <div className="rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/10 p-6">
             <AlertIcon className="h-12 w-12 mx-auto text-[var(--error)]" />
@@ -146,7 +146,7 @@ function UnsubscribeContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
           <div className="rounded-xl border border-[var(--success)]/20 bg-[var(--success)]/10 p-6">
             <CheckIcon className="h-12 w-12 mx-auto text-[var(--success)]" />
@@ -162,9 +162,9 @@ function UnsubscribeContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="rounded-xl border border-white/10 bg-[#141414] p-6">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="text-center mb-6">
             <MailIcon className="h-12 w-12 mx-auto text-[var(--primary)]" />
             <h1 className="mt-4 text-xl font-semibold text-white">Email Preferences</h1>
@@ -221,7 +221,7 @@ function UnsubscribeContent() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+              className="w-full rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Preferences"}
             </button>
@@ -229,7 +229,7 @@ function UnsubscribeContent() {
             <button
               onClick={handleUnsubscribeAll}
               disabled={saving}
-              className="w-full rounded-lg border border-white/10 bg-transparent px-4 py-2.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-transparent px-4 py-2.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50"
             >
               Unsubscribe from All Emails
             </button>
@@ -356,7 +356,7 @@ export default function UnsubscribePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
           <LoadingSpinner className="h-8 w-8 text-white" />
         </div>
       }

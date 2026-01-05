@@ -33,11 +33,11 @@ export function PasswordGate({ slug, websiteName }: PasswordGateProps) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-4">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-[#262626] bg-[#141414] p-8">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8">
           {/* Lock Icon */}
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#1E1E1E]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background-elevated)]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -46,7 +46,7 @@ export function PasswordGate({ slug, websiteName }: PasswordGateProps) {
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="h-8 w-8 text-[#7C7C7C]"
+              className="h-8 w-8 text-[var(--foreground-muted)]"
             >
               <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -57,7 +57,7 @@ export function PasswordGate({ slug, websiteName }: PasswordGateProps) {
           <h1 className="mt-6 text-center text-xl font-semibold text-white">
             Password Protected
           </h1>
-          <p className="mt-2 text-center text-sm text-[#A7A7A7]">
+          <p className="mt-2 text-center text-sm text-[var(--foreground-secondary)]">
             Enter the password to view{" "}
             <span className="font-medium text-white">{websiteName}</span>
           </p>
@@ -76,18 +76,18 @@ export function PasswordGate({ slug, websiteName }: PasswordGateProps) {
                 placeholder="Enter password"
                 autoComplete="current-password"
                 autoFocus
-                className="w-full rounded-lg border border-[#313131] bg-[#0A0A0A] px-4 py-3 text-white placeholder-[#7C7C7C] outline-none transition-colors focus:border-[#3b82f6]"
+                className="w-full rounded-lg border border-[var(--background-hover)] bg-[var(--background)] px-4 py-3 text-white placeholder-[var(--foreground-muted)] outline-none transition-colors focus:border-[var(--primary)]"
               />
             </div>
 
             {error && (
-              <p className="mt-3 text-center text-sm text-[#ef4444]">{error}</p>
+              <p className="mt-3 text-center text-sm text-[var(--error)]">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={isPending || !password}
-              className="mt-4 w-full rounded-lg bg-[#3b82f6] px-4 py-3 font-medium text-white transition-colors hover:bg-[#3b82f6]/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-4 w-full rounded-lg bg-[var(--primary)] px-4 py-3 font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPending ? "Verifying..." : "View Portfolio"}
             </button>
@@ -95,7 +95,7 @@ export function PasswordGate({ slug, websiteName }: PasswordGateProps) {
         </div>
 
         {/* Footer */}
-        <p className="mt-6 text-center text-xs text-[#7C7C7C]">
+        <p className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
           If you don&apos;t have the password, please contact the photographer.
         </p>
       </div>

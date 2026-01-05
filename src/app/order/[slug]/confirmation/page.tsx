@@ -35,10 +35,10 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            <p className="text-[#7c7c7c]">Loading confirmation...</p>
+            <p className="text-[var(--foreground-muted)]">Loading confirmation...</p>
           </div>
         </div>
       }

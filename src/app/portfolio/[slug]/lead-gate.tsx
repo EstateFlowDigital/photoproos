@@ -46,9 +46,9 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0A0A0A] px-6">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-6">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#141414] p-8">
+        <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8">
           {/* Header */}
           <div className="mb-6 text-center">
             <div
@@ -58,7 +58,7 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
               <LockIcon className="h-8 w-8" style={{ color: accentColor }} />
             </div>
             <h1 className="text-2xl font-bold text-white">{websiteName}</h1>
-            <p className="mt-2 text-[#A7A7A7]">
+            <p className="mt-2 text-[var(--foreground-secondary)]">
               {message || "Enter your email to view this portfolio."}
             </p>
           </div>
@@ -66,7 +66,7 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-[#A7A7A7]">
+              <label htmlFor="name" className="block text-sm font-medium text-[var(--foreground-secondary)]">
                 Name
               </label>
               <input
@@ -75,12 +75,12 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
-                className="mt-1 w-full rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#0A0A0A] px-4 py-3 text-white placeholder-[#7C7C7C] outline-none transition-colors focus:border-[rgba(255,255,255,0.24)]"
+                className="mt-1 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 text-white placeholder-[var(--foreground-muted)] outline-none transition-colors focus:border-[var(--border-hover)]"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#A7A7A7]">
+              <label htmlFor="email" className="block text-sm font-medium text-[var(--foreground-secondary)]">
                 Email <span className="text-[var(--error)]">*</span>
               </label>
               <input
@@ -90,7 +90,7 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                className="mt-1 w-full rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#0A0A0A] px-4 py-3 text-white placeholder-[#7C7C7C] outline-none transition-colors focus:border-[rgba(255,255,255,0.24)]"
+                className="mt-1 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 text-white placeholder-[var(--foreground-muted)] outline-none transition-colors focus:border-[var(--border-hover)]"
               />
             </div>
 
@@ -109,13 +109,13 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
           </form>
 
           {/* Privacy note */}
-          <p className="mt-6 text-center text-xs text-[#7C7C7C]">
+          <p className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
             Your information will only be shared with the portfolio owner.
           </p>
         </div>
 
         {/* Powered by */}
-        <p className="mt-6 text-center text-xs text-[#7C7C7C]">
+        <p className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
           Powered by{" "}
           <a
             href="https://photoproos.com"

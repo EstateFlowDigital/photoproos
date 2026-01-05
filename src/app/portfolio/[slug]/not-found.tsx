@@ -2,12 +2,12 @@ import Link from "next/link";
 
 export default function PortfolioNotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0A0A0A] px-6">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] px-6">
       <div className="max-w-md text-center">
         {/* 404 Illustration */}
         <div className="mb-8">
           <svg
-            className="mx-auto h-32 w-32 text-[#313131]"
+            className="mx-auto h-32 w-32 text-[var(--border-visible)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -22,7 +22,7 @@ export default function PortfolioNotFound() {
         </div>
 
         <h1 className="text-4xl font-bold text-white">Portfolio Not Found</h1>
-        <p className="mt-4 text-lg text-[#A7A7A7]">
+        <p className="mt-4 text-lg text-[var(--foreground-secondary)]">
           The portfolio you&apos;re looking for doesn&apos;t exist or may have been removed.
         </p>
 
@@ -36,7 +36,7 @@ export default function PortfolioNotFound() {
           </Link>
           <button
             onClick={() => window.history.back()}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1E1E1E]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--background-elevated)]"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             Go Back
@@ -45,7 +45,7 @@ export default function PortfolioNotFound() {
 
         {/* Powered by */}
         <div className="mt-16">
-          <p className="text-xs text-[#7C7C7C]">
+          <p className="text-xs text-[var(--foreground-muted)]">
             Powered by{" "}
             <a
               href="https://photoproos.com"
