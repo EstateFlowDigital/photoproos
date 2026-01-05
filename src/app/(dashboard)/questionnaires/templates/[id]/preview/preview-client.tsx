@@ -147,12 +147,12 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
     return (
       <div className="flex items-center justify-center py-20">
         <div className={`mx-auto px-6 ${getDeviceWidth()}`}>
-          <div className="bg-[#141414] rounded-2xl border border-[#262626] p-12 text-center">
-            <div className="mx-auto h-20 w-20 rounded-full bg-[#22c55e]/20 flex items-center justify-center mb-6">
-              <CheckIcon className="h-10 w-10 text-[#22c55e]" />
+          <div className="bg-[var(--card)] rounded-2xl border border-[var(--card-border)] p-12 text-center">
+            <div className="mx-auto h-20 w-20 rounded-full bg-[var(--success)]/20 flex items-center justify-center mb-6">
+              <CheckIcon className="h-10 w-10 text-[var(--success)]" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-3">Preview Complete!</h1>
-            <p className="text-[#a7a7a7] mb-6">
+            <p className="text-[var(--foreground-secondary)] mb-6">
               This is what your clients see after submitting.
               In production, their responses would be saved.
             </p>
@@ -163,7 +163,7 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                 setAgreementStates({});
                 setSignatureStates({});
               }}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#3b82f6] px-6 py-3 text-sm font-medium text-white hover:bg-[#3b82f6]/90 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--primary)]/90 transition-colors"
             >
               <RefreshIcon className="w-4 h-4" />
               Reset Preview
@@ -178,13 +178,13 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
     <div className="py-6">
       {/* Device Selector */}
       <div className="max-w-7xl mx-auto px-4 mb-6">
-        <div className="flex items-center justify-center gap-2 p-1 bg-[#141414] rounded-lg w-fit mx-auto border border-[#262626]">
+        <div className="flex items-center justify-center gap-2 p-1 bg-[var(--card)] rounded-lg w-fit mx-auto border border-[var(--card-border)]">
           <button
             onClick={() => setDeviceView("desktop")}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               deviceView === "desktop"
-                ? "bg-[#262626] text-white"
-                : "text-[#7c7c7c] hover:text-white"
+                ? "bg-[var(--background-tertiary)] text-white"
+                : "text-[var(--foreground-muted)] hover:text-white"
             }`}
           >
             <DesktopIcon className="w-4 h-4" />
@@ -194,8 +194,8 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
             onClick={() => setDeviceView("tablet")}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               deviceView === "tablet"
-                ? "bg-[#262626] text-white"
-                : "text-[#7c7c7c] hover:text-white"
+                ? "bg-[var(--background-tertiary)] text-white"
+                : "text-[var(--foreground-muted)] hover:text-white"
             }`}
           >
             <TabletIcon className="w-4 h-4" />
@@ -205,8 +205,8 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
             onClick={() => setDeviceView("mobile")}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               deviceView === "mobile"
-                ? "bg-[#262626] text-white"
-                : "text-[#7c7c7c] hover:text-white"
+                ? "bg-[var(--background-tertiary)] text-white"
+                : "text-[var(--foreground-muted)] hover:text-white"
             }`}
           >
             <MobileIcon className="w-4 h-4" />
@@ -218,35 +218,35 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
       {/* Preview Frame */}
       <div className={`mx-auto px-4 transition-all duration-300 ${getDeviceWidth()}`}>
         {/* Device Frame */}
-        <div className={`bg-[#1a1a1a] rounded-2xl border-2 border-[#333] overflow-hidden shadow-2xl ${
+        <div className={`bg-[var(--background-tertiary)] rounded-2xl border-2 border-[var(--border-visible)] overflow-hidden shadow-2xl ${
           deviceView === "mobile" ? "rounded-[2rem]" : ""
         }`}>
           {/* Browser Chrome */}
-          <div className="bg-[#262626] px-4 py-3 flex items-center gap-3 border-b border-[#333]">
+          <div className="bg-[var(--background-tertiary)] px-4 py-3 flex items-center gap-3 border-b border-[var(--border-visible)]">
             <div className="flex gap-2">
               <div className="w-3 h-3 rounded-full bg-[#ef4444]" />
               <div className="w-3 h-3 rounded-full bg-[#f97316]" />
-              <div className="w-3 h-3 rounded-full bg-[#22c55e]" />
+              <div className="w-3 h-3 rounded-full bg-[var(--success)]" />
             </div>
-            <div className="flex-1 bg-[#1a1a1a] rounded-lg px-4 py-1.5 text-sm text-[#7c7c7c] text-center truncate">
+            <div className="flex-1 bg-[var(--background-tertiary)] rounded-lg px-4 py-1.5 text-sm text-[var(--foreground-muted)] text-center truncate">
               portal.yourdomain.com/questionnaires/{template.slug}
             </div>
           </div>
 
           {/* Portal Header */}
-          <div className="bg-[#141414] border-b border-[#262626] px-6 py-4">
+          <div className="bg-[var(--card)] border-b border-[var(--card-border)] px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#7c7c7c]">← Back to Portal</p>
+                <p className="text-sm text-[var(--foreground-muted)]">← Back to Portal</p>
                 <h1 className="text-lg font-semibold text-white mt-1">{template.name}</h1>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <p className="text-sm text-white">{progress}% complete</p>
                 </div>
-                <div className="h-2 w-24 rounded-full bg-[#262626] overflow-hidden">
+                <div className="h-2 w-24 rounded-full bg-[var(--background-tertiary)] overflow-hidden">
                   <div
-                    className="h-full bg-[#3b82f6] transition-all duration-300"
+                    className="h-full bg-[var(--primary)] transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -255,13 +255,13 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
           </div>
 
           {/* Questionnaire Content */}
-          <div className="bg-[#0a0a0a] min-h-[500px] max-h-[70vh] overflow-y-auto">
+          <div className="bg-[var(--background)] min-h-[500px] max-h-[70vh] overflow-y-auto">
             <div className="p-6 space-y-6">
               {/* Sample Booking Info */}
-              <div className="rounded-xl border border-[#262626] bg-[#141414] p-4">
-                <p className="text-sm text-[#7c7c7c]">This questionnaire is for:</p>
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                <p className="text-sm text-[var(--foreground-muted)]">This questionnaire is for:</p>
                 <p className="text-lg font-medium text-white">Sample Booking - Preview</p>
-                <p className="text-sm text-[#7c7c7c]">
+                <p className="text-sm text-[var(--foreground-muted)]">
                   {new Date().toLocaleDateString("en-US", {
                     weekday: "long",
                     month: "long",
@@ -273,8 +273,8 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
 
               {/* Form Sections */}
               {Object.entries(sections).map(([sectionName, fields]) => (
-                <section key={sectionName} className="rounded-xl border border-[#262626] bg-[#141414]">
-                  <div className="border-b border-[#262626] px-6 py-4">
+                <section key={sectionName} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+                  <div className="border-b border-[var(--card-border)] px-6 py-4">
                     <h2 className="text-lg font-medium text-white">{sectionName}</h2>
                   </div>
                   <div className="p-6 space-y-6">
@@ -292,10 +292,10 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
 
               {/* Legal Agreements */}
               {template.legalAgreements.length > 0 && (
-                <section className="rounded-xl border border-[#262626] bg-[#141414]">
-                  <div className="border-b border-[#262626] px-6 py-4">
+                <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+                  <div className="border-b border-[var(--card-border)] px-6 py-4">
                     <h2 className="text-lg font-medium text-white">Legal Agreements</h2>
-                    <p className="text-sm text-[#7c7c7c]">
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       Please review and accept the following agreements
                     </p>
                   </div>
@@ -308,8 +308,8 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                       return (
                         <div
                           key={agreement.id}
-                          className={`space-y-4 pb-6 border-b border-[#262626] last:border-0 last:pb-0 ${
-                            agreement.requiresSignature ? "bg-[#0a0a0a] -mx-6 px-6 py-6 first:-mt-2" : ""
+                          className={`space-y-4 pb-6 border-b border-[var(--card-border)] last:border-0 last:pb-0 ${
+                            agreement.requiresSignature ? "bg-[var(--background)] -mx-6 px-6 py-6 first:-mt-2" : ""
                           }`}
                         >
                           <div className="flex items-start justify-between gap-4">
@@ -317,18 +317,18 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                               <h3 className="font-medium text-white">
                                 {agreement.title}
                                 {agreement.isRequired && (
-                                  <span className="ml-1 text-[#ef4444]">*</span>
+                                  <span className="ml-1 text-[var(--error)]">*</span>
                                 )}
                               </h3>
                               {agreement.requiresSignature && (
-                                <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f97316]">
+                                <span className="inline-flex items-center gap-1 mt-1 text-xs text-[var(--warning)]">
                                   <SignatureIcon className="w-3 h-3" />
                                   Signature required
                                 </span>
                               )}
                             </div>
                             {isAccepted && (
-                              <span className="rounded-full bg-[#22c55e]/20 px-2 py-0.5 text-xs text-[#22c55e] flex items-center gap-1">
+                              <span className="rounded-full bg-[var(--success)]/20 px-2 py-0.5 text-xs text-[var(--success)] flex items-center gap-1">
                                 <CheckSmallIcon className="w-3 h-3" />
                                 Accepted & Signed
                               </span>
@@ -336,7 +336,7 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                           </div>
 
                           {/* Agreement Content */}
-                          <div className="max-h-48 overflow-y-auto rounded-lg border border-[#262626] bg-[#141414] p-4 text-sm text-[#a7a7a7]">
+                          <div className="max-h-48 overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 text-sm text-[var(--foreground-secondary)]">
                             <div
                               dangerouslySetInnerHTML={{
                                 __html: agreement.content.replace(/\n/g, "<br />"),
@@ -362,15 +362,15 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                           {/* Show stored signature */}
                           {agreement.requiresSignature && isAccepted && hasSignature && (
                             <div className="pt-2">
-                              <p className="text-sm text-[#7c7c7c] mb-2">Your signature:</p>
-                              <div className="bg-white rounded-lg p-3 inline-block border border-[#262626]">
+                              <p className="text-sm text-[var(--foreground-muted)] mb-2">Your signature:</p>
+                              <div className="bg-white rounded-lg p-3 inline-block border border-[var(--card-border)]">
                                 <img
                                   src={sigState.signatureData!}
                                   alt="Your signature"
                                   className="h-16 w-auto"
                                 />
                               </div>
-                              <p className="text-xs text-[#7c7c7c] mt-2">
+                              <p className="text-xs text-[var(--foreground-muted)] mt-2">
                                 Signed just now (preview)
                               </p>
                             </div>
@@ -407,26 +407,26 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
               )}
 
               {/* Submit Button */}
-              <div className="flex items-center justify-between rounded-xl border border-[#262626] bg-[#141414] p-6">
+              <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <div>
                   {isComplete ? (
-                    <p className="text-sm text-[#22c55e]">
+                    <p className="text-sm text-[var(--success)]">
                       All required fields and agreements completed
                     </p>
                   ) : (
                     <div className="space-y-1">
                       {requiredFields.length - completedRequired.length > 0 && (
-                        <p className="text-sm text-[#7c7c7c]">
+                        <p className="text-sm text-[var(--foreground-muted)]">
                           {requiredFields.length - completedRequired.length} required field{requiredFields.length - completedRequired.length !== 1 ? 's' : ''} remaining
                         </p>
                       )}
                       {requiredAgreements.length - acceptedRequiredAgreements.length > 0 && (
-                        <p className="text-sm text-[#7c7c7c]">
+                        <p className="text-sm text-[var(--foreground-muted)]">
                           {requiredAgreements.length - acceptedRequiredAgreements.length} agreement{requiredAgreements.length - acceptedRequiredAgreements.length !== 1 ? 's' : ''} require acceptance
                         </p>
                       )}
                       {agreementsNeedingSignature.length > 0 && (
-                        <p className="text-sm text-[#f97316]">
+                        <p className="text-sm text-[var(--warning)]">
                           {agreementsNeedingSignature.length} agreement{agreementsNeedingSignature.length !== 1 ? 's' : ''} need{agreementsNeedingSignature.length === 1 ? 's' : ''} your signature
                         </p>
                       )}
@@ -436,7 +436,7 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                 <button
                   onClick={handleSubmit}
                   disabled={!isComplete}
-                  className="flex items-center gap-2 rounded-lg bg-[#3b82f6] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#3b82f6]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Submit Questionnaire
                 </button>
@@ -448,14 +448,14 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
 
       {/* Info Card */}
       <div className="max-w-2xl mx-auto mt-8 px-4">
-        <div className="bg-[#141414] rounded-xl border border-[#262626] p-6">
+        <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] p-6">
           <div className="flex items-start gap-4">
-            <div className="p-2 rounded-lg bg-[#8b5cf6]/10 text-[#8b5cf6]">
+            <div className="p-2 rounded-lg bg-[var(--ai)]/10 text-[var(--ai)]">
               <InfoIcon className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-medium text-white mb-1">Preview Mode</h3>
-              <p className="text-sm text-[#a7a7a7]">
+              <p className="text-sm text-[var(--foreground-secondary)]">
                 This preview shows exactly what your clients will see when completing this questionnaire.
                 Test the form fields, signature pad, and submission flow. No data is saved in preview mode.
               </p>
@@ -478,16 +478,16 @@ function PreviewField({
   onChange: (value: string | string[] | boolean) => void;
 }) {
   const baseInputClass =
-    "w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-[#7c7c7c] focus:border-[#3b82f6] focus:outline-none focus:ring-1 focus:ring-[#3b82f6]";
+    "w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]";
 
   return (
     <div>
       <label className="block text-sm font-medium text-white mb-2">
         {field.label}
-        {field.isRequired && <span className="ml-1 text-[#ef4444]">*</span>}
+        {field.isRequired && <span className="ml-1 text-[var(--error)]">*</span>}
       </label>
       {field.helpText && (
-        <p className="mb-2 text-xs text-[#7c7c7c]">{field.helpText}</p>
+        <p className="mb-2 text-xs text-[var(--foreground-muted)]">{field.helpText}</p>
       )}
 
       {field.type === "text" && (
@@ -579,7 +579,7 @@ function PreviewField({
             checked={(value as boolean) || false}
             onCheckedChange={(checked) => onChange(checked === true)}
           />
-          <span className="text-sm text-[#a7a7a7]">{field.placeholder || "Yes"}</span>
+          <span className="text-sm text-[var(--foreground-secondary)]">{field.placeholder || "Yes"}</span>
         </label>
       )}
 
@@ -595,7 +595,7 @@ function PreviewField({
                 onChange={(e) => onChange(e.target.value)}
                 className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
               />
-              <span className="text-sm text-[#a7a7a7]">{opt}</span>
+              <span className="text-sm text-[var(--foreground-secondary)]">{opt}</span>
             </label>
           ))}
         </div>

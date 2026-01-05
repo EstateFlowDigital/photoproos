@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Design System Compliance - Questionnaire Preview** - Updated preview page to use CSS variables
+  - Updated `preview-client.tsx` with comprehensive design token usage
+  - All card, background, border, and text colors now use semantic tokens
+  - Input focus states use primary color token
+  - Success, error, warning states use appropriate semantic tokens
+  - Browser chrome macOS traffic light colors remain hardcoded as intentional OS UI simulation
+
 - **Design System Compliance - Scheduling Availability** - Updated availability page to use CSS variables
   - Updated `availability-page-client.tsx` with comprehensive design token usage
   - Block type colors now use semantic tokens: error (time off), warning (holiday), ai (personal), primary (maintenance)
