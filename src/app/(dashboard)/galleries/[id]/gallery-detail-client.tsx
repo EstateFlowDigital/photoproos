@@ -834,38 +834,38 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Status & Stats */}
-          <div className="grid gap-4 sm:grid-cols-4">
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 sm:p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Status</p>
               <span className={cn("mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium", statusStyles[gallery.status])}>
                 {gallery.status.charAt(0).toUpperCase() + gallery.status.slice(1)}
               </span>
             </div>
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 sm:p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Revenue</p>
-              <p className="mt-2 text-2xl font-bold text-foreground">
+              <p className="mt-2 text-xl sm:text-2xl font-bold text-foreground">
                 {gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : "Free"}
               </p>
             </div>
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 sm:p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Views</p>
-              <p className="mt-2 text-2xl font-bold text-foreground">{gallery.views}</p>
+              <p className="mt-2 text-xl sm:text-2xl font-bold text-foreground">{gallery.views}</p>
             </div>
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 sm:p-4">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Downloads</p>
-              <p className="mt-2 text-2xl font-bold text-foreground">{gallery.downloads}</p>
+              <p className="mt-2 text-xl sm:text-2xl font-bold text-foreground">{gallery.downloads}</p>
             </div>
           </div>
 
           {/* Tabs Navigation */}
-          <div className="border-b border-[var(--card-border)]">
-            <nav className="flex gap-6 overflow-x-auto">
+          <div className="border-b border-[var(--card-border)] -mx-4 px-4 sm:mx-0 sm:px-0">
+            <nav className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-px" style={{ WebkitOverflowScrolling: 'touch' }}>
               {(["photos", "activity", "analytics", "settings", "invoices"] as TabType[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    "relative shrink-0 py-3 text-sm font-medium transition-colors",
+                    "relative shrink-0 whitespace-nowrap py-3 text-sm font-medium transition-colors",
                     activeTab === tab
                       ? "text-[var(--primary)]"
                       : "text-foreground-muted hover:text-foreground"
@@ -924,9 +924,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           )}
 
           {/* Photo Grid */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 sm:p-6">
             <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <h2 className="text-lg font-semibold text-foreground">
                   Photos <span className="text-foreground-muted font-normal">({photos.length})</span>
                 </h2>
@@ -936,12 +936,12 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {photos.length > 1 && !isSelectMode && (
                   <button
                     onClick={toggleReorderMode}
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+                      "inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
                       isReorderMode
                         ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
                         : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
@@ -955,7 +955,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   <button
                     onClick={toggleSelectMode}
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+                      "inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
                       isSelectMode
                         ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
                         : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
@@ -968,7 +968,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                 {isSelectMode && photos.length > 0 && (
                   <button
                     onClick={selectedPhotos.size === photos.length ? deselectAllPhotos : selectAllPhotos}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
                   >
                     {selectedPhotos.size === photos.length ? "Deselect All" : "Select All"}
                   </button>
@@ -978,7 +978,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     {hasMorePhotos && !showAllPhotos && (
                       <button
                         onClick={() => setShowAllPhotos(true)}
-                        className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                        className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
                       >
                         <GridIcon className="h-4 w-4" />
                         View All
@@ -986,7 +986,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     )}
                     <button
                       onClick={() => setShowCommentsPanel(true)}
-                      className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                      className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
                     >
                       <CommentBubbleIcon className="h-4 w-4" />
                       Comments
@@ -998,7 +998,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     </button>
                     <button
                       onClick={handleAddPhotos}
-                      className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                      className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
                     >
                       <UploadIcon className="h-4 w-4" />
                       Add Photos

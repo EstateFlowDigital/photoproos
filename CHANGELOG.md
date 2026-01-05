@@ -52,6 +52,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Server actions now use session-based authentication internally
 
 ### Fixed
+- **Gallery Detail Mobile Overflow** - Fixed multiple overflow issues on the gallery detail page
+  - Action buttons (QR Code, Proof Sheet, Favorites, Delete) now icon-only on mobile
+  - Tabs navigation now scrolls horizontally with hidden scrollbar on mobile
+  - Photo toolbar (Reorder, Select, View All, Comments) now scrolls horizontally on mobile
+  - Stats cards now display in 2-column grid on mobile instead of overflowing
+  - Added `scrollbar-hide` utility class for hidden scrollable areas
+
 - **Duplicate Upload Entries** - Fixed files showing twice in upload queue
   - Removed duplicate state addition when adding files to queue
   - Tasks now only added once via the onProgress callback

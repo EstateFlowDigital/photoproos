@@ -102,10 +102,11 @@ export function GalleryActions({
         <button
           type="button"
           onClick={() => setShowQRModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+          title="QR Code"
         >
           <QRIcon className="h-4 w-4" />
-          QR Code
+          <span className="hidden md:inline">QR Code</span>
         </button>
       )}
 
@@ -113,10 +114,11 @@ export function GalleryActions({
         type="button"
         onClick={handleDownloadProofSheet}
         disabled={isDownloadingProofSheet || photoCount === 0}
-        className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Proof Sheet"
       >
         <ProofSheetIcon className="h-4 w-4" />
-        {isDownloadingProofSheet ? "Generating..." : "Proof Sheet"}
+        <span className="hidden md:inline">{isDownloadingProofSheet ? "Generating..." : "Proof Sheet"}</span>
       </button>
 
       {hasFavorites && (
@@ -125,11 +127,12 @@ export function GalleryActions({
             type="button"
             onClick={() => setShowFavoritesMenu(!showFavoritesMenu)}
             disabled={isExportingFavorites}
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Favorites"
           >
             <HeartIcon className="h-4 w-4" />
-            {isExportingFavorites ? "Exporting..." : "Favorites"}
-            <ChevronDownIcon className="h-3 w-3" />
+            <span className="hidden md:inline">{isExportingFavorites ? "Exporting..." : "Favorites"}</span>
+            <ChevronDownIcon className="h-3 w-3 hidden md:block" />
           </button>
 
           {showFavoritesMenu && (
@@ -168,10 +171,11 @@ export function GalleryActions({
       <button
         type="button"
         onClick={() => setShowDeleteModal(true)}
-        className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
+        className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
+        title="Delete"
       >
         <TrashIcon className="h-4 w-4" />
-        Delete
+        <span className="hidden md:inline">Delete</span>
       </button>
 
       <DeleteConfirmationModal
