@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Shared Icon Library Expansion** - Extended `components/ui/icons.tsx` with commonly used icons
+  - Added `PhoneIcon`, `EmailIcon`, `ClockIcon`, `QuoteIcon`, `PackageIcon` (filled variants)
+  - Added `CartIcon`, `CloseIcon`, `TrashIcon`, `MinusIcon`, `PlusIcon` for cart interactions
+  - Added `ErrorIcon`, `CheckCircleOutlineIcon`, `PhoneOutlineIcon`, `EmailOutlineIcon` (outline variants)
+  - All icons now support optional `style` prop for dynamic coloring
+  - Order pages now import from shared library instead of inline definitions
+
 - **BugProbe Router Diagnostics** - Added diagnostic buttons to test navigation
   - "Test Router" button tests `router.push()` directly
   - "Test Location" button tests `window.location.href` as fallback
@@ -62,7 +69,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Clear feedback with toast notifications on completion
   - Server actions now use session-based authentication internally
 
+### Changed
+- **Order Pages Design System Compliance** - Replaced hardcoded hex colors with CSS variables
+  - `order-page-client.tsx`: All colors now use design system tokens (background, card, borders, text)
+  - `order-confirmation-client.tsx`: Migrated to CSS variables for consistent dark theme
+  - Improves maintainability and ensures theme consistency across the application
+  - Added `aria-hidden="true"` to all icons for accessibility
+
 ### Fixed
+- **Order Flow Accessibility** - Added comprehensive ARIA labels to interactive elements
+  - Cart button announces item count (e.g., "Shopping cart, 3 items")
+  - Close cart button has clear "Close cart" label
+  - Quantity controls have descriptive labels ("Increase/Decrease [item name] quantity")
+  - Remove buttons specify item being removed
+  - Mobile floating cart button announces full context
+  - Bundle select/remove buttons include package name
+  - Loading state uses `role="status"` and `aria-live="polite"`
+
 - **Gallery Detail Mobile Overflow** - Fixed multiple overflow issues on the gallery detail page
   - Action buttons (QR Code, Proof Sheet, Favorites, Delete) now icon-only on mobile
   - Tabs navigation now scrolls horizontally with hidden scrollbar on mobile

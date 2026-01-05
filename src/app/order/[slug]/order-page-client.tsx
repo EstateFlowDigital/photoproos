@@ -5,6 +5,19 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Testimonial } from "@/lib/validations/order-pages";
 import { CheckoutModal } from "@/components/order/checkout-modal";
+import {
+  PhoneIcon,
+  EmailIcon,
+  CheckIcon,
+  ClockIcon,
+  QuoteIcon,
+  PackageIcon,
+  CartIcon,
+  CloseIcon,
+  TrashIcon,
+  MinusIcon,
+  PlusIcon,
+} from "@/components/ui/icons";
 
 // Pricing tier type
 interface PricingTier {
@@ -315,9 +328,9 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <header className="border-b border-[#262626] bg-[#141414]">
+      <header className="border-b border-[var(--card-border)] bg-[var(--card)]">
         <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             {orderPage.logoOverrideUrl ? (
@@ -333,7 +346,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                 {orderPage.organization.name}
               </span>
             )}
-            <div className="flex items-center gap-4 text-sm text-[#a7a7a7]">
+            <div className="flex items-center gap-4 text-sm text-[var(--foreground-secondary)]">
               {orderPage.showPhone && orderPage.customPhone && (
                 <a
                   href={`tel:${orderPage.customPhone}`}
@@ -355,7 +368,8 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               {/* Cart Button */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center gap-1.5 rounded-lg bg-[#262626] px-3 py-2 text-white transition-colors hover:bg-[#313131]"
+                aria-label={`Shopping cart${cartTotals.itemCount > 0 ? `, ${cartTotals.itemCount} items` : ''}`}
+                className="relative flex items-center gap-1.5 rounded-lg bg-[var(--background-tertiary)] px-3 py-2 text-white transition-colors hover:bg-[var(--background-hover)]"
               >
                 <CartIcon className="h-5 w-5" />
                 <span className="hidden sm:inline">Cart</span>
@@ -375,7 +389,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
 
       {/* Hero Section */}
       <section
-        className="relative border-b border-[#262626]"
+        className="relative border-b border-[var(--card-border)]"
         style={{
           background: orderPage.heroImageUrl
             ? undefined
@@ -390,7 +404,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               fill
               className="object-cover opacity-30"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/80 via-[#0a0a0a]/60 to-[#0a0a0a]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)]/80 via-[var(--background)]/60 to-[var(--background)]" />
           </div>
         )}
         <div className="relative mx-auto max-w-7xl px-6 py-16 sm:py-24">
@@ -401,7 +415,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               </h1>
             )}
             {orderPage.subheadline && (
-              <p className="mt-6 text-lg text-[#a7a7a7] sm:text-xl">
+              <p className="mt-6 text-lg text-[var(--foreground-secondary)] sm:text-xl">
                 {orderPage.subheadline}
               </p>
             )}
@@ -418,7 +432,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               <h2 className="text-2xl font-bold text-white sm:text-3xl">
                 Service Packages
               </h2>
-              <p className="mt-2 text-[#7c7c7c]">
+              <p className="mt-2 text-[var(--foreground-muted)]">
                 Save more with our curated bundles
               </p>
             </div>
@@ -445,7 +459,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               <h2 className="text-2xl font-bold text-white sm:text-3xl">
                 Individual Services
               </h2>
-              <p className="mt-2 text-[#7c7c7c]">
+              <p className="mt-2 text-[var(--foreground-muted)]">
                 Select exactly what you need
               </p>
             </div>
@@ -484,12 +498,12 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
 
         {/* Empty State */}
         {orderPage.bundles.length === 0 && orderPage.services.length === 0 && (
-          <div className="rounded-xl border border-dashed border-[#262626] py-16 text-center">
-            <PackageIcon className="mx-auto h-12 w-12 text-[#7c7c7c]" />
+          <div className="rounded-xl border border-dashed border-[var(--card-border)] py-16 text-center">
+            <PackageIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
             <h3 className="mt-4 text-lg font-medium text-white">
               No services available
             </h3>
-            <p className="mt-2 text-sm text-[#7c7c7c]">
+            <p className="mt-2 text-sm text-[var(--foreground-muted)]">
               Check back soon for our offerings.
             </p>
           </div>
@@ -497,14 +511,14 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#262626] bg-[#141414]">
+      <footer className="border-t border-[var(--card-border)] bg-[var(--card)]">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <div className="flex items-center gap-4">
               {orderPage.showPhone && orderPage.customPhone && (
                 <a
                   href={`tel:${orderPage.customPhone}`}
-                  className="text-sm text-[#7c7c7c] hover:text-white transition-colors"
+                  className="text-sm text-[var(--foreground-muted)] hover:text-white transition-colors"
                 >
                   {orderPage.customPhone}
                 </a>
@@ -512,15 +526,15 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               {orderPage.showEmail && orderPage.customEmail && (
                 <a
                   href={`mailto:${orderPage.customEmail}`}
-                  className="text-sm text-[#7c7c7c] hover:text-white transition-colors"
+                  className="text-sm text-[var(--foreground-muted)] hover:text-white transition-colors"
                 >
                   {orderPage.customEmail}
                 </a>
               )}
             </div>
-            <p className="text-sm text-[#454545]">
+            <p className="text-sm text-[var(--border-visible)]">
               Powered by{" "}
-              <Link href="/" className="text-[#7c7c7c] hover:text-white transition-colors">
+              <Link href="/" className="text-[var(--foreground-muted)] hover:text-white transition-colors">
                 PhotoProOS
               </Link>
             </p>
@@ -538,22 +552,23 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
           />
 
           {/* Sidebar */}
-          <div className="absolute right-0 top-0 h-full w-full max-w-md bg-[#141414] shadow-2xl">
+          <div className="absolute right-0 top-0 h-full w-full max-w-md bg-[var(--card)] shadow-2xl">
             <div className="flex h-full flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-[#262626] p-6">
+              <div className="flex items-center justify-between border-b border-[var(--card-border)] p-6">
                 <div className="flex items-center gap-3">
                   <CartIcon className="h-6 w-6 text-white" />
                   <div>
                     <h2 className="text-lg font-semibold text-white">Your Cart</h2>
-                    <p className="text-sm text-[#7c7c7c]">
+                    <p className="text-sm text-[var(--foreground-muted)]">
                       {cartTotals.itemCount} {cartTotals.itemCount === 1 ? "item" : "items"}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsCartOpen(false)}
-                  className="rounded-lg p-2 text-[#7c7c7c] transition-colors hover:bg-[#262626] hover:text-white"
+                  aria-label="Close cart"
+                  className="rounded-lg p-2 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
                 >
                   <CloseIcon className="h-5 w-5" />
                 </button>
@@ -563,9 +578,9 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               <div className="flex-1 overflow-y-auto p-6">
                 {cartItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <CartIcon className="h-12 w-12 text-[#454545]" />
+                    <CartIcon className="h-12 w-12 text-[var(--border-visible)]" />
                     <p className="mt-4 text-lg font-medium text-white">Your cart is empty</p>
-                    <p className="mt-2 text-sm text-[#7c7c7c]">
+                    <p className="mt-2 text-sm text-[var(--foreground-muted)]">
                       Add services or bundles to get started
                     </p>
                     <button
@@ -584,14 +599,14 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                       .map((bundle) => (
                         <div
                           key={bundle.id}
-                          className="flex items-start gap-4 rounded-lg border border-[#262626] bg-[#0a0a0a] p-4"
+                          className="flex items-start gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                         >
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#262626]">
-                            <PackageIcon className="h-5 w-5 text-[#7c7c7c]" />
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-tertiary)]">
+                            <PackageIcon className="h-5 w-5 text-[var(--foreground-muted)]" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-white truncate">{bundle.name}</p>
-                            <p className="text-sm text-[#7c7c7c]">
+                            <p className="text-sm text-[var(--foreground-muted)]">
                               {bundle.sqft ? (
                                 <>
                                   {bundle.sqft.toLocaleString()} sqft
@@ -610,7 +625,8 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                             </p>
                             <button
                               onClick={() => removeBundle(bundle.id)}
-                              className="rounded-lg p-1.5 text-[#7c7c7c] transition-colors hover:bg-[#262626] hover:text-red-400"
+                              aria-label={`Remove ${bundle.name} from cart`}
+                              className="rounded-lg p-1.5 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-red-400"
                             >
                               <TrashIcon className="h-4 w-4" />
                             </button>
@@ -624,32 +640,34 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                       .map((service) => (
                         <div
                           key={service.id}
-                          className="flex items-start gap-4 rounded-lg border border-[#262626] bg-[#0a0a0a] p-4"
+                          className="flex items-start gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                         >
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-white truncate">{service.name}</p>
-                            <p className="text-sm text-[#7c7c7c]">
+                            <p className="text-sm text-[var(--foreground-muted)]">
                               {formatPrice(service.priceCents)} each
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1 rounded-lg border border-[#262626] bg-[#141414]">
+                            <div className="flex items-center gap-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)]">
                               <button
                                 onClick={() =>
                                   updateServiceQuantity(service.id, service.quantity - 1)
                                 }
-                                className="rounded-l-lg px-2.5 py-1 text-[#7c7c7c] transition-colors hover:bg-[#262626] hover:text-white"
+                                aria-label={`Decrease ${service.name} quantity`}
+                                className="rounded-l-lg px-2.5 py-1 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
                               >
                                 <MinusIcon className="h-4 w-4" />
                               </button>
-                              <span className="w-8 text-center text-sm font-medium text-white">
+                              <span className="w-8 text-center text-sm font-medium text-white" aria-label={`${service.name} quantity`}>
                                 {service.quantity}
                               </span>
                               <button
                                 onClick={() =>
                                   updateServiceQuantity(service.id, service.quantity + 1)
                                 }
-                                className="rounded-r-lg px-2.5 py-1 text-[#7c7c7c] transition-colors hover:bg-[#262626] hover:text-white"
+                                aria-label={`Increase ${service.name} quantity`}
+                                className="rounded-r-lg px-2.5 py-1 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
                               >
                                 <PlusIcon className="h-4 w-4" />
                               </button>
@@ -664,7 +682,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                     {/* Clear Cart */}
                     <button
                       onClick={clearCart}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#262626] py-2.5 text-sm text-[#7c7c7c] transition-colors hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-400"
+                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] py-2.5 text-sm text-[var(--foreground-muted)] transition-colors hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-400"
                     >
                       <TrashIcon className="h-4 w-4" />
                       Clear cart
@@ -675,9 +693,9 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
 
               {/* Footer with Total & Checkout */}
               {cartItems.length > 0 && (
-                <div className="border-t border-[#262626] p-6">
+                <div className="border-t border-[var(--card-border)] p-6">
                   <div className="mb-4 flex items-center justify-between">
-                    <span className="text-[#7c7c7c]">Subtotal</span>
+                    <span className="text-[var(--foreground-muted)]">Subtotal</span>
                     <span className="text-xl font-bold text-white">
                       {formatPrice(cartTotals.subtotal)}
                     </span>
@@ -692,7 +710,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                   >
                     Proceed to Checkout
                   </button>
-                  <p className="mt-3 text-center text-xs text-[#7c7c7c]">
+                  <p className="mt-3 text-center text-xs text-[var(--foreground-muted)]">
                     Secure checkout powered by Stripe
                   </p>
                 </div>
@@ -706,6 +724,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
       {cartTotals.itemCount > 0 && !isCartOpen && (
         <button
           onClick={() => setIsCartOpen(true)}
+          aria-label={`View cart, ${cartTotals.itemCount} items, ${formatPrice(cartTotals.subtotal)} total`}
           className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full px-5 py-3 text-white shadow-lg transition-all hover:scale-105 sm:hidden"
           style={{ backgroundColor: primaryColor }}
         >
@@ -727,12 +746,12 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               setSelectedBundle(null);
             }}
           />
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-[#262626] bg-[#141414] shadow-2xl">
-            <div className="border-b border-[#262626] px-6 py-4">
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
+            <div className="border-b border-[var(--card-border)] px-6 py-4">
               <h2 className="text-lg font-semibold text-white">
                 Enter Property Size
               </h2>
-              <p className="mt-1 text-sm text-[#7c7c7c]">
+              <p className="mt-1 text-sm text-[var(--foreground-muted)]">
                 {selectedBundle.name}
               </p>
             </div>
@@ -740,12 +759,12 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
             <div className="p-6 space-y-6">
               {/* Pricing Method Info */}
               {selectedBundle.pricingMethod === "per_sqft" && (
-                <div className="rounded-lg bg-[#0a0a0a] border border-[#262626] p-4">
-                  <p className="text-sm text-[#a7a7a7]">
+                <div className="rounded-lg bg-[var(--background)] border border-[var(--card-border)] p-4">
+                  <p className="text-sm text-[var(--foreground-secondary)]">
                     Price: <span className="font-semibold text-white">{formatPrice(selectedBundle.pricePerSqftCents || 0)}/sqft</span>
                   </p>
                   {selectedBundle.minSqft && selectedBundle.minSqft > 0 && (
-                    <p className="text-xs text-[#7c7c7c] mt-1">
+                    <p className="text-xs text-[var(--foreground-muted)] mt-1">
                       Minimum: {selectedBundle.minSqft.toLocaleString()} sqft
                     </p>
                   )}
@@ -753,14 +772,14 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               )}
 
               {selectedBundle.pricingMethod === "tiered" && selectedBundle.pricingTiers.length > 0 && (
-                <div className="rounded-lg bg-[#0a0a0a] border border-[#262626] p-4">
+                <div className="rounded-lg bg-[var(--background)] border border-[var(--card-border)] p-4">
                   <p className="text-sm font-medium text-white mb-2">Pricing Tiers</p>
                   <div className="space-y-1.5">
                     {selectedBundle.pricingTiers.map((tier) => (
                       <div key={tier.id} className="flex items-center justify-between text-sm">
-                        <span className="text-[#a7a7a7]">
+                        <span className="text-[var(--foreground-secondary)]">
                           {tier.minSqft.toLocaleString()} - {tier.maxSqft ? tier.maxSqft.toLocaleString() : "∞"} sqft
-                          {tier.tierName && <span className="text-[#7c7c7c] ml-1">({tier.tierName})</span>}
+                          {tier.tierName && <span className="text-[var(--foreground-muted)] ml-1">({tier.tierName})</span>}
                         </span>
                         <span className="font-medium text-white">{formatPrice(tier.priceCents)}</span>
                       </div>
@@ -781,24 +800,24 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                   onChange={(e) => setSqftInput(e.target.value)}
                   placeholder="e.g., 2500"
                   min={selectedBundle.minSqft || 1}
-                  className="w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-3 text-lg text-white placeholder:text-[#7c7c7c] focus:border-[#454545] focus:outline-none focus:ring-1 focus:ring-[#454545]"
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 text-lg text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)]"
                   autoFocus
                 />
               </div>
 
               {/* Calculated Price Preview */}
               {sqftInput && parseInt(sqftInput, 10) > 0 && (
-                <div className="rounded-lg border border-[#262626] bg-[#0a0a0a] p-4">
+                <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-[#7c7c7c]">Estimated Price</p>
+                      <p className="text-sm text-[var(--foreground-muted)]">Estimated Price</p>
                       <p className="text-2xl font-bold text-white">
                         {formatPrice(calculateSqftPrice(selectedBundle, parseInt(sqftInput, 10)).priceCents)}
                       </p>
                     </div>
                     {calculateSqftPrice(selectedBundle, parseInt(sqftInput, 10)).tier && (
                       <div className="text-right">
-                        <p className="text-xs text-[#7c7c7c]">Tier</p>
+                        <p className="text-xs text-[var(--foreground-muted)]">Tier</p>
                         <p className="text-sm font-medium" style={{ color: primaryColor }}>
                           {calculateSqftPrice(selectedBundle, parseInt(sqftInput, 10)).tier?.tierName || "Standard"}
                         </p>
@@ -816,7 +835,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                     setShowSqftModal(false);
                     setSelectedBundle(null);
                   }}
-                  className="flex-1 rounded-lg border border-[#262626] bg-[#0a0a0a] py-3 text-sm font-medium text-white transition-colors hover:bg-[#262626]"
+                  className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--background-tertiary)]"
                 >
                   Cancel
                 </button>
@@ -863,7 +882,7 @@ function BundleCard({
   onRemove: () => void;
 }) {
   return (
-    <div className="group relative flex flex-col rounded-xl border border-[#262626] bg-[#141414] overflow-hidden transition-all hover:border-[#454545]">
+    <div className="group relative flex flex-col rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden transition-all hover:border-[var(--border-visible)]">
       {/* Badge */}
       {bundle.badgeText && (
         <div
@@ -890,21 +909,21 @@ function BundleCard({
       <div className="flex flex-1 flex-col p-6">
         <h3 className="text-lg font-semibold text-white">{bundle.name}</h3>
         {bundle.description && (
-          <p className="mt-2 text-sm text-[#a7a7a7] line-clamp-2">
+          <p className="mt-2 text-sm text-[var(--foreground-secondary)] line-clamp-2">
             {bundle.description}
           </p>
         )}
 
         {/* Included Services */}
         <div className="mt-4 flex-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-[#7c7c7c] mb-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--foreground-muted)] mb-2">
             Includes
           </p>
           <ul className="space-y-1.5">
             {bundle.services.slice(0, 4).map((service) => (
               <li
                 key={service.id}
-                className="flex items-center gap-2 text-sm text-[#a7a7a7]"
+                className="flex items-center gap-2 text-sm text-[var(--foreground-secondary)]"
               >
                 <CheckIcon
                   className="h-4 w-4 shrink-0"
@@ -917,7 +936,7 @@ function BundleCard({
               </li>
             ))}
             {bundle.services.length > 4 && (
-              <li className="text-xs text-[#7c7c7c]">
+              <li className="text-xs text-[var(--foreground-muted)]">
                 +{bundle.services.length - 4} more
               </li>
             )}
@@ -925,34 +944,34 @@ function BundleCard({
         </div>
 
         {/* Pricing */}
-        <div className="mt-6 flex items-end justify-between border-t border-[#262626] pt-4">
+        <div className="mt-6 flex items-end justify-between border-t border-[var(--card-border)] pt-4">
           <div>
             {bundle.pricingMethod === "per_sqft" ? (
               <>
-                <p className="text-sm text-[#7c7c7c]">Starting at</p>
+                <p className="text-sm text-[var(--foreground-muted)]">Starting at</p>
                 <p className="text-2xl font-bold text-white">
-                  {formatPrice(bundle.pricePerSqftCents || 0)}<span className="text-sm font-normal text-[#7c7c7c]">/sqft</span>
+                  {formatPrice(bundle.pricePerSqftCents || 0)}<span className="text-sm font-normal text-[var(--foreground-muted)]">/sqft</span>
                 </p>
                 {bundle.minSqft && bundle.minSqft > 0 && (
-                  <p className="text-xs text-[#7c7c7c]">
+                  <p className="text-xs text-[var(--foreground-muted)]">
                     Min {bundle.minSqft.toLocaleString()} sqft
                   </p>
                 )}
               </>
             ) : bundle.pricingMethod === "tiered" && bundle.pricingTiers.length > 0 ? (
               <>
-                <p className="text-sm text-[#7c7c7c]">From</p>
+                <p className="text-sm text-[var(--foreground-muted)]">From</p>
                 <p className="text-2xl font-bold text-white">
                   {formatPrice(Math.min(...bundle.pricingTiers.map((t) => t.priceCents)))}
                 </p>
-                <p className="text-xs text-[#7c7c7c]">
+                <p className="text-xs text-[var(--foreground-muted)]">
                   {bundle.pricingTiers.length} tier{bundle.pricingTiers.length > 1 ? "s" : ""} by sqft
                 </p>
               </>
             ) : (
               <>
                 {bundle.originalPriceCents && bundle.savingsPercent && bundle.savingsPercent > 0 && (
-                  <p className="text-sm text-[#7c7c7c] line-through">
+                  <p className="text-sm text-[var(--foreground-muted)] line-through">
                     {formatPrice(bundle.originalPriceCents)}
                   </p>
                 )}
@@ -970,7 +989,8 @@ function BundleCard({
           {isInCart ? (
             <button
               onClick={onRemove}
-              className="flex items-center gap-2 rounded-lg border border-[#262626] bg-[#262626] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#313131]"
+              aria-label={`Remove ${bundle.name} from cart`}
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--background-hover)]"
             >
               <CheckIcon className="h-4 w-4" style={{ color: primaryColor }} />
               Added
@@ -978,6 +998,7 @@ function BundleCard({
           ) : (
             <button
               onClick={onAdd}
+              aria-label={`Select ${bundle.name} package`}
               className="rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
               style={{ backgroundColor: primaryColor }}
             >
@@ -1005,22 +1026,22 @@ function ServiceCard({
   onUpdateQuantity: (qty: number) => void;
 }) {
   return (
-    <div className="group flex items-center gap-4 rounded-xl border border-[#262626] bg-[#141414] p-5 transition-all hover:border-[#454545]">
+    <div className="group flex items-center gap-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:border-[var(--border-visible)]">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3 className="font-medium text-white truncate">{service.name}</h3>
           {service.category && (
-            <span className="shrink-0 rounded-full bg-[#262626] px-2 py-0.5 text-xs text-[#7c7c7c]">
+            <span className="shrink-0 rounded-full bg-[var(--background-tertiary)] px-2 py-0.5 text-xs text-[var(--foreground-muted)]">
               {service.category.replace(/_/g, " ")}
             </span>
           )}
         </div>
         {service.description && (
-          <p className="mt-1 text-sm text-[#a7a7a7] line-clamp-1">
+          <p className="mt-1 text-sm text-[var(--foreground-secondary)] line-clamp-1">
             {service.description}
           </p>
         )}
-        <div className="mt-2 flex items-center gap-3 text-xs text-[#7c7c7c]">
+        <div className="mt-2 flex items-center gap-3 text-xs text-[var(--foreground-muted)]">
           {service.duration > 0 && (
             <span className="flex items-center gap-1">
               <ClockIcon className="h-3.5 w-3.5" />
@@ -1035,19 +1056,21 @@ function ServiceCard({
           {formatPrice(service.priceCents)}
         </p>
         {quantity > 0 ? (
-          <div className="flex items-center gap-1 rounded-lg border border-[#262626] bg-[#0a0a0a]">
+          <div className="flex items-center gap-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)]" role="group" aria-label={`${service.name} quantity controls`}>
             <button
               onClick={() => onUpdateQuantity(quantity - 1)}
-              className="rounded-l-lg px-2.5 py-1.5 text-[#7c7c7c] transition-colors hover:bg-[#262626] hover:text-white"
+              aria-label={`Decrease ${service.name} quantity`}
+              className="rounded-l-lg px-2.5 py-1.5 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
             >
               <MinusIcon className="h-4 w-4" />
             </button>
-            <span className="w-8 text-center text-sm font-medium text-white">
+            <span className="w-8 text-center text-sm font-medium text-white" aria-live="polite">
               {quantity}
             </span>
             <button
               onClick={() => onUpdateQuantity(quantity + 1)}
-              className="rounded-r-lg px-2.5 py-1.5 text-[#7c7c7c] transition-colors hover:bg-[#262626] hover:text-white"
+              aria-label={`Increase ${service.name} quantity`}
+              className="rounded-r-lg px-2.5 py-1.5 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
             >
               <PlusIcon className="h-4 w-4" />
             </button>
@@ -1055,6 +1078,7 @@ function ServiceCard({
         ) : (
           <button
             onClick={onAdd}
+            aria-label={`Add ${service.name} to cart`}
             className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-all hover:opacity-90"
             style={{ backgroundColor: primaryColor }}
           >
@@ -1069,9 +1093,9 @@ function ServiceCard({
 // Testimonial Card Component
 function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   return (
-    <div className="flex flex-col rounded-xl border border-[#262626] bg-[#141414] p-6">
-      <QuoteIcon className="h-8 w-8 text-[#262626] mb-4" />
-      <p className="flex-1 text-[#a7a7a7] italic">
+    <div className="flex flex-col rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+      <QuoteIcon className="h-8 w-8 text-[var(--card-border)] mb-4" />
+      <p className="flex-1 text-[var(--foreground-secondary)] italic">
         &ldquo;{testimonial.quote}&rdquo;
       </p>
       <div className="mt-4 flex items-center gap-3">
@@ -1084,14 +1108,14 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
             className="h-10 w-10 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#262626] text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-white">
             {testimonial.name.charAt(0).toUpperCase()}
           </div>
         )}
         <div>
           <p className="font-medium text-white">{testimonial.name}</p>
           {testimonial.company && (
-            <p className="text-sm text-[#7c7c7c]">{testimonial.company}</p>
+            <p className="text-sm text-[var(--foreground-muted)]">{testimonial.company}</p>
           )}
         </div>
       </div>
@@ -1099,175 +1123,3 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   );
 }
 
-// Icons
-function PhoneIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className}
-    >
-      <path
-        fillRule="evenodd"
-        d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function EmailIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M3 4a2 2 0 0 0-2 2v1.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 7.162V6a2 2 0 0 0-2-2H3Z" />
-      <path d="m19 8.839-7.77 3.885a2.75 2.75 0 0 1-2.46 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z" />
-    </svg>
-  );
-}
-
-function CheckIcon({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className}
-      style={style}
-    >
-      <path
-        fillRule="evenodd"
-        d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className}
-    >
-      <path
-        fillRule="evenodd"
-        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function QuoteIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 0 1-3.5 3.5 3.871 3.871 0 0 1-2.748-1.179Zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 0 1-3.5 3.5 3.871 3.871 0 0 1-2.748-1.179Z"
-      />
-    </svg>
-  );
-}
-
-function PackageIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M12.378 1.602a.75.75 0 0 0-.756 0L3 6.632l9 5.25 9-5.25-8.622-5.03ZM21.75 7.93l-9 5.25v9l8.628-5.032a.75.75 0 0 0 .372-.648V7.93ZM11.25 22.18v-9l-9-5.25v8.57a.75.75 0 0 0 .372.648l8.628 5.033Z" />
-    </svg>
-  );
-}
-
-function CartIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 0 0-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 0 0 0-1.5H5.378A2.25 2.25 0 0 1 7.5 15h11.218a.75.75 0 0 0 .674-.421 60.358 60.358 0 0 0 2.96-7.228.75.75 0 0 0-.525-.965A60.864 60.864 0 0 0 5.68 4.509l-.232-.867A1.875 1.875 0 0 0 3.636 2.25H2.25ZM3.75 20.25a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM16.5 20.25a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
-    </svg>
-  );
-}
-
-function CloseIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      <path
-        fillRule="evenodd"
-        d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function TrashIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className}
-    >
-      <path
-        fillRule="evenodd"
-        d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function MinusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M6.75 9.25a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" />
-    </svg>
-  );
-}
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-    </svg>
-  );
-}
