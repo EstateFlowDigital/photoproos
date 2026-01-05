@@ -44,10 +44,12 @@ export function DashboardSidebar({
     industries,
   });
 
+  const [editMode, setEditMode] = React.useState(false);
   const [pinnedIds, setPinnedIds] = React.useState<string[]>([]);
   const [draggingPinnedId, setDraggingPinnedId] = React.useState<string | null>(null);
   const [navOrder, setNavOrder] = React.useState<string[]>([]);
   const [draggingNavId, setDraggingNavId] = React.useState<string | null>(null);
+  const [hiddenIds, setHiddenIds] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -70,12 +72,31 @@ export function DashboardSidebar({
         setNavOrder([]);
       }
     }
+    const storedHidden = window.localStorage.getItem("ppos_nav_hidden");
+    if (storedHidden) {
+      try {
+        const parsedHidden = JSON.parse(storedHidden) as string[];
+        const availableIds = navItems.map((n) => n.id);
+        setHiddenIds(parsedHidden.filter((id) => availableIds.includes(id)));
+      } catch {
+        setHiddenIds([]);
+      }
+    }
   }, [navItems]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("ppos_pinned_nav", JSON.stringify(pinnedIds));
   }, [pinnedIds]);
+
+  React.useEffect(() => {
+    setPinnedIds((prev) => prev.filter((id) => !hiddenIds.includes(id)));
+  }, [hiddenIds]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ppos_nav_hidden", JSON.stringify(hiddenIds));
+  }, [hiddenIds]);
 
   const togglePin = (id: string) => {
     setPinnedIds((prev) =>
@@ -98,8 +119,11 @@ export function DashboardSidebar({
       ]
     : navItems;
 
+  const visibleNav = sidebarNav.filter((item) => !hiddenIds.includes(item.id));
+  const hiddenNav = sidebarNav.filter((item) => hiddenIds.includes(item.id));
+
   React.useEffect(() => {
-    const available = sidebarNav.map((item) => item.id);
+    const available = visibleNav.map((item) => item.id);
     setNavOrder((prev) => {
       const filtered = prev.filter((id) => available.includes(id));
       const missing = available.filter((id) => !filtered.includes(id));
@@ -126,12 +150,12 @@ export function DashboardSidebar({
   };
 
   const corePrimaryIds = ["dashboard", "projects", "clients", "scheduling"];
-  const pinnedNav = sidebarNav.filter((item) => pinnedIds.includes(item.id));
-  const coreNav = sortByNavOrder(sidebarNav).filter((item) => corePrimaryIds.includes(item.id) && !pinnedIds.includes(item.id));
-  const workspaceNav = sortByNavOrder(sidebarNav).filter(
+  const pinnedNav = visibleNav.filter((item) => pinnedIds.includes(item.id));
+  const coreNav = sortByNavOrder(visibleNav).filter((item) => corePrimaryIds.includes(item.id) && !pinnedIds.includes(item.id));
+  const workspaceNav = sortByNavOrder(visibleNav).filter(
     (item) => !corePrimaryIds.includes(item.id) && item.category !== "advanced" && !pinnedIds.includes(item.id)
   );
-  const advancedNav = sortByNavOrder(sidebarNav).filter((item) => item.category === "advanced" && !pinnedIds.includes(item.id));
+  const advancedNav = sortByNavOrder(visibleNav).filter((item) => item.category === "advanced" && !pinnedIds.includes(item.id));
   const [sectionState, setSectionState] = React.useState({
     workspaces: true,
     advanced: false,
@@ -162,13 +186,20 @@ export function DashboardSidebar({
     const linkContent = (
       <Link
         key={item.href}
-        href={item.href}
+        href={editMode ? "#" : item.href}
+        onClick={(e) => {
+          if (editMode) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
         className={cn(
           "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
           isActive
             ? "bg-[var(--primary)] text-white"
             : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground",
-          canDrag && "cursor-move"
+          canDrag && "cursor-move",
+          editMode && "pointer-events-auto"
         )}
       >
         <IconComponent
@@ -203,8 +234,32 @@ export function DashboardSidebar({
           )}
           title={isPinned ? "Unpin" : "Pin"}
         >
-          {isPinned ? <StarFilledIcon className="h-4 w-4" /> : <StarIcon className="h-4 w-4" />}
+          {isPinned ? (
+            <StarFilledIcon className="h-4 w-4" />
+          ) : (
+            <StarIcon className="h-4 w-4 opacity-50" />
+          )}
         </button>
+        {editMode && (
+          <label className="flex items-center gap-1 text-xs text-foreground-muted">
+            <input
+              type="checkbox"
+              className="h-3 w-3 accent-[var(--primary)]"
+              checked={!hiddenIds.includes(item.id)}
+              onChange={(e) => {
+                const visible = e.target.checked;
+                setHiddenIds((prev) => {
+                  const next = visible ? prev.filter((id) => id !== item.id) : [...prev, item.id];
+                  if (!visible) {
+                    setPinnedIds((p) => p.filter((id) => id !== item.id));
+                  }
+                  return next;
+                });
+              }}
+            />
+            Show
+          </label>
+        )}
       </Link>
     );
 
@@ -241,11 +296,13 @@ export function DashboardSidebar({
 
   const resetNav = () => {
     setPinnedIds([]);
+    setHiddenIds([]);
     const ids = sidebarNav.map((item) => item.id);
     setNavOrder(ids);
     if (typeof window !== "undefined") {
       window.localStorage.removeItem("ppos_pinned_nav");
       window.localStorage.removeItem("ppos_nav_order");
+      window.localStorage.removeItem("ppos_nav_hidden");
     }
   };
 
@@ -276,10 +333,28 @@ export function DashboardSidebar({
           <CameraIcon className="h-4 w-4 text-white" />
         </div>
         <span className="text-lg font-semibold text-foreground">PhotoProOS</span>
+        <button
+          type="button"
+          onClick={() => setEditMode((v) => !v)}
+          className={cn(
+            "ml-auto inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors",
+            editMode
+              ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+              : "border-[var(--card-border)] text-foreground-secondary hover:text-foreground hover:bg-[var(--background-hover)]"
+          )}
+          title="Reorder, hide, or pin navigation links"
+        >
+          {editMode ? "Done" : "Customize"}
+        </button>
       </div>
 
       {/* Main Navigation */}
       <nav className="flex-1 min-h-0 overflow-y-auto px-4 pb-6 pt-4">
+        {editMode && (
+          <div className="mb-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs text-foreground-muted">
+            Drag to reorder, toggle favorites, and choose which links are visible. Hidden links stay available here but won’t show in the main nav.
+          </div>
+        )}
         {pinnedNav.length > 0 && (
           <div className="mb-4 space-y-2 rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-3">
             <div className="flex items-center justify-between text-sm font-semibold text-foreground">
@@ -372,6 +447,22 @@ export function DashboardSidebar({
                 {advancedNav.map((item) => renderNavItem(item, { draggable: true }))}
               </div>
             )}
+          </div>
+        )}
+
+        {editMode && hiddenNav.length > 0 && (
+          <div className="mt-4 space-y-2 rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--background)] p-3">
+            <div className="flex items-center justify-between text-sm font-semibold text-foreground">
+              <span>Hidden Links</span>
+              <span className="text-xs text-foreground-muted">{hiddenNav.length}</span>
+            </div>
+            <div className="space-y-1">
+              {hiddenNav.map((item) => (
+                <div key={item.id} className="opacity-70 hover:opacity-100 transition-opacity">
+                  {renderNavItem(item, { draggable: false })}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </nav>
