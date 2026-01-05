@@ -854,6 +854,7 @@ export async function getGallery(id: string) {
         filename: asset.filename,
         url: asset.originalUrl,
         thumbnailUrl: asset.thumbnailUrl,
+        mediumUrl: asset.mediumUrl,
         width: asset.width,
         height: asset.height,
         sortOrder: asset.sortOrder,
@@ -1039,6 +1040,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
               filename: true,
               originalUrl: true,
               thumbnailUrl: true,
+              mediumUrl: true,
               width: true,
               height: true,
             },
@@ -1095,6 +1097,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
                   filename: true,
                   originalUrl: true,
                   thumbnailUrl: true,
+                  mediumUrl: true,
                   width: true,
                   height: true,
                 },
@@ -1138,9 +1141,11 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
     const photos = await Promise.all(
       project.assets.map(async (asset) => {
         const thumbKey = asset.thumbnailUrl ? extractKeyFromUrl(asset.thumbnailUrl) : null;
+        const mediumKey = asset.mediumUrl ? extractKeyFromUrl(asset.mediumUrl) : null;
         const originalKey = asset.originalUrl ? extractKeyFromUrl(asset.originalUrl) : null;
 
         let signedThumbnailUrl = asset.thumbnailUrl || asset.originalUrl;
+        let signedMediumUrl = asset.mediumUrl || asset.originalUrl;
         let signedOriginalUrl = "";
 
         try {
@@ -1149,6 +1154,14 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
           }
         } catch (err) {
           console.error("Failed to sign thumbnail URL", { assetId: asset.id, err });
+        }
+
+        try {
+          if (mediumKey) {
+            signedMediumUrl = await generatePresignedDownloadUrl(mediumKey, 900);
+          }
+        } catch (err) {
+          console.error("Failed to sign medium URL", { assetId: asset.id, err });
         }
 
         if (canDownload && originalKey) {
@@ -1162,7 +1175,9 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
 
         return {
           id: asset.id,
-          url: signedThumbnailUrl || signedOriginalUrl,
+          url: signedMediumUrl || signedThumbnailUrl || signedOriginalUrl,
+          thumbnailUrl: signedThumbnailUrl,
+          mediumUrl: signedMediumUrl,
           originalUrl: signedOriginalUrl,
           filename: asset.filename,
           width: asset.width || 4,

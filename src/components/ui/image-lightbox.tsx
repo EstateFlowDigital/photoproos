@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 interface Photo {
   id: string;
   url: string;
+  thumbnailUrl?: string | null;
+  mediumUrl?: string | null;
   filename: string;
 }
 
@@ -150,7 +152,7 @@ export function ImageLightbox({
         onClick={() => setIsZoomed(!isZoomed)}
       >
         <img
-          src={currentPhoto.url.replace("w=400&h=300", "w=1200&h=900")}
+          src={currentPhoto.mediumUrl || currentPhoto.url}
           alt={currentPhoto.filename}
           className={cn(
             "max-h-[80vh] max-w-[90vw] object-contain transition-transform duration-200",
@@ -202,7 +204,7 @@ export function ImageLightbox({
               )}
             >
               <img
-                src={photo.url}
+                src={photo.thumbnailUrl || photo.url}
                 alt={photo.filename}
                 className="h-full w-full object-cover"
               />

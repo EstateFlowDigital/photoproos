@@ -152,12 +152,37 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
       onError: (task, error) => {
         console.error(`Upload failed for ${task.file.name}:`, error);
       },
-      onAllComplete: () => {
+      onAllComplete: async () => {
         const completedCount = completedAssetsRef.current.length;
         showToastRef.current?.(
-          `Successfully uploaded ${completedCount} ${completedCount === 1 ? 'photo' : 'photos'}`,
+          `Successfully uploaded ${completedCount} ${completedCount === 1 ? 'photo' : 'photos'}. Generating thumbnails...`,
           "success"
         );
+
+        // Trigger image processing for all completed assets
+        const assetIds = completedAssetsRef.current.map((a) => a.id);
+        if (assetIds.length > 0) {
+          try {
+            const response = await fetch("/api/images/process", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ assetIds }),
+            });
+
+            if (response.ok) {
+              const result = await response.json();
+              if (result.processed > 0) {
+                showToastRef.current?.(
+                  `Thumbnails generated for ${result.processed} ${result.processed === 1 ? 'photo' : 'photos'}`,
+                  "success"
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Failed to process images:", error);
+            // Don't show error to user - thumbnails can be generated later
+          }
+        }
       },
     });
 

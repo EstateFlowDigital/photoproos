@@ -9,6 +9,8 @@ import { PasswordGate } from "./password-gate";
 interface Photo {
   id: string;
   url: string;
+  thumbnailUrl?: string | null;
+  mediumUrl?: string | null;
   originalUrl: string;
   filename: string;
   width: number;
@@ -263,7 +265,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
 
       {/* Photo Grid */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
           {gallery.photos.map((photo: Photo) => (
             <div
               key={photo.id}
@@ -271,7 +273,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
               style={{ backgroundColor: colors.cardBg }}
             >
               <img
-                src={photo.url}
+                src={photo.thumbnailUrl || photo.url}
                 alt={photo.filename}
                 className={cn(
                   "h-full w-full object-cover transition-transform duration-300 group-hover:scale-105",
@@ -279,23 +281,23 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
                 )}
               />
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <p className="text-sm font-medium text-white truncate">{photo.filename}</p>
+              {/* Overlay - Always visible on mobile for filename visibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+                  <p className="text-xs md:text-sm font-medium text-white truncate">{photo.filename}</p>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Action Buttons - Always visible on mobile, hover on desktop */}
+              <div className="absolute top-3 right-3 flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 {gallery.allowFavorites && (
-                  <button className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors">
-                    <HeartIcon className="h-4 w-4" />
+                  <button className="rounded-full bg-black/50 p-2.5 text-white hover:bg-black/70 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                    <HeartIcon className="h-5 w-5" />
                   </button>
                 )}
                 {gallery.isPaid && gallery.allowDownload && (
-                  <button className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors">
-                    <DownloadIcon className="h-4 w-4" />
+                  <button className="rounded-full bg-black/50 p-2.5 text-white hover:bg-black/70 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                    <DownloadIcon className="h-5 w-5" />
                   </button>
                 )}
               </div>

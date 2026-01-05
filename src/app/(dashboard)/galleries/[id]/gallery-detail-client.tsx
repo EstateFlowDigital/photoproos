@@ -40,6 +40,8 @@ import { CSS } from "@dnd-kit/utilities";
 interface Photo {
   id: string;
   url: string;
+  thumbnailUrl?: string | null;
+  mediumUrl?: string | null;
   filename: string;
   isFavorite?: boolean;
   downloads?: number;
@@ -1125,7 +1127,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                         )}
                       >
                         <img
-                          src={photo.url}
+                          src={photo.thumbnailUrl || photo.url}
                           alt={photo.filename}
                           className={cn(
                             "h-full w-full object-cover transition-transform",
@@ -1465,7 +1467,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                               </span>
                               {photo && (
                                 <img
-                                  src={photo.url}
+                                  src={photo.thumbnailUrl || photo.url}
                                   alt={photo.filename}
                                   className="h-10 w-14 rounded object-cover"
                                 />
@@ -2104,7 +2106,7 @@ function SortablePhotoItem({ photo, isCover, isFavorite }: SortablePhotoItemProp
       {...listeners}
     >
       <img
-        src={photo.url}
+        src={photo.thumbnailUrl || photo.url}
         alt={photo.filename}
         className="h-full w-full object-cover pointer-events-none"
         draggable={false}

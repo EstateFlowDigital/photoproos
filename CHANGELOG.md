@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Image Optimization Pipeline** - Automatic thumbnail and medium-sized image generation
+  - Sharp-based server-side processing generates WebP variants for faster loading
+  - Thumbnail (400px width) for gallery grids - much faster page loads
+  - Medium (1600px width) for lightbox preview - good balance of quality and speed
+  - Original JPEG preserved for downloads - full quality maintained
+  - Processing triggered automatically after uploads complete
+  - API endpoint `/api/images/process` handles batches of up to 10 images
+  - Dashboard and client galleries now use optimized images where available
+  - Falls back to original URLs for images not yet processed
+
+- **Gallery Mobile Responsiveness** - Improved touch device experience
+  - Action buttons (favorite, download, comment) now always visible on mobile
+  - Buttons use hover-reveal on desktop for cleaner look
+  - 44px minimum touch targets for accessibility compliance
+  - Added md breakpoint to photo grids for smoother column transitions
+  - Filename overlays always visible on mobile for better context
+  - Dashboard header buttons collapse to icon-only on small screens
+  - Property website and deliver buttons responsive with hidden labels on mobile
+
 - **Background Uploads** - Global upload context for persistent uploads across navigation
   - Uploads continue even when navigating away from gallery page
   - Minimizable upload indicator shows progress in bottom-right corner

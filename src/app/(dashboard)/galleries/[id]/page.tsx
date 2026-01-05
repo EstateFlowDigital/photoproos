@@ -50,6 +50,8 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
     photos: gallery.photos.map((photo) => ({
       id: photo.id,
       url: photo.thumbnailUrl || photo.url,
+      thumbnailUrl: photo.thumbnailUrl,
+      mediumUrl: photo.mediumUrl,
       filename: photo.filename,
     })),
     deliveryLink: gallery.deliverySlug
@@ -145,20 +147,22 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
           </span>
         }
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
             <Link
               href="/galleries"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              title="Back"
             >
               <ArrowLeftIcon className="h-4 w-4" />
-              Back
+              <span className="hidden md:inline">Back</span>
             </Link>
             <Link
               href={`/galleries/${id}/edit`}
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              title="Edit"
             >
               <EditIcon className="h-4 w-4" />
-              Edit
+              <span className="hidden md:inline">Edit</span>
             </Link>
             <GalleryActions
               galleryId={id}
@@ -172,18 +176,20 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
               hasPropertyWebsite ? (
                 <Link
                   href={`/properties/${gallery.propertyWebsite?.id}`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--success)]/30 bg-[var(--success)]/10 px-4 py-2.5 text-sm font-medium text-[var(--success)] transition-colors hover:bg-[var(--success)]/20"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--success)]/30 bg-[var(--success)]/10 p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-[var(--success)] transition-colors hover:bg-[var(--success)]/20"
+                  title="View Property Website"
                 >
                   <HomeIcon className="h-4 w-4" />
-                  View Property Website
+                  <span className="hidden lg:inline">View Property Website</span>
                 </Link>
               ) : (
                 <Link
                   href={`/properties/new?galleryId=${id}`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-2.5 text-sm font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/20"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/20"
+                  title="Create Property Website"
                 >
                   <HomeIcon className="h-4 w-4" />
-                  Create Property Website
+                  <span className="hidden lg:inline">Create Property Website</span>
                 </Link>
               )
             )}
@@ -196,10 +202,11 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
               >
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                  title="Deliver Gallery"
                 >
                   <SendIcon className="h-4 w-4" />
-                  Deliver Gallery
+                  <span className="hidden md:inline">Deliver Gallery</span>
                 </button>
               </form>
             )}

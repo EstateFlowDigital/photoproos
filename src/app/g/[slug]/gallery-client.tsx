@@ -20,6 +20,8 @@ interface ExifData {
 interface Photo {
   id: string;
   url: string;
+  thumbnailUrl?: string | null;
+  mediumUrl?: string | null;
   originalUrl: string;
   filename: string;
   width: number;
@@ -1485,7 +1487,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               }}
             >
               <img
-                src={photo.url}
+                src={photo.thumbnailUrl || photo.url}
                 alt={photo.filename}
                 className={cn(
                   "h-full w-full object-cover transition-transform duration-300 group-hover:scale-105",
@@ -1545,15 +1547,15 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 </div>
               )}
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <p className="text-sm font-medium text-white truncate">{photo.filename}</p>
+              {/* Overlay - Always visible on mobile for filename */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+                  <p className="text-xs md:text-sm font-medium text-white truncate">{photo.filename}</p>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Action Buttons - Always visible on mobile, hover on desktop */}
+              <div className="absolute top-2 right-2 md:top-3 md:right-3 flex items-center gap-1.5 md:gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 {gallery.allowFavorites && (
                   <button
                     onClick={(e) => {
@@ -1562,14 +1564,14 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     }}
                     disabled={isTogglingFavorite === photo.id}
                     className={cn(
-                      "rounded-full p-2 transition-colors",
+                      "rounded-full p-2 md:p-2.5 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center",
                       favoriteAssetIds.has(photo.id)
                         ? "bg-red-500 text-white hover:bg-red-600"
                         : "bg-black/50 text-white hover:bg-black/70"
                     )}
                     title={favoriteAssetIds.has(photo.id) ? "Remove from favorites" : "Add to favorites"}
                   >
-                    <HeartIcon className={cn("h-4 w-4", favoriteAssetIds.has(photo.id) && "fill-current")} />
+                    <HeartIcon className={cn("h-4 w-4 md:h-5 md:w-5", favoriteAssetIds.has(photo.id) && "fill-current")} />
                   </button>
                 )}
                 <button
@@ -1577,10 +1579,10 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     e.stopPropagation();
                     handleOpenPhotoModal(photo);
                   }}
-                  className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
+                  className="rounded-full bg-black/50 p-2 md:p-2.5 text-white hover:bg-black/70 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
                   title="Add comment"
                 >
-                  <ChatIcon className="h-4 w-4" />
+                  <ChatIcon className="h-4 w-4 md:h-5 md:w-5" />
                 </button>
                 {gallery.isPaid && gallery.allowDownload && (
                   <button
@@ -1588,10 +1590,10 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                       e.stopPropagation();
                       handleDownloadPhoto(photo);
                     }}
-                    className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
+                    className="rounded-full bg-black/50 p-2 md:p-2.5 text-white hover:bg-black/70 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
                     title={`Download ${photo.filename}`}
                   >
-                    <DownloadIcon className="h-4 w-4" />
+                    <DownloadIcon className="h-4 w-4 md:h-5 md:w-5" />
                   </button>
                 )}
               </div>
@@ -2021,7 +2023,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     title={`${index + 1}. ${photo.filename}`}
                   >
                     <img
-                      src={photo.url}
+                      src={photo.thumbnailUrl || photo.url}
                       alt={photo.filename}
                       className="w-full h-full object-cover"
                     />
@@ -2450,7 +2452,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               {comparePhotos.map((photo) => (
                 <img
                   key={photo.id}
-                  src={photo.url}
+                  src={photo.thumbnailUrl || photo.url}
                   alt={photo.filename}
                   className="h-12 w-12 rounded-lg object-cover ring-2 ring-white"
                 />
