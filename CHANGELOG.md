@@ -76,6 +76,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added aria-hidden="true" to decorative check icon SVG
   - Added JSDoc examples for proper label association patterns
 
+- **Accessibility Improvements - Inbox Page** - Enhanced keyboard and screen reader support
+  - Added aria-labels to all icon-only buttons (back, star, archive, more, attach, link)
+  - Added aria-label to settings link for clear navigation
+  - Added proper role="dialog" and aria-modal="true" to compose modal
+  - Added aria-labelledby to connect modal title with dialog
+  - Added aria-hidden="true" to decorative close icon SVG
+
 - **Type Safety - PDF Helpers** - Replaced `any` types with proper typing
   - Updated `receipt-pdf.ts` with ReactElement type for createPdfElement helper
 
