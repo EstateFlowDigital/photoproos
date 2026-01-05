@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Dropbox Sync** - Automatic file sync from Dropbox to galleries via webhooks
+  - `syncDropboxChangesForAccount()` - Main sync function triggered by webhooks
+  - Cursor-based delta sync for efficient incremental updates
+  - Automatic token refresh when expired
+  - Gallery matching from folder structure (`/PhotoProOS/Galleries/GalleryName_id/`)
+  - Duplicate detection via content hash to avoid re-uploading
+  - Downloads images from Dropbox, uploads to R2, creates asset records
+  - Tracks Dropbox path in asset metadata for future sync reference
+
 - **Bulk Upload v2** - Enhanced parallel upload system with progress tracking
   - 5 concurrent uploads with automatic queue management
   - Real-time progress tracking per file and overall

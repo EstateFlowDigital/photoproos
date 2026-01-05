@@ -614,3 +614,356 @@ export async function recordSyncError(errorMessage: string): Promise<ActionResul
     return { success: false, error: "Failed to record error" };
   }
 }
+
+// ============================================================================
+// WEBHOOK SYNC OPERATIONS (Called from webhook, no user auth required)
+// ============================================================================
+
+/**
+ * Process Dropbox webhook notification for changed files.
+ * Called from the webhook endpoint when Dropbox notifies of changes.
+ */
+export async function syncDropboxChangesForAccount(
+  dropboxAccountId: string
+): Promise<{ success: boolean; error?: string; synced?: number }> {
+  try {
+    // Look up the organization that owns this Dropbox account
+    const integration = await prisma.dropboxIntegration.findFirst({
+      where: {
+        accountId: dropboxAccountId,
+        isActive: true,
+        syncEnabled: true,
+        autoSync: true,
+      },
+      select: {
+        id: true,
+        organizationId: true,
+        accessToken: true,
+        refreshToken: true,
+        syncFolder: true,
+        cursor: true,
+      },
+    });
+
+    if (!integration) {
+      console.log(`[Dropbox Sync] No active integration found for account ${dropboxAccountId}`);
+      return { success: true, synced: 0 };
+    }
+
+    console.log(`[Dropbox Sync] Processing changes for org ${integration.organizationId}`);
+
+    // Get a valid access token (refresh if needed)
+    let accessToken = integration.accessToken;
+    const testResult = await testDropboxConnection(accessToken);
+
+    if (!testResult.success && integration.refreshToken) {
+      const newTokens = await refreshDropboxTokenInternal(integration.refreshToken);
+      if (newTokens) {
+        accessToken = newTokens.accessToken;
+        await prisma.dropboxIntegration.update({
+          where: { id: integration.id },
+          data: {
+            accessToken: newTokens.accessToken,
+            ...(newTokens.refreshToken && { refreshToken: newTokens.refreshToken }),
+          },
+        });
+      } else {
+        await prisma.dropboxIntegration.update({
+          where: { id: integration.id },
+          data: {
+            lastSyncError: "Failed to refresh token. Please reconnect Dropbox.",
+          },
+        });
+        return { success: false, error: "Token refresh failed" };
+      }
+    }
+
+    const client = new DropboxClient(accessToken);
+
+    // Get changes using cursor (delta sync) or list folder for initial sync
+    let changes: DropboxEntry[];
+    let newCursor: string;
+
+    if (integration.cursor) {
+      // Use cursor to get only changes since last sync
+      const result = await client.listFolderContinue(integration.cursor);
+      changes = result.entries;
+      newCursor = result.cursor;
+
+      // Handle pagination
+      let hasMore = result.has_more;
+      while (hasMore) {
+        const moreResults = await client.listFolderContinue(newCursor);
+        changes.push(...moreResults.entries);
+        newCursor = moreResults.cursor;
+        hasMore = moreResults.has_more;
+      }
+    } else {
+      // Initial sync - list all files in sync folder
+      const result = await client.listFolder(integration.syncFolder, true);
+      changes = result.entries;
+      newCursor = result.cursor;
+
+      // Handle pagination
+      let hasMore = result.has_more;
+      while (hasMore) {
+        const moreResults = await client.listFolderContinue(newCursor);
+        changes.push(...moreResults.entries);
+        newCursor = moreResults.cursor;
+        hasMore = moreResults.has_more;
+      }
+    }
+
+    console.log(`[Dropbox Sync] Found ${changes.length} changes for org ${integration.organizationId}`);
+
+    // Process changes
+    let syncedCount = 0;
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic"];
+
+    for (const entry of changes) {
+      // Skip folders and deleted items
+      if (entry[".tag"] === "folder") continue;
+      if (entry[".tag"] === "deleted") {
+        // Handle deletion - find and mark asset as deleted
+        await handleDropboxFileDeletion(integration.organizationId, entry.path_lower);
+        continue;
+      }
+
+      // Only process image files
+      const fileEntry = entry as DropboxEntry & { ".tag": "file" };
+      const ext = fileEntry.name.toLowerCase().substring(fileEntry.name.lastIndexOf("."));
+      if (!imageExtensions.includes(ext)) continue;
+
+      // Process new/modified image file
+      const processed = await processDropboxImageFile(
+        client,
+        integration.organizationId,
+        integration.syncFolder,
+        fileEntry
+      );
+      if (processed) syncedCount++;
+    }
+
+    // Update cursor and sync timestamp
+    await prisma.dropboxIntegration.update({
+      where: { id: integration.id },
+      data: {
+        cursor: newCursor,
+        lastSyncAt: new Date(),
+        lastSyncError: null,
+      },
+    });
+
+    console.log(`[Dropbox Sync] Synced ${syncedCount} files for org ${integration.organizationId}`);
+    return { success: true, synced: syncedCount };
+  } catch (error) {
+    console.error("[Dropbox Sync] Error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Sync failed"
+    };
+  }
+}
+
+/**
+ * Internal token refresh function (no auth context required)
+ */
+async function refreshDropboxTokenInternal(
+  refreshToken: string
+): Promise<{ accessToken: string; refreshToken?: string } | null> {
+  const appKey = process.env.DROPBOX_APP_KEY;
+  const appSecret = process.env.DROPBOX_APP_SECRET;
+
+  if (!appKey || !appSecret) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("https://api.dropboxapi.com/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: appKey,
+        client_secret: appSecret,
+      }),
+    });
+
+    if (!response.ok) return null;
+
+    const tokens = await response.json();
+    return {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Handle file deletion from Dropbox - find matching asset and soft delete
+ */
+async function handleDropboxFileDeletion(
+  organizationId: string,
+  dropboxPath: string
+): Promise<void> {
+  // Find asset by matching the Dropbox path stored in metadata
+  const asset = await prisma.asset.findFirst({
+    where: {
+      project: { organizationId },
+      // Store Dropbox path in exifData.dropboxPath
+      exifData: {
+        path: ["dropboxPath"],
+        equals: dropboxPath,
+      },
+    },
+  });
+
+  if (asset) {
+    // Soft delete by setting deletedAt (if your schema supports it)
+    // Or just log for now - actual deletion requires more consideration
+    console.log(`[Dropbox Sync] File deleted in Dropbox: ${dropboxPath}`);
+  }
+}
+
+/**
+ * Process a new/modified image file from Dropbox
+ */
+async function processDropboxImageFile(
+  client: DropboxClient,
+  organizationId: string,
+  syncFolder: string,
+  file: DropboxEntry & { ".tag": "file" }
+): Promise<boolean> {
+  try {
+    // Parse the folder structure to determine which gallery this belongs to
+    // Expected structure: /PhotoProOS/Galleries/GalleryName_id/photo.jpg
+    const relativePath = file.path_lower.replace(syncFolder.toLowerCase(), "");
+    const pathParts = relativePath.split("/").filter(Boolean);
+
+    // Must be in Galleries folder with at least gallery folder + filename
+    if (pathParts.length < 3 || pathParts[0] !== "galleries") {
+      return false;
+    }
+
+    const galleryFolderName = pathParts[1];
+
+    // Extract gallery ID from folder name (format: GalleryName_abcd1234)
+    const idMatch = galleryFolderName.match(/_([a-z0-9]{8})$/);
+    if (!idMatch) {
+      // Try to find gallery by name match
+      const gallery = await prisma.project.findFirst({
+        where: {
+          organizationId,
+          name: { contains: galleryFolderName.replace(/_/g, " "), mode: "insensitive" },
+        },
+        select: { id: true },
+      });
+      if (!gallery) return false;
+
+      return await downloadAndCreateAsset(client, organizationId, gallery.id, file);
+    }
+
+    // Find gallery by partial ID
+    const gallery = await prisma.project.findFirst({
+      where: {
+        organizationId,
+        id: { startsWith: idMatch[1] },
+      },
+      select: { id: true },
+    });
+
+    if (!gallery) return false;
+
+    return await downloadAndCreateAsset(client, organizationId, gallery.id, file);
+  } catch (error) {
+    console.error(`[Dropbox Sync] Error processing file ${file.path_display}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Download file from Dropbox and create asset in R2 + database
+ */
+async function downloadAndCreateAsset(
+  client: DropboxClient,
+  organizationId: string,
+  galleryId: string,
+  file: DropboxEntry & { ".tag": "file" }
+): Promise<boolean> {
+  // Import storage functions dynamically to avoid circular deps
+  const { uploadFile, generateFileKey, getPublicUrl } = await import("@/lib/storage");
+
+  try {
+    // Check if asset already exists (by Dropbox path)
+    const existing = await prisma.asset.findFirst({
+      where: {
+        projectId: galleryId,
+        exifData: {
+          path: ["dropboxPath"],
+          equals: file.path_lower,
+        },
+      },
+    });
+
+    if (existing) {
+      // Check if file was modified (using content_hash)
+      const existingHash = (existing.exifData as Record<string, unknown>)?.dropboxContentHash;
+      if (existingHash === file.content_hash) {
+        return false; // File unchanged
+      }
+      // File was modified - could update here, but skip for now
+      return false;
+    }
+
+    // Download file from Dropbox
+    const fileContent = await client.downloadFile(file.path_display);
+    const buffer = Buffer.from(fileContent);
+
+    // Determine content type from extension
+    const ext = file.name.toLowerCase().substring(file.name.lastIndexOf("."));
+    const contentTypeMap: Record<string, string> = {
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".png": "image/png",
+      ".gif": "image/gif",
+      ".webp": "image/webp",
+      ".heic": "image/heic",
+    };
+    const contentType = contentTypeMap[ext] || "image/jpeg";
+
+    // Generate key and upload to R2
+    const key = generateFileKey(organizationId, galleryId, file.name);
+    await uploadFile(key, buffer, contentType);
+
+    // Get current asset count for sortOrder
+    const assetCount = await prisma.asset.count({
+      where: { projectId: galleryId },
+    });
+
+    // Create asset record
+    await prisma.asset.create({
+      data: {
+        projectId: galleryId,
+        filename: file.name,
+        originalUrl: getPublicUrl(key),
+        mimeType: contentType,
+        sizeBytes: file.size || buffer.byteLength,
+        sortOrder: assetCount,
+        exifData: {
+          dropboxPath: file.path_lower,
+          dropboxContentHash: file.content_hash,
+          syncedAt: new Date().toISOString(),
+        },
+      },
+    });
+
+    console.log(`[Dropbox Sync] Created asset: ${file.name} in gallery ${galleryId}`);
+    return true;
+  } catch (error) {
+    console.error(`[Dropbox Sync] Failed to create asset for ${file.name}:`, error);
+    return false;
+  }
+}

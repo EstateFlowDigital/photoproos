@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { syncDropboxChangesForAccount } from "@/lib/actions/dropbox";
 
 // Dropbox webhook verification (GET request)
 // Dropbox sends a challenge parameter that we must echo back
@@ -36,19 +37,37 @@ export async function POST(request: NextRequest) {
     // Parse the notification
     const notification = JSON.parse(body);
 
-    // Log the notification for now
-    // In production, this would trigger a sync for affected accounts
+    // Get accounts that have changes
+    const accounts = notification.list_folder?.accounts || [];
+
     console.log("Dropbox webhook notification:", {
-      accounts: notification.list_folder?.accounts?.length || 0,
-      delta: notification.delta?.users?.length || 0,
+      accountCount: accounts.length,
     });
 
     // Process each account that has changes
-    // For now, just acknowledge receipt - actual sync would be triggered here
-    // TODO: Implement actual file sync logic
-    // - Look up which organization owns this Dropbox account
-    // - Fetch changed files using Dropbox API
-    // - Update galleries with new photos
+    // We process in background and return immediately to Dropbox
+    // (Dropbox expects quick acknowledgment)
+    if (accounts.length > 0) {
+      // Fire and forget - sync in background
+      Promise.all(
+        accounts.map(async (accountId: string) => {
+          try {
+            const result = await syncDropboxChangesForAccount(accountId);
+            if (result.success) {
+              console.log(`Dropbox sync completed for account ${accountId}:`, {
+                synced: result.synced,
+              });
+            } else {
+              console.error(`Dropbox sync failed for account ${accountId}:`, result.error);
+            }
+          } catch (error) {
+            console.error(`Dropbox sync error for account ${accountId}:`, error);
+          }
+        })
+      ).catch((error) => {
+        console.error("Dropbox sync batch error:", error);
+      });
+    }
 
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error) {
