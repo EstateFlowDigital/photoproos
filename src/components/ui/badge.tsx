@@ -53,9 +53,33 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {
   /** Adds a subtle pulse animation to draw attention */
   pulse?: boolean;
+  /**
+   * When true, adds role="status" for live region announcements.
+   * Use for dynamic status badges that update (e.g., "Active", "Pending").
+   */
+  isStatus?: boolean;
+  /**
+   * For badges that act as tags/labels, provide a category name.
+   * Adds aria-label="[category]: [badge text]" for context.
+   */
+  category?: string;
 }
 
-function Badge({ className, variant, size, pulse, ...props }: BadgeProps) {
+function Badge({
+  className,
+  variant,
+  size,
+  pulse,
+  isStatus,
+  category,
+  children,
+  ...props
+}: BadgeProps) {
+  // Build aria-label if category is provided
+  const ariaLabel = category && typeof children === "string"
+    ? `${category}: ${children}`
+    : undefined;
+
   return (
     <span
       className={cn(
@@ -63,8 +87,13 @@ function Badge({ className, variant, size, pulse, ...props }: BadgeProps) {
         pulse && "animate-pulse-slow",
         className
       )}
+      role={isStatus ? "status" : undefined}
+      aria-live={isStatus ? "polite" : undefined}
+      aria-label={ariaLabel}
       {...props}
-    />
+    >
+      {children}
+    </span>
   );
 }
 

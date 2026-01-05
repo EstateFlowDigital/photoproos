@@ -4,12 +4,15 @@ import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoicePdf } from "@/lib/pdf/templates/invoice-pdf";
-import React from "react";
+import React, { type ReactElement } from "react";
 import QRCode from "qrcode";
 
-// Type assertion helper for react-pdf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createPdfElement = (component: any) => component as any;
+/**
+ * Type-safe wrapper for react-pdf's renderToBuffer.
+ * react-pdf expects Document elements but React.createElement returns generic ReactElement.
+ * This wrapper ensures type safety while allowing the conversion.
+ */
+const createPdfElement = (component: ReactElement): ReactElement => component;
 
 /**
  * Generate a PDF for an invoice

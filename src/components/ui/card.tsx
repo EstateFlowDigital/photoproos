@@ -1,19 +1,53 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-xl border border-[var(--card-border)] bg-[var(--card)] text-foreground shadow-sm",
-      className
-    )}
-    {...props}
-  />
-));
+/**
+ * Card Component
+ *
+ * A container component for grouping related content.
+ * Uses semantic design tokens for consistent theming.
+ *
+ * @example
+ * // Basic card
+ * <Card>
+ *   <CardHeader>
+ *     <CardTitle>Title</CardTitle>
+ *   </CardHeader>
+ *   <CardContent>Content</CardContent>
+ * </Card>
+ *
+ * @example
+ * // Accessible region with label
+ * <Card asRegion aria-labelledby="stats-title">
+ *   <CardTitle id="stats-title">Statistics</CardTitle>
+ * </Card>
+ */
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * When true, adds role="region" to make the card a landmark.
+   * Should be used with aria-labelledby pointing to CardTitle.
+   */
+  asRegion?: boolean;
+  /**
+   * When true, adds role="article" for standalone content cards.
+   * Use for cards that represent independent pieces of content.
+   */
+  asArticle?: boolean;
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, asRegion, asArticle, ...props }, ref) => (
+    <div
+      ref={ref}
+      role={asRegion ? "region" : asArticle ? "article" : undefined}
+      className={cn(
+        "rounded-xl border border-[var(--card-border)] bg-[var(--card)] text-foreground shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+);
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<

@@ -4,6 +4,23 @@ import * as React from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { cn } from "@/lib/utils";
 
+/**
+ * Checkbox Component
+ *
+ * An accessible checkbox input using Radix UI primitives.
+ * Uses semantic design tokens for consistent theming.
+ *
+ * @example
+ * // With associated label (recommended)
+ * <div className="flex items-center gap-2">
+ *   <Checkbox id="terms" aria-describedby="terms-description" />
+ *   <label htmlFor="terms">Accept terms</label>
+ * </div>
+ *
+ * @example
+ * // Standalone with aria-label
+ * <Checkbox aria-label="Select all items" />
+ */
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
@@ -40,6 +57,7 @@ function CheckIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
+      aria-hidden="true"
     >
       <polyline points="20 6 9 17 4 12" />
     </svg>

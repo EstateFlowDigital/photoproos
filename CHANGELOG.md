@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Gallery Icons Module** - Extracted 30+ icon components from `gallery-client.tsx`
+  - New `src/app/g/[slug]/gallery-icons.tsx` file with all public gallery icons
+  - Includes social icons (Facebook, X, Pinterest, Email)
+  - Includes action icons (Download, Zoom, Compare, Print, etc.)
+  - Includes navigation icons (ChevronLeft, ChevronRight, Grid, etc.)
+  - Reduces gallery-client.tsx by 260 lines (3076 → 2816)
+
+### Changed
+- **Accessibility Improvements - Button Component** - Enhanced ARIA support
+  - Added `loading` prop with aria-busy attribute for loading states
+  - Added built-in spinner for loading buttons with aria-hidden
+  - Added documentation for aria-label requirement on icon-only buttons
+  - Loading state properly disables interactions via aria-disabled
+
+- **Accessibility Improvements - Badge Component** - Added semantic ARIA attributes
+  - Added `isStatus` prop for role="status" live region announcements
+  - Added `category` prop for contextual aria-label (e.g., "Status: Active")
+  - Added aria-live="polite" for dynamic status updates
+
+- **Accessibility Improvements - Card Component** - Added landmark roles
+  - Added `asRegion` prop for role="region" landmark cards
+  - Added `asArticle` prop for role="article" standalone content
+  - Added JSDoc examples for accessible card patterns
+
+- **Accessibility Improvements - Checkbox Component** - Enhanced accessibility
+  - Added aria-hidden="true" to decorative check icon SVG
+  - Added JSDoc examples for proper label association patterns
+
+- **Type Safety - PDF Helpers** - Replaced `any` types with proper typing
+  - Updated `receipt-pdf.ts` with ReactElement type for createPdfElement helper
+  - Updated `invoice-pdf.ts` with ReactElement type for createPdfElement helper
+  - Updated `contract-pdf.ts` with ReactElement type for createPdfElement helper
+  - Added documentation explaining react-pdf type compatibility
+
+- **Build Fix - Dashboard Page** - Fixed Next.js 15 compatibility issues
+  - Fixed `dynamic` variable naming conflict with next/dynamic import
+  - Removed incompatible `ssr: false` options from Server Component
+  - Added missing Suspense import
+
+
+- **Unified Email Inbox (Database Schema)** - Added foundation for Gmail/Outlook email integration
+  - `EmailAccount` model for storing connected email accounts with OAuth tokens
+  - `EmailThread` model for grouping email conversations with client auto-linking
+  - `EmailMessage` model for individual emails with full header and body support
+  - `EmailAttachment` model for storing email attachments in S3/R2
+  - `EmailProvider` enum (GMAIL, OUTLOOK) for provider identification
+  - `EmailDirection` enum (INBOUND, OUTBOUND) for message direction tracking
+  - Relations to Organization and Client models for seamless integration
+  - Comprehensive indexing for efficient queries on threads, messages, and sync operations
+
+- **Unified Email Inbox (Dashboard UI)** - Added complete inbox interface for email management
+  - New `/inbox` route with responsive split-panel layout (thread list + conversation view)
+  - Thread list with search, filtering (All, Unread, Starred, Archived), and real-time updates
+  - Conversation view with message bubbles, attachment indicators, and reply functionality
+  - Compose modal for creating new emails with recipient, subject, and body fields
+  - Empty state UI for connecting Gmail/Outlook accounts when no email configured
+  - Client linking - threads automatically linked to existing clients by email match
+  - Mobile-responsive design with collapsible panels
+  - Added inbox module to navigation system (sortOrder 5.3 in client category)
+
 ### Changed
 - **Design System Compliance - Unsubscribe & Order Pages** - Updated public pages to use CSS variables
   - Updated `unsubscribe/page.tsx` with background, card, border, and primary button tokens

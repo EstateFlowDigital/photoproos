@@ -24,6 +24,7 @@ import {
   Settings,
   MessageSquare,
   FileInput,
+  Mail,
   type LucideIcon,
 } from "lucide-react";
 
@@ -155,6 +156,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
   // ============================================================================
   // CLIENT MODULES
   // ============================================================================
+  inbox: {
+    id: "inbox",
+    name: "Inbox",
+    description: "Unified email inbox with Gmail & Outlook sync",
+    icon: Mail,
+    href: "/inbox",
+    isCore: false,
+    industries: ["real_estate", "commercial", "events", "portraits", "food", "product"],
+    category: "client",
+    sortOrder: 5.3,
+  },
   leads: {
     id: "leads",
     name: "Leads",
