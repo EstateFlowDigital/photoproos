@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Image preloading** - Preloads adjacent images for smooth transitions
   - Jump to any photo by clicking its thumbnail
 
+- **Gallery Sharing Features**
+  - **Copy Link Button** - One-click copy gallery URL to clipboard with visual feedback
+  - **QR Code Modal** - Generate shareable QR code for gallery access
+  - Displays gallery name and photographer info in QR modal
+  - Copy link button within QR modal for easy sharing
+  - Clean, themed modal design matching gallery appearance
+
 - **Dashboard Appearance Customization**
   - Font customization with 6 font options (System, Inter, Plus Jakarta, DM Sans, Space Grotesk, JetBrains Mono)
   - Google Fonts loading for all custom font options
@@ -39,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Respects `prefers-reduced-motion` for users who prefer no animations
   - **Theme sync across browser tabs** - changing theme in one tab updates all tabs
   - **Export/Import settings** - backup and restore appearance preferences as JSON files
+  - **Sidebar position** - option to place sidebar on left or right side of the screen
+  - **Reduce motion** - toggle to minimize animations for accessibility
+  - **Automatic theme switching** - schedule dark/light mode based on time of day
   - User preferences stored in database and applied via CSS custom properties
 
 - **Invoice PDF Generation**

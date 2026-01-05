@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
-import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
+import { UserButton, OrganizationSwitcher, useUser, useOrganization } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -36,6 +36,8 @@ export function DashboardSidebar({
   notificationCount = 0,
 }: DashboardSidebarProps) {
   const pathname = usePathname() || "";
+  const { user } = useUser();
+  const { organization } = useOrganization();
 
   const navItems = getFilteredNavigation({
     enabledModules,
@@ -246,34 +248,56 @@ export function DashboardSidebar({
           })}
         </div>
 
-        <div className="mt-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
-          <div className="px-3 py-2.5">
+        {/* Identity / org card */}
+        <div className="mt-4 rounded-xl border border-[var(--card-border)] bg-gradient-to-br from-[var(--background)] to-[var(--background-secondary)] shadow-sm">
+          <div className="px-3 pb-2 pt-3">
             <OrganizationSwitcher
               appearance={{
                 elements: {
                   rootBox: "w-full",
-                  organizationSwitcherTrigger: "w-full",
+                  organizationSwitcherTrigger:
+                    "w-full justify-between rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-foreground",
+                  organizationSwitcherTriggerIcon: "text-foreground-muted",
+                  organizationSwitcherOrganizationName: "text-sm font-semibold",
                 },
               }}
               afterSelectOrganizationUrl="/dashboard"
               afterCreateOrganizationUrl="/dashboard"
             />
-          </div>
-
-          <div className="flex items-center gap-3 px-3 py-2.5">
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "h-9 w-9",
-                },
-              }}
-              afterSignOutUrl="/"
-            />
-            <div className="flex-1 min-w-0 hidden sm:block">
-              <p className="truncate text-xs text-foreground-muted">Signed in</p>
+            <div className="mt-3 flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-10 w-10",
+                  },
+                }}
+                afterSignOutUrl="/"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {user?.fullName || user?.username || "Signed in"}
+                </p>
+                <p className="truncate text-xs text-foreground-muted">
+                  {organization?.name || user?.primaryEmailAddress?.emailAddress || "Workspace member"}
+                </p>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {typeof organization?.publicMetadata?.plan === "string" && (
+                    <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-[11px] font-medium text-[var(--primary)]">
+                      {organization.publicMetadata.plan}
+                    </span>
+                  )}
+                  {typeof organization?.publicMetadata?.role === "string" && (
+                    <span className="rounded-full bg-[var(--background-hover)] px-2 py-0.5 text-[11px] font-medium text-foreground-secondary">
+                      {organization.publicMetadata.role}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-2">
+                <QuickThemeSwitcher />
+                <ThemeToggle />
+              </div>
             </div>
-            <QuickThemeSwitcher />
-            <ThemeToggle />
           </div>
 
           <div className="px-3 pb-3">
@@ -281,19 +305,28 @@ export function DashboardSidebar({
               <Link
                 href="/settings"
                 className={cn(
-                  "flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-medium transition-colors",
+                  "flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-semibold transition-colors",
                   pathname.startsWith("/settings")
                     ? "border-transparent bg-[var(--primary)] text-white"
                     : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                 )}
               >
+                <SettingsIcon className="h-4 w-4" />
                 Settings
               </Link>
               <Link
                 href="/settings/team?invite=1"
-                className="flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-medium text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
               >
-                Invite Team
+                <InviteIcon className="h-4 w-4" />
+                Invite
+              </Link>
+              <Link
+                href="/settings/billing"
+                className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
+              >
+                <PaymentsIcon className="h-4 w-4" />
+                Billing & plan
               </Link>
             </div>
           </div>
@@ -422,6 +455,14 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+    </svg>
+  );
+}
+
+function InviteIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.572.398-.255.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM16.75 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z" />
     </svg>
   );
 }

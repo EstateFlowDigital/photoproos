@@ -8,7 +8,7 @@ import {
   resetAppearancePreferences,
 } from "@/lib/actions/appearance";
 import { DEFAULT_APPEARANCE, FONT_SIZE_OPTIONS } from "@/lib/appearance-types";
-import type { AppearancePreferences, ThemePreset, FontOption, DensityOption, FontSizeOption } from "@/lib/appearance-types";
+import type { AppearancePreferences, ThemePreset, FontOption, DensityOption, FontSizeOption, SidebarPositionOption } from "@/lib/appearance-types";
 import { useToast } from "@/components/ui/toast";
 
 interface AppearanceSettingsFormProps {
@@ -17,6 +17,7 @@ interface AppearanceSettingsFormProps {
   fontOptions: FontOption[];
   densityOptions: DensityOption[];
   fontSizeOptions: FontSizeOption[];
+  sidebarPositionOptions: SidebarPositionOption[];
 }
 
 interface PreviewState {
@@ -25,6 +26,8 @@ interface PreviewState {
   density: string | null;
   fontSize: string | null;
   highContrast: boolean | null;
+  reduceMotion: boolean | null;
+  sidebarPosition: string | null;
 }
 
 export function AppearanceSettingsForm({
@@ -33,6 +36,7 @@ export function AppearanceSettingsForm({
   fontOptions,
   densityOptions,
   fontSizeOptions,
+  sidebarPositionOptions,
 }: AppearanceSettingsFormProps) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -50,9 +54,11 @@ export function AppearanceSettingsForm({
     density: null,
     fontSize: null,
     highContrast: null,
+    reduceMotion: null,
+    sidebarPosition: null,
   });
 
-  const hasPreviewChanges = preview.accentColor !== null || preview.fontFamily !== null || preview.density !== null || preview.fontSize !== null || preview.highContrast !== null;
+  const hasPreviewChanges = preview.accentColor !== null || preview.fontFamily !== null || preview.density !== null || preview.fontSize !== null || preview.highContrast !== null || preview.reduceMotion !== null || preview.sidebarPosition !== null;
 
   // Apply preview styles dynamically
   useEffect(() => {
@@ -127,7 +133,7 @@ export function AppearanceSettingsForm({
   }, []);
 
   const resetPreview = useCallback(() => {
-    setPreview({ accentColor: null, fontFamily: null, density: null, fontSize: null, highContrast: null });
+    setPreview({ accentColor: null, fontFamily: null, density: null, fontSize: null, highContrast: null, reduceMotion: null, sidebarPosition: null });
     showToast("Preview reset", "info");
   }, [showToast]);
 
@@ -287,7 +293,7 @@ export function AppearanceSettingsForm({
       if (result.success) {
         setPreferences(DEFAULT_APPEARANCE);
         setCustomColor("#3b82f6");
-        setPreview({ accentColor: null, fontFamily: null, density: null, fontSize: null, highContrast: null });
+        setPreview({ accentColor: null, fontFamily: null, density: null, fontSize: null, highContrast: null, reduceMotion: null, sidebarPosition: null });
         showToast("Settings reset to defaults", "success");
         window.location.reload();
       } else {
@@ -296,18 +302,81 @@ export function AppearanceSettingsForm({
     });
   };
 
+  const handleSidebarPositionChange = (position: string) => {
+    startTransition(async () => {
+      const result = await updateAppearancePreferences({
+        sidebarPosition: position,
+      });
+      if (result.success) {
+        setPreferences({ ...preferences, sidebarPosition: position });
+        showToast(`Sidebar position: ${position}`, "success");
+      } else {
+        showToast(result.error || "Failed to update sidebar position", "error");
+      }
+    });
+  };
+
+  const handleReduceMotionToggle = () => {
+    const newValue = !preferences.reduceMotion;
+    startTransition(async () => {
+      const result = await updateAppearancePreferences({
+        reduceMotion: newValue,
+      });
+      if (result.success) {
+        setPreferences({ ...preferences, reduceMotion: newValue });
+        showToast(newValue ? "Animations reduced" : "Animations enabled", "success");
+      } else {
+        showToast(result.error || "Failed to update motion preference", "error");
+      }
+    });
+  };
+
+  const handleAutoThemeToggle = () => {
+    const newValue = !preferences.autoThemeEnabled;
+    startTransition(async () => {
+      const result = await updateAppearancePreferences({
+        autoThemeEnabled: newValue,
+      });
+      if (result.success) {
+        setPreferences({ ...preferences, autoThemeEnabled: newValue });
+        showToast(newValue ? "Auto theme enabled" : "Auto theme disabled", "success");
+      } else {
+        showToast(result.error || "Failed to update auto theme", "error");
+      }
+    });
+  };
+
+  const handleAutoThemeTimeChange = (field: "autoThemeDarkStart" | "autoThemeDarkEnd", value: string) => {
+    startTransition(async () => {
+      const result = await updateAppearancePreferences({
+        [field]: value,
+      });
+      if (result.success) {
+        setPreferences({ ...preferences, [field]: value });
+        showToast("Schedule updated", "success");
+      } else {
+        showToast(result.error || "Failed to update schedule", "error");
+      }
+    });
+  };
+
   const handleExportSettings = () => {
     const exportData = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       preferences: {
         dashboardTheme: preferences.dashboardTheme,
         dashboardAccent: preferences.dashboardAccent,
         sidebarCompact: preferences.sidebarCompact,
+        sidebarPosition: preferences.sidebarPosition,
         fontFamily: preferences.fontFamily,
         density: preferences.density,
         fontSize: preferences.fontSize,
         highContrast: preferences.highContrast,
+        reduceMotion: preferences.reduceMotion,
+        autoThemeEnabled: preferences.autoThemeEnabled,
+        autoThemeDarkStart: preferences.autoThemeDarkStart,
+        autoThemeDarkEnd: preferences.autoThemeDarkEnd,
       },
     };
 
@@ -347,10 +416,15 @@ export function AppearanceSettingsForm({
             dashboardTheme: importedPrefs.dashboardTheme,
             dashboardAccent: importedPrefs.dashboardAccent,
             sidebarCompact: importedPrefs.sidebarCompact,
+            sidebarPosition: importedPrefs.sidebarPosition || "left",
             fontFamily: importedPrefs.fontFamily,
             density: importedPrefs.density,
             fontSize: importedPrefs.fontSize,
             highContrast: importedPrefs.highContrast,
+            reduceMotion: importedPrefs.reduceMotion ?? false,
+            autoThemeEnabled: importedPrefs.autoThemeEnabled ?? false,
+            autoThemeDarkStart: importedPrefs.autoThemeDarkStart || "18:00",
+            autoThemeDarkEnd: importedPrefs.autoThemeDarkEnd || "06:00",
           });
 
           if (result.success) {
@@ -877,6 +951,142 @@ export function AppearanceSettingsForm({
               />
             </button>
           </div>
+
+          {/* Sidebar Position */}
+          <div className="p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+            <div className="mb-3">
+              <h3 className="font-medium text-foreground">Sidebar Position</h3>
+              <p className="text-sm text-foreground-muted">
+                Choose which side the sidebar appears on
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {sidebarPositionOptions.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => handleSidebarPositionChange(option.id)}
+                  disabled={isPending}
+                  className={cn(
+                    "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                    preferences.sidebarPosition === option.id
+                      ? "bg-[var(--primary)] text-white"
+                      : "border border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
+                  )}
+                >
+                  {option.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Reduce Motion Toggle */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+            <div>
+              <h3 className="font-medium text-foreground">Reduce Motion</h3>
+              <p className="text-sm text-foreground-muted">
+                Minimize animations throughout the dashboard
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={preferences.reduceMotion}
+              onClick={handleReduceMotionToggle}
+              disabled={isPending}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
+                preferences.reduceMotion
+                  ? "bg-[var(--primary)]"
+                  : "bg-[var(--background-hover)]"
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+                  preferences.reduceMotion ? "translate-x-5" : "translate-x-0"
+                )}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Auto Theme Scheduling */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">
+          Automatic Theme
+        </h2>
+        <p className="text-sm text-foreground-muted mb-6">
+          Automatically switch between light and dark mode based on time of day
+        </p>
+
+        <div className="space-y-4">
+          {/* Auto Theme Toggle */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+            <div>
+              <h3 className="font-medium text-foreground">Enable Auto Theme</h3>
+              <p className="text-sm text-foreground-muted">
+                Switch theme automatically at scheduled times
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={preferences.autoThemeEnabled}
+              onClick={handleAutoThemeToggle}
+              disabled={isPending}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
+                preferences.autoThemeEnabled
+                  ? "bg-[var(--primary)]"
+                  : "bg-[var(--background-hover)]"
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+                  preferences.autoThemeEnabled ? "translate-x-5" : "translate-x-0"
+                )}
+              />
+            </button>
+          </div>
+
+          {/* Time Settings */}
+          {preferences.autoThemeEnabled && (
+            <div className="grid gap-4 sm:grid-cols-2 p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Dark Mode Starts At
+                </label>
+                <input
+                  type="time"
+                  value={preferences.autoThemeDarkStart}
+                  onChange={(e) => handleAutoThemeTimeChange("autoThemeDarkStart", e.target.value)}
+                  disabled={isPending}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-foreground"
+                />
+                <p className="text-xs text-foreground-muted mt-1">
+                  Switch to dark theme
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Light Mode Starts At
+                </label>
+                <input
+                  type="time"
+                  value={preferences.autoThemeDarkEnd}
+                  onChange={(e) => handleAutoThemeTimeChange("autoThemeDarkEnd", e.target.value)}
+                  disabled={isPending}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-foreground"
+                />
+                <p className="text-xs text-foreground-muted mt-1">
+                  Switch to light theme
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

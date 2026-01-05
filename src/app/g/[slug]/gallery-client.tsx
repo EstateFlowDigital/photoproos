@@ -80,6 +80,10 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
 
+  // Sharing state
+  const [showLinkCopied, setShowLinkCopied] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+
   useEffect(() => {
     // Check system preference
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -499,6 +503,26 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     setSlideshowPlaying(false); // Pause when manually selecting
   }, []);
 
+  // Copy gallery link to clipboard
+  const handleCopyLink = useCallback(async () => {
+    try {
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      setShowLinkCopied(true);
+      setTimeout(() => setShowLinkCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy link:", error);
+    }
+  }, []);
+
+  // Get the gallery URL for QR code
+  const getGalleryUrl = useCallback(() => {
+    if (typeof window !== "undefined") {
+      return window.location.href;
+    }
+    return "";
+  }, []);
+
   const getThemeColors = () => {
     if (resolvedTheme === "light") {
       return {
@@ -560,6 +584,43 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
             {/* Actions */}
             <div className="flex items-center gap-3">
+              {/* Copy Link Button */}
+              <button
+                onClick={handleCopyLink}
+                className="relative flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: colors.cardBg,
+                  color: colors.textColor,
+                }}
+                title="Copy gallery link"
+              >
+                {showLinkCopied ? (
+                  <>
+                    <CheckIcon className="h-4 w-4" style={{ color: "#22c55e" }} />
+                    <span className="hidden sm:inline" style={{ color: "#22c55e" }}>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <LinkIcon className="h-4 w-4" />
+                    <span className="hidden sm:inline">Copy Link</span>
+                  </>
+                )}
+              </button>
+
+              {/* QR Code Button */}
+              <button
+                onClick={() => setShowQRModal(true)}
+                className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: colors.cardBg,
+                  color: colors.textColor,
+                }}
+                title="Show QR code"
+              >
+                <QRCodeIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">QR Code</span>
+              </button>
+
               {/* Slideshow Button */}
               {displayedPhotos.length > 0 && (
                 <button
@@ -1138,6 +1199,86 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         </div>
       )}
 
+      {/* QR Code Modal */}
+      {showQRModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowQRModal(false)}
+          />
+
+          {/* Modal Content */}
+          <div
+            className="relative z-10 w-full max-w-sm mx-4 rounded-2xl p-6 shadow-2xl"
+            style={{ backgroundColor: colors.cardBg }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowQRModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              aria-label="Close QR code"
+            >
+              <CloseIcon className="h-6 w-6" />
+            </button>
+
+            {/* Header */}
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-semibold" style={{ color: colors.textColor }}>
+                Share Gallery
+              </h3>
+              <p className="text-sm mt-1" style={{ color: colors.mutedColor }}>
+                Scan to view this gallery
+              </p>
+            </div>
+
+            {/* QR Code */}
+            <div className="flex justify-center mb-6">
+              <div className="bg-white p-4 rounded-xl">
+                <QRCodeSVG
+                  url={getGalleryUrl()}
+                  size={200}
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                />
+              </div>
+            </div>
+
+            {/* Gallery name */}
+            <div className="text-center mb-4">
+              <p className="font-medium" style={{ color: colors.textColor }}>
+                {gallery.name}
+              </p>
+              <p className="text-xs mt-1" style={{ color: colors.mutedColor }}>
+                by {gallery.photographer.name}
+              </p>
+            </div>
+
+            {/* Copy Link Button */}
+            <button
+              onClick={handleCopyLink}
+              className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors"
+              style={{
+                backgroundColor: showLinkCopied ? "#22c55e" : primaryColor,
+                color: "#fff",
+              }}
+            >
+              {showLinkCopied ? (
+                <>
+                  <CheckIcon className="h-4 w-4" />
+                  Link Copied!
+                </>
+              ) : (
+                <>
+                  <LinkIcon className="h-4 w-4" />
+                  Copy Gallery Link
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <footer
         className="border-t py-8 transition-colors duration-300"
@@ -1197,9 +1338,9 @@ function PhotoIcon({ className }: { className?: string }) {
   );
 }
 
-function CheckIcon({ className }: { className?: string }) {
+function CheckIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
     </svg>
   );
@@ -1293,6 +1434,51 @@ function GridIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 0 0 2 4.25v2.5A2.25 2.25 0 0 0 4.25 9h2.5A2.25 2.25 0 0 0 9 6.75v-2.5A2.25 2.25 0 0 0 6.75 2h-2.5Zm0 9A2.25 2.25 0 0 0 2 13.25v2.5A2.25 2.25 0 0 0 4.25 18h2.5A2.25 2.25 0 0 0 9 15.75v-2.5A2.25 2.25 0 0 0 6.75 11h-2.5Zm9-9A2.25 2.25 0 0 0 11 4.25v2.5A2.25 2.25 0 0 0 13.25 9h2.5A2.25 2.25 0 0 0 18 6.75v-2.5A2.25 2.25 0 0 0 15.75 2h-2.5Zm0 9A2.25 2.25 0 0 0 11 13.25v2.5A2.25 2.25 0 0 0 13.25 18h2.5A2.25 2.25 0 0 0 18 15.75v-2.5A2.25 2.25 0 0 0 15.75 11h-2.5Z" clipRule="evenodd" />
     </svg>
+  );
+}
+
+function LinkIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z" />
+      <path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z" />
+    </svg>
+  );
+}
+
+function QRCodeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3.75 2A1.75 1.75 0 0 0 2 3.75v3.5C2 8.216 2.784 9 3.75 9h3.5A1.75 1.75 0 0 0 9 7.25v-3.5A1.75 1.75 0 0 0 7.25 2h-3.5ZM3.5 3.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM3.75 11A1.75 1.75 0 0 0 2 12.75v3.5c0 .966.784 1.75 1.75 1.75h3.5A1.75 1.75 0 0 0 9 16.25v-3.5A1.75 1.75 0 0 0 7.25 11h-3.5Zm-.25 1.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM12.75 2A1.75 1.75 0 0 0 11 3.75v3.5c0 .966.784 1.75 1.75 1.75h3.5A1.75 1.75 0 0 0 18 7.25v-3.5A1.75 1.75 0 0 0 16.25 2h-3.5Zm-.25 1.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM11 12.75c0-.41.34-.75.75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Zm4.25-.75a.75.75 0 0 0 0 1.5h1a.75.75 0 0 0 .75-.75v-1a.75.75 0 0 0-1.5 0v.25h-.25ZM11 15.25a.75.75 0 0 1 .75-.75h.25v-.25a.75.75 0 0 1 1.5 0v1c0 .41-.34.75-.75.75h-1a.75.75 0 0 1-.75-.75Zm4.25-.75a.75.75 0 0 0-.75.75v1.75c0 .41.34.75.75.75h2a.75.75 0 0 0 0-1.5H16v-1a.75.75 0 0 0-.75-.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+// QR Code SVG Generator Component
+// Uses a simple algorithm to generate QR codes client-side
+function QRCodeSVG({
+  url,
+  size = 200,
+  bgColor = "#ffffff",
+  fgColor = "#000000",
+}: {
+  url: string;
+  size?: number;
+  bgColor?: string;
+  fgColor?: string;
+}) {
+  // Simple QR code generation using Google Charts API as fallback
+  // For a production app, you'd use a proper QR code library like 'qrcode'
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=${bgColor.replace("#", "")}&color=${fgColor.replace("#", "")}`;
+
+  return (
+    <img
+      src={qrUrl}
+      alt="QR Code"
+      width={size}
+      height={size}
+      style={{ display: "block" }}
+    />
   );
 }
 

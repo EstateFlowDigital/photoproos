@@ -631,13 +631,18 @@ model User {
   tourCompletedModules String[] @default([])
 
   // Dashboard appearance preferences
-  dashboardTheme    String  @default("default") // Theme preset: default, midnight, forest, sunset, ocean, lavender
-  dashboardAccent   String  @default("#3b82f6") // Custom accent color
-  sidebarCompact    Boolean @default(false) // Compact sidebar mode
-  fontFamily        String  @default("system") // Font: system, inter, jakarta, dm-sans, space-grotesk, jetbrains
-  density           String  @default("comfortable") // Spacing: compact, comfortable, spacious
-  fontSize          String  @default("medium") // Font size: small, medium, large, x-large
-  highContrast      Boolean @default(false) // High contrast mode for accessibility
+  dashboardTheme     String  @default("default") // Theme preset: default, midnight, forest, sunset, ocean, lavender
+  dashboardAccent    String  @default("#3b82f6") // Custom accent color
+  sidebarCompact     Boolean @default(false) // Compact sidebar mode
+  sidebarPosition    String  @default("left") // Sidebar position: left, right
+  fontFamily         String  @default("system") // Font: system, inter, jakarta, dm-sans, space-grotesk, jetbrains
+  density            String  @default("comfortable") // Spacing: compact, comfortable, spacious
+  fontSize           String  @default("medium") // Font size: small, medium, large, x-large
+  highContrast       Boolean @default(false) // High contrast mode for accessibility
+  reduceMotion       Boolean @default(false) // Reduce animations for accessibility
+  autoThemeEnabled   Boolean @default(false) // Auto switch theme based on time
+  autoThemeDarkStart String  @default("18:00") // When to switch to dark mode (HH:MM)
+  autoThemeDarkEnd   String  @default("06:00") // When to switch to light mode (HH:MM)
 
   // Home base location (overrides org default for travel calculations)
   homeBaseLocationId String?

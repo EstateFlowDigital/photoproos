@@ -63,10 +63,15 @@ export default async function DashboardLayout({
   const userAppearance = {
     dashboardAccent: user.dashboardAccent || "#3b82f6",
     sidebarCompact: user.sidebarCompact || false,
+    sidebarPosition: (user.sidebarPosition as "left" | "right") || "left",
     fontFamily: fontOption.fontFamily,
     densityScale: densityOption.scale,
     fontSizeScale: fontSizeOption.scale,
     highContrast: user.highContrast || false,
+    reduceMotion: user.reduceMotion || false,
+    autoThemeEnabled: user.autoThemeEnabled || false,
+    autoThemeDarkStart: user.autoThemeDarkStart || "18:00",
+    autoThemeDarkEnd: user.autoThemeDarkEnd || "06:00",
   };
 
   // Check if user has an organization
@@ -165,6 +170,7 @@ export default async function DashboardLayout({
                   --card-padding: calc(24px * ${userAppearance.densityScale});
                   --section-gap: calc(24px * ${userAppearance.densityScale});
                   --item-gap: calc(16px * ${userAppearance.densityScale});
+                  --sidebar-position: ${userAppearance.sidebarPosition};
                 }
                 body {
                   font-family: var(--font-family);
@@ -191,6 +197,15 @@ export default async function DashboardLayout({
                   --border-emphasis: rgba(0, 0, 0, 0.4);
                 }
                 ` : ''}
+                ${userAppearance.reduceMotion ? `
+                /* Reduce Motion Mode */
+                *, *::before, *::after {
+                  animation-duration: 0.01ms !important;
+                  animation-iteration-count: 1 !important;
+                  transition-duration: 0.01ms !important;
+                  scroll-behavior: auto !important;
+                }
+                ` : ''}
               `,
             }}
           />
@@ -198,6 +213,12 @@ export default async function DashboardLayout({
             enabledModules={enabledModules}
             industries={organizationIndustries}
             unreadNotificationCount={unreadNotificationCount}
+            sidebarPosition={userAppearance.sidebarPosition}
+            autoTheme={userAppearance.autoThemeEnabled ? {
+              enabled: true,
+              darkStart: userAppearance.autoThemeDarkStart,
+              darkEnd: userAppearance.autoThemeDarkEnd,
+            } : undefined}
           >
             {children}
           </DashboardLayoutClient>

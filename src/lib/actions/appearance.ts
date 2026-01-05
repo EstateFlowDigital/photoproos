@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, FONT_SIZE_OPTIONS, DEFAULT_APPEARANCE, type AppearancePreferences } from "@/lib/appearance-types";
+import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, FONT_SIZE_OPTIONS, SIDEBAR_POSITION_OPTIONS, DEFAULT_APPEARANCE, type AppearancePreferences } from "@/lib/appearance-types";
 
 /**
  * Get user's appearance preferences
@@ -25,10 +25,15 @@ export async function getAppearancePreferences(): Promise<{
         dashboardTheme: true,
         dashboardAccent: true,
         sidebarCompact: true,
+        sidebarPosition: true,
         fontFamily: true,
         density: true,
         fontSize: true,
         highContrast: true,
+        reduceMotion: true,
+        autoThemeEnabled: true,
+        autoThemeDarkStart: true,
+        autoThemeDarkEnd: true,
       },
     });
 
@@ -42,10 +47,15 @@ export async function getAppearancePreferences(): Promise<{
         dashboardTheme: user.dashboardTheme,
         dashboardAccent: user.dashboardAccent,
         sidebarCompact: user.sidebarCompact,
+        sidebarPosition: user.sidebarPosition,
         fontFamily: user.fontFamily,
         density: user.density,
         fontSize: user.fontSize,
         highContrast: user.highContrast,
+        reduceMotion: user.reduceMotion,
+        autoThemeEnabled: user.autoThemeEnabled,
+        autoThemeDarkStart: user.autoThemeDarkStart,
+        autoThemeDarkEnd: user.autoThemeDarkEnd,
       },
     };
   } catch (error) {
@@ -106,6 +116,23 @@ export async function updateAppearancePreferences(
       }
     }
 
+    // Validate sidebar position
+    if (preferences.sidebarPosition) {
+      const validPositions = SIDEBAR_POSITION_OPTIONS.map((p) => p.id as string);
+      if (!validPositions.includes(preferences.sidebarPosition)) {
+        return { success: false, error: "Invalid sidebar position" };
+      }
+    }
+
+    // Validate time format for auto theme
+    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (preferences.autoThemeDarkStart && !timeRegex.test(preferences.autoThemeDarkStart)) {
+      return { success: false, error: "Invalid time format for dark mode start" };
+    }
+    if (preferences.autoThemeDarkEnd && !timeRegex.test(preferences.autoThemeDarkEnd)) {
+      return { success: false, error: "Invalid time format for dark mode end" };
+    }
+
     await prisma.user.update({
       where: { clerkUserId: userId },
       data: {
@@ -118,6 +145,9 @@ export async function updateAppearancePreferences(
         ...(preferences.sidebarCompact !== undefined && {
           sidebarCompact: preferences.sidebarCompact,
         }),
+        ...(preferences.sidebarPosition !== undefined && {
+          sidebarPosition: preferences.sidebarPosition,
+        }),
         ...(preferences.fontFamily !== undefined && {
           fontFamily: preferences.fontFamily,
         }),
@@ -129,6 +159,18 @@ export async function updateAppearancePreferences(
         }),
         ...(preferences.highContrast !== undefined && {
           highContrast: preferences.highContrast,
+        }),
+        ...(preferences.reduceMotion !== undefined && {
+          reduceMotion: preferences.reduceMotion,
+        }),
+        ...(preferences.autoThemeEnabled !== undefined && {
+          autoThemeEnabled: preferences.autoThemeEnabled,
+        }),
+        ...(preferences.autoThemeDarkStart !== undefined && {
+          autoThemeDarkStart: preferences.autoThemeDarkStart,
+        }),
+        ...(preferences.autoThemeDarkEnd !== undefined && {
+          autoThemeDarkEnd: preferences.autoThemeDarkEnd,
         }),
       },
     });
@@ -178,10 +220,15 @@ export async function resetAppearancePreferences(): Promise<{
         dashboardTheme: DEFAULT_APPEARANCE.dashboardTheme,
         dashboardAccent: DEFAULT_APPEARANCE.dashboardAccent,
         sidebarCompact: DEFAULT_APPEARANCE.sidebarCompact,
+        sidebarPosition: DEFAULT_APPEARANCE.sidebarPosition,
         fontFamily: DEFAULT_APPEARANCE.fontFamily,
         density: DEFAULT_APPEARANCE.density,
         fontSize: DEFAULT_APPEARANCE.fontSize,
         highContrast: DEFAULT_APPEARANCE.highContrast,
+        reduceMotion: DEFAULT_APPEARANCE.reduceMotion,
+        autoThemeEnabled: DEFAULT_APPEARANCE.autoThemeEnabled,
+        autoThemeDarkStart: DEFAULT_APPEARANCE.autoThemeDarkStart,
+        autoThemeDarkEnd: DEFAULT_APPEARANCE.autoThemeDarkEnd,
       },
     });
 

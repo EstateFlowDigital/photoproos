@@ -8,12 +8,21 @@ import { MobileNav, MobileMenuButton } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { ResponsiveTester } from "@/components/dev/responsive-tester";
+import { useTheme } from "@/components/theme-provider";
+
+interface AutoThemeConfig {
+  enabled: boolean;
+  darkStart: string;
+  darkEnd: string;
+}
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode;
   enabledModules: string[];
   industries: string[];
   unreadNotificationCount?: number;
+  sidebarPosition?: "left" | "right";
+  autoTheme?: AutoThemeConfig;
 }
 
 export function DashboardLayoutClient({
@@ -21,6 +30,8 @@ export function DashboardLayoutClient({
   enabledModules,
   industries,
   unreadNotificationCount = 0,
+  sidebarPosition = "left",
+  autoTheme,
 }: DashboardLayoutClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -61,9 +72,45 @@ export function DashboardLayoutClient({
     }
   };
 
+  // Auto theme switching based on time of day
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    if (!autoTheme?.enabled) return;
+
+    const checkAndApplyTheme = () => {
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      const [darkStartH, darkStartM] = autoTheme.darkStart.split(":").map(Number);
+      const [darkEndH, darkEndM] = autoTheme.darkEnd.split(":").map(Number);
+
+      const darkStartMinutes = darkStartH * 60 + darkStartM;
+      const darkEndMinutes = darkEndH * 60 + darkEndM;
+
+      let shouldBeDark: boolean;
+
+      if (darkStartMinutes < darkEndMinutes) {
+        // e.g., dark from 18:00 to 06:00 (next day)
+        shouldBeDark = currentMinutes >= darkStartMinutes || currentMinutes < darkEndMinutes;
+      } else {
+        // e.g., dark from 06:00 to 18:00 (same day - unlikely but handle it)
+        shouldBeDark = currentMinutes >= darkStartMinutes && currentMinutes < darkEndMinutes;
+      }
+
+      setTheme(shouldBeDark ? "dark" : "light");
+    };
+
+    // Check immediately and then every minute
+    checkAndApplyTheme();
+    const interval = setInterval(checkAndApplyTheme, 60000);
+
+    return () => clearInterval(interval);
+  }, [autoTheme, setTheme]);
+
   return (
     <ResponsiveTester>
-      <div className="shell-container flex h-screen bg-[var(--background)]">
+      <div className={`shell-container flex h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}>
         {/* Desktop Sidebar - hidden on mobile or when in top-nav mode */}
         {navMode !== "top" && (
           <div className="shell-sidebar hidden lg:block">

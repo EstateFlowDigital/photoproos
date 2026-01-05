@@ -2,15 +2,21 @@ export interface AppearancePreferences {
   dashboardTheme: string;
   dashboardAccent: string;
   sidebarCompact: boolean;
+  sidebarPosition: string;
   fontFamily: string;
   density: string;
   fontSize: string;
   highContrast: boolean;
+  reduceMotion: boolean;
+  autoThemeEnabled: boolean;
+  autoThemeDarkStart: string;
+  autoThemeDarkEnd: string;
 }
 
 export type FontFamily = "system" | "inter" | "jakarta" | "dm-sans" | "space-grotesk" | "jetbrains";
 export type Density = "compact" | "comfortable" | "spacious";
 export type FontSize = "small" | "medium" | "large" | "x-large";
+export type SidebarPosition = "left" | "right";
 
 export interface FontOption {
   id: FontFamily;
@@ -32,6 +38,12 @@ export interface FontSizeOption {
   name: string;
   description: string;
   scale: number;
+}
+
+export interface SidebarPositionOption {
+  id: SidebarPosition;
+  name: string;
+  description: string;
 }
 
 export const FONT_SIZE_OPTIONS: FontSizeOption[] = [
@@ -124,6 +136,19 @@ export const DENSITY_OPTIONS: DensityOption[] = [
     name: "Spacious",
     description: "More breathing room",
     scale: 1.15,
+  },
+];
+
+export const SIDEBAR_POSITION_OPTIONS: SidebarPositionOption[] = [
+  {
+    id: "left",
+    name: "Left",
+    description: "Sidebar on the left side (default)",
+  },
+  {
+    id: "right",
+    name: "Right",
+    description: "Sidebar on the right side",
   },
 ];
 
@@ -259,8 +284,13 @@ export const DEFAULT_APPEARANCE: AppearancePreferences = {
   dashboardTheme: "default",
   dashboardAccent: "#3b82f6",
   sidebarCompact: false,
+  sidebarPosition: "left",
   fontFamily: "system",
   density: "comfortable",
   fontSize: "medium",
   highContrast: false,
+  reduceMotion: false,
+  autoThemeEnabled: false,
+  autoThemeDarkStart: "18:00",
+  autoThemeDarkEnd: "06:00",
 };
