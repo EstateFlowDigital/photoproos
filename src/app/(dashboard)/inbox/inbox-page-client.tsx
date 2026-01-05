@@ -4,11 +4,21 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";
+import { useToast } from "@/components/ui/toast";
 import type {
   EmailAccountData,
   EmailThreadData,
   EmailMessageData,
 } from "./page";
+import {
+  triggerEmailSync,
+  getEmailThread,
+  markThreadRead,
+  toggleThreadStar,
+  toggleThreadArchive,
+  sendEmailReply,
+  sendNewEmail,
+} from "@/lib/actions/email-sync";
 import {
   Mail,
   Search,
@@ -30,6 +40,7 @@ import {
   Inbox,
   StarOff,
   ArchiveRestore,
+  Loader2,
 } from "lucide-react";
 
 type FilterType = "all" | "unread" | "starred" | "archived";
@@ -50,7 +61,10 @@ export function InboxPageClient({
   organizationId,
 }: InboxPageClientProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedThread, setSelectedThread] = useState<EmailThreadData | null>(null);
@@ -82,10 +96,160 @@ export function InboxPageClient({
     }
   });
 
-  const handleRefresh = () => {
-    startTransition(() => {
-      router.refresh();
+  const handleRefresh = async () => {
+    if (accounts.length === 0) {
+      showToast("No email accounts connected", "error");
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const result = await triggerEmailSync();
+      if (result.success) {
+        const totalNew = result.results?.reduce((sum, r) => sum + r.newThreads, 0) || 0;
+        if (totalNew > 0) {
+          showToast(`Synced ${totalNew} new conversation${totalNew > 1 ? "s" : ""}`, "success");
+        } else {
+          showToast("Emails are up to date", "success");
+        }
+        router.refresh();
+      } else {
+        showToast(result.error || "Sync failed", "error");
+      }
+    } catch (error) {
+      showToast("Failed to sync emails", "error");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleToggleStar = async (threadId: string, currentValue: boolean) => {
+    startTransition(async () => {
+      const result = await toggleThreadStar(threadId);
+      if (result.success) {
+        const newValue = result.isStarred ?? !currentValue;
+        // Update local state
+        setThreads((prev) =>
+          prev.map((t) =>
+            t.id === threadId ? { ...t, isStarred: newValue } : t
+          )
+        );
+        if (selectedThread?.id === threadId) {
+          setSelectedThread((prev) =>
+            prev ? { ...prev, isStarred: newValue } : null
+          );
+        }
+        showToast(newValue ? "Conversation starred" : "Star removed", "success");
+      } else {
+        showToast(result.error || "Failed to update star", "error");
+      }
     });
+  };
+
+  const handleToggleArchive = async (threadId: string, currentValue: boolean) => {
+    startTransition(async () => {
+      const result = await toggleThreadArchive(threadId);
+      if (result.success) {
+        const newValue = result.isArchived ?? !currentValue;
+        // Update local state
+        setThreads((prev) =>
+          prev.map((t) =>
+            t.id === threadId ? { ...t, isArchived: newValue } : t
+          )
+        );
+        if (selectedThread?.id === threadId) {
+          setSelectedThread(null); // Close the conversation view when archiving
+        }
+        showToast(newValue ? "Conversation archived" : "Conversation unarchived", "success");
+      } else {
+        showToast(result.error || "Failed to update archive status", "error");
+      }
+    });
+  };
+
+  const handleSendReply = async (threadId: string, body: string) => {
+    startTransition(async () => {
+      const result = await sendEmailReply(threadId, body);
+      if (result.success) {
+        showToast("Reply sent", "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to send reply", "error");
+      }
+    });
+  };
+
+  const handleSendNewEmail = async (toEmail: string, subject: string, body: string, fromAccountId?: string) => {
+    startTransition(async () => {
+      const accountId = fromAccountId || accounts[0]?.id;
+      if (!accountId) {
+        showToast("No email account available", "error");
+        return;
+      }
+      const result = await sendNewEmail({
+        accountId,
+        to: [toEmail],
+        subject,
+        body,
+      });
+      if (result.success) {
+        showToast("Email sent", "success");
+        setShowCompose(false);
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to send email", "error");
+      }
+    });
+  };
+
+  const handleSelectThread = async (thread: EmailThreadData) => {
+    // If already selected, do nothing
+    if (selectedThread?.id === thread.id) return;
+
+    setIsLoadingThread(true);
+    try {
+      // Fetch full thread with all messages
+      const result = await getEmailThread(thread.id);
+      if (result.success && result.thread) {
+        // Build the full thread data with all messages
+        const fullThread: EmailThreadData = {
+          id: result.thread.id,
+          subject: result.thread.subject,
+          snippet: thread.snippet, // Keep original snippet
+          participantEmails: result.thread.participantEmails,
+          isRead: true, // Will be marked as read
+          isStarred: result.thread.isStarred,
+          isArchived: result.thread.isArchived,
+          lastMessageAt: thread.lastMessageAt,
+          clientId: result.thread.clientId,
+          client: result.thread.client,
+          messages: result.thread.messages,
+          _count: { messages: result.thread.messages.length },
+        };
+        setSelectedThread(fullThread);
+
+        // Mark as read if unread
+        if (!thread.isRead) {
+          markThreadRead(thread.id, true).then((readResult) => {
+            if (readResult.success) {
+              // Update local state
+              setThreads((prev) =>
+                prev.map((t) =>
+                  t.id === thread.id ? { ...t, isRead: true } : t
+                )
+              );
+              setUnreadCount((prev) => Math.max(0, prev - 1));
+            }
+          });
+        }
+      } else {
+        showToast("Failed to load conversation", "error");
+      }
+    } catch {
+      showToast("Failed to load conversation", "error");
+    } finally {
+      setIsLoadingThread(false);
+    }
   };
 
   const formatTimeAgo = (date: Date) => {
@@ -129,13 +293,20 @@ export function InboxPageClient({
             automatically.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button className="inline-flex items-center gap-3 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+            <Link
+              href="/api/integrations/gmail/authorize"
+              className="inline-flex items-center gap-3 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            >
               <GoogleIcon className="h-5 w-5" />
               Connect Gmail
-            </button>
-            <button className="inline-flex items-center gap-3 rounded-lg bg-[#0078d4] px-6 py-3 text-sm font-medium text-white hover:bg-[#106ebe]">
+            </Link>
+            <button
+              disabled
+              className="inline-flex items-center gap-3 rounded-lg bg-[#0078d4]/50 px-6 py-3 text-sm font-medium text-white cursor-not-allowed"
+            >
               <MicrosoftIcon className="h-5 w-5" />
               Connect Outlook
+              <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded">Soon</span>
             </button>
           </div>
           <p className="mt-6 text-xs text-foreground-muted">
@@ -160,11 +331,11 @@ export function InboxPageClient({
         <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
-            disabled={isPending}
+            disabled={isSyncing}
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50"
           >
-            <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
-            Sync
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+            {isSyncing ? "Syncing..." : "Sync"}
           </button>
           <button
             onClick={() => setShowCompose(true)}
@@ -265,7 +436,8 @@ export function InboxPageClient({
                     key={thread.id}
                     thread={thread}
                     isSelected={selectedThread?.id === thread.id}
-                    onClick={() => setSelectedThread(thread)}
+                    isLoading={isLoadingThread && selectedThread?.id !== thread.id}
+                    onClick={() => handleSelectThread(thread)}
                     formatTimeAgo={formatTimeAgo}
                   />
                 ))}
@@ -285,6 +457,10 @@ export function InboxPageClient({
               thread={selectedThread}
               onBack={() => setSelectedThread(null)}
               formatTimeAgo={formatTimeAgo}
+              onToggleStar={() => handleToggleStar(selectedThread.id, selectedThread.isStarred)}
+              onToggleArchive={() => handleToggleArchive(selectedThread.id, selectedThread.isArchived)}
+              onSendReply={(body) => handleSendReply(selectedThread.id, body)}
+              isPending={isPending}
             />
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center text-center">
@@ -304,7 +480,12 @@ export function InboxPageClient({
 
       {/* Compose Modal */}
       {showCompose && (
-        <ComposeModal onClose={() => setShowCompose(false)} accounts={accounts} />
+        <ComposeModal
+          onClose={() => setShowCompose(false)}
+          accounts={accounts}
+          onSend={handleSendNewEmail}
+          isPending={isPending}
+        />
       )}
     </div>
   );
@@ -354,11 +535,13 @@ function FilterButton({
 function ThreadItem({
   thread,
   isSelected,
+  isLoading,
   onClick,
   formatTimeAgo,
 }: {
   thread: EmailThreadData;
   isSelected: boolean;
+  isLoading?: boolean;
   onClick: () => void;
   formatTimeAgo: (date: Date) => string;
 }) {
@@ -456,12 +639,26 @@ function ConversationView({
   thread,
   onBack,
   formatTimeAgo,
+  onToggleStar,
+  onToggleArchive,
+  onSendReply,
+  isPending,
 }: {
   thread: EmailThreadData;
   onBack: () => void;
   formatTimeAgo: (date: Date) => string;
+  onToggleStar: () => void;
+  onToggleArchive: () => void;
+  onSendReply: (body: string) => void;
+  isPending: boolean;
 }) {
   const [replyText, setReplyText] = useState("");
+
+  const handleSendReply = () => {
+    if (!replyText.trim()) return;
+    onSendReply(replyText);
+    setReplyText("");
+  };
 
   return (
     <>
@@ -497,7 +694,9 @@ function ConversationView({
         </div>
         <div className="flex items-center gap-1">
           <button
-            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+            onClick={onToggleStar}
+            disabled={isPending}
+            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
             title={thread.isStarred ? "Unstar" : "Star"}
           >
             {thread.isStarred ? (
@@ -507,7 +706,9 @@ function ConversationView({
             )}
           </button>
           <button
-            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+            onClick={onToggleArchive}
+            disabled={isPending}
+            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
             title={thread.isArchived ? "Unarchive" : "Archive"}
           >
             {thread.isArchived ? (
@@ -554,11 +755,16 @@ function ConversationView({
               </button>
             </div>
             <button
-              disabled={!replyText.trim()}
+              onClick={handleSendReply}
+              disabled={!replyText.trim() || isPending}
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Send className="h-4 w-4" />
-              Send
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              {isPending ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
@@ -632,14 +838,23 @@ function MessageBubble({
 function ComposeModal({
   onClose,
   accounts,
+  onSend,
+  isPending,
 }: {
   onClose: () => void;
   accounts: EmailAccountData[];
+  onSend: (toEmail: string, subject: string, body: string, fromAccountId?: string) => void;
+  isPending: boolean;
 }) {
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [fromAccount, setFromAccount] = useState(accounts[0]?.email || "");
+  const [fromAccountId, setFromAccountId] = useState(accounts[0]?.id || "");
+
+  const handleSend = () => {
+    if (!to || !subject) return;
+    onSend(to, subject, body, fromAccountId);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -663,12 +878,12 @@ function ComposeModal({
             <div>
               <label className="text-sm font-medium text-foreground-muted">From</label>
               <select
-                value={fromAccount}
-                onChange={(e) => setFromAccount(e.target.value)}
+                value={fromAccountId}
+                onChange={(e) => setFromAccountId(e.target.value)}
                 className="mt-1 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
               >
                 {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.email}>
+                  <option key={acc.id} value={acc.id}>
                     {acc.email}
                   </option>
                 ))}
@@ -720,16 +935,22 @@ function ComposeModal({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+              disabled={isPending}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
             >
               Cancel
             </button>
             <button
-              disabled={!to || !subject}
+              onClick={handleSend}
+              disabled={!to || !subject || isPending}
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Send className="h-4 w-4" />
-              Send
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              {isPending ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
