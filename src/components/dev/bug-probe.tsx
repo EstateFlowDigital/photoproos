@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   X,
@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 // Only available for the developer account
 const DEV_EMAIL = "cameron@houseandhomephoto.com";
+const STORAGE_KEY = "ppos_bug_probe_session";
 
 type RecognitionInstance = {
   start: () => void;
@@ -55,7 +56,6 @@ interface Entry {
 export function BugProbe() {
   const { user, isLoaded } = useUser();
   const pathname = usePathname();
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [note, setNote] = useState("");
@@ -76,6 +76,14 @@ export function BugProbe() {
     startedAt: null,
     completedAt: null,
   });
+  const [hud, setHud] = useState<{
+    href?: string;
+    defaultPrevented?: string;
+    target?: string;
+    overlay?: string;
+    routeStarted?: string;
+    routeCompleted?: string;
+  }>({});
 
   // Generate session ID on client only to avoid hydration mismatch
   useEffect(() => {
@@ -98,8 +106,37 @@ export function BugProbe() {
       ts: Date.now(),
       meta,
     };
-    setEntries((prev) => [entry, ...prev].slice(0, 200));
+    setEntries((prev) => [entry, ...prev].slice(0, 150));
   };
+
+  // Restore saved session (entries + session id) so refreshes keep context
+  useEffect(() => {
+    if (!isDeveloper) return;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { entries?: Entry[]; sessionId?: string };
+        if (parsed.sessionId) {
+          sessionIdRef.current = parsed.sessionId;
+        }
+        if (parsed.entries?.length) {
+          setEntries(parsed.entries);
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }, [isDeveloper]);
+
+  // Persist session snapshot whenever entries change
+  useEffect(() => {
+    if (!isDeveloper) return;
+    const payload = JSON.stringify({
+      sessionId: sessionIdRef.current,
+      entries,
+    });
+    localStorage.setItem(STORAGE_KEY, payload);
+  }, [entries, isDeveloper]);
 
   // Capture clicks (use capture phase to avoid stopPropagation)
   useEffect(() => {
@@ -132,6 +169,8 @@ export function BugProbe() {
           overlay: describeElement(topElement),
           coords: `${pointerX},${pointerY}`,
         });
+        flashElement(target, "rgba(255,0,0,0.4)");
+        flashElement(topElement, "rgba(255,215,0,0.4)");
       }
 
       const meta: Record<string, string> = {
@@ -161,6 +200,16 @@ export function BugProbe() {
             addEntry("nav", "Navigation did not occur after click", meta);
             // Auto-screenshot on failed nav
             setTimeout(() => captureScreenshot(), 0);
+            setHud({
+              href,
+              defaultPrevented: String(e.defaultPrevented),
+              target: describeElement(target),
+              overlay: topElement ? describeElement(topElement) : undefined,
+              routeStarted: routeEventRef.current.startedAt ? "yes" : "no",
+              routeCompleted: routeEventRef.current.completedAt ? "yes" : "no",
+            });
+            // Fallback hard navigation
+            window.location.href = href;
           }
         }, 2000);
         navChecksRef.current.push({ timer, href });
@@ -429,9 +478,25 @@ export function BugProbe() {
   if (!isDeveloper) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] w-full max-w-[360px] text-sm">
-      {isOpen ? (
-        <div className="rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] text-white shadow-2xl">
+    <>
+      {/* Inline HUD for quick debugging */}
+      <div className="fixed top-4 left-4 z-[9998] rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] px-3 py-2 text-[11px] text-white shadow-lg space-y-1 w-[260px]">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold text-[var(--primary)]">Click HUD</span>
+          <span className="text-[10px] text-[#9ca3af]">path: {pathname}</span>
+        </div>
+        <div className="space-y-1 text-[#d1d5db]">
+          <div>Href: {hud.href || "—"}</div>
+          <div>DefaultPrevented: {hud.defaultPrevented || "—"}</div>
+          <div>Target: {hud.target || "—"}</div>
+          <div>Overlay: {hud.overlay || "—"}</div>
+          <div>Route events: start {hud.routeStarted || "no"}, complete {hud.routeCompleted || "no"}</div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-4 right-4 z-[9999] w-full max-w-[360px] text-sm">
+        {isOpen ? (
+          <div className="rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] text-white shadow-2xl">
           <div className="flex items-center justify-between gap-2 border-b border-[rgba(255,255,255,0.12)] px-3 py-2">
             <div className="flex items-center gap-2">
               <Bug className="h-4 w-4 text-[var(--primary)]" />
@@ -468,6 +533,13 @@ export function BugProbe() {
                 title={recording ? "Stop recording" : "Start 30s screen record"}
               >
                 {recording ? <StopCircle className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+              </button>
+              <button
+                onClick={() => addEntry("note", "Testing checkpoint")}
+                className="flex h-8 w-8 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
+                title="Add testing line"
+              >
+                <span className="text-[10px] font-bold">T</span>
               </button>
               <button
                 onClick={copyLog}
@@ -601,38 +673,6 @@ export function BugProbe() {
                 <p className="text-[11px] text-[#9ca3af]">Voice notes not supported in this browser.</p>
               )}
             </div>
-            {/* Router diagnostic buttons */}
-            <div className="flex items-center gap-2 border-t border-[rgba(255,255,255,0.08)] pt-2 mt-2">
-              <button
-                onClick={() => {
-                  addEntry("nav", "Testing router.push(/dashboard)...");
-                  try {
-                    router.push("/dashboard");
-                    setTimeout(() => {
-                      if (window.location.pathname !== "/dashboard") {
-                        addEntry("error", "router.push() did not navigate!");
-                      } else {
-                        addEntry("nav", "router.push() succeeded!");
-                      }
-                    }, 1000);
-                  } catch (err) {
-                    addEntry("error", `router.push() threw: ${err}`);
-                  }
-                }}
-                className="flex-1 rounded-lg bg-[var(--warning)]/15 px-3 py-2 text-xs font-semibold text-[var(--warning)] hover:bg-[var(--warning)]/25"
-              >
-                Test Router
-              </button>
-              <button
-                onClick={() => {
-                  addEntry("nav", "Testing window.location...");
-                  window.location.href = "/dashboard";
-                }}
-                className="flex-1 rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10"
-              >
-                Test Location
-              </button>
-            </div>
           </div>
         </div>
       ) : (
@@ -644,7 +684,8 @@ export function BugProbe() {
           <span>Bug Probe</span>
         </button>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -659,4 +700,15 @@ function describeElement(el: Element): string {
           .join(".")}`
       : "";
   return `${tag}${id}${cls}`;
+}
+
+function flashElement(el: Element, color: string) {
+  const prev = (el as HTMLElement).style.outline;
+  const prevOffset = (el as HTMLElement).style.outlineOffset;
+  (el as HTMLElement).style.outline = `2px solid ${color}`;
+  (el as HTMLElement).style.outlineOffset = "2px";
+  setTimeout(() => {
+    (el as HTMLElement).style.outline = prev;
+    (el as HTMLElement).style.outlineOffset = prevOffset;
+  }, 1200);
 }
