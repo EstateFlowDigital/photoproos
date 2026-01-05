@@ -110,11 +110,11 @@ export function PreviewPanel({
       </div>
 
       {/* Preview Content */}
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-[#1a1a1a] p-4">
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-[var(--background-tertiary)] p-4">
         {/* Device Frame */}
         <div
           className={cn(
-            "relative h-full overflow-hidden rounded-lg border border-[#333] bg-white shadow-2xl transition-all duration-300",
+            "relative h-full overflow-hidden rounded-lg border border-[var(--border-visible)] bg-white shadow-2xl transition-all duration-300",
             viewport === "desktop" && "w-full",
             viewport === "tablet" && "w-[768px] max-w-full",
             viewport === "mobile" && "w-[375px] max-w-full"
