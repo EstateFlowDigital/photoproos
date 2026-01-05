@@ -566,18 +566,23 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
                 <span>{navModeState === "sidebar" ? "Switch to top navigation" : "Switch to sidebar navigation"}</span>
                 <span className="text-xs text-foreground-muted">Layout</span>
               </button>
-              <button
-                type="button"
-                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-[var(--background-hover)]"
-                onClick={() => {
-                  const event = new CustomEvent("ppos-nav-edit", { detail: true });
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-[var(--background-hover)]"
+            onClick={() => {
+                  const current =
+                    typeof window !== "undefined"
+                      ? window.localStorage.getItem("ppos_nav_edit_mode")
+                      : null;
+                  const next = current === "true" ? false : true;
+                  const event = new CustomEvent("ppos-nav-edit", { detail: next });
                   window.dispatchEvent(event);
                   setDisplayOpen(false);
-                }}
-              >
-                <span>Customize navigation</span>
-                <span className="text-xs text-foreground-muted">Reorder / hide</span>
-              </button>
+              }}
+          >
+            <span>Customize navigation</span>
+            <span className="text-xs text-foreground-muted">Reorder / hide</span>
+          </button>
             </div>
           )}
         </div>

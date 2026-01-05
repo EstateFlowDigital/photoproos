@@ -100,6 +100,15 @@ export function DashboardSidebar({
     window.localStorage.setItem("ppos_nav_edit_mode", JSON.stringify(editMode));
   }, [editMode]);
 
+  // Auto-exit edit mode when the route changes so clicks never get stuck
+  React.useEffect(() => {
+    setEditMode(false);
+    setDraggingNavId(null);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ppos_nav_edit_mode", JSON.stringify(false));
+    }
+  }, [pathname]);
+
   const paymentsVisible = navItems.some((item) => item.id === "invoices");
   const sidebarNav = paymentsVisible
     ? [
@@ -187,11 +196,12 @@ export function DashboardSidebar({
             ? "bg-[var(--primary)] text-white"
             : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground",
           canDrag && "cursor-move",
-          editMode && "pointer-events-auto",
           hiddenIds.includes(item.id) && editMode && "opacity-70 line-through"
         )}
         onClick={(e) => {
-          if (editMode) {
+          // Allow navigation even in edit mode; only stop when interacting with controls
+          const target = e.target as HTMLElement;
+          if (editMode && target.closest("label")) {
             e.preventDefault();
             e.stopPropagation();
           }

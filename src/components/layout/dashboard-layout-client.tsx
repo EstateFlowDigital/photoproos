@@ -96,6 +96,13 @@ export function DashboardLayoutClient({
     setEffectiveNavMode(forceTop ? "top" : preferredNavMode);
   }, [containerWidth, preferredNavMode]);
 
+  // If nav mode switches (especially to top), ensure nav edit mode is cleared to avoid stale overlays
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ppos_nav_edit_mode", JSON.stringify(false));
+    window.dispatchEvent(new CustomEvent("ppos-nav-edit", { detail: false }));
+  }, [effectiveNavMode]);
+
   // Auto theme switching based on time of day
   const { setTheme } = useTheme();
 
