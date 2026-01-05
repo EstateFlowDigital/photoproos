@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Time-Off Integration** - Team availability now includes time-off data from AvailabilityBlock model
+  - `getTeamAvailability()` - Returns time-off slots for each team member
+  - `getDailyTeamSummary()` - Factors approved time-off into availability calculations
+  - `findAvailableTeamMembers()` - Excludes members on approved time-off
+  - `getTeamUtilization()` - Calculates capacity with time-off deductions
+  - `getSuggestedBookingTimes()` - Only suggests times when members are not on time-off
+
 - **Form Validation Feedback** - Added inline field-level validation to client forms
   - Real-time validation on blur with inline error messages
   - Email format validation with helpful error text

@@ -121,17 +121,44 @@ export async function getTeamAvailability(
       },
     });
 
-    // Get time-off requests for team members
-    // TODO: Implement TimeOffRequest model in schema
-    const timeOff: Array<{
-      id: string;
-      userId: string;
-      type: string;
-      startDate: Date;
-      endDate: Date;
-      reason: string | null;
-      status: string;
-    }> = [];
+    // Get time-off requests for team members from AvailabilityBlock model
+    const timeOffBlocks = await prisma.availabilityBlock.findMany({
+      where: {
+        organizationId,
+        blockType: "time_off",
+        userId: options?.userId
+          ? options.userId
+          : { in: teamMembers.map((m) => m.id) },
+        OR: [
+          {
+            startDate: { lte: endDate },
+            endDate: { gte: startDate },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        description: true,
+        startDate: true,
+        endDate: true,
+        requestStatus: true,
+      },
+    });
+
+    // Transform to expected format
+    const timeOff = timeOffBlocks
+      .filter((block) => block.userId !== null)
+      .map((block) => ({
+        id: block.id,
+        userId: block.userId as string,
+        type: "time_off",
+        startDate: block.startDate,
+        endDate: block.endDate,
+        reason: block.description,
+        status: block.requestStatus,
+      }));
 
     // Build availability for each team member
     const result: TeamMemberAvailability[] = teamMembers.map((member) => {
@@ -263,10 +290,23 @@ export async function getDailyTeamSummary(
       },
     });
 
-    // Time-off tracking not yet implemented in schema; use empty set for now
-    const timeOff: { userId: string }[] = [];
+    // Get approved time-off for this day from AvailabilityBlock
+    const timeOffBlocks = await prisma.availabilityBlock.findMany({
+      where: {
+        organizationId,
+        blockType: "time_off",
+        requestStatus: "approved",
+        startDate: { lte: endOfDay },
+        endDate: { gte: startOfDay },
+      },
+      select: { userId: true },
+    });
 
-    const timeOffUserIds = new Set(timeOff.map((t) => t.userId));
+    const timeOffUserIds = new Set(
+      timeOffBlocks
+        .filter((t) => t.userId !== null)
+        .map((t) => t.userId as string)
+    );
 
     // Calculate availability for each member
     const memberAvailability = teamMembers.map((member) => {
@@ -383,10 +423,23 @@ export async function findAvailableTeamMembers(
       conflicts.map((c) => c.assignedUserId).filter((id): id is string => !!id)
     );
 
-    // Time-off tracking not yet implemented in schema; use empty set for now
-    const timeOff: { userId: string }[] = [];
+    // Get approved time-off that overlaps with the requested time slot
+    const timeOffBlocks = await prisma.availabilityBlock.findMany({
+      where: {
+        organizationId,
+        blockType: "time_off",
+        requestStatus: "approved",
+        startDate: { lte: endTime },
+        endDate: { gte: startTime },
+      },
+      select: { userId: true },
+    });
 
-    const timeOffUserIds = new Set(timeOff.map((t) => t.userId));
+    const timeOffUserIds = new Set(
+      timeOffBlocks
+        .filter((t) => t.userId !== null)
+        .map((t) => t.userId as string)
+    );
 
     // Categorize members
     const available: {
@@ -510,8 +563,29 @@ export async function getTeamUtilization(
       },
     });
 
-    // Time-off tracking not yet implemented in schema; use empty set for now
-    const timeOff: { userId: string; startDate: Date; endDate: Date }[] = [];
+    // Get approved time-off in the date range
+    const timeOffBlocks = await prisma.availabilityBlock.findMany({
+      where: {
+        organizationId,
+        blockType: "time_off",
+        requestStatus: "approved",
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
+      },
+      select: {
+        userId: true,
+        startDate: true,
+        endDate: true,
+      },
+    });
+
+    const timeOff = timeOffBlocks
+      .filter((t) => t.userId !== null)
+      .map((t) => ({
+        userId: t.userId as string,
+        startDate: t.startDate,
+        endDate: t.endDate,
+      }));
 
     // Calculate per-member utilization
     const hoursPerDay = 8;
@@ -660,9 +734,23 @@ export async function getSuggestedBookingTimes(
       },
     });
 
-    // Time-off tracking not yet implemented in schema; use empty set for now
-    const timeOff: { userId: string }[] = [];
-    const timeOffUserIds = new Set(timeOff.map((t) => t.userId));
+    // Get approved time-off for this day
+    const timeOffBlocks = await prisma.availabilityBlock.findMany({
+      where: {
+        organizationId,
+        blockType: "time_off",
+        requestStatus: "approved",
+        startDate: { lte: endOfDay },
+        endDate: { gte: startOfDay },
+      },
+      select: { userId: true },
+    });
+
+    const timeOffUserIds = new Set(
+      timeOffBlocks
+        .filter((t) => t.userId !== null)
+        .map((t) => t.userId as string)
+    );
 
     // Generate time slots (every 30 minutes)
     const suggestions: {
