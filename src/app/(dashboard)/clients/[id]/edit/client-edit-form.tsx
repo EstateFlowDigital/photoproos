@@ -201,6 +201,8 @@ export function ClientEditForm({ client }: ClientEditFormProps) {
               </label>
               <input
                 type="email"
+                inputMode="email"
+                autoComplete="email"
                 id="email"
                 name="email"
                 value={formData.email}
@@ -219,6 +221,8 @@ export function ClientEditForm({ client }: ClientEditFormProps) {
               </label>
               <input
                 type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 id="phone"
                 name="phone"
                 value={formData.phone}

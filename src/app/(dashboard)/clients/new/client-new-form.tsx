@@ -130,6 +130,8 @@ export function ClientNewForm() {
             </label>
             <input
               type="email"
+              inputMode="email"
+              autoComplete="email"
               id="email"
               name="email"
               placeholder="john@premierrealty.com"
@@ -144,6 +146,8 @@ export function ClientNewForm() {
             </label>
             <input
               type="tel"
+              inputMode="tel"
+              autoComplete="tel"
               id="phone"
               name="phone"
               placeholder="(555) 123-4567"
@@ -243,6 +247,8 @@ export function ClientNewForm() {
               </label>
               <input
                 type="text"
+                inputMode="numeric"
+                autoComplete="postal-code"
                 id="zip"
                 name="zip"
                 placeholder="94102"

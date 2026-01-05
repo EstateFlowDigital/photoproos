@@ -103,6 +103,8 @@ export function ContactForm() {
             <input
               id="email"
               type="email"
+              inputMode="email"
+              autoComplete="email"
               required
               value={formData.email}
               onChange={(e) =>

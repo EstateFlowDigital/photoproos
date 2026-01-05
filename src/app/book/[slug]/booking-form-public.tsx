@@ -366,6 +366,8 @@ export function BookingFormPublic({ form, organization }: BookingFormPublicProps
                 </label>
                 <input
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   value={contactInfo.email}
                   onChange={(e) =>
                     setContactInfo((prev) => ({ ...prev, email: e.target.value }))
@@ -389,6 +391,8 @@ export function BookingFormPublic({ form, organization }: BookingFormPublicProps
                 </label>
                 <input
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   value={contactInfo.phone}
                   onChange={(e) =>
                     setContactInfo((prev) => ({ ...prev, phone: e.target.value }))
@@ -535,6 +539,8 @@ function FormFieldInput({
         return (
           <input
             type={field.type === "phone" ? "tel" : field.type}
+            inputMode={field.type === "email" ? "email" : field.type === "phone" ? "tel" : undefined}
+            autoComplete={field.type === "email" ? "email" : field.type === "phone" ? "tel" : undefined}
             value={(value as string) || ""}
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder || undefined}
@@ -559,6 +565,7 @@ function FormFieldInput({
         return (
           <input
             type="number"
+            inputMode="decimal"
             value={(value as number) ?? ""}
             onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : "")}
             placeholder={field.placeholder || undefined}

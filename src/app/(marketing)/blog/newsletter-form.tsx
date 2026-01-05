@@ -38,6 +38,8 @@ export function NewsletterForm() {
         <form className="mx-auto flex max-w-md gap-3" onSubmit={handleSubmit}>
           <input
             type="email"
+            inputMode="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"

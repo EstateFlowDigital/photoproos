@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Mobile Input Optimization** - Added proper `inputMode` and `autoComplete` attributes to form inputs for better mobile UX
+  - **Forms Updated:**
+    - `booking-form-public.tsx` - Email, phone, and dynamic form field inputs
+    - `client-new-form.tsx` - Email, phone, and ZIP code inputs
+    - `client-edit-form.tsx` - Email and phone inputs
+    - `property-inquiry-form.tsx` - Email and phone inputs
+    - `contact-form.tsx` - Email input
+    - `newsletter-form.tsx` - Email input
+  - Mobile keyboards now match input type (email keyboard for email, numeric pad for phone/ZIP)
+  - Added `autoComplete` hints for faster form filling
+
 - **Page Reload Elimination** - Replaced 19 jarring `window.location.reload()` calls with smooth `router.refresh()` across the application
   - **Settings Pages Fixed:**
     - `availability-page-client.tsx` - 3 instances (recurring blocks add/delete)

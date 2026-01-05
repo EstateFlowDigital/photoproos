@@ -153,6 +153,8 @@ export function PropertyInquiryForm({
         <div>
           <input
             type="email"
+            inputMode="email"
+            autoComplete="email"
             placeholder="Email address"
             value={formData.email}
             onChange={(e) => {
@@ -174,6 +176,8 @@ export function PropertyInquiryForm({
         <div>
           <input
             type="tel"
+            inputMode="tel"
+            autoComplete="tel"
             placeholder="Phone (optional)"
             value={formData.phone}
             onChange={(e) =>
