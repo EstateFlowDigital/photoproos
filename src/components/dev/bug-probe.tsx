@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   X,
@@ -55,7 +55,6 @@ interface Entry {
 export function BugProbe() {
   const { user, isLoaded } = useUser();
   const pathname = usePathname();
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [note, setNote] = useState("");
@@ -115,9 +114,11 @@ export function BugProbe() {
         target.getAttribute("data-testid") ||
         target.tagName;
       const href = anchor?.getAttribute("href") || undefined;
+      const pointerX = e.clientX;
+      const pointerY = e.clientY;
 
       // Overlay intercept detector: if something else is on top of the click target
-      const topElement = document.elementFromPoint(e.clientX, e.clientY);
+      const topElement = document.elementFromPoint(pointerX, pointerY);
       if (
         topElement &&
         target &&
@@ -128,10 +129,16 @@ export function BugProbe() {
         addEntry("overlay", "Click intercepted by overlay", {
           target: describeElement(target),
           overlay: describeElement(topElement),
+          coords: `${pointerX},${pointerY}`,
         });
       }
 
-      addEntry("click", label || "Unknown click", href ? { href } : undefined);
+      const meta: Record<string, string> = {
+        defaultPrevented: String(e.defaultPrevented),
+        coords: `${pointerX},${pointerY}`,
+      };
+      if (href) meta.href = href;
+      addEntry("click", label || "Unknown click", meta);
 
       if (e.defaultPrevented && href) {
         addEntry("nav", "Link click default prevented", { href });
@@ -139,10 +146,20 @@ export function BugProbe() {
 
       // Check if navigation actually occurs within 2s
       if (href && typeof window !== "undefined") {
+        routeEventRef.current.startedAt = Date.now();
+        routeEventRef.current.completedAt = null;
         const before = window.location.href;
         const timer = window.setTimeout(() => {
           if (window.location.href === before) {
-            addEntry("nav", "Navigation did not occur after click", { href });
+            const meta: Record<string, string> = {
+              defaultPrevented: String(e.defaultPrevented),
+              routeEventStart: routeEventRef.current.startedAt ? "yes" : "no",
+              routeEventComplete: routeEventRef.current.completedAt ? "yes" : "no",
+            };
+            if (href) meta.href = href;
+            addEntry("nav", "Navigation did not occur after click", meta);
+            // Auto-screenshot on failed nav
+            setTimeout(() => captureScreenshot(), 0);
           }
         }, 2000);
         navChecksRef.current.push({ timer, href });
@@ -175,6 +192,7 @@ export function BugProbe() {
     if (prevPathRef.current && prevPathRef.current !== pathname) {
       addEntry("route", `Navigated to ${pathname}`);
     }
+    routeEventRef.current.completedAt = Date.now();
     // Clear pending nav timers on route change
     navChecksRef.current.forEach(({ timer }) => window.clearTimeout(timer));
     navChecksRef.current = [];
@@ -286,7 +304,7 @@ export function BugProbe() {
     setNote("");
   };
 
-  const captureScreenshot = async () => {
+  async function captureScreenshot() {
     if (screenshotting) return;
     if (!navigator.mediaDevices?.getDisplayMedia) {
       addEntry("error", "Screen capture not supported by this browser");
@@ -330,7 +348,7 @@ export function BugProbe() {
       stream?.getTracks().forEach((t) => t.stop());
       setScreenshotting(false);
     }
-  };
+  }
 
   const startRecording = async () => {
     if (recording) return;
@@ -581,38 +599,6 @@ export function BugProbe() {
               ) : (
                 <p className="text-[11px] text-[#9ca3af]">Voice notes not supported in this browser.</p>
               )}
-            </div>
-            {/* Router diagnostic */}
-            <div className="flex items-center gap-2 border-t border-[rgba(255,255,255,0.08)] pt-2 mt-2">
-              <button
-                onClick={() => {
-                  addEntry("nav", "Testing router.push(/dashboard)...");
-                  try {
-                    router.push("/dashboard");
-                    setTimeout(() => {
-                      if (window.location.pathname !== "/dashboard") {
-                        addEntry("error", "router.push() did not navigate!");
-                      } else {
-                        addEntry("nav", "router.push() succeeded!");
-                      }
-                    }, 1000);
-                  } catch (err) {
-                    addEntry("error", `router.push() threw: ${err}`);
-                  }
-                }}
-                className="flex-1 rounded-lg bg-[var(--warning)]/15 px-3 py-2 text-xs font-semibold text-[var(--warning)] hover:bg-[var(--warning)]/25"
-              >
-                Test Router
-              </button>
-              <button
-                onClick={() => {
-                  addEntry("nav", "Testing window.location...");
-                  window.location.href = "/dashboard";
-                }}
-                className="flex-1 rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10"
-              >
-                Test Location
-              </button>
             </div>
           </div>
         </div>
