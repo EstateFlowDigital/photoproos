@@ -128,6 +128,9 @@ export function DashboardLayoutClient({
         path: window.location.pathname,
       });
 
+      // Track click start for later duration logging
+      (window as any).__ppos_nav_last_click = performance.now();
+
       // If an href exists and navigation doesn’t happen soon, log and force it.
       if (href && href.startsWith("/")) {
         const startPath = window.location.pathname;
@@ -186,9 +189,60 @@ export function DashboardLayoutClient({
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.localStorage.getItem("ppos_nav_debug") !== "true") return;
+    const sinceClickMs =
+      typeof (window as any).__ppos_nav_last_click === "number"
+        ? Math.round(performance.now() - (window as any).__ppos_nav_last_click)
+        : undefined;
     // eslint-disable-next-line no-console
-    console.log("[nav-debug route]", { path: pathname });
+    console.log("[nav-debug route]", { path: pathname, sinceClickMs: sinceClickMs ?? "n/a" });
   }, [pathname]);
+
+  // Perf markers (only when nav debug is on)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.localStorage.getItem("ppos_nav_debug") !== "true") return;
+
+    const navEntries = performance.getEntriesByType("navigation");
+    if (navEntries.length > 0) {
+      const nav = navEntries[0] as PerformanceNavigationTiming;
+      // eslint-disable-next-line no-console
+      console.log("[nav-debug perf]", {
+        type: nav.type,
+        domContentLoaded: Math.round(nav.domContentLoadedEventEnd),
+        load: Math.round(nav.loadEventEnd),
+        ttfb: Math.round(nav.responseStart),
+      });
+    }
+
+    const lcpObserver =
+      "PerformanceObserver" in window
+        ? new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              if (entry.entryType === "largest-contentful-paint") {
+                // eslint-disable-next-line no-console
+                console.log("[nav-debug lcp]", {
+                  value: Math.round(entry.startTime),
+                  size: (entry as any).size,
+                });
+              }
+            }
+          })
+        : null;
+
+    if (lcpObserver) {
+      try {
+        lcpObserver.observe({ type: "largest-contentful-paint", buffered: true });
+      } catch {
+        // ignore
+      }
+    }
+
+    return () => {
+      if (lcpObserver) {
+        lcpObserver.disconnect();
+      }
+    };
+  }, []);
 
   return (
     <div
