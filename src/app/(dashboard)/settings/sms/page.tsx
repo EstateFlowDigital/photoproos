@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { PageHeader, Breadcrumb } from "@/components/dashboard";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getSMSSettings, getSMSStats, getSMSTemplates, getSMSLogs } from "@/lib/actions/sms";
 import { SMSSettingsClient } from "./sms-settings-client";
@@ -42,20 +43,18 @@ export default async function SMSSettingsPage() {
         subtitle="Configure Twilio SMS integration and message templates"
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/settings"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back
-            </Link>
-            <Link
-              href="/settings/sms/templates"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
-            >
-              <TemplateIcon className="h-4 w-4" />
-              Manage Templates
-            </Link>
+            <Button variant="outline" asChild className="w-full sm:w-auto">
+              <Link href="/settings">
+                <ArrowLeftIcon className="h-4 w-4" />
+                Back
+              </Link>
+            </Button>
+            <Button variant="primary" asChild className="w-full sm:w-auto">
+              <Link href="/settings/sms/templates">
+                <TemplateIcon className="h-4 w-4" />
+                Manage Templates
+              </Link>
+            </Button>
           </div>
         }
       />

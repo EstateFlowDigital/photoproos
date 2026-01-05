@@ -25,9 +25,11 @@ interface DashboardTopbarProps {
     id: string;
     label: string;
     href: string;
+    [key: string]: unknown;
   }[];
   navMode?: "sidebar" | "top";
   onNavModeChange?: (mode: "sidebar" | "top") => void;
+  navAutoForced?: boolean;
 }
 
 // Notification type for UI display
@@ -91,12 +93,14 @@ interface SearchResult {
   url: string;
 }
 
-export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar", onNavModeChange }: DashboardTopbarProps) {
+export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar", navAutoForced = false, onNavModeChange }: DashboardTopbarProps) {
   const router = useRouter();
   const pathname = usePathname() || "";
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [recentResults, setRecentResults] = useState<SearchResult[]>([]);
+  const [activeTypes, setActiveTypes] = useState<SearchResult["type"][]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -230,6 +234,26 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
     performSearch();
   }, [debouncedQuery]);
 
+  // Load recent results
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("ppos_recent_search");
+    if (stored) {
+      try {
+        setRecentResults(JSON.parse(stored) as SearchResult[]);
+      } catch {
+        setRecentResults([]);
+      }
+    }
+  }, []);
+
+  const persistRecent = (next: SearchResult[]) => {
+    setRecentResults(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ppos_recent_search", JSON.stringify(next.slice(0, 6)));
+    }
+  };
+
   // Search query update handler
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -243,6 +267,8 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
     setSearchOpen(false);
     setSearchQuery("");
     setSearchResults([]);
+    const nextRecent = [result, ...recentResults.filter((r) => !(r.id === result.id && r.type === result.type))].slice(0, 6);
+    persistRecent(nextRecent);
     setQuickActionsOpen(false);
     setNotificationsOpen(false);
     setHelpOpen(false);
@@ -262,8 +288,8 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         setTimeout(() => searchInputRef.current?.focus(), 0);
       }
 
-      // Open keyboard shortcuts modal with "?"
-      if (e.key === "?" && !isTyping) {
+      // Open keyboard shortcuts modal with Cmd/Ctrl + /
+      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
         e.preventDefault();
         setShortcutsOpen(true);
       }
@@ -366,6 +392,17 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
     }
   };
 
+  const toggleType = (type: SearchResult["type"]) => {
+    setActiveTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
+
+  const filteredResults =
+    activeTypes.length > 0
+      ? searchResults.filter((r) => activeTypes.includes(r.type))
+      : searchResults;
+
   return (
     <div
       className={cn(
@@ -397,16 +434,38 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
           </kbd>
 
           {/* Search results dropdown */}
-          {searchOpen && (searchQuery.trim() !== "" || searchResults.length > 0 || isSearching) && (
+          {searchOpen && (searchQuery.trim() !== "" || searchResults.length > 0 || isSearching || recentResults.length > 0) && (
             <div className="absolute top-full left-0 right-0 mt-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
+              <div className="flex flex-wrap items-center gap-2 border-b border-[var(--card-border)] px-3 py-2">
+                {["gallery","client","payment","property","service","invoice","booking"].map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => toggleType(type as SearchResult["type"])}
+                    className={cn(
+                      "rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors",
+                      activeTypes.includes(type as SearchResult["type"])
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+                        : "border-[var(--card-border)] text-foreground-muted hover:text-foreground hover:border-[var(--primary)]/40"
+                    )}
+                  >
+                    {type}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setActiveTypes([])}
+                  className="ml-auto text-xs text-[var(--primary)] hover:underline"
+                >
+                  Clear
+                </button>
+              </div>
               {isSearching ? (
                 <div className="px-4 py-8 text-center">
                   <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
                   <p className="mt-2 text-xs text-foreground-muted">Searching...</p>
                 </div>
-              ) : searchResults.length > 0 ? (
+              ) : filteredResults.length > 0 ? (
                 <div className="max-h-80 overflow-y-auto">
-                  {searchResults.map((result) => (
+                  {filteredResults.map((result) => (
                     <button
                       key={result.id}
                       onClick={() => handleSearchSelect(result)}
@@ -431,6 +490,30 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
                 <div className="px-4 py-8 text-center">
                   <SearchIcon className="h-8 w-8 text-foreground-muted mx-auto mb-2" />
                   <p className="text-sm text-foreground-muted">No results found for &quot;{searchQuery}&quot;</p>
+                </div>
+              ) : recentResults.length > 0 ? (
+                <div className="max-h-80 overflow-y-auto">
+                  <div className="px-4 py-3 text-xs uppercase tracking-wide text-foreground-muted">Recent</div>
+                  {recentResults.map((result) => (
+                    <button
+                      key={`${result.type}-${result.id}`}
+                      onClick={() => handleSearchSelect(result)}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-[var(--background-hover)] transition-colors"
+                    >
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
+                        {getResultIcon(result.type)}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate" title={result.title}>
+                          {result.title}
+                        </p>
+                        <p className="text-xs text-foreground-muted truncate" title={result.subtitle}>
+                          {result.subtitle}
+                        </p>
+                      </div>
+                      <span className="text-xs text-foreground-muted capitalize">{result.type}</span>
+                    </button>
+                  ))}
                 </div>
               ) : null}
             </div>
@@ -458,7 +541,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
               />
             </button>
             {topNavOpen && (
-              <div className="absolute right-0 top-full mt-2 w-[min(360px,90vw)] max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-xl z-50">
+              <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-xl z-50">
                 {navLinks.map((link) => {
                   const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
                   return (
@@ -499,7 +582,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
             />
           </button>
           {quickActionsOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[min(360px,90vw)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50">
+            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50">
               <QuickActions className="grid grid-cols-1 gap-2" actions={QUICK_ACTIONS} />
             </div>
           )}
@@ -509,19 +592,32 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
         <div ref={navToggleRef} className="relative">
           <button
             type="button"
+            disabled={navAutoForced}
             onClick={() => {
+              if (navAutoForced) return;
               const nextMode = navModeState === "sidebar" ? "top" : "sidebar";
               setNavModeState(nextMode);
               onNavModeChange?.(nextMode);
               setTopNavOpen(false);
               setWorkspaceOpen(false);
             }}
-            className="hidden sm:flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+            title={navAutoForced ? "Top nav enforced to fit smaller width" : "Toggle navigation layout"}
+            className={cn(
+              "hidden sm:flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30",
+              navAutoForced
+                ? "cursor-not-allowed opacity-60"
+                : "hover:border-[var(--primary)]"
+            )}
           >
             <LayoutIcon className="h-4 w-4" />
             <span className="hidden md:inline">
               {navModeState === "sidebar" ? "Top nav" : "Sidebar"}
             </span>
+            {navAutoForced && (
+              <span className="ml-1 rounded-full bg-[var(--warning)]/15 px-2 py-0.5 text-[10px] font-semibold text-[var(--warning)]">
+                Auto
+              </span>
+            )}
           </button>
         </div>
 
@@ -550,7 +646,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
             />
           </button>
           {workspaceOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[min(360px,90vw)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden">
               <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <p className="text-sm font-semibold text-foreground truncate">
                   {organization?.name || user?.fullName || "Workspace"}
@@ -584,6 +680,14 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
                   <UserPlusIcon className="h-4 w-4" />
                   Invite team
                 </Link>
+                <Link
+                  href="/portal"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] transition-colors"
+                  onClick={() => setWorkspaceOpen(false)}
+                >
+                  <EyeIcon className="h-4 w-4" />
+                  View client portal
+                </Link>
                 <div className="mt-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
                   <div className="flex items-center gap-2">
@@ -613,7 +717,7 @@ export function DashboardTopbar({ className, navLinks = [], navMode = "sidebar",
 
           {/* Notifications dropdown */}
           {notificationsOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[min(360px,90vw)] max-h-[70vh] overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50">
+            <div className="absolute right-0 top-full mt-2 w-[clamp(260px,70vw,440px)] max-h-[70vh] overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50">
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
                 <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                 {unreadCount > 0 && (

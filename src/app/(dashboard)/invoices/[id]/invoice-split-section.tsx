@@ -297,7 +297,7 @@ export function InvoiceSplitSection({
               value={option.value}
               checked={splitType === option.value}
               onChange={(e) => setSplitType(e.target.value as InvoiceSplitType)}
-              className="mt-1 accent-[var(--primary)]"
+              className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
             />
             <div>
               <p className="font-medium text-foreground">{option.label}</p>

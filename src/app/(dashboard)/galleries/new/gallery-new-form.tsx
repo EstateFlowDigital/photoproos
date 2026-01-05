@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/toast";
 import { createGallery } from "@/lib/actions/galleries";
 import type { ServiceType, ServiceCategory } from "@/lib/services";
@@ -18,37 +19,87 @@ interface Client {
   email: string;
 }
 
-interface GalleryNewFormProps {
-  clients: Client[];
+interface GalleryTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  serviceId: string | null;
+  defaultPriceCents: number;
+  isPasswordProtected: boolean;
+  defaultPassword: string | null;
+  allowDownloads: boolean;
+  allowFavorites: boolean;
+  showWatermark: boolean;
+  sendNotifications: boolean;
+  expirationDays: number | null;
+  isDefault: boolean;
 }
 
-export function GalleryNewForm({ clients }: GalleryNewFormProps) {
+interface GalleryNewFormProps {
+  clients: Client[];
+  templates: GalleryTemplate[];
+}
+
+export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
+
+  // Find default template
+  const defaultTemplate = templates.find((t) => t.isDefault);
 
   // Form state
   const [name, setName] = useState("");
   const [galleryDescription, setGalleryDescription] = useState("");
   const [clientId, setClientId] = useState("");
   const [selectedService, setSelectedService] = useState<SelectedService>(null);
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState(defaultTemplate?.defaultPriceCents || 0);
   const [description, setDescription] = useState("");
   const [serviceName, setServiceName] = useState("");
   const [deliverables, setDeliverables] = useState<string[]>([]);
   const [category, setCategory] = useState<ServiceCategory>("other");
   const [duration, setDuration] = useState("");
-  const [accessType, setAccessType] = useState<"public" | "password">("public");
-  const [galleryPassword, setGalleryPassword] = useState("");
+  const [accessType, setAccessType] = useState<"public" | "password">(
+    defaultTemplate?.isPasswordProtected ? "password" : "public"
+  );
+  const [galleryPassword, setGalleryPassword] = useState(defaultTemplate?.defaultPassword || "");
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(defaultTemplate?.id || null);
 
   // Settings
-  const [allowDownloads, setAllowDownloads] = useState(true);
-  const [allowFavorites, setAllowFavorites] = useState(true);
-  const [showWatermark, setShowWatermark] = useState(false);
-  const [sendNotifications, setSendNotifications] = useState(true);
+  const [allowDownloads, setAllowDownloads] = useState(defaultTemplate?.allowDownloads ?? true);
+  const [allowFavorites, setAllowFavorites] = useState(defaultTemplate?.allowFavorites ?? true);
+  const [showWatermark, setShowWatermark] = useState(defaultTemplate?.showWatermark ?? false);
+  const [sendNotifications, setSendNotifications] = useState(defaultTemplate?.sendNotifications ?? true);
 
   // Form submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle template selection
+  const applyTemplate = (templateId: string | null) => {
+    setSelectedTemplateId(templateId);
+    if (!templateId) {
+      // Reset to defaults
+      setPrice(0);
+      setAccessType("public");
+      setGalleryPassword("");
+      setAllowDownloads(true);
+      setAllowFavorites(true);
+      setShowWatermark(false);
+      setSendNotifications(true);
+      return;
+    }
+
+    const template = templates.find((t) => t.id === templateId);
+    if (template) {
+      setPrice(template.defaultPriceCents);
+      setAccessType(template.isPasswordProtected ? "password" : "public");
+      setGalleryPassword(template.defaultPassword || "");
+      setAllowDownloads(template.allowDownloads);
+      setAllowFavorites(template.allowFavorites);
+      setShowWatermark(template.showWatermark);
+      setSendNotifications(template.sendNotifications);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +153,46 @@ export function GalleryNewForm({ clients }: GalleryNewFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Template Selector */}
+      {templates.length > 0 && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Template</h2>
+          <p className="text-sm text-foreground-muted mb-4">
+            Start with a preset template or customize settings manually.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => applyTemplate(null)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                selectedTemplateId === null
+                  ? "bg-[var(--primary)] text-white"
+                  : "bg-[var(--background)] text-foreground border border-[var(--card-border)] hover:bg-[var(--background-hover)]"
+              }`}
+            >
+              Custom
+            </button>
+            {templates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => applyTemplate(template.id)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  selectedTemplateId === template.id
+                    ? "bg-[var(--primary)] text-white"
+                    : "bg-[var(--background)] text-foreground border border-[var(--card-border)] hover:bg-[var(--background-hover)]"
+                }`}
+              >
+                {template.name}
+                {template.isDefault && (
+                  <span className="ml-1.5 text-xs opacity-75">(Default)</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Gallery Details Section */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Details</h2>
@@ -386,27 +477,13 @@ function ToggleSetting({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between cursor-pointer">
+    <div className="flex items-center justify-between">
       <div>
         <span className="text-sm font-medium text-foreground">{label}</span>
         <p className="text-xs text-foreground-muted">{description}</p>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)] ${
-          checked ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-        }`}
-      >
-        <span
-          className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-5" : "translate-x-0"
-          }`}
-        />
-      </button>
-    </label>
+      <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
   );
 }
 

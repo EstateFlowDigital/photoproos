@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AvailableProject {
   id: string;
@@ -87,11 +88,9 @@ export function GalleryConfigForm({
       {/* Show Project Names */}
       <div>
         <label className="flex items-center gap-3">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={showProjectNames}
-            onChange={(e) => updateConfig({ showProjectNames: e.target.checked })}
-            className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+            onCheckedChange={(checked) => updateConfig({ showProjectNames: checked === true })}
           />
           <span className="text-sm text-foreground">
             Show project names below images

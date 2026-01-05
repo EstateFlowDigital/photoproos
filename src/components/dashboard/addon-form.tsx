@@ -13,6 +13,7 @@ import {
 import { getServices } from "@/lib/actions/services";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { Switch } from "@/components/ui/switch";
 
 interface AddonFormData {
   name: string;
@@ -499,38 +500,23 @@ export function AddonForm({ initialData, mode }: AddonFormProps) {
 
         <div className="space-y-4">
           {/* Active Toggle */}
-          <label className="flex items-center justify-between cursor-pointer">
+          <div className="flex items-center justify-between">
             <div>
               <span className="text-sm font-medium text-foreground">Active</span>
               <p className="text-xs text-foreground-muted">
                 Active addons can be added to orders
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={formData.isActive}
-              onClick={() =>
-                setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
+            <Switch
+              checked={formData.isActive}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, isActive: checked }))
               }
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                formData.isActive
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  formData.isActive ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
-          </label>
+            />
+          </div>
 
           {/* One-Time Toggle */}
-          <label className="flex items-center justify-between cursor-pointer">
+          <div className="flex items-center justify-between">
             <div>
               <span className="text-sm font-medium text-foreground">
                 One-Time Purchase
@@ -539,28 +525,13 @@ export function AddonForm({ initialData, mode }: AddonFormProps) {
                 One-time addons can only be purchased once per order
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={formData.isOneTime}
-              onClick={() =>
-                setFormData((prev) => ({ ...prev, isOneTime: !prev.isOneTime }))
+            <Switch
+              checked={formData.isOneTime}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, isOneTime: checked }))
               }
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                formData.isOneTime
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  formData.isOneTime ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
-          </label>
+            />
+          </div>
         </div>
       </div>
 

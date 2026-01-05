@@ -13,6 +13,7 @@ import {
   CalendarDays,
   X,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { AvailabilityBlock, BookingBuffer, CalendarProvider } from "@prisma/client";
 import {
   createAvailabilityBlock,
@@ -538,12 +539,10 @@ export function AvailabilityPageClient({
               </div>
 
               <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
+                <Checkbox
                   id="recurring"
                   checked={newBlock.isRecurring}
-                  onChange={(e) => setNewBlock({ ...newBlock, isRecurring: e.target.checked })}
-                  className="w-4 h-4 rounded border-[rgba(255,255,255,0.24)] bg-transparent"
+                  onCheckedChange={(checked) => setNewBlock({ ...newBlock, isRecurring: checked === true })}
                 />
                 <label htmlFor="recurring" className="text-sm text-[#a7a7a7]">
                   Repeat weekly

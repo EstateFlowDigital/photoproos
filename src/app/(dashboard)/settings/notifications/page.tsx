@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { Switch } from "@/components/ui/switch";
 
 interface NotificationPreferences {
   email: {
@@ -177,13 +179,12 @@ export default function NotificationsSettingsPage() {
         title="Notification Preferences"
         subtitle="Choose how you want to be notified"
         actions={
-          <Link
-            href="/settings"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Settings
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href="/settings">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Settings
+            </Link>
+          </Button>
         }
       />
 
@@ -191,7 +192,7 @@ export default function NotificationsSettingsPage() {
         {/* Email Notifications */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <EmailIcon className="h-5 w-5" />
             </div>
             <div>
@@ -216,7 +217,7 @@ export default function NotificationsSettingsPage() {
         {/* Push Notifications */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <BellIcon className="h-5 w-5" />
             </div>
             <div>
@@ -232,12 +233,9 @@ export default function NotificationsSettingsPage() {
                   <p className="text-sm font-medium text-foreground">Enable Push Notifications</p>
                   <p className="text-xs text-foreground-muted">Allow notifications in your browser</p>
                 </div>
-                <button
-                  onClick={handleEnablePush}
-                  className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-                >
+                <Button variant="primary" onClick={handleEnablePush}>
                   Enable
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -265,7 +263,7 @@ export default function NotificationsSettingsPage() {
         {/* Quiet Hours */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <MoonIcon className="h-5 w-5" />
             </div>
             <div>
@@ -280,9 +278,9 @@ export default function NotificationsSettingsPage() {
                 <p className="text-sm font-medium text-foreground">Enable Quiet Hours</p>
                 <p className="text-xs text-foreground-muted">Notifications will be silenced during this period</p>
               </div>
-              <ToggleSwitch
+              <Switch
                 checked={preferences.quietHours.enabled}
-                onChange={(checked) => updateQuietHours({ enabled: checked })}
+                onCheckedChange={(checked) => updateQuietHours({ enabled: checked })}
               />
             </div>
 
@@ -327,13 +325,13 @@ export default function NotificationsSettingsPage() {
               Unsaved changes
             </span>
           )}
-          <button
+          <Button
+            variant="primary"
             onClick={handleSave}
             disabled={isSaving || !hasChanges}
-            className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
             {isSaving ? "Saving..." : "Save Preferences"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -371,36 +369,8 @@ function NotificationToggle({
         <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="text-xs text-foreground-muted">{description}</p>
       </div>
-      <ToggleSwitch checked={checked} onChange={onChange} />
+      <Switch checked={checked} onCheckedChange={onChange} />
     </div>
-  );
-}
-
-function ToggleSwitch({
-  checked,
-  onChange,
-}: {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors cursor-pointer",
-        checked ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-      )}
-    >
-      <span
-        className={cn(
-          "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-          checked ? "translate-x-5" : "translate-x-0"
-        )}
-      />
-    </button>
   );
 }
 

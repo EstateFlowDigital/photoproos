@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { PageHeader, Breadcrumb } from "@/components/dashboard";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getSMSTemplates } from "@/lib/actions/sms";
 import { SMSTemplatesClient } from "./sms-templates-client";
@@ -23,13 +24,12 @@ export default async function SMSTemplatesPage() {
         title="SMS Templates"
         subtitle="Customize message templates for automated notifications"
         actions={
-          <Link
-            href="/settings/sms"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to SMS Settings
-          </Link>
+          <Button variant="outline" asChild className="w-full sm:w-auto">
+            <Link href="/settings/sms">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to SMS Settings
+            </Link>
+          </Button>
         }
       />
 

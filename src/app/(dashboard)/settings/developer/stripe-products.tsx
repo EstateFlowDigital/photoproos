@@ -10,6 +10,7 @@ import {
   refreshSyncOverview,
 } from "@/lib/actions/stripe-product-sync";
 import type { ProductSyncOverview } from "@/lib/stripe/product-sync";
+import { Button } from "@/components/ui/button";
 
 const SERVICE_CATEGORIES = [
   { value: "real_estate", label: "Real Estate" },
@@ -302,7 +303,7 @@ export function StripeProductsSection({
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#635bff]/10 text-[#635bff]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#635bff]/10 text-[#635bff] border-2 border-[var(--card-border)]">
             <StripeIcon className="h-5 w-5" />
           </div>
           <div>
@@ -611,16 +612,17 @@ export function StripeProductsSection({
 
           {/* Quick Actions */}
           {totalUnsynced > 0 && syncOverview.isConfigured && (
-            <button
+            <Button
+              variant="primary"
               onClick={() => {
                 setActiveTab("sync");
                 handleSyncAll();
               }}
               disabled={isPending}
-              className="w-full rounded-lg bg-[#635bff] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#635bff]/90 disabled:opacity-50"
+              className="w-full bg-[#635bff] hover:bg-[#635bff]/90"
             >
               {isPending ? "Syncing..." : `Sync ${totalUnsynced} Pending Products`}
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -724,13 +726,14 @@ export function StripeProductsSection({
             />
           </div>
 
-          <button
+          <Button
+            variant="primary"
             onClick={handleCreateService}
             disabled={isPending || !syncOverview.isConfigured}
-            className="w-full rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+            className="w-full"
           >
             {isPending ? "Creating..." : "Create Service & Sync to Stripe"}
-          </button>
+          </Button>
 
           {!syncOverview.isConfigured && (
             <p className="text-xs text-[var(--error)] text-center">
@@ -823,13 +826,14 @@ export function StripeProductsSection({
             </p>
           </div>
 
-          <button
+          <Button
+            variant="primary"
             onClick={handleCreateBundle}
             disabled={isPending || !syncOverview.isConfigured}
-            className="w-full rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+            className="w-full"
           >
             {isPending ? "Creating..." : "Create Bundle & Sync to Stripe"}
-          </button>
+          </Button>
 
           {!syncOverview.isConfigured && (
             <p className="text-xs text-[var(--error)] text-center">
@@ -872,13 +876,14 @@ export function StripeProductsSection({
             </ul>
           </div>
 
-          <button
+          <Button
+            variant="primary"
             onClick={handleSyncAll}
             disabled={isPending || !syncOverview.isConfigured}
-            className="w-full rounded-lg bg-[#635bff] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#635bff]/90 disabled:opacity-50"
+            className="w-full bg-[#635bff] hover:bg-[#635bff]/90"
           >
             {isPending ? "Syncing..." : "Sync All Products to Stripe"}
-          </button>
+          </Button>
 
           {!syncOverview.isConfigured && (
             <p className="text-xs text-[var(--error)] text-center">

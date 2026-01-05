@@ -10,6 +10,7 @@ import {
   assignEquipmentToUser,
   unassignEquipmentFromUser,
 } from "@/lib/actions/equipment";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type CapabilityLevel = "learning" | "capable" | "expert";
 
@@ -116,7 +117,7 @@ export function CapabilitiesForm({
       {/* User Header */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-[var(--background-secondary)] flex items-center justify-center text-2xl font-semibold text-foreground-muted overflow-hidden">
+          <div className="h-16 w-16 rounded-full border-2 border-[var(--card-border)] bg-[var(--background-secondary)] flex items-center justify-center text-2xl font-semibold text-foreground-muted overflow-hidden">
             {userAvatar ? (
               <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
             ) : (
@@ -237,12 +238,10 @@ export function CapabilitiesForm({
               return (
                 <div key={equipment.id} className="px-6 py-4">
                   <label className="flex items-center gap-4 cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={isAssigned}
-                      onChange={() => handleEquipmentToggle(equipment.id, isAssigned)}
+                      onCheckedChange={() => handleEquipmentToggle(equipment.id, isAssigned)}
                       disabled={isPending}
-                      className="h-5 w-5 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)] disabled:opacity-50"
                     />
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-foreground">{equipment.name}</h4>

@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { getTeamMembers } from "@/lib/actions/settings";
 import { getPhotographerRates, getEarningStats } from "@/lib/actions/photographer-pay";
 import { getServices } from "@/lib/actions/services";
@@ -27,20 +28,18 @@ export default async function PhotographerPayPage() {
         subtitle="Configure pay rates and track earnings for team members"
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/settings"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back
-            </Link>
-            <Link
-              href="/settings/payouts"
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-            >
-              <PayoutIcon className="h-4 w-4" />
-              Manage Payouts
-            </Link>
+            <Button variant="outline" asChild>
+              <Link href="/settings">
+                <ArrowLeftIcon className="h-4 w-4" />
+                Back
+              </Link>
+            </Button>
+            <Button variant="primary" asChild>
+              <Link href="/settings/payouts">
+                <PayoutIcon className="h-4 w-4" />
+                Manage Payouts
+              </Link>
+            </Button>
           </div>
         }
       />

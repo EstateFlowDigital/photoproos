@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ServiceItem {
   id: string;
@@ -73,11 +74,9 @@ export function ServicesConfigForm({
       {/* Show Pricing */}
       <div>
         <label className="flex items-center gap-3">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={showPricing}
-            onChange={(e) => updateConfig({ showPricing: e.target.checked })}
-            className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+            onCheckedChange={(checked) => updateConfig({ showPricing: checked === true })}
           />
           <span className="text-sm text-foreground">Show pricing</span>
         </label>

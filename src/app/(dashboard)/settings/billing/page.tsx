@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { getBillingStats, getInvoiceHistory } from "@/lib/actions/settings";
 
 const plans = [
@@ -60,13 +61,12 @@ export default async function BillingSettingsPage() {
         title="Billing & Subscription"
         subtitle="Manage your plan and payment methods"
         actions={
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Settings
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href="/settings">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Settings
+            </Link>
+          </Button>
         }
       />
 
@@ -91,16 +91,15 @@ export default async function BillingSettingsPage() {
               )}
             </div>
             {billingStats?.stripeSubscriptionId ? (
-              <button className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
+              <Button variant="secondary">
                 Manage Subscription
-              </button>
+              </Button>
             ) : (
-              <Link
-                href="/settings/billing/upgrade"
-                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-              >
-                Upgrade Plan
-              </Link>
+              <Button variant="primary" asChild>
+                <Link href="/settings/billing/upgrade">
+                  Upgrade Plan
+                </Link>
+              </Button>
             )}
           </div>
         </div>
@@ -167,17 +166,13 @@ export default async function BillingSettingsPage() {
                       </li>
                     ))}
                   </ul>
-                  <button
-                    className={cn(
-                      "mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                      isCurrent
-                        ? "border border-[var(--primary)] text-[var(--primary)] cursor-default"
-                        : "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
-                    )}
+                  <Button
+                    variant={isCurrent ? "outline" : "primary"}
+                    className={cn("mt-4 w-full", isCurrent && "cursor-default")}
                     disabled={isCurrent}
                   >
                     {isCurrent ? "Current Plan" : plan.price === 0 ? "Downgrade" : "Upgrade"}
-                  </button>
+                  </Button>
                 </div>
               );
             })}
@@ -198,9 +193,9 @@ export default async function BillingSettingsPage() {
                   <p className="text-sm text-foreground-muted">Managed through Stripe</p>
                 </div>
               </div>
-              <button className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
+              <Button variant="secondary">
                 Update
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="rounded-lg border-2 border-dashed border-[var(--card-border)] p-6 text-center">

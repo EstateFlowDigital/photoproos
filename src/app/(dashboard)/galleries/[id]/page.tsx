@@ -6,6 +6,7 @@ import { GalleryDetailClient } from "./gallery-detail-client";
 import { GalleryActions } from "./gallery-actions";
 import { getGallery, deliverGallery } from "@/lib/actions/galleries";
 import { getClientInvoices } from "@/lib/actions/invoices";
+import { getGalleryDownloadAnalytics } from "@/lib/actions/download-tracking";
 
 interface GalleryDetailPageProps {
   params: Promise<{ id: string }>;
@@ -24,10 +25,11 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
   const isRealEstateGallery = gallery.service?.category === "real_estate";
   const hasPropertyWebsite = !!gallery.propertyWebsite;
 
-  // Fetch invoices for this client (if client exists)
-  const invoices = gallery.client?.id
-    ? await getClientInvoices(gallery.client.id)
-    : [];
+  // Fetch invoices and analytics in parallel
+  const [invoices, analyticsResult] = await Promise.all([
+    gallery.client?.id ? getClientInvoices(gallery.client.id) : Promise.resolve([]),
+    gallery.status === "delivered" ? getGalleryDownloadAnalytics(id) : Promise.resolve(null),
+  ]);
 
   // Map to the format expected by GalleryDetailClient
   const mappedGallery = {
@@ -91,6 +93,29 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
       dueDate: invoice.dueDate?.toISOString() || null,
       createdAt: invoice.createdAt.toISOString(),
     })),
+    // Analytics data (for delivered galleries)
+    analytics: analyticsResult?.success && analyticsResult.data
+      ? {
+          totalViews: gallery.viewCount,
+          uniqueVisitors: analyticsResult.data.uniqueClients,
+          totalDownloads: analyticsResult.data.totalDownloads,
+          photoDownloads: analyticsResult.data.topPhotos.map((p) => ({
+            photoId: p.assetId,
+            count: p.count,
+          })),
+          viewsByDay: analyticsResult.data.downloadsByDay.map((d) => ({
+            date: d.date,
+            views: d.count,
+          })),
+          avgTimeOnPage: 0, // Not tracked yet
+          deviceBreakdown: [], // Not tracked yet
+          topPhotos: analyticsResult.data.topPhotos.map((p) => ({
+            photoId: p.assetId,
+            views: 0,
+            downloads: p.count,
+          })),
+        }
+      : undefined,
   };
 
   return (
@@ -139,6 +164,8 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
               galleryId={id}
               galleryName={gallery.name}
               photoCount={gallery.photos.length}
+              deliveryLink={mappedGallery.deliveryLink}
+              hasFavorites={(gallery as { favoriteCount?: number }).favoriteCount ? (gallery as { favoriteCount?: number }).favoriteCount! > 0 : false}
             />
             {/* Property Website Button - Only for Real Estate Galleries */}
             {isRealEstateGallery && (

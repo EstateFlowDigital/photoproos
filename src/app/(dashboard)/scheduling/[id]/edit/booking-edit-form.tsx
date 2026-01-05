@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/toast";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { Select } from "@/components/ui/select";
@@ -345,11 +346,9 @@ export function BookingEditForm({ booking, clients }: BookingEditFormProps) {
             </div>
             <div className="flex items-end">
               <label className="flex items-center gap-3 cursor-pointer pb-2.5">
-                <input
-                  type="checkbox"
+                <Checkbox
                   name="depositPaid"
                   defaultChecked={booking.depositPaid}
-                  className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)] focus:ring-[var(--primary)]"
                 />
                 <span className="text-sm text-foreground">Deposit has been paid</span>
               </label>

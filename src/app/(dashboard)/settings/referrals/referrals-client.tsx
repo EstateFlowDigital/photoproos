@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   ReferralProgram,
   Referrer,
@@ -218,13 +219,14 @@ export function ReferralsClient({
                 />
               </div>
 
-              <button
+              <Button
                 type="submit"
+                variant="primary"
                 disabled={isPending}
-                className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50 sm:w-auto"
+                className="w-full sm:w-auto"
               >
                 {isPending ? "Saving..." : "Save Settings"}
-              </button>
+              </Button>
             </form>
           </div>
         )}

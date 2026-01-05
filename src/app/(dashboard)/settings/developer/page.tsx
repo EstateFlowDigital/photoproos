@@ -52,7 +52,7 @@ export default async function DeveloperSettingsPage() {
         {/* Seed Database */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <DatabaseIcon className="h-5 w-5" />
             </div>
             <div>
@@ -131,7 +131,7 @@ export default async function DeveloperSettingsPage() {
         {/* Clear Data */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--error)]/10 text-[var(--error)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--error)]/10 text-[var(--error)]">
               <TrashIcon className="h-5 w-5" />
             </div>
             <div>

@@ -17,6 +17,13 @@ export function getResend(): Resend {
 // Default sender
 export const DEFAULT_FROM_EMAIL = "PhotoProOS <noreply@photoproos.com>";
 
+// Email attachment interface
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer | string; // Buffer for binary, base64 string also accepted
+  contentType?: string;
+}
+
 // Email send options interface
 export interface SendEmailOptions {
   to: string | string[];
@@ -25,6 +32,7 @@ export interface SendEmailOptions {
   text?: string;
   from?: string;
   replyTo?: string;
+  attachments?: EmailAttachment[];
 }
 
 /**
@@ -36,7 +44,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
   resendId?: string;
   error?: string;
 }> {
-  const { to, subject, react, text, from = DEFAULT_FROM_EMAIL, replyTo } = options;
+  const { to, subject, react, text, from = DEFAULT_FROM_EMAIL, replyTo, attachments } = options;
 
   try {
     let html: string | undefined;
@@ -63,11 +71,13 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
       html?: string;
       text?: string;
       replyTo?: string;
+      attachments?: EmailAttachment[];
     } = {
       from,
       to: Array.isArray(to) ? to : [to],
       subject,
       replyTo,
+      attachments,
     };
 
     if (html) {

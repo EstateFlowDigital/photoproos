@@ -3,6 +3,16 @@
 import { useState, useTransition, useEffect, useRef } from "react";
 import { PageHeader } from "@/components/dashboard";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import Link from "next/link";
 import {
   sendReferralInvite,
@@ -172,13 +182,12 @@ export function MyReferralsClient({
         title="Refer & Earn"
         subtitle="Invite photographers to PhotoProOS and earn rewards"
         actions={
-          <Link
-            href="/settings"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Settings
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href="/settings">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Settings
+            </Link>
+          </Button>
         }
       />
 
@@ -219,12 +228,13 @@ export function MyReferralsClient({
                 </button>
               </div>
             </div>
-            <button
+            <Button
+              variant="primary"
               onClick={handleCopyLink}
-              className="hidden md:flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/25"
+              className="hidden md:flex"
             >
               {copied ? "Copied!" : "Copy Link"}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -275,22 +285,22 @@ export function MyReferralsClient({
       </div>
 
       {/* Email Invite Modal */}
-      {showInviteForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+      <Dialog open={showInviteForm} onOpenChange={setShowInviteForm}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
                 <MailIcon className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  Send Referral Invite
-                </h3>
-                <p className="text-xs text-foreground-muted">
+                <DialogTitle>Send Referral Invite</DialogTitle>
+                <DialogDescription>
                   They&apos;ll receive a personalized email with your link
-                </p>
+                </DialogDescription>
               </div>
             </div>
+          </DialogHeader>
+          <DialogBody>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-foreground-muted mb-1.5">
@@ -317,61 +327,52 @@ export function MyReferralsClient({
                 />
               </div>
             </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button
-                onClick={() => setShowInviteForm(false)}
-                className="inline-flex w-full items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSendInvite}
-                disabled={isPending || !inviteEmail}
-                className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/25 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
-              >
-                {isPending ? (
-                  <span className="flex items-center gap-2">
-                    <LoadingSpinner className="h-4 w-4" />
-                    Sending...
-                  </span>
-                ) : (
-                  "Send Invite"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowInviteForm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSendInvite}
+              disabled={isPending || !inviteEmail}
+            >
+              {isPending ? (
+                <span className="flex items-center gap-2">
+                  <LoadingSpinner className="h-4 w-4" />
+                  Sending...
+                </span>
+              ) : (
+                "Send Invite"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* QR Code Modal */}
-      {showQRCode && referralLink && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
-                  <QRCodeIcon className="h-5 w-5 text-[var(--primary)]" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Your Referral QR Code
-                  </h3>
-                  <p className="text-xs text-foreground-muted">
-                    Perfect for events & networking
-                  </p>
-                </div>
+      <Dialog open={showQRCode && !!referralLink} onOpenChange={setShowQRCode}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
+                <QRCodeIcon className="h-5 w-5 text-[var(--primary)]" />
               </div>
-              <button
-                onClick={() => setShowQRCode(false)}
-                className="p-1.5 rounded-lg hover:bg-[var(--background-hover)] text-foreground-muted hover:text-foreground transition-colors"
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
+              <div>
+                <DialogTitle>Your Referral QR Code</DialogTitle>
+                <DialogDescription>
+                  Perfect for events & networking
+                </DialogDescription>
+              </div>
             </div>
-
+          </DialogHeader>
+          <DialogBody>
             {/* QR Code Display */}
             <div className="flex justify-center py-6 bg-white rounded-lg mb-4">
-              <QRCodeCanvas referralLink={referralLink} size={qrCodeSize} />
+              {referralLink && <QRCodeCanvas referralLink={referralLink} size={qrCodeSize} />}
             </div>
 
             {/* Size Selector */}
@@ -392,8 +393,19 @@ export function MyReferralsClient({
               ))}
             </div>
 
-            {/* Download Button */}
-            <button
+            <p className="text-center text-xs text-foreground-muted">
+              Scan to visit: {referralLink}
+            </p>
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowQRCode(false)}
+            >
+              Close
+            </Button>
+            <Button
+              variant="primary"
               onClick={() => {
                 const canvas = document.querySelector("#qr-code-canvas") as HTMLCanvasElement;
                 if (canvas) {
@@ -404,17 +416,12 @@ export function MyReferralsClient({
                   showToast("QR code downloaded!", "success");
                 }
               }}
-              className="w-full rounded-lg bg-[var(--primary)] py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/25"
             >
               Download QR Code
-            </button>
-
-            <p className="text-center text-xs text-foreground-muted mt-4">
-              Scan to visit: {referralLink}
-            </p>
-          </div>
-        </div>
-      )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Stats Cards */}
       {stats && (
@@ -573,7 +580,7 @@ export function MyReferralsClient({
               {/* How It Works Steps */}
               <div className="grid gap-6 md:grid-cols-3">
                 <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--primary)]/30 transition-all">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] mb-4 group-hover:scale-110 transition-transform">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
                     <ShareIcon className="h-6 w-6" />
                   </div>
                   <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
@@ -585,7 +592,7 @@ export function MyReferralsClient({
                   </p>
                 </div>
                 <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--warning)]/30 transition-all">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--warning)]/10 text-[var(--warning)] mb-4 group-hover:scale-110 transition-transform">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--warning)]/10 text-[var(--warning)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
                     <UserPlusIcon className="h-6 w-6" />
                   </div>
                   <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
@@ -597,7 +604,7 @@ export function MyReferralsClient({
                   </p>
                 </div>
                 <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--success)]/30 transition-all">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--success)]/10 text-[var(--success)] mb-4 group-hover:scale-110 transition-transform">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--success)]/10 text-[var(--success)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
                     <GiftIcon className="h-6 w-6" />
                   </div>
                   <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
@@ -660,13 +667,10 @@ export function MyReferralsClient({
                   <p className="text-sm text-foreground-muted max-w-sm mx-auto mb-6">
                     Start sharing your referral link to see your invites and their status here.
                   </p>
-                  <button
-                    onClick={() => setShowInviteForm(true)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90"
-                  >
+                  <Button variant="primary" onClick={() => setShowInviteForm(true)}>
                     <MailIcon className="h-4 w-4" />
                     Send Your First Invite
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="overflow-x-auto -mx-6">
@@ -889,12 +893,9 @@ export function MyReferralsClient({
                   <p className="text-sm text-foreground-muted max-w-sm mx-auto mb-4">
                     Be the first to climb the leaderboard by referring photographers!
                   </p>
-                  <button
-                    onClick={() => setActiveTab("overview")}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/90"
-                  >
+                  <Button variant="primary" onClick={() => setActiveTab("overview")}>
                     Start Referring
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -1079,14 +1080,6 @@ function QRCodeIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M3.75 2A1.75 1.75 0 0 0 2 3.75v3.5c0 .966.784 1.75 1.75 1.75h3.5A1.75 1.75 0 0 0 9 7.25v-3.5A1.75 1.75 0 0 0 7.25 2h-3.5ZM3.5 3.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM3.75 11A1.75 1.75 0 0 0 2 12.75v3.5c0 .966.784 1.75 1.75 1.75h3.5A1.75 1.75 0 0 0 9 16.25v-3.5A1.75 1.75 0 0 0 7.25 11h-3.5Zm-.25 1.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM12.75 2A1.75 1.75 0 0 0 11 3.75v3.5c0 .966.784 1.75 1.75 1.75h3.5A1.75 1.75 0 0 0 18 7.25v-3.5A1.75 1.75 0 0 0 16.25 2h-3.5Zm-.25 1.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5ZM11 12.25a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm0 2.75a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm0 2.75a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
     </svg>
   );
 }

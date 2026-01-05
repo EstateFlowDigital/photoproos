@@ -1552,7 +1552,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                       name="resolution"
                       checked={settings.downloadResolution === "full"}
                       onChange={() => setSettings(prev => ({ ...prev, downloadResolution: "full" }))}
-                      className="h-4 w-4 text-[var(--primary)] border-[var(--card-border)] focus:ring-[var(--primary)]"
+                      className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
                     />
                     <div>
                       <p className="text-sm font-medium text-foreground">Full Resolution Only</p>
@@ -1565,7 +1565,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                       name="resolution"
                       checked={settings.downloadResolution === "web"}
                       onChange={() => setSettings(prev => ({ ...prev, downloadResolution: "web" }))}
-                      className="h-4 w-4 text-[var(--primary)] border-[var(--card-border)] focus:ring-[var(--primary)]"
+                      className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
                     />
                     <div>
                       <p className="text-sm font-medium text-foreground">Web Resolution Only</p>
@@ -1578,7 +1578,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                       name="resolution"
                       checked={settings.downloadResolution === "both"}
                       onChange={() => setSettings(prev => ({ ...prev, downloadResolution: "both" }))}
-                      className="h-4 w-4 text-[var(--primary)] border-[var(--card-border)] focus:ring-[var(--primary)]"
+                      className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
                     />
                     <div>
                       <p className="text-sm font-medium text-foreground">Both Options</p>

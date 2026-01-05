@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   updateBookingForm,
   updateBookingFormFields,
@@ -393,11 +394,9 @@ export function BookingFormEditClient({
                       className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={isSelected}
-                          onChange={() => handleServiceToggle(service.id)}
-                          className="h-4 w-4 rounded border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--primary)] focus:ring-[var(--ring)]"
+                          onCheckedChange={() => handleServiceToggle(service.id)}
                         />
                         <div>
                           <p className="font-medium text-foreground">{service.name}</p>

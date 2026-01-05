@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { Switch } from "@/components/ui/switch";
 import {
   getEmailSettings,
   updateEmailSettings,
@@ -119,13 +121,12 @@ export default function EmailSettingsPage() {
         title="Email Settings"
         subtitle="Configure how emails are sent from your organization"
         actions={
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Settings
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href="/settings">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Settings
+            </Link>
+          </Button>
         }
       />
 
@@ -133,7 +134,7 @@ export default function EmailSettingsPage() {
         {/* Sender Information */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <MailIcon className="h-5 w-5" />
             </div>
             <div>
@@ -196,7 +197,7 @@ export default function EmailSettingsPage() {
         {/* Email Notifications */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <BellIcon className="h-5 w-5" />
             </div>
             <div>
@@ -213,9 +214,9 @@ export default function EmailSettingsPage() {
                   Send notifications when questionnaires are assigned, reminded, or completed
                 </p>
               </div>
-              <ToggleSwitch
+              <Switch
                 checked={settings.enableQuestionnaireEmails}
-                onChange={(checked) => handleChange("enableQuestionnaireEmails", checked)}
+                onCheckedChange={(checked) => handleChange("enableQuestionnaireEmails", checked)}
               />
             </div>
 
@@ -226,9 +227,9 @@ export default function EmailSettingsPage() {
                   Receive summary emails about pending questionnaires and tasks
                 </p>
               </div>
-              <ToggleSwitch
+              <Switch
                 checked={settings.enableDigestEmails}
-                onChange={(checked) => handleChange("enableDigestEmails", checked)}
+                onCheckedChange={(checked) => handleChange("enableDigestEmails", checked)}
               />
             </div>
 
@@ -276,7 +277,7 @@ export default function EmailSettingsPage() {
         {/* Test Email */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <SendIcon className="h-5 w-5" />
             </div>
             <div>
@@ -293,10 +294,10 @@ export default function EmailSettingsPage() {
               placeholder="Enter email address"
               className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
             />
-            <button
+            <Button
+              variant="secondary"
               onClick={handleSendTest}
               disabled={sendingTest || !testEmail}
-              className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--background-secondary)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
             >
               {sendingTest ? (
                 <span className="flex items-center gap-2">
@@ -306,7 +307,7 @@ export default function EmailSettingsPage() {
               ) : (
                 "Send Test"
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -318,13 +319,13 @@ export default function EmailSettingsPage() {
               Unsaved changes
             </span>
           )}
-          <button
+          <Button
+            variant="primary"
             onClick={handleSave}
             disabled={saving || !hasChanges}
-            className="rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? "Saving..." : "Save Settings"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -343,34 +344,6 @@ function generateTimeOptions() {
     });
   }
   return options;
-}
-
-function ToggleSwitch({
-  checked,
-  onChange,
-}: {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors cursor-pointer",
-        checked ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-      )}
-    >
-      <span
-        className={cn(
-          "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-          checked ? "translate-x-5" : "translate-x-0"
-        )}
-      />
-    </button>
-  );
 }
 
 // Icons

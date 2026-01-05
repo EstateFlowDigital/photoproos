@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { getPayoutBatches, getPendingPayouts, getPayoutStats } from "@/lib/actions/payouts";
 import { PayoutsPageClient } from "./payouts-page-client";
 
@@ -24,15 +25,12 @@ export default async function PayoutsPage() {
         title="Payouts"
         subtitle="Process and track photographer payouts"
         actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/settings/photographer-pay"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-            >
+          <Button variant="outline" asChild>
+            <Link href="/settings/photographer-pay">
               <ArrowLeftIcon className="h-4 w-4" />
               Pay Rates
             </Link>
-          </div>
+          </Button>
         }
       />
 

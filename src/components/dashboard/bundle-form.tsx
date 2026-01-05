@@ -14,6 +14,8 @@ import {
 import { getServices } from "@/lib/actions/services";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface BundleFormData {
   name: string;
@@ -925,15 +927,13 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
                           />
                         </div>
                         <label className="flex items-center gap-2 text-xs text-foreground-muted">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={bs.isRequired}
-                            onChange={(e) =>
+                            onCheckedChange={(checked) =>
                               handleUpdateService(bs.serviceId, {
-                                isRequired: e.target.checked,
+                                isRequired: checked === true,
                               })
                             }
-                            className="rounded border-[var(--card-border)]"
                           />
                           Required
                         </label>
@@ -1008,66 +1008,36 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
 
         <div className="space-y-4">
           {/* Active Toggle */}
-          <label className="flex items-center justify-between cursor-pointer">
+          <div className="flex items-center justify-between">
             <div>
               <span className="text-sm font-medium text-foreground">Active</span>
               <p className="text-xs text-foreground-muted">
                 Active bundles appear on order pages
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={formData.isActive}
-              onClick={() =>
-                setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
+            <Switch
+              checked={formData.isActive}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, isActive: checked }))
               }
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                formData.isActive
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  formData.isActive ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
-          </label>
+            />
+          </div>
 
           {/* Public Toggle */}
-          <label className="flex items-center justify-between cursor-pointer">
+          <div className="flex items-center justify-between">
             <div>
               <span className="text-sm font-medium text-foreground">Public</span>
               <p className="text-xs text-foreground-muted">
                 Public bundles can be viewed by anyone with the link
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={formData.isPublic}
-              onClick={() =>
-                setFormData((prev) => ({ ...prev, isPublic: !prev.isPublic }))
+            <Switch
+              checked={formData.isPublic}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, isPublic: checked }))
               }
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                formData.isPublic
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  formData.isPublic ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
-          </label>
+            />
+          </div>
         </div>
       </div>
 

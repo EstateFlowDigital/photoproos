@@ -2040,3 +2040,349 @@ export async function getMultiDayEvents(): Promise<
     return { success: false, error: "Failed to fetch multi-day events" };
   }
 }
+
+// =============================================================================
+// Booking Conflict Detection
+// =============================================================================
+
+export interface BookingConflict {
+  bookingId: string;
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  clientName: string | null;
+  overlapMinutes: number;
+  conflictType: "full" | "partial_start" | "partial_end" | "contained";
+}
+
+export interface ConflictCheckResult {
+  hasConflicts: boolean;
+  conflicts: BookingConflict[];
+  suggestions?: {
+    earliestAvailable: Date | null;
+    nextAvailable: Date | null;
+  };
+}
+
+/**
+ * Check for booking conflicts in a time range
+ * Considers buffer times if configured
+ */
+export async function checkBookingConflicts(params: {
+  startTime: Date;
+  endTime: Date;
+  excludeBookingId?: string;
+  userId?: string;
+  serviceId?: string;
+  includeBuffers?: boolean;
+}): Promise<ActionResult<ConflictCheckResult>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const {
+      startTime,
+      endTime,
+      excludeBookingId,
+      userId,
+      serviceId,
+      includeBuffers = true,
+    } = params;
+
+    // Get buffer times if configured
+    let bufferBefore = 0;
+    let bufferAfter = 0;
+
+    if (includeBuffers && serviceId) {
+      const buffer = await prisma.bookingBuffer.findFirst({
+        where: {
+          organizationId,
+          serviceId,
+        },
+      });
+      if (buffer) {
+        bufferBefore = buffer.bufferBefore;
+        bufferAfter = buffer.bufferAfter;
+      }
+    }
+
+    // If no service-specific buffer, check org-wide defaults
+    if (includeBuffers && bufferBefore === 0 && bufferAfter === 0) {
+      const orgBuffer = await prisma.bookingBuffer.findFirst({
+        where: {
+          organizationId,
+          serviceId: null,
+        },
+      });
+      if (orgBuffer) {
+        bufferBefore = orgBuffer.bufferBefore;
+        bufferAfter = orgBuffer.bufferAfter;
+      }
+    }
+
+    // Adjust times with buffers (in minutes)
+    const bufferedStart = new Date(startTime.getTime() - bufferBefore * 60 * 1000);
+    const bufferedEnd = new Date(endTime.getTime() + bufferAfter * 60 * 1000);
+
+    // Find overlapping bookings
+    const overlappingBookings = await prisma.booking.findMany({
+      where: {
+        organizationId,
+        status: { notIn: ["cancelled"] },
+        ...(excludeBookingId && { id: { not: excludeBookingId } }),
+        ...(userId && { assignedUserId: userId }),
+        // Time overlap check: booking starts before our end AND ends after our start
+        AND: [
+          { startTime: { lt: bufferedEnd } },
+          { endTime: { gt: bufferedStart } },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        startTime: true,
+        endTime: true,
+        client: {
+          select: {
+            fullName: true,
+          },
+        },
+        clientName: true,
+      },
+      orderBy: { startTime: "asc" },
+    });
+
+    // Calculate overlap details for each conflict
+    const conflicts: BookingConflict[] = overlappingBookings.map((booking) => {
+      const overlapStart = new Date(
+        Math.max(bufferedStart.getTime(), booking.startTime.getTime())
+      );
+      const overlapEnd = new Date(
+        Math.min(bufferedEnd.getTime(), booking.endTime.getTime())
+      );
+      const overlapMinutes = Math.ceil(
+        (overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60)
+      );
+
+      // Determine conflict type
+      let conflictType: BookingConflict["conflictType"];
+      if (
+        booking.startTime <= bufferedStart &&
+        booking.endTime >= bufferedEnd
+      ) {
+        conflictType = "contained"; // Existing booking contains the new one
+      } else if (
+        booking.startTime >= bufferedStart &&
+        booking.endTime <= bufferedEnd
+      ) {
+        conflictType = "full"; // New booking contains existing
+      } else if (booking.startTime < bufferedStart) {
+        conflictType = "partial_start"; // Existing overlaps at start
+      } else {
+        conflictType = "partial_end"; // Existing overlaps at end
+      }
+
+      return {
+        bookingId: booking.id,
+        title: booking.title,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        clientName: booking.client?.fullName || booking.clientName,
+        overlapMinutes,
+        conflictType,
+      };
+    });
+
+    // Find next available slot if there are conflicts
+    let suggestions: ConflictCheckResult["suggestions"] | undefined;
+    if (conflicts.length > 0) {
+      const duration = endTime.getTime() - startTime.getTime();
+
+      // Find the earliest available slot after conflicts
+      const latestConflictEnd = new Date(
+        Math.max(...conflicts.map((c) => c.endTime.getTime())) + bufferAfter * 60 * 1000
+      );
+
+      suggestions = {
+        earliestAvailable: null,
+        nextAvailable: new Date(latestConflictEnd.getTime() + bufferBefore * 60 * 1000),
+      };
+
+      // Check if we can find an earlier slot before the first conflict
+      const earliestConflictStart = new Date(
+        Math.min(...conflicts.map((c) => c.startTime.getTime()))
+      );
+      const potentialEarlyEnd = new Date(
+        earliestConflictStart.getTime() - bufferAfter * 60 * 1000
+      );
+      const potentialEarlyStart = new Date(potentialEarlyEnd.getTime() - duration);
+
+      if (potentialEarlyStart >= new Date()) {
+        suggestions.earliestAvailable = potentialEarlyStart;
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        hasConflicts: conflicts.length > 0,
+        conflicts,
+        suggestions,
+      },
+    };
+  } catch (error) {
+    console.error("Error checking booking conflicts:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to check booking conflicts" };
+  }
+}
+
+/**
+ * Get all conflicts for a specific date range (for calendar display)
+ */
+export async function getConflictsInRange(params: {
+  startDate: Date;
+  endDate: Date;
+  userId?: string;
+}): Promise<ActionResult<{ conflicts: BookingConflict[][] }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const { startDate, endDate, userId } = params;
+
+    // Get all bookings in the range
+    const bookings = await prisma.booking.findMany({
+      where: {
+        organizationId,
+        status: { notIn: ["cancelled"] },
+        ...(userId && { assignedUserId: userId }),
+        AND: [
+          { startTime: { lt: endDate } },
+          { endTime: { gt: startDate } },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        startTime: true,
+        endTime: true,
+        client: {
+          select: {
+            fullName: true,
+          },
+        },
+        clientName: true,
+      },
+      orderBy: { startTime: "asc" },
+    });
+
+    // Find all overlapping pairs
+    const conflictPairs: BookingConflict[][] = [];
+
+    for (let i = 0; i < bookings.length; i++) {
+      for (let j = i + 1; j < bookings.length; j++) {
+        const a = bookings[i];
+        const b = bookings[j];
+
+        // Check if they overlap
+        if (a.startTime < b.endTime && a.endTime > b.startTime) {
+          const overlapStart = new Date(
+            Math.max(a.startTime.getTime(), b.startTime.getTime())
+          );
+          const overlapEnd = new Date(
+            Math.min(a.endTime.getTime(), b.endTime.getTime())
+          );
+          const overlapMinutes = Math.ceil(
+            (overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60)
+          );
+
+          const conflictA: BookingConflict = {
+            bookingId: a.id,
+            title: a.title,
+            startTime: a.startTime,
+            endTime: a.endTime,
+            clientName: a.client?.fullName || a.clientName,
+            overlapMinutes,
+            conflictType: a.startTime <= b.startTime ? "partial_end" : "partial_start",
+          };
+
+          const conflictB: BookingConflict = {
+            bookingId: b.id,
+            title: b.title,
+            startTime: b.startTime,
+            endTime: b.endTime,
+            clientName: b.client?.fullName || b.clientName,
+            overlapMinutes,
+            conflictType: b.startTime <= a.startTime ? "partial_end" : "partial_start",
+          };
+
+          conflictPairs.push([conflictA, conflictB]);
+        }
+      }
+    }
+
+    return {
+      success: true,
+      data: { conflicts: conflictPairs },
+    };
+  } catch (error) {
+    console.error("Error getting conflicts in range:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get conflicts" };
+  }
+}
+
+/**
+ * Validate a booking before creation/update for conflicts
+ */
+export async function validateBookingTime(params: {
+  startTime: Date;
+  endTime: Date;
+  bookingId?: string;
+  userId?: string;
+  serviceId?: string;
+  allowConflicts?: boolean;
+}): Promise<ActionResult<{ valid: boolean; message?: string; conflicts?: BookingConflict[] }>> {
+  try {
+    const { allowConflicts = false, ...checkParams } = params;
+
+    const result = await checkBookingConflicts({
+      ...checkParams,
+      excludeBookingId: params.bookingId,
+    });
+
+    if (!result.success) {
+      return result;
+    }
+
+    if (result.data.hasConflicts && !allowConflicts) {
+      const conflictMessages = result.data.conflicts.map(
+        (c) =>
+          `"${c.title}"${c.clientName ? ` with ${c.clientName}` : ""} (${c.overlapMinutes}min overlap)`
+      );
+
+      return {
+        success: true,
+        data: {
+          valid: false,
+          message: `This time conflicts with: ${conflictMessages.join(", ")}`,
+          conflicts: result.data.conflicts,
+        },
+      };
+    }
+
+    return {
+      success: true,
+      data: { valid: true },
+    };
+  } catch (error) {
+    console.error("Error validating booking time:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to validate booking time" };
+  }
+}

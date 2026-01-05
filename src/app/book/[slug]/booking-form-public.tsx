@@ -654,7 +654,7 @@ function FormFieldInput({
                   name={field.id}
                   checked={value === opt}
                   onChange={() => onChange(opt)}
-                  className="h-4 w-4"
+                  className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
                   style={{ accentColor: primaryColor }}
                 />
                 <span className="text-gray-900 dark:text-gray-100">{opt}</span>

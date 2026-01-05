@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
   getPortfolioComments,
@@ -110,21 +111,17 @@ export function CommentsTab({ website, isPending: externalPending }: CommentsTab
         <h3 className="mb-4 text-lg font-semibold text-foreground">Comment Settings</h3>
         <div className="space-y-4">
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={allowComments}
-              onChange={(e) => setAllowComments(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => setAllowComments(checked === true)}
             />
             <span className="text-sm text-foreground">Allow visitors to leave comments</span>
           </label>
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={requireEmail}
-              onChange={(e) => setRequireEmail(e.target.checked)}
+              onCheckedChange={(checked) => setRequireEmail(checked === true)}
               disabled={!allowComments}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)] disabled:opacity-50"
             />
             <span className={cn("text-sm", !allowComments ? "text-foreground-muted" : "text-foreground")}>
               Require email address to comment

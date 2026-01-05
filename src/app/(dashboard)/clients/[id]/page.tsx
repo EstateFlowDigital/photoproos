@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ClientActions } from "./client-actions";
 import { ClientEmailPreferences } from "./client-email-preferences";
+import { ClientActivityTimeline } from "./client-activity-timeline";
 import { getClientEmailLogs, getClientEmailHealth } from "@/lib/actions/email-logs";
 
 const industryLabels: Record<string, { label: string; color: string }> = {
@@ -112,6 +113,81 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     .reduce((sum, inv) => sum + inv.totalCents, 0);
   // Use calculated invoice revenue if available, otherwise fall back to stored value
   const lifetimeRevenue = invoiceRevenue > 0 ? invoiceRevenue : client.lifetimeRevenueCents;
+
+  // Build activity timeline
+  type ActivityItem = {
+    id: string;
+    type: "payment" | "gallery" | "email" | "booking" | "communication" | "invoice";
+    title: string;
+    description?: string;
+    timestamp: Date;
+    status?: "success" | "pending" | "error" | "info";
+    metadata?: Record<string, string | number>;
+  };
+
+  const activities: ActivityItem[] = [];
+
+  // Add payments to timeline
+  for (const payment of payments) {
+    activities.push({
+      id: `payment-${payment.id}`,
+      type: "payment",
+      title: payment.status === "paid" ? "Payment received" : "Payment pending",
+      description: payment.project?.name ? `For gallery: ${payment.project.name}` : undefined,
+      timestamp: payment.createdAt,
+      status: payment.status === "paid" ? "success" : "pending",
+      metadata: { Amount: payment.amountCents },
+    });
+  }
+
+  // Add galleries to timeline
+  for (const project of client.projects) {
+    activities.push({
+      id: `gallery-${project.id}`,
+      type: "gallery",
+      title: `Gallery created: ${project.name}`,
+      description: `${project._count.assets} photos`,
+      timestamp: project.createdAt,
+      status: project.status === "delivered" ? "success" : "info",
+      metadata: { Photos: project._count.assets },
+    });
+  }
+
+  // Add bookings to timeline
+  for (const booking of client.bookings) {
+    activities.push({
+      id: `booking-${booking.id}`,
+      type: "booking",
+      title: "Booking scheduled",
+      description: booking.title || undefined,
+      timestamp: booking.createdAt,
+      status: booking.status === "completed" ? "success" : booking.status === "cancelled" ? "error" : "info",
+    });
+  }
+
+  // Add email logs to timeline
+  for (const log of emailLogs) {
+    activities.push({
+      id: `email-${log.id}`,
+      type: "email",
+      title: log.subject || formatEmailType(log.emailType),
+      description: log.subject || formatEmailType(log.emailType),
+      timestamp: log.createdAt,
+      status: log.status === "delivered" ? "success" : log.status === "failed" || log.status === "bounced" ? "error" : "info",
+    });
+  }
+
+  // Add communications to timeline
+  for (const comm of communications) {
+    activities.push({
+      id: `comm-${comm.id}`,
+      type: "communication",
+      title: comm.subject || `${comm.type} ${comm.direction}`,
+      description: comm.content.substring(0, 100) + (comm.content.length > 100 ? "..." : ""),
+      timestamp: comm.createdAt,
+      status: "info",
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -447,48 +523,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             }}
           />
 
-          {/* Communication Timeline */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h2>
-            {communications.length > 0 ? (
-              <div className="space-y-3">
-                {communications.slice(0, 5).map((comm) => (
-                  <div key={comm.id} className="flex items-start gap-3">
-                    <div className={cn(
-                      "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                      comm.type === "email" ? "bg-blue-500/10 text-blue-400" :
-                      comm.type === "call" ? "bg-green-500/10 text-green-400" :
-                      comm.type === "meeting" ? "bg-purple-500/10 text-purple-400" :
-                      "bg-gray-500/10 text-gray-400"
-                    )}>
-                      {comm.type === "email" ? <EmailIcon className="h-4 w-4" /> :
-                       comm.type === "call" ? <PhoneIcon className="h-4 w-4" /> :
-                       comm.type === "meeting" ? <CalendarIcon className="h-4 w-4" /> :
-                       <NoteIcon className="h-4 w-4" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {comm.subject || (comm.type === "note" ? "Note" : comm.type.charAt(0).toUpperCase() + comm.type.slice(1))}
-                      </p>
-                      <p className="text-xs text-foreground-muted">
-                        {new Date(comm.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                        {comm.direction && comm.direction !== "internal" && (
-                          <span className="ml-1">• {comm.direction === "inbound" ? "Received" : "Sent"}</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {communications.length > 5 && (
-                  <p className="text-xs text-foreground-muted text-center">
-                    +{communications.length - 5} more
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-foreground-muted italic">No communication history yet</p>
-            )}
-          </div>
+          {/* Activity Timeline */}
+          <ClientActivityTimeline activities={activities} />
 
           {/* Related Items */}
           <RelatedItems

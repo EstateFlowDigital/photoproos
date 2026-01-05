@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { InviteModal, PendingInvitations } from "./invite-modal";
 
@@ -69,21 +70,16 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
           <p className="text-sm text-foreground-muted mt-1">Manage your team and permissions</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/settings"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back
-          </Link>
-          <button
-            onClick={() => setIsInviteModalOpen(true)}
-            disabled={!canInvite}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-          >
+          <Button variant="outline" asChild>
+            <Link href="/settings">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back
+            </Link>
+          </Button>
+          <Button variant="primary" onClick={() => setIsInviteModalOpen(true)} disabled={!canInvite}>
             <PlusIcon className="h-4 w-4" />
             Invite Member
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -129,7 +125,7 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
                   className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                       {(member.user.fullName || member.user.email).charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">

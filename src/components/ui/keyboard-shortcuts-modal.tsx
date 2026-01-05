@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface KeyboardShortcutsModalProps {
@@ -16,54 +16,75 @@ interface ShortcutGroup {
   }[];
 }
 
-const shortcutGroups: ShortcutGroup[] = [
-  {
-    title: "Navigation",
-    shortcuts: [
-      { keys: ["⌘", "⇧", "D"], description: "Go to Dashboard" },
-      { keys: ["⌘", "⇧", "G"], description: "Go to Galleries" },
-      { keys: ["⌘", "⇧", "C"], description: "Go to Clients" },
-      { keys: ["⌘", "⇧", "P"], description: "Go to Payments" },
-      { keys: ["⌘", "⇧", "S"], description: "Go to Scheduling" },
-      { keys: ["⌘", "⇧", "I"], description: "Go to Invoices" },
-      { keys: ["⌘", "⇧", "O"], description: "Go to Contracts" },
-      { keys: ["⌘", "⇧", "R"], description: "Go to Properties" },
-      { keys: ["⌘", "⇧", "V"], description: "Go to Services" },
-      { keys: ["⌘", "⇧", "A"], description: "Go to Analytics" },
-      { keys: ["⌘", "⇧", "T"], description: "Go to Settings" },
-    ],
-  },
-  {
-    title: "Global",
-    shortcuts: [
-      { keys: ["⌘", "K"], description: "Open command palette" },
-      { keys: ["⌘", "⇧", "N"], description: "Create new item" },
-      { keys: ["?"], description: "Open keyboard shortcuts" },
-      { keys: ["Esc"], description: "Close modal / Cancel" },
-    ],
-  },
-  {
-    title: "Gallery View",
-    shortcuts: [
-      { keys: ["S"], description: "Toggle selection mode" },
-      { keys: ["A"], description: "Select all photos" },
-      { keys: ["R"], description: "Toggle reorder mode" },
-      { keys: ["Delete"], description: "Delete selected photos" },
-    ],
-  },
-  {
-    title: "Photo Lightbox",
-    shortcuts: [
-      { keys: ["←"], description: "Previous photo" },
-      { keys: ["→"], description: "Next photo" },
-      { keys: ["+"], description: "Zoom in" },
-      { keys: ["-"], description: "Zoom out" },
-      { keys: ["Esc"], description: "Close lightbox" },
-    ],
-  },
-];
+// Detect if user is on Mac
+function useIsMac() {
+  const [isMac, setIsMac] = useState(true); // Default to Mac for SSR
+  useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
+  }, []);
+  return isMac;
+}
+
+// Get modifier key based on platform
+function getModKey(isMac: boolean) {
+  return isMac ? "⌘" : "Ctrl";
+}
+
+function getShortcutGroups(isMac: boolean): ShortcutGroup[] {
+  const mod = getModKey(isMac);
+  return [
+    {
+      title: "Navigation",
+      shortcuts: [
+        { keys: [mod, "⇧", "D"], description: "Go to Dashboard" },
+        { keys: [mod, "⇧", "G"], description: "Go to Galleries" },
+        { keys: [mod, "⇧", "C"], description: "Go to Clients" },
+        { keys: [mod, "⇧", "P"], description: "Go to Payments" },
+        { keys: [mod, "⇧", "S"], description: "Go to Scheduling" },
+        { keys: [mod, "⇧", "I"], description: "Go to Invoices" },
+        { keys: [mod, "⇧", "O"], description: "Go to Contracts" },
+        { keys: [mod, "⇧", "R"], description: "Go to Properties" },
+        { keys: [mod, "⇧", "V"], description: "Go to Services" },
+        { keys: [mod, "⇧", "A"], description: "Go to Analytics" },
+        { keys: [mod, "⇧", "T"], description: "Go to Settings" },
+      ],
+    },
+    {
+      title: "Global",
+      shortcuts: [
+        { keys: [mod, "K"], description: "Open command palette" },
+        { keys: [mod, "⇧", "N"], description: "Create new item" },
+        { keys: [mod, "/"], description: "Open keyboard shortcuts" },
+        { keys: ["Esc"], description: "Close modal / Cancel" },
+      ],
+    },
+    {
+      title: "Gallery View",
+      shortcuts: [
+        { keys: ["S"], description: "Toggle selection mode" },
+        { keys: ["A"], description: "Select all photos" },
+        { keys: ["R"], description: "Toggle reorder mode" },
+        { keys: ["Delete"], description: "Delete selected photos" },
+      ],
+    },
+    {
+      title: "Photo Lightbox",
+      shortcuts: [
+        { keys: ["←"], description: "Previous photo" },
+        { keys: ["→"], description: "Next photo" },
+        { keys: ["+"], description: "Zoom in" },
+        { keys: ["-"], description: "Zoom out" },
+        { keys: ["Esc"], description: "Close lightbox" },
+      ],
+    },
+  ];
+}
 
 export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsModalProps) {
+  const isMac = useIsMac();
+  const shortcutGroups = getShortcutGroups(isMac);
+  const modKey = getModKey(isMac);
+
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -154,7 +175,11 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
             <p className="text-xs text-foreground-muted text-center">
               Press{" "}
               <kbd className="rounded border border-[var(--card-border)] bg-[var(--background-secondary)] px-1.5 py-0.5 text-xs font-medium text-foreground-muted">
-                ?
+                {modKey}
+              </kbd>
+              <span className="mx-0.5 text-foreground-muted">+</span>
+              <kbd className="rounded border border-[var(--card-border)] bg-[var(--background-secondary)] px-1.5 py-0.5 text-xs font-medium text-foreground-muted">
+                /
               </kbd>{" "}
               anywhere to open this dialog
             </p>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { upsertPhotographerRate, deletePhotographerRate } from "@/lib/actions/photographer-pay";
 import type { PhotographerRateWithRelations } from "@/lib/actions/photographer-pay";
 
@@ -134,13 +135,10 @@ export function PhotographerPayClient({
             <h2 className="text-lg font-semibold text-foreground">Pay Rates</h2>
             <p className="text-sm text-foreground-muted">Configure how photographers are paid for each service</p>
           </div>
-          <button
-            onClick={() => setIsAddingRate(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
+          <Button variant="primary" onClick={() => setIsAddingRate(true)}>
             <PlusIcon className="h-4 w-4" />
             Add Rate
-          </button>
+          </Button>
         </div>
 
         {/* Add Rate Form */}
@@ -233,20 +231,16 @@ export function PhotographerPayClient({
             </div>
 
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
-              >
+              <Button type="submit" variant="primary" disabled={isSubmitting}>
                 {isSubmitting ? "Saving..." : "Save Rate"}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => setIsAddingRate(false)}
-                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         )}
@@ -262,7 +256,7 @@ export function PhotographerPayClient({
                   className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                 >
                   <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-center sm:gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                       {(member.user.fullName || member.user.email).charAt(0).toUpperCase()}
                     </div>
                     <div>

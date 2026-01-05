@@ -8,6 +8,7 @@ import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { TravelInfoCard } from "@/components/dashboard/travel-info-card";
 import { TeamMemberSelector } from "@/components/dashboard/team-member-selector";
 import { Select } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createBooking, createRecurringBooking, createBookingReminders, type ReminderInput } from "@/lib/actions/bookings";
 import { getRecurrenceSummary } from "@/lib/utils/bookings";
 import { calculateTravelPreview } from "@/lib/actions/locations";
@@ -697,11 +698,9 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
         <div className="space-y-4">
           {/* Confirmation Email */}
           <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
+            <Checkbox
               name="sendConfirmation"
               defaultChecked
-              className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
             />
             <div>
               <span className="text-sm font-medium text-foreground">Send confirmation email</span>
@@ -718,11 +717,9 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
 
             <div className="space-y-3 pl-6">
               <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={reminder24h}
-                  onChange={(e) => setReminder24h(e.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  onCheckedChange={(checked) => setReminder24h(checked === true)}
                 />
                 <div>
                   <span className="text-sm font-medium text-foreground">24 hours before</span>
@@ -731,11 +728,9 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
               </label>
 
               <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={reminder1h}
-                  onChange={(e) => setReminder1h(e.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  onCheckedChange={(checked) => setReminder1h(checked === true)}
                 />
                 <div>
                   <span className="text-sm font-medium text-foreground">1 hour before</span>
@@ -775,11 +770,9 @@ export function BookingNewForm({ clients, timeSlots, services, fromOrder }: Book
           {/* Calendar */}
           <div className="pt-3 border-t border-[var(--card-border)]">
             <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
+              <Checkbox
                 name="addToCalendar"
                 defaultChecked
-                className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
               />
               <div>
                 <span className="text-sm font-medium text-foreground">Add to calendar</span>

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { ContractStatus } from "@prisma/client";
+import { BulkExportButton } from "@/components/contracts/bulk-export-button";
 
 // Helper to format date
 function formatDate(date: Date): string {
@@ -106,13 +107,16 @@ export default async function ContractsPage({ searchParams }: PageProps) {
         title="Contracts"
         subtitle={`${contracts.length} contract${contracts.length !== 1 ? "s" : ""}`}
         actions={
-          <Link
-            href="/contracts/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Create Contract
-          </Link>
+          <div className="flex items-center gap-3">
+            <BulkExportButton statusFilter={statusFilter} contractCount={contracts.length} />
+            <Link
+              href="/contracts/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Create Contract
+            </Link>
+          </div>
         }
       />
 

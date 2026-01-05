@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   findDuplicateClients,
   getClientMergePreview,
@@ -371,21 +372,17 @@ export function ClientMergeClient() {
 
                 {/* Options */}
                 <div className="mt-4 pt-4 border-t border-[var(--card-border)] space-y-2">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
                       checked={keepSecondaryEmail}
-                      onChange={(e) => setKeepSecondaryEmail(e.target.checked)}
-                      className="rounded border-[var(--card-border)]"
+                      onCheckedChange={(checked) => setKeepSecondaryEmail(checked === true)}
                     />
                     <span className="text-foreground">Save secondary email to notes</span>
                   </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
                       checked={keepSecondaryPhone}
-                      onChange={(e) => setKeepSecondaryPhone(e.target.checked)}
-                      className="rounded border-[var(--card-border)]"
+                      onCheckedChange={(checked) => setKeepSecondaryPhone(checked === true)}
                     />
                     <span className="text-foreground">Save secondary phone to notes</span>
                   </label>

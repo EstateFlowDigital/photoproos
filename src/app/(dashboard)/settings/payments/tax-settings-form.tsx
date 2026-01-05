@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateTaxSettings } from "@/lib/actions/settings";
+import { Button } from "@/components/ui/button";
 
 interface TaxSettingsFormProps {
   initialTaxRate: number;
@@ -100,10 +101,10 @@ export function TaxSettingsForm({ initialTaxRate, initialTaxLabel }: TaxSettings
       )}
 
       <div className="flex justify-end">
-        <button
+        <Button
+          variant="primary"
           type="submit"
           disabled={isSaving}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
         >
           {isSaving ? (
             <>
@@ -113,7 +114,7 @@ export function TaxSettingsForm({ initialTaxRate, initialTaxLabel }: TaxSettings
           ) : (
             "Save Tax Settings"
           )}
-        </button>
+        </Button>
       </div>
     </form>
   );

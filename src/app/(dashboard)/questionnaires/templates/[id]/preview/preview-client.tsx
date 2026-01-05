@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AgreementSignature } from "@/components/portal/agreement-signature";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { FormFieldType, LegalAgreementType } from "@prisma/client";
 
 interface TemplateField {
@@ -381,12 +382,11 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                               isAccepted ? "opacity-75" : ""
                             }`}
                           >
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               checked={isAccepted || false}
-                              onChange={(e) => handleAgreementAccept(agreement.id, e.target.checked)}
+                              onCheckedChange={(checked) => handleAgreementAccept(agreement.id, checked === true)}
                               disabled={isAccepted || (agreement.requiresSignature && !hasSignature)}
-                              className="mt-0.5 h-5 w-5 rounded border-[#262626] bg-[#0a0a0a] text-[#3b82f6] focus:ring-[#3b82f6] disabled:opacity-50"
+                              className="mt-0.5"
                             />
                             <span className="text-sm text-white">
                               {agreement.requiresSignature ? (
@@ -575,11 +575,9 @@ function PreviewField({
 
       {field.type === "checkbox" && (
         <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={(value as boolean) || false}
-            onChange={(e) => onChange(e.target.checked)}
-            className="h-5 w-5 rounded border-[#262626] bg-[#0a0a0a] text-[#3b82f6] focus:ring-[#3b82f6]"
+            onCheckedChange={(checked) => onChange(checked === true)}
           />
           <span className="text-sm text-[#a7a7a7]">{field.placeholder || "Yes"}</span>
         </label>
@@ -595,7 +593,7 @@ function PreviewField({
                 value={opt}
                 checked={(value as string) === opt}
                 onChange={(e) => onChange(e.target.value)}
-                className="h-4 w-4 border-[#262626] bg-[#0a0a0a] text-[#3b82f6] focus:ring-[#3b82f6]"
+                className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
               />
               <span className="text-sm text-[#a7a7a7]">{opt}</span>
             </label>

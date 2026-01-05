@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { getCurrentUser, getBillingStats } from "@/lib/actions/settings";
 import { ProfileSettingsForm } from "./profile-settings-form";
 
@@ -35,13 +36,12 @@ export default async function ProfileSettingsPage() {
         title="Profile Settings"
         subtitle="Manage your personal information and preferences"
         actions={
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Settings
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href="/settings">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Settings
+            </Link>
+          </Button>
         }
       />
 

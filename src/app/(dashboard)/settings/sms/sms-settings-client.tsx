@@ -4,6 +4,8 @@ import { useState } from "react";
 import { StatCard } from "@/components/dashboard";
 import { updateSMSSettings, sendTestSMS, seedDefaultTemplates } from "@/lib/actions/sms";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { SMSTemplateType, SMSDeliveryStatus } from "@prisma/client";
 
@@ -189,15 +191,10 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
 
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <label className="relative inline-flex cursor-pointer items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.smsEnabled}
-                  onChange={(e) => setFormData({ ...formData, smsEnabled: e.target.checked })}
-                  className="peer sr-only"
-                />
-                <div className="h-6 w-11 rounded-full bg-[var(--background-tertiary)] peer-checked:bg-[var(--primary)] peer-focus:ring-2 peer-focus:ring-[var(--primary)]/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"></div>
-              </label>
+              <Switch
+                checked={formData.smsEnabled}
+                onCheckedChange={(checked) => setFormData({ ...formData, smsEnabled: checked })}
+              />
               <span className="text-sm text-foreground">Enable SMS Notifications</span>
             </div>
 
@@ -296,20 +293,20 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
             <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
 
             <div className="space-y-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={handleSeedTemplates}
                 disabled={seeding}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+                className="w-full"
               >
                 {seeding ? "Creating..." : "Create Default Templates"}
-              </button>
+              </Button>
 
-              <Link
-                href="/settings/sms/templates"
-                className="block w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-center text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-              >
-                Manage Message Templates
-              </Link>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/settings/sms/templates">
+                  Manage Message Templates
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -435,7 +432,7 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
       {/* Info Card */}
       <div className="rounded-xl border border-[var(--primary)]/20 bg-[var(--primary)]/5 p-6">
         <div className="flex flex-col gap-4 sm:flex-row">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10">
             <InfoIcon className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>

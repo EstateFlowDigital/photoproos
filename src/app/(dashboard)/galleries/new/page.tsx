@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getGalleryTemplates } from "@/lib/actions/gallery-templates";
 
 async function getClients(organizationId: string) {
   try {
@@ -73,10 +74,13 @@ export default async function NewGalleryPage() {
     redirect("/sign-in");
   }
 
-  const [clients, stats] = await Promise.all([
+  const [clients, stats, templatesResult] = await Promise.all([
     getClients(auth.organizationId),
     getStats(auth.organizationId),
+    getGalleryTemplates(),
   ]);
+
+  const templates = templatesResult.success ? templatesResult.data : [];
 
   return (
     <div className="space-y-6">
@@ -97,7 +101,7 @@ export default async function NewGalleryPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
         <div className="lg:col-span-2">
-          <GalleryNewForm clients={clients} />
+          <GalleryNewForm clients={clients} templates={templates || []} />
         </div>
 
         {/* Sidebar */}

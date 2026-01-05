@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { assignQuestionnaireToClient } from "@/lib/actions/client-questionnaires";
 import type { QuestionnaireTemplateWithRelations } from "@/lib/actions/questionnaire-templates";
 
@@ -329,11 +330,9 @@ export function AssignQuestionnaireModal({
             {/* Options */}
             <div className="space-y-3 rounded-lg border border-[var(--card-border)] bg-background p-4">
               <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={isRequired}
-                  onChange={(e) => setIsRequired(e.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  onCheckedChange={(checked) => setIsRequired(checked === true)}
                 />
                 <div>
                   <span className="text-sm font-medium text-foreground">Required</span>
@@ -342,11 +341,9 @@ export function AssignQuestionnaireModal({
               </label>
 
               <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={sendReminders}
-                  onChange={(e) => setSendReminders(e.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  onCheckedChange={(checked) => setSendReminders(checked === true)}
                 />
                 <div>
                   <span className="text-sm font-medium text-foreground">Send Reminders</span>

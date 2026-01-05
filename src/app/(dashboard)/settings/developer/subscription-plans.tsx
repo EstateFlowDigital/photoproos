@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   createSubscriptionPlan,
   updateSubscriptionPlan,
@@ -21,6 +22,7 @@ import {
   type EnvironmentStatus,
 } from "@/lib/actions/subscription-plans";
 import type { PlanName, ExperimentStatus } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 
 // =============================================================================
 // Types
@@ -542,7 +544,7 @@ export function SubscriptionPlansSection({
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] border-2 border-[var(--card-border)]">
             <CreditCardIcon className="h-5 w-5" />
           </div>
           <div>
@@ -555,14 +557,14 @@ export function SubscriptionPlansSection({
           </div>
         </div>
 
-        <button
+        <Button
+          variant="primary"
           onClick={handleSyncAllPlans}
           disabled={isPending || plans.length === 0}
-          className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
         >
           <SyncIcon className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
           Sync All to Stripe
-        </button>
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -913,14 +915,15 @@ export function SubscriptionPlansSection({
                     />
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="primary"
                   onClick={handleAddFeature}
                   disabled={isPending}
-                  className="mt-4 flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                  className="mt-4"
                 >
                   <PlusIcon className="h-4 w-4" />
                   Add Feature
-                </button>
+                </Button>
               </div>
             </>
           )}
@@ -1022,13 +1025,13 @@ export function SubscriptionPlansSection({
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
-                <button
+                <Button
+                  variant="primary"
                   onClick={handleCreateExperiment}
                   disabled={isPending}
-                  className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
                 >
                   Create Experiment
-                </button>
+                </Button>
                 <button
                   onClick={() => setShowNewExperimentForm(false)}
                   className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -1215,12 +1218,10 @@ export function SubscriptionPlansSection({
                             />
                           </div>
                           <div className="flex items-center gap-2 pt-5">
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               id="isControl"
                               checked={newVariant.isControl}
-                              onChange={(e) => setNewVariant({ ...newVariant, isControl: e.target.checked })}
-                              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+                              onCheckedChange={(checked) => setNewVariant({ ...newVariant, isControl: checked === true })}
                             />
                             <label htmlFor="isControl" className="text-sm text-foreground">
                               Is Control Group
@@ -1228,13 +1229,14 @@ export function SubscriptionPlansSection({
                           </div>
                         </div>
                         <div className="flex gap-2 mt-3">
-                          <button
+                          <Button
+                            variant="primary"
                             onClick={() => handleCreateVariant(experiment.id)}
                             disabled={isPending}
-                            className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                            className="text-xs px-3 py-1.5"
                           >
                             Add Variant
-                          </button>
+                          </Button>
                           <button
                             onClick={() => {
                               setShowNewVariantForm(null);
@@ -1426,14 +1428,14 @@ export function SubscriptionPlansSection({
             </div>
           </div>
 
-          <button
+          <Button
+            variant="primary"
             onClick={handleCreatePlan}
             disabled={isPending}
-            className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
           >
             <PlusIcon className="h-4 w-4" />
             Create Plan
-          </button>
+          </Button>
         </div>
       )}
 

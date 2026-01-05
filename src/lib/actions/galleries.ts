@@ -1142,6 +1142,8 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       theme: (org.portalMode || "dark") as "light" | "dark" | "auto",
       hidePlatformBranding: canHideBranding,
       isPreview, // Let the UI know this is a preview
+      expiresAt: project.expiresAt?.toISOString() || null,
+      isPasswordProtected: !!project.password,
       photos,
     };
   } catch (error) {

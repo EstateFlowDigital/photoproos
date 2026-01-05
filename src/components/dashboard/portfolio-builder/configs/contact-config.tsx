@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 interface ContactConfigFormProps {
   config: Record<string, unknown>;
   updateConfig: (updates: Record<string, unknown>) => void;
@@ -56,53 +58,43 @@ export function ContactConfigForm({
         </label>
         <div className="mt-3 space-y-3">
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={showForm}
-              onChange={(e) => updateConfig({ showForm: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => updateConfig({ showForm: checked === true })}
             />
             <span className="text-sm text-foreground">Show contact form</span>
           </label>
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={showEmail}
-              onChange={(e) => updateConfig({ showEmail: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => updateConfig({ showEmail: checked === true })}
             />
             <span className="text-sm text-foreground">
               Show email address (from organization settings)
             </span>
           </label>
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={showPhone}
-              onChange={(e) => updateConfig({ showPhone: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => updateConfig({ showPhone: checked === true })}
             />
             <span className="text-sm text-foreground">
               Show phone number (from organization settings)
             </span>
           </label>
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={showSocial}
-              onChange={(e) => updateConfig({ showSocial: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => updateConfig({ showSocial: checked === true })}
             />
             <span className="text-sm text-foreground">
               Show social media links
             </span>
           </label>
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={showMap}
-              onChange={(e) => updateConfig({ showMap: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => updateConfig({ showMap: checked === true })}
             />
             <span className="text-sm text-foreground">Show map</span>
           </label>

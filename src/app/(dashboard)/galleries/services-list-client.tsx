@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { serviceCategories, formatServicePrice, type ServiceCategory } from "@/lib/services";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Service {
   id: string;
@@ -178,11 +179,9 @@ export function ServicesListClient({ services }: ServicesListClientProps) {
 
         {/* Show Inactive Toggle */}
         <label className="flex items-center gap-2 text-sm text-foreground-muted cursor-pointer whitespace-nowrap">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={showInactive}
-            onChange={(e) => setShowInactive(e.target.checked)}
-            className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+            onCheckedChange={(checked) => setShowInactive(checked === true)}
           />
           Show inactive
         </label>

@@ -523,7 +523,7 @@ export function PaymentsSettingsClient({
       {/* Tax Settings */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
             <ReceiptIcon className="h-6 w-6 text-[var(--primary)]" />
           </div>
           <div>

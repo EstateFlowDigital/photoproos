@@ -9,7 +9,16 @@ import {
   deleteTerritory,
   toggleTerritoryStatus,
 } from "@/lib/actions/territories";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface TerritoriesClientProps {
   initialTerritories: ServiceTerritory[];
@@ -181,13 +190,10 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
             Define zones with custom pricing and travel fees based on ZIP codes
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-        >
+        <Button variant="primary" onClick={openCreateModal}>
           <PlusIcon className="h-4 w-4" />
           Add Territory
-        </button>
+        </Button>
       </div>
 
       {/* Summary Cards */}
@@ -268,217 +274,183 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
           <p className="mt-2 text-sm text-foreground-muted">
             Create your first territory to set up zone-based pricing.
           </p>
-          <button
-            onClick={openCreateModal}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
-          >
+          <Button variant="primary" onClick={openCreateModal} className="mt-6">
             <PlusIcon className="h-4 w-4" />
             Add First Territory
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Create/Edit Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
-            <div className="flex flex-col gap-2 border-b border-[var(--card-border)] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-lg font-semibold text-foreground">
-                {editingTerritory ? "Edit Territory" : "Create Territory"}
-              </h2>
-              <button
-                onClick={closeModal}
-                className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
-              >
-                <XIcon className="h-5 w-5" />
-              </button>
+      <Dialog open={showModal} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>{editingTerritory ? "Edit Territory" : "Create Territory"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {error && (
+              <div className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-3">
+                <p className="text-sm text-[var(--error)]">{error}</p>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Territory Name <span className="text-[var(--error)]">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g., Downtown Zone, Premium Area"
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {error && (
-                <div className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-3">
-                  <p className="text-sm text-[var(--error)]">{error}</p>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Description
+              </label>
+              <input
+                type="text"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Optional description"
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                ZIP Codes <span className="text-[var(--error)]">*</span>
+              </label>
+              <textarea
+                value={formData.zipCodes}
+                onChange={(e) => setFormData({ ...formData, zipCodes: e.target.value })}
+                placeholder="Enter ZIP codes separated by commas or spaces (e.g., 90210, 90211, 90212)"
+                rows={3}
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              />
+              <p className="mt-1 text-xs text-foreground-muted">
+                {formData.zipCodes.split(/[,\s]+/).filter((z) => z.trim()).length} ZIP codes entered
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Price Modifier
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.pricingModifier}
+                    onChange={(e) => setFormData({ ...formData, pricingModifier: e.target.value })}
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-foreground-muted">
+                    multiplier
+                  </span>
                 </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Territory Name <span className="text-[var(--error)]">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Downtown Zone, Premium Area"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Description
-                </label>
-                <input
-                  type="text"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Optional description"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  ZIP Codes <span className="text-[var(--error)]">*</span>
-                </label>
-                <textarea
-                  value={formData.zipCodes}
-                  onChange={(e) => setFormData({ ...formData, zipCodes: e.target.value })}
-                  placeholder="Enter ZIP codes separated by commas or spaces (e.g., 90210, 90211, 90212)"
-                  rows={3}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                />
                 <p className="mt-1 text-xs text-foreground-muted">
-                  {formData.zipCodes.split(/[,\s]+/).filter((z) => z.trim()).length} ZIP codes entered
+                  1.0 = base price, 1.1 = +10%, 0.9 = -10%
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    Price Modifier
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.pricingModifier}
-                      onChange={(e) => setFormData({ ...formData, pricingModifier: e.target.value })}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-foreground-muted">
-                      multiplier
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-foreground-muted">
-                    1.0 = base price, 1.1 = +10%, 0.9 = -10%
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    Travel Fee
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground-muted">
-                      $
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.travelFee}
-                      onChange={(e) => setFormData({ ...formData, travelFee: e.target.value })}
-                      placeholder="0.00"
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-7 pr-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-foreground-muted">
-                    Optional flat fee added for this zone
-                  </p>
-                </div>
-              </div>
-
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Color</label>
-                <div className="flex flex-wrap gap-2">
-                  {TERRITORY_COLORS.map((color) => (
-                    <button
-                      key={color.value}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color: color.value })}
-                      className={cn(
-                        "h-8 w-8 rounded-lg border-2 transition-all",
-                        formData.color === color.value
-                          ? "border-white scale-110"
-                          : "border-transparent opacity-60 hover:opacity-100"
-                      )}
-                      style={{ backgroundColor: color.value }}
-                      title={color.label}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)] focus:ring-[var(--primary)]"
-                />
-                <label htmlFor="isActive" className="text-sm text-foreground">
-                  Territory is active
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Travel Fee
                 </label>
-              </div>
-
-              <div className="flex flex-col gap-3 pt-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 rounded-lg border border-[var(--card-border)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="flex-1 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
-                >
-                  {isPending ? "Saving..." : editingTerritory ? "Save Changes" : "Create Territory"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
-            <div className="p-6">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--error)]/10">
-                <TrashIcon className="h-6 w-6 text-[var(--error)]" />
-              </div>
-              <h3 className="mt-4 text-center text-lg font-semibold text-foreground">
-                Delete Territory?
-              </h3>
-              <p className="mt-2 text-center text-sm text-foreground-muted">
-                This will permanently delete this territory. Any bookings or orders using this zone
-                will need to be updated manually.
-              </p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 rounded-lg border border-[var(--card-border)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleDelete(deleteConfirm)}
-                  disabled={isPending}
-                  className="flex-1 rounded-lg bg-[var(--error)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
-                >
-                  {isPending ? "Deleting..." : "Delete"}
-                </button>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground-muted">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.travelFee}
+                    onChange={(e) => setFormData({ ...formData, travelFee: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-7 pr-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-foreground-muted">
+                  Optional flat fee added for this zone
+                </p>
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Color</label>
+              <div className="flex flex-wrap gap-2">
+                {TERRITORY_COLORS.map((color) => (
+                  <button
+                    key={color.value}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, color: color.value })}
+                    className={cn(
+                      "h-8 w-8 rounded-lg border-2 transition-all",
+                      formData.color === color.value
+                        ? "border-white scale-110"
+                        : "border-transparent opacity-60 hover:opacity-100"
+                    )}
+                    style={{ backgroundColor: color.value }}
+                    title={color.label}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="isActive"
+                checked={formData.isActive}
+                onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked === true })}
+              />
+              <label htmlFor="isActive" className="text-sm text-foreground">
+                Territory is active
+              </label>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-4 sm:flex-row">
+              <Button variant="outline" type="button" onClick={closeModal} className="flex-1">
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={isPending} className="flex-1">
+                {isPending ? "Saving..." : editingTerritory ? "Save Changes" : "Create Territory"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <DialogContent size="sm">
+          <div className="p-6 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--error)]/10">
+              <TrashIcon className="h-6 w-6 text-[var(--error)]" />
+            </div>
+            <DialogTitle className="mt-4 text-lg font-semibold text-foreground">
+              Delete Territory?
+            </DialogTitle>
+            <DialogDescription className="mt-2 text-sm text-foreground-muted">
+              This will permanently delete this territory. Any bookings or orders using this zone will need to be updated manually.
+            </DialogDescription>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button variant="outline" onClick={() => setDeleteConfirm(null)} className="flex-1">
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)} disabled={isPending} className="flex-1">
+                {isPending ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -589,14 +561,6 @@ function PlusIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-    </svg>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
     </svg>
   );
 }

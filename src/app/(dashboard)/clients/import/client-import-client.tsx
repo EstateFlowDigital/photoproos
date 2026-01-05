@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   previewClientImport,
   importClients,
@@ -277,12 +278,10 @@ export function ClientImportClient() {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h3 className="font-semibold text-foreground mb-4">Import Options</h3>
             <div className="space-y-3">
-              <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
+              <label className="flex items-center gap-3 cursor-pointer">
+                <Checkbox
                   checked={skipDuplicates}
-                  onChange={(e) => setSkipDuplicates(e.target.checked)}
-                  className="rounded border-[var(--card-border)]"
+                  onCheckedChange={(checked) => setSkipDuplicates(checked === true)}
                 />
                 <div>
                   <span className="text-sm font-medium text-foreground">Skip duplicates</span>
@@ -291,13 +290,11 @@ export function ClientImportClient() {
                   </p>
                 </div>
               </label>
-              <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
+              <label className="flex items-center gap-3 cursor-pointer">
+                <Checkbox
                   checked={updateExisting}
-                  onChange={(e) => setUpdateExisting(e.target.checked)}
+                  onCheckedChange={(checked) => setUpdateExisting(checked === true)}
                   disabled={skipDuplicates}
-                  className="rounded border-[var(--card-border)] disabled:opacity-50"
                 />
                 <div>
                   <span className={cn("text-sm font-medium", skipDuplicates ? "text-foreground-muted" : "text-foreground")}>

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   PageHeader,
   PageContextNav,
@@ -533,12 +534,10 @@ function TimeOffRequestModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="allDay"
               checked={allDay}
-              onChange={(e) => setAllDay(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+              onCheckedChange={(checked) => setAllDay(checked === true)}
             />
             <label htmlFor="allDay" className="text-sm text-foreground">
               All day

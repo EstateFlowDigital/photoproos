@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 interface VideoConfigFormProps {
   config: Record<string, unknown>;
   updateConfig: (updates: Record<string, unknown>) => void;
@@ -59,29 +61,23 @@ export function VideoConfigForm({ config, updateConfig }: VideoConfigFormProps) 
         </label>
         <div className="mt-3 space-y-3">
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={autoplay}
-              onChange={(e) => updateConfig({ autoplay: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => updateConfig({ autoplay: checked === true })}
             />
             <span className="text-sm text-foreground">Autoplay</span>
           </label>
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={loop}
-              onChange={(e) => updateConfig({ loop: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => updateConfig({ loop: checked === true })}
             />
             <span className="text-sm text-foreground">Loop video</span>
           </label>
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={muted}
-              onChange={(e) => updateConfig({ muted: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => updateConfig({ muted: checked === true })}
             />
             <span className="text-sm text-foreground">Start muted</span>
           </label>

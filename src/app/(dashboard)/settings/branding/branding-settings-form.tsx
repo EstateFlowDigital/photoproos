@@ -4,7 +4,9 @@ import { useState, useTransition, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { updateOrganizationBranding } from "@/lib/actions/settings";
 import { useToast } from "@/components/ui/toast";
+import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface BrandingSettingsFormProps {
   settings: {
@@ -185,21 +187,21 @@ export function BrandingSettingsForm({
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button
+                    <Button
+                      variant="primary"
                       type="button"
                       onClick={() => logoInputRef.current?.click()}
-                      className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
                     >
                       Upload
-                    </button>
+                    </Button>
                     {logoUrl && (
-                      <button
+                      <Button
+                        variant="outline"
                         type="button"
                         onClick={() => setLogoUrl(null)}
-                        className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)]"
                       >
                         Remove
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -248,21 +250,21 @@ export function BrandingSettingsForm({
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button
+                    <Button
+                      variant="outline"
                       type="button"
                       onClick={() => logoLightInputRef.current?.click()}
-                      className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
                     >
                       Upload
-                    </button>
+                    </Button>
                     {logoLightUrl && (
-                      <button
+                      <Button
+                        variant="outline"
                         type="button"
                         onClick={() => setLogoLightUrl(null)}
-                        className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)]"
                       >
                         Remove
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -308,21 +310,21 @@ export function BrandingSettingsForm({
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button
+                    <Button
+                      variant="outline"
                       type="button"
                       onClick={() => faviconInputRef.current?.click()}
-                      className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
                     >
                       Upload
-                    </button>
+                    </Button>
                     {faviconUrl && (
-                      <button
+                      <Button
+                        variant="outline"
                         type="button"
                         onClick={() => setFaviconUrl(null)}
-                        className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)]"
                       >
                         Remove
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -561,21 +563,21 @@ export function BrandingSettingsForm({
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button
+                  <Button
+                    variant="outline"
                     type="button"
                     onClick={() => invoiceLogoInputRef.current?.click()}
-                    className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
                   >
                     Upload Custom
-                  </button>
+                  </Button>
                   {invoiceLogoUrl && (
-                    <button
+                    <Button
+                      variant="outline"
                       type="button"
                       onClick={() => setInvoiceLogoUrl(null)}
-                      className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)]"
                     >
                       Use Default
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -589,23 +591,10 @@ export function BrandingSettingsForm({
                 <h2 className="text-lg font-semibold text-foreground">Watermark</h2>
                 <p className="text-sm text-foreground-muted">Add your logo to unpurchased photos</p>
               </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={showWatermark}
-                onClick={() => setShowWatermark(!showWatermark)}
-                className={cn(
-                  "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                  showWatermark ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-                )}
-              >
-                <span
-                  className={cn(
-                    "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                    showWatermark ? "translate-x-5" : "translate-x-0"
-                  )}
-                />
-              </button>
+              <Switch
+                checked={showWatermark}
+                onCheckedChange={setShowWatermark}
+              />
             </div>
 
             {showWatermark && (
@@ -653,23 +642,10 @@ export function BrandingSettingsForm({
                       Remove the PhotoProOS branding from your client galleries
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={hidePlatformBranding}
-                    onClick={() => setHidePlatformBranding(!hidePlatformBranding)}
-                    className={cn(
-                      "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                      hidePlatformBranding ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                        hidePlatformBranding ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
+                  <Switch
+                    checked={hidePlatformBranding}
+                    onCheckedChange={setHidePlatformBranding}
+                  />
                 </div>
 
                 {hidePlatformBranding && (
@@ -754,10 +730,11 @@ export function BrandingSettingsForm({
 
           {/* Save Button */}
           <div className="flex flex-col items-stretch sm:items-end">
-            <button
+            <Button
+              variant="primary"
               type="submit"
               disabled={isPending}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
+              className="sm:w-auto"
             >
               {isPending ? (
                 <>
@@ -767,7 +744,7 @@ export function BrandingSettingsForm({
               ) : (
                 "Save Changes"
               )}
-            </button>
+            </Button>
           </div>
         </div>
 

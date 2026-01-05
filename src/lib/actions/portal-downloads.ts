@@ -4,6 +4,14 @@ import { prisma } from "@/lib/db";
 import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { getClientSession } from "./client-auth";
 import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
+import { renderToBuffer } from "@react-pdf/renderer";
+import { InvoicePdf } from "@/lib/pdf/templates/invoice-pdf";
+import React from "react";
+import QRCode from "qrcode";
+
+// Type assertion helper for react-pdf
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createPdfElement = (component: any) => component as any;
 
 /**
  * Get a download URL for all photos in a gallery as a ZIP file
@@ -407,5 +415,159 @@ export async function getInvoicePaymentLink(invoiceId: string): Promise<{
   } catch (error) {
     console.error("[Portal Payment] Error getting payment link:", error);
     return { success: false, error: "Failed to get payment link" };
+  }
+}
+
+/**
+ * Generate and download invoice PDF for client portal
+ * Returns base64 encoded PDF for client-side download
+ */
+export async function getInvoicePdfDownload(invoiceId: string): Promise<{
+  success: boolean;
+  error?: string;
+  pdfBuffer?: string; // Base64 encoded
+  filename?: string;
+}> {
+  try {
+    const session = await getClientSession();
+
+    if (!session) {
+      return { success: false, error: "Please log in to download" };
+    }
+
+    // Get invoice for this client
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        clientId: session.clientId,
+      },
+      include: {
+        lineItems: {
+          orderBy: { sortOrder: "asc" },
+        },
+        payments: {
+          where: { status: "paid" },
+          select: {
+            id: true,
+            amountCents: true,
+            paidAt: true,
+            description: true,
+          },
+          orderBy: { paidAt: "asc" },
+        },
+        organization: {
+          select: {
+            name: true,
+            publicName: true,
+            publicEmail: true,
+            publicPhone: true,
+            logoUrl: true,
+            logoLightUrl: true,
+            invoiceLogoUrl: true,
+            primaryColor: true,
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      return { success: false, error: "Invoice not found" };
+    }
+
+    // Format dates
+    const formatDate = (date: Date): string => {
+      return new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+    };
+
+    // Determine display status (check if overdue)
+    let displayStatus = invoice.status;
+    if (invoice.status === "sent" && new Date(invoice.dueDate) < new Date()) {
+      displayStatus = "overdue";
+    }
+
+    // Build payment URL if exists
+    const paymentUrl = invoice.paymentLinkUrl || null;
+
+    // Determine logo URL
+    const logoUrl = invoice.organization?.invoiceLogoUrl
+      || invoice.organization?.logoLightUrl
+      || invoice.organization?.logoUrl
+      || null;
+
+    // Generate QR code for payment URL if available and invoice is not paid
+    let qrCodeDataUrl: string | null = null;
+    if (paymentUrl && displayStatus !== "paid" && displayStatus !== "cancelled") {
+      try {
+        qrCodeDataUrl = await QRCode.toDataURL(paymentUrl, {
+          width: 200,
+          margin: 1,
+          color: {
+            dark: "#166534",
+            light: "#ffffff",
+          },
+        });
+      } catch (qrError) {
+        console.error("Failed to generate QR code:", qrError);
+      }
+    }
+
+    // Generate the PDF
+    const pdfBuffer = await renderToBuffer(
+      createPdfElement(
+        React.createElement(InvoicePdf, {
+          invoiceNumber: invoice.invoiceNumber,
+          status: displayStatus,
+          issueDate: formatDate(invoice.issueDate),
+          dueDate: formatDate(invoice.dueDate),
+          clientName: invoice.clientName || "Unknown Client",
+          clientEmail: invoice.clientEmail,
+          clientAddress: invoice.clientAddress,
+          businessName: invoice.organization?.publicName || invoice.organization?.name || "Your Business",
+          businessEmail: invoice.organization?.publicEmail || null,
+          businessPhone: invoice.organization?.publicPhone || null,
+          businessAddress: null,
+          logoUrl,
+          lineItems: invoice.lineItems.map((item) => ({
+            description: item.description,
+            itemType: item.itemType,
+            quantity: item.quantity,
+            unitCents: item.unitCents,
+            totalCents: item.totalCents,
+          })),
+          subtotalCents: invoice.subtotalCents,
+          discountCents: invoice.discountCents,
+          taxCents: invoice.taxCents,
+          totalCents: invoice.totalCents,
+          notes: invoice.notes,
+          terms: invoice.terms,
+          paymentUrl,
+          qrCodeDataUrl,
+          currency: invoice.currency || "USD",
+          payments: invoice.payments.map((payment) => ({
+            id: payment.id,
+            amountCents: payment.amountCents,
+            paidAt: payment.paidAt ? formatDate(payment.paidAt) : null,
+            description: payment.description,
+          })),
+          accentColor: invoice.organization?.primaryColor || "#3b82f6",
+        })
+      )
+    );
+
+    // Generate filename
+    const filename = `${invoice.invoiceNumber.replace(/[^a-zA-Z0-9-]/g, "-")}.pdf`;
+
+    return {
+      success: true,
+      pdfBuffer: Buffer.from(pdfBuffer).toString("base64"),
+      filename,
+    };
+  } catch (error) {
+    console.error("[Portal Download] Error generating invoice PDF:", error);
+    return { success: false, error: "Failed to generate invoice PDF" };
   }
 }

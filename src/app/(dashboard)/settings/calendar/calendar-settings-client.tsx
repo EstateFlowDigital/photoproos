@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import type { GoogleCalendarConfig } from "@/lib/actions/google-calendar";
 import {
   updateGoogleCalendarSettings,
@@ -261,33 +262,30 @@ export function CalendarSettingsClient({
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <button
+              <Button
+                variant="primary"
                 onClick={handleSync}
                 disabled={syncing || loading}
-                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
               >
                 {syncing ? "Syncing..." : "Sync Now"}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={handleTest}
                 disabled={loading}
-                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
               >
                 {loading ? "Testing..." : "Test Connection"}
-              </button>
-              <button
-                onClick={handleConnect}
-                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-              >
+              </Button>
+              <Button variant="secondary" onClick={handleConnect}>
                 Reconnect
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleDisconnect}
                 disabled={loading}
-                className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 disabled:opacity-50"
               >
                 Disconnect
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -364,13 +362,13 @@ export function CalendarSettingsClient({
               </button>
             </div>
 
-            <button
+            <Button
+              variant="primary"
               onClick={handleUpdateSettings}
               disabled={loading}
-              className="rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
             >
               {loading ? "Saving..." : "Save Settings"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

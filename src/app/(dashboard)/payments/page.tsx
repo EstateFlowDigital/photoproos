@@ -7,6 +7,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import { ExportButton } from "./export-button";
+import { BulkPdfButton } from "./bulk-pdf-button";
 
 // Helper to format currency
 function formatCurrency(cents: number): string {
@@ -134,7 +135,12 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
       <PageHeader
         title="Payments"
         subtitle="Track and manage your payment history"
-        actions={<ExportButton />}
+        actions={
+          <div className="flex items-center gap-3">
+            <BulkPdfButton paidCount={countsMap.paid || 0} />
+            <ExportButton />
+          </div>
+        }
       />
 
       {/* Context Navigation */}

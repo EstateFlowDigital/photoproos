@@ -40,6 +40,11 @@ const buttonVariants = cva(
           "hover:bg-foreground/90",
           "shadow-sm hover:shadow-md",
         ].join(" "),
+        primary: [
+          "bg-[var(--primary)] text-white",
+          "hover:bg-[var(--primary)]/90",
+          "shadow-sm hover:shadow-md",
+        ].join(" "),
         secondary: [
           "bg-secondary text-secondary-foreground",
           "hover:bg-[var(--secondary-hover)]",
@@ -58,6 +63,15 @@ const buttonVariants = cva(
         destructive: [
           "bg-destructive text-destructive-foreground",
           "hover:bg-[var(--destructive-hover)]",
+        ].join(" "),
+        danger: [
+          "bg-[var(--error)] text-white",
+          "hover:bg-[var(--error)]/90",
+        ].join(" "),
+        "danger-outline": [
+          "bg-transparent text-[var(--error)]",
+          "border border-[var(--error)]/30",
+          "hover:bg-[var(--error)]/10 hover:border-[var(--error)]/50",
         ].join(" "),
         link: [
           "text-foreground underline-offset-4",

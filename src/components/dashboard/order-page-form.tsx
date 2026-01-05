@@ -14,6 +14,7 @@ import {
 import { getBundles } from "@/lib/actions/bundles";
 import { getServices } from "@/lib/actions/services";
 import { useToast } from "@/components/ui/toast";
+import { Switch } from "@/components/ui/switch";
 import type { Testimonial } from "@/lib/validations/order-pages";
 
 interface OrderPageFormData {
@@ -638,23 +639,10 @@ export function OrderPageForm({ initialData, mode }: OrderPageFormProps) {
                   <span className="text-sm font-medium text-foreground">Show Phone Number</span>
                   <p className="text-xs text-foreground-muted">Display phone on the order page</p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.showPhone}
-                  onClick={() => setFormData((prev) => ({ ...prev, showPhone: !prev.showPhone }))}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                    formData.showPhone ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                      formData.showPhone ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
+                <Switch
+                  checked={formData.showPhone}
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, showPhone: checked }))}
+                />
               </label>
 
               {formData.showPhone && (
@@ -678,23 +666,10 @@ export function OrderPageForm({ initialData, mode }: OrderPageFormProps) {
                   <span className="text-sm font-medium text-foreground">Show Email</span>
                   <p className="text-xs text-foreground-muted">Display email on the order page</p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.showEmail}
-                  onClick={() => setFormData((prev) => ({ ...prev, showEmail: !prev.showEmail }))}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                    formData.showEmail ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                      formData.showEmail ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
+                <Switch
+                  checked={formData.showEmail}
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, showEmail: checked }))}
+                />
               </label>
 
               {formData.showEmail && (
@@ -758,23 +733,10 @@ export function OrderPageForm({ initialData, mode }: OrderPageFormProps) {
                   <span className="text-sm font-medium text-foreground">Published</span>
                   <p className="text-xs text-foreground-muted">Published pages can receive orders</p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.isPublished}
-                  onClick={() => setFormData((prev) => ({ ...prev, isPublished: !prev.isPublished }))}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                    formData.isPublished ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                      formData.isPublished ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
+                <Switch
+                  checked={formData.isPublished}
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isPublished: checked }))}
+                />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
@@ -782,23 +744,10 @@ export function OrderPageForm({ initialData, mode }: OrderPageFormProps) {
                   <span className="text-sm font-medium text-foreground">Require Login</span>
                   <p className="text-xs text-foreground-muted">Visitors must sign in to view this page</p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.requireLogin}
-                  onClick={() => setFormData((prev) => ({ ...prev, requireLogin: !prev.requireLogin }))}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                    formData.requireLogin ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                      formData.requireLogin ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
+                <Switch
+                  checked={formData.requireLogin}
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, requireLogin: checked }))}
+                />
               </label>
             </div>
           </div>

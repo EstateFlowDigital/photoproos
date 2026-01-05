@@ -34,6 +34,7 @@ import {
   type FormFieldOption,
 } from "@/lib/actions/custom-forms";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { CustomFormFieldType } from "@prisma/client";
 
 // ============================================================================
@@ -1119,7 +1120,7 @@ function FieldPreview({ field }: { field: FormField }) {
         <div className="space-y-2 opacity-50">
           {getOptionsArray(field.options).map((opt) => (
             <label key={opt.value} className="flex items-center gap-2">
-              <input type="checkbox" disabled className="rounded" />
+              <Checkbox checked={false} onCheckedChange={() => {}} disabled />
               <span className="text-sm text-foreground">{opt.label}</span>
             </label>
           ))}
@@ -1135,7 +1136,7 @@ function FieldPreview({ field }: { field: FormField }) {
         </div>
       ) : field.type === "checkbox" ? (
         <label className="flex items-center gap-2 opacity-50">
-          <input type="checkbox" disabled className="rounded" />
+          <Checkbox checked={false} onCheckedChange={() => {}} disabled />
           <span className="text-sm text-foreground">{field.placeholder || "I agree"}</span>
         </label>
       ) : field.type === "file" ? (

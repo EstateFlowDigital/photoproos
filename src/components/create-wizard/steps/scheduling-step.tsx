@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Calendar, ArrowRight, ArrowLeft, Clock, MapPin, FileText, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { WizardData } from "@/app/(dashboard)/create/create-wizard-client";
 
 type SchedulingLocation = {
@@ -292,11 +293,9 @@ export function SchedulingStep({
         <div className="space-y-4 p-4 rounded-lg border border-[var(--border)] bg-[var(--background-secondary)]">
           {/* Require Payment */}
           <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={formData.requirePaymentFirst}
-              onChange={(e) => updateFormData({ requirePaymentFirst: e.target.checked })}
-              className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+              onCheckedChange={(checked) => updateFormData({ requirePaymentFirst: checked === true })}
             />
             <div>
               <span className="font-medium text-foreground">Require payment before gallery access</span>

@@ -142,6 +142,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   // EXIF data display
   const [showExifInfo, setShowExifInfo] = useState(false);
 
+  // Photo ratings
+  const [photoRatings, setPhotoRatings] = useState<Record<string, { average: number; count: number }>>({});
+  const [userRatings, setUserRatings] = useState<Record<string, number>>({});
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+
   // Calculate expiration countdown
   useEffect(() => {
     if (!gallery.expiresAt) {
@@ -239,6 +245,67 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
     loadCommentCounts();
   }, [gallery.id]);
+
+  // Load photo ratings on mount
+  useEffect(() => {
+    const loadRatings = async () => {
+      try {
+        const response = await fetch(`/api/gallery/rating?galleryId=${gallery.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPhotoRatings(data.averages || {});
+          setUserRatings(data.userRatings || {});
+        }
+      } catch (error) {
+        console.error("Failed to load ratings:", error);
+      }
+    };
+
+    loadRatings();
+  }, [gallery.id]);
+
+  // Handle photo rating
+  const handleRatePhoto = useCallback(async (photoId: string, rating: number) => {
+    setIsSubmittingRating(true);
+    try {
+      const response = await fetch("/api/gallery/rating", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          galleryId: gallery.id,
+          assetId: photoId,
+          rating,
+        }),
+      });
+
+      if (response.ok) {
+        // Update user's rating
+        setUserRatings((prev) => ({ ...prev, [photoId]: rating }));
+        // Update averages
+        setPhotoRatings((prev) => {
+          const current = prev[photoId] || { average: 0, count: 0 };
+          const wasRated = userRatings[photoId] !== undefined;
+          const newCount = wasRated ? current.count : current.count + 1;
+          const oldTotal = current.average * current.count;
+          const newTotal = wasRated
+            ? oldTotal - userRatings[photoId] + rating
+            : oldTotal + rating;
+          return {
+            ...prev,
+            [photoId]: {
+              average: Math.round((newTotal / newCount) * 10) / 10,
+              count: newCount,
+            },
+          };
+        });
+      }
+    } catch (error) {
+      console.error("Failed to rate photo:", error);
+    } finally {
+      setIsSubmittingRating(false);
+      setHoverRating(0);
+    }
+  }, [gallery.id, userRatings]);
 
   // Load comments for a specific photo
   const loadPhotoComments = useCallback(async (photoId: string) => {
@@ -453,6 +520,39 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           if (showShortcutsHelp) setShowShortcutsHelp(false);
           if (showCompareModal) setShowCompareModal(false);
           if (showSelectionPanel) setShowSelectionPanel(false);
+          if (selectedPhoto) {
+            setSelectedPhoto(null);
+            setPhotoComments([]);
+            setNewComment("");
+            setZoomLevel(1);
+            setPanPosition({ x: 0, y: 0 });
+          }
+          break;
+        case "ArrowLeft":
+          if (selectedPhoto && displayedPhotos.length > 1) {
+            e.preventDefault();
+            const currentIndex = displayedPhotos.findIndex(p => p.id === selectedPhoto.id);
+            const prevIndex = currentIndex > 0 ? currentIndex - 1 : displayedPhotos.length - 1;
+            const prevPhoto = displayedPhotos[prevIndex];
+            setSelectedPhoto(prevPhoto);
+            loadPhotoComments(prevPhoto.id);
+            setZoomLevel(1);
+            setPanPosition({ x: 0, y: 0 });
+            setHoverRating(0);
+          }
+          break;
+        case "ArrowRight":
+          if (selectedPhoto && displayedPhotos.length > 1) {
+            e.preventDefault();
+            const currentIndex = displayedPhotos.findIndex(p => p.id === selectedPhoto.id);
+            const nextIndex = currentIndex < displayedPhotos.length - 1 ? currentIndex + 1 : 0;
+            const nextPhoto = displayedPhotos[nextIndex];
+            setSelectedPhoto(nextPhoto);
+            loadPhotoComments(nextPhoto.id);
+            setZoomLevel(1);
+            setPanPosition({ x: 0, y: 0 });
+            setHoverRating(0);
+          }
           break;
         case "c":
         case "C":
@@ -480,7 +580,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showShortcutsHelp, showCompareModal, showSelectionPanel, handleToggleCompareMode, handleToggleSelectionMode, gallery.allowFavorites]);
+  }, [showShortcutsHelp, showCompareModal, showSelectionPanel, handleToggleCompareMode, handleToggleSelectionMode, gallery.allowFavorites, selectedPhoto, displayedPhotos, loadPhotoComments]);
 
   // Submit a new comment
   const handleSubmitComment = useCallback(async () => {
@@ -813,6 +913,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
   // Touch/swipe handlers for mobile
   const minSwipeDistance = 50;
+  const [modalTouchStart, setModalTouchStart] = useState<number | null>(null);
+  const [modalTouchEnd, setModalTouchEnd] = useState<number | null>(null);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -835,6 +937,47 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
       prevSlide();
     }
   }, [touchStart, touchEnd, nextSlide, prevSlide]);
+
+  // Modal touch handlers for swipe navigation
+  const handleModalTouchStart = useCallback((e: React.TouchEvent) => {
+    if (zoomLevel > 1) return; // Don't swipe when zoomed in
+    setModalTouchEnd(null);
+    setModalTouchStart(e.targetTouches[0].clientX);
+  }, [zoomLevel]);
+
+  const handleModalTouchMove = useCallback((e: React.TouchEvent) => {
+    if (zoomLevel > 1) return;
+    setModalTouchEnd(e.targetTouches[0].clientX);
+  }, [zoomLevel]);
+
+  const handleModalTouchEnd = useCallback(() => {
+    if (!modalTouchStart || !modalTouchEnd || !selectedPhoto || displayedPhotos.length <= 1) return;
+    const distance = modalTouchStart - modalTouchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      // Next photo
+      const currentIndex = displayedPhotos.findIndex(p => p.id === selectedPhoto.id);
+      const nextIndex = currentIndex < displayedPhotos.length - 1 ? currentIndex + 1 : 0;
+      const nextPhoto = displayedPhotos[nextIndex];
+      setSelectedPhoto(nextPhoto);
+      loadPhotoComments(nextPhoto.id);
+      setZoomLevel(1);
+      setPanPosition({ x: 0, y: 0 });
+      setHoverRating(0);
+    } else if (isRightSwipe) {
+      // Previous photo
+      const currentIndex = displayedPhotos.findIndex(p => p.id === selectedPhoto.id);
+      const prevIndex = currentIndex > 0 ? currentIndex - 1 : displayedPhotos.length - 1;
+      const prevPhoto = displayedPhotos[prevIndex];
+      setSelectedPhoto(prevPhoto);
+      loadPhotoComments(prevPhoto.id);
+      setZoomLevel(1);
+      setPanPosition({ x: 0, y: 0 });
+      setHoverRating(0);
+    }
+  }, [modalTouchStart, modalTouchEnd, selectedPhoto, displayedPhotos, loadPhotoComments]);
 
   // Preload adjacent images for smoother transitions
   useEffect(() => {
@@ -1301,7 +1444,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {displayedPhotos.map((photo: Photo) => (
             <div
               key={photo.id}
@@ -1477,6 +1620,9 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               onMouseUp={handlePanEnd}
               onMouseLeave={handlePanEnd}
               onWheel={handleWheelZoom}
+              onTouchStart={handleModalTouchStart}
+              onTouchMove={handleModalTouchMove}
+              onTouchEnd={handleModalTouchEnd}
               style={{ cursor: zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in" }}
             >
               <img
@@ -1527,6 +1673,46 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 <div className="absolute top-4 left-4 text-white/50 text-xs hidden sm:block">
                   Double-click or scroll to zoom
                 </div>
+              )}
+
+              {/* Navigation Arrows */}
+              {displayedPhotos.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const currentIndex = displayedPhotos.findIndex(p => p.id === selectedPhoto.id);
+                      const prevIndex = currentIndex > 0 ? currentIndex - 1 : displayedPhotos.length - 1;
+                      const prevPhoto = displayedPhotos[prevIndex];
+                      setSelectedPhoto(prevPhoto);
+                      loadPhotoComments(prevPhoto.id);
+                      setZoomLevel(1);
+                      setPanPosition({ x: 0, y: 0 });
+                      setHoverRating(0);
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white hover:bg-black/70 transition-colors"
+                    title="Previous photo"
+                  >
+                    <ChevronLeftIcon className="h-6 w-6" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const currentIndex = displayedPhotos.findIndex(p => p.id === selectedPhoto.id);
+                      const nextIndex = currentIndex < displayedPhotos.length - 1 ? currentIndex + 1 : 0;
+                      const nextPhoto = displayedPhotos[nextIndex];
+                      setSelectedPhoto(nextPhoto);
+                      loadPhotoComments(nextPhoto.id);
+                      setZoomLevel(1);
+                      setPanPosition({ x: 0, y: 0 });
+                      setHoverRating(0);
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white hover:bg-black/70 transition-colors"
+                    title="Next photo"
+                  >
+                    <ChevronRightIcon className="h-6 w-6" />
+                  </button>
+                </>
               )}
             </div>
 
@@ -1588,6 +1774,48 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     Resolution too low for standard print sizes
                   </p>
                 )}
+              </div>
+
+              {/* Photo Rating */}
+              <div className="border-b p-4" style={{ borderColor: colors.borderColor }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <StarIcon className="h-4 w-4" style={{ color: primaryColor }} />
+                    <span className="text-sm font-medium">Rate this photo</span>
+                  </div>
+                  {photoRatings[selectedPhoto.id] && (
+                    <span className="text-xs" style={{ color: colors.mutedColor }}>
+                      {photoRatings[selectedPhoto.id].average} avg ({photoRatings[selectedPhoto.id].count} {photoRatings[selectedPhoto.id].count === 1 ? "rating" : "ratings"})
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const isActive = (hoverRating || userRatings[selectedPhoto.id] || 0) >= star;
+                    return (
+                      <button
+                        key={star}
+                        onClick={() => handleRatePhoto(selectedPhoto.id, star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        disabled={isSubmittingRating}
+                        className="p-1 transition-transform hover:scale-110 disabled:opacity-50"
+                        title={`Rate ${star} star${star !== 1 ? "s" : ""}`}
+                      >
+                        <StarIcon
+                          className="h-6 w-6 transition-colors"
+                          style={{ color: isActive ? "#fbbf24" : colors.mutedColor }}
+                          filled={isActive}
+                        />
+                      </button>
+                    );
+                  })}
+                  {userRatings[selectedPhoto.id] && (
+                    <span className="ml-2 text-xs" style={{ color: colors.mutedColor }}>
+                      Your rating: {userRatings[selectedPhoto.id]} star{userRatings[selectedPhoto.id] !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* EXIF Data Panel */}
@@ -1729,6 +1957,46 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   {isSubmittingComment ? "Posting..." : "Post Comment"}
                 </button>
               </div>
+            </div>
+
+            {/* Filmstrip Navigation */}
+            <div
+              className="absolute bottom-0 left-0 right-0 border-t py-2 px-4 overflow-x-auto flex gap-2"
+              style={{ backgroundColor: colors.cardBg, borderColor: colors.borderColor }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {displayedPhotos.map((photo, index) => {
+                const isSelected = photo.id === selectedPhoto.id;
+                return (
+                  <button
+                    key={photo.id}
+                    onClick={() => {
+                      setSelectedPhoto(photo);
+                      loadPhotoComments(photo.id);
+                      setZoomLevel(1);
+                      setPanPosition({ x: 0, y: 0 });
+                      setHoverRating(0);
+                    }}
+                    className={cn(
+                      "flex-shrink-0 rounded overflow-hidden transition-all",
+                      isSelected ? "ring-2 ring-offset-2 opacity-100" : "opacity-60 hover:opacity-100"
+                    )}
+                    style={{
+                      width: 56,
+                      height: 42,
+                      ["--tw-ring-color" as string]: primaryColor,
+                      ["--tw-ring-offset-color" as string]: colors.cardBg,
+                    }}
+                    title={`${index + 1}. ${photo.filename}`}
+                  >
+                    <img
+                      src={photo.url}
+                      alt={photo.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -2816,6 +3084,14 @@ function ChevronDownIcon({ className, style }: { className?: string; style?: CSS
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
       <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function StarIcon({ className, style, filled = false }: { className?: string; style?: CSSProperties; filled?: boolean }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? 0 : 1.5} className={className} style={style}>
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z" />
     </svg>
   );
 }

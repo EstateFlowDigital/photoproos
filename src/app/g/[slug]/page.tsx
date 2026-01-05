@@ -1,8 +1,10 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { getPublicGallery, recordGalleryView } from "@/lib/actions/galleries";
 import { PayButton } from "./pay-button";
 import { GalleryClient } from "./gallery-client";
+import { PasswordGate } from "./password-gate";
 
 interface Photo {
   id: string;
@@ -29,6 +31,27 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
     recordGalleryView(slug).catch(() => {
       // Silently ignore view recording errors
     });
+  }
+
+  // Check if gallery is password protected and user is authenticated
+  if (gallery && gallery.isPasswordProtected && !isPreview) {
+    const cookieStore = await cookies();
+    const authCookie = cookieStore.get(`gallery_auth_${gallery.id}`);
+
+    if (!authCookie || authCookie.value !== "authenticated") {
+      // Show password gate
+      const theme = gallery.theme === "auto" ? "dark" : gallery.theme || "dark";
+      return (
+        <PasswordGate
+          galleryId={gallery.id}
+          galleryName={gallery.name}
+          photographerName={gallery.photographer.name}
+          logoUrl={theme === "light" ? gallery.photographer.logoLightUrl : gallery.photographer.logoUrl}
+          primaryColor={gallery.primaryColor || "#3b82f6"}
+          theme={theme}
+        />
+      );
+    }
   }
 
   const formatCurrency = (cents: number) => {

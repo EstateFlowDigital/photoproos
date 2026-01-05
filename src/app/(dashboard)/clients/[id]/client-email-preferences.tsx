@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { Switch } from "@/components/ui/switch";
 import { updateClientEmailPreferences } from "@/lib/actions/clients";
 
 interface ClientEmailPreferencesProps {
@@ -127,25 +128,12 @@ export function ClientEmailPreferences({
                 <p className="text-xs text-foreground-muted">{option.description}</p>
               </div>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={preferences[option.key]}
+            <Switch
+              checked={preferences[option.key]}
+              onCheckedChange={() => handleToggle(option.key)}
               disabled={isPending}
-              onClick={() => handleToggle(option.key)}
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)] disabled:cursor-not-allowed disabled:opacity-50",
-                preferences[option.key] ? "bg-[var(--primary)]" : "bg-[var(--foreground-muted)]/30"
-              )}
-            >
-              <span className="sr-only">Toggle {option.label}</span>
-              <span
-                className={cn(
-                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                  preferences[option.key] ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
+              aria-label={`Toggle ${option.label}`}
+            />
           </div>
         ))}
       </div>

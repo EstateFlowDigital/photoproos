@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { serviceCategories, formatServicePrice, type ServiceCategory } from "@/lib/services";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   SelectableServiceCard,
   SelectableServiceRow,
@@ -214,11 +215,9 @@ export function ServicesPageClient({ services }: ServicesPageClientProps) {
 
         {/* Show Inactive Toggle */}
         <label className="flex items-center gap-2 text-sm text-foreground-muted cursor-pointer whitespace-nowrap">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={showInactive}
-            onChange={(e) => setShowInactive(e.target.checked)}
-            className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+            onCheckedChange={(checked) => setShowInactive(checked === true)}
           />
           Show inactive
         </label>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createBrokerage, updateBrokerage } from "@/lib/actions/brokerages";
 import type { BrokerageWithRelations } from "@/lib/actions/brokerages";
 
@@ -333,11 +334,9 @@ export function BrokerageForm({ brokerage }: BrokerageFormProps) {
           <h2 className="text-lg font-semibold text-foreground mb-4">Status</h2>
 
           <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={formData.isActive}
-              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--card)] text-[var(--primary)] focus:ring-[var(--primary)]"
+              onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked === true })}
             />
             <span className="text-sm text-foreground">Active brokerage</span>
           </label>

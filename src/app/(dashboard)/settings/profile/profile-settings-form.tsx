@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import Image from "next/image";
 import { updateUserProfile, updateOrganizationProfile } from "@/lib/actions/settings";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 import { TIMEZONE_GROUPS } from "@/lib/constants/timezones";
 
 interface ProfileSettingsFormProps {
@@ -182,11 +183,11 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
               onChange={handleFileChange}
               className="hidden"
             />
-            <button
+            <Button
               type="button"
+              variant="primary"
               onClick={handleUploadPhoto}
               disabled={isUploadingPhoto}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUploadingPhoto ? (
                 <>
@@ -196,7 +197,7 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
               ) : (
                 avatarUrl ? "Change Photo" : "Upload Photo"
               )}
-            </button>
+            </Button>
             <p className="text-xs text-foreground-muted">JPG, PNG or WebP. Max 5MB.</p>
           </div>
         </div>
@@ -302,21 +303,21 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
         <p className="text-sm text-foreground-muted mb-4">
           Change your password to keep your account secure.
         </p>
-        <button
+        <Button
+          variant="outline"
           type="button"
           onClick={handleChangePassword}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
         >
           Change Password
-        </button>
+        </Button>
       </div>
 
       {/* Save Button */}
       <div className="flex flex-col items-stretch sm:items-end">
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={isPending}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
         >
           {isPending ? (
             <>
@@ -326,7 +327,7 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
           ) : (
             "Save Changes"
           )}
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createPayoutBatch, processPayoutBatch, cancelPayoutBatch } from "@/lib/actions/payouts";
 import type { PayoutBatchWithRelations } from "@/lib/actions/payouts";
 
@@ -179,13 +181,13 @@ export function PayoutsPageClient({
                 >
                   {selectedPhotographers.length === pendingPayouts.length ? "Deselect All" : "Select All"}
                 </button>
-                <button
+                <Button
+                  variant="primary"
                   onClick={handleCreateBatch}
                   disabled={isCreatingBatch}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
                 >
                   {isCreatingBatch ? "Creating..." : "Create Payout Batch"}
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -205,13 +207,11 @@ export function PayoutsPageClient({
                 onClick={() => togglePhotographer(payout.userId)}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedPhotographers.includes(payout.userId)}
-                    onChange={() => {}}
-                    className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                    onCheckedChange={() => {}}
                   />
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                     {(payout.userFullName || payout.userEmail || "?").charAt(0).toUpperCase()}
                   </div>
                   <div>

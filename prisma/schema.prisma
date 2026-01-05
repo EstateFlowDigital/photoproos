@@ -384,6 +384,7 @@ enum ClientQuestionnaireStatus {
 
 enum EmailType {
   gallery_delivered
+  gallery_reminder
   payment_receipt
   booking_confirmation
   welcome
@@ -572,6 +573,7 @@ model Organization {
   discountCodes      DiscountCode[]
   paymentPlans       PaymentPlan[]
   invoiceTemplates   InvoiceTemplate[]
+  galleryTemplates   GalleryTemplate[]
 
   // Phase 1: Ordering System relations
   serviceBundles ServiceBundle[]
@@ -611,6 +613,11 @@ model Organization {
   // Recurring Invoices
   recurringInvoices RecurringInvoice[]
 
+  // API Keys & Webhooks for Integrations
+  apiKeys          ApiKey[]
+  webhookEndpoints WebhookEndpoint[]
+  integrationLogs  IntegrationLog[]
+
   @@index([slug])
   @@index([plan])
 }
@@ -646,7 +653,7 @@ model User {
   autoThemeDarkEnd   String  @default("06:00") // When to switch to light mode (HH:MM)
 
   // Dashboard customization
-  dashboardConfig    Json?   // JSON config for widget visibility, collapsed sections, order
+  dashboardConfig Json? // JSON config for widget visibility, collapsed sections, order
 
   // Home base location (overrides org default for travel calculations)
   homeBaseLocationId String?
@@ -867,6 +874,9 @@ model Service {
   // Phase 4: Territory pricing overrides
   territoryOverrides TerritoryServiceOverride[] @relation("ServiceTerritoryOverrides")
 
+  // Gallery templates using this service as default
+  galleryTemplates GalleryTemplate[]
+
   @@index([organizationId])
   @@index([category])
   @@index([isActive])
@@ -903,6 +913,12 @@ model Project {
   viewCount     Int       @default(0)
   downloadCount Int       @default(0)
 
+  // Reminder tracking
+  lastReminderSentAt       DateTime? // When last reminder was sent
+  reminderCount            Int       @default(0) // Number of reminders sent
+  reminderEnabled          Boolean   @default(true) // Allow reminders for this gallery
+  expirationWarningsSent   Int[]     @default([]) // Days before expiration when warnings were sent (e.g., [7, 3, 1])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -913,10 +929,12 @@ model Project {
   location          Location?                 @relation(fields: [locationId], references: [id], onDelete: SetNull)
   services          ProjectService[] // Many-to-many: services for this gallery
   assets            Asset[]
+  collections       GalleryCollection[] // Sub-albums within the gallery
   deliveryLinks     DeliveryLink[]
   payments          Payment[]
   favorites         GalleryFavorite[]
   comments          GalleryComment[]
+  ratings           PhotoRating[]
   feedback          GalleryFeedback[]
   propertyWebsite   PropertyWebsite?
   portfolioWebsites PortfolioWebsiteProject[]
@@ -951,9 +969,71 @@ model ProjectService {
   @@index([serviceId])
 }
 
+// Gallery Templates - Reusable gallery settings presets
+model GalleryTemplate {
+  id             String  @id @default(cuid())
+  organizationId String
+  name           String // Template name
+  description    String? // Optional description
+
+  // Default service to apply
+  serviceId String?
+
+  // Pricing defaults
+  defaultPriceCents Int    @default(0)
+  currency          String @default("USD")
+
+  // Access settings
+  isPasswordProtected Boolean @default(false)
+  defaultPassword     String? // Optional default password
+
+  // Gallery settings
+  allowDownloads    Boolean @default(true)
+  allowFavorites    Boolean @default(true)
+  showWatermark     Boolean @default(false)
+  sendNotifications Boolean @default(true)
+
+  // Expiration defaults
+  expirationDays Int? // Number of days until expiration (null = never)
+
+  // Metadata
+  isDefault Boolean  @default(false) // Mark as default template
+  usageCount Int     @default(0) // Track how often template is used
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  service      Service?     @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([serviceId])
+}
+
+// Gallery Collections - Sub-albums within a gallery
+model GalleryCollection {
+  id          String  @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  coverAssetId String? // Cover photo for the collection
+  sortOrder   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assets  Asset[]
+
+  @@index([projectId])
+  @@index([sortOrder])
+}
+
 model Asset {
-  id        String @id @default(cuid())
-  projectId String
+  id           String  @id @default(cuid())
+  projectId    String
+  collectionId String? // Optional collection assignment
 
   // File info
   filename       String
@@ -978,12 +1058,15 @@ model Asset {
   updatedAt DateTime @updatedAt
 
   // Relations
-  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project       Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  collection    GalleryCollection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
   favorites     GalleryFavorite[]
   comments      GalleryComment[]
+  ratings       PhotoRating[]
   productPhotos ProductPhoto[]
 
   @@index([projectId])
+  @@index([collectionId])
   @@index([sortOrder])
 }
 
@@ -1048,11 +1131,31 @@ model GalleryComment {
   @@index([sessionId])
 }
 
+model PhotoRating {
+  id        String @id @default(cuid())
+  projectId String
+  assetId   String
+  rating    Int    // 1-5 stars
+  sessionId String // Track who rated for updates
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  // Unique constraint: one rating per session per photo
+  @@unique([assetId, sessionId])
+  @@index([projectId])
+  @@index([assetId])
+}
+
 model GalleryFeedback {
   id             String  @id @default(cuid())
   projectId      String
   organizationId String
-  type           String  // "feedback", "feature", "issue"
+  type           String // "feedback", "feature", "issue"
   message        String
   clientName     String?
   clientEmail    String?
@@ -1412,10 +1515,10 @@ model Invoice {
   referrals Referral[] @relation("ReferralInvoice")
 
   // Payment Reminders
-  remindersSent    Int       @default(0)
-  lastReminderAt   DateTime?
-  nextReminderAt   DateTime?
-  autoReminders    Boolean   @default(true) // Enable/disable auto reminders
+  remindersSent  Int       @default(0)
+  lastReminderAt DateTime?
+  nextReminderAt DateTime?
+  autoReminders  Boolean   @default(true) // Enable/disable auto reminders
 
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
@@ -1460,19 +1563,19 @@ model RecurringInvoice {
   nextRunDate DateTime // Next scheduled invoice creation
 
   // Status
-  isActive  Boolean @default(true)
-  isPaused  Boolean @default(false)
-  pausedAt  DateTime?
+  isActive   Boolean   @default(true)
+  isPaused   Boolean   @default(false)
+  pausedAt   DateTime?
   pauseUntil DateTime? // Resume date if paused temporarily
 
   // Invoice template
-  subtotalCents Int    @default(0)
-  taxCents      Int    @default(0)
-  totalCents    Int    @default(0)
-  currency      String @default("USD")
+  subtotalCents Int     @default(0)
+  taxCents      Int     @default(0)
+  totalCents    Int     @default(0)
+  currency      String  @default("USD")
   notes         String?
   terms         String?
-  dueDays       Int    @default(30) // Days after creation until due
+  dueDays       Int     @default(30) // Days after creation until due
 
   // Line items stored as JSON (template for each invoice)
   lineItems Json // Array of { itemType, description, quantity, unitCents }
@@ -1483,8 +1586,8 @@ model RecurringInvoice {
   lastInvoiceId   String? // Reference to last created invoice
 
   // End conditions (optional)
-  endDate       DateTime? // Stop after this date
-  maxInvoices   Int? // Stop after this many invoices
+  endDate     DateTime? // Stop after this date
+  maxInvoices Int? // Stop after this many invoices
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2165,15 +2268,15 @@ model PortfolioWebsite {
   publishedAt DateTime?
 
   // Relations
-  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  projects          PortfolioWebsiteProject[]
-  sections          PortfolioWebsiteSection[]
-  views             PortfolioWebsiteView[]
-  inquiries         PortfolioInquiry[]
-  leads    PortfolioLead[]
-  comments    PortfolioComment[]
-  abTests     PortfolioABTest[]
-  customForms CustomForm[]
+  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projects     PortfolioWebsiteProject[]
+  sections     PortfolioWebsiteSection[]
+  views        PortfolioWebsiteView[]
+  inquiries    PortfolioInquiry[]
+  leads        PortfolioLead[]
+  comments     PortfolioComment[]
+  abTests      PortfolioABTest[]
+  customForms  CustomForm[]
 
   @@index([organizationId])
   @@index([slug])
@@ -2403,7 +2506,7 @@ model PortfolioABTest {
 
   // Test Configuration
   name        String
-  description String? @db.Text
+  description String?               @db.Text
   status      PortfolioABTestStatus @default(draft)
 
   // Traffic Split (percentages, must add up to 100)
@@ -2411,33 +2514,33 @@ model PortfolioABTest {
   variantTrafficPercent Int @default(50)
 
   // Variant Settings (what's different in the variant)
-  variantHeroTitle    String? @db.Text
-  variantHeroSubtitle String? @db.Text
+  variantHeroTitle    String?            @db.Text
+  variantHeroSubtitle String?            @db.Text
   variantPrimaryColor String?
   variantTemplate     PortfolioTemplate?
 
   // Goals
   goalType        ABTestGoalType @default(views)
-  targetMetric    Int?     // Target number to reach
-  confidenceLevel Float    @default(0.95) // Statistical confidence required
+  targetMetric    Int? // Target number to reach
+  confidenceLevel Float          @default(0.95) // Statistical confidence required
 
   // Timing
   startDate DateTime?
   endDate   DateTime?
 
   // Results (cached for performance)
-  controlViews      Int @default(0)
-  controlConversions Int @default(0)
-  variantViews      Int @default(0)
-  variantConversions Int @default(0)
-  winningVariant    String? // "control" or "variant" once determined
+  controlViews       Int     @default(0)
+  controlConversions Int     @default(0)
+  variantViews       Int     @default(0)
+  variantConversions Int     @default(0)
+  winningVariant     String? // "control" or "variant" once determined
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
-  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  portfolioWebsite PortfolioWebsite   @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)
+  organization     Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   assignments      ABTestAssignment[]
 
   @@index([portfolioWebsiteId])
@@ -2454,7 +2557,7 @@ model ABTestAssignment {
   variant   String // "control" or "variant"
   converted Boolean @default(false)
 
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
   convertedAt DateTime?
 
   // Relations
@@ -2473,12 +2576,12 @@ enum PortfolioABTestStatus {
 }
 
 enum ABTestGoalType {
-  views           // Total page views
+  views // Total page views
   unique_visitors // Unique visitor count
-  time_on_page    // Average time spent
-  scroll_depth    // Average scroll depth
-  inquiries       // Contact form submissions
-  leads           // Lead captures
+  time_on_page // Average time spent
+  scroll_depth // Average scroll depth
+  inquiries // Contact form submissions
+  leads // Lead captures
 }
 
 // ============================================================================
@@ -2496,15 +2599,15 @@ model CustomForm {
   slug        String  @unique // URL-friendly identifier
 
   // Appearance
-  submitButtonText   String  @default("Submit")
-  successMessage     String  @default("Thank you for your submission!")
-  redirectUrl        String? // Optional redirect after submission
+  submitButtonText String  @default("Submit")
+  successMessage   String  @default("Thank you for your submission!")
+  redirectUrl      String? // Optional redirect after submission
 
   // Behavior
   isActive           Boolean @default(true)
   requiresAuth       Boolean @default(false)
-  maxSubmissions     Int?    // Limit total submissions
-  submissionsPerUser Int?    // Limit per visitor
+  maxSubmissions     Int? // Limit total submissions
+  submissionsPerUser Int? // Limit per visitor
 
   // Notifications
   sendEmailOnSubmission Boolean @default(true)
@@ -2530,18 +2633,18 @@ model CustomFormField {
   formId String
 
   // Field Configuration
-  name        String              // Internal field name
-  label       String              // Display label
+  name        String // Internal field name
+  label       String // Display label
   type        CustomFormFieldType
   placeholder String?
   helpText    String?
 
   // Validation
-  isRequired    Boolean @default(false)
-  minLength     Int?
-  maxLength     Int?
-  pattern       String? // Regex pattern for validation
-  patternError  String? // Custom error message for pattern mismatch
+  isRequired   Boolean @default(false)
+  minLength    Int?
+  maxLength    Int?
+  pattern      String? // Regex pattern for validation
+  patternError String? // Custom error message for pattern mismatch
 
   // Options (for select, radio, checkbox)
   options Json? // Array of { label: string, value: string }
@@ -2568,7 +2671,7 @@ model FormSubmission {
   formId String
 
   // Submission Data
-  data      Json   // All field values
+  data      Json // All field values
   ipAddress String?
   userAgent String?
   visitorId String?
@@ -2609,9 +2712,9 @@ enum CustomFormFieldType {
   url
   file
   hidden
-  heading      // Display-only heading
-  paragraph    // Display-only text
-  divider      // Visual separator
+  heading // Display-only heading
+  paragraph // Display-only text
+  divider // Visual separator
 }
 
 // ============================================================================
@@ -5338,5 +5441,121 @@ model EmailLog {
   @@index([emailType])
   @@index([status])
   @@index([questionnaireId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// API KEYS & WEBHOOKS FOR INTEGRATIONS
+// ============================================================================
+
+// Webhook event types for external integrations
+enum WebhookEventType {
+  // Gallery events
+  gallery_created
+  gallery_delivered
+  gallery_viewed
+  gallery_paid
+  // Booking events
+  booking_created
+  booking_confirmed
+  booking_cancelled
+  booking_completed
+  // Invoice events
+  invoice_created
+  invoice_sent
+  invoice_paid
+  invoice_overdue
+  // Payment events
+  payment_received
+  payment_failed
+  payment_refunded
+  // Client events
+  client_created
+  client_updated
+  // Contract events
+  contract_sent
+  contract_signed
+  // Project events
+  project_created
+  project_completed
+}
+
+// API keys for third-party integrations
+model ApiKey {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String // User-provided name for the key
+  keyPrefix      String // Visible prefix (e.g., "sk_live_xxxx") for identification
+  keyHash        String // SHA-256 hash of the full key (never store plaintext)
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  scopes         String[]  @default(["read", "write"]) // Permissions: read, write, admin
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, keyPrefix])
+  @@index([organizationId])
+  @@index([keyHash])
+  @@index([isActive])
+}
+
+// Webhook endpoints for sending event notifications
+model WebhookEndpoint {
+  id             String    @id @default(cuid())
+  organizationId String
+  url            String // The URL to send webhook payloads to
+  description    String? // Optional user description
+  secret         String // HMAC signing secret for verification
+  events         String[] // Array of WebhookEventType values to subscribe to
+  isActive       Boolean   @default(true)
+  lastDeliveryAt DateTime?
+  failureCount   Int       @default(0) // Consecutive failures (reset on success)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveries   WebhookDelivery[]
+
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+// Webhook delivery attempts for debugging and retry logic
+model WebhookDelivery {
+  id                String    @id @default(cuid())
+  webhookEndpointId String
+  eventType         String // The event that triggered this delivery
+  payload           Json // The full payload that was sent
+  responseStatus    Int? // HTTP status code from the receiver
+  responseBody      String?   @db.Text // Response body (truncated if too large)
+  deliveredAt       DateTime? // When the webhook was successfully delivered
+  attemptCount      Int       @default(1) // Number of delivery attempts
+  success           Boolean   @default(false)
+  errorMessage      String? // Error message if delivery failed
+  createdAt         DateTime  @default(now())
+
+  endpoint WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id], onDelete: Cascade)
+
+  @@index([webhookEndpointId])
+  @@index([createdAt])
+  @@index([success])
+}
+
+// Integration activity logs for debugging and monitoring
+model IntegrationLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  provider       String // Integration provider: google_calendar, dropbox, slack, stripe, etc.
+  eventType      String // Event type: connected, disconnected, sync_started, sync_completed, error, etc.
+  message        String // Human-readable description of the event
+  details        Json? // Additional structured data about the event
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([organizationId, provider])
   @@index([createdAt])
 }

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -126,10 +127,10 @@ export function SettingsPageClient({
               Go through the setup wizard again to update your preferences, industries, or features.
             </p>
           </div>
-          <button
+          <Button
+            variant="outline"
             onClick={handleRestartOnboarding}
             disabled={isResettingOnboarding}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
           >
             {isResettingOnboarding ? (
               <>
@@ -142,7 +143,7 @@ export function SettingsPageClient({
                 Restart Onboarding
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -153,18 +154,18 @@ export function SettingsPageClient({
           Irreversible and destructive actions
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <button
+          <Button
+            variant="danger-outline"
             onClick={() => setIsExportModalOpen(true)}
-            className="rounded-lg border border-[var(--error)]/30 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
           >
             Export All Data
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="danger-outline"
             onClick={() => setIsDeleteModalOpen(true)}
-            className="rounded-lg border border-[var(--error)]/30 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
           >
             Delete Account
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -215,17 +216,17 @@ export function SettingsPageClient({
             </div>
           </DialogBody>
           <DialogFooter>
-            <button
+            <Button
+              variant="outline"
               type="button"
               onClick={() => setIsExportModalOpen(false)}
-              className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
               onClick={handleExportData}
               disabled={isExporting}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isExporting ? (
                 <>
@@ -238,7 +239,7 @@ export function SettingsPageClient({
                   Download Export
                 </>
               )}
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -292,20 +293,20 @@ export function SettingsPageClient({
             </div>
           </DialogBody>
           <DialogFooter>
-            <button
+            <Button
+              variant="outline"
               type="button"
               onClick={() => {
                 setIsDeleteModalOpen(false);
                 setDeleteConfirmText("");
               }}
-              className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="danger"
               onClick={handleDeleteAccount}
               disabled={deleteConfirmText !== requiredDeleteText || isPending}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? (
                 <>
@@ -315,7 +316,7 @@ export function SettingsPageClient({
               ) : (
                 "Delete Account"
               )}
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

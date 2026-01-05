@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import type { PortfolioWebsite } from "../portfolio-editor-client";
 import {
@@ -543,11 +544,9 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
 
         <div className="mt-5">
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={showBranding}
-              onChange={(e) => setShowBranding(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => setShowBranding(checked === true)}
             />
             <span className="text-sm text-foreground">
               Show &quot;Powered by PhotoProOS&quot; badge
@@ -581,11 +580,9 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
 
         <div className="mt-5 space-y-4">
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={isPasswordProtected}
-              onChange={(e) => setIsPasswordProtected(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => setIsPasswordProtected(checked === true)}
             />
             <span className="text-sm text-foreground">
               Require password to view this portfolio
@@ -764,11 +761,9 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
 
         <div className="mt-5 space-y-4">
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={allowDownloads}
-              onChange={(e) => setAllowDownloads(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => setAllowDownloads(checked === true)}
             />
             <span className="text-sm text-foreground">
               Allow visitors to download images
@@ -777,11 +772,9 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
 
           {allowDownloads && (
             <label className="flex items-center gap-3 pl-7">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={downloadWatermark}
-                onChange={(e) => setDownloadWatermark(e.target.checked)}
-                className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+                onCheckedChange={(checked) => setDownloadWatermark(checked === true)}
               />
               <span className="text-sm text-foreground">
                 Apply watermark to downloaded images
@@ -815,11 +808,9 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
 
         <div className="mt-5 space-y-5">
           <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={enableAnimations}
-              onChange={(e) => setEnableAnimations(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background)] text-[var(--primary)]"
+              onCheckedChange={(checked) => setEnableAnimations(checked === true)}
             />
             <span className="text-sm text-foreground">
               Enable scroll animations

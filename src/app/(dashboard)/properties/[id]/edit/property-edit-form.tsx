@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -583,29 +584,23 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
             <div className="space-y-4">
               <label className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between cursor-pointer">
                 <span className="text-sm text-foreground">Show photographer branding</span>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={isBranded}
-                  onChange={(e) => setIsBranded(e.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  onCheckedChange={(checked) => setIsBranded(checked === true)}
                 />
               </label>
               <label className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between cursor-pointer">
                 <span className="text-sm text-foreground">Show price</span>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={showPrice}
-                  onChange={(e) => setShowPrice(e.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  onCheckedChange={(checked) => setShowPrice(checked === true)}
                 />
               </label>
               <label className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between cursor-pointer">
                 <span className="text-sm text-foreground">Show agent contact info</span>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={showAgent}
-                  onChange={(e) => setShowAgent(e.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  onCheckedChange={(checked) => setShowAgent(checked === true)}
                 />
               </label>
             </div>

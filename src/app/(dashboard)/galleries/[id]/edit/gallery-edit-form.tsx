@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ServiceSelector, type DatabaseServiceType } from "@/components/dashboard/service-selector";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { getServiceById, type ServiceType } from "@/lib/services";
 import { updateGallery, deleteGallery } from "@/lib/actions/galleries";
 import { useToast } from "@/components/ui/toast";
@@ -256,7 +257,7 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
               value="public"
               checked={accessType === "public"}
               onChange={() => setAccessType("public")}
-              className="mt-0.5 h-4 w-4 border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+              className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent checked:border-[var(--primary)] checked:bg-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0 focus:ring-offset-transparent"
             />
             <div>
               <span className="text-sm font-medium text-foreground">Public Link</span>
@@ -270,7 +271,7 @@ export function GalleryEditForm({ gallery, clients }: GalleryEditFormProps) {
               value="password"
               checked={accessType === "password"}
               onChange={() => setAccessType("password")}
-              className="mt-0.5 h-4 w-4 border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+              className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent checked:border-[var(--primary)] checked:bg-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0 focus:ring-offset-transparent"
             />
             <div>
               <span className="text-sm font-medium text-foreground">Password Protected</span>
@@ -428,21 +429,10 @@ function ToggleSetting({
         <span className="text-sm font-medium text-foreground">{label}</span>
         <p className="text-xs text-foreground-muted">{description}</p>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={onToggle}
-        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)] ${
-          checked ? "bg-[var(--primary)]" : "bg-[var(--background-hover)]"
-        }`}
-      >
-        <span
-          className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-5" : "translate-x-0"
-          }`}
-        />
-      </button>
+      <Switch
+        checked={checked}
+        onCheckedChange={onToggle}
+      />
     </label>
   );
 }

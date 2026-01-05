@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 
 interface ClientPreferences {
   email: string;
@@ -268,24 +269,11 @@ function PreferenceToggle({
         <p className="text-sm font-medium text-white">{label}</p>
         <p className="text-xs text-white/60">{description}</p>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
+      <Switch
+        checked={checked}
+        onCheckedChange={onChange}
         disabled={disabled}
-        className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors cursor-pointer",
-          checked ? "bg-blue-600" : "bg-white/20"
-        )}
-      >
-        <span
-          className={cn(
-            "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-            checked ? "translate-x-5" : "translate-x-0"
-          )}
-        />
-      </button>
+      />
     </div>
   );
 }

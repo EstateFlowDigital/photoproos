@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import {
   serviceCategories,
   formatServicePrice,
@@ -424,27 +425,12 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
                 bookings
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={formData.isActive}
-              onClick={() =>
-                setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
+            <Switch
+              checked={formData.isActive}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, isActive: checked }))
               }
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)]",
-                formData.isActive
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  formData.isActive ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
+            />
           </label>
 
           {usageCount > 0 && (

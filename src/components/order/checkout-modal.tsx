@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createOrder, createOrderCheckoutSession } from "@/lib/actions/orders";
 
 interface CartItem {
@@ -272,12 +273,14 @@ export function CheckoutModal({
                 </div>
 
                 <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="flexibleDates"
+                  <Checkbox
                     checked={formData.flexibleDates}
-                    onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-[#262626] bg-[#0a0a0a] text-blue-500 focus:ring-0 focus:ring-offset-0"
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        flexibleDates: checked === true,
+                      }))
+                    }
                   />
                   <span className="text-sm text-[#a7a7a7]">
                     I&apos;m flexible on scheduling dates

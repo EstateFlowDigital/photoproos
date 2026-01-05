@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import {
   updateAppearancePreferences,
   applyThemePreset,
@@ -900,26 +901,11 @@ export function AppearanceSettingsForm({
                 Increase text and border contrast for better visibility
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={preferences.highContrast}
-              onClick={handleHighContrastToggle}
+            <Switch
+              checked={preferences.highContrast}
+              onCheckedChange={handleHighContrastToggle}
               disabled={isPending}
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                preferences.highContrast
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  preferences.highContrast ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
+            />
           </div>
 
           {/* Compact Sidebar Toggle */}
@@ -930,26 +916,11 @@ export function AppearanceSettingsForm({
                 Show only icons in the sidebar for more workspace
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={preferences.sidebarCompact}
-              onClick={handleCompactModeToggle}
+            <Switch
+              checked={preferences.sidebarCompact}
+              onCheckedChange={handleCompactModeToggle}
               disabled={isPending}
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                preferences.sidebarCompact
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  preferences.sidebarCompact ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
+            />
           </div>
 
           {/* Sidebar Position */}
@@ -988,26 +959,11 @@ export function AppearanceSettingsForm({
                 Minimize animations throughout the dashboard
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={preferences.reduceMotion}
-              onClick={handleReduceMotionToggle}
+            <Switch
+              checked={preferences.reduceMotion}
+              onCheckedChange={handleReduceMotionToggle}
               disabled={isPending}
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                preferences.reduceMotion
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  preferences.reduceMotion ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
+            />
           </div>
         </div>
       </div>
@@ -1030,26 +986,11 @@ export function AppearanceSettingsForm({
                 Switch theme automatically at scheduled times
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={preferences.autoThemeEnabled}
-              onClick={handleAutoThemeToggle}
+            <Switch
+              checked={preferences.autoThemeEnabled}
+              onCheckedChange={handleAutoThemeToggle}
               disabled={isPending}
-              className={cn(
-                "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
-                preferences.autoThemeEnabled
-                  ? "bg-[var(--primary)]"
-                  : "bg-[var(--background-hover)]"
-              )}
-            >
-              <span
-                className={cn(
-                  "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
-                  preferences.autoThemeEnabled ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
+            />
           </div>
 
           {/* Time Settings */}
@@ -1093,7 +1034,7 @@ export function AppearanceSettingsForm({
       {/* Theme Mode Reminder */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10">
             <InfoIcon className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>

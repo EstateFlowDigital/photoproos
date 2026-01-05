@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { updateIndustries, updateModules } from "@/lib/actions/onboarding";
@@ -218,7 +219,7 @@ export function FeaturesSettingsForm({
                   <div className="flex items-start gap-3">
                     <div
                       className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)]",
                         isSelected
                           ? "bg-[var(--primary)] text-white"
                           : "bg-[var(--background-secondary)] text-foreground-muted"
@@ -349,18 +350,18 @@ export function FeaturesSettingsForm({
 
       {/* Save Button */}
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <button
+        <Button
+          variant="outline"
           type="button"
           onClick={() => router.back()}
-          className="inline-flex w-full items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="primary"
           type="button"
           onClick={handleSave}
           disabled={isPending || selectedIndustries.length === 0}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
         >
           {isPending ? (
             <>
@@ -370,7 +371,7 @@ export function FeaturesSettingsForm({
           ) : (
             "Save Changes"
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

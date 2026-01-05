@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getDropboxConfig } from "@/lib/actions/dropbox";
 import { DropboxSettingsClient } from "./dropbox-settings-client";
@@ -15,13 +16,12 @@ export default async function DropboxSettingsPage() {
         title="Dropbox Integration"
         subtitle="Sync photos and deliverables with Dropbox"
         actions={
-          <Link
-            href="/settings/integrations"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Integrations
-          </Link>
+          <Button variant="outline" asChild className="w-full sm:w-auto">
+            <Link href="/settings/integrations">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Integrations
+            </Link>
+          </Button>
         }
       />
 

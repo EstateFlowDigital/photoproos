@@ -24,8 +24,9 @@
  *   if (!result.success) console.error(result.error);
  */
 
-import { sendEmail } from "./resend";
+import { sendEmail, EmailAttachment } from "./resend";
 import { GalleryDeliveredEmail } from "@/emails/gallery-delivered";
+import { InvoiceSentEmail } from "@/emails/invoice-sent";
 import { PaymentReceiptEmail } from "@/emails/payment-receipt";
 import { BookingConfirmationEmail } from "@/emails/booking-confirmation";
 import { WelcomeEmail } from "@/emails/welcome";
@@ -47,6 +48,8 @@ import { FormSubmissionNotificationEmail } from "@/emails/form-submission-notifi
 import { PaymentReminderEmail } from "@/emails/payment-reminder";
 import { PortfolioWeeklyDigestEmail } from "@/emails/portfolio-weekly-digest";
 import { ClientMagicLinkEmail } from "@/emails/client-magic-link";
+import { GalleryReminderEmail } from "@/emails/gallery-reminder";
+import { DownloadReceiptEmail } from "@/emails/download-receipt";
 
 /**
  * Send gallery delivered notification to client
@@ -1139,5 +1142,243 @@ export async function sendClientMagicLinkEmail(params: {
       magicLinkUrl,
       expiresInMinutes,
     }),
+  });
+}
+
+// =============================================================================
+// Invoice & Receipt Emails with PDF Attachments
+// =============================================================================
+
+/**
+ * Send invoice email with optional PDF attachment
+ *
+ * Triggered by: sendInvoice() action when user clicks "Send Invoice"
+ * Location: src/lib/actions/invoices.ts
+ */
+export async function sendInvoiceEmail(params: {
+  to: string;
+  clientName: string;
+  invoiceNumber: string;
+  paymentUrl: string;
+  amountCents: number;
+  currency: string;
+  photographerName: string;
+  photographerEmail?: string;
+  dueDate: string;
+  lineItemsSummary?: string;
+  pdfAttachment?: {
+    buffer: Buffer;
+    filename: string;
+  };
+}) {
+  const {
+    to,
+    clientName,
+    invoiceNumber,
+    paymentUrl,
+    amountCents,
+    currency,
+    photographerName,
+    photographerEmail,
+    dueDate,
+    lineItemsSummary,
+    pdfAttachment,
+  } = params;
+
+  // Build attachments array if PDF is provided
+  const attachments: EmailAttachment[] = pdfAttachment
+    ? [
+        {
+          filename: pdfAttachment.filename,
+          content: pdfAttachment.buffer,
+          contentType: "application/pdf",
+        },
+      ]
+    : [];
+
+  return sendEmail({
+    to,
+    subject: `Invoice ${invoiceNumber} from ${photographerName}`,
+    react: InvoiceSentEmail({
+      clientName,
+      invoiceNumber,
+      paymentUrl,
+      amountCents,
+      currency,
+      photographerName,
+      dueDate,
+      lineItemsSummary,
+      hasPdfAttachment: !!pdfAttachment,
+    }),
+    replyTo: photographerEmail,
+    attachments: attachments.length > 0 ? attachments : undefined,
+  });
+}
+
+/**
+ * Send receipt email with optional PDF attachment
+ *
+ * Triggered by: Payment completion webhook or manual receipt send
+ * Location: src/app/api/webhooks/stripe/route.ts, src/lib/actions/payments.ts
+ */
+export async function sendReceiptEmailWithPdf(params: {
+  to: string;
+  clientName: string;
+  galleryName: string;
+  galleryUrl: string;
+  amountCents: number;
+  currency: string;
+  photographerName: string;
+  photographerEmail?: string;
+  transactionId?: string;
+  pdfAttachment?: {
+    buffer: Buffer;
+    filename: string;
+  };
+}) {
+  const {
+    to,
+    clientName,
+    galleryName,
+    galleryUrl,
+    amountCents,
+    currency,
+    photographerName,
+    photographerEmail,
+    transactionId,
+    pdfAttachment,
+  } = params;
+
+  // Build attachments array if PDF is provided
+  const attachments: EmailAttachment[] = pdfAttachment
+    ? [
+        {
+          filename: pdfAttachment.filename,
+          content: pdfAttachment.buffer,
+          contentType: "application/pdf",
+        },
+      ]
+    : [];
+
+  return sendEmail({
+    to,
+    subject: `Payment received for ${galleryName}`,
+    react: PaymentReceiptEmail({
+      clientName,
+      galleryName,
+      galleryUrl,
+      amountCents,
+      currency,
+      photographerName,
+      transactionId,
+    }),
+    replyTo: photographerEmail,
+    attachments: attachments.length > 0 ? attachments : undefined,
+  });
+}
+
+/**
+ * Send gallery reminder to client
+ * Used for galleries that haven't been viewed or purchased
+ */
+export async function sendGalleryReminderEmail(params: {
+  to: string;
+  clientName: string;
+  galleryName: string;
+  galleryUrl: string;
+  photographerName: string;
+  photographerEmail?: string;
+  photoCount?: number;
+  priceCents?: number;
+  reminderType: "not_viewed" | "not_paid";
+  daysSinceDelivery: number;
+}) {
+  const {
+    to,
+    clientName,
+    galleryName,
+    galleryUrl,
+    photographerName,
+    photographerEmail,
+    photoCount,
+    priceCents,
+    reminderType,
+    daysSinceDelivery,
+  } = params;
+
+  const subject =
+    reminderType === "not_paid"
+      ? `Complete your purchase: ${galleryName}`
+      : `Your photos are waiting: ${galleryName}`;
+
+  return sendEmail({
+    to,
+    subject,
+    react: GalleryReminderEmail({
+      clientName,
+      galleryName,
+      galleryUrl,
+      photographerName,
+      photoCount,
+      priceCents,
+      reminderType,
+      daysSinceDelivery,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+// =============================================================================
+// Download Receipt Email
+// =============================================================================
+
+/**
+ * Send download receipt to client
+ *
+ * Triggered by: logDownload() action when sendReceipt option is enabled
+ * Location: src/lib/actions/download-tracking.ts
+ */
+export async function sendDownloadReceiptEmail(params: {
+  to: string;
+  clientName: string;
+  galleryName: string;
+  galleryUrl: string;
+  photographerName: string;
+  photographerEmail?: string;
+  downloadedPhotos: {
+    filename: string;
+    format: string;
+  }[];
+  totalFileCount: number;
+  downloadedAt?: Date;
+  receiptId?: string;
+}) {
+  const {
+    to,
+    clientName,
+    galleryName,
+    galleryUrl,
+    photographerName,
+    photographerEmail,
+    downloadedPhotos,
+    totalFileCount,
+    downloadedAt = new Date(),
+    receiptId,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `Download Receipt: ${galleryName}`,
+    react: DownloadReceiptEmail({
+      clientName,
+      galleryName,
+      galleryUrl,
+      photographerName,
+      downloadedPhotos,
+      totalFileCount,
+      downloadedAt: downloadedAt.toISOString(),
+      receiptId,
+    }),
+    replyTo: photographerEmail,
   });
 }

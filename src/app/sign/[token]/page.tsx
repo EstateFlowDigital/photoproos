@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import SignaturePad from "signature_pad";
 import { getContractForSigning, signContract } from "@/lib/actions/contract-signing";
 import { Loader2, CheckCircle2, AlertCircle, Pen, Type, FileText } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ContractData {
   contract: {
@@ -333,11 +334,10 @@ export default function ContractSigningPage() {
                 {/* Agreement Checkbox */}
                 <div className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.08)]">
                   <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={hasAgreed}
-                      onChange={(e) => setHasAgreed(e.target.checked)}
-                      className="mt-1 w-4 h-4 rounded border-[rgba(255,255,255,0.24)] bg-transparent checked:bg-[var(--primary)] checked:border-[var(--primary)]"
+                      onCheckedChange={(checked) => setHasAgreed(checked === true)}
+                      className="mt-1"
                     />
                     <span className="text-sm text-[#a7a7a7]">
                       I agree to sign this document electronically and understand that my

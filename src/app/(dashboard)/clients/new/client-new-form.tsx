@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/actions/clients";
 import { Select } from "@/components/ui/select";
 import { Input, Textarea } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { ClientIndustry } from "@prisma/client";
 
 const industries: { value: ClientIndustry; label: string }[] = [
@@ -276,11 +277,9 @@ export function ClientNewForm() {
       {/* Form Actions */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={createGallery}
-            onChange={(e) => setCreateGallery(e.target.checked)}
-            className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+            onCheckedChange={(checked) => setCreateGallery(checked === true)}
           />
           <span className="text-sm text-foreground">Create a gallery for this client</span>
         </label>

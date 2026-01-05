@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
@@ -36,7 +36,11 @@ export function DashboardLayoutClient({
   const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [navMode, setNavMode] = useState<"sidebar" | "top">("sidebar");
+  const [preferredNavMode, setPreferredNavMode] = useState<"sidebar" | "top">("sidebar");
+  const [effectiveNavMode, setEffectiveNavMode] = useState<"sidebar" | "top">("sidebar");
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [forcedTop, setForcedTop] = useState(false);
+  const shellRef = useRef<HTMLDivElement | null>(null);
 
   const handleOpenMenu = useCallback(() => {
     setMobileMenuOpen(true);
@@ -61,16 +65,36 @@ export function DashboardLayoutClient({
   useEffect(() => {
     const stored = typeof window !== "undefined" ? window.localStorage.getItem("ppos-nav-mode") : null;
     if (stored === "top" || stored === "sidebar") {
-      setNavMode(stored);
+      setPreferredNavMode(stored);
+      setEffectiveNavMode(stored);
     }
   }, []);
 
   const handleNavModeChange = (mode: "sidebar" | "top") => {
-    setNavMode(mode);
+    setPreferredNavMode(mode);
     if (typeof window !== "undefined") {
       window.localStorage.setItem("ppos-nav-mode", mode);
     }
   };
+
+  // Track container width to auto-collapse when space is limited
+  useEffect(() => {
+    if (!shellRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry?.contentRect?.width) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(shellRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const forceTop = containerWidth > 0 && containerWidth < 1120;
+    setForcedTop(forceTop && preferredNavMode === "sidebar");
+    setEffectiveNavMode(forceTop ? "top" : preferredNavMode);
+  }, [containerWidth, preferredNavMode]);
 
   // Auto theme switching based on time of day
   const { setTheme } = useTheme();
@@ -110,9 +134,12 @@ export function DashboardLayoutClient({
 
   return (
     <ResponsiveTester>
-      <div className={`shell-container flex h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}>
+      <div
+        ref={shellRef}
+        className={`shell-container flex h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
+      >
         {/* Desktop Sidebar - hidden on mobile or when in top-nav mode */}
-        {navMode !== "top" && (
+        {effectiveNavMode !== "top" && (
           <div className="shell-sidebar hidden lg:block">
             <DashboardSidebar
               enabledModules={enabledModules}
@@ -143,7 +170,8 @@ export function DashboardLayoutClient({
               <DashboardTopbar
                 className="h-full border-0 px-0"
                 navLinks={getFilteredNavigation({ enabledModules, industries })}
-                navMode={navMode}
+                navMode={effectiveNavMode}
+                navAutoForced={forcedTop}
                 onNavModeChange={handleNavModeChange}
               />
             </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { seedDatabase, clearSeededData } from "@/lib/actions/seed";
+import { Button } from "@/components/ui/button";
 
 export function SeedDatabaseButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,10 +34,11 @@ export function SeedDatabaseButton() {
 
   return (
     <div className="space-y-3">
-      <button
+      <Button
+        variant="primary"
         onClick={handleSeed}
         disabled={isLoading}
-        className="w-full rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">
@@ -46,7 +48,7 @@ export function SeedDatabaseButton() {
         ) : (
           "Seed Database with Sample Data"
         )}
-      </button>
+      </Button>
 
       {result && (
         <div

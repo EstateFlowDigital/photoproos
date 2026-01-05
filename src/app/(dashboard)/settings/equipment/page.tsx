@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";
+import { Button } from "@/components/ui/button";
 import { getEquipmentByCategory } from "@/lib/actions/equipment";
 import { EquipmentList } from "./equipment-list";
 
@@ -14,13 +15,12 @@ export default async function EquipmentSettingsPage() {
         subtitle="Manage your photography equipment inventory"
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/settings"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back
-            </Link>
+            <Button variant="outline" asChild>
+              <Link href="/settings">
+                <ArrowLeftIcon className="h-4 w-4" />
+                Back
+              </Link>
+            </Button>
           </div>
         }
       />

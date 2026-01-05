@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/dashboard";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   getEmailLogs,
   getEmailStats,
@@ -50,6 +52,7 @@ const statusConfig: Record<EmailStatus, { label: string; color: string; bgColor:
 
 const emailTypeLabels: Record<EmailType, string> = {
   gallery_delivered: "Gallery Delivered",
+  gallery_reminder: "Gallery Reminder",
   payment_receipt: "Payment Receipt",
   booking_confirmation: "Booking Confirmation",
   welcome: "Welcome",
@@ -257,13 +260,12 @@ export default function EmailLogsPage() {
         title="Email Logs"
         subtitle="Track all emails sent from your organization"
         actions={
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Settings
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href="/settings">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Settings
+            </Link>
+          </Button>
         }
       />
 
@@ -371,26 +373,28 @@ export default function EmailLogsPage() {
           </select>
         </div>
 
-        <button
+        <Button
+          variant="outline"
           onClick={() => {
             setStatusFilter("all");
             setTypeFilter("all");
             setSearchQuery("");
             setPage(1);
           }}
-          className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground-muted transition-colors hover:text-foreground sm:w-auto"
+          className="w-full sm:w-auto"
         >
           Clear
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="outline"
           onClick={handleExport}
           disabled={exporting || logs.length === 0}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 sm:w-auto"
+          className="w-full sm:w-auto"
         >
           {exporting ? <LoadingSpinner className="h-4 w-4" /> : <DownloadIcon className="h-4 w-4" />}
           Export CSV
-        </button>
+        </Button>
       </div>
 
       {/* Bulk Actions Bar */}
@@ -451,11 +455,9 @@ export default function EmailLogsPage() {
                 <thead>
                   <tr className="border-b border-[var(--card-border)] bg-[var(--background)]">
                     <th className="w-10 px-4 py-3">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selectedIds.size === logs.length && logs.length > 0}
-                        onChange={toggleSelectAll}
-                        className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                        onCheckedChange={toggleSelectAll}
                       />
                     </th>
                     <th className="text-left px-4 py-3 font-medium text-foreground-muted">Recipient</th>
@@ -476,11 +478,9 @@ export default function EmailLogsPage() {
                       )}
                     >
                       <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={selectedIds.has(log.id)}
-                          onChange={() => toggleSelection(log.id)}
-                          className="h-4 w-4 rounded border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                          onCheckedChange={() => toggleSelection(log.id)}
                         />
                       </td>
                       <td className="px-4 py-3">
@@ -570,20 +570,24 @@ export default function EmailLogsPage() {
                   Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} emails
                 </p>
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="w-full rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    className="w-full sm:w-auto"
                   >
                     Previous
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
-                    className="w-full rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    className="w-full sm:w-auto"
                   >
                     Next
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -615,7 +619,7 @@ function StatCard({
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-3">
-        <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", colorClasses[color])}>
+        <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)]", colorClasses[color])}>
           {icon}
         </div>
         <div>

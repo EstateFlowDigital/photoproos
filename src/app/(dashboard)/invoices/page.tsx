@@ -7,6 +7,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { InvoiceStatus } from "@prisma/client";
+import { BulkExportButton } from "@/components/invoices/bulk-export-button";
 
 // Helper to format currency
 function formatCurrency(cents: number): string {
@@ -105,13 +106,16 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
         title="Invoices"
         subtitle={`${invoices.length} invoice${invoices.length !== 1 ? "s" : ""}`}
         actions={
-          <Link
-            href="/invoices/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Create Invoice
-          </Link>
+          <div className="flex items-center gap-3">
+            <BulkExportButton statusFilter={statusFilter} invoiceCount={invoices.length} />
+            <Link
+              href="/invoices/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Create Invoice
+            </Link>
+          </div>
         }
       />
 

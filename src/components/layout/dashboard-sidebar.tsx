@@ -44,6 +44,45 @@ export function DashboardSidebar({
     industries,
   });
 
+  const [pinnedIds, setPinnedIds] = React.useState<string[]>([]);
+  const [draggingPinnedId, setDraggingPinnedId] = React.useState<string | null>(null);
+  const [navOrder, setNavOrder] = React.useState<string[]>([]);
+  const [draggingNavId, setDraggingNavId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("ppos_pinned_nav");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as string[];
+        const availableIds = navItems.map((n) => n.id);
+        setPinnedIds(parsed.filter((id) => availableIds.includes(id)));
+      } catch {
+        setPinnedIds([]);
+      }
+    }
+    const storedOrder = window.localStorage.getItem("ppos_nav_order");
+    if (storedOrder) {
+      try {
+        const parsedOrder = JSON.parse(storedOrder) as string[];
+        setNavOrder(parsedOrder);
+      } catch {
+        setNavOrder([]);
+      }
+    }
+  }, [navItems]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ppos_pinned_nav", JSON.stringify(pinnedIds));
+  }, [pinnedIds]);
+
+  const togglePin = (id: string) => {
+    setPinnedIds((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    );
+  };
+
   const paymentsVisible = navItems.some((item) => item.id === "invoices");
   const sidebarNav = paymentsVisible
     ? [
@@ -59,23 +98,68 @@ export function DashboardSidebar({
       ]
     : navItems;
 
+  React.useEffect(() => {
+    const available = sidebarNav.map((item) => item.id);
+    setNavOrder((prev) => {
+      const filtered = prev.filter((id) => available.includes(id));
+      const missing = available.filter((id) => !filtered.includes(id));
+      const next = [...filtered, ...missing];
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("ppos_nav_order", JSON.stringify(next));
+      }
+      return next;
+    });
+  }, [sidebarNav]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ppos_nav_order", JSON.stringify(navOrder));
+  }, [navOrder]);
+
+  const sortByNavOrder = (items: NavItem[]) => {
+    if (!navOrder.length) return items;
+    const orderMap = new Map(navOrder.map((id, index) => [id, index]));
+    const fallbackIndex = navOrder.length + 1;
+    return [...items].sort(
+      (a, b) => (orderMap.get(a.id) ?? fallbackIndex) - (orderMap.get(b.id) ?? fallbackIndex)
+    );
+  };
+
   const corePrimaryIds = ["dashboard", "projects", "clients", "scheduling"];
-  const coreNav = sidebarNav.filter((item) => corePrimaryIds.includes(item.id));
-  const workspaceNav = sidebarNav.filter(
-    (item) => !corePrimaryIds.includes(item.id) && item.category !== "advanced"
+  const pinnedNav = sidebarNav.filter((item) => pinnedIds.includes(item.id));
+  const coreNav = sortByNavOrder(sidebarNav).filter((item) => corePrimaryIds.includes(item.id) && !pinnedIds.includes(item.id));
+  const workspaceNav = sortByNavOrder(sidebarNav).filter(
+    (item) => !corePrimaryIds.includes(item.id) && item.category !== "advanced" && !pinnedIds.includes(item.id)
   );
-  const advancedNav = sidebarNav.filter((item) => item.category === "advanced");
+  const advancedNav = sortByNavOrder(sidebarNav).filter((item) => item.category === "advanced" && !pinnedIds.includes(item.id));
   const [sectionState, setSectionState] = React.useState({
     workspaces: true,
     advanced: false,
   });
 
-  const renderNavItem = (item: NavItem) => {
+  const handleNavReorder = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    setNavOrder((prev) => {
+      const available = sidebarNav.map((item) => item.id);
+      const base = prev.length ? prev.filter((id) => available.includes(id)) : available;
+      const fromIdx = base.indexOf(fromId);
+      const toIdx = base.indexOf(toId);
+      if (fromIdx === -1 || toIdx === -1) return base;
+      const next = [...base];
+      next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, fromId);
+      return next;
+    });
+  };
+
+  const renderNavItem = (item: NavItem, options?: { draggable?: boolean }) => {
     const isActive =
       pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
     const IconComponent = item.icon;
+    const isPinned = pinnedIds.includes(item.id);
+    const canDrag = options?.draggable && !isPinned;
 
-    return (
+    const linkContent = (
       <Link
         key={item.href}
         href={item.href}
@@ -83,7 +167,8 @@ export function DashboardSidebar({
           "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
           isActive
             ? "bg-[var(--primary)] text-white"
-            : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+            : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground",
+          canDrag && "cursor-move"
         )}
       >
         <IconComponent
@@ -105,12 +190,76 @@ export function DashboardSidebar({
             {item.badge}
           </span>
         )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            togglePin(item.id);
+          }}
+          className={cn(
+            "h-6 w-6 shrink-0 rounded-md border border-transparent text-foreground-muted transition-colors hover:border-[var(--card-border)] hover:text-foreground",
+            isPinned && (isActive ? "text-white" : "text-[var(--primary)]")
+          )}
+          title={isPinned ? "Unpin" : "Pin"}
+        >
+          {isPinned ? <StarFilledIcon className="h-4 w-4" /> : <StarIcon className="h-4 w-4" />}
+        </button>
       </Link>
+    );
+
+    if (!canDrag) return linkContent;
+
+    return (
+      <div
+        draggable
+        onDragStart={() => setDraggingNavId(item.id)}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (draggingNavId && draggingNavId !== item.id) {
+            handleNavReorder(draggingNavId, item.id);
+          }
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDraggingNavId(null);
+        }}
+        onDragEnd={() => setDraggingNavId(null)}
+        className={cn(
+          "rounded-lg border border-transparent transition-colors",
+          draggingNavId === item.id && "border-[var(--primary)]/50 bg-[var(--background-hover)]"
+        )}
+      >
+        {linkContent}
+      </div>
     );
   };
 
   const toggleSection = (key: "workspaces" | "advanced") => {
     setSectionState((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const resetNav = () => {
+    setPinnedIds([]);
+    const ids = sidebarNav.map((item) => item.id);
+    setNavOrder(ids);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("ppos_pinned_nav");
+      window.localStorage.removeItem("ppos_nav_order");
+    }
+  };
+
+  const handlePinnedReorder = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    setPinnedIds((prev) => {
+      const fromIdx = prev.indexOf(fromId);
+      const toIdx = prev.indexOf(toId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const next = [...prev];
+      next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, fromId);
+      return next;
+    });
   };
 
 
@@ -131,8 +280,53 @@ export function DashboardSidebar({
 
       {/* Main Navigation */}
       <nav className="flex-1 min-h-0 overflow-y-auto px-4 pb-6 pt-4">
+        {pinnedNav.length > 0 && (
+          <div className="mb-4 space-y-2 rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-3">
+            <div className="flex items-center justify-between text-sm font-semibold text-foreground">
+              <span>Pinned</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-foreground-muted">{pinnedNav.length} items</span>
+                <button
+                  type="button"
+                  onClick={resetNav}
+                  className="text-xs text-foreground-muted hover:text-foreground transition-colors"
+                  title="Reset ordering and pins"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              {pinnedNav.map((item) => (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={() => setDraggingPinnedId(item.id)}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (draggingPinnedId && draggingPinnedId !== item.id) {
+                      handlePinnedReorder(draggingPinnedId, item.id);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDraggingPinnedId(null);
+                  }}
+                  onDragEnd={() => setDraggingPinnedId(null)}
+                  className={cn(
+                    "rounded-lg border border-transparent transition-colors",
+                    draggingPinnedId === item.id && "border-[var(--primary)]/50 bg-[var(--background-hover)]"
+                  )}
+                >
+                  {renderNavItem(item)}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
-          {coreNav.map((item) => renderNavItem(item))}
+          {coreNav.map((item) => renderNavItem(item, { draggable: true }))}
         </div>
 
         {workspaceNav.length > 0 && (
@@ -152,7 +346,7 @@ export function DashboardSidebar({
             </button>
             {sectionState.workspaces && (
               <div className="space-y-1 pt-2">
-                {workspaceNav.map((item) => renderNavItem(item))}
+                {workspaceNav.map((item) => renderNavItem(item, { draggable: true }))}
               </div>
             )}
           </div>
@@ -175,7 +369,7 @@ export function DashboardSidebar({
             </button>
             {sectionState.advanced && (
               <div className="space-y-1 pt-2">
-                {advancedNav.map((item) => renderNavItem(item))}
+                {advancedNav.map((item) => renderNavItem(item, { draggable: true }))}
               </div>
             )}
           </div>
@@ -324,6 +518,13 @@ export function DashboardSidebar({
                 <PaymentsIcon className="h-4 w-4" />
                 Billing & plan
               </Link>
+              <Link
+                href="/portal"
+                className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 text-xs font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
+              >
+                <EyeIcon className="h-4 w-4" />
+                View as client
+              </Link>
             </div>
             <div className="mt-3 flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2">
               <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
@@ -368,6 +569,15 @@ function ClientsIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z" />
+    </svg>
+  );
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
     </svg>
   );
 }
@@ -466,6 +676,22 @@ function InviteIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.572.398-.255.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM16.75 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z" />
+    </svg>
+  );
+}
+
+function StarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.062 3.261a1 1 0 0 0 .95.69h3.43c.969 0 1.371 1.24.588 1.81l-2.774 2.016a1 1 0 0 0-.364 1.118l1.06 3.262c.3.921-.755 1.688-1.54 1.118l-2.774-2.015a1 1 0 0 0-1.176 0l-2.774 2.015c-.784.57-1.838-.197-1.539-1.118l1.06-3.262a1 1 0 0 0-.364-1.118L2.92 8.688c-.783-.57-.38-1.81.588-1.81h3.43a1 1 0 0 0 .95-.69l1.06-3.261Z" />
+    </svg>
+  );
+}
+
+function StarFilledIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.062 3.261a1 1 0 0 0 .95.69h3.43c.969 0 1.371 1.24.588 1.81l-2.774 2.016a1 1 0 0 0-.364 1.118l1.06 3.262c.3.921-.755 1.688-1.54 1.118l-2.774-2.015a1 1 0 0 0-1.176 0l-2.774 2.015c-.784.57-1.838-.197-1.539-1.118l1.06-3.262a1 1 0 0 0-.364-1.118L2.92 8.688c-.783-.57-.38-1.81.588-1.81h3.43a1 1 0 0 0 .95-.69l1.06-3.261Z" />
     </svg>
   );
 }

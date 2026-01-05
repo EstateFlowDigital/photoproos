@@ -241,6 +241,36 @@ export async function getEmailStats() {
 }
 
 /**
+ * Convenience helper to log an email send and mark its status.
+ */
+export async function logEmailSent(params: {
+  organizationId: string;
+  toEmail: string;
+  toName?: string;
+  clientId?: string;
+  projectId?: string;
+  emailType: EmailType;
+  subject: string;
+  status?: EmailStatus;
+}) {
+  const { success, logId } = await createEmailLog({
+    organizationId: params.organizationId,
+    toEmail: params.toEmail,
+    toName: params.toName,
+    clientId: params.clientId,
+    projectId: params.projectId,
+    emailType: params.emailType,
+    subject: params.subject,
+  });
+
+  if (success && logId && params.status) {
+    await updateEmailLogStatus(logId, params.status);
+  }
+
+  return { success, logId };
+}
+
+/**
  * Get questionnaire email activity for a specific questionnaire
  */
 export async function getQuestionnaireEmailActivity(questionnaireId: string) {
