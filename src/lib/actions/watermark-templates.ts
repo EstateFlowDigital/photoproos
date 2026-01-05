@@ -425,20 +425,22 @@ export async function applyTemplateToOrganization(templateId: string) {
 
     // Map template position format to organization settings format
     const positionMap: Record<string, WatermarkPosition | undefined> = {
-      "top-left": "top_left",
-      "top-right": "top_right",
-      "bottom-left": "bottom_left",
-      "bottom-right": "bottom_right",
-      center: "center",
-      "top_center": "top_center",
-      "bottom_center": "bottom_center",
-      tiled: "tiled",
-      diagonal: "diagonal",
+      "top-left": WatermarkPosition.top_left,
+      "top-right": WatermarkPosition.top_right,
+      "bottom-left": WatermarkPosition.bottom_left,
+      "bottom-right": WatermarkPosition.bottom_right,
+      top_left: WatermarkPosition.top_left,
+      top_right: WatermarkPosition.top_right,
+      bottom_left: WatermarkPosition.bottom_left,
+      bottom_right: WatermarkPosition.bottom_right,
+      center: WatermarkPosition.center,
+      top_center: WatermarkPosition.top_center,
+      bottom_center: WatermarkPosition.bottom_center,
+      tiled: WatermarkPosition.tiled,
+      diagonal: WatermarkPosition.diagonal,
     };
-    const mappedPosition =
-      positionMap[template.watermarkPosition] ??
-      (template.watermarkPosition as WatermarkPosition | undefined) ??
-      "bottom_right";
+    const mappedPosition: WatermarkPosition =
+      positionMap[template.watermarkPosition] ?? WatermarkPosition.bottom_right;
 
     // Update organization's watermark settings
     await prisma.organization.update({
