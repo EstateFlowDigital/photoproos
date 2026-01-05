@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- **Build Error Fix** - Fixed "use server" file export restrictions causing deployment failures
+- **Build Error Fixes** - Multiple fixes for "use server" file export restrictions and type errors
   - Moved `ACQUISITION_SOURCES` constant and related types from `clients.ts` to new `lib/constants/acquisition-sources.ts`
-  - Server action files can only export async functions, not constants or objects
+  - Moved `QuestionnaireTemplateWithRelations` and `PortalQuestionnaireWithRelations` types to new `lib/actions/questionnaire-types.ts`
+  - Fixed `ActivityType` enum usage (changed invalid `lead_received` to `client_added`)
+  - Fixed `BookingStatus` enum usage (removed invalid `no_show` status)
+  - Fixed `PaymentStatus` enum usage (changed invalid `completed` to `paid`)
+  - Server action files can only export async functions, not constants, types, or objects
   - Resolves Railway deployment build failures
 
 ### Changed
