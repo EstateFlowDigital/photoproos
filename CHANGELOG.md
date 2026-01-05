@@ -70,6 +70,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Clears error when user corrects the date
 
 ### Added
+- **Waitlist Email Notifications** - Automatic email alerts when spots become available
+  - New email template (`src/emails/waitlist-notification.tsx`) with dark theme styling
+  - Includes urgency messaging with expiration countdown
+  - Shows service name, preferred date, and booking deadline
+  - Direct "Book Your Spot Now" CTA button linking to photographer's booking page
+  - Displays photographer contact info for questions
+  - Dovetail-inspired design matching platform aesthetic
+
 - **Gallery Optimization Infrastructure** - Foundation for large-scale component refactoring
   - **GalleryContext** (`src/contexts/gallery-context.tsx`) - Centralized state management
     - Consolidated 47 useState hooks into single useReducer pattern

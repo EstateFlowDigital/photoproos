@@ -11,6 +11,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import { WaitlistStatus, Prisma } from "@prisma/client";
+import { sendWaitlistNotificationEmail } from "@/lib/email/send";
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -325,8 +326,21 @@ export async function notifyWaitlistClient(
   try {
     const organizationId = await requireOrganizationId();
 
+    // Fetch entry with service and organization details for the email
     const entry = await prisma.bookingWaitlist.findFirst({
       where: { id: entryId, organizationId },
+      include: {
+        service: {
+          select: { name: true },
+        },
+        organization: {
+          select: {
+            name: true,
+            publicEmail: true,
+            selfBookingPageSlug: true,
+          },
+        },
+      },
     });
 
     if (!entry) {
@@ -349,8 +363,21 @@ export async function notifyWaitlistClient(
       },
     });
 
-    // TODO: Send notification email to client
-    // await sendWaitlistNotificationEmail({ ... });
+    // Send notification email to client
+    const bookingUrl = entry.organization.selfBookingPageSlug
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/book/${entry.organization.selfBookingPageSlug}`
+      : `${process.env.NEXT_PUBLIC_APP_URL}/book`;
+
+    await sendWaitlistNotificationEmail({
+      to: entry.clientEmail,
+      clientName: entry.clientName,
+      serviceName: entry.service?.name || undefined,
+      preferredDate: entry.preferredDate,
+      expiresAt,
+      bookingUrl,
+      photographerName: entry.organization.name,
+      photographerEmail: entry.organization.publicEmail || undefined,
+    });
 
     revalidatePath("/scheduling/waitlist");
 

@@ -51,6 +51,7 @@ import { ClientMagicLinkEmail } from "@/emails/client-magic-link";
 import { GalleryReminderEmail } from "@/emails/gallery-reminder";
 import { DownloadReceiptEmail } from "@/emails/download-receipt";
 import { BookingFollowupEmail } from "@/emails/booking-followup";
+import { WaitlistNotificationEmail } from "@/emails/waitlist-notification";
 
 /**
  * Send gallery delivered notification to client
@@ -1439,6 +1440,53 @@ export async function sendBookingFollowupEmail(params: {
       rebookUrl,
       galleryUrl,
       followupType,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+// =============================================================================
+// Waitlist Notification Emails
+// =============================================================================
+
+/**
+ * Send waitlist notification email when a spot opens up
+ *
+ * Triggered by: notifyWaitlistClient() action
+ * Location: src/lib/actions/waitlist.ts
+ */
+export async function sendWaitlistNotificationEmail(params: {
+  to: string;
+  clientName: string;
+  serviceName?: string;
+  preferredDate: Date;
+  expiresAt: Date;
+  bookingUrl: string;
+  photographerName: string;
+  photographerEmail?: string;
+}) {
+  const {
+    to,
+    clientName,
+    serviceName,
+    preferredDate,
+    expiresAt,
+    bookingUrl,
+    photographerName,
+    photographerEmail,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `A spot is now available${serviceName ? ` for ${serviceName}` : ""} - ${photographerName}`,
+    react: WaitlistNotificationEmail({
+      clientName,
+      serviceName,
+      preferredDate: preferredDate.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      bookingUrl,
+      photographerName,
+      photographerEmail,
     }),
     replyTo: photographerEmail,
   });
