@@ -1,9 +1,20 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { PayButton } from "./pay-button";
+
+interface ExifData {
+  camera?: string;
+  lens?: string;
+  aperture?: string;
+  shutterSpeed?: string;
+  iso?: string;
+  focalLength?: string;
+  dateTaken?: string;
+}
 
 interface Photo {
   id: string;
@@ -12,6 +23,7 @@ interface Photo {
   filename: string;
   width: number;
   height: number;
+  exif?: ExifData;
 }
 
 interface Comment {
@@ -44,6 +56,7 @@ interface GalleryData {
   theme: "light" | "dark" | "auto";
   hidePlatformBranding: boolean;
   isPreview: boolean;
+  expiresAt?: string | null;
   photos: Photo[];
 }
 
@@ -98,6 +111,78 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [feedbackEmail, setFeedbackEmail] = useState("");
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  // Photo comparison mode
+  const [compareMode, setCompareMode] = useState(false);
+  const [comparePhotos, setComparePhotos] = useState<Photo[]>([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+
+  // Client selection list (proofing)
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
+  const [showSelectionPanel, setShowSelectionPanel] = useState(false);
+
+  // Keyboard shortcuts help
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+
+  // Download progress
+  const [downloadModalVisible, setDownloadModalVisible] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState<"preparing" | "downloading" | "complete" | "error">("preparing");
+  const [downloadProgressPercent, setDownloadProgressPercent] = useState(0);
+
+  // Expiration countdown
+  const [expirationCountdown, setExpirationCountdown] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    expired: boolean;
+    expiresSoon: boolean; // Less than 7 days
+  } | null>(null);
+
+  // EXIF data display
+  const [showExifInfo, setShowExifInfo] = useState(false);
+
+  // Calculate expiration countdown
+  useEffect(() => {
+    if (!gallery.expiresAt) {
+      setExpirationCountdown(null);
+      return;
+    }
+
+    const calculateCountdown = () => {
+      const expiresAt = new Date(gallery.expiresAt!);
+      const now = new Date();
+      const diff = expiresAt.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setExpirationCountdown({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          expired: true,
+          expiresSoon: false,
+        });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      setExpirationCountdown({
+        days,
+        hours,
+        minutes,
+        expired: false,
+        expiresSoon: days < 7,
+      });
+    };
+
+    calculateCountdown();
+    const interval = setInterval(calculateCountdown, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [gallery.expiresAt]);
 
   useEffect(() => {
     // Check system preference
@@ -292,6 +377,111 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     }
   }, [gallery.id, feedbackType, feedbackMessage, feedbackName, feedbackEmail]);
 
+  // Comparison mode handlers
+  const handleToggleCompareMode = useCallback(() => {
+    setCompareMode((prev) => !prev);
+    if (compareMode) {
+      setComparePhotos([]);
+    }
+  }, [compareMode]);
+
+  const handleAddToCompare = useCallback((photo: Photo) => {
+    setComparePhotos((prev) => {
+      if (prev.find((p) => p.id === photo.id)) {
+        return prev.filter((p) => p.id !== photo.id);
+      }
+      if (prev.length >= 2) {
+        return [prev[1], photo]; // Replace oldest
+      }
+      return [...prev, photo];
+    });
+  }, []);
+
+  const handleOpenCompare = useCallback(() => {
+    if (comparePhotos.length === 2) {
+      setShowCompareModal(true);
+    }
+  }, [comparePhotos.length]);
+
+  // Selection mode handlers (proofing)
+  const handleToggleSelectionMode = useCallback(() => {
+    setSelectionMode((prev) => !prev);
+    if (selectionMode) {
+      setSelectedPhotoIds(new Set());
+    }
+  }, [selectionMode]);
+
+  const handleTogglePhotoSelection = useCallback((photoId: string) => {
+    setSelectedPhotoIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(photoId)) {
+        newSet.delete(photoId);
+      } else {
+        newSet.add(photoId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Filter photos based on favorites view
+  const displayedPhotos = showFavoritesOnly
+    ? gallery.photos.filter((p) => favoriteAssetIds.has(p.id))
+    : gallery.photos;
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedPhotoIds(new Set(displayedPhotos.map((p) => p.id)));
+  }, [displayedPhotos]);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedPhotoIds(new Set());
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key) {
+        case "?":
+          e.preventDefault();
+          setShowShortcutsHelp((prev) => !prev);
+          break;
+        case "Escape":
+          if (showShortcutsHelp) setShowShortcutsHelp(false);
+          if (showCompareModal) setShowCompareModal(false);
+          if (showSelectionPanel) setShowSelectionPanel(false);
+          break;
+        case "c":
+        case "C":
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            handleToggleCompareMode();
+          }
+          break;
+        case "s":
+        case "S":
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            handleToggleSelectionMode();
+          }
+          break;
+        case "f":
+        case "F":
+          if (!e.metaKey && !e.ctrlKey && gallery.allowFavorites) {
+            e.preventDefault();
+            setShowFavoritesOnly((prev) => !prev);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showShortcutsHelp, showCompareModal, showSelectionPanel, handleToggleCompareMode, handleToggleSelectionMode, gallery.allowFavorites]);
+
   // Submit a new comment
   const handleSubmitComment = useCallback(async () => {
     if (!selectedPhoto || !newComment.trim()) return;
@@ -353,11 +543,6 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
       setIsTogglingFavorite(null);
     }
   }, [gallery.id, isTogglingFavorite]);
-
-  // Filter photos based on favorites view
-  const displayedPhotos = showFavoritesOnly
-    ? gallery.photos.filter((p) => favoriteAssetIds.has(p.id))
-    : gallery.photos;
 
   // Download a single photo
   const handleDownloadPhoto = useCallback(async (photo: Photo) => {
@@ -454,9 +639,16 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     if (isDownloadingZip) return;
 
     setIsDownloadingZip(true);
+    setDownloadModalVisible(true);
+    setDownloadStatus("preparing");
+    setDownloadProgressPercent(0);
 
     try {
       const allAssetIds = gallery.photos.map((p) => p.id);
+
+      // Simulate preparation progress
+      setDownloadProgressPercent(10);
+
       const response = await fetch("/api/download/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -470,22 +662,64 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
       if (!response.ok) {
         const error = await response.json();
         console.error("Batch download failed:", error);
+        setDownloadStatus("error");
         return;
       }
 
-      // Get the blob and trigger download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${gallery.name}-all-photos.zip`;
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      setDownloadStatus("downloading");
+      setDownloadProgressPercent(30);
+
+      // Get the blob with progress simulation
+      const reader = response.body?.getReader();
+      const contentLength = +(response.headers.get("Content-Length") || 0);
+
+      if (reader && contentLength) {
+        let receivedLength = 0;
+        const chunks: Uint8Array[] = [];
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          receivedLength += value.length;
+          const percent = Math.round(30 + (receivedLength / contentLength) * 60);
+          setDownloadProgressPercent(Math.min(percent, 90));
+        }
+
+        const blob = new Blob(chunks as BlobPart[]);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${gallery.name}-all-photos.zip`;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Fallback for browsers without ReadableStream
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${gallery.name}-all-photos.zip`;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+
+      setDownloadProgressPercent(100);
+      setDownloadStatus("complete");
+
+      // Auto-close modal after 2 seconds
+      setTimeout(() => {
+        setDownloadModalVisible(false);
+      }, 2000);
     } catch (error) {
       console.error("Batch download failed:", error);
+      setDownloadStatus("error");
     } finally {
       setIsDownloadingZip(false);
     }
@@ -759,6 +993,67 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   <span className="hidden sm:inline">Slideshow</span>
                 </button>
               )}
+
+              {/* Compare Mode Button */}
+              {displayedPhotos.length >= 2 && (
+                <button
+                  onClick={handleToggleCompareMode}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                    compareMode && "ring-2 ring-offset-2"
+                  )}
+                  style={{
+                    backgroundColor: compareMode ? primaryColor : colors.cardBg,
+                    color: compareMode ? "#fff" : colors.textColor,
+                    ["--tw-ring-color" as string]: primaryColor,
+                  }}
+                  title="Compare photos (C)"
+                >
+                  <CompareIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Compare</span>
+                  {comparePhotos.length > 0 && (
+                    <span
+                      className="rounded-full px-1.5 py-0.5 text-xs"
+                      style={{
+                        backgroundColor: compareMode ? "rgba(255,255,255,0.2)" : primaryColor,
+                        color: "#fff",
+                      }}
+                    >
+                      {comparePhotos.length}/2
+                    </span>
+                  )}
+                </button>
+              )}
+
+              {/* Selection Mode Button */}
+              <button
+                onClick={handleToggleSelectionMode}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  selectionMode && "ring-2 ring-offset-2"
+                )}
+                style={{
+                  backgroundColor: selectionMode ? primaryColor : colors.cardBg,
+                  color: selectionMode ? "#fff" : colors.textColor,
+                  ["--tw-ring-color" as string]: primaryColor,
+                }}
+                title="Select photos (S)"
+              >
+                <SelectIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Select</span>
+                {selectedPhotoIds.size > 0 && (
+                  <span
+                    className="rounded-full px-1.5 py-0.5 text-xs"
+                    style={{
+                      backgroundColor: selectionMode ? "rgba(255,255,255,0.2)" : primaryColor,
+                      color: "#fff",
+                    }}
+                  >
+                    {selectedPhotoIds.size}
+                  </span>
+                )}
+              </button>
+
               {gallery.allowFavorites && (
                 <button
                   onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
@@ -874,9 +1169,77 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 Free - Downloads enabled
               </span>
             )}
+            {/* Expiration countdown */}
+            {expirationCountdown && (
+              <span
+                className="flex items-center gap-1"
+                style={{
+                  color: expirationCountdown.expired
+                    ? "#ef4444"
+                    : expirationCountdown.expiresSoon
+                      ? "#f97316"
+                      : colors.mutedColor,
+                }}
+              >
+                <ClockIcon className="h-4 w-4" />
+                {expirationCountdown.expired ? (
+                  "Gallery expired"
+                ) : expirationCountdown.days > 0 ? (
+                  `Expires in ${expirationCountdown.days}d ${expirationCountdown.hours}h`
+                ) : expirationCountdown.hours > 0 ? (
+                  `Expires in ${expirationCountdown.hours}h ${expirationCountdown.minutes}m`
+                ) : (
+                  `Expires in ${expirationCountdown.minutes}m`
+                )}
+              </span>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Expiration Warning Banner */}
+      {expirationCountdown && (expirationCountdown.expired || expirationCountdown.expiresSoon) && (
+        <div
+          className="border-b"
+          style={{
+            backgroundColor: expirationCountdown.expired ? "rgba(239, 68, 68, 0.1)" : "rgba(249, 115, 22, 0.1)",
+            borderColor: expirationCountdown.expired ? "rgba(239, 68, 68, 0.3)" : "rgba(249, 115, 22, 0.3)",
+          }}
+        >
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center gap-3">
+              <ClockIcon
+                className={cn(
+                  "h-5 w-5",
+                  expirationCountdown.expired ? "text-red-500" : "text-orange-500"
+                )}
+              />
+              <div>
+                {expirationCountdown.expired ? (
+                  <p className="font-medium" style={{ color: "#ef4444" }}>
+                    This gallery has expired and downloads are no longer available.
+                  </p>
+                ) : (
+                  <>
+                    <p className="font-medium" style={{ color: "#f97316" }}>
+                      This gallery will expire soon!
+                    </p>
+                    <p className="text-sm" style={{ color: colors.mutedColor }}>
+                      Download your photos before{" "}
+                      {new Date(gallery.expiresAt!).toLocaleDateString(undefined, {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Payment Banner (if not paid) */}
       {!gallery.isPaid && gallery.price > 0 && (
@@ -928,13 +1291,38 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           </div>
         )}
 
+        {/* Mode instructions */}
+        {(compareMode || selectionMode) && (
+          <div className="mb-4 rounded-lg p-3" style={{ backgroundColor: `${primaryColor}15`, borderColor: `${primaryColor}30`, border: "1px solid" }}>
+            <p className="text-sm" style={{ color: primaryColor }}>
+              {compareMode && "Click on two photos to compare them side by side."}
+              {selectionMode && "Click photos to select them. Use the selection panel to review your choices."}
+            </p>
+          </div>
+        )}
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {displayedPhotos.map((photo: Photo) => (
             <div
               key={photo.id}
-              className="group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer transition-colors duration-300"
-              style={{ backgroundColor: colors.cardBg }}
-              onClick={() => handleOpenPhotoModal(photo)}
+              className={cn(
+                "group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer transition-all duration-300",
+                comparePhotos.find((p) => p.id === photo.id) && "ring-4",
+                selectedPhotoIds.has(photo.id) && "ring-4"
+              )}
+              style={{
+                backgroundColor: colors.cardBg,
+                ["--tw-ring-color" as string]: primaryColor,
+              }}
+              onClick={() => {
+                if (compareMode) {
+                  handleAddToCompare(photo);
+                } else if (selectionMode) {
+                  handleTogglePhotoSelection(photo.id);
+                } else {
+                  handleOpenPhotoModal(photo);
+                }
+              }}
             >
               <img
                 src={photo.url}
@@ -945,8 +1333,50 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 )}
               />
 
+              {/* Compare mode indicator */}
+              {compareMode && (
+                <div className="absolute top-3 right-3 z-10">
+                  {comparePhotos.find((p) => p.id === photo.id) ? (
+                    <div
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {comparePhotos.findIndex((p) => p.id === photo.id) + 1}
+                    </div>
+                  ) : (
+                    <div
+                      className="flex h-7 w-7 items-center justify-center rounded-full border-2 text-sm font-medium"
+                      style={{ borderColor: "rgba(255,255,255,0.5)", backgroundColor: "rgba(0,0,0,0.3)", color: "white" }}
+                    >
+                      +
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Selection mode checkbox */}
+              {selectionMode && (
+                <div className="absolute top-3 right-3 z-10">
+                  <div
+                    className={cn(
+                      "flex h-6 w-6 items-center justify-center rounded border-2 transition-colors",
+                      selectedPhotoIds.has(photo.id)
+                        ? "border-transparent"
+                        : "border-white/50 bg-black/30"
+                    )}
+                    style={{
+                      backgroundColor: selectedPhotoIds.has(photo.id) ? primaryColor : undefined,
+                    }}
+                  >
+                    {selectedPhotoIds.has(photo.id) && (
+                      <CheckIcon className="h-4 w-4 text-white" />
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Comment count badge */}
-              {commentCounts[photo.id] > 0 && (
+              {commentCounts[photo.id] > 0 && !compareMode && !selectionMode && (
                 <div className="absolute top-3 left-3">
                   <span className="flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
                     <ChatIcon className="h-3 w-3" />
@@ -1159,6 +1589,74 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   </p>
                 )}
               </div>
+
+              {/* EXIF Data Panel */}
+              {selectedPhoto.exif && Object.values(selectedPhoto.exif).some(Boolean) && (
+                <div className="border-b p-4" style={{ borderColor: colors.borderColor }}>
+                  <button
+                    onClick={() => setShowExifInfo(!showExifInfo)}
+                    className="flex w-full items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CameraIcon className="h-4 w-4" style={{ color: primaryColor }} />
+                      <span className="text-sm font-medium">Camera Info</span>
+                    </div>
+                    <ChevronDownIcon
+                      className={cn(
+                        "h-4 w-4 transition-transform",
+                        showExifInfo && "rotate-180"
+                      )}
+                      style={{ color: colors.mutedColor }}
+                    />
+                  </button>
+                  {showExifInfo && (
+                    <div className="mt-3 space-y-2 text-sm">
+                      {selectedPhoto.exif.camera && (
+                        <div className="flex justify-between">
+                          <span style={{ color: colors.mutedColor }}>Camera</span>
+                          <span>{selectedPhoto.exif.camera}</span>
+                        </div>
+                      )}
+                      {selectedPhoto.exif.lens && (
+                        <div className="flex justify-between">
+                          <span style={{ color: colors.mutedColor }}>Lens</span>
+                          <span>{selectedPhoto.exif.lens}</span>
+                        </div>
+                      )}
+                      {selectedPhoto.exif.focalLength && (
+                        <div className="flex justify-between">
+                          <span style={{ color: colors.mutedColor }}>Focal Length</span>
+                          <span>{selectedPhoto.exif.focalLength}</span>
+                        </div>
+                      )}
+                      {selectedPhoto.exif.aperture && (
+                        <div className="flex justify-between">
+                          <span style={{ color: colors.mutedColor }}>Aperture</span>
+                          <span>{selectedPhoto.exif.aperture}</span>
+                        </div>
+                      )}
+                      {selectedPhoto.exif.shutterSpeed && (
+                        <div className="flex justify-between">
+                          <span style={{ color: colors.mutedColor }}>Shutter Speed</span>
+                          <span>{selectedPhoto.exif.shutterSpeed}</span>
+                        </div>
+                      )}
+                      {selectedPhoto.exif.iso && (
+                        <div className="flex justify-between">
+                          <span style={{ color: colors.mutedColor }}>ISO</span>
+                          <span>{selectedPhoto.exif.iso}</span>
+                        </div>
+                      )}
+                      {selectedPhoto.exif.dateTaken && (
+                        <div className="flex justify-between">
+                          <span style={{ color: colors.mutedColor }}>Date Taken</span>
+                          <span>{new Date(selectedPhoto.exif.dateTaken).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Comments Header */}
               <div className="border-b p-4" style={{ borderColor: colors.borderColor }}>
@@ -1710,6 +2208,307 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         </div>
       )}
 
+      {/* Compare Modal */}
+      {showCompareModal && comparePhotos.length === 2 && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/95">
+          {/* Close button */}
+          <button
+            onClick={() => setShowCompareModal(false)}
+            className="absolute top-4 right-4 z-10 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+          >
+            <CloseIcon className="h-6 w-6" />
+          </button>
+
+          {/* Title */}
+          <div className="absolute top-4 left-4 text-white">
+            <h3 className="text-lg font-semibold">Compare Photos</h3>
+            <p className="text-sm text-white/60">Side by side comparison</p>
+          </div>
+
+          {/* Side by side comparison */}
+          <div className="flex h-[80vh] w-[95vw] max-w-6xl gap-4">
+            {comparePhotos.map((photo) => (
+              <div key={photo.id} className="flex-1 flex flex-col">
+                <div className="flex-1 relative rounded-lg overflow-hidden bg-black/50">
+                  <img
+                    src={photo.originalUrl || photo.url}
+                    alt={photo.filename}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <div className="mt-2 text-center">
+                  <p className="text-white font-medium truncate">{photo.filename}</p>
+                  <p className="text-white/60 text-sm">{photo.width} × {photo.height}px</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3">
+            <button
+              onClick={() => {
+                setComparePhotos([]);
+                setShowCompareModal(false);
+              }}
+              className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors"
+            >
+              Clear Selection
+            </button>
+            <button
+              onClick={() => setShowCompareModal(false)}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Compare floating panel - shows when 2 photos selected */}
+      {compareMode && comparePhotos.length === 2 && !showCompareModal && (
+        <div
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 rounded-lg shadow-xl p-4"
+          style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.borderColor}` }}
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-2">
+              {comparePhotos.map((photo) => (
+                <img
+                  key={photo.id}
+                  src={photo.url}
+                  alt={photo.filename}
+                  className="h-12 w-12 rounded-lg object-cover ring-2 ring-white"
+                />
+              ))}
+            </div>
+            <button
+              onClick={handleOpenCompare}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Compare Now
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Selection Panel */}
+      {selectionMode && selectedPhotoIds.size > 0 && (
+        <div
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 rounded-lg shadow-xl p-4"
+          style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.borderColor}` }}
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium" style={{ color: colors.textColor }}>
+                {selectedPhotoIds.size} selected
+              </span>
+              <button
+                onClick={handleSelectAll}
+                className="text-xs underline"
+                style={{ color: primaryColor }}
+              >
+                Select all
+              </button>
+              <button
+                onClick={handleClearSelection}
+                className="text-xs underline"
+                style={{ color: colors.mutedColor }}
+              >
+                Clear
+              </button>
+            </div>
+            {gallery.isPaid && gallery.allowDownload && (
+              <button
+                onClick={() => {
+                  const assetIds = Array.from(selectedPhotoIds);
+                  fetch("/api/download/batch", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      galleryId: gallery.id,
+                      assetIds,
+                      deliverySlug: gallery.deliverySlug,
+                    }),
+                  })
+                    .then((res) => res.blob())
+                    .then((blob) => {
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.download = `${gallery.name}-selected.zip`;
+                      link.click();
+                      window.URL.revokeObjectURL(url);
+                    });
+                }}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+                style={{ backgroundColor: primaryColor }}
+              >
+                Download Selected
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Keyboard Shortcuts Help */}
+      {showShortcutsHelp && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowShortcutsHelp(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md mx-4 rounded-2xl p-6 shadow-2xl"
+            style={{ backgroundColor: colors.cardBg }}
+          >
+            <button
+              onClick={() => setShowShortcutsHelp(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            >
+              <CloseIcon className="h-6 w-6" />
+            </button>
+
+            <h3 className="text-xl font-semibold mb-4" style={{ color: colors.textColor }}>
+              Keyboard Shortcuts
+            </h3>
+
+            <div className="space-y-3">
+              {[
+                { key: "?", action: "Show/hide this help" },
+                { key: "C", action: "Toggle compare mode" },
+                { key: "S", action: "Toggle selection mode" },
+                { key: "F", action: "Toggle favorites filter" },
+                { key: "ESC", action: "Close modals" },
+                { key: "← →", action: "Navigate in slideshow" },
+                { key: "Space", action: "Next photo in slideshow" },
+                { key: "P", action: "Play/pause slideshow" },
+                { key: "T", action: "Toggle thumbnails in slideshow" },
+              ].map(({ key, action }) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: colors.mutedColor }}>{action}</span>
+                  <kbd
+                    className="px-2 py-1 rounded text-xs font-mono"
+                    style={{ backgroundColor: colors.bgColor, color: colors.textColor, border: `1px solid ${colors.borderColor}` }}
+                  >
+                    {key}
+                  </kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Keyboard shortcut hint */}
+      <div className="fixed bottom-6 left-6 z-40">
+        <button
+          onClick={() => setShowShortcutsHelp(true)}
+          className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all hover:scale-105"
+          style={{ backgroundColor: colors.cardBg, color: colors.mutedColor, border: `1px solid ${colors.borderColor}` }}
+          title="Keyboard shortcuts"
+        >
+          <kbd className="font-mono">?</kbd>
+          <span className="hidden sm:inline">Shortcuts</span>
+        </button>
+      </div>
+
+      {/* Download Progress Modal */}
+      {downloadModalVisible && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => {
+              if (downloadStatus === "complete" || downloadStatus === "error") {
+                setDownloadModalVisible(false);
+              }
+            }}
+          />
+          <div
+            className="relative z-10 w-full max-w-sm mx-4 rounded-2xl p-6 shadow-2xl text-center"
+            style={{ backgroundColor: colors.cardBg }}
+          >
+            {downloadStatus === "preparing" && (
+              <>
+                <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
+                  <LoadingSpinner className="h-6 w-6 animate-spin" style={{ color: primaryColor }} />
+                </div>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
+                  Preparing Download
+                </h3>
+                <p className="text-sm mb-4" style={{ color: colors.mutedColor }}>
+                  Compressing {gallery.photos.length} photos...
+                </p>
+              </>
+            )}
+
+            {downloadStatus === "downloading" && (
+              <>
+                <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
+                  <DownloadIcon className="h-6 w-6" style={{ color: primaryColor }} />
+                </div>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
+                  Downloading
+                </h3>
+                <p className="text-sm mb-4" style={{ color: colors.mutedColor }}>
+                  Your photos are being downloaded...
+                </p>
+              </>
+            )}
+
+            {downloadStatus === "complete" && (
+              <>
+                <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34, 197, 94, 0.2)" }}>
+                  <CheckIcon className="h-6 w-6" style={{ color: "#22c55e" }} />
+                </div>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
+                  Download Complete
+                </h3>
+                <p className="text-sm mb-4" style={{ color: colors.mutedColor }}>
+                  Your photos have been downloaded successfully!
+                </p>
+              </>
+            )}
+
+            {downloadStatus === "error" && (
+              <>
+                <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(239, 68, 68, 0.2)" }}>
+                  <CloseIcon className="h-6 w-6 text-red-500" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
+                  Download Failed
+                </h3>
+                <p className="text-sm mb-4" style={{ color: colors.mutedColor }}>
+                  There was an error downloading your photos. Please try again.
+                </p>
+                <button
+                  onClick={() => setDownloadModalVisible(false)}
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Close
+                </button>
+              </>
+            )}
+
+            {/* Progress bar */}
+            {(downloadStatus === "preparing" || downloadStatus === "downloading") && (
+              <div className="w-full rounded-full h-2 overflow-hidden" style={{ backgroundColor: colors.bgColor }}>
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${downloadProgressPercent}%`,
+                    backgroundColor: primaryColor,
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <footer
         className="border-t py-8 transition-colors duration-300"
@@ -1744,9 +2543,9 @@ function HeartIcon({ className }: { className?: string }) {
   );
 }
 
-function DownloadIcon({ className }: { className?: string }) {
+function DownloadIcon({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
       <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
       <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
     </svg>
@@ -1769,7 +2568,7 @@ function PhotoIcon({ className }: { className?: string }) {
   );
 }
 
-function CheckIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
+function CheckIcon({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
@@ -1786,7 +2585,7 @@ function EyeIcon({ className }: { className?: string }) {
   );
 }
 
-function LoadingSpinner({ className, style }: { className?: string; style?: React.CSSProperties }) {
+function LoadingSpinner({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
     <svg className={className} style={style} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -1812,15 +2611,15 @@ function ChatIcon({ className }: { className?: string }) {
   );
 }
 
-function CloseIcon({ className }: { className?: string }) {
+function CloseIcon({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
       <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
     </svg>
   );
 }
 
-function PrintIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
+function PrintIcon({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
       <path fillRule="evenodd" d="M5 2.75C5 1.784 5.784 1 6.75 1h6.5c.966 0 1.75.784 1.75 1.75v3.552c.377.046.752.097 1.126.153A2.212 2.212 0 0 1 18 8.653v4.097A2.25 2.25 0 0 1 15.75 15h-.241l.305 1.984A1.75 1.75 0 0 1 14.084 19H5.915a1.75 1.75 0 0 1-1.73-2.016L4.492 15H4.25A2.25 2.25 0 0 1 2 12.75V8.653c0-1.082.775-2.034 1.874-2.198.374-.056.749-.107 1.126-.153V2.75Zm1.5 0v3.37a42.21 42.21 0 0 1 7 0V2.75a.25.25 0 0 0-.25-.25h-6.5a.25.25 0 0 0-.25.25Zm-1.274 8.5H4.25a.75.75 0 0 1-.75-.75V8.653c0-.339.239-.639.577-.694a40.726 40.726 0 0 1 11.846 0c.338.055.577.355.577.694v1.847a.75.75 0 0 1-.75.75h-.974l-.25 1.622a40.702 40.702 0 0 1-9.452 0l-.25-1.622Zm.855 2.078a39.14 39.14 0 0 0 7.838 0l.42 2.734a.25.25 0 0 1-.247.288H5.915a.25.25 0 0 1-.247-.288l.413-2.734Z" clipRule="evenodd" />
@@ -1965,6 +2764,22 @@ function ZoomOutIcon({ className }: { className?: string }) {
   );
 }
 
+function SelectIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M4 3.5A1.5 1.5 0 0 1 5.5 2h9A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5H11l-2.5 3.333A.5.5 0 0 1 8 17.5V14H5.5A1.5 1.5 0 0 1 4 12.5v-9Z" />
+    </svg>
+  );
+}
+
+function CompareIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M6.75 2a.75.75 0 0 1 .75.75V5h5V2.75a.75.75 0 0 1 1.5 0V5h1.5A2.5 2.5 0 0 1 18 7.5v8A2.5 2.5 0 0 1 15.5 18H4.5A2.5 2.5 0 0 1 2 15.5v-8A2.5 2.5 0 0 1 4.5 5h1.5V2.75A.75.75 0 0 1 6.75 2ZM4.5 6.5a1 1 0 0 0-1 1V9h13V7.5a1 1 0 0 0-1-1h-11Zm12 4H3.5v5a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-5Z" />
+    </svg>
+  );
+}
+
 function ResetIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
@@ -1977,6 +2792,30 @@ function FeedbackIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902 1.168.188 2.352.327 3.55.414.28.02.521.18.642.413l1.713 3.293a.75.75 0 0 0 1.33 0l1.713-3.293a.783.783 0 0 1 .642-.413 41.102 41.102 0 0 0 3.55-.414c1.437-.231 2.43-1.49 2.43-2.902V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0 0 10 2ZM6.75 6a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 2.5a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5h-3.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CameraIcon({ className, style }: { className?: string; style?: CSSProperties }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
+      <path fillRule="evenodd" d="M1 8a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 8.07 3h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 16.07 6H17a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8Zm13.5 3a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM10 14a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className, style }: { className?: string; style?: CSSProperties }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
+      <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
     </svg>
   );
 }

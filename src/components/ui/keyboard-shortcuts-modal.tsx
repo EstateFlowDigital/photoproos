@@ -25,15 +25,27 @@ const shortcutGroups: ShortcutGroup[] = [
       { keys: ["G", "C"], description: "Go to Clients" },
       { keys: ["G", "P"], description: "Go to Payments" },
       { keys: ["G", "S"], description: "Go to Scheduling" },
+      { keys: ["G", "I"], description: "Go to Invoices" },
+      { keys: ["G", "O"], description: "Go to Contracts" },
+      { keys: ["G", "R"], description: "Go to Properties" },
+      { keys: ["G", "V"], description: "Go to Services" },
+      { keys: ["G", "A"], description: "Go to Analytics" },
+      { keys: ["G", "T"], description: "Go to Settings" },
     ],
   },
   {
     title: "Global",
     shortcuts: [
-      { keys: ["⌘", "K"], description: "Open search" },
+      { keys: ["⌘", "K"], description: "Open command palette" },
       { keys: ["?"], description: "Open keyboard shortcuts" },
       { keys: ["Esc"], description: "Close modal / Cancel" },
-      { keys: ["N"], description: "Create new gallery" },
+    ],
+  },
+  {
+    title: "Quick Actions",
+    shortcuts: [
+      { keys: ["N"], description: "New gallery (from galleries)" },
+      { keys: ["B"], description: "New booking (from scheduling)" },
     ],
   },
   {

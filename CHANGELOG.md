@@ -8,6 +8,152 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Settings Area Comprehensive Overhaul**
+  - **Settings Sidebar Navigation** - New 260px sidebar with collapsible category sections and active state highlighting
+  - **Settings Mobile Navigation** - Slide-over drawer for mobile screens with backdrop blur and swipe-to-close
+  - **Settings Layout Wrapper** - Unified layout component for all settings sub-pages
+  - **Shared Settings Icons Library** - Centralized 35+ icon library in `/src/components/ui/settings-icons.tsx`
+  - **Settings Navigation Constants** - Centralized navigation structure in `/src/lib/constants/settings-navigation.ts`
+  - **Main Settings Page Redesign** - Category headers and improved card organization
+
+- **Integrations Hub Rebuild**
+  - **Integration Registry** - Complete definitions for 9+ integrations (Google Calendar, Dropbox, Stripe, Slack, QuickBooks, Mailchimp, Google Drive, Calendly, Notion, Zapier)
+  - **IntegrationCard & ConnectedIntegrationCard** - Visual components showing integration status and actions
+  - **IntegrationStatusBadge** - Status indicators for Connected/Disconnected/Error/Coming Soon
+  - **API Key Management** - Full CRUD interface for generating, copying, and revoking API keys
+  - **Webhook Management** - Create, edit, delete, and test webhook endpoints with delivery history
+  - **Rebuilt Integrations Page** - Category filtering, connected integrations section, API access panel
+
+- **Database Schema Additions**
+  - `ApiKey` model - Secure API key storage with hashing and scopes
+  - `WebhookEndpoint` model - Webhook endpoint configuration with event subscriptions
+  - `WebhookDelivery` model - Webhook delivery history and status tracking
+  - `IntegrationLog` model - Integration activity logging
+  - `WebhookEventType` enum - 20+ event types for webhook subscriptions
+
+- **Design System Compliance**
+  - **Checkbox Component** - New accessible Checkbox using Radix UI with proper dark mode contrast
+  - Replaced 8+ custom toggle implementations with standardized Switch component
+  - Fixed checkbox visibility/contrast issues in dark mode across settings files
+  - Replaced native checkboxes with Checkbox component in email-logs page (select all & individual row selection)
+  - Replaced native checkbox with Checkbox component in territories-client.tsx (isActive toggle)
+  - Replaced native checkbox with Checkbox component in payouts-page-client.tsx (photographer selection)
+  - Replaced native checkbox with Checkbox component in subscription-plans.tsx (isControl toggle)
+  - Replaced custom toggle in service-form.tsx with Switch component for status toggle
+  - Replaced custom toggle in gallery-new-form.tsx with Switch component for settings toggles
+  - Replaced 4 custom toggles in order-page-form.tsx with Switch component (showPhone, showEmail, isPublished, requireLogin)
+  - Replaced custom `role="switch"` toggle in gallery-edit-form.tsx with proper Switch component
+  - Fixed radio button styling in gallery access control to use visible borders (`--border-visible`) for dark mode contrast
+  - Fixed radio button contrast in invoice-split-section.tsx with visible borders and proper dark mode styling
+  - Fixed radio button contrast in gallery-detail-client.tsx (3 radio buttons for download resolution options) with visible borders
+  - Fixed radio button contrast in booking-form-public.tsx with visible borders for dark mode visibility
+  - Replaced native checkbox inputs with Checkbox component in client-merge-client.tsx (2 checkboxes for email/phone notes options)
+  - Fixed checkbox and radio button contrast in questionnaire preview (preview-client.tsx) - replaced native checkboxes with Checkbox component, updated radio buttons with visible borders
+  - Fixed checkbox and radio button contrast in client portal questionnaire form (questionnaire-form.tsx) - replaced native checkboxes with Checkbox component, updated radio buttons with visible borders
+  - Replaced native checkbox inputs with Checkbox component in client-import-client.tsx (2 checkboxes for skip duplicates and update existing)
+  - Replaced native checkbox input with Checkbox component in client-new-form.tsx (1 checkbox for create gallery option)
+  - Replaced native checkbox inputs with Checkbox component in portfolio-builder config files for proper dark mode contrast:
+  - Replaced native checkbox input with Checkbox component in contract signing page (`sign/[token]/page.tsx`) for electronic signature agreement
+  - Replaced native checkbox inputs with Checkbox component in services-list-client.tsx and services-page-client.tsx (show inactive toggle)
+    - video-config.tsx (3 checkboxes: autoplay, loop, muted)
+    - contact-config.tsx (5 checkboxes: showForm, showEmail, showPhone, showSocial, showMap)
+    - services-config.tsx (1 checkbox: showPricing)
+    - gallery-config.tsx (1 checkbox: showProjectNames)
+  - Replaced native checkbox inputs with Checkbox component in miscellaneous page files for proper dark mode contrast:
+    - comments-tab.tsx (2 checkboxes: allowComments, requireEmail)
+    - settings-tab.tsx (5 checkboxes: showBranding, isPasswordProtected, allowDownloads, downloadWatermark, enableAnimations)
+    - property-edit-form.tsx (3 checkboxes: isBranded, showPrice, showAgent)
+    - template-form-client.tsx (1 checkbox: isDefault)
+    - brokerage-form.tsx (1 checkbox: isActive)
+  - Replaced native checkbox inputs with Checkbox component in scheduling forms for proper dark mode contrast:
+    - booking-new-form.tsx (4 checkboxes: sendConfirmation, reminder24h, reminder1h, addToCalendar)
+    - time-off-page-client.tsx (1 checkbox: allDay)
+    - availability-page-client.tsx (1 checkbox: recurring)
+    - booking-form-edit-client.tsx (1 checkbox: service selection toggle)
+    - booking-edit-form.tsx (1 checkbox: depositPaid)
+  - Replaced native checkbox inputs with Checkbox component in form and modal files for proper dark mode contrast:
+    - form-editor-client.tsx (2 checkboxes: multiselect and checkbox field previews)
+    - checkout-modal.tsx (1 checkbox: flexible dates toggle)
+    - assign-questionnaire-modal.tsx (2 checkboxes: required and send reminders toggles)
+    - scheduling-step.tsx (1 checkbox: require payment first toggle)
+
+- **PDF Export & Email Attachments**
+  - **Invoice PDF Email Attachments** - Invoices can now be sent with PDF attachments
+  - **Receipt PDF Email Attachments** - Payment receipts include PDF attachments
+  - New `invoice-sent.tsx` email template with PDF attachment indicator
+  - New `sendInvoiceEmail` function for sending invoices with PDF
+  - New `sendReceiptEmailWithPdf` function for payment receipts with PDF
+  - New `generateInvoicePdfBuffer` server action for creating PDF buffers
+
+- **Analytics Report PDF Export**
+  - **Export Report Button** - Download analytics as a professional PDF report
+  - New `analytics-report-pdf.tsx` template with revenue charts, metrics, and client data
+  - Multi-page report with revenue summary, monthly trends, invoice status, and top clients
+  - `generateAnalyticsReportPdf` server action for PDF generation
+  - Custom accent color support matching organization branding
+
+- **Client Portal PDF Downloads**
+  - Download invoice PDFs directly from the client portal
+  - New `getInvoicePdfDownload` server action with client session authentication
+  - PDF download button in portal invoice cards
+  - Includes QR code for payment link when applicable
+
+- **Bulk PDF Export for Invoices**
+  - Export multiple invoices as a ZIP file containing PDFs
+  - Filter by status (draft, sent, paid, overdue) or export all
+  - New API route `POST /api/invoices/bulk-pdf`
+  - Bulk export button in invoices page header
+  - Automatic filename generation based on filter and date
+  - Limits to 100 invoices per export to prevent timeout
+
+- **Dashboard Layout Customization**
+  - **Collapsible Sections** - Dashboard sections can now be collapsed/expanded with smooth animations
+  - **Section Visibility Toggle** - Show/hide dashboard sections based on user preference
+  - **Customize Panel** - Dropdown panel in header to toggle section visibility with eye icons
+  - **Persistent Preferences** - Dashboard configuration stored per-user in database
+  - **Reset to Defaults** - One-click reset to restore default dashboard layout
+  - Collapsible sections: Quick Actions, Upcoming Bookings, Recent Galleries, Recent Activity, Referral Widget
+  - New database field `dashboardConfig` for storing user dashboard preferences
+  - New server actions: `getDashboardConfig`, `updateDashboardConfig`, `toggleSectionVisibility`, `toggleSectionCollapsed`, `resetDashboardConfig`
+
+- **Global Keyboard Shortcuts**
+  - **Navigation shortcuts** - Press G followed by a letter to navigate (G+D Dashboard, G+G Galleries, G+C Clients, etc.)
+  - **Command palette** - Cmd/Ctrl+K opens the command palette for global search
+  - **Quick actions** - N for new gallery (from galleries), B for new booking (from scheduling)
+  - **Help shortcut** - Press ? to view all keyboard shortcuts
+  - Full support for 11 navigation destinations: Dashboard, Galleries, Clients, Payments, Scheduling, Invoices, Contracts, Properties, Services, Analytics, Settings
+  - Context-aware shortcuts that only trigger when not typing in input fields
+  - Two-key sequences with 1-second timeout for comfortable input
+
+- **Settings Area Comprehensive Overhaul**
+  - **Settings Sidebar Navigation** - Collapsible sidebar with grouped categories for all settings sub-pages
+  - **Mobile Settings Navigation** - Slide-over drawer for settings navigation on mobile devices
+  - **Settings Layout Wrapper** - Consistent layout for all settings pages with sidebar on desktop
+  - **Main Settings Page** - Reorganized with category headers (Personal, Business, Team, Communications, Integrations, Workflow, Developer)
+  - **Shared Icon Library** - 35+ consolidated icons in `/src/components/ui/settings-icons.tsx`
+  - **Settings Navigation Constants** - Centralized navigation structure with helper functions
+
+- **Integrations Hub Rebuild**
+  - **Integration Registry** - Centralized registry defining all 9 integrations with metadata, auth types, and features
+  - **API Key Management** - Generate, copy, revoke, and delete API keys with secure hashing
+  - **Webhook Management** - Create, test, and manage webhook endpoints with event subscriptions
+  - **Webhook Delivery History** - Track delivery attempts with success/failure status
+  - **Integration Cards** - Reusable card components showing integration status and actions
+  - **Integration Status Badges** - Connected/Disconnected/Error/Coming Soon badges
+  - **Category Filtering** - Filter integrations by category (Scheduling, Storage, Payments, etc.)
+
+- **New Database Models for Integrations**
+  - `ApiKey` - API key management with secure hashing, scopes, and expiration
+  - `WebhookEndpoint` - Webhook endpoint configuration with event subscriptions
+  - `WebhookDelivery` - Webhook delivery attempt tracking with response data
+  - `IntegrationLog` - Integration activity logging for debugging and monitoring
+  - `WebhookEventType` enum - Standardized event types for webhooks
+
+- **New Server Actions**
+  - `api-keys.ts` - Generate, validate, revoke, delete, and update API keys
+  - `webhooks.ts` - Create, update, delete, test webhooks and view delivery history
+  - `integration-logs.ts` - Log and query integration activity
+
 - **Gallery Slideshow Mode**
   - Fullscreen slideshow presentation for client galleries
   - Auto-advance with configurable timing (2s, 3s, 4s, 5s, 8s intervals)
@@ -42,6 +188,92 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supports standard sizes: 4×6", 5×7", 8×10", 11×14", 16×20", 20×24"
   - Hover tooltip shows exact DPI for each size
   - Helps clients understand which photos work best for prints
+
+- **Photo Comparison Mode**
+  - Side-by-side comparison of any two photos in the gallery
+  - Click Compare button to enter selection mode
+  - Select exactly 2 photos with numbered badges (1, 2) overlay
+  - Cancel selection with × button on floating panel
+  - Compare selected opens split-screen modal
+  - Zoom and pan synchronized across both photos
+  - Keyboard shortcut: C to toggle comparison mode
+  - Helps clients compare similar shots for final selections
+
+- **Client Selection List (Proofing)**
+  - Selection mode for proofing workflow
+  - Checkbox overlay on each photo in grid view
+  - Floating selection panel shows count of selected photos
+  - Clear all button to deselect all at once
+  - Send Selections button to share with photographer
+  - Selection panel adapts to theme colors
+  - Keyboard shortcut: S to toggle selection mode
+  - Integrates with favorites for streamlined proofing
+
+- **Keyboard Shortcuts Help Overlay**
+  - Press ? key to view all keyboard shortcuts
+  - Modal overlay with organized shortcut categories
+  - Navigation shortcuts (arrow keys, Home/End)
+  - Action shortcuts (F favorite, D download, Z zoom)
+  - Mode shortcuts (C compare, S selection, / slideshow)
+  - Escape to close overlay
+  - Accessible from gallery header help button
+
+- **Gallery Expiration Countdown**
+  - Live countdown display when gallery has expiration date
+  - Shows days, hours, minutes remaining
+  - "Expires soon" warning badge when less than 3 days remain
+  - Full-width warning banner at top for expiring galleries
+  - Encourages clients to download before expiration
+  - Auto-updates every minute
+  - Respects theme colors for styling
+
+- **EXIF Data Display**
+  - Camera icon in photo modal to toggle EXIF panel
+  - Collapsible panel with chevron animation
+  - Displays: Camera model, Lens, Focal length
+  - Shows: ISO, Aperture (f-stop), Shutter speed
+  - Includes: Date taken, File dimensions
+  - Gracefully handles missing EXIF data
+  - Professional presentation matching gallery theme
+
+- **Feedback Inbox Dashboard**
+  - New `/feedback` page for photographers to manage client feedback
+  - Filter tabs: All, Unread, Resolved with counts
+  - Type filters: Feedback, Feature, Issue (color-coded badges)
+  - Expandable feedback cards with full message content
+  - Quick actions: Mark read, Mark resolved, Reply (opens email), Delete
+  - Mark all as read button for bulk operations
+  - Client name/email display with timestamps
+  - Links to original gallery for context
+
+- **Gallery Analytics Dashboard**
+  - Analytics section on gallery detail page
+  - Total views and unique visitors counts
+  - Total downloads with per-photo breakdown
+  - Views by day chart (last 7 days)
+  - Most downloaded photos list with counts
+  - Integration with download tracking system
+  - Real-time analytics updates
+
+- **Download Progress Modal**
+  - Progress modal for batch ZIP downloads
+  - States: Preparing, Downloading, Complete, Error
+  - Percentage progress bar with smooth animation
+  - File count display (e.g., "Packaging 45 photos...")
+  - Success state with checkmark icon
+  - Error state with retry messaging
+  - Auto-close on cancel or error
+
+- **Gallery Password Protection**
+  - Password gate for protected galleries
+  - Clean password entry form with validation
+  - Loading state during verification
+  - Error messages for incorrect passwords
+  - Cookie-based authentication (24-hour session)
+  - Respects gallery theme (light/dark)
+  - Photographer branding in gate UI
+  - API endpoint for password verification
+  - Preview mode bypasses password for photographers
 
 - **Photo Zoom in Gallery Modal**
   - Double-click to zoom in/out (up to 4x magnification)

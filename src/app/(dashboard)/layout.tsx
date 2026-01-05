@@ -4,6 +4,7 @@ import { DashboardLayoutClient } from "@/components/layout/dashboard-layout-clie
 import { ToastProvider } from "@/components/ui/toast";
 import { TourProvider } from "@/components/tour";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
+import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts-provider";
 import { ReferralProcessor } from "@/components/dashboard/referral-processor";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
@@ -156,6 +157,7 @@ export default async function DashboardLayout({
     <ToastProvider>
       <TourProvider organizationId={organization.id}>
         <CommandPaletteProvider>
+          <KeyboardShortcutsProvider>
           <ReferralProcessor />
           {/* Apply user's appearance preferences */}
           <style
@@ -222,6 +224,7 @@ export default async function DashboardLayout({
           >
             {children}
           </DashboardLayoutClient>
+          </KeyboardShortcutsProvider>
         </CommandPaletteProvider>
       </TourProvider>
     </ToastProvider>
