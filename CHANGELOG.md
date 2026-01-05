@@ -70,9 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Server actions now use session-based authentication internally
 
 ### Changed
-- **Order Pages Design System Compliance** - Replaced hardcoded hex colors with CSS variables
+- **Order Flow Design System Compliance** - Replaced hardcoded hex colors with CSS variables
   - `order-page-client.tsx`: All colors now use design system tokens (background, card, borders, text)
   - `order-confirmation-client.tsx`: Migrated to CSS variables for consistent dark theme
+  - `checkout-modal.tsx`: Updated form inputs and buttons to use CSS variables
   - Improves maintainability and ensures theme consistency across the application
   - Added `aria-hidden="true"` to all icons for accessibility
 

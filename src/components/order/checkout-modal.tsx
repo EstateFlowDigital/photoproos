@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createOrder, createOrderCheckoutSession } from "@/lib/actions/orders";
+import { CloseIcon } from "@/components/ui/icons";
 
 interface CartItem {
   type: "bundle" | "service";
@@ -139,14 +140,15 @@ export function CheckoutModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-[#262626] bg-[#141414] shadow-2xl">
+      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#262626] bg-[#141414] px-6 py-4">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
           <h2 className="text-xl font-semibold text-white">Complete Your Order</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-[#7c7c7c] transition-colors hover:bg-[#262626] hover:text-white"
+            aria-label="Close checkout"
+            className="rounded-lg p-2 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
           >
             <CloseIcon className="h-5 w-5" />
           </button>
@@ -163,7 +165,7 @@ export function CheckoutModal({
           <div className="space-y-5">
             {/* Contact Information */}
             <div>
-              <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-[#7c7c7c]">
+              <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-[var(--foreground-muted)]">
                 Contact Information
               </h3>
               <div className="space-y-4">
@@ -181,7 +183,7 @@ export function CheckoutModal({
                     required
                     value={formData.clientName}
                     onChange={handleInputChange}
-                    className="w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-2.5 text-white placeholder:text-[#7c7c7c] focus:border-[#454545] focus:outline-none focus:ring-1 focus:ring-[#454545]"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)]"
                     placeholder="John Doe"
                   />
                 </div>
@@ -200,7 +202,7 @@ export function CheckoutModal({
                     required
                     value={formData.clientEmail}
                     onChange={handleInputChange}
-                    className="w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-2.5 text-white placeholder:text-[#7c7c7c] focus:border-[#454545] focus:outline-none focus:ring-1 focus:ring-[#454545]"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)]"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -219,7 +221,7 @@ export function CheckoutModal({
                       name="clientPhone"
                       value={formData.clientPhone}
                       onChange={handleInputChange}
-                      className="w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-2.5 text-white placeholder:text-[#7c7c7c] focus:border-[#454545] focus:outline-none focus:ring-1 focus:ring-[#454545]"
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)]"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -237,7 +239,7 @@ export function CheckoutModal({
                       name="clientCompany"
                       value={formData.clientCompany}
                       onChange={handleInputChange}
-                      className="w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-2.5 text-white placeholder:text-[#7c7c7c] focus:border-[#454545] focus:outline-none focus:ring-1 focus:ring-[#454545]"
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)]"
                       placeholder="ABC Realty"
                     />
                   </div>
@@ -247,7 +249,7 @@ export function CheckoutModal({
 
             {/* Scheduling Preferences */}
             <div>
-              <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-[#7c7c7c]">
+              <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-[var(--foreground-muted)]">
                 Scheduling Preferences
               </h3>
               <div className="space-y-4">
@@ -263,7 +265,7 @@ export function CheckoutModal({
                     name="preferredTime"
                     value={formData.preferredTime}
                     onChange={handleInputChange}
-                    className="w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-2.5 text-white focus:border-[#454545] focus:outline-none focus:ring-1 focus:ring-[#454545]"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-white focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)]"
                   >
                     <option value="">No preference</option>
                     <option value="morning">Morning (8am - 12pm)</option>
@@ -282,7 +284,7 @@ export function CheckoutModal({
                       }))
                     }
                   />
-                  <span className="text-sm text-[#a7a7a7]">
+                  <span className="text-sm text-[var(--foreground-secondary)]">
                     I&apos;m flexible on scheduling dates
                   </span>
                 </label>
@@ -303,21 +305,21 @@ export function CheckoutModal({
                 rows={3}
                 value={formData.clientNotes}
                 onChange={handleInputChange}
-                className="w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-4 py-2.5 text-white placeholder:text-[#7c7c7c] focus:border-[#454545] focus:outline-none focus:ring-1 focus:ring-[#454545] resize-none"
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-white placeholder:text-[var(--foreground-muted)] focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)] resize-none"
                 placeholder="Any special requests or details about the property..."
               />
             </div>
           </div>
 
           {/* Order Summary */}
-          <div className="mt-6 rounded-lg border border-[#262626] bg-[#0a0a0a] p-4">
+          <div className="mt-6 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-[#7c7c7c]">Subtotal</span>
+              <span className="text-[var(--foreground-muted)]">Subtotal</span>
               <span className="font-medium text-white">
                 {formatPrice(subtotalCents)}
               </span>
             </div>
-            <p className="mt-2 text-xs text-[#7c7c7c]">
+            <p className="mt-2 text-xs text-[var(--foreground-muted)]">
               Tax will be calculated at checkout
             </p>
           </div>
@@ -339,7 +341,7 @@ export function CheckoutModal({
             )}
           </button>
 
-          <p className="mt-3 text-center text-xs text-[#7c7c7c]">
+          <p className="mt-3 text-center text-xs text-[var(--foreground-muted)]">
             You&apos;ll be redirected to secure checkout powered by Stripe
           </p>
         </form>
@@ -355,25 +357,6 @@ function formatPrice(cents: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(cents / 100);
-}
-
-function CloseIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className={className}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M6 18L18 6M6 6l12 12"
-      />
-    </svg>
-  );
 }
 
 function LoadingSpinner({ className }: { className?: string }) {

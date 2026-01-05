@@ -6,7 +6,7 @@ import Link from "next/link";
 import { verifyOrderPayment, getOrderBySessionToken } from "@/lib/actions/orders";
 import {
   CheckCircleOutlineIcon,
-  ErrorIcon,
+  ErrorIcon as OrderErrorIcon,
   PhoneOutlineIcon,
   EmailOutlineIcon,
 } from "@/components/ui/icons";
@@ -125,7 +125,7 @@ export function OrderConfirmationClient({
         <Header orderPage={orderPage} />
         <main className="mx-auto max-w-2xl px-6 py-16 text-center">
           <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/10 p-8">
-            <ErrorIcon className="mx-auto h-16 w-16 text-[var(--error)]" />
+            <OrderErrorIcon className="mx-auto h-16 w-16 text-[var(--error)]" />
             <h1 className="mt-6 text-2xl font-bold text-white">
               Something went wrong
             </h1>
@@ -363,4 +363,3 @@ function formatPrice(cents: number): string {
     maximumFractionDigits: 0,
   }).format(cents / 100);
 }
-
