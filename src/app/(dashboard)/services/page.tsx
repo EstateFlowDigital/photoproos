@@ -23,27 +23,30 @@ export default async function ServicesPage() {
         title="Services"
         subtitle={`${services.length} service${services.length !== 1 ? "s" : ""} • ${activeCount} active`}
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/services/bundles"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 sm:px-4 sm:py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              title="Bundles"
             >
               <BundleIcon className="h-4 w-4" />
-              Bundles
+              <span className="hidden sm:inline">Bundles</span>
             </Link>
             <Link
               href="/services/addons"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 sm:px-4 sm:py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              title="Add-ons"
             >
               <AddonIcon className="h-4 w-4" />
-              Add-ons
+              <span className="hidden sm:inline">Add-ons</span>
             </Link>
             <Link
               href="/services/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 sm:px-4 sm:py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              title="Create Service"
             >
               <PlusIcon className="h-4 w-4" />
-              Create Service
+              <span className="hidden sm:inline">Create Service</span>
             </Link>
           </div>
         }

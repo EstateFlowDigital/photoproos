@@ -57,8 +57,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Tabs navigation now scrolls horizontally with hidden scrollbar on mobile
   - Photo toolbar (Reorder, Select, View All, Comments) now scrolls horizontally on mobile
   - Stats cards now display in 2-column grid on mobile instead of overflowing
-  - Photo grid now displays 2 columns on mobile, 3 columns on md+ screens
+  - Photo grid now displays 1 column on xs, 2 on sm, 3 on md+ screens
   - Added `scrollbar-hide` utility class for hidden scrollable areas
+
+- **Dashboard-Wide Mobile Responsiveness** - Fixed responsive issues across multiple pages
+  - Dialog component: responsive width (`w-[calc(100%-2rem)]` on mobile) and padding (`px-4` → `px-6`)
+  - Gallery list: fixed service filter dropdown max-width, reduced table min-width to 650px
+  - Gallery list: fixed invalid `xs:` breakpoint to use `sm:` for bulk action buttons
+  - Leads table: reduced min-width from 700px to 600px for better mobile scrolling
+  - Analytics view: reduced gap and hid progress bars on smaller screens (`md:` instead of `sm:`)
+  - Services page: action buttons now icon-only on mobile with titles
 
 - **Duplicate Upload Entries** - Fixed files showing twice in upload queue
   - Removed duplicate state addition when adding files to queue

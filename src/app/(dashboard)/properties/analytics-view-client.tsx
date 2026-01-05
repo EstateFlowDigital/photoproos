@@ -315,12 +315,12 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
                     {property.city}, {property.state}
                   </p>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3 sm:gap-6">
                   <div className="text-right">
                     <p className="text-sm font-medium text-foreground">{property.viewCount.toLocaleString()}</p>
                     <p className="text-xs text-foreground-muted">views</p>
                   </div>
-                  <div className="w-24 hidden sm:block">
+                  <div className="w-24 hidden md:block">
                     <div className="h-2 rounded-full bg-[var(--background-secondary)] overflow-hidden">
                       <div
                         className="h-full bg-[var(--primary)] rounded-full"
@@ -332,7 +332,7 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
                     <p className="text-sm font-medium text-[var(--primary)]">{property.leadCount}</p>
                     <p className="text-xs text-foreground-muted">leads</p>
                   </div>
-                  <div className="w-16 hidden sm:block">
+                  <div className="w-16 hidden md:block">
                     <div className="h-2 rounded-full bg-[var(--background-secondary)] overflow-hidden">
                       <div
                         className="h-full bg-[var(--success)] rounded-full"

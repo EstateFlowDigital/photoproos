@@ -440,7 +440,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                 <ChevronDownIcon className="h-4 w-4" />
               </button>
               {showServiceFilter && (
-                <div className="absolute right-0 top-12 z-20 w-64 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 shadow-xl">
+                <div className="absolute right-0 top-12 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 shadow-xl">
                   <div className="flex flex-wrap items-center justify-between gap-2 px-3 pb-2 border-b border-[var(--card-border)]">
                     <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">
                       Filter by Service
@@ -548,28 +548,28 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ShareIcon className="h-4 w-4" />
-              <span className="hidden xs:inline">Share</span>
+              <span className="hidden sm:inline">Share</span>
             </button>
             <button
               onClick={handleBulkExport}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ExportIcon className="h-4 w-4" />
-              <span className="hidden xs:inline">Export</span>
+              <span className="hidden sm:inline">Export</span>
             </button>
             <button
               onClick={handleBulkArchive}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ArchiveIcon className="h-4 w-4" />
-              <span className="hidden xs:inline">Archive</span>
+              <span className="hidden sm:inline">Archive</span>
             </button>
             <button
               onClick={handleBulkDelete}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
             >
               <TrashIcon className="h-4 w-4" />
-              <span className="hidden xs:inline">Delete</span>
+              <span className="hidden sm:inline">Delete</span>
             </button>
           </div>
         </div>
@@ -647,7 +647,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
           </div>
         ) : (
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
-            <table className="w-full min-w-[800px]">
+            <table className="w-full min-w-[650px]">
               <thead>
                 <tr className="border-b border-[var(--card-border)]">
                   {isSelectMode && (

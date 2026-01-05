@@ -38,12 +38,12 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] border border-[var(--card-border)] bg-[var(--card)] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-xl",
+        "fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] sm:w-full translate-x-[-50%] translate-y-[-50%] border border-[var(--card-border)] bg-[var(--card)] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-xl",
         {
-          "max-w-sm": size === "sm",
-          "max-w-lg": size === "md",
-          "max-w-2xl": size === "lg",
-          "max-w-4xl": size === "xl",
+          "sm:max-w-sm": size === "sm",
+          "sm:max-w-lg": size === "md",
+          "sm:max-w-2xl": size === "lg",
+          "sm:max-w-4xl": size === "xl",
           "max-w-[90vw] max-h-[90vh]": size === "full",
         },
         className
@@ -62,7 +62,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col gap-1.5 px-6 py-4 border-b border-[var(--card-border)]",
+      "flex flex-col gap-1.5 px-4 sm:px-6 py-4 border-b border-[var(--card-border)]",
       className
     )}
     {...props}
@@ -76,7 +76,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-6 py-4 border-t border-[var(--card-border)] bg-[var(--background)]",
+      "flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-4 sm:px-6 py-4 border-t border-[var(--card-border)] bg-[var(--background)]",
       className
     )}
     {...props}
@@ -116,7 +116,7 @@ const DialogBody = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("px-6 py-4 overflow-y-auto max-h-[60vh]", className)}
+    className={cn("px-4 sm:px-6 py-4 overflow-y-auto max-h-[60vh]", className)}
     {...props}
   />
 );
