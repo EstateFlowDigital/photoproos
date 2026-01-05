@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Used refs for callback functions to prevent queue recreation
   - Upload modal no longer aborts files when component re-renders
 
+- **Image Caching** - Added Cache-Control headers to R2 uploads for proper browser caching
+  - Images now include `public, max-age=31536000, immutable` cache headers
+  - Prevents images from re-loading when scrolling in galleries
+  - Applied to both presigned uploads and server-side uploads
+
 - **Time-Off Integration** - Team availability now includes time-off data from AvailabilityBlock model
   - `getTeamAvailability()` - Returns time-off slots for each team member
   - `getDailyTeamSummary()` - Factors approved time-off into availability calculations
