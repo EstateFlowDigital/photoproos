@@ -177,7 +177,13 @@ export function MobileNav({
         {/* Navigation */}
         <nav
           className="flex-1 space-y-1 p-4 overflow-y-auto"
-          style={{ maxHeight: "calc(var(--mobile-vh, 1vh) * 100 - 8rem)" }}
+          style={{
+            maxHeight: "calc(var(--mobile-vh, 1vh) * 100 - 8rem)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
+            maskImage:
+              "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
+          }}
         >
           {/* New Project */}
           <Link

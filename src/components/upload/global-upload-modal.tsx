@@ -1,223 +1,87 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { X, Upload, Pause, Play, RotateCcw, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { useRef, useCallback } from "react";
+import { X, Upload, Pause, Play, RotateCcw, CheckCircle2, AlertCircle, Loader2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { UploadQueue, type UploadTask, type UploadStatus } from "@/lib/storage/upload-queue";
-import { getUploadPresignedUrls, createAssets } from "@/lib/actions/uploads";
-import { useToast } from "@/components/ui/toast";
+import { useUpload } from "@/contexts/upload-context";
+import type { UploadTask, UploadStatus } from "@/lib/storage/upload-queue";
 
-interface BulkUploadModalProps {
-  galleryId: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onUploadComplete?: (uploadedFiles: Array<{ id: string; url: string; filename: string }>) => void;
-}
+export function GlobalUploadModal() {
+  const {
+    activeUpload,
+    isModalOpen,
+    isMinimized,
+    addFiles,
+    pauseUpload,
+    resumeUpload,
+    cancelTask,
+    retryTask,
+    clearCompleted,
+    openModal,
+    closeModal,
+    minimizeModal,
+  } = useUpload();
 
-export function BulkUploadModal({
-  galleryId,
-  isOpen,
-  onClose,
-  onUploadComplete,
-}: BulkUploadModalProps) {
-  const { showToast } = useToast();
-  const [queue, setQueue] = useState<UploadQueue | null>(null);
-  const [tasks, setTasks] = useState<UploadTask[]>([]);
-  const [overallProgress, setOverallProgress] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [stats, setStats] = useState({
-    total: 0,
-    completed: 0,
-    failed: 0,
-    uploading: 0,
-    pending: 0,
-  });
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const completedAssetsRef = useRef<Array<{ id: string; url: string; filename: string }>>([]);
 
-  // Use refs for callbacks to prevent effect re-runs
-  const onUploadCompleteRef = useRef(onUploadComplete);
-  const showToastRef = useRef(showToast);
-
-  // Keep refs up to date
-  useEffect(() => {
-    onUploadCompleteRef.current = onUploadComplete;
-    showToastRef.current = showToast;
-  }, [onUploadComplete, showToast]);
-
-  // Initialize queue - only recreate when isOpen or galleryId changes
-  useEffect(() => {
-    if (!isOpen) return;
-
-    // Reset completed assets on open
-    completedAssetsRef.current = [];
-
-    const uploadQueue = new UploadQueue({
-      onProgress: (task) => {
-        setTasks((prev) => {
-          const index = prev.findIndex((t) => t.id === task.id);
-          if (index >= 0) {
-            const updated = [...prev];
-            updated[index] = task;
-            return updated;
-          }
-          return [...prev, task];
-        });
-
-        const state = uploadQueue.getState();
-        setOverallProgress(state.overallProgress);
-        setStats({
-          total: state.total,
-          completed: state.completed,
-          failed: state.failed,
-          uploading: state.uploading,
-          pending: state.pending,
-        });
-      },
-      onComplete: async (task) => {
-        // Create asset record in database
-        try {
-          const result = await createAssets(galleryId, [{
-            key: task.key,
-            filename: task.file.name,
-            mimeType: task.file.type,
-            sizeBytes: task.file.size,
-          }]);
-
-          // Track completed asset for callback
-          if (result.success && result.data?.assets?.[0]) {
-            completedAssetsRef.current.push({
-              id: result.data.assets[0].id,
-              url: result.data.assets[0].originalUrl,
-              filename: result.data.assets[0].filename,
-            });
-          }
-        } catch (error) {
-          console.error("Failed to create asset record:", error);
-        }
-      },
-      onError: (task, error) => {
-        console.error(`Upload failed for ${task.file.name}:`, error);
-      },
-      onAllComplete: () => {
-        const completedCount = completedAssetsRef.current.length;
-        showToastRef.current?.(`Successfully uploaded ${completedCount} ${completedCount === 1 ? 'photo' : 'photos'}`, "success");
-        onUploadCompleteRef.current?.(completedAssetsRef.current);
-      },
-    });
-
-    setQueue(uploadQueue);
-
-    // Check for incomplete uploads from previous session
-    const savedState = UploadQueue.loadFromLocalStorage();
-    if (savedState && savedState.queue.length > 0) {
-      const incompleteTasks = savedState.queue.filter(
-        (t) => t.status !== "completed"
-      );
-      if (incompleteTasks.length > 0) {
-        showToastRef.current?.(
-          `Found ${incompleteTasks.length} incomplete ${incompleteTasks.length === 1 ? 'upload' : 'uploads'}. Click Resume to continue.`,
-          "info"
-        );
-      }
-    }
-
-    return () => {
-      uploadQueue.pause();
-    };
-  }, [isOpen, galleryId]);
-
-  // Handle file selection
-  const handleFileSelect = async (files: FileList) => {
-    if (!queue) return;
-
+  const handleFileSelect = useCallback(async (files: FileList) => {
     const fileArray = Array.from(files);
+    await addFiles(fileArray);
+  }, [addFiles]);
 
-    // Get presigned URLs for all files
-    try {
-      const result = await getUploadPresignedUrls(
-        galleryId,
-        fileArray.map((f) => ({
-          filename: f.name,
-          contentType: f.type,
-          size: f.size,
-        }))
-      );
-
-      if (!result.success || !result.data) {
-        showToast(result.error || "Failed to prepare uploads", "error");
-        return;
-      }
-
-      // Add files to queue
-      const filesToUpload = result.data.files.map((urlData, index) => ({
-        file: fileArray[index],
-        uploadUrl: urlData.uploadUrl,
-        publicUrl: urlData.publicUrl,
-        key: urlData.key,
-      }));
-
-      // addFiles triggers onProgress which handles adding to state
-      queue.addFiles(filesToUpload);
-      showToast(`Added ${fileArray.length} ${fileArray.length === 1 ? 'file' : 'files'} to upload queue`, "success");
-    } catch (error) {
-      console.error("Failed to prepare uploads:", error);
-      showToast("Failed to prepare uploads", "error");
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileSelect(files);
     }
-  };
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        handleFileSelect(files);
-      }
-    },
-    [handleFileSelect]
-  );
-
-  const handlePauseResume = () => {
-    if (!queue) return;
-
-    if (isPaused) {
-      queue.resume();
-      setIsPaused(false);
-      showToast("Uploads resumed", "info");
-    } else {
-      queue.pause();
-      setIsPaused(true);
-      showToast("Uploads paused", "info");
-    }
-  };
-
-  const handleRetry = (taskId: string) => {
-    if (!queue) return;
-    queue.retry(taskId);
-  };
-
-  const handleCancel = (taskId: string) => {
-    if (!queue) return;
-    queue.cancel(taskId);
-    setTasks((prev) => prev.filter((t) => t.id !== taskId));
-  };
-
-  const handleClearCompleted = () => {
-    setTasks((prev) => prev.filter((t) => t.status !== "completed"));
-  };
+  }, [handleFileSelect]);
 
   const handleClose = () => {
-    if (stats.uploading > 0 || stats.pending > 0) {
-      if (!confirm("Uploads are still in progress. Are you sure you want to close?")) {
-        return;
-      }
-      queue?.pause();
+    if (activeUpload && (activeUpload.stats.uploading > 0 || activeUpload.stats.pending > 0)) {
+      // Minimize when uploads are active
+      minimizeModal();
+    } else {
+      closeModal();
     }
-    onClose();
   };
 
-  if (!isOpen) return null;
+  // Don't render if no active upload or modal is closed
+  if (!activeUpload || !isModalOpen) return null;
+
+  const { tasks, stats, overallProgress, isPaused, galleryName } = activeUpload;
+
+  // Minimized indicator
+  if (isMinimized) {
+    return (
+      <button
+        onClick={openModal}
+        className="fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 bg-[var(--card)] border border-[var(--card-border)] rounded-xl shadow-lg hover:bg-[var(--background-hover)] transition-colors"
+      >
+        <div className="relative">
+          <Upload className="h-5 w-5 text-[var(--primary)]" />
+          {stats.uploading > 0 && (
+            <span className="absolute -top-1 -right-1 h-2 w-2 bg-[var(--primary)] rounded-full animate-pulse" />
+          )}
+        </div>
+        <div className="text-left">
+          <p className="text-sm font-medium text-foreground">
+            {stats.completed}/{stats.total} uploaded
+          </p>
+          <p className="text-xs text-foreground-muted">
+            {stats.uploading > 0 ? `${overallProgress}% complete` : isPaused ? "Paused" : "Complete"}
+          </p>
+        </div>
+        <div className="w-12 h-1.5 bg-[var(--background)] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[var(--primary)] transition-all duration-300"
+            style={{ width: `${overallProgress}%` }}
+          />
+        </div>
+      </button>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -231,6 +95,8 @@ export function BulkUploadModal({
                 Upload Photos
               </h2>
               <p className="text-sm text-foreground-muted">
+                {galleryName && <span className="text-foreground">{galleryName}</span>}
+                {galleryName && " • "}
                 {stats.total > 0 ? (
                   <>
                     {stats.completed} / {stats.total} completed
@@ -242,12 +108,23 @@ export function BulkUploadModal({
               </p>
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {(stats.uploading > 0 || stats.pending > 0) && (
+              <button
+                onClick={minimizeModal}
+                className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
+                title="Minimize"
+              >
+                <Minimize2 className="h-5 w-5" />
+              </button>
+            )}
+            <button
+              onClick={handleClose}
+              className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Progress Bar */}
@@ -298,8 +175,8 @@ export function BulkUploadModal({
                 <UploadTaskCard
                   key={task.id}
                   task={task}
-                  onRetry={handleRetry}
-                  onCancel={handleCancel}
+                  onRetry={retryTask}
+                  onCancel={cancelTask}
                 />
               ))}
             </div>
@@ -313,10 +190,23 @@ export function BulkUploadModal({
             onChange={(e) => {
               if (e.target.files) {
                 handleFileSelect(e.target.files);
+                e.target.value = ""; // Reset to allow re-selecting same files
               }
             }}
           />
         </div>
+
+        {/* Add More Files Button (when files exist) */}
+        {tasks.length > 0 && (
+          <div className="px-6 py-3 border-t border-[var(--card-border)]">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-2 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
+            >
+              + Add more files
+            </button>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--card-border)] bg-[var(--background)]">
@@ -325,7 +215,7 @@ export function BulkUploadModal({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={handleClearCompleted}
+                onClick={clearCompleted}
               >
                 Clear Completed
               </Button>
@@ -336,7 +226,7 @@ export function BulkUploadModal({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={handlePauseResume}
+                onClick={isPaused ? resumeUpload : pauseUpload}
                 disabled={stats.uploading === 0 && stats.pending === 0}
               >
                 {isPaused ? (

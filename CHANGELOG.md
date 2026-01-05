@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Background Uploads** - Global upload context for persistent uploads across navigation
+  - Uploads continue even when navigating away from gallery page
+  - Minimizable upload indicator shows progress in bottom-right corner
+  - Click to expand full upload modal from minimized state
+  - Works with the existing bulk upload system
+
 - **Dropbox Sync** - Automatic file sync from Dropbox to galleries via webhooks
   - `syncDropboxChangesForAccount()` - Main sync function triggered by webhooks
   - Cursor-based delta sync for efficient incremental updates
@@ -27,6 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Server actions now use session-based authentication internally
 
 ### Fixed
+- **Duplicate Upload Entries** - Fixed files showing twice in upload queue
+  - Removed duplicate state addition when adding files to queue
+  - Tasks now only added once via the onProgress callback
+
+- **R2 File Cleanup** - Deleting photos now properly removes files from Cloudflare R2
+  - `deletePhoto()` extracts R2 keys and deletes files (original, thumbnail, medium, watermarked)
+  - `deleteGallery()` cleans up all asset files from R2 before database deletion
+  - Fire-and-forget pattern ensures database operations aren't blocked by storage
+
 - **Upload Abort Bug** - Fixed uploads being immediately aborted due to React useEffect re-running
   - Used refs for callback functions to prevent queue recreation
   - Upload modal no longer aborts files when component re-renders

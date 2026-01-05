@@ -18,7 +18,7 @@ import {
 import type { ProjectStatus } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendGalleryDeliveredEmail } from "@/lib/email/send";
-import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
+import { extractKeyFromUrl, generatePresignedDownloadUrl, deleteFiles } from "@/lib/storage";
 
 // Result type for server actions
 type ActionResult<T = void> =
@@ -264,7 +264,41 @@ export async function deleteGallery(
       return { success: true, data: undefined };
     }
 
-    // Delete assets first (in production, also delete from S3)
+    // Get all assets to delete from R2
+    const assets = await prisma.asset.findMany({
+      where: { projectId: id },
+      select: {
+        originalUrl: true,
+        thumbnailUrl: true,
+        mediumUrl: true,
+        watermarkedUrl: true,
+      },
+    });
+
+    // Collect all R2 keys to delete
+    const keysToDelete: string[] = [];
+    for (const asset of assets) {
+      const urls = [
+        asset.originalUrl,
+        asset.thumbnailUrl,
+        asset.mediumUrl,
+        asset.watermarkedUrl,
+      ].filter(Boolean) as string[];
+
+      for (const url of urls) {
+        const key = extractKeyFromUrl(url);
+        if (key) keysToDelete.push(key);
+      }
+    }
+
+    // Delete files from R2 (fire and forget)
+    if (keysToDelete.length > 0) {
+      deleteFiles(keysToDelete).catch((error) => {
+        console.error("Failed to delete gallery files from R2:", error);
+      });
+    }
+
+    // Delete assets from database
     await prisma.asset.deleteMany({
       where: { projectId: id },
     });
@@ -930,7 +964,26 @@ export async function deletePhoto(
       return { success: false, error: "Photo not found" };
     }
 
-    // Delete the asset from database (R2 cleanup can be done async or via cron)
+    // Extract R2 keys from URLs and delete files
+    const urlsToDelete = [
+      asset.originalUrl,
+      asset.thumbnailUrl,
+      asset.mediumUrl,
+      asset.watermarkedUrl,
+    ].filter(Boolean) as string[];
+
+    const keysToDelete = urlsToDelete
+      .map((url) => extractKeyFromUrl(url))
+      .filter((key): key is string => Boolean(key));
+
+    // Delete from R2 (fire and forget - don't block on storage deletion)
+    if (keysToDelete.length > 0) {
+      deleteFiles(keysToDelete).catch((error) => {
+        console.error("Failed to delete files from R2:", error);
+      });
+    }
+
+    // Delete the asset from database
     await prisma.asset.delete({
       where: { id: assetId },
     });

@@ -7,6 +7,8 @@ import { TourProvider } from "@/components/tour";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts-provider";
 import { ReferralProcessor } from "@/components/dashboard/referral-processor";
+import { UploadProvider } from "@/contexts/upload-context";
+import { GlobalUploadModal } from "@/components/upload/global-upload-modal";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
@@ -157,10 +159,12 @@ export default async function DashboardLayout({
   return (
     <ToastProvider>
       <ConfirmProvider>
+        <UploadProvider>
         <TourProvider organizationId={organization.id}>
           <CommandPaletteProvider>
             <KeyboardShortcutsProvider>
             <ReferralProcessor />
+            <GlobalUploadModal />
           {/* Apply user's appearance preferences */}
           <style
             dangerouslySetInnerHTML={{
@@ -229,6 +233,7 @@ export default async function DashboardLayout({
           </KeyboardShortcutsProvider>
           </CommandPaletteProvider>
         </TourProvider>
+        </UploadProvider>
       </ConfirmProvider>
     </ToastProvider>
   );

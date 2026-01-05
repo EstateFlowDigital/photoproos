@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { useToast } from "@/components/ui/toast";
-import { BulkUploadModal } from "@/components/upload/bulk-upload-modal";
+import { useUpload } from "@/contexts/upload-context";
 import {
   reorderPhotos,
   deleteGallery,
@@ -149,6 +149,7 @@ type TabType = "photos" | "activity" | "analytics" | "settings" | "invoices";
 export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const { showToast } = useToast();
   const router = useRouter();
+  const { startUpload, activeUpload } = useUpload();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
@@ -156,7 +157,6 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [notes, setNotes] = useState(gallery.notes || "");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [settings, setSettings] = useState<GallerySettings>(gallery.settings || defaultSettings);
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [photos, setPhotos] = useState<Photo[]>(gallery.photos);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
@@ -286,19 +286,21 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   };
 
   const handleAddPhotos = () => {
-    setUploadModalOpen(true);
+    startUpload(gallery.id, gallery.name);
   };
 
-  const handleUploadComplete = (uploadedFiles: Array<{ id: string; url: string; filename: string }>) => {
-    const newPhotos: Photo[] = uploadedFiles.map((file) => ({
-      id: file.id,
-      url: file.url,
-      filename: file.filename,
-    }));
-
-    setPhotos((prev) => [...prev, ...newPhotos]);
-    showToast(`${uploadedFiles.length} photo${uploadedFiles.length !== 1 ? "s" : ""} uploaded successfully`, "success");
-  };
+  // Refresh photos when uploads complete for this gallery
+  const prevCompletedRef = useRef(0);
+  useEffect(() => {
+    if (activeUpload?.galleryId === gallery.id) {
+      const justCompleted = activeUpload.stats.completed - prevCompletedRef.current;
+      if (justCompleted > 0 && activeUpload.stats.uploading === 0 && activeUpload.stats.pending === 0) {
+        // All uploads finished - refresh the page to get new photos
+        router.refresh();
+      }
+      prevCompletedRef.current = activeUpload.stats.completed;
+    }
+  }, [activeUpload, gallery.id, router]);
 
   const handleDownloadAll = async () => {
     showToast("Preparing download of all photos...", "info");
@@ -1867,14 +1869,6 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         onClose={() => setLightboxOpen(false)}
         onDownload={handlePhotoDownload}
         onDelete={handlePhotoDelete}
-      />
-
-      {/* Bulk Upload Modal */}
-      <BulkUploadModal
-        galleryId={gallery.id}
-        isOpen={uploadModalOpen}
-        onClose={() => setUploadModalOpen(false)}
-        onUploadComplete={handleUploadComplete}
       />
 
       {/* Delete Confirmation Dialog */}

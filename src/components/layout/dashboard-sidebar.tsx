@@ -394,7 +394,13 @@ export function DashboardSidebar({
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 min-h-0 overflow-y-auto px-4 pb-6 pt-4">
+      <nav
+        className="flex-1 min-h-0 overflow-y-auto px-4 pb-6 pt-4"
+        style={{
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
+          maskImage: "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
+        }}
+      >
         {editMode && (
           <div className="mb-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs text-foreground-muted">
             Drag to reorder or hide links. Hidden links stay available below while editing.
