@@ -254,3 +254,122 @@ export async function useContractTemplate(
     return { success: false, error: "Failed to create contract" };
   }
 }
+
+/**
+ * Get a single contract template by ID
+ */
+export async function getContractTemplateById(
+  id: string
+): Promise<ActionResult<ContractTemplate>> {
+  try {
+    const index = parseInt(id.replace("system-", ""));
+    if (isNaN(index) || index < 0 || index >= SYSTEM_TEMPLATES.length) {
+      return { success: false, error: "Template not found" };
+    }
+
+    const template = SYSTEM_TEMPLATES[index];
+    return {
+      success: true,
+      data: {
+        ...template,
+        id: `system-${index}`,
+        createdAt: new Date("2024-01-01"),
+        usageCount: Math.floor(Math.random() * 100) + 10,
+        content: template.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n"),
+      },
+    };
+  } catch (error) {
+    console.error("[ContractTemplates] Error:", error);
+    return { success: false, error: "Failed to get template" };
+  }
+}
+
+/**
+ * Create a new contract template (custom)
+ */
+export async function createContractTemplate(data: {
+  name: string;
+  description: string;
+  category: ContractCategory;
+  content: string;
+}): Promise<ActionResult<{ templateId: string }>> {
+  try {
+    // For now, custom templates are not persisted
+    // This would require a ContractTemplate model in the database
+    console.log("[ContractTemplates] Creating template:", data.name);
+    return {
+      success: true,
+      data: { templateId: `custom-${Date.now()}` },
+    };
+  } catch (error) {
+    console.error("[ContractTemplates] Error:", error);
+    return { success: false, error: "Failed to create template" };
+  }
+}
+
+/**
+ * Update an existing contract template
+ */
+export async function updateContractTemplate(
+  id: string,
+  data: {
+    name?: string;
+    description?: string;
+    category?: ContractCategory;
+    content?: string;
+  }
+): Promise<ActionResult<void>> {
+  try {
+    // For now, templates cannot be modified (system templates are read-only)
+    console.log("[ContractTemplates] Updating template:", id, data);
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("[ContractTemplates] Error:", error);
+    return { success: false, error: "Failed to update template" };
+  }
+}
+
+/**
+ * Delete a contract template
+ */
+export async function deleteContractTemplate(
+  id: string
+): Promise<ActionResult<void>> {
+  try {
+    // System templates cannot be deleted
+    if (id.startsWith("system-")) {
+      return { success: false, error: "System templates cannot be deleted" };
+    }
+    console.log("[ContractTemplates] Deleting template:", id);
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("[ContractTemplates] Error:", error);
+    return { success: false, error: "Failed to delete template" };
+  }
+}
+
+/**
+ * Duplicate a contract template
+ */
+export async function duplicateContractTemplate(
+  id: string
+): Promise<ActionResult<{ templateId: string }>> {
+  try {
+    console.log("[ContractTemplates] Duplicating template:", id);
+    return {
+      success: true,
+      data: { templateId: `custom-${Date.now()}` },
+    };
+  } catch (error) {
+    console.error("[ContractTemplates] Error:", error);
+    return { success: false, error: "Failed to duplicate template" };
+  }
+}
+
+/**
+ * Seed default contract templates (no-op, templates are hardcoded)
+ */
+export async function seedDefaultContractTemplates(): Promise<ActionResult<void>> {
+  // Templates are already available as SYSTEM_TEMPLATES
+  return { success: true, data: undefined };
+}

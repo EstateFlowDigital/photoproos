@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav, DocumentIcon } from "@/components/dashboard";
 import { TemplateFormClient } from "../template-form-client";
 import Link from "next/link";
-import { getContractTemplates } from "@/lib/actions/contract-templates";
+import { getContractTemplateById } from "@/lib/actions/contract-templates";
 import { notFound } from "next/navigation";
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 
 export default async function EditContractTemplatePage({ params }: Props) {
   const { id } = await params;
-  const result = await getContractTemplates({ id });
+  const result = await getContractTemplateById(id);
 
   if (!result.success || !result.data) {
     notFound();
