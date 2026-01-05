@@ -154,15 +154,25 @@ export function DashboardSidebar({
     );
   };
 
-  const corePrimaryIds = ["dashboard", "projects", "clients", "scheduling"];
-  const coreNav = sortByNavOrder(visibleNav).filter((item) => corePrimaryIds.includes(item.id));
-  const workspaceNav = sortByNavOrder(visibleNav).filter(
-    (item) => !corePrimaryIds.includes(item.id) && item.category !== "advanced"
+  const categoryLabels: Record<string, { title: string; defaultOpen: boolean }> = {
+    core: { title: "Workspace", defaultOpen: true },
+    operations: { title: "Operations", defaultOpen: true },
+    client: { title: "Clients", defaultOpen: false },
+    advanced: { title: "Advanced", defaultOpen: false },
+  };
+
+  const categories = Object.keys(categoryLabels) as Array<keyof typeof categoryLabels>;
+  const [sectionState, setSectionState] = React.useState<Record<string, boolean>>(
+    () =>
+      categories.reduce(
+        (acc, id) => ({ ...acc, [id]: categoryLabels[id].defaultOpen }),
+        {} as Record<string, boolean>
+      )
   );
-  const advancedNav = sortByNavOrder(visibleNav).filter((item) => item.category === "advanced");
-  const [sectionState, setSectionState] = React.useState({
-    workspaces: true,
-    advanced: false,
+
+  const categorizedNav = categories.map((category) => {
+    const items = sortByNavOrder(visibleNav).filter((item) => item.category === category);
+    return { category, items };
   });
 
   const handleNavReorder = (fromId: string, toId: string) => {
@@ -273,7 +283,7 @@ export function DashboardSidebar({
     );
   };
 
-  const toggleSection = (key: "workspaces" | "advanced") => {
+  const toggleSection = (key: string) => {
     setSectionState((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -322,58 +332,42 @@ export function DashboardSidebar({
       <nav className="flex-1 min-h-0 overflow-y-auto px-4 pb-6 pt-4">
         {editMode && (
           <div className="mb-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs text-foreground-muted">
-            Drag to reorder, toggle favorites, and choose which links are visible. Hidden links stay available here but won’t show in the main nav.
+            Drag to reorder or hide links. Hidden links stay available below while editing.
           </div>
         )}
-        <div className="space-y-2">
-          {coreNav.map((item) => renderNavItem(item, { draggable: true }))}
+
+        <div className="space-y-3">
+          {categorizedNav.map(({ category, items }) => {
+            if (!items.length) return null;
+            const label = categoryLabels[category]?.title ?? "More";
+            const open = sectionState[category] ?? false;
+            return (
+              <div
+                key={category}
+                className="rounded-xl border border-[var(--card-border)] bg-[var(--background)] shadow-sm"
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleSection(category)}
+                  className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold text-foreground hover:bg-[var(--background-hover)]"
+                >
+                  <span>{label}</span>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      open ? "rotate-180" : "rotate-0"
+                    )}
+                  />
+                </button>
+                {open && (
+                  <div className="space-y-1 border-t border-[var(--card-border)] p-2">
+                    {items.map((item) => renderNavItem(item, { draggable: true }))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-
-        {workspaceNav.length > 0 && (
-          <div className="mt-4 space-y-2 rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-3">
-            <button
-              type="button"
-              onClick={() => toggleSection("workspaces")}
-              className="flex w-full items-center justify-between text-sm font-semibold text-foreground"
-            >
-              <span>Workspaces</span>
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  sectionState.workspaces ? "rotate-180" : "rotate-0"
-                )}
-              />
-            </button>
-            {sectionState.workspaces && (
-              <div className="space-y-1 pt-2">
-                {workspaceNav.map((item) => renderNavItem(item, { draggable: true }))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {advancedNav.length > 0 && (
-          <div className="mt-4 space-y-2 rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-3">
-            <button
-              type="button"
-              onClick={() => toggleSection("advanced")}
-              className="flex w-full items-center justify-between text-sm font-semibold text-foreground"
-            >
-              <span>Advanced Tools</span>
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  sectionState.advanced ? "rotate-180" : "rotate-0"
-                )}
-              />
-            </button>
-            {sectionState.advanced && (
-              <div className="space-y-1 pt-2">
-                {advancedNav.map((item) => renderNavItem(item, { draggable: true }))}
-              </div>
-            )}
-          </div>
-        )}
 
         {editMode && hiddenNav.length > 0 && (
           <div className="mt-4 space-y-2 rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--background)] p-3">
@@ -388,6 +382,13 @@ export function DashboardSidebar({
                 </div>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={resetNav}
+              className="mt-3 inline-flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-1.5 text-xs font-semibold text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+            >
+              Reset navigation
+            </button>
           </div>
         )}
       </nav>
