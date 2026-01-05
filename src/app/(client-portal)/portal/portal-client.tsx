@@ -229,14 +229,14 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[var(--background)]">
       <PortalHeader client={client} />
 
       <div className="mx-auto max-w-7xl px-6 py-8">
         {/* Welcome */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white">Welcome back, {firstName}</h1>
-          <p className="mt-1 text-[#a7a7a7]">View your property websites, galleries, and downloads</p>
+          <p className="mt-1 text-[var(--foreground-secondary)]">View your property websites, galleries, and downloads</p>
         </div>
 
         <PortalStats stats={stats} />

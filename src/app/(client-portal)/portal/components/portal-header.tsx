@@ -22,11 +22,11 @@ export function PortalHeader({ client }: PortalHeaderProps) {
   };
 
   return (
-    <header className="border-b border-[#262626] bg-[#141414]">
+    <header className="border-b border-[var(--card-border)] bg-[var(--card)]">
       <div className="mx-auto max-w-7xl px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#3b82f6]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]">
               <CameraIcon className="h-4 w-4 text-white" />
             </div>
             <span className="text-lg font-semibold text-white">Client Portal</span>
@@ -34,15 +34,15 @@ export function PortalHeader({ client }: PortalHeaderProps) {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm font-medium text-white">{displayName}</p>
-              <p className="text-xs text-[#7c7c7c]">{client.company || client.email}</p>
+              <p className="text-xs text-[var(--foreground-muted)]">{client.company || client.email}</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3b82f6]/10 text-sm font-medium text-[#3b82f6]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
               {firstLetter}
             </div>
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="flex items-center gap-2 rounded-lg border border-[#262626] bg-[#141414] px-3 py-2 text-sm font-medium text-[#a7a7a7] transition-colors hover:bg-[#191919] hover:text-white disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white disabled:opacity-50"
             >
               {isLoggingOut ? (
                 <LoadingSpinner className="h-4 w-4" />

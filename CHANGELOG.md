@@ -77,6 +77,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improves maintainability and ensures theme consistency across the application
   - Added `aria-hidden="true"` to all icons for accessibility
 
+- **Client Portal Design System Compliance** - Migrated client portal components to CSS variables
+  - `portal-client.tsx`: Background and text colors now use design tokens
+  - `portal-header.tsx`: Header, buttons, and avatar styles use CSS variables
+  - `portal-stats.tsx`: Stats cards use card tokens for borders and backgrounds
+  - `portal-tabs.tsx`: Tab styling uses primary and muted color tokens
+  - `portal-footer.tsx`: Footer borders and text use design system tokens
+
 ### Fixed
 - **Order Flow Accessibility** - Added comprehensive ARIA labels to interactive elements
   - Cart button announces item count (e.g., "Shopping cart, 3 items")
