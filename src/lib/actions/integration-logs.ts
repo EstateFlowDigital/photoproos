@@ -98,14 +98,12 @@ export async function getIntegrationLogs(options?: {
   }
 
   try {
-    // Build where clause
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {
+    // Build where clause with proper Prisma typing
+    const where: Prisma.IntegrationLogWhereInput = {
       organizationId: organization.id,
+      ...(options?.provider && { provider: options.provider }),
+      ...(options?.eventType && { eventType: options.eventType }),
     };
-
-    if (options?.provider) where.provider = options.provider;
-    if (options?.eventType) where.eventType = options.eventType;
 
     const [logs, total] = await Promise.all([
       prisma.integrationLog.findMany({
