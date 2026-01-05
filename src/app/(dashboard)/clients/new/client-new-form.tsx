@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/actions/clients";
 import { Select } from "@/components/ui/select";
 import { Input, Textarea } from "@/components/ui/input";
@@ -22,11 +23,53 @@ const industries: { value: ClientIndustry; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+interface FieldErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  industry?: string;
+}
+
 export function ClientNewForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [createGallery, setCreateGallery] = useState(false);
+
+  const validateField = (name: string, value: string) => {
+    switch (name) {
+      case "firstName":
+        return !value.trim() ? "First name is required" : undefined;
+      case "lastName":
+        return !value.trim() ? "Last name is required" : undefined;
+      case "email":
+        if (!value.trim()) return "Email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Please enter a valid email address";
+        return undefined;
+      case "industry":
+        return !value ? "Please select an industry" : undefined;
+      default:
+        return undefined;
+    }
+  };
+
+  const handleBlur = (name: string, value: string) => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setFieldErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
+  const getInputClassName = (fieldName: keyof FieldErrors) => {
+    const hasError = touched[fieldName] && fieldErrors[fieldName];
+    return cn(
+      "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+      hasError
+        ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+        : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,9 +90,19 @@ export function ClientNewForm() {
     const zip = formData.get("zip") as string;
     const notes = formData.get("notes") as string;
 
-    // Validate required fields
-    if (!firstName || !lastName || !email || !industry) {
-      setError("Please fill in all required fields");
+    // Validate all required fields
+    const errors: FieldErrors = {
+      firstName: validateField("firstName", firstName),
+      lastName: validateField("lastName", lastName),
+      email: validateField("email", email),
+      industry: validateField("industry", industry || ""),
+    };
+
+    // Check if any errors exist
+    const hasErrors = Object.values(errors).some((error) => error !== undefined);
+    if (hasErrors) {
+      setFieldErrors(errors);
+      setTouched({ firstName: true, lastName: true, email: true, industry: true });
       return;
     }
 
@@ -105,9 +158,12 @@ export function ClientNewForm() {
                 id="firstName"
                 name="firstName"
                 placeholder="John"
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                onBlur={(e) => handleBlur("firstName", e.target.value)}
+                className={getInputClassName("firstName")}
               />
+              {touched.firstName && fieldErrors.firstName && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.firstName}</p>
+              )}
             </div>
             <div>
               <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-1.5">
@@ -118,9 +174,12 @@ export function ClientNewForm() {
                 id="lastName"
                 name="lastName"
                 placeholder="Peterson"
-                required
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                onBlur={(e) => handleBlur("lastName", e.target.value)}
+                className={getInputClassName("lastName")}
               />
+              {touched.lastName && fieldErrors.lastName && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.lastName}</p>
+              )}
             </div>
           </div>
 
@@ -135,9 +194,12 @@ export function ClientNewForm() {
               id="email"
               name="email"
               placeholder="john@premierrealty.com"
-              required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              onBlur={(e) => handleBlur("email", e.target.value)}
+              className={getInputClassName("email")}
             />
+            {touched.email && fieldErrors.email && (
+              <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div>
@@ -177,10 +239,11 @@ export function ClientNewForm() {
 
           <Select
             name="industry"
-            label="Industry"
-            required
+            label="Industry *"
             placeholder="Select an industry..."
             options={industries}
+            onBlur={(e) => handleBlur("industry", e.target.value)}
+            error={touched.industry ? fieldErrors.industry : undefined}
           />
         </div>
       </div>

@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Form Validation Feedback** - Added inline field-level validation to client forms
+  - Real-time validation on blur with inline error messages
+  - Email format validation with helpful error text
+  - Visual error states with red border highlighting
+  - All required fields validated before submission
+  - Pattern can be applied to other forms for consistency
+
 - **Mobile Input Optimization** - Added proper `inputMode` and `autoComplete` attributes to form inputs for better mobile UX
   - **Forms Updated:**
     - `booking-form-public.tsx` - Email, phone, and dynamic form field inputs
