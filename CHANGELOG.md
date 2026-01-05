@@ -22,6 +22,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `/src/lib/storage/upload-queue.ts` - Upload queue manager
   - Created `/src/components/upload/bulk-upload-modal.tsx` - Enhanced upload UI
 
+- **Watermark Templates: Reusable Watermark Presets** - Save and manage multiple watermark configurations
+  - Create unlimited watermark templates (text or image-based)
+  - Store watermark position, opacity, and scale settings per template
+  - Set default template for new galleries
+  - Apply templates to organization's global watermark settings with one click
+  - Template manager with grid view showing all saved presets
+  - Full CRUD operations - create, edit, delete, and duplicate templates
+  - Support for both text watermarks (e.g., "© 2024 Your Name") and image watermarks
+  - 5 position options: top-left, top-right, bottom-left, bottom-right, center
+  - Adjustable opacity (0-100%) and scale (0.5x-2x) settings
+  - Database schema: WatermarkTemplate model with organization relation
+  - Created `/src/lib/actions/watermark-templates.ts` - CRUD server actions
+  - Created `/src/app/(dashboard)/settings/watermarks/page.tsx` - Template settings page
+  - Created `/src/app/(dashboard)/settings/watermarks/watermark-templates-client.tsx` - Template manager UI
+
 ### Fixed
 - **UX: Eliminated Page Reloads** - Replaced jarring full-page reloads with smooth React state updates
   - Fixed field app (mobile PWA) check-in/check-out actions - now uses router.refresh() with success toasts

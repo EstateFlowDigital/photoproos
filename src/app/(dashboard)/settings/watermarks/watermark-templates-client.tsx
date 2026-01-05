@@ -19,9 +19,10 @@ import {
   updateWatermarkTemplate,
   deleteWatermarkTemplate,
   setDefaultTemplate,
+  applyTemplateToOrganization,
   type WatermarkTemplateInput,
 } from "@/lib/actions/watermark-templates";
-import { Star, Edit2, Trash2, Plus, Type, Image as ImageIcon } from "lucide-react";
+import { Star, Edit2, Trash2, Plus, Type, Image as ImageIcon, Check } from "lucide-react";
 
 interface WatermarkTemplate {
   id: string;
@@ -174,6 +175,23 @@ export function WatermarkTemplatesClient({ templates: initialTemplates }: Waterm
     }
   };
 
+  const handleApply = async (templateId: string) => {
+    setIsSubmitting(true);
+    try {
+      const result = await applyTemplateToOrganization(templateId);
+      if (result.success) {
+        showToast("Watermark template applied successfully", "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to apply template", "error");
+      }
+    } catch (error) {
+      showToast("An error occurred", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Create Button */}
@@ -263,35 +281,47 @@ export function WatermarkTemplatesClient({ templates: initialTemplates }: Waterm
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 pt-4 border-t border-[var(--card-border)]">
-                {!template.isDefault && (
+              <div className="space-y-2 pt-4 border-t border-[var(--card-border)]">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleApply(template.id)}
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  <Check className="h-3 w-3 mr-2" />
+                  Apply to Organization
+                </Button>
+                <div className="flex items-center gap-2">
+                  {!template.isDefault && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleSetDefault(template.id)}
+                      disabled={isSubmitting}
+                      className="flex-1"
+                    >
+                      <Star className="h-3 w-3 mr-1" />
+                      Set Default
+                    </Button>
+                  )}
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => handleSetDefault(template.id)}
+                    onClick={() => openModal(template)}
                     disabled={isSubmitting}
-                    className="flex-1"
                   >
-                    <Star className="h-3 w-3 mr-1" />
-                    Set Default
+                    <Edit2 className="h-3 w-3" />
                   </Button>
-                )}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => openModal(template)}
-                  disabled={isSubmitting}
-                >
-                  <Edit2 className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setDeleteConfirmId(template.id)}
-                  disabled={isSubmitting}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setDeleteConfirmId(template.id)}
+                    disabled={isSubmitting}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
