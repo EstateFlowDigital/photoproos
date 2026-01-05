@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
@@ -23,6 +23,8 @@ export function MobileNav({
   notificationCount = 0,
 }: MobileNavProps) {
   const pathname = usePathname() || "";
+  const [navOrder, setNavOrder] = useState<string[]>([]);
+  const [hiddenIds, setHiddenIds] = useState<string[]>([]);
 
   const navItems = getFilteredNavigation({
     enabledModules,
@@ -41,6 +43,53 @@ export function MobileNav({
         },
       ]
     : navItems;
+
+  // Keep MobileNav parity with the desktop sidebar's customized order + hidden items.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const availableIds = mobileNav.map((item) => item.id);
+
+    const storedOrder = window.localStorage.getItem("ppos_nav_order");
+    if (storedOrder) {
+      try {
+        const parsed = JSON.parse(storedOrder) as string[];
+        setNavOrder(parsed.filter((id) => availableIds.includes(id)));
+      } catch {
+        setNavOrder([]);
+      }
+    } else {
+      setNavOrder([]);
+    }
+
+    const storedHidden = window.localStorage.getItem("ppos_nav_hidden");
+    if (storedHidden) {
+      try {
+        const parsed = JSON.parse(storedHidden) as string[];
+        setHiddenIds(parsed.filter((id) => availableIds.includes(id)));
+      } catch {
+        setHiddenIds([]);
+      }
+    } else {
+      setHiddenIds([]);
+    }
+  }, [mobileNav]);
+
+  const orderedNav = useMemo(() => {
+    const visible = mobileNav.filter((item) => !hiddenIds.includes(item.id));
+    const availableIds = visible.map((item) => item.id);
+
+    const filteredOrder = navOrder.filter((id) => availableIds.includes(id));
+    const missing = availableIds.filter((id) => !filteredOrder.includes(id));
+    const finalOrder = [...filteredOrder, ...missing];
+
+    const orderMap = new Map(finalOrder.map((id, index) => [id, index]));
+    const fallbackIndex = finalOrder.length + 1;
+
+    return [...visible].sort(
+      (a, b) => (orderMap.get(a.id) ?? fallbackIndex) - (orderMap.get(b.id) ?? fallbackIndex)
+    );
+  }, [hiddenIds, mobileNav, navOrder]);
 
   // Close menu on route change
   useEffect(() => {
@@ -118,7 +167,7 @@ export function MobileNav({
             New Project
           </Link>
 
-          {mobileNav.map((item) => {
+          {orderedNav.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const IconComponent = item.icon;
 
