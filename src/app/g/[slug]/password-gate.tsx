@@ -126,14 +126,14 @@ export function PasswordGate({
                 className="w-full rounded-lg border px-4 py-3 text-sm focus:outline-none focus:ring-2"
                 style={{
                   backgroundColor: colors.bgColor,
-                  borderColor: error ? "#ef4444" : colors.borderColor,
+                  borderColor: error ? "var(--error)" : colors.borderColor,
                   color: colors.textColor,
                   ["--tw-ring-color" as string]: primaryColor,
                 }}
                 disabled={isLoading}
               />
               {error && (
-                <p className="mt-2 text-sm" style={{ color: "#ef4444" }}>
+                <p className="mt-2 text-sm" style={{ color: "var(--error)" }}>
                   {error}
                 </p>
               )}

@@ -1019,8 +1019,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               >
                 {showLinkCopied ? (
                   <>
-                    <CheckIcon className="h-4 w-4" style={{ color: "#22c55e" }} />
-                    <span className="hidden sm:inline" style={{ color: "#22c55e" }}>Copied!</span>
+                    <CheckIcon className="h-4 w-4" style={{ color: "var(--success)" }} />
+                    <span className="hidden sm:inline" style={{ color: "var(--success)" }}>Copied!</span>
                   </>
                 ) : (
                   <>
@@ -1241,9 +1241,9 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 className="flex items-center gap-1"
                 style={{
                   color: expirationCountdown.expired
-                    ? "#ef4444"
+                    ? "var(--error)"
                     : expirationCountdown.expiresSoon
-                      ? "#f97316"
+                      ? "var(--warning)"
                       : colors.mutedColor,
                 }}
               >
@@ -1269,19 +1269,19 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           className="border-b"
           style={{
             backgroundColor: expirationCountdown.expired
-              ? "rgba(239, 68, 68, 0.1)"
+              ? "color-mix(in srgb, var(--error) 10%, transparent)"
               : expirationCountdown.days <= 1
-              ? "rgba(239, 68, 68, 0.1)"
+              ? "color-mix(in srgb, var(--error) 10%, transparent)"
               : expirationCountdown.days <= 3
-              ? "rgba(249, 115, 22, 0.1)"
-              : "rgba(59, 130, 246, 0.1)",
+              ? "color-mix(in srgb, var(--warning) 10%, transparent)"
+              : "color-mix(in srgb, var(--primary) 10%, transparent)",
             borderColor: expirationCountdown.expired
-              ? "rgba(239, 68, 68, 0.3)"
+              ? "color-mix(in srgb, var(--error) 30%, transparent)"
               : expirationCountdown.days <= 1
-              ? "rgba(239, 68, 68, 0.3)"
+              ? "color-mix(in srgb, var(--error) 30%, transparent)"
               : expirationCountdown.days <= 3
-              ? "rgba(249, 115, 22, 0.3)"
-              : "rgba(59, 130, 246, 0.3)",
+              ? "color-mix(in srgb, var(--warning) 30%, transparent)"
+              : "color-mix(in srgb, var(--primary) 30%, transparent)",
           }}
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
@@ -1299,12 +1299,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 />
                 <div>
                   {expirationCountdown.expired ? (
-                    <p className="font-medium" style={{ color: "#ef4444" }}>
+                    <p className="font-medium" style={{ color: "var(--error)" }}>
                       This gallery has expired and downloads are no longer available.
                     </p>
                   ) : expirationCountdown.days === 0 ? (
                     <>
-                      <p className="font-medium" style={{ color: "#ef4444" }}>
+                      <p className="font-medium" style={{ color: "var(--error)" }}>
                         This gallery expires today!
                       </p>
                       <p className="text-sm" style={{ color: colors.mutedColor }}>
@@ -1319,7 +1319,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     </>
                   ) : expirationCountdown.days === 1 ? (
                     <>
-                      <p className="font-medium" style={{ color: "#ef4444" }}>
+                      <p className="font-medium" style={{ color: "var(--error)" }}>
                         This gallery expires tomorrow!
                       </p>
                       <p className="text-sm" style={{ color: colors.mutedColor }}>
@@ -1334,7 +1334,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     </>
                   ) : expirationCountdown.days <= 3 ? (
                     <>
-                      <p className="font-medium" style={{ color: "#f97316" }}>
+                      <p className="font-medium" style={{ color: "var(--warning)" }}>
                         This gallery expires in {expirationCountdown.days} days
                       </p>
                       <p className="text-sm" style={{ color: colors.mutedColor }}>
@@ -1349,7 +1349,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     </>
                   ) : (
                     <>
-                      <p className="font-medium" style={{ color: "#3b82f6" }}>
+                      <p className="font-medium" style={{ color: "var(--primary)" }}>
                         This gallery expires in {expirationCountdown.days} days
                       </p>
                       <p className="text-sm" style={{ color: colors.mutedColor }}>
@@ -1763,9 +1763,9 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     <div className="flex flex-wrap gap-2">
                       {getPrintSizes(selectedPhoto.width, selectedPhoto.height).map((size) => {
                         const qualityColors = {
-                          excellent: { bg: "rgba(34, 197, 94, 0.15)", text: "#22c55e", label: "★" },
-                          good: { bg: "rgba(59, 130, 246, 0.15)", text: "#3b82f6", label: "●" },
-                          fair: { bg: "rgba(249, 115, 22, 0.15)", text: "#f97316", label: "○" },
+                          excellent: { bg: "color-mix(in srgb, var(--success) 15%, transparent)", text: "var(--success)", label: "★" },
+                          good: { bg: "color-mix(in srgb, var(--primary) 15%, transparent)", text: "var(--primary)", label: "●" },
+                          fair: { bg: "color-mix(in srgb, var(--warning) 15%, transparent)", text: "var(--warning)", label: "○" },
                         };
                         const colors = qualityColors[size.quality];
                         return (
@@ -1783,13 +1783,13 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     </div>
                     <div className="mt-3 flex items-center gap-4 text-[10px]" style={{ color: colors.mutedColor }}>
                       <span className="flex items-center gap-1">
-                        <span style={{ color: "#22c55e" }}>★</span> Excellent (300+ DPI)
+                        <span style={{ color: "var(--success)" }}>★</span> Excellent (300+ DPI)
                       </span>
                       <span className="flex items-center gap-1">
-                        <span style={{ color: "#3b82f6" }}>●</span> Good (200+ DPI)
+                        <span style={{ color: "var(--primary)" }}>●</span> Good (200+ DPI)
                       </span>
                       <span className="flex items-center gap-1">
-                        <span style={{ color: "#f97316" }}>○</span> Fair (100+ DPI)
+                        <span style={{ color: "var(--warning)" }}>○</span> Fair (100+ DPI)
                       </span>
                     </div>
                   </>
@@ -2115,7 +2115,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               onClick={handleCopyLink}
               className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors mb-4"
               style={{
-                backgroundColor: showLinkCopied ? "#22c55e" : primaryColor,
+                backgroundColor: showLinkCopied ? "var(--success)" : primaryColor,
                 color: "#fff",
               }}
             >
@@ -2226,8 +2226,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
             {feedbackSubmitted ? (
               // Success State
               <div className="text-center py-8">
-                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)" }}>
-                  <CheckIcon className="h-8 w-8" style={{ color: "#22c55e" }} />
+                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "color-mix(in srgb, var(--success) 15%, transparent)" }}>
+                  <CheckIcon className="h-8 w-8" style={{ color: "var(--success)" }} />
                 </div>
                 <h3 className="text-xl font-semibold mb-2" style={{ color: colors.textColor }}>
                   Thank you!
@@ -2647,8 +2647,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
             {downloadStatus === "complete" && (
               <>
-                <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34, 197, 94, 0.2)" }}>
-                  <CheckIcon className="h-6 w-6" style={{ color: "#22c55e" }} />
+                <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "color-mix(in srgb, var(--success) 20%, transparent)" }}>
+                  <CheckIcon className="h-6 w-6" style={{ color: "var(--success)" }} />
                 </div>
                 <h3 id="download-modal-title" className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
                   Download Complete
@@ -2661,8 +2661,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
             {downloadStatus === "error" && (
               <>
-                <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(239, 68, 68, 0.2)" }}>
-                  <CloseIcon className="h-6 w-6 text-red-500" />
+                <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "color-mix(in srgb, var(--error) 20%, transparent)" }}>
+                  <CloseIcon className="h-6 w-6" style={{ color: "var(--error)" }} />
                 </div>
                 <h3 id="download-modal-title" className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
                   Download Failed

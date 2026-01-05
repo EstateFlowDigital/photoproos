@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Design System Compliance - Gallery Public Pages** - Updated gallery components to use CSS variables for semantic colors
+  - Updated `gallery-client.tsx` with success, error, warning, primary tokens for status indicators
+  - Updated expiration countdown colors to use `var(--error)`, `var(--warning)`, `var(--primary)`
+  - Updated print quality indicators with semantic color tokens
+  - Updated feedback and download modal success/error states
+  - Updated `password-gate.tsx` with error token for validation states
+  - Uses `color-mix()` for transparent backgrounds with design system colors
+  - Preserves intentional gallery theme system (light/dark) while standardizing semantic colors
+
 - **Design System Compliance - Client Portal** - Replaced all hardcoded hex colors with CSS variables
   - Updated `portal-client.tsx`, `portal-header.tsx`, `portal-stats.tsx`, `portal-tabs.tsx`, `portal-footer.tsx`
   - Updated all portal tab components: `properties-tab.tsx`, `galleries-tab.tsx`, `downloads-tab.tsx`, `invoices-tab.tsx`, `questionnaires-tab.tsx`
