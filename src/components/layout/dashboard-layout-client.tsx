@@ -104,10 +104,10 @@ export function DashboardLayoutClient({
   }, [effectiveNavMode]);
 
   // Auto theme switching based on time of day
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    if (!autoTheme?.enabled) return;
+    if (!autoTheme?.enabled || theme !== "system") return;
 
     const checkAndApplyTheme = () => {
       const now = new Date();
@@ -137,13 +137,13 @@ export function DashboardLayoutClient({
     const interval = setInterval(checkAndApplyTheme, 60000);
 
     return () => clearInterval(interval);
-  }, [autoTheme, setTheme]);
+  }, [autoTheme, setTheme, theme]);
 
   return (
     <ResponsiveTester>
       <div
         ref={shellRef}
-        className={`shell-container flex h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
+        className={`shell-container flex min-h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
       >
         {/* Desktop Sidebar - hidden on mobile or when in top-nav mode */}
         {effectiveNavMode !== "top" && (

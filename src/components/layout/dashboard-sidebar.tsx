@@ -303,7 +303,7 @@ export function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "flex h-screen max-h-screen min-h-0 w-full sm:w-[260px] lg:w-[280px] flex-col border-r border-[var(--card-border)] bg-[var(--card)] overflow-hidden",
+        "flex min-h-screen min-h-0 w-full sm:w-[260px] lg:w-[280px] flex-col border-r border-[var(--card-border)] bg-[var(--card)] overflow-hidden",
         className
       )}
     >
