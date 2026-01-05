@@ -126,7 +126,7 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
                     className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)] sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-medium text-white">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
                         {(agent.fullName || agent.email).substring(0, 2).toUpperCase()}
                       </div>
                       <div className="min-w-0">

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
-import { PageContextNav } from "@/components/dashboard";
+import { PageContextNav, PageHeader } from "@/components/dashboard";
 import {
   createTask,
   updateTask,
@@ -398,45 +398,43 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-4 sm:px-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">{board.name}</h1>
-            <p className="mt-0.5 text-sm text-foreground-secondary">
-              {totalTasks} tasks · {completedTasks} completed
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {/* View Mode Toggle */}
-            <div className="flex flex-wrap rounded-lg border border-[var(--card-border)] bg-background p-1">
-              {(["board", "list", "calendar"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setViewMode(mode)}
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                    viewMode === mode
-                      ? "bg-[var(--primary)] text-white"
-                      : "text-foreground-secondary hover:text-foreground"
-                  }`}
-                >
-                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                </button>
-              ))}
-            </div>
+        <PageHeader
+          title={board.name}
+          subtitle={`${totalTasks} tasks · ${completedTasks} completed`}
+          actions={
+            <div className="flex flex-wrap items-center gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex flex-wrap rounded-lg border border-[var(--card-border)] bg-background p-1">
+                {(["board", "list", "calendar"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setViewMode(mode)}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      viewMode === mode
+                        ? "bg-[var(--primary)] text-white"
+                        : "text-foreground-secondary hover:text-foreground"
+                    }`}
+                  >
+                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                  </button>
+                ))}
+              </div>
 
-            {/* Priority Filter */}
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value as TaskPriority | "all")}
-              className="h-9 w-full min-w-[160px] rounded-lg border border-[var(--card-border)] bg-background px-3 text-sm text-foreground sm:w-auto"
-            >
-              <option value="all">All Priorities</option>
-              <option value="urgent">Urgent</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-        </div>
+              {/* Priority Filter */}
+              <select
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value as TaskPriority | "all")}
+                className="h-9 w-full min-w-[160px] rounded-lg border border-[var(--card-border)] bg-background px-3 text-sm text-foreground sm:w-auto"
+              >
+                <option value="all">All Priorities</option>
+                <option value="urgent">Urgent</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          }
+        />
       </div>
 
       {/* Context Navigation */}

@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Avatar Gradient Design Tokens** - Consistent avatar styling across the app
+  - Added `--avatar-gradient-start`, `--avatar-gradient-end`, and `--avatar-gradient` CSS variables
+  - Added `.avatar-gradient` utility class for easy application
+  - Standardizes avatar colors across contracts, orders, clients, invoices, and brokerages pages
+
 - **Image Optimization Pipeline** - Automatic thumbnail and medium-sized image generation
   - Sharp-based server-side processing generates WebP variants for faster loading
   - Thumbnail (400px width) for gallery grids - much faster page loads
@@ -67,6 +72,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Leads table: reduced min-width from 700px to 600px for better mobile scrolling
   - Analytics view: reduced gap and hid progress bars on smaller screens (`md:` instead of `sm:`)
   - Services page: action buttons now icon-only on mobile with titles
+
+### Changed
+- **Design System Consistency Improvements** - Standardized UI patterns across dashboard
+  - Replaced hardcoded avatar gradient colors with `avatar-gradient` class in 10 files
+  - Projects page now uses `PageHeader` component for consistent header styling
+  - Forms page now uses `PageHeader` component for consistent header styling
 
 - **Duplicate Upload Entries** - Fixed files showing twice in upload queue
   - Removed duplicate state addition when adding files to queue

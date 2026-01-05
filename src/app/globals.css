@@ -176,6 +176,11 @@
   --ai-muted: rgba(139, 92, 246, 0.15);
   --ai-text: #a78bfa; /* AA compliant on dark bg */
 
+  /* --- Avatar Gradients --- */
+  --avatar-gradient-start: #3b82f6;
+  --avatar-gradient-end: #8b5cf6;
+  --avatar-gradient: linear-gradient(to bottom right, var(--avatar-gradient-start), var(--avatar-gradient-end));
+
   /* --- Shadows --- */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -1876,5 +1881,10 @@ html[data-scroll-theme="light"] {
   .table-scroll > table {
     width: 100%;
     min-width: var(--table-min, 700px);
+  }
+
+  /* Avatar with gradient background for initials */
+  .avatar-gradient {
+    background: var(--avatar-gradient);
   }
 }

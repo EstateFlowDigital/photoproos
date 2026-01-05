@@ -100,7 +100,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                 Customer
               </h3>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-sm font-medium text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
                   {clientName.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
@@ -370,7 +370,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                   href={`/clients/${order.client.id}`}
                   className="flex items-center gap-3 p-3 -mx-3 rounded-lg hover:bg-[var(--background-hover)] transition-colors"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-xs font-medium text-white">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full avatar-gradient text-xs font-medium text-white">
                     {order.client.fullName?.substring(0, 2).toUpperCase() || "??"}
                   </div>
                   <div className="flex-1 min-w-0">

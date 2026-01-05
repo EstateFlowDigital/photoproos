@@ -8,6 +8,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { createForm, deleteForm, duplicateForm } from "@/lib/actions/custom-forms";
 import { FileInput, Plus, MoreVertical, Copy, Trash2, ExternalLink, Edit } from "lucide-react";
+import { PageHeader } from "@/components/dashboard";
 
 interface Form {
   id: string;
@@ -100,23 +101,21 @@ export function FormsPageClient({ forms }: FormsPageClientProps) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Forms</h1>
-          <p className="mt-1 text-sm text-foreground-muted">
-            Create custom forms for leads, inquiries, and feedback
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-        >
-          <Plus className="h-4 w-4" />
-          Create Form
-        </button>
-      </div>
+      <PageHeader
+        title="Forms"
+        subtitle="Create custom forms for leads, inquiries, and feedback"
+        actions={
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+          >
+            <Plus className="h-4 w-4" />
+            Create Form
+          </button>
+        }
+      />
 
       {/* Forms Grid */}
       {forms.length === 0 ? (

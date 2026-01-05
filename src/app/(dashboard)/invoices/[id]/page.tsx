@@ -138,7 +138,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
                 Bill To
               </h3>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-medium text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
                   {(invoice.clientName || "?").substring(0, 2).toUpperCase()}
                 </div>
                 <div>
@@ -308,7 +308,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
                 href={`/clients/${invoice.client.id}`}
                 className="flex items-center gap-3 p-3 -m-3 rounded-lg hover:bg-[var(--background-hover)] transition-colors"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-medium text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
                   {(invoice.client.fullName || invoice.client.email).substring(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">

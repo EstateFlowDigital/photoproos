@@ -196,7 +196,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                       aria-label={`View client: ${client.fullName || client.email}`}
                     />
                     <div className="relative z-10 pointer-events-none flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-medium text-white">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
                         {(client.fullName || client.email).substring(0, 2).toUpperCase()}
                       </div>
                       <div>
