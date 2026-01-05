@@ -164,6 +164,7 @@ export async function generatePresignedUploadUrl(
     Key: key,
     ContentType: contentType,
     ContentLength: contentLength,
+    CacheControl: "public, max-age=31536000, immutable", // Cache for 1 year (images are immutable)
     Metadata: metadata,
   });
 
@@ -213,6 +214,7 @@ export async function uploadFile(
     Key: key,
     Body: body,
     ContentType: contentType,
+    CacheControl: "public, max-age=31536000, immutable", // Cache for 1 year
     Metadata: metadata,
   });
 
