@@ -78,6 +78,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Replaced hardcoded avatar gradient colors with `avatar-gradient` class in 10 files
   - Projects page now uses `PageHeader` component for consistent header styling
   - Forms page now uses `PageHeader` component for consistent header styling
+  - Invoice detail: replaced hardcoded `text-green-400`, `text-red-400` with CSS variables
+  - Invoice detail: replaced hardcoded timeline colors with `var(--primary)` and `var(--success)`
+  - Order detail: replaced hardcoded timeline colors with semantic CSS variables
+  - Contracts page: replaced `text-orange-400` with `var(--warning-text)`
+  - Projects PriorityBadge: replaced Tailwind color classes with semantic CSS variables
+  - Questionnaires StatusBadge: replaced hardcoded colors with design system tokens
+  - Feedback inbox: updated TYPE_LABELS to use CSS variable muted colors
+  - Added `--primary-muted` CSS variable to dark and light mode themes
 
 - **Duplicate Upload Entries** - Fixed files showing twice in upload queue
   - Removed duplicate state addition when adding files to queue

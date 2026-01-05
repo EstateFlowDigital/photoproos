@@ -430,8 +430,8 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
               </div>
               {order.paidAt && (
                 <div className="flex gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500/10">
-                    <div className="h-2 w-2 rounded-full bg-green-400" />
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
+                    <div className="h-2 w-2 rounded-full bg-[var(--success)]" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Payment Received</p>
@@ -441,8 +441,8 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
               )}
               {order.booking && (
                 <div className="flex gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
-                    <div className="h-2 w-2 rounded-full bg-blue-400" />
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
+                    <div className="h-2 w-2 rounded-full bg-[var(--primary)]" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Booking Created</p>

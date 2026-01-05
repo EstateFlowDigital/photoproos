@@ -201,7 +201,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
                 {invoice.discountCents > 0 && (
                   <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-foreground-muted">Discount</span>
-                    <span className="text-green-400">-{formatCurrency(invoice.discountCents)}</span>
+                    <span className="text-[var(--success-text)]">-{formatCurrency(invoice.discountCents)}</span>
                   </div>
                 )}
                 {invoice.taxCents > 0 && (
@@ -251,7 +251,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
                 <span className="text-sm text-foreground-muted">Due Date</span>
                 <span className={cn(
                   "text-sm font-medium",
-                  isOverdue ? "text-red-400" : "text-foreground"
+                  isOverdue ? "text-[var(--error-text)]" : "text-foreground"
                 )}>
                   {formatDate(invoice.dueDate)}
                 </span>
@@ -265,7 +265,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
               {invoice.paidAt && (
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm text-foreground-muted">Paid On</span>
-                  <span className="text-sm font-medium text-green-400">
+                  <span className="text-sm font-medium text-[var(--success-text)]">
                     {formatDate(invoice.paidAt)}
                   </span>
                 </div>
@@ -339,8 +339,8 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
               </div>
               {invoice.status !== "draft" && (
                 <div className="flex gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
-                    <div className="h-2 w-2 rounded-full bg-blue-400" />
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
+                    <div className="h-2 w-2 rounded-full bg-[var(--primary)]" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Sent</p>
@@ -350,8 +350,8 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
               )}
               {invoice.paidAt && (
                 <div className="flex gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500/10">
-                    <div className="h-2 w-2 rounded-full bg-green-400" />
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
+                    <div className="h-2 w-2 rounded-full bg-[var(--success)]" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Paid</p>

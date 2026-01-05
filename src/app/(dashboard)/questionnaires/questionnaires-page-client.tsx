@@ -148,7 +148,7 @@ export function QuestionnairesPageClient({
                       </p>
                     </div>
                     {template.isSystemTemplate && (
-                      <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400">
+                      <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs text-[var(--primary)]">
                         System
                       </span>
                     )}
@@ -227,13 +227,13 @@ export function QuestionnairesPageClient({
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    pending: "bg-yellow-500/10 text-yellow-400",
-    in_progress: "bg-purple-500/10 text-purple-400",
-    completed: "bg-green-500/10 text-green-400",
-    approved: "bg-blue-500/10 text-blue-400",
+    pending: "bg-[var(--warning)]/10 text-[var(--warning-text)]",
+    in_progress: "bg-[var(--ai)]/10 text-[var(--ai-text)]",
+    completed: "bg-[var(--success)]/10 text-[var(--success-text)]",
+    approved: "bg-[var(--primary)]/10 text-[var(--primary)]",
   };
   return (
-    <span className={"inline-flex rounded-full px-2 py-0.5 text-xs font-medium " + (styles[status] || "bg-gray-500/10 text-gray-400")}>
+    <span className={"inline-flex rounded-full px-2 py-0.5 text-xs font-medium " + (styles[status] || "bg-[var(--foreground-muted)]/10 text-foreground-muted")}>
       {status.replace(/_/g, " ")}
     </span>
   );

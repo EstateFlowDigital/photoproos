@@ -949,10 +949,10 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
 // Helper Components
 function PriorityBadge({ priority }: { priority: TaskPriority }) {
   const config = {
-    urgent: { bg: "bg-red-500/10", text: "text-red-500", label: "Urgent" },
-    high: { bg: "bg-orange-500/10", text: "text-orange-500", label: "High" },
-    medium: { bg: "bg-blue-500/10", text: "text-blue-500", label: "Medium" },
-    low: { bg: "bg-gray-500/10", text: "text-gray-500", label: "Low" },
+    urgent: { bg: "bg-[var(--error)]/10", text: "text-[var(--error-text)]", label: "Urgent" },
+    high: { bg: "bg-[var(--warning)]/10", text: "text-[var(--warning-text)]", label: "High" },
+    medium: { bg: "bg-[var(--primary)]/10", text: "text-[var(--primary)]", label: "Medium" },
+    low: { bg: "bg-[var(--foreground-muted)]/10", text: "text-foreground-muted", label: "Low" },
   };
 
   const { bg, text, label } = config[priority];

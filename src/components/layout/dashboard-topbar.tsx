@@ -120,6 +120,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
   const helpRef = useRef<HTMLDivElement>(null);
   const quickActionsRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<HTMLDivElement>(null);
+  const linkLoggerRef = useRef<boolean>(false);
 
   const closeAllPopovers = useCallback(() => {
     setSearchOpen(false);
@@ -335,6 +336,20 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
     window.addEventListener("scroll", handleScroll, true);
     return () => window.removeEventListener("scroll", handleScroll, true);
   }, [closeAllPopovers]);
+
+  // Debug: surface any prevented link clicks to help trace blocking overlays/extensions
+  useEffect(() => {
+    if (linkLoggerRef.current) return;
+    linkLoggerRef.current = true;
+    const handler = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest("a");
+      if (anchor && e.defaultPrevented) {
+        console.warn("Link click prevented", { href: anchor.getAttribute("href") });
+      }
+    };
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, []);
 
   const markAllAsRead = async () => {
     // Optimistically update UI

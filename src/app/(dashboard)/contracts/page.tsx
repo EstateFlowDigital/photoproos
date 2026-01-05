@@ -328,7 +328,7 @@ export default async function ContractsPage({ searchParams }: PageProps) {
                         {contract.expiresAt && (
                           <p className={cn(
                             "text-xs",
-                            new Date(contract.expiresAt) < new Date() ? "text-orange-400" : "text-foreground-muted"
+                            new Date(contract.expiresAt) < new Date() ? "text-[var(--warning-text)]" : "text-foreground-muted"
                           )}>
                             Expires {formatDate(contract.expiresAt)}
                           </p>

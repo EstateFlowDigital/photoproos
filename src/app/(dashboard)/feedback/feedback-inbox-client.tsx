@@ -35,9 +35,9 @@ interface FeedbackInboxClientProps {
 }
 
 const TYPE_LABELS: Record<string, { label: string; color: string; bgColor: string }> = {
-  feedback: { label: "Feedback", color: "var(--primary)", bgColor: "rgba(59, 130, 246, 0.1)" },
-  feature: { label: "Feature Request", color: "var(--ai)", bgColor: "rgba(139, 92, 246, 0.1)" },
-  issue: { label: "Issue", color: "var(--error)", bgColor: "rgba(239, 68, 68, 0.1)" },
+  feedback: { label: "Feedback", color: "var(--primary)", bgColor: "var(--primary-muted, rgba(59, 130, 246, 0.1))" },
+  feature: { label: "Feature Request", color: "var(--ai)", bgColor: "var(--ai-muted, rgba(139, 92, 246, 0.1))" },
+  issue: { label: "Issue", color: "var(--error)", bgColor: "var(--error-muted, rgba(239, 68, 68, 0.1))" },
 };
 
 export function FeedbackInboxClient({
