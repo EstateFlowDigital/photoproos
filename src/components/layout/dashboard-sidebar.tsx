@@ -51,6 +51,7 @@ export function DashboardSidebar({
   const [pinnedIds, setPinnedIds] = React.useState<string[]>([]);
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
   const [identityOpen, setIdentityOpen] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -83,6 +84,10 @@ export function DashboardSidebar({
         setPinnedIds([]);
       }
     }
+    const storedCollapsed = window.localStorage.getItem("ppos_sidebar_collapsed");
+    if (storedCollapsed) {
+      setCollapsed(storedCollapsed === "true");
+    }
   }, [navItems]);
 
   React.useEffect(() => {
@@ -94,6 +99,11 @@ export function DashboardSidebar({
     if (typeof window === "undefined") return;
     window.localStorage.setItem("ppos_nav_pinned", JSON.stringify(pinnedIds));
   }, [pinnedIds]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ppos_sidebar_collapsed", collapsed ? "true" : "false");
+  }, [collapsed]);
 
   // Listen for external edit-mode toggle (from topbar)
   React.useEffect(() => {
@@ -117,6 +127,13 @@ export function DashboardSidebar({
     if (typeof window === "undefined") return;
     window.localStorage.setItem("ppos_nav_edit_mode", JSON.stringify(editMode));
   }, [editMode]);
+
+  // If user enters edit mode, auto-expand so controls are visible
+  React.useEffect(() => {
+    if (editMode && collapsed) {
+      setCollapsed(false);
+    }
+  }, [collapsed, editMode]);
 
   // Auto-exit edit mode when the route changes so clicks never get stuck
   React.useEffect(() => {
@@ -228,25 +245,28 @@ export function DashboardSidebar({
     });
   };
 
-  const renderNavItem = (item: NavItem, options?: { draggable?: boolean }) => {
+  const renderNavItem = (item: NavItem, options?: { draggable?: boolean; showLabel?: boolean }) => {
     const isActive =
       pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
     const IconComponent = item.icon;
     const canDrag = options?.draggable && editMode;
     const isPinned = pinnedIds.includes(item.id);
+    const showLabel = options?.showLabel ?? true;
 
     const linkContent = (
       <Link
         key={item.href}
         href={item.href}
         className={cn(
-          "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          "group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          showLabel ? "gap-3" : "gap-0 justify-center",
           isActive
             ? "bg-[var(--primary)] text-white"
             : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground",
           canDrag && editMode && "cursor-move",
           hiddenIds.includes(item.id) && editMode && "opacity-70 line-through"
         )}
+        title={item.name || item.label}
         onClick={(e) => {
           // Allow navigation even in edit mode; only stop when interacting with controls
           const target = e.target as HTMLElement;
@@ -262,7 +282,11 @@ export function DashboardSidebar({
             isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
           )}
         />
-        <span className="flex-1">{item.name || item.label}</span>
+        {showLabel ? (
+          <span className="flex-1">{item.name || item.label}</span>
+        ) : (
+          <span className="sr-only">{item.name || item.label}</span>
+        )}
         {item.badge !== undefined && item.badge > 0 && (
           <span
             className={cn(
@@ -361,7 +385,8 @@ export function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "flex min-h-screen min-h-0 w-full sm:w-[260px] lg:w-[280px] flex-col border-r border-[var(--card-border)] bg-[var(--card)] overflow-hidden lg:sticky lg:top-0 lg:self-start",
+        "flex min-h-screen min-h-0 w-full flex-col border-r border-[var(--card-border)] bg-[var(--card)] overflow-hidden lg:sticky lg:top-0 lg:self-start",
+        collapsed ? "lg:w-[88px]" : "lg:w-[280px]",
         className
       )}
       style={
@@ -375,40 +400,56 @@ export function DashboardSidebar({
     >
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-[var(--card-border)] px-6">
+        <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)]">
             <CameraIcon className="h-4 w-4 text-white" />
           </div>
-          <span className="text-lg font-semibold text-foreground">PhotoProOS</span>
-        <button
-          type="button"
-          onClick={() => setEditMode((v) => !v)}
-          className={cn(
-            "ml-auto inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors",
-            editMode
-              ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
-              : "border-[var(--card-border)] text-foreground-secondary hover:text-foreground hover:bg-[var(--background-hover)]"
-          )}
-          title="Reorder, hide, or pin navigation links"
-        >
-          {editMode ? "Done" : "Customize"}
-        </button>
+          {!collapsed && <span className="text-lg font-semibold text-foreground">PhotoProOS</span>}
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--card-border)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
+            title={collapsed ? "Expand sidebar" : "Collapse to icons"}
+          >
+            {collapsed ? <ExpandIcon className="h-4 w-4" /> : <CollapseIcon className="h-4 w-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditMode((v) => !v)}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors",
+              collapsed && "h-9 w-9 justify-center px-0",
+              editMode
+                ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+                : "border-[var(--card-border)] text-foreground-secondary hover:text-foreground hover:bg-[var(--background-hover)]"
+            )}
+            title="Reorder, hide, or pin navigation links"
+          >
+            <span className={cn(collapsed && "sr-only")}>{editMode ? "Done" : "Customize"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Navigation */}
       <nav
-        className="flex-1 min-h-0 overflow-y-auto px-4 pb-6 pt-4"
+        className={cn(
+          "flex-1 min-h-0 overflow-y-auto pb-6 pt-4",
+          collapsed ? "px-2" : "px-4"
+        )}
         style={{
           WebkitMaskImage: "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
           maskImage: "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
         }}
       >
-        {editMode && (
+        {editMode && !collapsed && (
           <div className="mb-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs text-foreground-muted">
             Drag to reorder or hide links. Hidden links stay available below while editing.
           </div>
         )}
 
-        {pinnedNav.length > 0 && (
+        {!collapsed && pinnedNav.length > 0 && (
           <div className="mb-4 space-y-2">
             <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-foreground-muted">
               <span>Pinned</span>
@@ -441,222 +482,272 @@ export function DashboardSidebar({
           </div>
         )}
 
-        <div className="space-y-3">
-          {categorizedNav.map(({ category, items }) => {
-            if (!items.length) return null;
-            const label = categoryLabels[category]?.title ?? "More";
-            const open = sectionState[category] ?? false;
-            return (
-              <div
-                key={category}
-                className="rounded-xl border border-[var(--card-border)] bg-[var(--background)] shadow-sm"
-              >
+        {collapsed ? (
+          <div className="space-y-1">
+            {sortByNavOrder(visibleNav).map((item) => renderNavItem(item, { showLabel: false }))}
+          </div>
+        ) : (
+          <>
+            <div className="space-y-3">
+              {categorizedNav.map(({ category, items }) => {
+                if (!items.length) return null;
+                const label = categoryLabels[category]?.title ?? "More";
+                const open = sectionState[category] ?? false;
+                return (
+                  <div
+                    key={category}
+                    className="rounded-xl border border-[var(--card-border)] bg-[var(--background)] shadow-sm"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(category)}
+                      className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold text-foreground hover:bg-[var(--background-hover)]"
+                    >
+                      <span>{label}</span>
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 transition-transform",
+                          open ? "rotate-180" : "rotate-0"
+                        )}
+                      />
+                    </button>
+                    {open && (
+                      <div className="space-y-1 border-t border-[var(--card-border)] p-2">
+                        {items.map((item) => renderNavItem(item, { draggable: true }))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {editMode && hiddenNav.length > 0 && (
+              <div className="mt-4 space-y-2 rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--background)] p-3">
+                <div className="flex items-center justify-between text-sm font-semibold text-foreground">
+                  <span>Hidden Links</span>
+                  <span className="text-xs text-foreground-muted">{hiddenNav.length}</span>
+                </div>
+                <div className="space-y-1">
+                  {hiddenNav.map((item) => (
+                    <div key={item.id} className="opacity-70 hover:opacity-100 transition-opacity">
+                      {renderNavItem(item, { draggable: false })}
+                    </div>
+                  ))}
+                </div>
                 <button
                   type="button"
-                  onClick={() => toggleSection(category)}
-                  className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold text-foreground hover:bg-[var(--background-hover)]"
+                  onClick={resetNav}
+                  className="mt-3 inline-flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-1.5 text-xs font-semibold text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                 >
-                  <span>{label}</span>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 transition-transform",
-                      open ? "rotate-180" : "rotate-0"
-                    )}
-                  />
+                  Reset navigation
                 </button>
-                {open && (
-                  <div className="space-y-1 border-t border-[var(--card-border)] p-2">
-                    {items.map((item) => renderNavItem(item, { draggable: true }))}
-                  </div>
-                )}
               </div>
-            );
-          })}
-        </div>
-
-        {editMode && hiddenNav.length > 0 && (
-          <div className="mt-4 space-y-2 rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--background)] p-3">
-            <div className="flex items-center justify-between text-sm font-semibold text-foreground">
-              <span>Hidden Links</span>
-              <span className="text-xs text-foreground-muted">{hiddenNav.length}</span>
-            </div>
-            <div className="space-y-1">
-              {hiddenNav.map((item) => (
-                <div key={item.id} className="opacity-70 hover:opacity-100 transition-opacity">
-                  {renderNavItem(item, { draggable: false })}
-                </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={resetNav}
-              className="mt-3 inline-flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-1.5 text-xs font-semibold text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-            >
-              Reset navigation
-            </button>
-          </div>
+            )}
+          </>
         )}
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="sticky bottom-0 border-t border-[var(--card-border)] p-4 bg-[var(--card)]">
-        <div className="space-y-2">
-          {/* Notifications Link */}
-          {(() => {
-            const isActive = pathname === "/notifications" || (pathname ? pathname.startsWith("/notifications/") : false);
-            return (
-              <Link
-                href="/notifications"
-                className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-[var(--primary)] text-white"
-                    : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-                )}
-              >
-                <NotificationIcon
-                  className={cn(
-                    "h-5 w-5 shrink-0 transition-colors",
-                    isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
-                  )}
-                />
-                <span className="flex-1">Notifications</span>
-                {notificationCount > 0 && (
-                  <span
-                    className={cn(
-                      "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
-                      isActive
-                        ? "bg-white/20 text-white"
-                        : "bg-[var(--primary)]/10 text-[var(--primary)]"
-                    )}
-                  >
-                    {notificationCount > 99 ? "99+" : notificationCount}
-                  </span>
-                )}
-              </Link>
-            );
-          })()}
-
-          {bottomNavItems.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-            const IconComponent = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-[var(--primary)] text-white"
-                    : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-                )}
-              >
-                <IconComponent
-                  className={cn(
-                    "h-5 w-5 shrink-0 transition-colors",
-                    isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
-                  )}
-                />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Identity / org card */}
-        <div className="mt-4 space-y-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2">
-          <button
-            type="button"
-            onClick={() => setIdentityOpen((o) => !o)}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left hover:bg-[var(--background-hover)]"
-          >
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "h-9 w-9",
-                },
-              }}
-              afterSignOutUrl="/"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {user?.fullName || user?.username || "Signed in"}
-              </p>
-              <p className="truncate text-xs text-foreground-muted">
-                {organization?.name || user?.primaryEmailAddress?.emailAddress || "Workspace"}
-              </p>
-            </div>
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 text-foreground-muted transition-transform",
-                identityOpen ? "rotate-180" : "rotate-0"
-              )}
-            />
-          </button>
-
-          {identityOpen && (
-            <div className="space-y-3 rounded-md border border-[var(--card-border)] bg-[var(--card)] p-3">
-              <OrganizationSwitcher
-                appearance={{
-                  elements: {
-                    rootBox: "w-full",
-                    organizationSwitcherTrigger:
-                      "w-full justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-semibold text-foreground",
-                    organizationSwitcherTriggerIcon: "text-foreground-muted",
-                    organizationSwitcherOrganizationName: "text-sm font-semibold truncate",
-                  },
-                }}
-                afterSelectOrganizationUrl="/dashboard"
-                afterCreateOrganizationUrl="/dashboard"
-              />
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className={cn(
+        "sticky bottom-0 border-t border-[var(--card-border)] bg-[var(--card)]",
+        collapsed ? "p-3" : "p-4"
+      )}>
+        {collapsed ? (
+          <div className="flex flex-col items-center gap-3">
+            {(() => {
+              const isActive = pathname === "/notifications" || (pathname ? pathname.startsWith("/notifications/") : false);
+              return (
                 <Link
-                  href="/settings"
+                  href="/notifications"
                   className={cn(
-                    "flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold transition-colors",
-                    pathname.startsWith("/settings")
-                      ? "border-transparent bg-[var(--primary)] text-white"
+                    "flex h-10 w-10 items-center justify-center rounded-lg transition-all",
+                    isActive
+                      ? "bg-[var(--primary)] text-white"
                       : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                   )}
+                  title="Notifications"
                 >
-                  <SettingsIcon className="h-4 w-4" />
-                  Settings
+                  <NotificationIcon
+                    className={cn(
+                      "h-5 w-5 shrink-0",
+                      isActive ? "text-white" : "text-foreground-muted"
+                    )}
+                  />
                 </Link>
-                <Link
-                  href="/settings/team?invite=1"
-                  className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
-                >
-                  <InviteIcon className="h-4 w-4" />
-                  Invite
-                </Link>
-                <Link
-                  href="/settings/billing"
-                  className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
-                >
-                  <PaymentsIcon className="h-4 w-4" />
-                  Billing
-                </Link>
-                <Link
-                  href="/portal"
-                  className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
-                >
-                  <EyeIcon className="h-4 w-4" />
-                  View as client
-                </Link>
-              </div>
-
-              <div className="flex items-center justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2">
-                <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
-                <div className="flex items-center gap-2">
-                  <QuickThemeSwitcher />
-                  <ThemeToggle />
-                </div>
-              </div>
+              );
+            })()}
+            <div className="flex items-center justify-center">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-9 w-9",
+                  },
+                }}
+                afterSignOutUrl="/"
+              />
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-2">
+              {/* Notifications Link */}
+              {(() => {
+                const isActive = pathname === "/notifications" || (pathname ? pathname.startsWith("/notifications/") : false);
+                return (
+                  <Link
+                    href="/notifications"
+                    className={cn(
+                      "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-[var(--primary)] text-white"
+                        : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                    )}
+                  >
+                    <NotificationIcon
+                      className={cn(
+                        "h-5 w-5 shrink-0 transition-colors",
+                        isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                      )}
+                    />
+                    <span className="flex-1">Notifications</span>
+                    {notificationCount > 0 && (
+                      <span
+                        className={cn(
+                          "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                        )}
+                      >
+                        {notificationCount > 99 ? "99+" : notificationCount}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })()}
+
+              {bottomNavItems.map((item) => {
+                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                const IconComponent = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-[var(--primary)] text-white"
+                        : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                    )}
+                  >
+                    <IconComponent
+                      className={cn(
+                        "h-5 w-5 shrink-0 transition-colors",
+                        isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                      )}
+                    />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Identity / org card */}
+            <div className="mt-4 space-y-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2">
+              <button
+                type="button"
+                onClick={() => setIdentityOpen((o) => !o)}
+                className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left hover:bg-[var(--background-hover)]"
+              >
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: "h-9 w-9",
+                    },
+                  }}
+                  afterSignOutUrl="/"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {user?.fullName || user?.username || "Signed in"}
+                  </p>
+                  <p className="truncate text-xs text-foreground-muted">
+                    {organization?.name || user?.primaryEmailAddress?.emailAddress || "Workspace"}
+                  </p>
+                </div>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-foreground-muted transition-transform",
+                    identityOpen ? "rotate-180" : "rotate-0"
+                  )}
+                />
+              </button>
+
+              {identityOpen && (
+                <div className="space-y-3 rounded-md border border-[var(--card-border)] bg-[var(--card)] p-3">
+                  <OrganizationSwitcher
+                    appearance={{
+                      elements: {
+                        rootBox: "w-full",
+                        organizationSwitcherTrigger:
+                          "w-full justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-semibold text-foreground",
+                        organizationSwitcherTriggerIcon: "text-foreground-muted",
+                        organizationSwitcherOrganizationName: "text-sm font-semibold truncate",
+                      },
+                    }}
+                    afterSelectOrganizationUrl="/dashboard"
+                    afterCreateOrganizationUrl="/dashboard"
+                  />
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <Link
+                      href="/settings"
+                      className={cn(
+                        "flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold transition-colors",
+                        pathname.startsWith("/settings")
+                          ? "border-transparent bg-[var(--primary)] text-white"
+                          : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                      )}
+                    >
+                      <SettingsIcon className="h-4 w-4" />
+                      Settings
+                    </Link>
+                    <Link
+                      href="/settings/team?invite=1"
+                      className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                    >
+                      <InviteIcon className="h-4 w-4" />
+                      Invite
+                    </Link>
+                    <Link
+                      href="/settings/billing"
+                      className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
+                    >
+                      <PaymentsIcon className="h-4 w-4" />
+                      Billing
+                    </Link>
+                    <Link
+                      href="/portal"
+                      className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
+                    >
+                      <EyeIcon className="h-4 w-4" />
+                      View as client
+                    </Link>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2">
+                    <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
+                    <div className="flex items-center gap-2">
+                      <QuickThemeSwitcher />
+                      <ThemeToggle />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </aside>
   );
@@ -814,6 +905,24 @@ function StarFilledIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.062 3.261a1 1 0 0 0 .95.69h3.43c.969 0 1.371 1.24.588 1.81l-2.774 2.016a1 1 0 0 0-.364 1.118l1.06 3.262c.3.921-.755 1.688-1.54 1.118l-2.774-2.015a1 1 0 0 0-1.176 0l-2.774 2.015c-.784.57-1.838-.197-1.539-1.118l1.06-3.262a1 1 0 0 0-.364-1.118L2.92 8.688c-.783-.57-.38-1.81.588-1.81h3.43a1 1 0 0 0 .95-.69l1.06-3.261Z" />
+    </svg>
+  );
+}
+
+function CollapseIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M12.5 4.5a.75.75 0 0 1 1.13.98l-3.1 3.92a.25.25 0 0 0 0 .3l3.1 3.82a.75.75 0 0 1-1.16.96l-3.22-3.97a1.75 1.75 0 0 1 0-2.14l3.28-4.87Z" />
+      <path d="M8.5 4.5a.75.75 0 0 1 1.13.98l-3.1 3.92a.25.25 0 0 0 0 .3l3.1 3.82a.75.75 0 1 1-1.16.96L5.25 10.5a1.75 1.75 0 0 1 0-2.14l3.25-3.86Z" />
+    </svg>
+  );
+}
+
+function ExpandIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M7.5 4.5a.75.75 0 0 1 1.2-.9l3.22 3.97a1.75 1.75 0 0 1 0 2.14l-3.28 4.87a.75.75 0 1 1-1.25-.84l3.1-4.6a.25.25 0 0 0 0-.28L7.5 4.5Z" />
+      <path d="M3.5 4.5a.75.75 0 0 1 1.2-.9l3.22 3.97a1.75 1.75 0 0 1 0 2.14l-3.28 4.87a.75.75 0 0 1-1.25-.84l3.1-4.6a.25.25 0 0 0 0-.28L3.5 4.5Z" />
     </svg>
   );
 }
