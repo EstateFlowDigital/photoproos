@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { useToast } from "@/components/ui/toast";
-import { PhotoUploadModal } from "@/components/upload/photo-upload-modal";
+import { BulkUploadModal } from "@/components/upload/bulk-upload-modal";
 import {
   reorderPhotos,
   deleteGallery,
@@ -1869,13 +1869,12 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         onDelete={handlePhotoDelete}
       />
 
-      {/* Photo Upload Modal */}
-      <PhotoUploadModal
+      {/* Bulk Upload Modal */}
+      <BulkUploadModal
+        galleryId={gallery.id}
         isOpen={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         onUploadComplete={handleUploadComplete}
-        galleryId={gallery.id}
-        galleryName={gallery.name}
       />
 
       {/* Delete Confirmation Dialog */}

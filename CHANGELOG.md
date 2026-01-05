@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Bulk Upload v2** - Enhanced parallel upload system with progress tracking
+  - 5 concurrent uploads with automatic queue management
+  - Real-time progress tracking per file and overall
+  - Pause/resume capability for upload queue
+  - Automatic retry on failed uploads (3 attempts with exponential backoff)
+  - LocalStorage persistence for resuming interrupted sessions
+  - Clear feedback with toast notifications on completion
+  - Server actions now use session-based authentication internally
+
 ### Fixed
 - **Time-Off Integration** - Team availability now includes time-off data from AvailabilityBlock model
   - `getTeamAvailability()` - Returns time-off slots for each team member

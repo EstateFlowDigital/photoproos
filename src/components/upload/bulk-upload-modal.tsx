@@ -9,15 +9,13 @@ import { getUploadPresignedUrls, createAssets } from "@/lib/actions/uploads";
 import { useToast } from "@/components/ui/toast";
 
 interface BulkUploadModalProps {
-  organizationId: string;
   galleryId: string;
   isOpen: boolean;
   onClose: () => void;
-  onUploadComplete?: () => void;
+  onUploadComplete?: (uploadedFiles: Array<{ id: string; url: string; filename: string }>) => void;
 }
 
 export function BulkUploadModal({
-  organizationId,
   galleryId,
   isOpen,
   onClose,
@@ -36,10 +34,14 @@ export function BulkUploadModal({
     pending: 0,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const completedAssetsRef = useRef<Array<{ id: string; url: string; filename: string }>>([]);
 
   // Initialize queue
   useEffect(() => {
     if (!isOpen) return;
+
+    // Reset completed assets on open
+    completedAssetsRef.current = [];
 
     const uploadQueue = new UploadQueue({
       onProgress: (task) => {
@@ -66,12 +68,21 @@ export function BulkUploadModal({
       onComplete: async (task) => {
         // Create asset record in database
         try {
-          await createAssets(organizationId, galleryId, [{
+          const result = await createAssets(galleryId, [{
             key: task.key,
             filename: task.file.name,
             mimeType: task.file.type,
             sizeBytes: task.file.size,
           }]);
+
+          // Track completed asset for callback
+          if (result.success && result.data?.assets?.[0]) {
+            completedAssetsRef.current.push({
+              id: result.data.assets[0].id,
+              url: result.data.assets[0].originalUrl,
+              filename: result.data.assets[0].filename,
+            });
+          }
         } catch (error) {
           console.error("Failed to create asset record:", error);
         }
@@ -80,8 +91,9 @@ export function BulkUploadModal({
         console.error(`Upload failed for ${task.file.name}:`, error);
       },
       onAllComplete: () => {
-        showToast(`Successfully uploaded ${stats.completed} ${stats.completed === 1 ? 'photo' : 'photos'}`, "success");
-        onUploadComplete?.();
+        const completedCount = completedAssetsRef.current.length;
+        showToast(`Successfully uploaded ${completedCount} ${completedCount === 1 ? 'photo' : 'photos'}`, "success");
+        onUploadComplete?.(completedAssetsRef.current);
       },
     });
 
@@ -104,7 +116,7 @@ export function BulkUploadModal({
     return () => {
       uploadQueue.pause();
     };
-  }, [isOpen, organizationId, galleryId, onUploadComplete, showToast, stats.completed]);
+  }, [isOpen, galleryId, onUploadComplete, showToast]);
 
   // Handle file selection
   const handleFileSelect = async (files: FileList) => {
@@ -115,7 +127,6 @@ export function BulkUploadModal({
     // Get presigned URLs for all files
     try {
       const result = await getUploadPresignedUrls(
-        organizationId,
         galleryId,
         fileArray.map((f) => ({
           filename: f.name,

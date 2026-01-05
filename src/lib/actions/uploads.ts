@@ -15,6 +15,7 @@ import {
   extractKeyFromUrl,
   type PresignedUrlResponse,
 } from "@/lib/storage";
+import { requireOrganizationId } from "./auth-helper";
 
 // =============================================================================
 // Types
@@ -79,16 +80,19 @@ export interface BulkCreateAssetsResult {
 /**
  * Generate presigned URLs for uploading files to R2
  * Called before the client-side upload begins
+ * organizationId is optional - will be fetched from session if not provided
  */
 export async function getUploadPresignedUrls(
-  organizationId: string,
   galleryId: string,
   files: UploadRequestFile[]
 ): Promise<UploadPresignedUrlResult> {
   try {
+    // Get organizationId from session
+    const organizationId = await requireOrganizationId();
+
     // Validate inputs
-    if (!organizationId || !galleryId) {
-      return { success: false, error: "Missing organization or gallery ID" };
+    if (!galleryId) {
+      return { success: false, error: "Missing gallery ID" };
     }
 
     if (!files || files.length === 0) {
@@ -243,11 +247,13 @@ export async function createAsset(
  * Create multiple asset records in the database after successful batch upload
  */
 export async function createAssets(
-  organizationId: string,
   projectId: string,
   assets: Array<Omit<CreateAssetInput, "projectId">>
 ): Promise<BulkCreateAssetsResult> {
   try {
+    // Get organizationId from session
+    const organizationId = await requireOrganizationId();
+
     // Verify gallery exists and belongs to organization
     const gallery = await prisma.project.findFirst({
       where: {
