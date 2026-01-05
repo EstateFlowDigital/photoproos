@@ -112,9 +112,11 @@ export function DashboardLayoutClient({
       const target = evt.target as HTMLElement | null;
       const anchor = target?.closest("a");
       const top = document.elementFromPoint(evt.clientX, evt.clientY) as HTMLElement | null;
+      const href = anchor?.getAttribute("href");
+
       // eslint-disable-next-line no-console
       console.log("[nav-debug click]", {
-        href: anchor?.getAttribute("href"),
+        href,
         defaultPrevented: evt.defaultPrevented,
         targetTag: target?.tagName,
         targetId: target?.id,
@@ -125,6 +127,19 @@ export function DashboardLayoutClient({
         point: { x: evt.clientX, y: evt.clientY },
         path: window.location.pathname,
       });
+
+      // If an href exists and navigation doesn’t happen soon, log and force it.
+      if (href && href.startsWith("/")) {
+        const startPath = window.location.pathname;
+        setTimeout(() => {
+          const samePath = window.location.pathname === startPath;
+          if (samePath) {
+            // eslint-disable-next-line no-console
+            console.warn("[nav-debug stalled]", { href, path: startPath });
+            window.location.href = href;
+          }
+        }, 800);
+      }
     };
 
     const origPush = window.history.pushState;
