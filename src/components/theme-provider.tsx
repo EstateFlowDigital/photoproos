@@ -8,6 +8,7 @@ interface ThemeContextType {
   theme: Theme;
   resolvedTheme: "dark" | "light";
   setTheme: (theme: Theme) => void;
+  setResolvedThemeOverride: (resolved: "dark" | "light" | null) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -22,6 +23,7 @@ function getSystemTheme(): "dark" | "light" {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
+  const [resolvedThemeOverride, setResolvedThemeOverride] = useState<"dark" | "light" | null>(null);
   const [mounted, setMounted] = useState(false);
 
   // Load theme from localStorage on mount
@@ -37,7 +39,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
 
-    const resolved = theme === "system" ? getSystemTheme() : theme;
+    const resolved = theme === "system" ? (resolvedThemeOverride ?? getSystemTheme()) : theme;
     setResolvedTheme(resolved);
 
     // Apply theme to document
@@ -49,11 +51,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (metaThemeColor) {
       metaThemeColor.setAttribute("content", resolved === "dark" ? "#0A0A0A" : "#ffffff");
     }
-  }, [theme, mounted]);
+  }, [theme, mounted, resolvedThemeOverride]);
 
   // Listen for system theme changes
   useEffect(() => {
-    if (!mounted || theme !== "system") return;
+    if (!mounted || theme !== "system" || resolvedThemeOverride) return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
@@ -64,7 +66,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, mounted]);
+  }, [theme, mounted, resolvedThemeOverride]);
 
   // Sync theme across browser tabs via storage event
   useEffect(() => {
@@ -86,19 +88,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem(THEME_KEY, newTheme);
+    if (newTheme !== "system") setResolvedThemeOverride(null);
   };
 
   // Prevent flash by rendering nothing until mounted
   if (!mounted) {
     return (
-      <ThemeContext.Provider value={{ theme: "system", resolvedTheme: "dark", setTheme }}>
+      <ThemeContext.Provider value={{ theme: "system", resolvedTheme: "dark", setTheme, setResolvedThemeOverride }}>
         {children}
       </ThemeContext.Provider>
     );
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, setResolvedThemeOverride }}>
       {children}
     </ThemeContext.Provider>
   );

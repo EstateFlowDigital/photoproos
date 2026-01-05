@@ -104,10 +104,13 @@ export function DashboardLayoutClient({
   }, [effectiveNavMode]);
 
   // Auto theme switching based on time of day
-  const { theme, setTheme } = useTheme();
+  const { theme, setResolvedThemeOverride } = useTheme();
 
   useEffect(() => {
-    if (!autoTheme?.enabled || theme !== "system") return;
+    if (!autoTheme?.enabled || theme !== "system") {
+      setResolvedThemeOverride(null);
+      return;
+    }
 
     const checkAndApplyTheme = () => {
       const now = new Date();
@@ -129,7 +132,7 @@ export function DashboardLayoutClient({
         shouldBeDark = currentMinutes >= darkStartMinutes && currentMinutes < darkEndMinutes;
       }
 
-      setTheme(shouldBeDark ? "dark" : "light");
+      setResolvedThemeOverride(shouldBeDark ? "dark" : "light");
     };
 
     // Check immediately and then every minute
@@ -137,7 +140,7 @@ export function DashboardLayoutClient({
     const interval = setInterval(checkAndApplyTheme, 60000);
 
     return () => clearInterval(interval);
-  }, [autoTheme, setTheme, theme]);
+  }, [autoTheme, setResolvedThemeOverride, theme]);
 
   return (
     <ResponsiveTester>
