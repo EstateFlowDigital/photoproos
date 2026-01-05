@@ -65,6 +65,7 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
     serviceDescription: gallery.service?.description || undefined,
     accessType: gallery.password ? ("password" as const) : ("public" as const),
     coverImageUrl: gallery.coverImageUrl,
+    expiresAt: gallery.expiresAt,
     settings: {
       allowDownloads: gallery.allowDownloads,
       allowFavorites: true, // Default - not in schema yet
