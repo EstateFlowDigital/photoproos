@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -53,6 +54,7 @@ interface WebhookManagerProps {
 }
 
 export function WebhookManager({ webhooks, onRefresh, className }: WebhookManagerProps) {
+  const confirm = useConfirm();
   const [isCreating, setIsCreating] = React.useState(false);
   const [newWebhookSecret, setNewWebhookSecret] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -102,9 +104,13 @@ export function WebhookManager({ webhooks, onRefresh, className }: WebhookManage
   };
 
   const handleDelete = async (webhookId: string) => {
-    if (!confirm("Are you sure you want to delete this webhook endpoint?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete webhook",
+      description: "Are you sure you want to delete this webhook endpoint?",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     setIsLoading(true);
     const result = await deleteWebhookEndpoint(webhookId);

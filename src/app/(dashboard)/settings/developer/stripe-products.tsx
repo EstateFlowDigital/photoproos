@@ -11,6 +11,7 @@ import {
 } from "@/lib/actions/stripe-product-sync";
 import type { ProductSyncOverview } from "@/lib/stripe/product-sync";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 
 const SERVICE_CATEGORIES = [
   { value: "real_estate", label: "Real Estate" },
@@ -20,13 +21,13 @@ const SERVICE_CATEGORIES = [
   { value: "wedding", label: "Wedding" },
   { value: "product", label: "Product" },
   { value: "other", label: "Other" },
-] as const;
+] satisfies { value: string; label: string }[];
 
 const BUNDLE_TYPES = [
   { value: "fixed", label: "Fixed Price" },
   { value: "tiered", label: "Tiered" },
   { value: "custom", label: "Custom" },
-] as const;
+] satisfies { value: string; label: string }[];
 
 interface SyncStats {
   services: { synced: number; failed: number; errors: string[] } | null;
@@ -649,22 +650,12 @@ export function StripeProductsSection({
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                Category *
-              </label>
-              <select
-                value={serviceCategory}
-                onChange={(e) => setServiceCategory(e.target.value)}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                {SERVICE_CATEGORIES.map((cat) => (
-                  <option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Category *"
+              value={serviceCategory}
+              onChange={(e) => setServiceCategory(e.target.value)}
+              options={SERVICE_CATEGORIES}
+            />
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -765,22 +756,12 @@ export function StripeProductsSection({
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                Bundle Type *
-              </label>
-              <select
-                value={bundleType}
-                onChange={(e) => setBundleType(e.target.value)}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                {BUNDLE_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Bundle Type *"
+              value={bundleType}
+              onChange={(e) => setBundleType(e.target.value)}
+              options={BUNDLE_TYPES}
+            />
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-foreground mb-1.5">

@@ -15,6 +15,17 @@ import {
 } from "@/components/ui/dialog";
 import Link from "next/link";
 import {
+  LoadingSpinner,
+  ArrowLeftIcon,
+  CopyIcon,
+  CheckIcon,
+  MailIcon,
+  UsersIcon,
+  CheckCircleIcon,
+  GiftIcon,
+  SparklesIcon,
+} from "@/components/ui/settings-icons";
+import {
   sendReferralInvite,
   applyReward,
   type PlatformReferrerProfile,

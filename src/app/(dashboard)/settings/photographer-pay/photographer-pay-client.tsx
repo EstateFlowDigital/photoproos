@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { upsertPhotographerRate, deletePhotographerRate } from "@/lib/actions/photographer-pay";
 import type { PhotographerRateWithRelations } from "@/lib/actions/photographer-pay";
 
@@ -54,6 +56,7 @@ export function PhotographerPayClient({
   services,
 }: PhotographerPayClientProps) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [isAddingRate, setIsAddingRate] = useState(false);
   const [editingRateId, setEditingRateId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,7 +98,13 @@ export function PhotographerPayClient({
   };
 
   const handleDeleteRate = async (rateId: string) => {
-    if (!confirm("Are you sure you want to delete this rate?")) return;
+    const confirmed = await confirm({
+      title: "Delete rate",
+      description: "Are you sure you want to delete this rate? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     setIsSubmitting(true);
     try {
@@ -146,49 +155,39 @@ export function PhotographerPayClient({
           <form action={handleSaveRate} className="mb-6 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
             <h3 className="font-medium text-foreground mb-4">Add New Rate</h3>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Team Member</label>
-                <select
-                  name="userId"
-                  required
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
-                >
-                  <option value="">Select member...</option>
-                  {members.map((member) => (
-                    <option key={member.userId} value={member.userId}>
-                      {member.user.fullName || member.user.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Team Member"
+                name="userId"
+                required
+                placeholder="Select member..."
+                options={members.map((member) => ({
+                  value: member.userId,
+                  label: member.user.fullName || member.user.email,
+                }))}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Service</label>
-                <select
-                  name="serviceId"
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
-                >
-                  <option value="default">Default (all services)</option>
-                  {services.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Service"
+                name="serviceId"
+                options={[
+                  { value: "default", label: "Default (all services)" },
+                  ...services.map((service) => ({
+                    value: service.id,
+                    label: service.name,
+                  })),
+                ]}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Rate Type</label>
-                <select
-                  name="rateType"
-                  required
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
-                >
-                  <option value="percentage">Percentage of Invoice</option>
-                  <option value="fixed">Fixed Amount</option>
-                  <option value="hourly">Hourly Rate</option>
-                </select>
-              </div>
+              <Select
+                label="Rate Type"
+                name="rateType"
+                required
+                options={[
+                  { value: "percentage", label: "Percentage of Invoice" },
+                  { value: "fixed", label: "Fixed Amount" },
+                  { value: "hourly", label: "Hourly Rate" },
+                ]}
+              />
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">Rate Value</label>

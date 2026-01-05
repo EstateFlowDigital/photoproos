@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,6 +41,7 @@ interface ApiKeyManagerProps {
 }
 
 export function ApiKeyManager({ apiKeys, onRefresh, className }: ApiKeyManagerProps) {
+  const confirm = useConfirm();
   const [isCreating, setIsCreating] = React.useState(false);
   const [newKeyName, setNewKeyName] = React.useState("");
   const [newKeyValue, setNewKeyValue] = React.useState<string | null>(null);
@@ -70,9 +72,13 @@ export function ApiKeyManager({ apiKeys, onRefresh, className }: ApiKeyManagerPr
   };
 
   const handleRevokeKey = async (keyId: string) => {
-    if (!confirm("Are you sure you want to revoke this API key? This action cannot be undone.")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Revoke API key",
+      description: "Are you sure you want to revoke this API key? This action cannot be undone.",
+      confirmText: "Revoke",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     setIsLoading(true);
     const result = await revokeApiKey(keyId);
@@ -87,9 +93,13 @@ export function ApiKeyManager({ apiKeys, onRefresh, className }: ApiKeyManagerPr
   };
 
   const handleDeleteKey = async (keyId: string) => {
-    if (!confirm("Are you sure you want to permanently delete this API key?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete API key",
+      description: "Are you sure you want to permanently delete this API key?",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     setIsLoading(true);
     const result = await deleteApiKey(keyId);

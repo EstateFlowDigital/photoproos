@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   createSubscriptionPlan,
@@ -137,6 +138,7 @@ export function SubscriptionPlansSection({
   initialExperiments,
 }: SubscriptionPlansProps) {
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
   const [plans, setPlans] = useState<SubscriptionPlan[]>(initialPlans);
   const [experiments, setExperiments] = useState<PricingExperiment[]>(initialExperiments);
@@ -314,8 +316,14 @@ export function SubscriptionPlansSection({
     });
   };
 
-  const handleDeleteFeature = (featureId: string, featureName: string) => {
-    if (!confirm(`Delete feature "${featureName}"?`)) return;
+  const handleDeleteFeature = async (featureId: string, featureName: string) => {
+    const confirmed = await confirm({
+      title: "Delete feature",
+      description: `Delete feature "${featureName}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       try {
@@ -425,8 +433,14 @@ export function SubscriptionPlansSection({
     });
   };
 
-  const handleDeletePlan = (planId: string, planName: string) => {
-    if (!confirm(`Delete plan "${planName}"? This cannot be undone.`)) return;
+  const handleDeletePlan = async (planId: string, planName: string) => {
+    const confirmed = await confirm({
+      title: "Delete plan",
+      description: `Delete plan "${planName}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       try {
@@ -484,8 +498,14 @@ export function SubscriptionPlansSection({
     });
   };
 
-  const handleDeleteVariant = (variantId: string, variantName: string) => {
-    if (!confirm(`Delete variant "${variantName}"?`)) return;
+  const handleDeleteVariant = async (variantId: string, variantName: string) => {
+    const confirmed = await confirm({
+      title: "Delete variant",
+      description: `Delete variant "${variantName}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       try {

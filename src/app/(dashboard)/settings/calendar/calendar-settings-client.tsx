@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import type { GoogleCalendarConfig } from "@/lib/actions/google-calendar";
 import {
   updateGoogleCalendarSettings,
@@ -316,27 +317,17 @@ export function CalendarSettingsClient({
 
           <div className="space-y-4">
             {/* Sync Direction */}
-            <div>
-              <label
-                htmlFor="syncDirection"
-                className="block text-sm font-medium text-foreground mb-1.5"
-              >
-                Sync Direction
-              </label>
-              <select
-                id="syncDirection"
-                value={syncDirection}
-                onChange={(e) => setSyncDirection(e.target.value as SyncDirection)}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              >
-                <option value="both">Two-way sync (import and export)</option>
-                <option value="import_only">Import only (Google to PhotoProOS)</option>
-                <option value="export_only">Export only (PhotoProOS to Google)</option>
-              </select>
-              <p className="mt-1.5 text-xs text-foreground-muted">
-                Choose how events are synced between Google Calendar and PhotoProOS
-              </p>
-            </div>
+            <Select
+              label="Sync Direction"
+              value={syncDirection}
+              onChange={(e) => setSyncDirection(e.target.value as SyncDirection)}
+              options={[
+                { value: "both", label: "Two-way sync (import and export)" },
+                { value: "import_only", label: "Import only (Google to PhotoProOS)" },
+                { value: "export_only", label: "Export only (PhotoProOS to Google)" },
+              ]}
+              helperText="Choose how events are synced between Google Calendar and PhotoProOS"
+            />
 
             {/* Sync Toggle */}
             <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">

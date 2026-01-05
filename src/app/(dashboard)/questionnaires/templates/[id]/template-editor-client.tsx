@@ -31,6 +31,7 @@ import {
   deleteQuestionnaireTemplate,
 } from "@/lib/actions/questionnaire-templates";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import type { FormFieldType, LegalAgreementType } from "@prisma/client";
 
 // ============================================================================
@@ -117,6 +118,7 @@ const agreementTypes: { value: LegalAgreementType; label: string }[] = [
 export function TemplateEditorClient({ template }: TemplateEditorClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
 
   // Template metadata
@@ -334,9 +336,13 @@ export function TemplateEditorClient({ template }: TemplateEditorClientProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this template? This action cannot be undone.")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete template",
+      description: "Are you sure you want to delete this template? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deleteQuestionnaireTemplate({ id: template.id });

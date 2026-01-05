@@ -8,6 +8,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Custom Confirm Dialog Component** - Replaced native browser confirm() with styled dialog
+  - Created `ConfirmDialog` component with `useConfirm` hook (`components/ui/confirm-dialog.tsx`)
+  - Added `ConfirmProvider` to dashboard layout
+  - Supports destructive variant for delete actions
+  - Customizable title, description, and button text
+  - Consistent styling with design system
+
+### Changed
+- **Replace native confirm() dialogs with custom modals** - Updated 25+ files across the application
+  - All delete confirmations now use styled dialog matching the design system
+  - Improved accessibility with proper focus management
+  - Consistent UX for destructive actions across templates, forms, portfolios, settings, etc.
+- **Replace raw select elements with design system Select component** - Standardized dropdown styling across settings pages
+  - Updated email settings page with Select component for digest frequency and delivery time
+  - Updated notifications page with Select component for frequency, time, day of week, and quiet hours
+  - Updated gallery templates with Select component for service selection
+  - Updated Stripe products page with Select component for category and bundle type
+  - Updated referrals page with Select component for reward type
+  - Updated calendar settings with Select component for sync direction
+  - Updated photographer pay settings with Select component for team member, service, and rate type selections
+
+### Added
+- **Slack Integration Settings Page** - Dedicated settings page for Slack notifications
+  - New page at `/settings/slack` for managing Slack integration
+  - Connection status card showing workspace and active state
+  - Webhook URL configuration for incoming notifications
+  - Notification event selection (bookings, payments, cancellations, galleries, messages)
+  - Test notification button to verify connection
+  - Pause/resume and disconnect functionality
+  - Step-by-step setup instructions for creating Slack webhooks
+
 - **Photo Download Receipts** - Email receipts when clients download photos
   - Added DownloadReceiptEmail template (`emails/download-receipt.tsx`)
   - Added `sendDownloadReceiptEmail` function to email service

@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { Switch } from "@/components/ui/switch";
+import { Select } from "@/components/ui/select";
+import { ArrowLeftIcon, MailIcon, BellIcon, LoadingSpinner } from "@/components/ui/settings-icons";
 import {
   getEmailSettings,
   updateEmailSettings,
@@ -235,40 +237,24 @@ export default function EmailSettingsPage() {
 
             {settings.enableDigestEmails && (
               <div className="ml-4 pl-4 border-l-2 border-[var(--card-border)] space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    Digest Frequency
-                  </label>
-                  <select
-                    value={settings.digestEmailFrequency}
-                    onChange={(e) => handleChange("digestEmailFrequency", e.target.value)}
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground"
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly (Mondays)</option>
-                    <option value="none">Never</option>
-                  </select>
-                </div>
+                <Select
+                  label="Digest Frequency"
+                  value={settings.digestEmailFrequency}
+                  onChange={(e) => handleChange("digestEmailFrequency", e.target.value)}
+                  options={[
+                    { value: "daily", label: "Daily" },
+                    { value: "weekly", label: "Weekly (Mondays)" },
+                    { value: "none", label: "Never" },
+                  ]}
+                />
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    Delivery Time
-                  </label>
-                  <select
-                    value={settings.digestEmailTime || "08:00"}
-                    onChange={(e) => handleChange("digestEmailTime", e.target.value)}
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground"
-                  >
-                    {generateTimeOptions().map((time) => (
-                      <option key={time.value} value={time.value}>
-                        {time.label}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="mt-1 text-xs text-foreground-muted">
-                    Time is in your organization's timezone
-                  </p>
-                </div>
+                <Select
+                  label="Delivery Time"
+                  value={settings.digestEmailTime || "08:00"}
+                  onChange={(e) => handleChange("digestEmailTime", e.target.value)}
+                  options={generateTimeOptions()}
+                  helperText="Time is in your organization's timezone"
+                />
               </div>
             )}
           </div>
@@ -346,45 +332,11 @@ function generateTimeOptions() {
   return options;
 }
 
-// Icons
-function ArrowLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
-function MailIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M3 4a2 2 0 0 0-2 2v1.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 7.162V6a2 2 0 0 0-2-2H3Z" />
-      <path d="m19 8.839-7.77 3.885a2.75 2.75 0 0 1-2.46 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z" />
-    </svg>
-  );
-}
-
-function BellIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
+// Email-specific icons (not in shared library)
 function SendIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.155.75.75 0 0 0 0-1.114A28.897 28.897 0 0 0 3.105 2.288Z" />
-    </svg>
-  );
-}
-
-function LoadingSpinner({ className }: { className?: string }) {
-  return (
-    <svg className={cn("animate-spin", className)} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
     </svg>
   );
 }

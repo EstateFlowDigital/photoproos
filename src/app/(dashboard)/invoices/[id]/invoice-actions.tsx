@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { updateInvoiceStatus, deleteInvoice } from "@/lib/actions/invoices";
 import { generateInvoicePdf } from "@/lib/actions/invoice-pdf";
 import type { InvoiceStatus } from "@prisma/client";
@@ -17,6 +18,7 @@ interface InvoiceActionsProps {
 export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: InvoiceActionsProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isLoading, setIsLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
@@ -39,9 +41,13 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this draft invoice?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete invoice",
+      description: "Are you sure you want to delete this draft invoice? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     setIsLoading(true);
     setShowMenu(false);

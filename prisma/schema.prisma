@@ -521,6 +521,13 @@ model Organization {
   enableDigestEmails        Boolean @default(true)
   digestEmailFrequency      String? @default("daily") // "daily", "weekly", "none"
   digestEmailTime           String? @default("08:00") // Time in HH:MM format
+  digestEmailDayOfWeek      Int?    @default(0) // 0=Sunday, 1=Monday, etc. (for weekly digest)
+
+  // Notification Preferences (JSON: per-category email/push toggles)
+  notificationPreferences Json? // { email: {...}, push: {...}, quietHours: {...} }
+  quietHoursEnabled       Boolean @default(false)
+  quietHoursFrom          String? @default("22:00") // HH:MM format
+  quietHoursTo            String? @default("07:00") // HH:MM format
 
   // Twilio SMS Settings
   twilioAccountSid  String?
@@ -620,6 +627,9 @@ model Organization {
 
   // iCal Feed Exports
   calendarFeeds CalendarFeed[]
+
+  // Booking Waitlist
+  waitlistEntries BookingWaitlist[]
 
   @@index([slug])
   @@index([plan])
@@ -814,6 +824,12 @@ model Client {
   // Email Logging System
   emailLogs EmailLog[]
 
+  // Client Portal Notifications
+  notifications ClientNotification[]
+
+  // Booking Waitlist
+  waitlistEntries BookingWaitlist[]
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([email])
@@ -882,6 +898,9 @@ model Service {
 
   // Gallery templates using this service as default
   galleryTemplates GalleryTemplate[]
+
+  // Booking Waitlist
+  waitlistEntries BookingWaitlist[]
 
   @@index([organizationId])
   @@index([category])
@@ -1324,6 +1343,12 @@ model Booking {
   // Industry categorization (for multi-industry orgs)
   industry Industry?
 
+  // Completion tracking
+  completedAt DateTime? // When booking status changed to "completed"
+
+  // Follow-up tracking
+  followupsSent String[] @default([]) // Tracks which follow-up emails were sent (e.g., "thank_you_1", "review_request_3")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1366,6 +1391,7 @@ model Booking {
   // Phase 3: SMS Integration
   smsLogs SMSLog[]
 
+
   @@index([organizationId])
   @@index([multiDayParentId])
   @@index([clientId])
@@ -1377,6 +1403,61 @@ model Booking {
   @@index([seriesId])
   @@index([parentBookingId])
   @@index([industry])
+}
+
+// ============================================================================
+// BOOKING WAITLIST
+// ============================================================================
+
+model BookingWaitlist {
+  id             String          @id @default(cuid())
+  organizationId String
+
+  // Client info (can be existing client or new inquiry)
+  clientId    String?
+  clientName  String
+  clientEmail String
+  clientPhone String?
+
+  // Desired booking details
+  serviceId   String?
+  preferredDate     DateTime // Preferred date/time
+  alternateDate     DateTime? // Alternate date if available
+  flexibleDates     Boolean   @default(false) // Willing to take any available slot
+  notes             String? // Special requests
+
+  // Waitlist status
+  status            WaitlistStatus @default(pending)
+  priority          Int            @default(0) // Higher = more priority
+  position          Int? // Position in queue (calculated)
+  notifiedAt        DateTime? // When client was notified of availability
+  expiresAt         DateTime? // When the offer expires
+  convertedBookingId String? @unique // If converted to booking
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client           Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  service          Service?     @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  convertedBooking Booking?     @relation("WaitlistConversion", fields: [convertedBookingId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([serviceId])
+  @@index([status])
+  @@index([preferredDate])
+  @@index([priority])
+}
+
+enum WaitlistStatus {
+  pending       // Waiting for availability
+  notified      // Client notified of availability
+  accepted      // Client accepted and booking created
+  declined      // Client declined the offer
+  expired       // Offer expired without response
+  cancelled     // Client cancelled from waitlist
 }
 
 // ============================================================================
@@ -1767,6 +1848,44 @@ model Notification {
   @@index([organizationId])
   @@index([read])
   @@index([createdAt])
+}
+
+// Client Portal Notifications (for clients in their portal)
+model ClientNotification {
+  id       String                   @id @default(cuid())
+  clientId String
+  type     ClientNotificationType
+  title    String
+  message  String
+  linkUrl  String?
+  read     Boolean                  @default(false)
+  readAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+enum ClientNotificationType {
+  gallery_ready        // Gallery is ready for viewing
+  gallery_expiring     // Gallery is about to expire
+  invoice_sent         // New invoice received
+  invoice_reminder     // Payment reminder
+  payment_confirmed    // Payment was successful
+  contract_ready       // Contract needs signature
+  contract_signed      // Contract was signed successfully
+  booking_confirmed    // Booking was confirmed
+  booking_reminder     // Upcoming booking reminder
+  questionnaire_ready  // Questionnaire needs completion
+  message_received     // New message from photographer
+  photos_downloaded    // Download receipt
+  favorites_saved      // Favorites were saved
+  system               // System notification
 }
 
 // ============================================================================

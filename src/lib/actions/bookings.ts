@@ -346,7 +346,11 @@ export async function updateBookingStatus(
 
     await prisma.booking.update({
       where: { id },
-      data: { status },
+      data: {
+        status,
+        // Set completedAt timestamp when booking is marked as completed
+        ...(status === "completed" && { completedAt: new Date() }),
+      },
     });
 
     // Send confirmation email when booking is confirmed

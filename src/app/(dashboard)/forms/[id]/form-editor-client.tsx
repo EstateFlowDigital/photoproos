@@ -34,6 +34,7 @@ import {
   type FormFieldOption,
 } from "@/lib/actions/custom-forms";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { CustomFormFieldType } from "@prisma/client";
 
@@ -135,6 +136,7 @@ const categories = [
 export function FormEditorClient({ form }: FormEditorClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
 
   // Form metadata state
@@ -252,8 +254,14 @@ export function FormEditorClient({ form }: FormEditorClientProps) {
     });
   };
 
-  const handleDeleteField = (fieldId: string) => {
-    if (!confirm("Delete this field?")) return;
+  const handleDeleteField = async (fieldId: string) => {
+    const confirmed = await confirm({
+      title: "Delete field",
+      description: "Delete this field? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deleteFormField(fieldId);
@@ -323,9 +331,13 @@ export function FormEditorClient({ form }: FormEditorClientProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this form? This action cannot be undone.")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete form",
+      description: "Are you sure you want to delete this form? All submissions will be lost.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deleteForm(form.id);

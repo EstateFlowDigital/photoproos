@@ -45,6 +45,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const [openDirection, setOpenDirection] = useState<"up" | "down">("down");
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -61,6 +62,14 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen || !buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const estimatedMenuHeight = 190; // fits all theme options with padding
+    setOpenDirection(spaceBelow < estimatedMenuHeight ? "up" : "down");
+  }, [isOpen]);
 
   const options = [
     { value: "light" as const, label: "Light", icon: SunIcon },
@@ -88,7 +97,10 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div
             ref={menuRef}
-            className="absolute right-0 top-full z-50 mt-2 w-36 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-1 shadow-lg"
+            className={cn(
+              "absolute right-0 z-50 w-36 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-1 shadow-lg",
+              openDirection === "up" ? "bottom-full mb-2" : "top-full mt-2"
+            )}
           >
             {options.map((option) => {
               const Icon = option.icon;

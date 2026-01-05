@@ -20,6 +20,7 @@ import {
   duplicateBookingForm,
 } from "@/lib/actions/booking-forms";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import type { Industry } from "@prisma/client";
 
 interface BookingFormData {
@@ -63,6 +64,7 @@ export function BookingFormsPageClient({
 }: BookingFormsPageClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,7 +170,13 @@ export function BookingFormsPageClient({
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this form?")) return;
+    const confirmed = await confirm({
+      title: "Delete booking form",
+      description: "Are you sure you want to delete this form? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deleteBookingForm(id);

@@ -1302,3 +1302,369 @@ export async function getBundleWithPricing(bundleId: string) {
     return null;
   }
 }
+
+// =============================================================================
+// Package Builder Analytics & Recommendations
+// =============================================================================
+
+interface PackagePerformance {
+  bundleId: string;
+  bundleName: string;
+  totalOrders: number;
+  totalRevenueCents: number;
+  averageOrderValueCents: number;
+  conversionRate: number;
+  lastOrderDate: Date | null;
+}
+
+interface PackageAnalytics {
+  totalPackages: number;
+  activePackages: number;
+  totalPackageRevenueCents: number;
+  topPerformers: PackagePerformance[];
+  underperformers: PackagePerformance[];
+  revenueByPackage: { bundleId: string; name: string; revenueCents: number }[];
+}
+
+/**
+ * Get package performance analytics
+ */
+export async function getPackageAnalytics(
+  dateRange?: { startDate: Date; endDate: Date }
+): Promise<ActionResult<PackageAnalytics>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Get all packages with their order data
+    const bundles = await prisma.serviceBundle.findMany({
+      where: { organizationId },
+      include: {
+        orderItems: {
+          where: dateRange
+            ? {
+                createdAt: {
+                  gte: dateRange.startDate,
+                  lte: dateRange.endDate,
+                },
+              }
+            : undefined,
+          include: {
+            order: {
+              select: {
+                status: true,
+                paidAt: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: { orderItems: true },
+        },
+      },
+    });
+
+    // Calculate performance metrics for each package
+    const performanceData: PackagePerformance[] = bundles.map((bundle) => {
+      const completedOrders = bundle.orderItems.filter(
+        (item) => item.order.status === "completed" || item.order.paidAt
+      );
+      const totalRevenue = completedOrders.reduce(
+        (sum, item) => sum + item.priceCents * item.quantity,
+        0
+      );
+      const lastOrder = completedOrders.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      )[0];
+
+      return {
+        bundleId: bundle.id,
+        bundleName: bundle.name,
+        totalOrders: completedOrders.length,
+        totalRevenueCents: totalRevenue,
+        averageOrderValueCents:
+          completedOrders.length > 0
+            ? Math.round(totalRevenue / completedOrders.length)
+            : 0,
+        conversionRate: bundle._count.orderItems > 0
+          ? (completedOrders.length / bundle._count.orderItems) * 100
+          : 0,
+        lastOrderDate: lastOrder?.createdAt || null,
+      };
+    });
+
+    // Sort by revenue for top/under performers
+    const sortedByRevenue = [...performanceData].sort(
+      (a, b) => b.totalRevenueCents - a.totalRevenueCents
+    );
+
+    const activePackages = bundles.filter((b) => b.isActive).length;
+    const totalRevenue = performanceData.reduce(
+      (sum, p) => sum + p.totalRevenueCents,
+      0
+    );
+
+    return {
+      success: true,
+      data: {
+        totalPackages: bundles.length,
+        activePackages,
+        totalPackageRevenueCents: totalRevenue,
+        topPerformers: sortedByRevenue.slice(0, 5),
+        underperformers: sortedByRevenue
+          .filter((p) => p.totalOrders > 0)
+          .slice(-5)
+          .reverse(),
+        revenueByPackage: sortedByRevenue.map((p) => ({
+          bundleId: p.bundleId,
+          name: p.bundleName,
+          revenueCents: p.totalRevenueCents,
+        })),
+      },
+    };
+  } catch (error) {
+    console.error("Error getting package analytics:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get package analytics" };
+  }
+}
+
+/**
+ * Get service combination recommendations based on booking patterns
+ */
+export async function getPackageRecommendations(): Promise<
+  ActionResult<{
+    recommendations: {
+      services: { id: string; name: string }[];
+      frequency: number;
+      suggestedPriceCents: number;
+      potentialSavingsPercent: number;
+    }[];
+  }>
+> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Get recent bookings with services to find common combinations
+    const recentBookings = await prisma.booking.findMany({
+      where: {
+        organizationId,
+        serviceId: { not: null },
+        createdAt: { gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) }, // Last 90 days
+      },
+      include: {
+        service: {
+          select: { id: true, name: true, priceCents: true },
+        },
+        client: {
+          select: { id: true },
+        },
+      },
+    });
+
+    // Group by client to find service combinations
+    const clientServiceMap = new Map<string, Set<string>>();
+    const serviceDetails = new Map<string, { name: string; priceCents: number }>();
+
+    recentBookings.forEach((booking) => {
+      if (booking.clientId && booking.serviceId && booking.service) {
+        if (!clientServiceMap.has(booking.clientId)) {
+          clientServiceMap.set(booking.clientId, new Set());
+        }
+        clientServiceMap.get(booking.clientId)!.add(booking.serviceId);
+        serviceDetails.set(booking.serviceId, {
+          name: booking.service.name,
+          priceCents: booking.service.priceCents,
+        });
+      }
+    });
+
+    // Find common service combinations (clients who bought multiple services)
+    const combinationFrequency = new Map<string, number>();
+    clientServiceMap.forEach((services) => {
+      if (services.size >= 2) {
+        const sortedServices = Array.from(services).sort().join(",");
+        combinationFrequency.set(
+          sortedServices,
+          (combinationFrequency.get(sortedServices) || 0) + 1
+        );
+      }
+    });
+
+    // Convert to recommendations (top 5 combinations)
+    const sortedCombinations = Array.from(combinationFrequency.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    const recommendations = sortedCombinations.map(([combo, frequency]) => {
+      const serviceIds = combo.split(",");
+      const services = serviceIds.map((id) => ({
+        id,
+        name: serviceDetails.get(id)?.name || "Unknown",
+      }));
+      const totalPrice = serviceIds.reduce(
+        (sum, id) => sum + (serviceDetails.get(id)?.priceCents || 0),
+        0
+      );
+      const suggestedDiscount = 0.1 + (frequency > 5 ? 0.05 : 0); // 10-15% discount
+      const suggestedPriceCents = Math.round(totalPrice * (1 - suggestedDiscount));
+
+      return {
+        services,
+        frequency,
+        suggestedPriceCents,
+        potentialSavingsPercent: Math.round(suggestedDiscount * 100),
+      };
+    });
+
+    return {
+      success: true,
+      data: { recommendations },
+    };
+  } catch (error) {
+    console.error("Error getting package recommendations:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get package recommendations" };
+  }
+}
+
+/**
+ * Quick create a package from a recommendation
+ */
+export async function createPackageFromRecommendation(
+  name: string,
+  serviceIds: string[],
+  priceCents: number,
+  options?: {
+    description?: string;
+    badgeText?: string;
+  }
+): Promise<ActionResult<{ id: string; slug: string }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify all services exist and belong to org
+    const services = await prisma.service.findMany({
+      where: {
+        id: { in: serviceIds },
+        organizationId,
+      },
+    });
+
+    if (services.length !== serviceIds.length) {
+      return { success: false, error: "One or more services not found" };
+    }
+
+    // Calculate original price for savings display
+    const originalPriceCents = services.reduce((sum, s) => sum + s.priceCents, 0);
+    const savingsPercent =
+      originalPriceCents > 0
+        ? Math.round(((originalPriceCents - priceCents) / originalPriceCents) * 100)
+        : 0;
+
+    // Generate slug
+    const slug = generateSlug(name);
+
+    // Create bundle with services
+    const bundle = await prisma.serviceBundle.create({
+      data: {
+        organizationId,
+        name,
+        slug,
+        description: options?.description,
+        priceCents,
+        bundleType: "fixed",
+        pricingMethod: "fixed",
+        badgeText: options?.badgeText || (savingsPercent >= 15 ? "Best Value" : null),
+        originalPriceCents,
+        savingsPercent,
+        isActive: true,
+        isPublic: true,
+        services: {
+          create: serviceIds.map((serviceId, index) => ({
+            serviceId,
+            isRequired: true,
+            quantity: 1,
+            sortOrder: index,
+          })),
+        },
+      },
+    });
+
+    revalidatePath("/services/bundles");
+    revalidatePath("/order-pages");
+
+    return { success: true, data: { id: bundle.id, slug: bundle.slug } };
+  } catch (error) {
+    console.error("Error creating package from recommendation:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create package" };
+  }
+}
+
+/**
+ * Get package templates for quick setup
+ */
+export async function getPackageTemplates(): Promise<
+  ActionResult<{
+    templates: {
+      id: string;
+      name: string;
+      description: string;
+      suggestedServices: string[];
+      industry: string;
+      discountPercent: number;
+    }[];
+  }>
+> {
+  // Pre-defined templates for common photography package types
+  const templates = [
+    {
+      id: "wedding-complete",
+      name: "Complete Wedding Package",
+      description: "Full-day coverage with engagement session and albums",
+      suggestedServices: ["Wedding Photography", "Engagement Session", "Wedding Album"],
+      industry: "Wedding",
+      discountPercent: 15,
+    },
+    {
+      id: "corporate-headshots",
+      name: "Corporate Headshots Package",
+      description: "Team headshots with quick turnaround",
+      suggestedServices: ["Headshots", "Retouching", "Digital Delivery"],
+      industry: "Corporate",
+      discountPercent: 10,
+    },
+    {
+      id: "real-estate-premium",
+      name: "Premium Real Estate Package",
+      description: "Photos, video, and aerial coverage",
+      suggestedServices: ["Real Estate Photos", "Video Tour", "Drone Photography", "Virtual Staging"],
+      industry: "Real Estate",
+      discountPercent: 20,
+    },
+    {
+      id: "event-full",
+      name: "Full Event Coverage",
+      description: "Multi-photographer event coverage with same-day preview",
+      suggestedServices: ["Event Photography", "Second Photographer", "Same-Day Preview"],
+      industry: "Events",
+      discountPercent: 12,
+    },
+    {
+      id: "portrait-family",
+      name: "Family Portrait Session",
+      description: "Extended session with prints and digital files",
+      suggestedServices: ["Portrait Session", "Print Package", "Digital Files"],
+      industry: "Portrait",
+      discountPercent: 10,
+    },
+  ];
+
+  return { success: true, data: { templates } };
+}

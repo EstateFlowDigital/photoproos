@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import {
   updatePortfolioWebsite,
@@ -61,6 +62,7 @@ interface PortfolioDetailClientProps {
 export function PortfolioDetailClient({ website, availableProjects }: PortfolioDetailClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
 
   const [name, setName] = useState(website.name);
@@ -132,10 +134,14 @@ export function PortfolioDetailClient({ website, availableProjects }: PortfolioD
     });
   };
 
-  const handleDelete = () => {
-    if (!confirm("Delete this portfolio website? This action cannot be undone.")) {
-      return;
-    }
+  const handleDelete = async () => {
+    const confirmed = await confirm({
+      title: "Delete portfolio",
+      description: "Delete this portfolio website? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deletePortfolioWebsite(website.id);

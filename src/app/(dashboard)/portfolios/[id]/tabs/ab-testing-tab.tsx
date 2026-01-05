@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import {
   getABTests,
@@ -49,6 +50,7 @@ interface ABTest {
 export function ABTestingTab({ website, isPending: externalPending }: ABTestingTabProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
   const [tests, setTests] = useState<ABTest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,8 +160,14 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
     });
   }
 
-  function handleDeleteTest(testId: string) {
-    if (!confirm("Are you sure you want to delete this test?")) return;
+  async function handleDeleteTest(testId: string) {
+    const confirmed = await confirm({
+      title: "Delete test",
+      description: "Are you sure you want to delete this A/B test?",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deleteABTest(testId);

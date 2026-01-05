@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import type { PortfolioSectionType } from "@prisma/client";
 import type { PortfolioWebsite } from "../portfolio-editor-client";
@@ -30,6 +31,7 @@ interface SectionsTabProps {
 export function SectionsTab({ website, isPending: parentPending, availableProjects = [], onSave }: SectionsTabProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingSection, setEditingSection] = useState<PortfolioWebsite["sections"][number] | null>(null);
@@ -89,10 +91,14 @@ export function SectionsTab({ website, isPending: parentPending, availableProjec
     });
   };
 
-  const handleDelete = (sectionId: string) => {
-    if (!confirm("Delete this section? This cannot be undone.")) {
-      return;
-    }
+  const handleDelete = async (sectionId: string) => {
+    const confirmed = await confirm({
+      title: "Delete section",
+      description: "Delete this section? This cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deletePortfolioSection(sectionId);

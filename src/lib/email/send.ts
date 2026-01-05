@@ -50,6 +50,7 @@ import { PortfolioWeeklyDigestEmail } from "@/emails/portfolio-weekly-digest";
 import { ClientMagicLinkEmail } from "@/emails/client-magic-link";
 import { GalleryReminderEmail } from "@/emails/gallery-reminder";
 import { DownloadReceiptEmail } from "@/emails/download-receipt";
+import { BookingFollowupEmail } from "@/emails/booking-followup";
 
 /**
  * Send gallery delivered notification to client
@@ -1378,6 +1379,66 @@ export async function sendDownloadReceiptEmail(params: {
       totalFileCount,
       downloadedAt: downloadedAt.toISOString(),
       receiptId,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+/**
+ * Send booking follow-up email to client
+ *
+ * Triggered by: booking-followups cron job
+ * Types:
+ *   - thank_you: Sent 1 day after booking completion
+ *   - review_request: Sent 3 days after booking completion
+ *   - rebook_reminder: Sent 30/60/90 days after booking completion
+ */
+export async function sendBookingFollowupEmail(params: {
+  to: string;
+  clientName: string;
+  bookingTitle: string;
+  bookingDate: string;
+  serviceName?: string;
+  photographerName: string;
+  photographerEmail?: string;
+  reviewUrl?: string;
+  rebookUrl?: string;
+  galleryUrl?: string;
+  followupType: "thank_you" | "review_request" | "rebook_reminder";
+}) {
+  const {
+    to,
+    clientName,
+    bookingTitle,
+    bookingDate,
+    serviceName,
+    photographerName,
+    photographerEmail,
+    reviewUrl,
+    rebookUrl,
+    galleryUrl,
+    followupType,
+  } = params;
+
+  const subjects = {
+    thank_you: `Thank you for choosing ${photographerName}!`,
+    review_request: `How was your experience with ${photographerName}?`,
+    rebook_reminder: `Ready for your next session with ${photographerName}?`,
+  };
+
+  return sendEmail({
+    to,
+    subject: subjects[followupType],
+    react: BookingFollowupEmail({
+      clientName,
+      bookingTitle,
+      bookingDate,
+      serviceName,
+      photographerName,
+      reviewUrl,
+      rebookUrl,
+      galleryUrl,
+      followupType,
     }),
     replyTo: photographerEmail,
   });

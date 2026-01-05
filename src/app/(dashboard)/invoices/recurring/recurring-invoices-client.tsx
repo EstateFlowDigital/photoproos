@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import {
   getRecurringInvoices,
   createRecurringInvoice,
@@ -65,6 +66,7 @@ function formatFrequency(frequency: RecurringFrequency): string {
 
 export function RecurringInvoicesClient() {
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [recurring, setRecurring] = useState<RecurringInvoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,7 +126,13 @@ export function RecurringInvoicesClient() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this recurring invoice?")) return;
+    const confirmed = await confirm({
+      title: "Delete recurring invoice",
+      description: "Are you sure you want to delete this recurring invoice? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
     setActionLoading(id);
     const result = await deleteRecurringInvoice(id);
     if (result.success) {

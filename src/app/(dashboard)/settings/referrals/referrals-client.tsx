@@ -11,6 +11,7 @@ import {
   toggleReferralProgram,
 } from "@/lib/actions/referrals";
 import { toast } from "sonner";
+import { Select } from "@/components/ui/select";
 import { PageHeader } from "@/components/dashboard";
 
 interface Client {
@@ -195,19 +196,17 @@ export function ReferralsClient({
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Reward Type</label>
-                <select
-                  name="rewardType"
-                  defaultValue={program?.rewardType || "percentage"}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground"
-                >
-                  <option value="percentage">Percentage of Sale</option>
-                  <option value="fixed">Fixed Amount</option>
-                  <option value="credit">Account Credit</option>
-                  <option value="gift_card">Gift Card</option>
-                </select>
-              </div>
+              <Select
+                label="Reward Type"
+                name="rewardType"
+                defaultValue={program?.rewardType || "percentage"}
+                options={[
+                  { value: "percentage", label: "Percentage of Sale" },
+                  { value: "fixed", label: "Fixed Amount" },
+                  { value: "credit", label: "Account Credit" },
+                  { value: "gift_card", label: "Gift Card" },
+                ]}
+              />
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">Reward Value</label>

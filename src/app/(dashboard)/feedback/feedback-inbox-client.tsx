@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { markFeedbackAsRead, markFeedbackAsResolved, deleteFeedback, markAllFeedbackAsRead } from "@/lib/actions/gallery-feedback";
 
 interface FeedbackItem {
@@ -46,6 +47,7 @@ export function FeedbackInboxClient({
   currentType,
 }: FeedbackInboxClientProps) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -69,7 +71,13 @@ export function FeedbackInboxClient({
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this feedback?")) return;
+    const confirmed = await confirm({
+      title: "Delete feedback",
+      description: "Are you sure you want to delete this feedback? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
     setSelectedId(id);
     const result = await deleteFeedback(id);
     if (result.success) {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import {
   createClientTag,
   updateClientTag,
@@ -39,6 +40,7 @@ const TAG_COLORS = [
 export function TagsManagementClient({ tags }: TagsManagementClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isCreating, setIsCreating] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,13 +109,15 @@ export function TagsManagementClient({ tags }: TagsManagementClientProps) {
   };
 
   const handleDelete = async (tagId: string, clientCount: number) => {
-    if (clientCount > 0) {
-      if (!confirm(`This tag is assigned to ${clientCount} client(s). Are you sure you want to delete it?`)) {
-        return;
-      }
-    } else if (!confirm("Are you sure you want to delete this tag?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete tag",
+      description: clientCount > 0
+        ? `This tag is assigned to ${clientCount} client(s). Are you sure you want to delete it?`
+        : "Are you sure you want to delete this tag?",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     try {
       const result = await deleteClientTag(tagId);

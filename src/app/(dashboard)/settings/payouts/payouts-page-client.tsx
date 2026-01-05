@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createPayoutBatch, processPayoutBatch, cancelPayoutBatch } from "@/lib/actions/payouts";
@@ -66,6 +67,7 @@ export function PayoutsPageClient({
   stats,
 }: PayoutsPageClientProps) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [isCreatingBatch, setIsCreatingBatch] = useState(false);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [selectedPhotographers, setSelectedPhotographers] = useState<string[]>([]);
@@ -98,9 +100,12 @@ export function PayoutsPageClient({
   };
 
   const handleProcessBatch = async (batchId: string) => {
-    if (!confirm("Process this payout batch? This will send money to photographers via Stripe.")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Process payout batch",
+      description: "Process this payout batch? This will send money to photographers via Stripe.",
+      confirmText: "Process",
+    });
+    if (!confirmed) return;
 
     setIsProcessing(batchId);
     try {
@@ -112,9 +117,13 @@ export function PayoutsPageClient({
   };
 
   const handleCancelBatch = async (batchId: string) => {
-    if (!confirm("Cancel this payout batch? Earnings will return to approved status.")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Cancel payout batch",
+      description: "Cancel this payout batch? Earnings will return to approved status.",
+      confirmText: "Cancel batch",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     setIsProcessing(batchId);
     try {

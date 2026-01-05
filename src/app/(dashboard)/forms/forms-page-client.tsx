@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { createForm, deleteForm, duplicateForm } from "@/lib/actions/custom-forms";
 import { FileInput, Plus, MoreVertical, Copy, Trash2, ExternalLink, Edit } from "lucide-react";
@@ -33,6 +34,7 @@ interface FormsPageClientProps {
 export function FormsPageClient({ forms }: FormsPageClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newFormName, setNewFormName] = useState("");
@@ -76,8 +78,14 @@ export function FormsPageClient({ forms }: FormsPageClientProps) {
     setActiveDropdown(null);
   }
 
-  function handleDelete(formId: string) {
-    if (!confirm("Are you sure you want to delete this form? All submissions will be lost.")) return;
+  async function handleDelete(formId: string) {
+    const confirmed = await confirm({
+      title: "Delete form",
+      description: "Are you sure you want to delete this form? All submissions will be lost.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deleteForm(formId);

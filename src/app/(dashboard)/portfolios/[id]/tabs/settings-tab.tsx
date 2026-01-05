@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import type { PortfolioWebsite } from "../portfolio-editor-client";
@@ -28,6 +29,7 @@ interface SettingsTabProps {
 export function SettingsTab({ website, isPending: parentPending, onSave }: SettingsTabProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
 
   // Basic Info
@@ -295,10 +297,14 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
     }
   };
 
-  const handleRemoveCustomDomain = () => {
-    if (!confirm("Remove custom domain? This cannot be undone.")) {
-      return;
-    }
+  const handleRemoveCustomDomain = async () => {
+    const confirmed = await confirm({
+      title: "Remove custom domain",
+      description: "Remove custom domain? This cannot be undone.",
+      confirmText: "Remove",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await removeCustomDomain(website.id);
@@ -314,14 +320,14 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
     });
   };
 
-  const handleDelete = () => {
-    if (
-      !confirm(
-        "Delete this portfolio website? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+  const handleDelete = async () => {
+    const confirmed = await confirm({
+      title: "Delete portfolio",
+      description: "Delete this portfolio website? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deletePortfolioWebsite(website.id);

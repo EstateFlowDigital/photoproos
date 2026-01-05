@@ -13,6 +13,7 @@ import {
   CalendarDays,
   X,
 } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { AvailabilityBlock, BookingBuffer, CalendarProvider } from "@prisma/client";
 import {
@@ -57,6 +58,7 @@ export function AvailabilityPageClient({
   defaultBuffer,
   calendarIntegrations,
 }: AvailabilityPageClientProps) {
+  const confirm = useConfirm();
   const [blocks, setBlocks] = useState(initialBlocks);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showAddModal, setShowAddModal] = useState(false);
@@ -172,9 +174,13 @@ export function AvailabilityPageClient({
   };
 
   const handleDeleteBlock = async (blockId: string) => {
-    if (!confirm("Are you sure you want to delete this availability block?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete availability block",
+      description: "Are you sure you want to delete this availability block?",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     try {
       const result = await deleteAvailabilityBlock(blockId);

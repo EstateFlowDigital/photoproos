@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { duplicateContractTemplate, deleteContractTemplate } from "@/lib/actions/contract-templates";
 import type { ContractTemplateWithCount } from "@/lib/actions/contract-templates";
 
@@ -15,6 +16,7 @@ interface TemplatesListClientProps {
 export function TemplatesListClient({ templates }: TemplatesListClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
@@ -41,7 +43,13 @@ export function TemplatesListClient({ templates }: TemplatesListClientProps) {
   };
 
   const handleDelete = async (templateId: string) => {
-    if (!confirm("Are you sure you want to delete this template?")) return;
+    const confirmed = await confirm({
+      title: "Delete template",
+      description: "Are you sure you want to delete this template? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     setIsDeleting(templateId);
     try {

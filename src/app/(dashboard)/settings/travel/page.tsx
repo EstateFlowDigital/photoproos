@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/dashboard";
 import { Button } from "@/components/ui/button";
 import { getOrganizationSettings } from "@/lib/actions/settings";
 import { TravelSettingsForm } from "./travel-settings-form";
+import { ArrowLeftIcon } from "@/components/ui/settings-icons";
 
 export default async function TravelSettingsPage() {
   const org = await getOrganizationSettings();
@@ -34,13 +35,5 @@ export default async function TravelSettingsPage() {
 
       <TravelSettingsForm settings={settings} />
     </div>
-  );
-}
-
-function ArrowLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
-    </svg>
   );
 }

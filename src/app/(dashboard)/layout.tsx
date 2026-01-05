@@ -2,6 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { DashboardLayoutClient } from "@/components/layout/dashboard-layout-client";
 import { ToastProvider } from "@/components/ui/toast";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { TourProvider } from "@/components/tour";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts-provider";
@@ -155,10 +156,11 @@ export default async function DashboardLayout({
 
   return (
     <ToastProvider>
-      <TourProvider organizationId={organization.id}>
-        <CommandPaletteProvider>
-          <KeyboardShortcutsProvider>
-          <ReferralProcessor />
+      <ConfirmProvider>
+        <TourProvider organizationId={organization.id}>
+          <CommandPaletteProvider>
+            <KeyboardShortcutsProvider>
+            <ReferralProcessor />
           {/* Apply user's appearance preferences */}
           <style
             dangerouslySetInnerHTML={{
@@ -225,8 +227,9 @@ export default async function DashboardLayout({
             {children}
           </DashboardLayoutClient>
           </KeyboardShortcutsProvider>
-        </CommandPaletteProvider>
-      </TourProvider>
+          </CommandPaletteProvider>
+        </TourProvider>
+      </ConfirmProvider>
     </ToastProvider>
   );
 }

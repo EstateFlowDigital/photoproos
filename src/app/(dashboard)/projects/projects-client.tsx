@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { PageContextNav } from "@/components/dashboard";
 import {
   createTask,
@@ -160,6 +161,7 @@ function generateMonthDays(
 export function ProjectsClient({ board }: ProjectsClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
 
   // View state
@@ -246,7 +248,13 @@ export function ProjectsClient({ board }: ProjectsClientProps) {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    const confirmed = await confirm({
+      title: "Delete task",
+      description: "Are you sure you want to delete this task? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deleteTask(taskId);

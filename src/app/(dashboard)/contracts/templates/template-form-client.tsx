@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import {
   createContractTemplate,
   updateContractTemplate,
@@ -45,6 +46,7 @@ const TEMPLATE_VARIABLES = [
 export function TemplateFormClient({ mode, initialData }: TemplateFormClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,9 +112,13 @@ export function TemplateFormClient({ mode, initialData }: TemplateFormClientProp
       return;
     }
 
-    if (!confirm("Are you sure you want to delete this template? This action cannot be undone.")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "Delete template",
+      description: "Are you sure you want to delete this template? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     setIsDeleting(true);
 

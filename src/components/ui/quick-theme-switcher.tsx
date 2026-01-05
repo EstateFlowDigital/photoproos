@@ -155,7 +155,7 @@ export function QuickThemeSwitcher({ className }: QuickThemeSwitcherProps) {
       {isOpen && (
         <div
           ref={popoverRef}
-          className="absolute bottom-full right-0 mb-2 w-64 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 shadow-lg animate-scale-in"
+          className="absolute bottom-full right-0 z-50 mb-2 w-64 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 shadow-lg animate-scale-in"
           role="dialog"
           aria-label="Choose accent color"
         >

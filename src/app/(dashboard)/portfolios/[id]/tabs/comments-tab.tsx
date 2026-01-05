@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
@@ -26,6 +27,7 @@ interface CommentsTabProps {
 export function CommentsTab({ website, isPending: externalPending }: CommentsTabProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
   const [comments, setComments] = useState<PortfolioCommentWithMeta[]>([]);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "hidden">("pending");
@@ -88,8 +90,14 @@ export function CommentsTab({ website, isPending: externalPending }: CommentsTab
     });
   }
 
-  function handleDelete(commentId: string) {
-    if (!confirm("Are you sure you want to delete this comment?")) return;
+  async function handleDelete(commentId: string) {
+    const confirmed = await confirm({
+      title: "Delete comment",
+      description: "Are you sure you want to delete this comment? This action cannot be undone.",
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
 
     startTransition(async () => {
       const result = await deleteComment(commentId);

@@ -1,70 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { Switch } from "@/components/ui/switch";
-
-interface NotificationPreferences {
-  email: {
-    galleryDelivered: boolean;
-    paymentReceived: boolean;
-    newBooking: boolean;
-    bookingReminder: boolean;
-    invoiceOverdue: boolean;
-    weeklyDigest: boolean;
-    marketingUpdates: boolean;
-  };
-  push: {
-    galleryDelivered: boolean;
-    paymentReceived: boolean;
-    newBooking: boolean;
-    bookingReminder: boolean;
-    invoiceOverdue: boolean;
-    weeklyDigest: boolean;
-    marketingUpdates: boolean;
-  };
-  quietHours: {
-    enabled: boolean;
-    from: string;
-    to: string;
-  };
-}
-
-const defaultPreferences: NotificationPreferences = {
-  email: {
-    galleryDelivered: true,
-    paymentReceived: true,
-    newBooking: true,
-    bookingReminder: true,
-    invoiceOverdue: true,
-    weeklyDigest: true,
-    marketingUpdates: false,
-  },
-  push: {
-    galleryDelivered: true,
-    paymentReceived: true,
-    newBooking: true,
-    bookingReminder: false,
-    invoiceOverdue: true,
-    weeklyDigest: false,
-    marketingUpdates: false,
-  },
-  quietHours: {
-    enabled: false,
-    from: "22:00",
-    to: "07:00",
-  },
-};
+import { Select } from "@/components/ui/select";
+import { ArrowLeftIcon, MailIcon, BellIcon, MoonIcon, CheckIcon } from "@/components/ui/settings-icons";
+import {
+  getNotificationPreferences,
+  updateAllNotificationSettings,
+  type NotificationPreferences,
+  type DigestSettings,
+  type QuietHoursSettings,
+  defaultNotificationPreferences,
+  defaultDigestSettings,
+  defaultQuietHours,
+} from "@/lib/actions/notification-preferences";
 
 const notificationTypes = [
   {
     id: "galleryDelivered",
     label: "Gallery Delivered",
-    description: "When a client views or downloads their gallery",
+    description: "When a gallery is delivered to a client",
+  },
+  {
+    id: "galleryViewed",
+    label: "Gallery Viewed",
+    description: "When a client views their gallery",
   },
   {
     id: "paymentReceived",
@@ -82,42 +47,82 @@ const notificationTypes = [
     description: "24 hours before a scheduled shoot",
   },
   {
+    id: "bookingCanceled",
+    label: "Booking Canceled",
+    description: "When a booking is canceled",
+  },
+  {
     id: "invoiceOverdue",
     label: "Invoice Overdue",
     description: "When an invoice becomes overdue",
   },
   {
-    id: "weeklyDigest",
-    label: "Weekly Digest",
-    description: "Summary of your week's activity every Sunday",
+    id: "contractSigned",
+    label: "Contract Signed",
+    description: "When a client signs a contract",
   },
   {
-    id: "marketingUpdates",
-    label: "Product Updates",
-    description: "News about new features and improvements",
+    id: "clientFeedback",
+    label: "Client Feedback",
+    description: "When a client leaves feedback on a gallery",
+  },
+  {
+    id: "questionnaireCompleted",
+    label: "Questionnaire Completed",
+    description: "When a client completes a questionnaire",
   },
 ];
 
-const STORAGE_KEY = "photoproos_notification_preferences";
+const digestFrequencyOptions = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "none", label: "Never" },
+];
+
+const dayOfWeekOptions = [
+  { value: 0, label: "Sunday" },
+  { value: 1, label: "Monday" },
+  { value: 2, label: "Tuesday" },
+  { value: 3, label: "Wednesday" },
+  { value: 4, label: "Thursday" },
+  { value: 5, label: "Friday" },
+  { value: 6, label: "Saturday" },
+];
 
 export default function NotificationsSettingsPage() {
   const { showToast } = useToast();
-  const [preferences, setPreferences] = useState<NotificationPreferences>(defaultPreferences);
+  const [isLoading, setIsLoading] = useState(true);
+  const [preferences, setPreferences] = useState<NotificationPreferences>(defaultNotificationPreferences);
+  const [digest, setDigest] = useState<DigestSettings>(defaultDigestSettings);
+  const [quietHours, setQuietHours] = useState<QuietHoursSettings>(defaultQuietHours);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Load preferences from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setPreferences(JSON.parse(saved));
-      } catch {
-        // Use defaults if parsing fails
+  // Load preferences on mount
+  const loadPreferences = useCallback(async () => {
+    try {
+      const result = await getNotificationPreferences();
+      if (result.success && result.data) {
+        setPreferences(result.data.preferences);
+        setDigest(result.data.digest);
+        setQuietHours(result.data.quietHours);
       }
+    } catch (error) {
+      console.error("Failed to load preferences:", error);
+      showToast("Failed to load notification preferences", "error");
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  }, [showToast]);
+
+  useEffect(() => {
+    loadPreferences();
+    // Check if push notifications are enabled
+    if ("Notification" in window) {
+      setPushEnabled(Notification.permission === "granted");
+    }
+  }, [loadPreferences]);
 
   const updateEmailPreference = (key: string, value: boolean) => {
     setPreferences((prev) => ({
@@ -135,11 +140,13 @@ export default function NotificationsSettingsPage() {
     setHasChanges(true);
   };
 
-  const updateQuietHours = (updates: Partial<NotificationPreferences["quietHours"]>) => {
-    setPreferences((prev) => ({
-      ...prev,
-      quietHours: { ...prev.quietHours, ...updates },
-    }));
+  const updateDigest = (updates: Partial<DigestSettings>) => {
+    setDigest((prev) => ({ ...prev, ...updates }));
+    setHasChanges(true);
+  };
+
+  const updateQuietHours = (updates: Partial<QuietHoursSettings>) => {
+    setQuietHours((prev) => ({ ...prev, ...updates }));
     setHasChanges(true);
   };
 
@@ -158,20 +165,38 @@ export default function NotificationsSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Save to localStorage (simulating DB persistence)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+      const result = await updateAllNotificationSettings({
+        preferences,
+        digest,
+        quietHours,
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      showToast("Notification preferences saved", "success");
-      setHasChanges(false);
+      if (result.success) {
+        showToast("Notification preferences saved", "success");
+        setHasChanges(false);
+      } else {
+        showToast(result.error || "Failed to save preferences", "error");
+      }
     } catch {
       showToast("Failed to save preferences", "error");
     } finally {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Notification Preferences"
+          subtitle="Choose how you want to be notified"
+        />
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--primary)] border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -207,10 +232,72 @@ export default function NotificationsSettingsPage() {
                 key={`email-${type.id}`}
                 label={type.label}
                 description={type.description}
-                checked={preferences.email[type.id as keyof typeof preferences.email]}
+                checked={preferences.email[type.id as keyof typeof preferences.email] ?? true}
                 onChange={(checked) => updateEmailPreference(type.id, checked)}
               />
             ))}
+          </div>
+        </div>
+
+        {/* Email Digest Configuration */}
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+              <DigestIcon className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Email Digest</h2>
+              <p className="text-sm text-foreground-muted">Receive a summary of your activity</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Enable Digest Emails</p>
+                <p className="text-xs text-foreground-muted">Get a summary of activity sent to your email</p>
+              </div>
+              <Switch
+                checked={digest.enabled}
+                onCheckedChange={(checked) => updateDigest({ enabled: checked })}
+              />
+            </div>
+
+            <div className={cn("grid gap-4 sm:grid-cols-3", !digest.enabled && "opacity-50 pointer-events-none")}>
+              <Select
+                label="Frequency"
+                value={digest.frequency}
+                onChange={(e) => updateDigest({ frequency: e.target.value as DigestSettings["frequency"] })}
+                options={digestFrequencyOptions}
+              />
+
+              <Select
+                label="Send At"
+                value={digest.time}
+                onChange={(e) => updateDigest({ time: e.target.value })}
+                options={generateTimeOptions()}
+              />
+
+              {digest.frequency === "weekly" && (
+                <Select
+                  label="Day of Week"
+                  value={String(digest.dayOfWeek)}
+                  onChange={(e) => updateDigest({ dayOfWeek: parseInt(e.target.value) })}
+                  options={dayOfWeekOptions.map((opt) => ({ value: String(opt.value), label: opt.label }))}
+                />
+              )}
+            </div>
+
+            <div className="rounded-lg bg-[var(--background)] p-4 mt-4">
+              <h4 className="text-sm font-medium text-foreground mb-2">What&apos;s included in the digest?</h4>
+              <ul className="text-xs text-foreground-muted space-y-1">
+                <li>• Summary of galleries delivered and viewed</li>
+                <li>• Payments received and pending invoices</li>
+                <li>• Upcoming bookings for the week</li>
+                <li>• New contracts signed</li>
+                <li>• Client feedback and questionnaire responses</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -222,7 +309,7 @@ export default function NotificationsSettingsPage() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-foreground">Push Notifications</h2>
-              <p className="text-sm text-foreground-muted">Receive notifications on your device</p>
+              <p className="text-sm text-foreground-muted">Receive real-time notifications on your device</p>
             </div>
           </div>
 
@@ -248,12 +335,12 @@ export default function NotificationsSettingsPage() {
           )}
 
           <div className={cn("space-y-4", !pushEnabled && "opacity-50 pointer-events-none")}>
-            {notificationTypes.slice(0, -1).map((type) => (
+            {notificationTypes.map((type) => (
               <NotificationToggle
                 key={`push-${type.id}`}
                 label={type.label}
                 description={type.description}
-                checked={preferences.push[type.id as keyof typeof preferences.push]}
+                checked={preferences.push[type.id as keyof typeof preferences.push] ?? false}
                 onChange={(checked) => updatePushPreference(type.id, checked)}
               />
             ))}
@@ -276,43 +363,27 @@ export default function NotificationsSettingsPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">Enable Quiet Hours</p>
-                <p className="text-xs text-foreground-muted">Notifications will be silenced during this period</p>
+                <p className="text-xs text-foreground-muted">Push notifications will be silenced during this period</p>
               </div>
               <Switch
-                checked={preferences.quietHours.enabled}
+                checked={quietHours.enabled}
                 onCheckedChange={(checked) => updateQuietHours({ enabled: checked })}
               />
             </div>
 
-            <div className={cn("grid gap-4 sm:grid-cols-2", !preferences.quietHours.enabled && "opacity-50 pointer-events-none")}>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">From</label>
-                <select
-                  value={preferences.quietHours.from}
-                  onChange={(e) => updateQuietHours({ from: e.target.value })}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground"
-                >
-                  {generateTimeOptions().map((time) => (
-                    <option key={`from-${time.value}`} value={time.value}>
-                      {time.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">To</label>
-                <select
-                  value={preferences.quietHours.to}
-                  onChange={(e) => updateQuietHours({ to: e.target.value })}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground"
-                >
-                  {generateTimeOptions().map((time) => (
-                    <option key={`to-${time.value}`} value={time.value}>
-                      {time.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className={cn("grid gap-4 sm:grid-cols-2", !quietHours.enabled && "opacity-50 pointer-events-none")}>
+              <Select
+                label="From"
+                value={quietHours.from}
+                onChange={(e) => updateQuietHours({ from: e.target.value })}
+                options={generateTimeOptions()}
+              />
+              <Select
+                label="To"
+                value={quietHours.to}
+                onChange={(e) => updateQuietHours({ to: e.target.value })}
+                options={generateTimeOptions()}
+              />
             </div>
           </div>
         </div>
@@ -374,14 +445,7 @@ function NotificationToggle({
   );
 }
 
-function ArrowLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
+// Notifications-specific icons (not in shared library)
 function EmailIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
@@ -391,26 +455,10 @@ function EmailIcon({ className }: { className?: string }) {
   );
 }
 
-function BellIcon({ className }: { className?: string }) {
+function DigestIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.91 32.91 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.903 32.903 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6ZM8.05 14.943a33.54 33.54 0 0 0 3.9 0 2 2 0 0 1-3.9 0Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
-function MoonIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M7.455 2.004a.75.75 0 0 1 .26.77 7 7 0 0 0 9.958 7.967.75.75 0 0 1 1.067.853A8.5 8.5 0 1 1 6.647 1.921a.75.75 0 0 1 .808.083Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
     </svg>
   );
 }
