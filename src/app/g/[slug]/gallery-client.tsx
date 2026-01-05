@@ -394,8 +394,14 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     setIsDragging(false);
   }, []);
 
-  // Handle wheel zoom
+  // Handle wheel zoom - requires Ctrl/Cmd key to prevent accidental zoom
   const handleWheelZoom = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    // Only zoom if Ctrl (Windows/Linux) or Cmd (Mac) is held
+    // This prevents accidental zoom when scrolling
+    if (!e.ctrlKey && !e.metaKey) {
+      return; // Allow normal scroll behavior
+    }
+
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.2 : 0.2;
     setZoomLevel((prev) => {
@@ -1415,8 +1421,19 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* Photo Grid */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        {/* Empty state for gallery with no photos */}
+        {gallery.photos.length === 0 && (
+          <div className="text-center py-16">
+            <PhotoIcon className="mx-auto h-16 w-16 opacity-20" />
+            <h3 className="mt-4 text-xl font-medium">No photos yet</h3>
+            <p className="mt-2 max-w-md mx-auto" style={{ color: colors.mutedColor }}>
+              This gallery is being prepared. Photos will appear here once they have been uploaded.
+            </p>
+          </div>
+        )}
+
         {/* Empty state for favorites */}
-        {showFavoritesOnly && displayedPhotos.length === 0 && (
+        {gallery.photos.length > 0 && showFavoritesOnly && displayedPhotos.length === 0 && (
           <div className="text-center py-12">
             <HeartIcon className="mx-auto h-12 w-12 opacity-20" />
             <h3 className="mt-4 text-lg font-medium">No favorites yet</h3>
@@ -1434,7 +1451,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         )}
 
         {/* Mode instructions */}
-        {(compareMode || selectionMode) && (
+        {gallery.photos.length > 0 && (compareMode || selectionMode) && (
           <div className="mb-4 rounded-lg p-3" style={{ backgroundColor: `${primaryColor}15`, borderColor: `${primaryColor}30`, border: "1px solid" }}>
             <p className="text-sm" style={{ color: primaryColor }}>
               {compareMode && "Click on two photos to compare them side by side."}
@@ -1443,6 +1460,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           </div>
         )}
 
+        {gallery.photos.length > 0 && (
         <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {displayedPhotos.map((photo: Photo) => (
             <div
@@ -1589,11 +1607,15 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* Photo Detail Modal with Comments */}
       {selectedPhoto && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="photo-detail-title"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
           onClick={handleClosePhotoModal}
         >
@@ -1606,6 +1628,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
             <button
               onClick={handleClosePhotoModal}
               className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
+              aria-label="Close photo detail"
             >
               <CloseIcon className="h-5 w-5" />
             </button>
@@ -1670,7 +1693,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               {/* Zoom hint */}
               {zoomLevel === 1 && (
                 <div className="absolute top-4 left-4 text-white/50 text-xs hidden sm:block">
-                  Double-click or scroll to zoom
+                  Double-click or Ctrl+scroll to zoom
                 </div>
               )}
 
@@ -1721,7 +1744,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               style={{ borderColor: colors.borderColor }}
             >
               <div className="border-b p-4" style={{ borderColor: colors.borderColor }}>
-                <h3 className="font-medium">{selectedPhoto.filename}</h3>
+                <h3 id="photo-detail-title" className="font-medium">{selectedPhoto.filename}</h3>
                 <p className="mt-1 text-sm" style={{ color: colors.mutedColor }}>
                   {selectedPhoto.width} × {selectedPhoto.height}px
                 </p>
@@ -1928,7 +1951,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   placeholder="Your name (optional)"
                   value={commentName}
                   onChange={(e) => setCommentName(e.target.value)}
-                  className="mb-2 w-full rounded-lg border px-3 py-2 text-sm"
+                  disabled={isSubmittingComment}
+                  className="mb-2 w-full rounded-lg border px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
                   style={{
                     backgroundColor: colors.bgColor,
                     borderColor: colors.borderColor,
@@ -1939,8 +1963,9 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   placeholder="Add a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
+                  disabled={isSubmittingComment}
                   rows={3}
-                  className="w-full resize-none rounded-lg border px-3 py-2 text-sm"
+                  className="w-full resize-none rounded-lg border px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
                   style={{
                     backgroundColor: colors.bgColor,
                     borderColor: colors.borderColor,
@@ -1950,10 +1975,17 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 <button
                   onClick={handleSubmitComment}
                   disabled={isSubmittingComment || !newComment.trim()}
-                  className="mt-2 w-full rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                  className="mt-2 w-full rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                   style={{ backgroundColor: primaryColor }}
                 >
-                  {isSubmittingComment ? "Posting..." : "Post Comment"}
+                  {isSubmittingComment ? (
+                    <>
+                      <LoadingSpinner className="h-4 w-4 animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    "Post Comment"
+                  )}
                 </button>
               </div>
             </div>
@@ -2018,7 +2050,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* QR Code Modal */}
       {showQRModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qr-modal-title"
+          className="fixed inset-0 z-[70] flex items-center justify-center"
+        >
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
@@ -2041,7 +2078,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
             {/* Header */}
             <div className="text-center mb-6">
-              <h3 className="text-xl font-semibold" style={{ color: colors.textColor }}>
+              <h3 id="qr-modal-title" className="text-xl font-semibold" style={{ color: colors.textColor }}>
                 Share Gallery
               </h3>
               <p className="text-sm mt-1" style={{ color: colors.mutedColor }}>
@@ -2163,7 +2200,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* Feedback Modal */}
       {showFeedbackModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="feedback-modal-title"
+          className="fixed inset-0 z-[70] flex items-center justify-center"
+        >
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
@@ -2205,7 +2247,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
                 {/* Header */}
                 <div className="mb-6">
-                  <h3 className="text-xl font-semibold" style={{ color: colors.textColor }}>
+                  <h3 id="feedback-modal-title" className="text-xl font-semibold" style={{ color: colors.textColor }}>
                     Send Feedback
                   </h3>
                   <p className="text-sm mt-1" style={{ color: colors.mutedColor }}>
@@ -2335,18 +2377,24 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* Compare Modal */}
       {showCompareModal && comparePhotos.length === 2 && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/95">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="compare-modal-title"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/95"
+        >
           {/* Close button */}
           <button
             onClick={() => setShowCompareModal(false)}
             className="absolute top-4 right-4 z-10 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+            aria-label="Close comparison"
           >
             <CloseIcon className="h-6 w-6" />
           </button>
 
           {/* Title */}
           <div className="absolute top-4 left-4 text-white">
-            <h3 className="text-lg font-semibold">Compare Photos</h3>
+            <h3 id="compare-modal-title" className="text-lg font-semibold">Compare Photos</h3>
             <p className="text-sm text-white/60">Side by side comparison</p>
           </div>
 
@@ -2480,7 +2528,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* Keyboard Shortcuts Help */}
       {showShortcutsHelp && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="shortcuts-modal-title"
+          className="fixed inset-0 z-[70] flex items-center justify-center"
+        >
           <div
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowShortcutsHelp(false)}
@@ -2492,11 +2545,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
             <button
               onClick={() => setShowShortcutsHelp(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              aria-label="Close shortcuts help"
             >
               <CloseIcon className="h-6 w-6" />
             </button>
 
-            <h3 className="text-xl font-semibold mb-4" style={{ color: colors.textColor }}>
+            <h3 id="shortcuts-modal-title" className="text-xl font-semibold mb-4" style={{ color: colors.textColor }}>
               Keyboard Shortcuts
             </h3>
 
@@ -2542,7 +2596,13 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* Download Progress Modal */}
       {downloadModalVisible && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="download-modal-title"
+          aria-live="polite"
+          className="fixed inset-0 z-[80] flex items-center justify-center"
+        >
           <div
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => {
@@ -2560,7 +2620,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
                   <LoadingSpinner className="h-6 w-6 animate-spin" style={{ color: primaryColor }} />
                 </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
+                <h3 id="download-modal-title" className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
                   Preparing Download
                 </h3>
                 <p className="text-sm mb-4" style={{ color: colors.mutedColor }}>
@@ -2574,7 +2634,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
                   <DownloadIcon className="h-6 w-6" style={{ color: primaryColor }} />
                 </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
+                <h3 id="download-modal-title" className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
                   Downloading
                 </h3>
                 <p className="text-sm mb-4" style={{ color: colors.mutedColor }}>
@@ -2588,7 +2648,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34, 197, 94, 0.2)" }}>
                   <CheckIcon className="h-6 w-6" style={{ color: "#22c55e" }} />
                 </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
+                <h3 id="download-modal-title" className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
                   Download Complete
                 </h3>
                 <p className="text-sm mb-4" style={{ color: colors.mutedColor }}>
@@ -2602,19 +2662,36 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 <div className="mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(239, 68, 68, 0.2)" }}>
                   <CloseIcon className="h-6 w-6 text-red-500" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
+                <h3 id="download-modal-title" className="text-lg font-semibold mb-2" style={{ color: colors.textColor }}>
                   Download Failed
                 </h3>
                 <p className="text-sm mb-4" style={{ color: colors.mutedColor }}>
                   There was an error downloading your photos. Please try again.
                 </p>
-                <button
-                  onClick={() => setDownloadModalVisible(false)}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  Close
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setDownloadModalVisible(false)}
+                    className="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                    style={{
+                      backgroundColor: colors.bgColor,
+                      color: colors.textColor,
+                      border: `1px solid ${colors.borderColor}`
+                    }}
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDownloadModalVisible(false);
+                      // Small delay to allow modal to close before reopening
+                      setTimeout(() => handleDownloadAllAsZip(), 100);
+                    }}
+                    className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Retry Download
+                  </button>
+                </div>
               </>
             )}
 

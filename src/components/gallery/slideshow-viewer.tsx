@@ -139,7 +139,7 @@ export function SlideshowViewer({
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  // Auto-hide controls on mouse inactivity
+  // Auto-hide controls on inactivity - responds to mouse, keyboard, and touch
   useEffect(() => {
     const resetControlsTimeout = () => {
       setShowControls(true);
@@ -159,14 +159,22 @@ export function SlideshowViewer({
         window.clearTimeout(controlsTimeoutRef.current);
       }
     };
+    // Show controls on any keyboard activity
+    const handleKeyDown = () => resetControlsTimeout();
+    // Show controls on touch activity
+    const handleTouchStart = () => resetControlsTimeout();
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("touchstart", handleTouchStart);
     resetControlsTimeout();
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("touchstart", handleTouchStart);
       if (controlsTimeoutRef.current) {
         window.clearTimeout(controlsTimeoutRef.current);
       }
@@ -203,10 +211,17 @@ export function SlideshowViewer({
     }
   };
 
-  // Touch gestures
+  // Touch gestures with improved detection
+  const touchStartY = useRef<number | null>(null);
+  const lastTapPosition = useRef<{ x: number; y: number } | null>(null);
+  const SWIPE_THRESHOLD = 75; // Increased from 50 to reduce accidental swipes
+  const SWIPE_RATIO = 2; // Horizontal movement must be 2x vertical movement
+
   const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.targetTouches[0];
     setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    setTouchStart(touch.clientX);
+    touchStartY.current = touch.clientY;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -214,31 +229,66 @@ export function SlideshowViewer({
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd || touchStartY.current === null) return;
 
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
+    const distanceX = touchStart - touchEnd;
+    const distanceY = Math.abs((touchStartY.current || 0) - (touchEnd || 0));
 
-    if (isLeftSwipe) {
-      handleNext();
-    } else if (isRightSwipe) {
-      handlePrevious();
+    // Only trigger swipe if horizontal movement is significantly greater than vertical
+    const isHorizontalSwipe = Math.abs(distanceX) > distanceY * SWIPE_RATIO;
+
+    if (isHorizontalSwipe) {
+      const isLeftSwipe = distanceX > SWIPE_THRESHOLD;
+      const isRightSwipe = distanceX < -SWIPE_THRESHOLD;
+
+      if (isLeftSwipe) {
+        handleNext();
+      } else if (isRightSwipe) {
+        handlePrevious();
+      }
     }
 
     setTouchStart(null);
     setTouchEnd(null);
+    touchStartY.current = null;
   };
 
-  // Double-tap for fullscreen
-  const handleDoubleTap = () => {
+  // Double-tap for fullscreen with position check
+  const TAP_DISTANCE_THRESHOLD = 50; // Max distance between taps to count as double-tap
+
+  const handleDoubleTap = (e: React.MouseEvent | React.TouchEvent) => {
     const now = Date.now();
     const timeSinceLastTap = now - lastTapRef.current;
 
-    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-      toggleFullscreen();
+    // Get current tap position
+    let currentX: number, currentY: number;
+    if ("touches" in e && e.touches.length > 0) {
+      currentX = e.touches[0].clientX;
+      currentY = e.touches[0].clientY;
+    } else if ("clientX" in e) {
+      currentX = e.clientX;
+      currentY = e.clientY;
+    } else {
+      lastTapRef.current = now;
+      return;
     }
 
+    // Check if this is a valid double-tap (within time AND distance)
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0 && lastTapPosition.current) {
+      const distance = Math.sqrt(
+        Math.pow(currentX - lastTapPosition.current.x, 2) +
+        Math.pow(currentY - lastTapPosition.current.y, 2)
+      );
+
+      if (distance < TAP_DISTANCE_THRESHOLD) {
+        toggleFullscreen();
+        lastTapPosition.current = null;
+        lastTapRef.current = 0;
+        return;
+      }
+    }
+
+    lastTapPosition.current = { x: currentX, y: currentY };
     lastTapRef.current = now;
   };
 
@@ -247,6 +297,9 @@ export function SlideshowViewer({
   return (
     <div
       ref={containerRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Slideshow: ${currentPhoto.filename} (${currentIndex + 1} of ${photos.length})`}
       className="fixed inset-0 z-50 bg-black"
       style={{ contain: "layout style paint" }}
       onTouchStart={handleTouchStart}

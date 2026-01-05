@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Gallery UX Polish** - Critical fixes for gallery viewer experience
+  - **Empty Gallery State** - Added visual placeholder for galleries with no photos yet
+    - Shows photo icon, heading, and explanatory text
+    - Prevents confusing blank page for clients
+  - **Slideshow Swipe Gesture** - Fixed accidental photo navigation on mobile
+    - Increased swipe threshold from 50px to 75px
+    - Added horizontal/vertical ratio check (horizontal must be 2x vertical)
+    - Prevents vertical scrolling from triggering photo changes
+  - **Slideshow Double-Tap Detection** - Fixed race condition causing accidental fullscreen toggle
+    - Added position validation between taps (must be within 50px)
+    - Prevents double-tap triggers when tapping different areas
+  - **Modal Accessibility (ARIA)** - Added proper ARIA attributes to all modals
+    - Photo detail modal, QR code modal, feedback modal
+    - Compare modal, shortcuts help modal, download progress modal
+    - Slideshow viewer with dynamic aria-label
+    - All modals now have `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
+    - Added `aria-label` attributes to close buttons
+  - **Download Error Handling** - Added retry button for failed downloads
+    - Users can now retry downloads without dismissing the modal
+    - Clear visual distinction between "Close" and "Retry Download" buttons
+  - **Scroll Wheel Zoom** - Fixed accidental zoom when scrolling page
+    - Now requires Ctrl/Cmd key to zoom with scroll wheel
+    - Updated zoom hint text to show "Ctrl+scroll to zoom"
+    - Prevents zoom hijacking when cursor is over photo
+  - **Comment Form Loading States** - Enhanced feedback during submission
+    - Input fields now disabled while submitting
+    - Added loading spinner to submit button
+    - Improved cursor and opacity states for disabled inputs
+  - **Slideshow Controls Auto-Hide** - Fixed for keyboard and touch users
+    - Controls now respond to keyboard activity (not just mouse)
+    - Controls respond to touch events
+    - 3-second timeout resets on any input type
+  - **Expiration Date Validation** - Added form validation for custom expiration dates
+    - Custom date now required when "Custom Date" option selected
+    - Validates that date is in the future
+    - Shows inline error messages with proper styling
+    - Clears error when user corrects the date
+
 ### Added
 - **Gallery Optimization Infrastructure** - Foundation for large-scale component refactoring
   - **GalleryContext** (`src/contexts/gallery-context.tsx`) - Centralized state management

@@ -271,6 +271,7 @@ export function SchedulingPageClient({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [lastDesktopView, setLastDesktopView] = useState<CalendarViewMode>("month");
 
   // For week view navigation
   const [weekOffset, setWeekOffset] = useState(0);
@@ -319,13 +320,18 @@ export function SchedulingPageClient({
     const handleResize = () => {
       const compact = window.innerWidth < 640;
       setIsCompact(compact);
-      setCalendarView((prev) => (compact && prev === "month" ? "list" : prev));
+      setCalendarView((prev) => {
+        if (compact) {
+          return "list";
+        }
+        return lastDesktopView;
+      });
     };
 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [lastDesktopView]);
 
   // Generate calendar data
   const weekDays = useMemo(() => generateWeekDays(weekOffset, bookings), [weekOffset, bookings]);
@@ -831,7 +837,12 @@ export function SchedulingPageClient({
               {(["week", "month", "list"] as CalendarViewMode[]).map((view) => (
                 <button
                   key={view}
-                  onClick={() => setCalendarView(view)}
+                  onClick={() => {
+                    setCalendarView(view);
+                    if (!isCompact) {
+                      setLastDesktopView(view);
+                    }
+                  }}
                   className={cn(
                     "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
                     calendarView === view

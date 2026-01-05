@@ -16,6 +16,7 @@ type SelectedService = ServiceType | DatabaseServiceType | null;
 
 interface FieldErrors {
   name?: string;
+  expirationDate?: string;
 }
 
 interface Client {
@@ -131,9 +132,23 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
     const errors: FieldErrors = {};
     if (!name.trim()) errors.name = "Gallery name is required";
 
+    // Validate custom expiration date
+    if (expirationType === "custom") {
+      if (!customExpirationDate) {
+        errors.expirationDate = "Please select an expiration date";
+      } else {
+        const selectedDate = new Date(customExpirationDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate <= today) {
+          errors.expirationDate = "Expiration date must be in the future";
+        }
+      }
+    }
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setTouched({ name: true });
+      setTouched({ name: true, expirationDate: expirationType === "custom" });
       return;
     }
 
@@ -479,13 +494,30 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
             <div className="flex-1">
               <div className="text-sm font-medium text-foreground mb-2">Custom Date</div>
               {expirationType === "custom" && (
-                <input
-                  type="date"
-                  value={customExpirationDate}
-                  onChange={(e) => setCustomExpirationDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full rounded-lg border border-[var(--input-border)] bg-[var(--input)] px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                />
+                <div className="space-y-1">
+                  <input
+                    type="date"
+                    value={customExpirationDate}
+                    onChange={(e) => {
+                      setCustomExpirationDate(e.target.value);
+                      // Clear error when user types
+                      if (fieldErrors.expirationDate) {
+                        setFieldErrors((prev) => ({ ...prev, expirationDate: undefined }));
+                      }
+                    }}
+                    onBlur={() => setTouched((prev) => ({ ...prev, expirationDate: true }))}
+                    min={new Date().toISOString().split('T')[0]}
+                    className={cn(
+                      "w-full rounded-lg border bg-[var(--input)] px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2",
+                      touched.expirationDate && fieldErrors.expirationDate
+                        ? "border-[var(--error)] focus:ring-[var(--error)]"
+                        : "border-[var(--input-border)] focus:ring-[var(--primary)]"
+                    )}
+                  />
+                  {touched.expirationDate && fieldErrors.expirationDate && (
+                    <p className="text-xs text-[var(--error)]">{fieldErrors.expirationDate}</p>
+                  )}
+                </div>
               )}
             </div>
           </label>
