@@ -39,7 +39,7 @@ export default async function CreditNoteDetailPage({ params }: Props) {
         where: {
           organizationId,
           clientId: creditNote.clientId || undefined,
-          status: { in: ["sent", "viewed", "partial", "overdue"] },
+          status: { in: ["sent", "overdue"] },
         },
         select: {
           id: true,
@@ -66,8 +66,7 @@ export default async function CreditNoteDetailPage({ params }: Props) {
     const styles: Record<CreditNoteStatus, string> = {
       draft: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]",
       issued: "bg-[var(--primary)]/10 text-[var(--primary)]",
-      partially_applied: "bg-[var(--ai)]/10 text-[var(--ai)]",
-      fully_applied: "bg-[var(--success)]/10 text-[var(--success)]",
+      applied: "bg-[var(--success)]/10 text-[var(--success)]",
       refunded: "bg-[var(--warning)]/10 text-[var(--warning)]",
       voided: "bg-[var(--error)]/10 text-[var(--error)]",
     };
@@ -75,8 +74,7 @@ export default async function CreditNoteDetailPage({ params }: Props) {
     const labels: Record<CreditNoteStatus, string> = {
       draft: "Draft",
       issued: "Issued",
-      partially_applied: "Partially Applied",
-      fully_applied: "Fully Applied",
+      applied: "Applied",
       refunded: "Refunded",
       voided: "Voided",
     };
@@ -92,12 +90,7 @@ export default async function CreditNoteDetailPage({ params }: Props) {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title={creditNote.creditNoteNumber}
-        description="Credit note details"
-        breadcrumbs={[
-          { label: "Billing", href: "/billing" },
-          { label: "Credit Notes", href: "/billing/credit-notes" },
-          { label: creditNote.creditNoteNumber },
-        ]}
+        subtitle="Credit note details"
         actions={
           <Link
             href="/billing/credit-notes"

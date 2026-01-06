@@ -109,6 +109,11 @@ export function ExportButtons({ data }: ExportButtonsProps) {
   const handleExportPDF = async () => {
     setIsExporting("pdf");
     try {
+      // Calculate totals for PDF
+      const totalInvoices = data.monthlyBreakdown.reduce((sum, row) => sum + row.invoiceCount, 0);
+      const totalRevenue = data.monthlyBreakdown.reduce((sum, row) => sum + row.revenue, 0);
+      const totalTax = data.monthlyBreakdown.reduce((sum, row) => sum + row.tax, 0);
+
       // Generate HTML content for PDF
       const htmlContent = `
         <!DOCTYPE html>

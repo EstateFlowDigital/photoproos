@@ -83,17 +83,17 @@ export function CreditNotesPageClient({ creditNotes, statusFilter }: CreditNotes
 
   const getStatusBadge = (status: CreditNoteStatus) => {
     const styles: Record<CreditNoteStatus, string> = {
+      draft: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]",
       issued: "bg-[var(--primary)]/10 text-[var(--primary)]",
-      partially_applied: "bg-[var(--ai)]/10 text-[var(--ai)]",
-      fully_applied: "bg-[var(--success)]/10 text-[var(--success)]",
+      applied: "bg-[var(--success)]/10 text-[var(--success)]",
       refunded: "bg-[var(--warning)]/10 text-[var(--warning)]",
       voided: "bg-[var(--error)]/10 text-[var(--error)]",
     };
 
     const labels: Record<CreditNoteStatus, string> = {
+      draft: "Draft",
       issued: "Issued",
-      partially_applied: "Partial",
-      fully_applied: "Applied",
+      applied: "Applied",
       refunded: "Refunded",
       voided: "Voided",
     };
@@ -262,7 +262,7 @@ export function CreditNotesPageClient({ creditNotes, statusFilter }: CreditNotes
                         Apply
                       </Link>
                     )}
-                    {(creditNote.status === "issued" || creditNote.status === "partially_applied") && (
+                    {creditNote.status === "issued" && (
                       <button
                         onClick={() => handleVoid(creditNote.id)}
                         disabled={isLoading === creditNote.id}

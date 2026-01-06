@@ -6,6 +6,7 @@ import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
 import { getClientSession } from "@/lib/actions/client-auth";
 import { logDownload } from "@/lib/actions/download-tracking";
 import { applyWatermark, type WatermarkSettings } from "@/lib/watermark";
+import { resizeForMls, updateFilenameForMls, type MlsResizeOptions } from "@/lib/image-processing";
 import { PassThrough } from "stream";
 
 // Configuration
@@ -101,13 +102,52 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { galleryId, assetIds, deliverySlug } = body;
+    const { galleryId, assetIds, deliverySlug, mlsPresetId } = body;
 
     if (!galleryId || !assetIds || !Array.isArray(assetIds) || assetIds.length === 0) {
       return NextResponse.json(
         { error: "Gallery ID and at least one asset ID are required" },
         { status: 400 }
       );
+    }
+
+    // Load MLS preset if specified
+    let mlsPreset: {
+      id: string;
+      name: string;
+      width: number;
+      height: number;
+      quality: number;
+      format: string;
+      maxFileSizeKb: number | null;
+      maintainAspect: boolean;
+      letterbox: boolean;
+      letterboxColor: string | null;
+    } | null = null;
+
+    if (mlsPresetId) {
+      mlsPreset = await prisma.mlsPreset.findUnique({
+        where: { id: mlsPresetId },
+        select: {
+          id: true,
+          name: true,
+          width: true,
+          height: true,
+          quality: true,
+          format: true,
+          maxFileSizeKb: true,
+          maintainAspect: true,
+          letterbox: true,
+          letterboxColor: true,
+        },
+      });
+
+      if (!mlsPreset) {
+        return NextResponse.json(
+          { error: "Invalid MLS preset" },
+          { status: 400 }
+        );
+      }
     }
 
     // Limit batch size to prevent abuse
@@ -282,6 +322,29 @@ export async function POST(request: NextRequest) {
                 }
               }
 
+              // Apply MLS preset resizing if specified
+              if (mlsPreset) {
+                try {
+                  const mlsOptions: MlsResizeOptions = {
+                    width: mlsPreset.width,
+                    height: mlsPreset.height,
+                    quality: mlsPreset.quality,
+                    format: mlsPreset.format as "jpeg" | "png" | "webp",
+                    maintainAspect: mlsPreset.maintainAspect,
+                    letterbox: mlsPreset.letterbox,
+                    letterboxColor: mlsPreset.letterboxColor || "#ffffff",
+                    maxFileSizeKb: mlsPreset.maxFileSizeKb || undefined,
+                  };
+
+                  const resized = await resizeForMls(finalBuffer, mlsOptions);
+                  finalBuffer = resized.buffer;
+                  filename = updateFilenameForMls(filename, resized.format);
+                } catch (err) {
+                  console.error(`Failed to apply MLS preset to ${result.filename}:`, err);
+                  // Use previous buffer on MLS resize failure
+                }
+              }
+
               archive.append(finalBuffer, { name: filename });
               successCount++;
             } else {
@@ -332,15 +395,22 @@ export async function POST(request: NextRequest) {
           data: {
             organizationId: gallery.organizationId,
             type: "file_downloaded",
-            description: `Batch download: ${successCount}/${gallery.assets.length} photos`,
+            description: mlsPreset
+              ? `Batch download (${mlsPreset.name}): ${successCount}/${gallery.assets.length} photos`
+              : `Batch download: ${successCount}/${gallery.assets.length} photos`,
             projectId: gallery.id,
             metadata: {
               assetCount: successCount,
               failedCount: failedAssets.length,
+              ...(mlsPreset && {
+                mlsPreset: mlsPreset.name,
+                mlsPresetId: mlsPreset.id,
+                mlsDimensions: `${mlsPreset.width}x${mlsPreset.height}`,
+              }),
             },
           },
         }),
-        // Log download for client history
+        // Log download for client history (always use zip_all format, MLS details in activity log metadata)
         logDownload({
           projectId: gallery.id,
           assetIds: gallery.assets.map(a => a.id),
@@ -383,12 +453,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Generate ZIP filename (include MLS preset name if applicable)
+    const zipFilename = mlsPreset
+      ? `${gallery.name}-${mlsPreset.name.toLowerCase().replace(/\s+/g, "-")}-photos.zip`
+      : `${gallery.name}-photos.zip`;
+
     // Return streaming response
     return new Response(readableStream, {
       status: 200,
       headers: {
         "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(gallery.name)}-photos.zip"`,
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(zipFilename)}"`,
         "Transfer-Encoding": "chunked",
         "Cache-Control": "no-cache",
       },

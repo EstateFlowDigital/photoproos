@@ -24,6 +24,7 @@ interface LightboxProps {
   favorites?: Set<string>;
   onCompare?: (photos: Photo[]) => void;
   galleryName?: string;
+  galleryId?: string; // Needed for ratings API
 }
 
 export function Lightbox({
@@ -36,6 +37,7 @@ export function Lightbox({
   favorites = new Set(),
   onCompare,
   galleryName,
+  galleryId,
 }: LightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +47,13 @@ export function Lightbox({
   const [slideshowInterval, setSlideshowInterval] = useState(4000);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  // Rating state
+  const [photoRatings, setPhotoRatings] = useState<Record<string, { average: number; count: number }>>({});
+  const [userRatings, setUserRatings] = useState<Record<string, number>>({});
+  const [hoverRating, setHoverRating] = useState(0);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [showRatingPanel, setShowRatingPanel] = useState(false);
 
   const currentPhoto = photos[currentIndex];
 
@@ -56,8 +65,74 @@ export function Lightbox({
       setShowSlideshow(false);
       setSlideshowPlaying(false);
       setShowShareMenu(false);
+      setHoverRating(0);
     }
   }, [isOpen, initialIndex]);
+
+  // Load ratings when lightbox opens
+  useEffect(() => {
+    if (!isOpen || !galleryId) return;
+
+    const loadRatings = async () => {
+      try {
+        const response = await fetch(`/api/gallery/rating?galleryId=${galleryId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPhotoRatings(data.averages || {});
+          setUserRatings(data.userRatings || {});
+        }
+      } catch (error) {
+        console.error("Failed to load ratings:", error);
+      }
+    };
+
+    loadRatings();
+  }, [isOpen, galleryId]);
+
+  // Handle photo rating
+  const handleRatePhoto = useCallback(async (photoId: string, rating: number) => {
+    if (!galleryId) return;
+
+    setIsSubmittingRating(true);
+    try {
+      const response = await fetch("/api/gallery/rating", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          galleryId,
+          assetId: photoId,
+          rating,
+        }),
+      });
+
+      if (response.ok) {
+        // Update user's rating
+        setUserRatings((prev) => ({ ...prev, [photoId]: rating }));
+        // Update averages
+        setPhotoRatings((prev) => {
+          const current = prev[photoId] || { average: 0, count: 0 };
+          const wasRated = userRatings[photoId] !== undefined;
+          const newCount = wasRated ? current.count : current.count + 1;
+          const oldTotal = current.average * current.count;
+          const newTotal = wasRated
+            ? oldTotal - userRatings[photoId] + rating
+            : oldTotal + rating;
+          return {
+            ...prev,
+            [photoId]: {
+              average: Math.round((newTotal / newCount) * 10) / 10,
+              count: newCount,
+            },
+          };
+        });
+      }
+    } catch (error) {
+      console.error("Failed to rate photo:", error);
+    } finally {
+      setIsSubmittingRating(false);
+      setHoverRating(0);
+    }
+  }, [galleryId, userRatings]);
 
   // Slideshow auto-advance
   useEffect(() => {
@@ -109,6 +184,11 @@ export function Lightbox({
           break;
         case "s":
           setShowSlideshow((prev) => !prev);
+          break;
+        case "r":
+          if (galleryId) {
+            setShowRatingPanel((prev) => !prev);
+          }
           break;
         case " ":
           if (showSlideshow) {
@@ -276,6 +356,24 @@ export function Lightbox({
             )}
           </div>
 
+          {/* Rating Button */}
+          {galleryId && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowRatingPanel(!showRatingPanel);
+              }}
+              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${
+                showRatingPanel || userRatings[currentPhoto.id]
+                  ? "bg-yellow-500 text-white"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              }`}
+              title="Rate photo (R)"
+            >
+              <StarIcon filled={!!userRatings[currentPhoto.id]} className="h-5 w-5" />
+            </button>
+          )}
+
           {/* Favorite Button */}
           {onToggleFavorite && (
             <button
@@ -404,6 +502,49 @@ export function Lightbox({
         </div>
       )}
 
+      {/* Rating Panel */}
+      {showRatingPanel && galleryId && currentPhoto && (
+        <div
+          className="absolute right-4 top-20 z-20 w-64 rounded-xl border border-white/10 bg-[#1a1a1a]/95 p-4 shadow-xl backdrop-blur-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-white">Rate this photo</h3>
+            {photoRatings[currentPhoto.id] && (
+              <span className="text-xs text-white/60">
+                {photoRatings[currentPhoto.id].average} avg ({photoRatings[currentPhoto.id].count})
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const isActive = (hoverRating || userRatings[currentPhoto.id] || 0) >= star;
+              return (
+                <button
+                  key={star}
+                  onClick={() => handleRatePhoto(currentPhoto.id, star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  disabled={isSubmittingRating}
+                  className="p-1.5 transition-all hover:scale-110 disabled:opacity-50"
+                  title={`Rate ${star} star${star !== 1 ? "s" : ""}`}
+                >
+                  <StarIcon
+                    filled={isActive}
+                    className={`h-7 w-7 ${isActive ? "text-yellow-400" : "text-white/30"}`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+          {userRatings[currentPhoto.id] && (
+            <p className="mt-2 text-xs text-white/60">
+              Your rating: {userRatings[currentPhoto.id]} star{userRatings[currentPhoto.id] !== 1 ? "s" : ""}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Slideshow Controls Overlay */}
       {showSlideshow && (
         <div className="absolute bottom-32 left-1/2 z-10 flex -translate-x-1/2 items-center gap-4 rounded-full bg-black/70 px-6 py-3 backdrop-blur-sm">
@@ -466,7 +607,7 @@ export function Lightbox({
         <span className="hidden sm:inline">
           {showSlideshow
             ? "Space Play/Pause • ← → Navigate • S Exit Slideshow • ESC Close"
-            : "← → Navigate • F Favorite • D Download • S Slideshow • ESC Close"}
+            : "← → Navigate • F Favorite • R Rate • D Download • S Slideshow • ESC Close"}
         </span>
       </div>
     </div>
@@ -639,6 +780,29 @@ function PauseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
       <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+    </svg>
+  );
+}
+
+function StarIcon({ filled, className }: { filled?: boolean; className?: string }) {
+  if (filled) {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path
+          fillRule="evenodd"
+          d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
+          clipRule="evenodd"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+      />
     </svg>
   );
 }

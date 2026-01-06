@@ -355,7 +355,7 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         {/* Welcome with time-based greeting */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-xl font-bold text-white sm:text-2xl">
+          <h1 className="text-xl font-bold text-[var(--foreground)] sm:text-2xl">
             {greeting}, {firstName}
           </h1>
           <p className="mt-1 text-sm text-[var(--foreground-secondary)] sm:text-base">

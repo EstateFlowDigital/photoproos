@@ -29,10 +29,11 @@ interface GalleryCardProps {
   thumbnailUrl?: string;
   views?: number;
   downloads?: number;
+  pendingAddonRequests?: number;
   onQuickAction?: (action: QuickAction, galleryId: string) => void;
 }
 
-export function GalleryCard({ id, title, client, photos, status, revenue, thumbnailUrl, views, downloads, onQuickAction }: GalleryCardProps) {
+export function GalleryCard({ id, title, client, photos, status, revenue, thumbnailUrl, views, downloads, pendingAddonRequests, onQuickAction }: GalleryCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -126,6 +127,15 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
           ) : (
             <div className="flex h-full items-center justify-center">
               <GalleryPlaceholderIcon className="h-8 w-8 text-foreground-muted/50" />
+            </div>
+          )}
+          {/* Pending Add-on Requests Badge */}
+          {pendingAddonRequests !== undefined && pendingAddonRequests > 0 && (
+            <div className="absolute top-2 left-2 flex items-center gap-1 rounded-md bg-[var(--warning)] px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm">
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              {pendingAddonRequests} add-on{pendingAddonRequests !== 1 ? "s" : ""}
             </div>
           )}
           {/* Performance Badges */}

@@ -195,7 +195,7 @@ export function CreditNoteActions({ creditNote, availableInvoices }: CreditNoteA
         )}
 
         {/* No actions available */}
-        {(creditNote.status === "fully_applied" ||
+        {(creditNote.status === "applied" ||
           creditNote.status === "refunded" ||
           creditNote.status === "voided") && (
           <p className="text-center text-sm text-foreground-muted py-2">
@@ -203,31 +203,7 @@ export function CreditNoteActions({ creditNote, availableInvoices }: CreditNoteA
           </p>
         )}
 
-        {/* Partially applied can still apply more or void */}
-        {creditNote.status === "partially_applied" && availableCredit > 0 && (
-          <>
-            <button
-              onClick={() => {
-                setApplyAmount(0);
-                setSelectedInvoiceId("");
-                setShowApplyModal(true);
-              }}
-              disabled={isLoading !== null || availableInvoices.length === 0}
-              className="w-full rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
-            >
-              Apply Remaining Credit
-            </button>
-            <button
-              onClick={handleVoid}
-              disabled={isLoading !== null}
-              className="w-full rounded-lg border border-[var(--error)] bg-transparent px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10 disabled:opacity-50"
-            >
-              {isLoading === "void" ? "Voiding..." : "Void Credit Note"}
-            </button>
-          </>
-        )}
-
-        {availableInvoices.length === 0 && (creditNote.status === "issued" || creditNote.status === "partially_applied") && (
+        {availableInvoices.length === 0 && creditNote.status === "issued" && (
           <p className="text-xs text-foreground-muted text-center">
             No outstanding invoices available for this client.
           </p>

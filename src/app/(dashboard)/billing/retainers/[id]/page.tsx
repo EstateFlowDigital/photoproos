@@ -23,10 +23,6 @@ export default async function RetainerDetailPage({ params }: Props) {
       transactions: {
         orderBy: { createdAt: "desc" },
         take: 50,
-        include: {
-          invoice: { select: { id: true, invoiceNumber: true } },
-          payment: { select: { id: true, paymentMethod: true } },
-        },
       },
     },
   });
@@ -41,7 +37,7 @@ export default async function RetainerDetailPage({ params }: Props) {
         where: {
           organizationId,
           clientId: retainer.clientId,
-          status: { in: ["sent", "viewed", "partial", "overdue"] },
+          status: { in: ["sent", "overdue"] },
         },
         select: {
           id: true,
@@ -91,12 +87,7 @@ export default async function RetainerDetailPage({ params }: Props) {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title={`Retainer for ${retainer.client.fullName || retainer.client.company || retainer.client.email}`}
-        description="Prepaid balance and transaction history"
-        breadcrumbs={[
-          { label: "Billing", href: "/billing" },
-          { label: "Retainers", href: "/billing/retainers" },
-          { label: retainer.client.fullName || "Retainer" },
-        ]}
+        subtitle="Prepaid balance and transaction history"
         actions={
           <Link
             href="/billing/retainers"
@@ -208,12 +199,12 @@ export default async function RetainerDetailPage({ params }: Props) {
                         </td>
                         <td className="px-4 py-3">
                           <p className="text-sm text-foreground">{tx.description || "-"}</p>
-                          {tx.invoice && (
+                          {tx.invoiceId && (
                             <Link
-                              href={`/invoices/${tx.invoice.id}`}
+                              href={`/invoices/${tx.invoiceId}`}
                               className="text-xs text-[var(--primary)] hover:underline"
                             >
-                              {tx.invoice.invoiceNumber}
+                              View Invoice
                             </Link>
                           )}
                         </td>

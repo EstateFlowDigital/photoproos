@@ -146,3 +146,241 @@ export function needsProcessing(asset: {
 }): boolean {
   return !asset.thumbnailUrl || !asset.mediumUrl;
 }
+
+// =============================================================================
+// MLS Preset Resizing
+// =============================================================================
+
+export interface MlsResizeOptions {
+  width: number;
+  height: number;
+  quality?: number;
+  format?: "jpeg" | "png" | "webp";
+  maintainAspect?: boolean;
+  letterbox?: boolean;
+  letterboxColor?: string;
+  maxFileSizeKb?: number;
+}
+
+export interface MlsResizeResult {
+  buffer: Buffer;
+  format: "jpeg" | "png" | "webp";
+  width: number;
+  height: number;
+  fileSizeKb: number;
+}
+
+/**
+ * Resize an image according to MLS preset specifications
+ *
+ * @param imageBuffer - Original image buffer
+ * @param options - MLS resize options
+ * @returns Resized image buffer with metadata
+ */
+export async function resizeForMls(
+  imageBuffer: Buffer,
+  options: MlsResizeOptions
+): Promise<MlsResizeResult> {
+  const {
+    width: targetWidth,
+    height: targetHeight,
+    quality = 90,
+    format = "jpeg",
+    maintainAspect = true,
+    letterbox = false,
+    letterboxColor = "#ffffff",
+    maxFileSizeKb,
+  } = options;
+
+  // Get original dimensions
+  const metadata = await sharp(imageBuffer).metadata();
+  const originalWidth = metadata.width || 0;
+  const originalHeight = metadata.height || 0;
+
+  let pipeline = sharp(imageBuffer);
+
+  if (maintainAspect) {
+    if (letterbox) {
+      // Letterbox: resize to fit within dimensions, then add padding
+      pipeline = pipeline.resize(targetWidth, targetHeight, {
+        fit: "contain",
+        background: letterboxColor,
+        withoutEnlargement: true,
+      });
+    } else {
+      // Standard resize: fit within dimensions maintaining aspect ratio
+      pipeline = pipeline.resize(targetWidth, targetHeight, {
+        fit: "inside",
+        withoutEnlargement: true,
+      });
+    }
+  } else {
+    // Exact dimensions: crop to fill (cover)
+    pipeline = pipeline.resize(targetWidth, targetHeight, {
+      fit: "cover",
+      position: "centre",
+    });
+  }
+
+  // Apply format and quality
+  let finalBuffer: Buffer;
+  let finalFormat: "jpeg" | "png" | "webp" = format;
+
+  switch (format) {
+    case "png":
+      finalBuffer = await pipeline.png({ quality }).toBuffer();
+      break;
+    case "webp":
+      finalBuffer = await pipeline.webp({ quality }).toBuffer();
+      break;
+    case "jpeg":
+    default:
+      finalBuffer = await pipeline
+        .jpeg({ quality, mozjpeg: true })
+        .toBuffer();
+      finalFormat = "jpeg";
+      break;
+  }
+
+  // If max file size specified, progressively reduce quality until under limit
+  if (maxFileSizeKb && finalBuffer.length > maxFileSizeKb * 1024) {
+    let currentQuality = quality;
+    const minQuality = 40; // Don't go below 40% quality
+
+    while (
+      finalBuffer.length > maxFileSizeKb * 1024 &&
+      currentQuality > minQuality
+    ) {
+      currentQuality -= 5;
+
+      pipeline = sharp(imageBuffer);
+
+      if (maintainAspect) {
+        if (letterbox) {
+          pipeline = pipeline.resize(targetWidth, targetHeight, {
+            fit: "contain",
+            background: letterboxColor,
+            withoutEnlargement: true,
+          });
+        } else {
+          pipeline = pipeline.resize(targetWidth, targetHeight, {
+            fit: "inside",
+            withoutEnlargement: true,
+          });
+        }
+      } else {
+        pipeline = pipeline.resize(targetWidth, targetHeight, {
+          fit: "cover",
+          position: "centre",
+        });
+      }
+
+      switch (format) {
+        case "png":
+          finalBuffer = await pipeline.png({ quality: currentQuality }).toBuffer();
+          break;
+        case "webp":
+          finalBuffer = await pipeline.webp({ quality: currentQuality }).toBuffer();
+          break;
+        case "jpeg":
+        default:
+          finalBuffer = await pipeline
+            .jpeg({ quality: currentQuality, mozjpeg: true })
+            .toBuffer();
+          break;
+      }
+    }
+
+    // If still too large, reduce dimensions proportionally
+    if (finalBuffer.length > maxFileSizeKb * 1024) {
+      let scaleFactor = 0.9;
+
+      while (
+        finalBuffer.length > maxFileSizeKb * 1024 &&
+        scaleFactor > 0.3
+      ) {
+        const scaledWidth = Math.round(targetWidth * scaleFactor);
+        const scaledHeight = Math.round(targetHeight * scaleFactor);
+
+        pipeline = sharp(imageBuffer);
+
+        if (maintainAspect) {
+          if (letterbox) {
+            pipeline = pipeline.resize(scaledWidth, scaledHeight, {
+              fit: "contain",
+              background: letterboxColor,
+              withoutEnlargement: true,
+            });
+          } else {
+            pipeline = pipeline.resize(scaledWidth, scaledHeight, {
+              fit: "inside",
+              withoutEnlargement: true,
+            });
+          }
+        } else {
+          pipeline = pipeline.resize(scaledWidth, scaledHeight, {
+            fit: "cover",
+            position: "centre",
+          });
+        }
+
+        switch (format) {
+          case "png":
+            finalBuffer = await pipeline.png({ quality: minQuality }).toBuffer();
+            break;
+          case "webp":
+            finalBuffer = await pipeline.webp({ quality: minQuality }).toBuffer();
+            break;
+          case "jpeg":
+          default:
+            finalBuffer = await pipeline
+              .jpeg({ quality: minQuality, mozjpeg: true })
+              .toBuffer();
+            break;
+        }
+
+        scaleFactor -= 0.1;
+      }
+    }
+  }
+
+  // Get final dimensions
+  const finalMetadata = await sharp(finalBuffer).metadata();
+
+  return {
+    buffer: finalBuffer,
+    format: finalFormat,
+    width: finalMetadata.width || targetWidth,
+    height: finalMetadata.height || targetHeight,
+    fileSizeKb: Math.round(finalBuffer.length / 1024),
+  };
+}
+
+/**
+ * Get file extension for MLS format
+ */
+export function getMlsFormatExtension(format: string): string {
+  switch (format) {
+    case "png":
+      return ".png";
+    case "webp":
+      return ".webp";
+    case "jpeg":
+    default:
+      return ".jpg";
+  }
+}
+
+/**
+ * Update filename with MLS format extension
+ */
+export function updateFilenameForMls(
+  originalFilename: string,
+  format: string,
+  presetName?: string
+): string {
+  const baseName = originalFilename.replace(/\.[^.]+$/, "");
+  const extension = getMlsFormatExtension(format);
+  const suffix = presetName ? `-${presetName.toLowerCase().replace(/\s+/g, "-")}` : "";
+  return `${baseName}${suffix}${extension}`;
+}

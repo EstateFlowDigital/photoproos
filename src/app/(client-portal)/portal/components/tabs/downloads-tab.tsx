@@ -61,7 +61,7 @@ export function DownloadsTab({
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
             <DownloadIcon className="h-8 w-8 text-[var(--foreground-muted)]" />
           </div>
-          <p className="mt-4 text-lg font-medium text-white">No downloads available yet</p>
+          <p className="mt-4 text-lg font-medium text-[var(--foreground)]">No downloads available yet</p>
           <p className="mx-auto mt-2 max-w-sm text-sm text-[var(--foreground-muted)]">
             Your photo downloads will appear here once your galleries are delivered and ready for download.
           </p>
@@ -78,7 +78,7 @@ export function DownloadsTab({
           {clientEmail && downloadableGalleries.length > 0 && (
             <button
               onClick={() => openHistory(downloadableGalleries[0].id)}
-              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-[var(--foreground)]"
             >
               <ClockIcon className="h-4 w-4" />
               Download History
@@ -181,7 +181,7 @@ function FavoritesSection({ photos, downloadingGallery, downloadType, onDownload
             <HeartIcon className="h-5 w-5 text-[var(--error)]" />
           </div>
           <div>
-            <h3 className="font-semibold text-white">Your Favorites</h3>
+            <h3 className="font-semibold text-[var(--foreground)]">Your Favorites</h3>
             <p className="text-sm text-[var(--foreground-muted)]">
               {photos.length} photo{photos.length !== 1 ? "s" : ""} marked as favorites
             </p>
@@ -296,7 +296,7 @@ function DownloadCard({
       <div className="border-b border-[var(--card-border)] p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">{gallery.name}</h3>
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">{gallery.name}</h3>
             <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-[var(--foreground-muted)]">
               <span>{gallery.photoCount} photos</span>
               {favoriteCount > 0 && (
@@ -316,7 +316,7 @@ function DownloadCard({
             {showHistoryButton && onViewHistory && (
               <button
                 onClick={onViewHistory}
-                className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
+                className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-[var(--foreground)]"
                 title="View download history"
               >
                 <ClockIcon className="h-4 w-4" />
@@ -324,7 +324,7 @@ function DownloadCard({
             )}
             <button
               onClick={() => setShowPhotoSelector(!showPhotoSelector)}
-              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-[var(--foreground)]"
             >
               <CheckboxIcon className="h-4 w-4" />
               {showPhotoSelector ? "Hide Selection" : "Select Photos"}
@@ -472,7 +472,7 @@ function DownloadButton({ label, description, icon, isLoading, onClick, comingSo
         {isLoading ? <LoadingSpinner className="h-5 w-5" /> : icon}
       </div>
       <div>
-        <span className="text-sm font-medium text-white">{label}</span>
+        <span className="text-sm font-medium text-[var(--foreground)]">{label}</span>
         {description && (
           <p className="mt-0.5 text-xs text-[var(--foreground-muted)]">{description}</p>
         )}

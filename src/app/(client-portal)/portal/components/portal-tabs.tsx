@@ -36,8 +36,8 @@ export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires }: Po
             tabIndex={isActive ? 0 : -1}
             className={`relative border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
               isActive
-                ? "border-[var(--primary)] text-white"
-                : "border-transparent text-[var(--foreground-muted)] hover:text-white"
+                ? "border-[var(--primary)] text-[var(--foreground)]"
+                : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
             }`}
           >
             {tab.label}

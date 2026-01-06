@@ -170,6 +170,7 @@ export async function getClientPortalData() {
     status: gallery.status,
     downloadable: gallery.status === "delivered" && gallery.allowDownloads,
     deliveredAt: gallery.deliveredAt,
+    expiresAt: gallery.expiresAt,
     serviceName: gallery.service?.name || null,
     photos: gallery.assets.slice(0, 4).map((asset) => ({
       id: asset.id,

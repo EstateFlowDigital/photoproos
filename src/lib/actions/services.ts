@@ -7,11 +7,15 @@ import {
   updateServiceSchema,
   deleteServiceSchema,
   duplicateServiceSchema,
+  createServicePricingTiersSchema,
+  calculateServicePriceSchema,
   type CreateServiceInput,
   type UpdateServiceInput,
   type ServiceFilters,
+  type CreateServicePricingTiersInput,
+  type CalculateServicePriceInput,
 } from "@/lib/validations/services";
-import type { ServiceCategory } from "@prisma/client";
+import type { ServiceCategory, ServicePricingMethod } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import {
   syncServiceToStripe,
@@ -652,5 +656,536 @@ export async function bulkDeleteServices(
       return fail(error.message);
     }
     return fail("Failed to delete services");
+  }
+}
+
+// =============================================================================
+// SQUARE FOOTAGE PRICING
+// =============================================================================
+
+export type ServicePriceResult = {
+  priceCents: number;
+  pricingMethod: ServicePricingMethod;
+  appliedTier?: {
+    id: string;
+    name: string | null;
+    minSqft: number;
+    maxSqft: number | null;
+  };
+  sqftUsed: number;
+};
+
+/**
+ * Set pricing tiers for a service (replaces all existing)
+ */
+export async function setServicePricingTiers(
+  input: CreateServicePricingTiersInput
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    const validated = createServicePricingTiersSchema.parse(input);
+    const organizationId = await getOrganizationId();
+
+    // Verify service exists and belongs to organization
+    const service = await prisma.service.findFirst({
+      where: {
+        id: validated.serviceId,
+        organizationId,
+      },
+    });
+
+    if (!service) {
+      return fail("Service not found");
+    }
+
+    // Validate tier ranges don't overlap
+    const sortedTiers = [...validated.tiers].sort((a, b) => a.minSqft - b.minSqft);
+    for (let i = 0; i < sortedTiers.length - 1; i++) {
+      const currentTier = sortedTiers[i];
+      const nextTier = sortedTiers[i + 1];
+      if (currentTier.maxSqft && currentTier.maxSqft >= nextTier.minSqft) {
+        return fail(
+          `Tier ranges overlap: ${currentTier.minSqft}-${currentTier.maxSqft} and ${nextTier.minSqft}-${nextTier.maxSqft}`
+        );
+      }
+    }
+
+    // Replace all pricing tiers
+    await prisma.$transaction([
+      // Delete existing
+      prisma.servicePricingTier.deleteMany({
+        where: { serviceId: validated.serviceId },
+      }),
+      // Create new
+      prisma.servicePricingTier.createMany({
+        data: validated.tiers.map((tier, index) => ({
+          serviceId: validated.serviceId,
+          minSqft: tier.minSqft,
+          maxSqft: tier.maxSqft,
+          priceCents: tier.priceCents,
+          tierName: tier.tierName,
+          sortOrder: tier.sortOrder ?? index,
+        })),
+      }),
+      // Update service pricing method to tiered
+      prisma.service.update({
+        where: { id: validated.serviceId },
+        data: { pricingMethod: "tiered" },
+      }),
+    ]);
+
+    revalidatePath("/services");
+    revalidatePath(`/services/${validated.serviceId}`);
+
+    return success({ count: validated.tiers.length });
+  } catch (error) {
+    console.error("Error setting service pricing tiers:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to set pricing tiers");
+  }
+}
+
+/**
+ * Get pricing tiers for a service
+ */
+export async function getServicePricingTiers(serviceId: string) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const service = await prisma.service.findFirst({
+      where: { id: serviceId, organizationId },
+      include: {
+        pricingTiers: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    if (!service) {
+      return null;
+    }
+
+    return service.pricingTiers.map((tier) => ({
+      id: tier.id,
+      minSqft: tier.minSqft,
+      maxSqft: tier.maxSqft,
+      priceCents: tier.priceCents,
+      tierName: tier.tierName,
+      sortOrder: tier.sortOrder,
+    }));
+  } catch (error) {
+    console.error("Error fetching service pricing tiers:", error);
+    return null;
+  }
+}
+
+/**
+ * Delete a pricing tier
+ */
+export async function deleteServicePricingTier(id: string): Promise<ActionResult> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify tier exists and service belongs to organization
+    const tier = await prisma.servicePricingTier.findFirst({
+      where: { id },
+      include: {
+        service: {
+          select: { organizationId: true, id: true },
+        },
+      },
+    });
+
+    if (!tier || tier.service.organizationId !== organizationId) {
+      return fail("Pricing tier not found");
+    }
+
+    await prisma.servicePricingTier.delete({
+      where: { id },
+    });
+
+    revalidatePath("/services");
+    revalidatePath(`/services/${tier.service.id}`);
+
+    return ok();
+  } catch (error) {
+    console.error("Error deleting pricing tier:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to delete pricing tier");
+  }
+}
+
+/**
+ * Calculate the price for a service based on square footage
+ * Supports: fixed, per_sqft, and tiered pricing methods
+ */
+export async function calculateServicePrice(
+  input: CalculateServicePriceInput
+): Promise<ActionResult<ServicePriceResult>> {
+  try {
+    const validated = calculateServicePriceSchema.parse(input);
+
+    const service = await prisma.service.findUnique({
+      where: { id: validated.serviceId },
+      include: {
+        pricingTiers: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    if (!service) {
+      return fail("Service not found");
+    }
+
+    const sqft = validated.sqft;
+
+    // Handle based on pricing method
+    switch (service.pricingMethod) {
+      case "fixed": {
+        // Fixed pricing - sqft doesn't matter
+        return success({
+          priceCents: service.priceCents,
+          pricingMethod: "fixed",
+          sqftUsed: sqft,
+        });
+      }
+
+      case "per_sqft": {
+        // Price per square foot calculation
+        const pricePerSqft = service.pricePerSqftCents || 0;
+        const minSqft = service.minSqft || 0;
+        const maxSqft = service.maxSqft;
+        const increments = service.sqftIncrements || 1;
+
+        // Apply min/max bounds
+        let adjustedSqft = Math.max(sqft, minSqft);
+        if (maxSqft) {
+          adjustedSqft = Math.min(adjustedSqft, maxSqft);
+        }
+
+        // Round to nearest increment
+        adjustedSqft = Math.ceil(adjustedSqft / increments) * increments;
+
+        const priceCents = adjustedSqft * pricePerSqft;
+
+        return success({
+          priceCents,
+          pricingMethod: "per_sqft",
+          sqftUsed: adjustedSqft,
+        });
+      }
+
+      case "tiered": {
+        // Tiered pricing (BICEP-style)
+        if (service.pricingTiers.length === 0) {
+          return fail("No pricing tiers configured for this service");
+        }
+
+        // Find the applicable tier
+        const applicableTier = service.pricingTiers.find((tier) => {
+          const inMinRange = sqft >= tier.minSqft;
+          const inMaxRange = tier.maxSqft === null || sqft <= tier.maxSqft;
+          return inMinRange && inMaxRange;
+        });
+
+        if (!applicableTier) {
+          // If no tier matches, use the highest tier (for properties larger than defined tiers)
+          const highestTier = service.pricingTiers[service.pricingTiers.length - 1];
+          return success({
+            priceCents: highestTier.priceCents,
+            pricingMethod: "tiered",
+            appliedTier: {
+              id: highestTier.id,
+              name: highestTier.tierName,
+              minSqft: highestTier.minSqft,
+              maxSqft: highestTier.maxSqft,
+            },
+            sqftUsed: sqft,
+          });
+        }
+
+        return success({
+          priceCents: applicableTier.priceCents,
+          pricingMethod: "tiered",
+          appliedTier: {
+            id: applicableTier.id,
+            name: applicableTier.tierName,
+            minSqft: applicableTier.minSqft,
+            maxSqft: applicableTier.maxSqft,
+          },
+          sqftUsed: sqft,
+        });
+      }
+
+      default:
+        return fail("Invalid pricing method");
+    }
+  } catch (error) {
+    console.error("Error calculating service price:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to calculate service price");
+  }
+}
+
+/**
+ * Get a service with full pricing information
+ */
+export async function getServiceWithPricing(id: string) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const service = await prisma.service.findFirst({
+      where: {
+        id,
+        organizationId,
+      },
+      include: {
+        pricingTiers: {
+          orderBy: { sortOrder: "asc" },
+        },
+        _count: {
+          select: {
+            projects: true,
+            bookings: true,
+          },
+        },
+      },
+    });
+
+    if (!service) {
+      return null;
+    }
+
+    return {
+      id: service.id,
+      name: service.name,
+      category: service.category,
+      description: service.description,
+      duration: service.duration,
+      deliverables: service.deliverables,
+      isActive: service.isActive,
+      isDefault: service.isDefault,
+
+      // Pricing information
+      pricingMethod: service.pricingMethod,
+      priceCents: service.priceCents,
+      pricePerSqftCents: service.pricePerSqftCents,
+      minSqft: service.minSqft,
+      maxSqft: service.maxSqft,
+      sqftIncrements: service.sqftIncrements,
+
+      // Pricing tiers
+      pricingTiers: service.pricingTiers.map((tier) => ({
+        id: tier.id,
+        minSqft: tier.minSqft,
+        maxSqft: tier.maxSqft,
+        priceCents: tier.priceCents,
+        tierName: tier.tierName,
+        sortOrder: tier.sortOrder,
+      })),
+
+      usageCount: service._count.projects + service._count.bookings,
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
+    };
+  } catch (error) {
+    console.error("Error fetching service with pricing:", error);
+    return null;
+  }
+}
+
+/**
+ * Update service pricing method
+ */
+export async function updateServicePricingMethod(
+  id: string,
+  pricingMethod: ServicePricingMethod,
+  options?: {
+    priceCents?: number;
+    pricePerSqftCents?: number;
+    minSqft?: number;
+    maxSqft?: number | null;
+    sqftIncrements?: number;
+  }
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify service exists and belongs to organization
+    const existing = await prisma.service.findFirst({
+      where: { id, organizationId },
+    });
+
+    if (!existing) {
+      return fail("Service not found");
+    }
+
+    // Validate options based on pricing method
+    if (pricingMethod === "per_sqft" && (!options?.pricePerSqftCents || options.pricePerSqftCents <= 0)) {
+      return fail("Price per sqft is required for per_sqft pricing");
+    }
+
+    const service = await prisma.service.update({
+      where: { id },
+      data: {
+        pricingMethod,
+        ...(options?.priceCents !== undefined && { priceCents: options.priceCents }),
+        ...(options?.pricePerSqftCents !== undefined && { pricePerSqftCents: options.pricePerSqftCents }),
+        ...(options?.minSqft !== undefined && { minSqft: options.minSqft }),
+        ...(options?.maxSqft !== undefined && { maxSqft: options.maxSqft }),
+        ...(options?.sqftIncrements !== undefined && { sqftIncrements: options.sqftIncrements }),
+      },
+    });
+
+    // Sync to Stripe if price changed
+    if (options?.priceCents !== undefined) {
+      syncServiceToStripe(service, organizationId).catch((err) => {
+        console.error("Failed to sync service to Stripe:", err);
+      });
+    }
+
+    revalidatePath("/services");
+    revalidatePath(`/services/${id}`);
+
+    return success({ id: service.id });
+  } catch (error) {
+    console.error("Error updating service pricing method:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to update service pricing method");
+  }
+}
+
+/**
+ * Get all services with pricing tiers included
+ */
+export async function getServicesWithPricing(filters?: ServiceFilters) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const services = await prisma.service.findMany({
+      where: {
+        organizationId,
+        ...(filters?.category && { category: filters.category as ServiceCategory }),
+        ...(filters?.isActive !== undefined && { isActive: filters.isActive }),
+        ...(filters?.isDefault !== undefined && { isDefault: filters.isDefault }),
+        ...(filters?.pricingMethod && { pricingMethod: filters.pricingMethod }),
+        ...(filters?.search && {
+          OR: [
+            { name: { contains: filters.search, mode: "insensitive" } },
+            { description: { contains: filters.search, mode: "insensitive" } },
+          ],
+        }),
+      },
+      include: {
+        pricingTiers: {
+          orderBy: { sortOrder: "asc" },
+        },
+        _count: {
+          select: {
+            projects: true,
+            bookings: true,
+          },
+        },
+      },
+      orderBy: [
+        { isDefault: "asc" }, // Custom services first
+        { sortOrder: "asc" },
+        { name: "asc" },
+      ],
+    });
+
+    return services.map((service) => ({
+      id: service.id,
+      name: service.name,
+      category: service.category,
+      description: service.description,
+      duration: service.duration,
+      deliverables: service.deliverables,
+      isActive: service.isActive,
+      isDefault: service.isDefault,
+      pricingMethod: service.pricingMethod,
+      priceCents: service.priceCents,
+      pricePerSqftCents: service.pricePerSqftCents,
+      minSqft: service.minSqft,
+      maxSqft: service.maxSqft,
+      sqftIncrements: service.sqftIncrements,
+      pricingTiers: service.pricingTiers.map((tier) => ({
+        id: tier.id,
+        minSqft: tier.minSqft,
+        maxSqft: tier.maxSqft,
+        priceCents: tier.priceCents,
+        tierName: tier.tierName,
+        sortOrder: tier.sortOrder,
+      })),
+      usageCount: service._count.projects + service._count.bookings,
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
+    }));
+  } catch (error) {
+    console.error("Error fetching services with pricing:", error);
+    return [];
+  }
+}
+
+/**
+ * Get formatted price display for a service
+ * Returns a human-readable price string based on pricing method
+ */
+export async function getServicePriceDisplay(id: string): Promise<string | null> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const service = await prisma.service.findFirst({
+      where: { id, organizationId },
+      include: {
+        pricingTiers: {
+          orderBy: { minSqft: "asc" },
+          take: 1,
+        },
+      },
+    });
+
+    if (!service) {
+      return null;
+    }
+
+    const formatPrice = (cents: number) => {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(cents / 100);
+    };
+
+    switch (service.pricingMethod) {
+      case "fixed":
+        return formatPrice(service.priceCents);
+
+      case "per_sqft":
+        const perSqft = (service.pricePerSqftCents || 0) / 100;
+        return `$${perSqft.toFixed(2)}/sqft`;
+
+      case "tiered":
+        if (service.pricingTiers.length > 0) {
+          const lowestPrice = service.pricingTiers[0].priceCents;
+          return `From ${formatPrice(lowestPrice)}`;
+        }
+        return "Contact for pricing";
+
+      default:
+        return formatPrice(service.priceCents);
+    }
+  } catch (error) {
+    console.error("Error getting service price display:", error);
+    return null;
   }
 }

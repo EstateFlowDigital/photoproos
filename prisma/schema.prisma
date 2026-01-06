@@ -310,6 +310,45 @@ enum PortfolioSectionType {
   custom_html
 }
 
+enum PropertySectionType {
+  // Core property sections (auto-fill from property data)
+  property_hero // Hero with featured images, address, price badge
+  property_details // Beds, baths, sqft, lot size, year built grid
+  property_features // Features list with icons
+  property_description // Property description with rich text
+  property_gallery // Full photo gallery grid with lightbox
+  floor_plans // Floor plan images/PDFs
+  virtual_tour // Matterport/iGuide embed
+  video_tour // Video player section
+
+  // Location & neighborhood
+  location_map // Interactive map with property marker
+  neighborhood // Nearby amenities, schools, transit
+  walk_score // Walk/bike/transit scores
+
+  // Agent & contact
+  agent_info // Agent/photographer info card
+  inquiry_form // Contact/inquiry form
+  open_house // Open house schedule with calendar
+
+  // Marketing & social proof
+  testimonials // Client testimonials
+  similar_properties // Related listings
+  price_history // Price change timeline
+
+  // Financial tools
+  mortgage_calculator // Interactive mortgage calc
+
+  // Freeform blocks
+  text_block // Rich text content
+  image_block // Single image with caption
+  video_block // Embedded video
+  spacer // Vertical spacing
+  divider // Horizontal divider
+  call_to_action // CTA button/banner
+  custom_html // Custom HTML/embed code
+}
+
 enum LineItemType {
   service
   travel
@@ -701,6 +740,7 @@ model Organization {
   emailThreads         EmailThread[]
   galleryAddons        GalleryAddon[]
   galleryAddonRequests GalleryAddonRequest[]
+  mlsPresets           MlsPreset[]
 
   @@index([slug])
   @@index([plan])
@@ -913,6 +953,7 @@ model Client {
   // Retainer Balance
   retainer             ClientRetainer?
   galleryAddonRequests GalleryAddonRequest[]
+  mlsPresetOverrides   MlsPresetOverride[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -939,18 +980,32 @@ model ClientSession {
 // SERVICES
 // ============================================================================
 
+// Service pricing method (flat rate vs square footage based)
+enum ServicePricingMethod {
+  fixed // Single fixed price (default)
+  per_sqft // Price calculated per square foot
+  tiered // Price based on sqft tiers (like BICEP pricing)
+}
+
 model Service {
   id             String          @id @default(cuid())
   organizationId String
   name           String
   category       ServiceCategory @default(other)
   description    String?
-  priceCents     Int             @default(0)
+  priceCents     Int             @default(0) // Base price or fixed price
   duration       String? // e.g., "2-3 hours"
   deliverables   String[] // Array of included items
   isActive       Boolean         @default(true)
   isDefault      Boolean         @default(false) // System-provided template
   sortOrder      Int             @default(0)
+
+  // Square footage pricing (for real estate and property-based services)
+  pricingMethod     ServicePricingMethod @default(fixed)
+  pricePerSqftCents Int?                 @default(0) // Price per sqft for per_sqft pricing
+  minSqft           Int?                 @default(0) // Minimum sqft (floor for pricing)
+  maxSqft           Int? // Maximum sqft (optional ceiling)
+  sqftIncrements    Int?                 @default(500) // Round to nearest X sqft (e.g., 500)
 
   // Stripe Product Catalog sync
   stripeProductId String? // Stripe Product ID (prod_xxx)
@@ -967,6 +1022,9 @@ model Service {
   bookings              Booking[] // Bookings using this service
   userCapabilities      UserServiceCapability[] // Team members who can perform this service
   equipmentRequirements ServiceEquipmentRequirement[] // Equipment required for this service
+
+  // Square footage pricing tiers (for tiered pricing method)
+  pricingTiers ServicePricingTier[]
 
   // Phase 1: Ordering System relations
   bundleItems        ServiceBundleItem[] // Bundles this service is part of
@@ -990,6 +1048,32 @@ model Service {
   @@index([category])
   @@index([isActive])
   @@index([isDefault])
+  @@index([pricingMethod])
+}
+
+// Pricing tiers for tiered sqft services (BICEP-style pricing)
+model ServicePricingTier {
+  id        String @id @default(cuid())
+  serviceId String
+
+  // Tier range (e.g., 0-2000 sqft, 2001-3500 sqft, etc.)
+  minSqft Int // Minimum sqft for this tier (inclusive)
+  maxSqft Int? // Maximum sqft for this tier (null = unlimited)
+
+  // Tier pricing
+  priceCents Int // Fixed price for this tier
+  tierName   String? // Optional display name (e.g., "Small Home", "Medium Home")
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, minSqft])
+  @@index([serviceId])
 }
 
 // ============================================================================
@@ -2600,25 +2684,66 @@ model PropertyWebsite {
   virtualTourUrl String? // Matterport, iGuide, etc.
   videoUrl       String?
 
+  // Floor Plans
+  floorPlanUrls String[] // Array of floor plan image URLs
+
   // Settings
-  template     PropertyWebsiteTemplate @default(modern)
-  isPublished  Boolean                 @default(false)
-  isBranded    Boolean                 @default(true) // Show photographer branding
-  showPrice    Boolean                 @default(true)
-  showAgent    Boolean                 @default(true)
-  customDomain String?                 @unique
+  template    PropertyWebsiteTemplate @default(modern)
+  isPublished Boolean                 @default(false)
+  isBranded   Boolean                 @default(true) // Show photographer branding
+  showPrice   Boolean                 @default(true)
+  showAgent   Boolean                 @default(true)
+
+  // Section-based layout (like portfolio websites)
+  useSectionLayout Boolean @default(false) // Toggle between classic template and section-based
+
+  // Custom Domain
+  customDomain         String? @unique
+  customDomainVerified Boolean @default(false)
+  customDomainSsl      Boolean @default(false)
 
   // Template Customization
-  accentColor String? // Custom accent color override (hex, e.g., "#3b82f6")
+  accentColor    String? // Custom accent color override (hex, e.g., "#3b82f6")
+  secondaryColor String? // Secondary accent color
+  fontHeading    String? // Custom heading font
+  fontBody       String? // Custom body font
+  logoUrl        String? // Custom logo for the property page
+  customCss      String? @db.Text // Custom CSS overrides
+
+  // Access Control
+  isPasswordProtected Boolean @default(false)
+  password            String? // Hashed password
+
+  // Scheduled Publishing
+  scheduledPublishAt DateTime? // When to auto-publish
+  expiresAt          DateTime? // When the site expires/unpublishes
 
   // Open House Scheduling
   openHouseDate    DateTime? // Open house start date/time
   openHouseEndDate DateTime? // Open house end date/time (optional, defaults to +2 hours)
 
+  // Agent/Contact Info Override
+  agentName     String?
+  agentEmail    String?
+  agentPhone    String?
+  agentPhotoUrl String?
+  brokerageName String?
+  brokerageLogo String?
+
+  // Social & Sharing
+  socialImage   String? // OG image for social sharing
+  enableSharing Boolean @default(true) // Show share buttons
+
+  // Interactive Features
+  enableMortgageCalc Boolean @default(true)
+  enableScheduleTour Boolean @default(true)
+  enableFavorite     Boolean @default(true) // Allow users to "heart" the property
+
   // SEO
   slug            String  @unique
   metaTitle       String?
   metaDescription String?
+  faviconUrl      String?
 
   // Analytics (denormalized for quick access)
   viewCount Int @default(0)
@@ -2629,14 +2754,115 @@ model PropertyWebsite {
   publishedAt DateTime?
 
   // Relations
-  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project         Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sections        PropertyWebsiteSection[]
   analytics       PropertyAnalytics[]
   marketingAssets MarketingAsset[]
   leads           PropertyLead[]
   tasks           Task[]
+  views           PropertyWebsiteView[]
 
   @@index([slug])
   @@index([isPublished])
+  @@index([customDomain])
+}
+
+// Property Website Section (like Portfolio sections but for properties)
+model PropertyWebsiteSection {
+  id                String @id @default(cuid())
+  propertyWebsiteId String
+
+  // Section Configuration
+  sectionType PropertySectionType
+  position    Int                 @default(0)
+  isVisible   Boolean             @default(true)
+
+  // Section Content (JSON - varies by sectionType)
+  // property_hero: { layout, showPrice, showBadge, badgeText, overlayOpacity, ctaText, ctaLink }
+  // property_details: { layout, showIcons, columns, customLabels }
+  // property_features: { layout, columns, iconStyle, showCategories }
+  // property_description: { showTitle, alignment }
+  // property_gallery: { layout, columns, showCaptions, enableLightbox, maxImages }
+  // floor_plans: { layout, showLabels }
+  // virtual_tour: { provider, embedOptions }
+  // video_tour: { autoplay, muted, loop, showControls }
+  // location_map: { zoom, style, showMarker, height }
+  // neighborhood: { categories[], radius, showDistances }
+  // walk_score: { showBikeScore, showTransitScore }
+  // agent_info: { layout, showPhone, showEmail, showSocial }
+  // inquiry_form: { fields[], submitText, successMessage }
+  // open_house: { showCalendarAdd, showReminder }
+  // testimonials: { items[], layout }
+  // similar_properties: { maxItems, showPrice }
+  // price_history: { showChart }
+  // mortgage_calculator: { defaultDownPayment, defaultInterestRate, defaultTerm }
+  // text_block: { content, alignment, maxWidth }
+  // image_block: { url, alt, caption, layout, aspectRatio }
+  // video_block: { url, provider, autoplay }
+  // spacer: { height, showDivider }
+  // divider: { style, color, width }
+  // call_to_action: { title, subtitle, buttonText, buttonLink, style }
+  // custom_html: { html, containerClass }
+  config Json
+
+  // Optional title override for section
+  customTitle String?
+
+  // Styling overrides
+  backgroundColor String? // Section-specific background color
+  paddingTop      String? // Custom top padding
+  paddingBottom   String? // Custom bottom padding
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+
+  @@index([propertyWebsiteId])
+  @@index([position])
+}
+
+// Property Website View Analytics (like Portfolio views)
+model PropertyWebsiteView {
+  id                String   @id @default(cuid())
+  propertyWebsiteId String
+  viewedAt          DateTime @default(now())
+
+  // Visitor identification
+  visitorId String? // Anonymous visitor ID (cookie-based)
+  sessionId String? // Session identifier
+  ipAddress String? // Hashed IP for uniqueness
+  userAgent String?
+
+  // Referral tracking
+  referrer    String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  // Geo data
+  country String?
+  city    String?
+  region  String?
+
+  // Engagement
+  scrollDepth      Int? // 0-100 percentage
+  timeOnPage       Int? // seconds
+  sectionsViewed   String[] // Array of section IDs viewed
+  actionsPerformed String[] // e.g., ["gallery_open", "tour_click", "inquiry_start"]
+
+  // Device info
+  deviceType String? // mobile, tablet, desktop
+  browser    String?
+  os         String?
+
+  // Relations
+  propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+
+  @@index([propertyWebsiteId])
+  @@index([viewedAt])
+  @@index([visitorId])
 }
 
 model PropertyAnalytics {
@@ -4824,10 +5050,11 @@ model Brokerage {
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  agents       Client[]            @relation("BrokerageAgents")
-  contracts    BrokerageContract[]
-  orderPages   OrderPage[]         @relation("BrokerageOrderPages")
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agents             Client[]            @relation("BrokerageAgents")
+  contracts          BrokerageContract[]
+  orderPages         OrderPage[]         @relation("BrokerageOrderPages")
+  mlsPresetOverrides MlsPresetOverride[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -4874,6 +5101,87 @@ model BrokerageContract {
 
   @@index([brokerageId])
   @@index([isActive])
+}
+
+// ============================================================================
+// MLS DOWNLOAD PRESETS (Image dimensions for MLS providers)
+// ============================================================================
+
+// System-wide MLS presets (seed data)
+model MlsPreset {
+  id             String  @id @default(cuid())
+  organizationId String? // Null = system-wide default preset
+
+  // Preset identification
+  name        String // e.g., "HAR Standard", "Zillow Large"
+  provider    String // e.g., "HAR", "Zillow", "Realtor.com", "NWMLS", "Custom"
+  description String?
+
+  // Dimensions
+  width  Int // Max width in pixels
+  height Int // Max height in pixels
+
+  // Quality settings
+  quality        Int     @default(90) // JPEG quality 1-100
+  format         String  @default("jpeg") // "jpeg", "png", "webp"
+  maxFileSizeKb  Int? // Max file size in KB (optional)
+  maintainAspect Boolean @default(true) // Maintain aspect ratio
+
+  // Processing options
+  letterbox      Boolean @default(false) // Add padding to reach exact dimensions
+  letterboxColor String? @default("#ffffff") // Padding color
+
+  // Metadata
+  isSystemPreset Boolean @default(false) // True = app-level default, cannot be deleted
+  isActive       Boolean @default(true)
+  sortOrder      Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider, name]) // One preset per provider/name per org
+  @@index([organizationId])
+  @@index([provider])
+  @@index([isActive])
+}
+
+// Override settings at different levels (brokerage, client)
+// This allows hierarchical override: App → Org → Brokerage → Client
+model MlsPresetOverride {
+  id String @id @default(cuid())
+
+  // Exactly one of these must be set
+  brokerageId String?
+  clientId    String?
+
+  // The preset being enabled/configured
+  presetId String
+
+  // Override settings (null = inherit from parent level)
+  enabled   Boolean? // Override whether this preset is available
+  isDefault Boolean? // Override whether this is the default preset
+
+  // Custom dimension overrides (null = use preset defaults)
+  customWidth     Int?
+  customHeight    Int?
+  customQuality   Int?
+  customMaxSizeKb Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  brokerage Brokerage? @relation(fields: [brokerageId], references: [id], onDelete: Cascade)
+  client    Client?    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([brokerageId, presetId])
+  @@unique([clientId, presetId])
+  @@index([brokerageId])
+  @@index([clientId])
+  @@index([presetId])
 }
 
 // ============================================================================

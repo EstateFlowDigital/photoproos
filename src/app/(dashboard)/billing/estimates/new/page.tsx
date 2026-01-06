@@ -34,12 +34,7 @@ export default async function NewEstimatePage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="New Estimate"
-        description="Create a quote for your client"
-        breadcrumbs={[
-          { label: "Billing", href: "/billing" },
-          { label: "Estimates", href: "/billing/estimates" },
-          { label: "New Estimate" },
-        ]}
+        subtitle="Create a quote for your client"
       />
 
       <div className="mx-auto w-full max-w-3xl">

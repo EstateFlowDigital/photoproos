@@ -49,45 +49,45 @@ export default async function BillingAnalyticsPage() {
     prisma.invoice.aggregate({
       where: {
         organizationId: organization.id,
-        invoiceDate: { gte: thisMonthStart },
+        issueDate: { gte: thisMonthStart },
       },
       _sum: { totalCents: true },
-      _count: { id: true },
+      _count: true,
     }),
     // Last month invoiced
     prisma.invoice.aggregate({
       where: {
         organizationId: organization.id,
-        invoiceDate: { gte: lastMonthStart, lt: thisMonthStart },
+        issueDate: { gte: lastMonthStart, lt: thisMonthStart },
       },
       _sum: { totalCents: true },
-      _count: { id: true },
+      _count: true,
     }),
     // This month paid
     prisma.payment.aggregate({
       where: {
         organizationId: organization.id,
         createdAt: { gte: thisMonthStart },
-        status: "succeeded",
+        status: "paid",
       },
       _sum: { amountCents: true },
-      _count: { id: true },
+      _count: true,
     }),
     // Last month paid
     prisma.payment.aggregate({
       where: {
         organizationId: organization.id,
         createdAt: { gte: lastMonthStart, lt: thisMonthStart },
-        status: "succeeded",
+        status: "paid",
       },
       _sum: { amountCents: true },
-      _count: { id: true },
+      _count: true,
     }),
     // This year invoiced
     prisma.invoice.aggregate({
       where: {
         organizationId: organization.id,
-        invoiceDate: { gte: thisYearStart },
+        issueDate: { gte: thisYearStart },
       },
       _sum: { totalCents: true },
     }),
@@ -96,7 +96,7 @@ export default async function BillingAnalyticsPage() {
       where: {
         organizationId: organization.id,
         createdAt: { gte: thisYearStart },
-        status: "succeeded",
+        status: "paid",
       },
       _sum: { amountCents: true },
     }),
@@ -104,7 +104,7 @@ export default async function BillingAnalyticsPage() {
     prisma.invoice.findMany({
       where: {
         organizationId: organization.id,
-        status: { in: ["sent", "overdue", "partial"] },
+        status: { in: ["sent", "overdue"] },
       },
       select: {
         id: true,
@@ -118,7 +118,7 @@ export default async function BillingAnalyticsPage() {
       by: ["clientId"],
       where: {
         organizationId: organization.id,
-        status: "succeeded",
+        status: "paid",
         clientId: { not: null },
       },
       _sum: { amountCents: true },
@@ -130,7 +130,7 @@ export default async function BillingAnalyticsPage() {
       SELECT DATE_TRUNC('month', "createdAt") as month, SUM("amountCents") as total
       FROM "Payment"
       WHERE "organizationId" = ${organization.id}
-        AND "status" = 'succeeded'
+        AND "status" = 'paid'
         AND "createdAt" >= ${new Date(now.getFullYear() - 1, now.getMonth(), 1)}
       GROUP BY DATE_TRUNC('month', "createdAt")
       ORDER BY month ASC
@@ -174,18 +174,19 @@ export default async function BillingAnalyticsPage() {
   const clientMap = new Map(clients.map((c) => [c.id, c]));
 
   // Calculate changes
+  const lastMonthInvoicedTotal = lastMonthInvoiced._sum?.totalCents ?? 0;
+  const thisMonthInvoicedTotal = thisMonthInvoiced._sum?.totalCents ?? 0;
+  const lastMonthPaidTotal = lastMonthPaid._sum?.amountCents ?? 0;
+  const thisMonthPaidTotal = thisMonthPaid._sum?.amountCents ?? 0;
+
   const invoicedChange =
-    lastMonthInvoiced._sum.totalCents && lastMonthInvoiced._sum.totalCents > 0
-      ? (((thisMonthInvoiced._sum.totalCents || 0) - lastMonthInvoiced._sum.totalCents) /
-          lastMonthInvoiced._sum.totalCents) *
-        100
+    lastMonthInvoicedTotal > 0
+      ? ((thisMonthInvoicedTotal - lastMonthInvoicedTotal) / lastMonthInvoicedTotal) * 100
       : 0;
 
   const paidChange =
-    lastMonthPaid._sum.amountCents && lastMonthPaid._sum.amountCents > 0
-      ? (((thisMonthPaid._sum.amountCents || 0) - lastMonthPaid._sum.amountCents) /
-          lastMonthPaid._sum.amountCents) *
-        100
+    lastMonthPaidTotal > 0
+      ? ((thisMonthPaidTotal - lastMonthPaidTotal) / lastMonthPaidTotal) * 100
       : 0;
 
   return (
@@ -210,7 +211,7 @@ export default async function BillingAnalyticsPage() {
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">This Month Invoiced</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            {formatCurrency(thisMonthInvoiced._sum.totalCents || 0)}
+            {formatCurrency(thisMonthInvoicedTotal)}
           </p>
           <p className="mt-1 flex items-center gap-1 text-sm">
             <span
@@ -227,7 +228,7 @@ export default async function BillingAnalyticsPage() {
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">This Month Collected</p>
           <p className="mt-2 text-2xl font-semibold text-[var(--success)]">
-            {formatCurrency(thisMonthPaid._sum.amountCents || 0)}
+            {formatCurrency(thisMonthPaidTotal)}
           </p>
           <p className="mt-1 flex items-center gap-1 text-sm">
             <span className={paidChange >= 0 ? "text-[var(--success)]" : "text-[var(--error)]"}>
@@ -240,19 +241,19 @@ export default async function BillingAnalyticsPage() {
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">YTD Invoiced</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            {formatCurrency(thisYearInvoiced._sum.totalCents || 0)}
+            {formatCurrency(thisYearInvoiced._sum?.totalCents ?? 0)}
           </p>
           <p className="mt-1 text-sm text-foreground-muted">
-            {thisMonthInvoiced._count.id} invoices this month
+            {thisMonthInvoiced._count ?? 0} invoices this month
           </p>
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">YTD Collected</p>
           <p className="mt-2 text-2xl font-semibold text-[var(--success)]">
-            {formatCurrency(thisYearPaid._sum.amountCents || 0)}
+            {formatCurrency(thisYearPaid._sum?.amountCents ?? 0)}
           </p>
           <p className="mt-1 text-sm text-foreground-muted">
-            {thisMonthPaid._count.id} payments this month
+            {thisMonthPaid._count ?? 0} payments this month
           </p>
         </div>
       </div>
@@ -362,7 +363,7 @@ export default async function BillingAnalyticsPage() {
                       </p>
                     </div>
                     <p className="font-semibold text-[var(--success)]">
-                      {formatCurrency(Number(client._sum.amountCents) || 0)}
+                      {formatCurrency(Number(client._sum?.amountCents ?? 0))}
                     </p>
                   </div>
                 );

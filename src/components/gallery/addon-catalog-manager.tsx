@@ -19,6 +19,7 @@ import {
   updateGalleryAddon,
   deleteGalleryAddon,
   reorderGalleryAddons,
+  createDefaultAddons,
   type GalleryAddonInput,
 } from "@/lib/actions/gallery-addons";
 import {
@@ -39,6 +40,7 @@ import {
   Clock,
   Check,
   X,
+  Wand2,
 } from "lucide-react";
 import { GalleryAddonCategory, ClientIndustry } from "@prisma/client";
 import {
@@ -246,6 +248,8 @@ export function AddonCatalogManager({
     maxPhotos: null,
   });
 
+  const [isCreatingDefaults, setIsCreatingDefaults] = useState(false);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -384,6 +388,23 @@ export function AddonCatalogManager({
     }));
   };
 
+  const handleCreateDefaults = async () => {
+    setIsCreatingDefaults(true);
+    try {
+      const result = await createDefaultAddons([]);
+      if (result.success && result.data) {
+        showToast(`Created ${result.data.count} default add-ons`, "success");
+        router.refresh();
+      } else if (!result.success) {
+        showToast(result.error || "Failed to create default add-ons", "error");
+      }
+    } catch (error) {
+      showToast("An error occurred", "error");
+    } finally {
+      setIsCreatingDefaults(false);
+    }
+  };
+
   return (
     <div className={cn("space-y-6", className)}>
       {/* Header */}
@@ -412,10 +433,33 @@ export function AddonCatalogManager({
           <p className="text-sm text-[var(--foreground-muted)] mb-4">
             Create add-on services that clients can request directly from their gallery.
           </p>
-          <Button onClick={() => openModal()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Your First Add-on
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button onClick={() => openModal()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Custom Add-on
+            </Button>
+            <span className="text-xs text-[var(--foreground-muted)]">or</span>
+            <Button
+              variant="outline"
+              onClick={handleCreateDefaults}
+              disabled={isCreatingDefaults}
+            >
+              {isCreatingDefaults ? (
+                <>
+                  <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-[var(--foreground)] border-t-transparent" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Create Default Add-ons
+                </>
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-[var(--foreground-muted)] mt-4">
+            Default add-ons include popular services like Virtual Staging, Rush Delivery, and more.
+          </p>
         </div>
       ) : (
         <DndContext

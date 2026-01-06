@@ -382,16 +382,31 @@ export async function sendAddonQuote(
   try {
     const org = await prisma.organization.findUnique({
       where: { clerkOrganizationId: orgId },
-      select: { id: true },
+      select: { id: true, name: true },
     });
 
     if (!org) {
       return fail("Organization not found");
     }
 
-    // Verify request belongs to this organization
+    // Verify request belongs to this organization with full details
     const request = await prisma.galleryAddonRequest.findFirst({
       where: { id: requestId, organizationId: org.id },
+      include: {
+        addon: { select: { name: true } },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            deliveryLinks: {
+              where: { isActive: true },
+              select: { slug: true },
+              take: 1,
+            },
+          }
+        },
+        client: { select: { fullName: true, email: true } },
+      },
     });
 
     if (!request) {
@@ -412,7 +427,30 @@ export async function sendAddonQuote(
       },
     });
 
-    // TODO: Send notification email to client
+    // Send quote notification email to client
+    const clientEmail = request.clientEmail || request.client?.email;
+    if (clientEmail) {
+      try {
+        const deliverySlug = request.project.deliveryLinks[0]?.slug;
+        const galleryUrl = deliverySlug
+          ? `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliverySlug}`
+          : `${process.env.NEXT_PUBLIC_APP_URL}/galleries/${request.projectId}`;
+
+        const { sendAddonQuoteEmailToClient } = await import("@/lib/email/send");
+        await sendAddonQuoteEmailToClient({
+          to: clientEmail,
+          clientName: request.client?.fullName || request.clientEmail?.split("@")[0] || "Client",
+          photographerName: org.name || "Your Photographer",
+          galleryName: request.project.name || "Gallery",
+          addonName: request.addon.name,
+          quoteCents,
+          quoteDescription: quoteDescription || null,
+          galleryUrl,
+        });
+      } catch (emailError) {
+        console.error("Failed to send quote notification email:", emailError);
+      }
+    }
 
     revalidatePath(`/galleries/${request.projectId}`);
 
@@ -480,15 +518,31 @@ export async function completeAddonRequest(requestId: string, deliveryNote?: str
   try {
     const org = await prisma.organization.findUnique({
       where: { clerkOrganizationId: orgId },
-      select: { id: true },
+      select: { id: true, name: true },
     });
 
     if (!org) {
       return fail("Organization not found");
     }
 
+    // Get request with full details for email
     const request = await prisma.galleryAddonRequest.findFirst({
       where: { id: requestId, organizationId: org.id },
+      include: {
+        addon: { select: { name: true } },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            deliveryLinks: {
+              where: { isActive: true },
+              select: { slug: true },
+              take: 1,
+            },
+          }
+        },
+        client: { select: { fullName: true, email: true } },
+      },
     });
 
     if (!request) {
@@ -504,7 +558,29 @@ export async function completeAddonRequest(requestId: string, deliveryNote?: str
       },
     });
 
-    // TODO: Send completion notification to client
+    // Send completion notification email to client
+    const clientEmail = request.clientEmail || request.client?.email;
+    if (clientEmail) {
+      try {
+        const deliverySlug = request.project.deliveryLinks[0]?.slug;
+        const galleryUrl = deliverySlug
+          ? `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliverySlug}`
+          : `${process.env.NEXT_PUBLIC_APP_URL}/galleries/${request.projectId}`;
+
+        const { sendAddonCompletedEmailToClient } = await import("@/lib/email/send");
+        await sendAddonCompletedEmailToClient({
+          to: clientEmail,
+          clientName: request.client?.fullName || request.clientEmail?.split("@")[0] || "Client",
+          photographerName: org.name || "Your Photographer",
+          galleryName: request.project.name || "Gallery",
+          addonName: request.addon.name,
+          deliveryNote: deliveryNote || null,
+          galleryUrl,
+        });
+      } catch (emailError) {
+        console.error("Failed to send completion notification email:", emailError);
+      }
+    }
 
     revalidatePath(`/galleries/${request.projectId}`);
 
@@ -990,6 +1066,162 @@ export async function declineAddonQuote(requestId: string, deliverySlug?: string
 // ============================================================================
 // SEED DATA HELPERS
 // ============================================================================
+
+/**
+ * Create default add-ons for the organization based on selected industries
+ */
+export async function createDefaultAddons(industries: ClientIndustry[] = []) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    // Check if org already has add-ons
+    const existingCount = await prisma.galleryAddon.count({
+      where: { organizationId: org.id },
+    });
+
+    if (existingCount > 0) {
+      return fail("Your catalog already has add-ons. Delete them first to reset.");
+    }
+
+    // Collect all default add-ons for selected industries
+    const allDefaults: GalleryAddonInput[] = [];
+    const seenNames = new Set<string>();
+
+    // Add common add-ons first (available to all)
+    const commonAddons: GalleryAddonInput[] = [
+      {
+        name: "Rush Delivery",
+        description: "Get your photos delivered within 24 hours",
+        iconName: "Zap",
+        priceCents: 4900,
+        category: "other",
+        estimatedTurnaround: "24 hours",
+      },
+      {
+        name: "Additional Retouching",
+        description: "Professional retouching for selected photos",
+        iconName: "Sparkles",
+        priceCents: 1500,
+        pricePerItem: true,
+        category: "enhancement",
+        requiresSelection: true,
+      },
+    ];
+
+    for (const addon of commonAddons) {
+      if (!seenNames.has(addon.name)) {
+        seenNames.add(addon.name);
+        allDefaults.push(addon);
+      }
+    }
+
+    // Add industry-specific add-ons
+    for (const industry of industries) {
+      const industryAddons = await getDefaultAddonsForIndustry(industry);
+      for (const addon of industryAddons) {
+        if (!seenNames.has(addon.name)) {
+          seenNames.add(addon.name);
+          allDefaults.push(addon);
+        }
+      }
+    }
+
+    // If no industries selected, add a popular default set
+    if (industries.length === 0) {
+      const popularDefaults: GalleryAddonInput[] = [
+        {
+          name: "Virtual Staging",
+          description: "Transform empty rooms with virtual furniture",
+          iconName: "Sofa",
+          priceCents: 2500,
+          pricePerItem: true,
+          category: "virtual_staging",
+          estimatedTurnaround: "24-48 hours",
+          requiresSelection: true,
+        },
+        {
+          name: "Day to Dusk Conversion",
+          description: "Transform daytime exterior photos to twilight",
+          iconName: "Moon",
+          priceCents: 3500,
+          pricePerItem: true,
+          category: "enhancement",
+          estimatedTurnaround: "24-48 hours",
+          requiresSelection: true,
+          maxPhotos: 5,
+        },
+        {
+          name: "Item Removal",
+          description: "Remove unwanted items from photos",
+          iconName: "Trash2",
+          priceCents: 1000,
+          pricePerItem: true,
+          category: "removal",
+          requiresSelection: true,
+        },
+        {
+          name: "Sky Replacement",
+          description: "Replace overcast skies with beautiful blue sky",
+          iconName: "Cloud",
+          priceCents: 1500,
+          pricePerItem: true,
+          category: "enhancement",
+          requiresSelection: true,
+        },
+      ];
+
+      for (const addon of popularDefaults) {
+        if (!seenNames.has(addon.name)) {
+          seenNames.add(addon.name);
+          allDefaults.push(addon);
+        }
+      }
+    }
+
+    // Create all add-ons
+    const createdAddons = await prisma.$transaction(
+      allDefaults.map((addon, index) =>
+        prisma.galleryAddon.create({
+          data: {
+            organizationId: org.id,
+            name: addon.name,
+            description: addon.description,
+            iconName: addon.iconName,
+            priceCents: addon.priceCents,
+            pricePerItem: addon.pricePerItem ?? false,
+            category: addon.category ?? "other",
+            industries: addon.industries ?? [],
+            estimatedTurnaround: addon.estimatedTurnaround,
+            sortOrder: index,
+            imageUrl: addon.imageUrl,
+            isActive: addon.isActive ?? true,
+            requiresSelection: addon.requiresSelection ?? false,
+            maxPhotos: addon.maxPhotos,
+          },
+        })
+      )
+    );
+
+    revalidatePath("/settings/addons");
+
+    return success({ addons: createdAddons, count: createdAddons.length });
+  } catch (error) {
+    console.error("Error creating default add-ons:", error);
+    return fail("Failed to create default add-ons");
+  }
+}
 
 /**
  * Get default add-ons for an industry (for seeding/onboarding)

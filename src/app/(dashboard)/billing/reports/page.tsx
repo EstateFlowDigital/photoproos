@@ -32,7 +32,7 @@ export default async function TaxReportsPage() {
     prisma.invoice.aggregate({
       where: {
         organizationId,
-        status: { in: ["paid", "partially_paid"] },
+        status: { in: ["paid"] },
         paidAt: { gte: thisMonthStart },
       },
       _sum: { taxCents: true, totalCents: true, subtotalCents: true },
@@ -41,7 +41,7 @@ export default async function TaxReportsPage() {
     prisma.invoice.aggregate({
       where: {
         organizationId,
-        status: { in: ["paid", "partially_paid"] },
+        status: { in: ["paid"] },
         paidAt: { gte: thisQuarterStart },
       },
       _sum: { taxCents: true, totalCents: true, subtotalCents: true },
@@ -50,7 +50,7 @@ export default async function TaxReportsPage() {
     prisma.invoice.aggregate({
       where: {
         organizationId,
-        status: { in: ["paid", "partially_paid"] },
+        status: { in: ["paid"] },
         paidAt: { gte: thisYearStart },
       },
       _sum: { taxCents: true, totalCents: true, subtotalCents: true },
@@ -59,7 +59,7 @@ export default async function TaxReportsPage() {
     prisma.invoice.aggregate({
       where: {
         organizationId,
-        status: { in: ["paid", "partially_paid"] },
+        status: { in: ["paid"] },
         paidAt: { gte: lastMonthStart, lte: lastMonthEnd },
       },
       _sum: { taxCents: true, totalCents: true, subtotalCents: true },
@@ -93,7 +93,7 @@ export default async function TaxReportsPage() {
     by: ["clientId"],
     where: {
       organizationId,
-      status: { in: ["paid", "partially_paid"] },
+      status: "paid",
       paidAt: { gte: thisYearStart },
       taxCents: { gt: 0 },
     },
@@ -159,7 +159,7 @@ export default async function TaxReportsPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Tax Reports"
-        description="Track and export tax collected on invoices"
+        subtitle="Track and export tax collected on invoices"
         actions={<ExportButtons data={exportData} />}
       />
 

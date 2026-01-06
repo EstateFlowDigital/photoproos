@@ -65,12 +65,7 @@ export default async function EstimateDetailPage({ params }: Props) {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title={`Estimate ${estimate.estimateNumber}`}
-        description={estimate.title || "Estimate details"}
-        breadcrumbs={[
-          { label: "Billing", href: "/billing" },
-          { label: "Estimates", href: "/billing/estimates" },
-          { label: estimate.estimateNumber },
-        ]}
+        subtitle={estimate.title || "Estimate details"}
         actions={<EstimateActions estimate={estimate} />}
       />
 

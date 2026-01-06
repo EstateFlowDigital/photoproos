@@ -43,11 +43,11 @@ export function CreditNoteForm({ clients, invoices }: CreditNoteFormProps) {
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const preselectedInvoiceId = searchParams.get("invoiceId");
-  const preselectedClientId = searchParams.get("clientId");
+  const preselectedInvoiceId = searchParams?.get("invoiceId");
+  const preselectedClientId = searchParams?.get("clientId");
 
-  const [selectedClientId, setSelectedClientId] = useState(preselectedClientId || "");
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState(preselectedInvoiceId || "");
+  const [selectedClientId, setSelectedClientId] = useState(preselectedClientId ?? "");
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(preselectedInvoiceId ?? "");
   const [amountCents, setAmountCents] = useState(0);
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");

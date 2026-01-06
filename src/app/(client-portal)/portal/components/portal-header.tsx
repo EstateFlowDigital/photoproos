@@ -4,6 +4,7 @@ import { useState } from "react";
 import { logoutClient } from "@/lib/actions/client-auth";
 import { CameraIcon, LogoutIcon, LoadingSpinner } from "./icons";
 import { NotificationBell } from "./notification-bell";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import type { ClientData, InvoiceData, QuestionnaireData, GalleryData } from "./types";
 
 interface PortalHeaderProps {
@@ -33,7 +34,7 @@ export function PortalHeader({ client, invoices = [], questionnaires = [], galle
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]">
               <CameraIcon className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-semibold text-white">Client Portal</span>
+            <span className="text-lg font-semibold text-[var(--foreground)]">Client Portal</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
             {/* Notification Bell */}
@@ -43,9 +44,12 @@ export function PortalHeader({ client, invoices = [], questionnaires = [], galle
               galleries={galleries}
             />
 
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* User Info - Hidden on mobile */}
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-medium text-white">{displayName}</p>
+              <p className="text-sm font-medium text-[var(--foreground)]">{displayName}</p>
               <p className="text-xs text-[var(--foreground-muted)]">{client.company || client.email}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
@@ -54,7 +58,7 @@ export function PortalHeader({ client, invoices = [], questionnaires = [], galle
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-[var(--foreground)] disabled:opacity-50"
             >
               {isLoggingOut ? (
                 <LoadingSpinner className="h-4 w-4" />

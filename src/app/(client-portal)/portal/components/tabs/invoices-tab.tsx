@@ -63,7 +63,7 @@ function InvoiceCard({ invoice, isPaying, isDownloading, onPayment, onPdfDownloa
           <ReceiptIcon className="h-5 w-5 text-[var(--foreground-muted)]" />
         </div>
         <div>
-          <h3 className="font-medium text-white">{invoice.invoiceNumber}</h3>
+          <h3 className="font-medium text-[var(--foreground)]">{invoice.invoiceNumber}</h3>
           <p className="text-sm text-[var(--foreground-muted)]">
             {invoice.dueDate && `Due ${formatDate(invoice.dueDate)}`}
             {invoice.paidAt && ` • Paid ${formatDate(invoice.paidAt)}`}
@@ -71,12 +71,12 @@ function InvoiceCard({ invoice, isPaying, isDownloading, onPayment, onPdfDownloa
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <p className="text-lg font-bold text-white">{formatPrice(invoice.amount)}</p>
+        <p className="text-lg font-bold text-[var(--foreground)]">{formatPrice(invoice.amount)}</p>
         <InvoiceStatusBadge status={invoice.status} />
         <button
           onClick={onPdfDownload}
           disabled={isDownloading}
-          className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--card-border)] disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--card-border)] disabled:opacity-50"
           title="Download PDF"
         >
           {isDownloading ? (

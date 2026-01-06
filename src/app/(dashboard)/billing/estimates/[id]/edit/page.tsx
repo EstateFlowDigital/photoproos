@@ -44,13 +44,7 @@ export default async function EditEstimatePage({ params }: Props) {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title={`Edit ${estimate.estimateNumber}`}
-        description="Update estimate details"
-        breadcrumbs={[
-          { label: "Billing", href: "/billing" },
-          { label: "Estimates", href: "/billing/estimates" },
-          { label: estimate.estimateNumber, href: `/billing/estimates/${id}` },
-          { label: "Edit" },
-        ]}
+        subtitle="Update estimate details"
       />
 
       <div className="mx-auto w-full max-w-3xl">

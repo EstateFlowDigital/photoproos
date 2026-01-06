@@ -64,9 +64,9 @@ function PropertyCard({ property }: { property: PropertyData }) {
       </div>
       <div className="p-4">
         {property.price && (
-          <p className="font-bold text-white">{formatPrice(property.price)}</p>
+          <p className="font-bold text-[var(--foreground)]">{formatPrice(property.price)}</p>
         )}
-        <p className="mt-1 font-medium text-white">{property.address}</p>
+        <p className="mt-1 font-medium text-[var(--foreground)]">{property.address}</p>
         <p className="text-sm text-[var(--foreground-muted)]">
           {property.city}, {property.state} {property.zipCode}
         </p>

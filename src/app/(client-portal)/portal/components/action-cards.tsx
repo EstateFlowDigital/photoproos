@@ -178,7 +178,7 @@ function ActionCard({ variant, icon, title, subtitle, action }: ActionCardProps)
           {icon}
         </div>
         <div>
-          <p className="font-medium text-white">{title}</p>
+          <p className="font-medium text-[var(--foreground)]">{title}</p>
           {subtitle && (
             <p className="text-sm text-[var(--foreground-muted)]">{subtitle}</p>
           )}

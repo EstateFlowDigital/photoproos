@@ -142,7 +142,7 @@ export function NotificationBell({
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--card-border)] hover:text-white"
+        className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--card-border)] hover:text-[var(--foreground)]"
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
       >
         <BellIcon className="h-5 w-5" />
@@ -158,7 +158,7 @@ export function NotificationBell({
         <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl sm:w-96">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
-            <h3 className="font-semibold text-white">Notifications</h3>
+            <h3 className="font-semibold text-[var(--foreground)]">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
@@ -251,7 +251,7 @@ function ActivityItem({ activity, onRead }: ActivityItemProps) {
           <div>
             <p
               className={`text-sm font-medium ${
-                activity.read ? "text-[var(--foreground-secondary)]" : "text-white"
+                activity.read ? "text-[var(--foreground-secondary)]" : "text-[var(--foreground)]"
               }`}
             >
               {activity.title}

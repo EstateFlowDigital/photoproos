@@ -30,6 +30,7 @@ export interface GalleryData {
   status: string;
   downloadable: boolean;
   deliveredAt: Date | null;
+  expiresAt: Date | null;
   serviceName: string | null;
   photos: {
     id: string;

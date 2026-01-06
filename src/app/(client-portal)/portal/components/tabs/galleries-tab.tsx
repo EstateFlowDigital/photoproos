@@ -101,6 +101,7 @@ export function GalleriesTab({
           onDownload={onPhotoDownload}
           onCompare={handleCompare}
           galleryName={lightboxGallery.name}
+          galleryId={lightboxGallery.id}
         />
       )}
 
@@ -135,6 +136,34 @@ function GalleryCard({
   // Count favorites in this gallery
   const favoriteCount = gallery.photos.filter((p) => favorites.has(p.id)).length;
 
+  // Calculate expiration countdown
+  const getExpirationInfo = () => {
+    if (!gallery.expiresAt) return null;
+
+    const now = new Date();
+    const expiresAt = new Date(gallery.expiresAt);
+    const diffMs = expiresAt.getTime() - now.getTime();
+
+    if (diffMs <= 0) {
+      return { expired: true, text: "Expired", urgency: "expired" as const };
+    }
+
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (diffDays > 30) {
+      return { expired: false, text: `${diffDays} days left`, urgency: "normal" as const };
+    } else if (diffDays > 7) {
+      return { expired: false, text: `${diffDays} days left`, urgency: "warning" as const };
+    } else if (diffDays >= 1) {
+      return { expired: false, text: `${diffDays} day${diffDays !== 1 ? "s" : ""} left`, urgency: "urgent" as const };
+    } else {
+      return { expired: false, text: `${diffHours}h left`, urgency: "urgent" as const };
+    }
+  };
+
+  const expirationInfo = getExpirationInfo();
+
   return (
     <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
       <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -159,7 +188,7 @@ function GalleryCard({
             </div>
           )}
           <div>
-            <h3 className="font-medium text-white">{gallery.name}</h3>
+            <h3 className="font-medium text-[var(--foreground)]">{gallery.name}</h3>
             <p className="text-sm text-[var(--foreground-muted)]">
               {gallery.photoCount} photos
               {gallery.serviceName && ` • ${gallery.serviceName}`}
@@ -174,6 +203,10 @@ function GalleryCard({
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {/* Expiration Countdown */}
+          {expirationInfo && (
+            <ExpirationBadge info={expirationInfo} />
+          )}
           <GalleryStatusBadge status={gallery.status} />
           {gallery.downloadable && (
             <button
@@ -284,6 +317,49 @@ function HeartIcon({ className, filled }: { className?: string; filled?: boolean
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+      />
+    </svg>
+  );
+}
+
+interface ExpirationInfo {
+  expired: boolean;
+  text: string;
+  urgency: "normal" | "warning" | "urgent" | "expired";
+}
+
+function ExpirationBadge({ info }: { info: ExpirationInfo }) {
+  const urgencyStyles = {
+    normal: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-secondary)]",
+    warning: "bg-[var(--warning)]/10 text-[var(--warning)]",
+    urgent: "bg-[var(--error)]/10 text-[var(--error)] animate-pulse",
+    expired: "bg-[var(--error)]/20 text-[var(--error)]",
+  };
+
+  return (
+    <span
+      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${urgencyStyles[info.urgency]}`}
+      title={info.expired ? "This gallery has expired" : "Time remaining until gallery expires"}
+    >
+      <ClockIcon className="h-3.5 w-3.5" />
+      {info.text}
+    </span>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
       />
     </svg>
   );

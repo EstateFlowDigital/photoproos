@@ -17,7 +17,7 @@ export default async function NewCreditNotePage() {
     prisma.invoice.findMany({
       where: {
         organizationId,
-        status: { in: ["sent", "viewed", "partial", "overdue"] },
+        status: { in: ["sent", "overdue"] },
       },
       select: {
         id: true,
@@ -35,12 +35,7 @@ export default async function NewCreditNotePage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Issue Credit Note"
-        description="Create a credit note for a client refund or credit"
-        breadcrumbs={[
-          { label: "Billing", href: "/billing" },
-          { label: "Credit Notes", href: "/billing/credit-notes" },
-          { label: "New Credit Note" },
-        ]}
+        subtitle="Create a credit note for a client refund or credit"
       />
 
       <div className="mx-auto w-full max-w-2xl">

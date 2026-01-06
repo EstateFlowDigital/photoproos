@@ -53,6 +53,8 @@ import { DownloadReceiptEmail } from "@/emails/download-receipt";
 import { BookingFollowupEmail } from "@/emails/booking-followup";
 import { WaitlistNotificationEmail } from "@/emails/waitlist-notification";
 import { AddonRequestEmail } from "@/emails/addon-request";
+import { AddonQuoteEmail } from "@/emails/addon-quote";
+import { AddonCompletedEmail } from "@/emails/addon-completed";
 
 /**
  * Send gallery delivered notification to client
@@ -1546,5 +1548,92 @@ export async function sendAddonRequestEmail(params: {
       galleryUrl,
     }),
     replyTo: clientEmail,
+  });
+}
+
+/**
+ * Send quote notification to client when photographer sends a quote
+ *
+ * Triggered by: sendAddonQuote() action
+ * Location: src/lib/actions/gallery-addons.ts
+ */
+export async function sendAddonQuoteEmailToClient(params: {
+  to: string;
+  clientName: string;
+  photographerName: string;
+  galleryName: string;
+  addonName: string;
+  quoteCents: number;
+  quoteDescription?: string | null;
+  galleryUrl: string;
+  photographerEmail?: string;
+}) {
+  const {
+    to,
+    clientName,
+    photographerName,
+    galleryName,
+    addonName,
+    quoteCents,
+    quoteDescription,
+    galleryUrl,
+    photographerEmail,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `Quote received: ${addonName} - ${galleryName}`,
+    react: AddonQuoteEmail({
+      clientName,
+      photographerName,
+      galleryName,
+      addonName,
+      quoteCents,
+      quoteDescription,
+      galleryUrl,
+    }),
+    replyTo: photographerEmail,
+  });
+}
+
+/**
+ * Send completion notification to client when add-on request is completed
+ *
+ * Triggered by: completeAddonRequest() action
+ * Location: src/lib/actions/gallery-addons.ts
+ */
+export async function sendAddonCompletedEmailToClient(params: {
+  to: string;
+  clientName: string;
+  photographerName: string;
+  galleryName: string;
+  addonName: string;
+  deliveryNote?: string | null;
+  galleryUrl: string;
+  photographerEmail?: string;
+}) {
+  const {
+    to,
+    clientName,
+    photographerName,
+    galleryName,
+    addonName,
+    deliveryNote,
+    galleryUrl,
+    photographerEmail,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `Completed: ${addonName} for ${galleryName}`,
+    react: AddonCompletedEmail({
+      clientName,
+      photographerName,
+      galleryName,
+      addonName,
+      deliveryNote,
+      galleryUrl,
+    }),
+    replyTo: photographerEmail,
   });
 }

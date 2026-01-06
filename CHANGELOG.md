@@ -8,6 +8,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Billing Module Overhaul** - Comprehensive billing hub with unified dashboard and improved UX
+  - **Billing Overview Dashboard** (`/billing`) - Central hub for all billing operations
+    - Key metrics: Outstanding balance, monthly invoiced/collected, available credits
+    - Quick links to all billing modules (Invoices, Estimates, Credit Notes, Retainers, Analytics, Tax Reports)
+    - Recent invoices and payments activity feed
+    - Alert section for overdue invoices and low-balance retainers
+  - **Estimates List Page** (`/billing/estimates`) - Full estimates management
+    - Sortable columns (number, client, status, amount, valid until, created)
+    - Status filter tabs (All, Draft, Sent, Approved, Rejected, Expired, Converted)
+    - Search across estimate numbers, titles, and client info
+    - Bulk selection and delete functionality
+    - Quick actions: Send, Edit, Duplicate, Delete
+  - **Credit Notes Page** (`/billing/credit-notes`) - Wired existing client component to route
+    - List view with search and status filtering
+    - Apply, void, and manage credit notes
+  - **TypeScript Fixes** - Resolved all billing module type errors
+    - Fixed PageHeader props (subtitle instead of description)
+    - Corrected enum values (InvoiceStatus, CreditNoteStatus, PaymentStatus)
+    - Fixed Prisma query field names and includes
+    - Removed invalid activity logging calls
+
+- **Client Portal Theme Toggle** - Light/dark mode support for the client portal
+  - Theme toggle button in portal header with Sun/Moon icons
+  - Three modes: Light, Dark, System (follows OS preference)
+  - Persists preference to localStorage
+  - Updated all portal components to use CSS variables instead of hardcoded colors
+  - Seamless theme switching for galleries, invoices, downloads, questionnaires, and all UI elements
+- **Photo Rating System in Client Portal** - 1-5 star rating for gallery photos
+  - Star rating button in lightbox header (toggles rating panel)
+  - Interactive 5-star rating with hover states
+  - Shows average rating and count from all viewers
+  - Shows user's own rating with visual highlight
+  - Keyboard shortcut 'R' to toggle rating panel
+  - Ratings persist via session and integrate with existing API
+- **Gallery Expiration Countdown in Client Portal** - Visual countdown for gallery expiration
+  - Shows days/hours remaining until gallery expires
+  - Color-coded urgency levels: normal (grey), warning (yellow, <30 days), urgent (red, <7 days)
+  - Pulsing animation for urgent galleries (<7 days)
+  - Displays "Expired" badge for expired galleries
+  - Clock icon with tooltip explaining countdown
+- **MLS Download Presets** - Hierarchical image dimension presets for MLS-compliant photo downloads
+  - **Database Schema** - New `MlsPreset` and `MlsPresetOverride` models for storing presets at multiple levels
+  - **System Presets** - 17 built-in presets for major MLS providers (HAR, Zillow, Realtor.com, NWMLS, Bright MLS, CRMLS) plus social media and print formats
+  - **Hierarchical Overrides** - App defaults → Organization → Brokerage → Client override chain
+    - Organizations can customize presets for their needs
+    - Brokerages can override organization defaults
+    - Individual clients/agents can override brokerage defaults
+  - **Server Actions** - Complete CRUD operations:
+    - `getMlsPresets` - Get all available presets
+    - `getEffectivePresetsForClient` - Resolve presets with all overrides applied
+    - `getDefaultPresetForClient` - Auto-select appropriate preset
+    - `setPresetOverride` - Configure overrides at brokerage/client level
+    - `setClientMlsPreferences` - Bulk update client preferences (for onboarding)
+  - **Download API Integration** - Batch download route now accepts `mlsPresetId` parameter
+    - Applies Sharp image resizing according to preset specifications
+    - Supports maintain aspect ratio, letterboxing, quality compression
+    - Automatic file size optimization to meet MLS limits
+    - ZIP filename includes preset name for easy identification
+  - **Image Processing** - New MLS resize utilities in `image-processing.ts`:
+    - `resizeForMls` - Core resizing function with quality/size optimization
+    - Progressive quality reduction to meet file size limits
+    - Format conversion (JPEG, PNG, WebP)
+- **AI Features Roadmap** - Documented future AI features in README for future implementation
+  - AI Photo Editing Module (blur detection, duplicate detection, HDR, exposure analysis)
+  - AI Content Generation (captions, property descriptions, SEO tags)
+  - AI Business Intelligence (smart pricing, demand forecasting, churn prediction)
+  - AI Automation (smart scheduling, auto-culling, intelligent delivery)
+  - Video Features (auto generation, music sync, social clips)
+- **Square Footage Pricing for Services** - Tiered and per-sqft pricing for real estate photography services
+  - **Database Schema** - New `ServicePricingTier` model and `ServicePricingMethod` enum
+  - **Three Pricing Methods**:
+    - `fixed` - Traditional flat rate pricing (default)
+    - `per_sqft` - Price calculated per square foot with min/max bounds and rounding increments
+    - `tiered` - BICEP-style pricing with defined sqft ranges and tier names
+  - **Service Fields** - Added to Service model: `pricingMethod`, `pricePerSqftCents`, `minSqft`, `maxSqft`, `sqftIncrements`
+  - **Pricing Tiers** - Support for multiple tiers with min/max sqft ranges, tier names (e.g., "Small Home", "Medium Home")
+  - **Server Actions**:
+    - `setServicePricingTiers` - Configure tiered pricing for a service
+    - `calculateServicePrice` - Calculate final price based on sqft input
+    - `updateServicePricingMethod` - Switch between fixed/per_sqft/tiered pricing
+    - `getServiceWithPricing` - Fetch service with full pricing configuration
+    - `getServicesWithPricing` - List services with pricing tiers included
+    - `getServicePriceDisplay` - Get human-readable price display string
+  - **Validation Schemas** - Zod schemas for pricing inputs and tier configuration
 - **Gallery Add-on Upsells Enhancement** - Complete add-on request lifecycle with notifications and UI polish
   - **Email Notifications**
     - Quote notification email to client when photographer sends a quote

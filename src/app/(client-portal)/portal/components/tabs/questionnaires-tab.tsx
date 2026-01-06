@@ -60,7 +60,7 @@ function PendingQuestionnaireCard({ questionnaire: q }: { questionnaire: Questio
           <ClipboardIcon className="h-5 w-5 text-[var(--warning)]" />
         </div>
         <div>
-          <h3 className="font-medium text-white">{q.templateName}</h3>
+          <h3 className="font-medium text-[var(--foreground)]">{q.templateName}</h3>
           <p className="text-sm text-[var(--foreground-muted)]">
             {q.bookingTitle && `For: ${q.bookingTitle}`}
             {q.bookingDate && ` • ${formatDate(q.bookingDate)}`}
@@ -108,7 +108,7 @@ function CompletedQuestionnaireCard({ questionnaire: q }: { questionnaire: Quest
           <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />
         </div>
         <div>
-          <h3 className="font-medium text-white">{q.templateName}</h3>
+          <h3 className="font-medium text-[var(--foreground)]">{q.templateName}</h3>
           <p className="text-sm text-[var(--foreground-muted)]">
             {q.bookingTitle && `For: ${q.bookingTitle}`}
             {q.completedAt && ` • Completed ${formatDate(q.completedAt)}`}

@@ -13,6 +13,15 @@ export const serviceCategorySchema = z.enum([
 
 export type ServiceCategoryEnum = z.infer<typeof serviceCategorySchema>;
 
+// Service pricing method enum matching Prisma schema
+export const servicePricingMethodSchema = z.enum([
+  "fixed", // Single fixed price (default)
+  "per_sqft", // Price calculated per square foot
+  "tiered", // Price based on sqft tiers (like BICEP pricing)
+]);
+
+export type ServicePricingMethodEnum = z.infer<typeof servicePricingMethodSchema>;
+
 // Base service schema for validation
 export const serviceSchema = z.object({
   name: z
@@ -41,6 +50,34 @@ export const serviceSchema = z.object({
     .max(20, "Maximum 20 deliverables allowed")
     .default([]),
   isActive: z.boolean().default(true),
+
+  // Square footage pricing fields
+  pricingMethod: servicePricingMethodSchema.optional().default("fixed"),
+  pricePerSqftCents: z
+    .number()
+    .min(0, "Price per sqft must be positive")
+    .max(10000, "Price per sqft too high") // Max $100/sqft
+    .optional()
+    .nullable(),
+  minSqft: z
+    .number()
+    .min(0, "Minimum sqft must be positive")
+    .max(100000, "Maximum sqft too high")
+    .optional()
+    .nullable(),
+  maxSqft: z
+    .number()
+    .min(0, "Maximum sqft must be positive")
+    .max(1000000, "Maximum sqft too high")
+    .optional()
+    .nullable(),
+  sqftIncrements: z
+    .number()
+    .min(1, "Increments must be at least 1")
+    .max(10000, "Increments too high")
+    .optional()
+    .nullable()
+    .default(500),
 });
 
 // Schema for creating a new service
@@ -92,6 +129,48 @@ export const serviceFiltersSchema = z.object({
   isActive: z.boolean().optional(),
   isDefault: z.boolean().optional(),
   search: z.string().optional(),
+  pricingMethod: servicePricingMethodSchema.optional(),
 });
 
 export type ServiceFilters = z.infer<typeof serviceFiltersSchema>;
+
+// =============================================================================
+// PRICING TIERS (for tiered sqft services)
+// =============================================================================
+
+// Single pricing tier schema
+export const pricingTierSchema = z.object({
+  minSqft: z.number().min(0, "Minimum sqft must be positive"),
+  maxSqft: z.number().min(0, "Maximum sqft must be positive").nullable().optional(),
+  priceCents: z.number().min(0, "Price must be positive").max(100000000, "Price too high"),
+  tierName: z.string().max(50, "Tier name too long").nullable().optional(),
+  sortOrder: z.number().optional(),
+});
+
+export type PricingTierInput = z.infer<typeof pricingTierSchema>;
+
+// Schema for setting pricing tiers on a service
+export const createServicePricingTiersSchema = z.object({
+  serviceId: z.string().cuid(),
+  tiers: z
+    .array(pricingTierSchema)
+    .min(1, "At least one tier is required")
+    .max(10, "Maximum 10 tiers allowed"),
+});
+
+export type CreateServicePricingTiersInput = z.infer<typeof createServicePricingTiersSchema>;
+
+// Schema for updating a single pricing tier
+export const updatePricingTierSchema = pricingTierSchema.extend({
+  id: z.string().cuid(),
+});
+
+export type UpdatePricingTierInput = z.infer<typeof updatePricingTierSchema>;
+
+// Schema for calculating service price
+export const calculateServicePriceSchema = z.object({
+  serviceId: z.string().cuid(),
+  sqft: z.number().min(0, "Square footage must be positive"),
+});
+
+export type CalculateServicePriceInput = z.infer<typeof calculateServicePriceSchema>;

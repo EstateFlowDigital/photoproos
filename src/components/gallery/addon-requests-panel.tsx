@@ -109,6 +109,161 @@ function formatDate(date: Date | string): string {
   });
 }
 
+function formatDateTime(date: Date | string): string {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+interface TimelineEvent {
+  label: string;
+  date: Date | string | null;
+  status: "completed" | "current" | "upcoming";
+  color: string;
+}
+
+function RequestTimeline({ request }: { request: AddonRequest }) {
+  const getTimelineEvents = (): TimelineEvent[] => {
+    const events: TimelineEvent[] = [];
+
+    // Request created - always present
+    events.push({
+      label: "Request Submitted",
+      date: request.createdAt,
+      status: "completed",
+      color: "var(--primary)",
+    });
+
+    // Quoted
+    if (request.quotedAt || ["quoted", "approved", "in_progress", "completed"].includes(request.status)) {
+      events.push({
+        label: "Quote Sent",
+        date: request.quotedAt,
+        status: request.quotedAt ? "completed" : request.status === "pending" ? "upcoming" : "current",
+        color: "var(--primary)",
+      });
+    }
+
+    // Approved/Declined
+    if (request.approvedAt || ["approved", "in_progress", "completed"].includes(request.status)) {
+      events.push({
+        label: "Approved",
+        date: request.approvedAt,
+        status: request.approvedAt ? "completed" : request.status === "quoted" ? "upcoming" : "current",
+        color: "var(--success)",
+      });
+    } else if (request.declinedAt || request.status === "declined") {
+      events.push({
+        label: "Declined",
+        date: request.declinedAt,
+        status: request.declinedAt ? "completed" : "current",
+        color: "var(--error)",
+      });
+    }
+
+    // In Progress
+    if (["in_progress", "completed"].includes(request.status)) {
+      events.push({
+        label: "Work Started",
+        date: request.approvedAt, // Use approvedAt as proxy since we don't have startedAt
+        status: request.status === "in_progress" ? "current" : "completed",
+        color: "var(--ai)",
+      });
+    }
+
+    // Completed
+    if (request.completedAt || request.status === "completed") {
+      events.push({
+        label: "Completed",
+        date: request.completedAt,
+        status: request.completedAt ? "completed" : "upcoming",
+        color: "var(--success)",
+      });
+    }
+
+    // Cancelled
+    if (request.status === "cancelled") {
+      events.push({
+        label: "Cancelled",
+        date: null,
+        status: "completed",
+        color: "var(--foreground-muted)",
+      });
+    }
+
+    return events;
+  };
+
+  const events = getTimelineEvents();
+
+  return (
+    <div className="relative">
+      <p className="text-xs font-medium text-foreground-muted mb-3">Timeline</p>
+      <div className="relative pl-4">
+        {/* Vertical line */}
+        <div className="absolute left-[5px] top-1 bottom-1 w-px bg-[var(--card-border)]" />
+
+        <div className="space-y-3">
+          {events.map((event, index) => (
+            <div key={index} className="relative flex items-start gap-3">
+              {/* Dot */}
+              <div
+                className={cn(
+                  "absolute -left-4 mt-1.5 h-2.5 w-2.5 rounded-full border-2 transition-all",
+                  event.status === "completed"
+                    ? "border-transparent"
+                    : event.status === "current"
+                    ? "border-transparent animate-pulse"
+                    : "border-[var(--card-border)] bg-[var(--background)]"
+                )}
+                style={{
+                  backgroundColor: event.status !== "upcoming" ? event.color : undefined,
+                }}
+              />
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <p
+                  className={cn(
+                    "text-sm font-medium",
+                    event.status === "upcoming"
+                      ? "text-foreground-muted"
+                      : "text-foreground"
+                  )}
+                >
+                  {event.label}
+                </p>
+                {event.date && (
+                  <p className="text-xs text-foreground-muted">
+                    {formatDateTime(event.date)}
+                  </p>
+                )}
+              </div>
+
+              {/* Status indicator for current step */}
+              {event.status === "current" && (
+                <span
+                  className="shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${event.color} 15%, transparent)`,
+                    color: event.color,
+                  }}
+                >
+                  Current
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type StatusFilter = "all" | "active" | "completed";
 
 const STATUS_FILTERS: { value: StatusFilter; label: string; statuses: GalleryAddonRequestStatus[] }[] = [
@@ -376,6 +531,9 @@ export function AddonRequestsPanel({ galleryId, photos = [] }: AddonRequestsPane
             {/* Expanded Content */}
             {isExpanded && (
               <div className="border-t border-[var(--card-border)] p-4 space-y-4 bg-[var(--background)]">
+                {/* Request Timeline */}
+                <RequestTimeline request={request} />
+
                 {/* Client Notes */}
                 {request.notes && (
                   <div>

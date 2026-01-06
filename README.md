@@ -139,6 +139,66 @@ PhotoProOS is a comprehensive business management platform for professional phot
 | Multi-Location | Branch management | Planned |
 | Marketplace | Third-party integrations | Planned |
 
+## AI Features Roadmap (Tabled for Future)
+
+The following AI-powered features are planned for future implementation. These are being deferred to focus on core business functionality first.
+
+### AI Photo Editing Module
+
+A standalone "Editing" workspace powered by AI for streamlined photo processing.
+
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| **Blur Detection** | Automatically detect and flag out-of-focus images | High |
+| **Duplicate Detection** | Perceptual hashing to identify similar/duplicate photos | High |
+| **Exposure Analysis** | Histogram-based over/under exposure detection | Medium |
+| **AI Auto-Enhance** | One-click improvements (contrast, color, sharpness) | Medium |
+| **Noise Reduction** | AI-powered noise removal for high-ISO images | Medium |
+| **HDR Bracketing** | Auto-detect bracketed exposures and merge to HDR | Low |
+| **Batch Processing** | Apply AI edits across multiple photos | High |
+
+### AI Content Generation
+
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| **Photo Captions** | Auto-generate descriptions for images | Medium |
+| **Property Descriptions** | AI-written listing descriptions from photos | High |
+| **SEO Meta Tags** | Auto-generate optimized meta descriptions | Medium |
+| **Social Media Copy** | Generate captions for social sharing | Low |
+| **Email Drafts** | AI-assisted client communication | Low |
+
+### AI Business Intelligence
+
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| **Smart Pricing** | Dynamic pricing suggestions based on market data | Medium |
+| **Demand Forecasting** | Predict busy periods from historical data | Medium |
+| **Client Matching** | Style-based client/photographer matching | Low |
+| **Churn Prediction** | Identify at-risk clients | Low |
+| **Revenue Optimization** | Upsell recommendations based on client behavior | Medium |
+
+### AI Automation
+
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| **Smart Scheduling** | AI-optimized booking slot suggestions | Medium |
+| **Auto-Culling Workflow** | Streamlined cull → select → deliver pipeline | High |
+| **Intelligent Delivery** | Auto-select best photos for client galleries | Medium |
+| **Email Personalization** | Dynamic content insertion based on client data | Low |
+
+### Video Features (Future)
+
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| **Auto Video Generation** | Create slideshows/reels from gallery photos | Medium |
+| **Music Sync** | Auto-sync transitions to background music | Low |
+| **Social Clips** | Generate short-form content for social platforms | Medium |
+| **Virtual Tour Stitching** | AI-assisted 360° tour creation | Low |
+
+> **Note:** These features require significant ML/AI infrastructure investment. Implementation will begin after core business features are stable and user feedback indicates demand.
+
+---
+
 ## Tech Stack
 
 | Category | Technology |

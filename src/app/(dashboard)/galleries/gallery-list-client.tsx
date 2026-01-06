@@ -53,6 +53,7 @@ interface Gallery {
   createdAt?: string;
   views?: number;
   downloads?: number;
+  pendingAddonRequests?: number;
   services: GalleryService[];
 }
 
@@ -649,6 +650,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                     thumbnailUrl={gallery.thumbnailUrl}
                     views={gallery.views}
                     downloads={gallery.downloads}
+                    pendingAddonRequests={gallery.pendingAddonRequests}
                     onQuickAction={isSelectMode ? undefined : handleQuickAction}
                   />
                 </div>
@@ -700,6 +702,9 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                       Status
+                    </th>
+                    <th className="hidden px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
+                      Add-ons
                     </th>
                     <th className="hidden px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
                       Views
@@ -815,6 +820,15 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                           >
                             {gallery.status.charAt(0).toUpperCase() + gallery.status.slice(1)}
                           </span>
+                        </td>
+                        <td className="hidden px-4 py-3 text-center md:table-cell">
+                          {gallery.pendingAddonRequests && gallery.pendingAddonRequests > 0 ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--warning)]/10 px-2 py-0.5 text-xs font-medium text-[var(--warning)]">
+                              {gallery.pendingAddonRequests}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-foreground-muted">—</span>
+                          )}
                         </td>
                         <td className="hidden px-4 py-3 text-center lg:table-cell">
                           <div className="flex items-center justify-center gap-1 text-sm text-foreground-secondary">

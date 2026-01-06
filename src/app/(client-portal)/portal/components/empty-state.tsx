@@ -39,7 +39,7 @@ export function EmptyState({ icon, title, description, illustration, action }: E
         )}
 
         {/* Text Content */}
-        <h3 className="text-lg font-semibold text-white sm:text-xl">{title}</h3>
+        <h3 className="text-lg font-semibold text-[var(--foreground)] sm:text-xl">{title}</h3>
         <p className="mx-auto mt-3 max-w-md text-sm text-[var(--foreground-muted)] sm:text-base">
           {description}
         </p>

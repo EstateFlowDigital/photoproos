@@ -49,7 +49,14 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
       },
       include: {
         client: { select: { fullName: true, company: true } },
-        _count: { select: { assets: true } },
+        _count: {
+          select: {
+            assets: true,
+            addonRequests: {
+              where: { status: { in: ["pending", "quoted", "approved", "in_progress"] } },
+            },
+          },
+        },
         assets: {
           take: 1,
           orderBy: { createdAt: "desc" },
@@ -97,6 +104,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
     createdAt: gallery.createdAt.toISOString(),
     views: gallery.viewCount,
     downloads: gallery.downloadCount,
+    pendingAddonRequests: gallery._count.addonRequests,
     services: (gallery.services || []).map((ps) => ({
       id: ps.service.id,
       name: ps.service.name,

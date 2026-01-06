@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { CreditNoteStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
-import { logActivity } from "@/lib/utils/activity";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
@@ -122,19 +121,6 @@ export async function createCreditNote(
       },
     });
 
-    // Log activity
-    await logActivity({
-      organizationId,
-      type: "credit_note_created",
-      description: `Credit note ${creditNoteNumber} created for ${clientName || "client"}`,
-      metadata: {
-        creditNoteId: creditNote.id,
-        creditNoteNumber,
-        amountCents: input.amountCents,
-        invoiceId: input.invoiceId,
-      },
-    });
-
     revalidatePath("/credit-notes");
     revalidatePath("/invoices");
 
@@ -167,7 +153,7 @@ export async function getCreditNote(creditNoteId: string): Promise<
     clientEmail: string | null;
     issueDate: Date;
     createdAt: Date;
-    client: { id: string; fullName: string; company: string | null } | null;
+    client: { id: string; fullName: string | null; company: string | null } | null;
     invoice: { id: string; invoiceNumber: string; totalCents: number } | null;
     appliedToInvoice: { id: string; invoiceNumber: string; totalCents: number } | null;
   }>
@@ -320,18 +306,6 @@ export async function issueCreditNote(creditNoteId: string): Promise<ActionResul
       data: { status: "issued" },
     });
 
-    // Log activity
-    await logActivity({
-      organizationId,
-      type: "credit_note_issued",
-      description: `Credit note ${creditNote.creditNoteNumber} was issued`,
-      metadata: {
-        creditNoteId,
-        creditNoteNumber: creditNote.creditNoteNumber,
-        amountCents: creditNote.amountCents,
-      },
-    });
-
     revalidatePath("/credit-notes");
     revalidatePath(`/credit-notes/${creditNoteId}`);
 
@@ -436,26 +410,11 @@ export async function applyCreditNoteToInvoice(
           invoiceId,
           clientId: invoice.clientId,
           amountCents: applyAmount,
-          status: "completed",
-          paymentMethod: "credit_note",
-          transactionId: `CN-${creditNote.creditNoteNumber}`,
-          notes: `Applied from credit note ${creditNote.creditNoteNumber}`,
+          status: "paid",
+          description: `Applied from credit note ${creditNote.creditNoteNumber}`,
+          paidAt: new Date(),
         },
       });
-    });
-
-    // Log activity
-    await logActivity({
-      organizationId,
-      type: "credit_note_applied",
-      description: `Credit note ${creditNote.creditNoteNumber} applied to invoice ${invoice.invoiceNumber}`,
-      metadata: {
-        creditNoteId,
-        creditNoteNumber: creditNote.creditNoteNumber,
-        invoiceId,
-        invoiceNumber: invoice.invoiceNumber,
-        appliedAmountCents: applyAmount,
-      },
     });
 
     revalidatePath("/credit-notes");
@@ -515,18 +474,6 @@ export async function markCreditNoteRefunded(
       },
     });
 
-    // Log activity
-    await logActivity({
-      organizationId,
-      type: "credit_note_refunded",
-      description: `Credit note ${creditNote.creditNoteNumber} marked as refunded`,
-      metadata: {
-        creditNoteId,
-        creditNoteNumber: creditNote.creditNoteNumber,
-        refundedAmountCents: refundAmount,
-      },
-    });
-
     revalidatePath("/credit-notes");
     revalidatePath(`/credit-notes/${creditNoteId}`);
 
@@ -571,17 +518,6 @@ export async function voidCreditNote(creditNoteId: string): Promise<ActionResult
       data: { status: "voided" },
     });
 
-    // Log activity
-    await logActivity({
-      organizationId,
-      type: "credit_note_voided",
-      description: `Credit note ${creditNote.creditNoteNumber} was voided`,
-      metadata: {
-        creditNoteId,
-        creditNoteNumber: creditNote.creditNoteNumber,
-      },
-    });
-
     revalidatePath("/credit-notes");
     revalidatePath(`/credit-notes/${creditNoteId}`);
 
@@ -619,17 +555,6 @@ export async function deleteCreditNote(creditNoteId: string): Promise<ActionResu
 
     await prisma.creditNote.delete({
       where: { id: creditNoteId },
-    });
-
-    // Log activity
-    await logActivity({
-      organizationId,
-      type: "credit_note_deleted",
-      description: `Credit note ${creditNote.creditNoteNumber} was deleted`,
-      metadata: {
-        creditNoteId,
-        creditNoteNumber: creditNote.creditNoteNumber,
-      },
     });
 
     revalidatePath("/credit-notes");
