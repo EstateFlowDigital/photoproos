@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { DownloadIcon, ImageIcon, FileIcon, DocumentIcon, LoadingSpinner } from "../icons";
+import { DownloadIcon, ImageIcon, FileIcon, DocumentIcon, LoadingSpinner, ClockIcon } from "../icons";
 import { BLUR_DATA_URL } from "../utils";
+import { DownloadHistoryPanel } from "@/components/gallery/download-history-panel";
 import type { GalleryData } from "../types";
 
 export type DownloadType = "zip" | "web" | "highres" | "marketing" | "selected" | null;
@@ -18,6 +19,7 @@ interface DownloadsTabProps {
   onMarketingKitDownload: (galleryId: string) => void;
   favorites?: Set<string>;
   onSelectedDownload?: (galleryId: string, photoIds: string[]) => void;
+  clientEmail?: string;
 }
 
 export function DownloadsTab({
@@ -30,13 +32,26 @@ export function DownloadsTab({
   onMarketingKitDownload,
   favorites = new Set(),
   onSelectedDownload,
+  clientEmail,
 }: DownloadsTabProps) {
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyGalleryId, setHistoryGalleryId] = useState<string | null>(null);
   const downloadableGalleries = galleries.filter((g) => g.downloadable);
 
   // Get all favorited photos across galleries
   const favoritedPhotos = galleries.flatMap((g) =>
     g.photos.filter((p) => favorites.has(p.id)).map((p) => ({ ...p, galleryName: g.name, galleryId: g.id }))
   );
+
+  const openHistory = (galleryId: string) => {
+    setHistoryGalleryId(galleryId);
+    setShowHistory(true);
+  };
+
+  const closeHistory = () => {
+    setShowHistory(false);
+    setHistoryGalleryId(null);
+  };
 
   if (downloadableGalleries.length === 0) {
     return (
@@ -56,40 +71,66 @@ export function DownloadsTab({
   }
 
   return (
-    <div className="space-y-8">
-      <p className="text-[var(--foreground-secondary)]">Download all your photos and marketing materials</p>
+    <>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <p className="text-[var(--foreground-secondary)]">Download all your photos and marketing materials</p>
+          {clientEmail && downloadableGalleries.length > 0 && (
+            <button
+              onClick={() => openHistory(downloadableGalleries[0].id)}
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
+            >
+              <ClockIcon className="h-4 w-4" />
+              Download History
+            </button>
+          )}
+        </div>
 
-      {/* Favorites Section */}
-      {favoritedPhotos.length > 0 && (
-        <FavoritesSection
-          photos={favoritedPhotos}
-          downloadingGallery={downloadingGallery}
-          downloadType={downloadType}
-          onDownload={onSelectedDownload}
-        />
-      )}
-
-      {/* Gallery Downloads */}
-      <div className="space-y-6">
-        <h3 className="text-sm font-medium uppercase tracking-wider text-[var(--foreground-muted)]">
-          All Galleries
-        </h3>
-        {downloadableGalleries.map((gallery) => (
-          <DownloadCard
-            key={gallery.id}
-            gallery={gallery}
+        {/* Favorites Section */}
+        {favoritedPhotos.length > 0 && (
+          <FavoritesSection
+            photos={favoritedPhotos}
             downloadingGallery={downloadingGallery}
             downloadType={downloadType}
-            onZipDownload={onZipDownload}
-            onWebSizeDownload={onWebSizeDownload}
-            onHighResDownload={onHighResDownload}
-            onMarketingKitDownload={onMarketingKitDownload}
-            onSelectedDownload={onSelectedDownload}
-            favorites={favorites}
+            onDownload={onSelectedDownload}
           />
-        ))}
+        )}
+
+        {/* Gallery Downloads */}
+        <div className="space-y-6">
+          <h3 className="text-sm font-medium uppercase tracking-wider text-[var(--foreground-muted)]">
+            All Galleries
+          </h3>
+          {downloadableGalleries.map((gallery) => (
+            <DownloadCard
+              key={gallery.id}
+              gallery={gallery}
+              downloadingGallery={downloadingGallery}
+              downloadType={downloadType}
+              onZipDownload={onZipDownload}
+              onWebSizeDownload={onWebSizeDownload}
+              onHighResDownload={onHighResDownload}
+              onMarketingKitDownload={onMarketingKitDownload}
+              onSelectedDownload={onSelectedDownload}
+              favorites={favorites}
+              onViewHistory={() => openHistory(gallery.id)}
+              showHistoryButton={!!clientEmail}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+
+      {/* Download History Panel */}
+      {historyGalleryId && (
+        <DownloadHistoryPanel
+          galleryId={historyGalleryId}
+          sessionId={null}
+          clientEmail={clientEmail || null}
+          isOpen={showHistory}
+          onClose={closeHistory}
+        />
+      )}
+    </>
   );
 }
 
@@ -199,6 +240,8 @@ interface DownloadCardProps {
   onMarketingKitDownload: (galleryId: string) => void;
   onSelectedDownload?: (galleryId: string, photoIds: string[]) => void;
   favorites: Set<string>;
+  onViewHistory?: () => void;
+  showHistoryButton?: boolean;
 }
 
 function DownloadCard({
@@ -211,6 +254,8 @@ function DownloadCard({
   onMarketingKitDownload,
   onSelectedDownload,
   favorites,
+  onViewHistory,
+  showHistoryButton,
 }: DownloadCardProps) {
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [showPhotoSelector, setShowPhotoSelector] = useState(false);
@@ -267,13 +312,24 @@ function DownloadCard({
               )}
             </div>
           </div>
-          <button
-            onClick={() => setShowPhotoSelector(!showPhotoSelector)}
-            className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
-          >
-            <CheckboxIcon className="h-4 w-4" />
-            {showPhotoSelector ? "Hide Selection" : "Select Photos"}
-          </button>
+          <div className="flex items-center gap-2">
+            {showHistoryButton && onViewHistory && (
+              <button
+                onClick={onViewHistory}
+                className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
+                title="View download history"
+              >
+                <ClockIcon className="h-4 w-4" />
+              </button>
+            )}
+            <button
+              onClick={() => setShowPhotoSelector(!showPhotoSelector)}
+              className="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-tertiary)] hover:text-white"
+            >
+              <CheckboxIcon className="h-4 w-4" />
+              {showPhotoSelector ? "Hide Selection" : "Select Photos"}
+            </button>
+          </div>
         </div>
       </div>
 

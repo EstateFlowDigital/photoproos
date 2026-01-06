@@ -19,6 +19,7 @@ export {
   ClipboardIcon,
   CheckCircleIcon,
   ChevronRightIcon,
+  ClockIcon,
 } from "@/components/ui/icons";
 
 export type { IconProps } from "@/components/ui/icons";

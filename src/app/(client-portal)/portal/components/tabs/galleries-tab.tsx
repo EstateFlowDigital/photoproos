@@ -6,7 +6,15 @@ import { ImageIcon, DownloadIcon, LoadingSpinner } from "../icons";
 import { Lightbox } from "../lightbox";
 import { EmptyState } from "../empty-state";
 import { formatDate, BLUR_DATA_URL } from "../utils";
+import { PhotoComparisonModal } from "@/components/gallery/photo-comparison-modal";
 import type { GalleryData } from "../types";
+
+interface Photo {
+  id: string;
+  url: string;
+  thumbnailUrl: string | null;
+  filename: string;
+}
 
 interface GalleriesTabProps {
   galleries: GalleryData[];
@@ -27,6 +35,8 @@ export function GalleriesTab({
 }: GalleriesTabProps) {
   const [lightboxGallery, setLightboxGallery] = useState<GalleryData | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [comparisonPhotos, setComparisonPhotos] = useState<Photo[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
 
   const openLightbox = (gallery: GalleryData, photoIndex: number) => {
     setLightboxGallery(gallery);
@@ -37,6 +47,20 @@ export function GalleriesTab({
     setLightboxGallery(null);
     setLightboxIndex(0);
   };
+
+  const handleCompare = (photos: Photo[]) => {
+    setComparisonPhotos(photos);
+    setShowComparison(true);
+    closeLightbox(); // Close lightbox when opening comparison
+  };
+
+  const closeComparison = () => {
+    setShowComparison(false);
+    setComparisonPhotos([]);
+  };
+
+  // Get all photos across all galleries for comparison swapping
+  const allPhotos = galleries.flatMap((g) => g.photos);
 
   if (galleries.length === 0) {
     return (
@@ -75,8 +99,18 @@ export function GalleriesTab({
           favorites={favorites}
           onToggleFavorite={onToggleFavorite}
           onDownload={onPhotoDownload}
+          onCompare={handleCompare}
+          galleryName={lightboxGallery.name}
         />
       )}
+
+      {/* Photo Comparison Modal */}
+      <PhotoComparisonModal
+        photos={comparisonPhotos}
+        isOpen={showComparison}
+        onClose={closeComparison}
+        allPhotos={allPhotos}
+      />
     </>
   );
 }

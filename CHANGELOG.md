@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gallery Add-on Upsells Enhancement** - Complete add-on request lifecycle with notifications and UI polish
+  - **Email Notifications**
+    - Quote notification email to client when photographer sends a quote
+    - Completion notification email when add-on request is marked complete
+    - Request notification email to photographer when client submits request
+  - **Request Timeline** - Visual status history in admin panel showing request progression
+    - Timeline shows: Request Submitted → Quote Sent → Approved/Declined → Work Started → Completed
+    - Current status indicator with animated pulse
+    - Timestamps for each milestone
+  - **Default Add-ons Button** - Quick catalog setup with popular add-on templates
+    - One-click creation of common add-ons (Virtual Staging, Rush Delivery, etc.)
+    - Includes industry-standard pricing and turnaround times
+  - **Add-on Request Counts** - Gallery list view now shows pending add-on requests
+    - Warning badge on gallery cards when add-on requests need attention
+    - Add-ons column in list view table showing pending count
+  - **Status Filter Tabs** - Admin panel now has All/Active/Completed filter tabs with counts
+  - **Pending Count Badge** - Add-ons tab in gallery detail shows pending request count
 - **Billing Module Complete CRUD Operations** - Full create, view, edit functionality for all billing entities
   - **Estimates**
     - New estimate form with line items, services quick-add, validity period
@@ -64,6 +81,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Proper tab indexing for keyboard navigation
     - Badge notifications announced with `aria-label`
     - Decorative elements marked with `aria-hidden`
+- **Client Portal Sprint 3 Enhancements** - Advanced photo features integrated from public gallery
+  - **Lightbox Slideshow Mode** - Auto-advancing photo slideshow
+    - Play/Pause controls with keyboard shortcut (Space)
+    - Adjustable speed: 2s, 4s, or 8s intervals
+    - Progress bar showing position in gallery
+    - Dedicated slideshow controls overlay
+    - Toggle with "S" key or slideshow button
+  - **Photo Comparison Mode** - Side-by-side photo comparison
+    - Compare current photo with next in gallery
+    - Layout options: horizontal, vertical, or 4-grid
+    - Zoom and pan controls (synchronized)
+    - Navigate through photos within comparison view
+    - Keyboard shortcuts for zoom (+/-/0)
+    - Integrated with existing PhotoComparisonModal component
+  - **Social Sharing** - Share photos with clients
+    - Copy link to clipboard functionality
+    - Native share dialog on supported devices
+    - Share menu in lightbox header
+    - Gallery name included in share text
+  - **Download History Panel** - Track download activity
+    - View download history per gallery
+    - Shows filename, format, and timestamp
+    - Relative time display ("5 min ago", "2 hours ago")
+    - Accessible from downloads tab header and per-gallery cards
+    - Integrated with existing DownloadHistoryPanel component
 
 - **Client Portal Sprint 1 Enhancements** - Major improvements to the client-facing portal experience
   - **Smart Dashboard** - Priority action cards for unpaid invoices, pending questionnaires, and new galleries
