@@ -99,10 +99,10 @@ export async function createRetainer(
 
   await logActivity({
     organizationId,
-    entityType: "retainer",
-    entityId: retainer.id,
-    action: "created",
-    details: { clientId: input.clientId, initialDeposit },
+    type: "retainer_created",
+    description: `Retainer account created for client`,
+    clientId: input.clientId,
+    metadata: { retainerId: retainer.id, initialDeposit },
   });
 
   revalidatePath("/clients/" + input.clientId);
@@ -274,10 +274,10 @@ export async function addDeposit(
 
   await logActivity({
     organizationId,
-    entityType: "retainer",
-    entityId: retainerId,
-    action: "deposit",
-    details: { amountCents: input.amountCents },
+    type: "retainer_deposit",
+    description: `Deposit of ${(input.amountCents / 100).toFixed(2)} added to retainer`,
+    clientId: retainer.clientId,
+    metadata: { retainerId, amountCents: input.amountCents },
   });
 
   revalidatePath("/clients/" + retainer.clientId);
@@ -369,10 +369,11 @@ export async function applyToInvoice(
 
   await logActivity({
     organizationId,
-    entityType: "retainer",
-    entityId: retainerId,
-    action: "applied_to_invoice",
-    details: { invoiceId: input.invoiceId, amountCents: input.amountCents },
+    type: "retainer_usage",
+    description: `${(input.amountCents / 100).toFixed(2)} applied from retainer to invoice ${invoice.invoiceNumber}`,
+    clientId: retainer.clientId,
+    invoiceId: input.invoiceId,
+    metadata: { retainerId, amountCents: input.amountCents },
   });
 
   revalidatePath("/clients/" + retainer.clientId);
@@ -432,10 +433,10 @@ export async function refundFromRetainer(
 
   await logActivity({
     organizationId,
-    entityType: "retainer",
-    entityId: retainerId,
-    action: "refund",
-    details: { amountCents },
+    type: "retainer_refund",
+    description: `Refund of ${(amountCents / 100).toFixed(2)} processed from retainer`,
+    clientId: retainer.clientId,
+    metadata: { retainerId, amountCents },
   });
 
   revalidatePath("/clients/" + retainer.clientId);
@@ -493,10 +494,10 @@ export async function adjustRetainerBalance(
 
   await logActivity({
     organizationId,
-    entityType: "retainer",
-    entityId: retainerId,
-    action: "adjustment",
-    details: { amountCents, description },
+    type: "retainer_updated",
+    description: `Retainer adjusted by ${(amountCents / 100).toFixed(2)}: ${description}`,
+    clientId: retainer.clientId,
+    metadata: { retainerId, amountCents, adjustmentDescription: description },
   });
 
   revalidatePath("/clients/" + retainer.clientId);

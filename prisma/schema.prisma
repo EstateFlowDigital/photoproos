@@ -57,6 +57,7 @@ enum BookingStatus {
 enum InvoiceStatus {
   draft
   sent
+  partial
   paid
   overdue
   cancelled
@@ -110,6 +111,19 @@ enum ActivityType {
   order_paid
   selections_submitted
   message_sent
+  // Estimates
+  estimate_created
+  estimate_updated
+  estimate_sent
+  estimate_approved
+  estimate_rejected
+  estimate_converted
+  // Retainers
+  retainer_created
+  retainer_deposit
+  retainer_usage
+  retainer_refund
+  retainer_updated
 }
 
 enum NotificationType {

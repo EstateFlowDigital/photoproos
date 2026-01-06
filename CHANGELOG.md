@@ -18,14 +18,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Configure day of week, day of month, and time of day
     - Auto-create tasks in specified column with assignee
 
-- **Truth Ledger Documentation System** - Verification system for documentation accuracy
+- **Truth Ledger Documentation System** - Complete verification system for documentation accuracy
   - Created `docs/TRUTH_LEDGER.md` - Tracks verified vs documented state
-  - Documented 157 Prisma models (grouped by domain)
-  - Documented 56 enums with purposes
+  - **Full Route Audit Complete:**
+    - 192 total pages verified (documented: 169)
+    - 134 dashboard routes (99 non-settings + 35 settings)
+    - 34 marketing routes, 15 public routes
+    - 3 client portal, 2 field, 3 auth routes
+  - **Server Actions Audit:** 129 files verified (documented: 80+)
+  - **API Routes Audit:** 58 routes verified (documented: 20+)
+  - **Database Schema:** 157 models, 56 enums verified
   - Established frozen conventions (route naming, action naming, folder structure)
   - Completed vertical slice verification for leads analytics feature
-  - Tracks discrepancies between documentation and reality
+  - Documented all discrepancies between documentation and reality
 
+### Changed
+- **APP_ARCHITECTURE.md Updated** - Corrected all counts to match verified Truth Ledger values
+  - Total pages: 169 → 192
+  - Dashboard routes: 89 → 99 (non-settings)
+  - Settings routes: 27 → 35
+  - Marketing routes: 31 → 34
+  - Public routes: 14 → 15
+  - API routes: 20+ → 58
+  - Server actions: 80+ → 129 files
+  - Added Prisma model count (157) and enum count (56)
+  - Added missing `/settings/mls-presets` route to documentation
+  - Added link to TRUTH_LEDGER.md for verification reference
+
+### Added
 - **Project Chat System** - Per-project messaging with internal/client visibility toggle
   - **Database Schema**:
     - New `MessageVisibility` enum: `internal` (team only), `client` (visible to all)
@@ -535,6 +555,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Added keyboard support: Escape key closes modal, click outside to dismiss
     - Focus management: Auto-focus on deposit input when modal opens
     - All interactive elements have visible focus states with ring styling
+  - **TypeScript & Schema Fixes**
+    - Added `partial` to `InvoiceStatus` enum for partially paid invoices
+    - Added new `ActivityType` values: `estimate_created`, `estimate_updated`, `estimate_sent`, `estimate_approved`, `estimate_rejected`, `estimate_converted`, `retainer_created`, `retainer_deposit`, `retainer_usage`, `retainer_refund`, `retainer_updated`
+    - Fixed `logActivity` calls in `estimates.ts` to use correct signature (`type`, `description`, `metadata`)
+    - Fixed `logActivity` calls in `retainers.ts` to use correct signature with proper `clientId` and `invoiceId` references
 - **Client Portal Sprint 2 Enhancements** - Continued improvements to the client portal experience
   - **Selective Photo Downloads** - Download specific photos instead of entire galleries
     - Photo selection grid with checkboxes in Downloads tab

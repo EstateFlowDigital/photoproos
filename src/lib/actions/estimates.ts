@@ -173,10 +173,9 @@ export async function createEstimate(
 
   await logActivity({
     organizationId,
-    entityType: "estimate",
-    entityId: estimate.id,
-    action: "created",
-    details: { estimateNumber, totalCents },
+    type: "estimate_created",
+    description: `Estimate ${estimateNumber} created`,
+    metadata: { estimateId: estimate.id, estimateNumber, totalCents },
   });
 
   revalidatePath("/estimates");
@@ -330,10 +329,9 @@ export async function updateEstimate(
 
   await logActivity({
     organizationId,
-    entityType: "estimate",
-    entityId: estimateId,
-    action: "updated",
-    details: {},
+    type: "estimate_updated",
+    description: `Estimate ${estimate.estimateNumber} updated`,
+    metadata: { estimateId },
   });
 
   revalidatePath("/estimates");
@@ -371,10 +369,9 @@ export async function deleteEstimate(
 
   await logActivity({
     organizationId,
-    entityType: "estimate",
-    entityId: estimateId,
-    action: "deleted",
-    details: { estimateNumber: existing.estimateNumber },
+    type: "estimate_updated",
+    description: `Estimate ${existing.estimateNumber} deleted`,
+    metadata: { estimateId, estimateNumber: existing.estimateNumber },
   });
 
   revalidatePath("/estimates");
@@ -421,10 +418,9 @@ export async function sendEstimate(
 
   await logActivity({
     organizationId,
-    entityType: "estimate",
-    entityId: estimateId,
-    action: "sent",
-    details: { clientEmail: estimate.clientEmail },
+    type: "estimate_sent",
+    description: `Estimate ${estimate.estimateNumber} sent to ${estimate.clientEmail}`,
+    metadata: { estimateId, clientEmail: estimate.clientEmail },
   });
 
   revalidatePath("/estimates");
@@ -494,10 +490,9 @@ export async function approveEstimate(
 
   await logActivity({
     organizationId: estimate.organizationId,
-    entityType: "estimate",
-    entityId: estimateId,
-    action: "approved",
-    details: {},
+    type: "estimate_approved",
+    description: `Estimate ${estimate.estimateNumber} approved`,
+    metadata: { estimateId },
   });
 
   revalidatePath("/estimates");
@@ -535,10 +530,9 @@ export async function rejectEstimate(
 
   await logActivity({
     organizationId: estimate.organizationId,
-    entityType: "estimate",
-    entityId: estimateId,
-    action: "rejected",
-    details: { reason },
+    type: "estimate_rejected",
+    description: `Estimate ${estimate.estimateNumber} rejected${reason ? `: ${reason}` : ""}`,
+    metadata: { estimateId, reason },
   });
 
   revalidatePath("/estimates");
@@ -639,10 +633,10 @@ export async function convertEstimateToInvoice(
 
   await logActivity({
     organizationId,
-    entityType: "estimate",
-    entityId: estimateId,
-    action: "converted",
-    details: { invoiceId: invoice.id, invoiceNumber },
+    type: "estimate_converted",
+    description: `Estimate ${estimate.estimateNumber} converted to invoice ${invoiceNumber}`,
+    invoiceId: invoice.id,
+    metadata: { estimateId, invoiceId: invoice.id, invoiceNumber },
   });
 
   revalidatePath("/estimates");
@@ -712,10 +706,9 @@ export async function duplicateEstimate(
 
   await logActivity({
     organizationId,
-    entityType: "estimate",
-    entityId: duplicate.id,
-    action: "created",
-    details: { duplicatedFrom: estimateId },
+    type: "estimate_created",
+    description: `Estimate ${duplicate.estimateNumber} created (duplicated from ${estimateNumber})`,
+    metadata: { estimateId: duplicate.id, duplicatedFrom: estimateId },
   });
 
   revalidatePath("/estimates");
