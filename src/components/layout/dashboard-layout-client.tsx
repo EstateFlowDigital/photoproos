@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
+import { MobileNav } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { useTheme } from "@/components/theme-provider";
