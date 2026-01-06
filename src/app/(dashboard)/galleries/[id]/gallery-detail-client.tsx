@@ -354,7 +354,18 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     try {
       const result = await deliverGallery(gallery.id);
       if (result.success) {
-        showToast("Gallery delivered successfully!", "success");
+        // Check if email was sent successfully
+        if (result.data.emailSent) {
+          showToast("Gallery delivered and email sent!", "success");
+        } else if (result.data.emailError) {
+          showToast("Gallery delivered successfully!", "success");
+          // Show warning about email failure after a short delay
+          setTimeout(() => {
+            showToast(`Email not sent: ${result.data.emailError}`, "error");
+          }, 500);
+        } else {
+          showToast("Gallery delivered successfully!", "success");
+        }
         router.refresh();
       } else {
         showToast(result.error || "Failed to deliver gallery", "error");

@@ -39,6 +39,7 @@ import {
   CameraIcon,
   ChevronDownIcon,
   StarIcon,
+  MoreIcon,
 } from "./gallery-icons";
 
 interface ExifData {
@@ -158,6 +159,9 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
   // Keyboard shortcuts help
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+
+  // Mobile menu for secondary actions
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Download progress
   const [downloadModalVisible, setDownloadModalVisible] = useState(false);
@@ -1040,125 +1044,198 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3">
-              {/* Copy Link Button */}
-              <button
-                onClick={handleCopyLink}
-                className="relative flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                style={{
-                  backgroundColor: colors.cardBg,
-                  color: colors.textColor,
-                }}
-                title="Copy gallery link"
-              >
-                {showLinkCopied ? (
+            <div className="flex items-center gap-2">
+              {/* Mobile Menu - Secondary Actions */}
+              <div className="relative md:hidden">
+                <button
+                  onClick={() => setShowMobileMenu(!showMobileMenu)}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors"
+                  style={{ backgroundColor: colors.cardBg, color: colors.textColor }}
+                  aria-label="More options"
+                  aria-expanded={showMobileMenu}
+                >
+                  <MoreIcon className="h-5 w-5" />
+                </button>
+                {showMobileMenu && (
                   <>
-                    <CheckIcon className="h-4 w-4" style={{ color: "var(--success)" }} />
-                    <span className="hidden sm:inline" style={{ color: "var(--success)" }}>Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <LinkIcon className="h-4 w-4" />
-                    <span className="hidden sm:inline">Copy Link</span>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowMobileMenu(false)}
+                    />
+                    {/* Menu */}
+                    <div
+                      className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg py-1 shadow-lg"
+                      style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.borderColor}` }}
+                    >
+                      <button
+                        onClick={() => { handleCopyLink(); setShowMobileMenu(false); }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+                        style={{ color: colors.textColor }}
+                      >
+                        {showLinkCopied ? (
+                          <CheckIcon className="h-4 w-4" style={{ color: "var(--success)" }} />
+                        ) : (
+                          <LinkIcon className="h-4 w-4" />
+                        )}
+                        {showLinkCopied ? "Copied!" : "Copy Link"}
+                      </button>
+                      <button
+                        onClick={() => { setShowQRModal(true); setShowMobileMenu(false); }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+                        style={{ color: colors.textColor }}
+                      >
+                        <QRCodeIcon className="h-4 w-4" />
+                        QR Code
+                      </button>
+                      {displayedPhotos.length > 0 && (
+                        <button
+                          onClick={() => { startSlideshow(0); setShowMobileMenu(false); }}
+                          className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+                          style={{ color: colors.textColor }}
+                        >
+                          <PlayIcon className="h-4 w-4" />
+                          Slideshow
+                        </button>
+                      )}
+                      {displayedPhotos.length >= 2 && (
+                        <button
+                          onClick={() => { handleToggleCompareMode(); setShowMobileMenu(false); }}
+                          className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+                          style={{ color: compareMode ? primaryColor : colors.textColor }}
+                        >
+                          <CompareIcon className="h-4 w-4" />
+                          Compare {comparePhotos.length > 0 && `(${comparePhotos.length}/2)`}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { handleToggleSelectionMode(); setShowMobileMenu(false); }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+                        style={{ color: selectionMode ? primaryColor : colors.textColor }}
+                      >
+                        <SelectIcon className="h-4 w-4" />
+                        Select {selectedPhotoIds.size > 0 && `(${selectedPhotoIds.size})`}
+                      </button>
+                    </div>
                   </>
                 )}
-              </button>
+              </div>
 
-              {/* QR Code Button */}
-              <button
-                onClick={() => setShowQRModal(true)}
-                className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                style={{
-                  backgroundColor: colors.cardBg,
-                  color: colors.textColor,
-                }}
-                title="Show QR code"
-              >
-                <QRCodeIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">QR Code</span>
-              </button>
-
-              {/* Slideshow Button */}
-              {displayedPhotos.length > 0 && (
+              {/* Desktop: Secondary Action Buttons */}
+              <div className="hidden md:flex items-center gap-2">
+                {/* Copy Link Button */}
                 <button
-                  onClick={() => startSlideshow(0)}
-                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                  style={{
-                    backgroundColor: colors.cardBg,
-                    color: colors.textColor,
-                  }}
-                  title="Start slideshow"
+                  onClick={handleCopyLink}
+                  className="relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                  style={{ backgroundColor: colors.cardBg, color: colors.textColor }}
+                  title="Copy gallery link"
+                  aria-label="Copy gallery link"
                 >
-                  <PlayIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">Slideshow</span>
+                  {showLinkCopied ? (
+                    <CheckIcon className="h-4 w-4" style={{ color: "var(--success)" }} />
+                  ) : (
+                    <LinkIcon className="h-4 w-4" />
+                  )}
+                  <span className="hidden lg:inline">{showLinkCopied ? "Copied!" : "Copy Link"}</span>
                 </button>
-              )}
 
-              {/* Compare Mode Button */}
-              {displayedPhotos.length >= 2 && (
+                {/* QR Code Button */}
                 <button
-                  onClick={handleToggleCompareMode}
+                  onClick={() => setShowQRModal(true)}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                  style={{ backgroundColor: colors.cardBg, color: colors.textColor }}
+                  title="Show QR code"
+                  aria-label="Show QR code"
+                >
+                  <QRCodeIcon className="h-4 w-4" />
+                  <span className="hidden lg:inline">QR Code</span>
+                </button>
+
+                {/* Slideshow Button */}
+                {displayedPhotos.length > 0 && (
+                  <button
+                    onClick={() => startSlideshow(0)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                    style={{ backgroundColor: colors.cardBg, color: colors.textColor }}
+                    title="Start slideshow"
+                    aria-label="Start slideshow"
+                  >
+                    <PlayIcon className="h-4 w-4" />
+                    <span className="hidden lg:inline">Slideshow</span>
+                  </button>
+                )}
+
+                {/* Compare Mode Button */}
+                {displayedPhotos.length >= 2 && (
+                  <button
+                    onClick={handleToggleCompareMode}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      compareMode && "ring-2 ring-offset-2"
+                    )}
+                    style={{
+                      backgroundColor: compareMode ? primaryColor : colors.cardBg,
+                      color: compareMode ? "#fff" : colors.textColor,
+                      ["--tw-ring-color" as string]: primaryColor,
+                    }}
+                    title="Compare photos (C)"
+                    aria-label="Compare photos"
+                    aria-pressed={compareMode}
+                  >
+                    <CompareIcon className="h-4 w-4" />
+                    <span className="hidden lg:inline">Compare</span>
+                    {comparePhotos.length > 0 && (
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-xs"
+                        style={{
+                          backgroundColor: compareMode ? "rgba(255,255,255,0.2)" : primaryColor,
+                          color: "#fff",
+                        }}
+                      >
+                        {comparePhotos.length}/2
+                      </span>
+                    )}
+                  </button>
+                )}
+
+                {/* Selection Mode Button */}
+                <button
+                  onClick={handleToggleSelectionMode}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                    compareMode && "ring-2 ring-offset-2"
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    selectionMode && "ring-2 ring-offset-2"
                   )}
                   style={{
-                    backgroundColor: compareMode ? primaryColor : colors.cardBg,
-                    color: compareMode ? "#fff" : colors.textColor,
+                    backgroundColor: selectionMode ? primaryColor : colors.cardBg,
+                    color: selectionMode ? "#fff" : colors.textColor,
                     ["--tw-ring-color" as string]: primaryColor,
                   }}
-                  title="Compare photos (C)"
+                  title="Select photos (S)"
+                  aria-label="Select photos"
+                  aria-pressed={selectionMode}
                 >
-                  <CompareIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">Compare</span>
-                  {comparePhotos.length > 0 && (
+                  <SelectIcon className="h-4 w-4" />
+                  <span className="hidden lg:inline">Select</span>
+                  {selectedPhotoIds.size > 0 && (
                     <span
                       className="rounded-full px-1.5 py-0.5 text-xs"
                       style={{
-                        backgroundColor: compareMode ? "rgba(255,255,255,0.2)" : primaryColor,
+                        backgroundColor: selectionMode ? "rgba(255,255,255,0.2)" : primaryColor,
                         color: "#fff",
                       }}
                     >
-                      {comparePhotos.length}/2
+                      {selectedPhotoIds.size}
                     </span>
                   )}
                 </button>
-              )}
+              </div>
 
-              {/* Selection Mode Button */}
-              <button
-                onClick={handleToggleSelectionMode}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                  selectionMode && "ring-2 ring-offset-2"
-                )}
-                style={{
-                  backgroundColor: selectionMode ? primaryColor : colors.cardBg,
-                  color: selectionMode ? "#fff" : colors.textColor,
-                  ["--tw-ring-color" as string]: primaryColor,
-                }}
-                title="Select photos (S)"
-              >
-                <SelectIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Select</span>
-                {selectedPhotoIds.size > 0 && (
-                  <span
-                    className="rounded-full px-1.5 py-0.5 text-xs"
-                    style={{
-                      backgroundColor: selectionMode ? "rgba(255,255,255,0.2)" : primaryColor,
-                      color: "#fff",
-                    }}
-                  >
-                    {selectedPhotoIds.size}
-                  </span>
-                )}
-              </button>
-
+              {/* Primary Actions - Always Visible */}
               {gallery.allowFavorites && (
                 <button
                   onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     showFavoritesOnly && "ring-2 ring-offset-2"
                   )}
                   style={{
@@ -1166,10 +1243,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     color: showFavoritesOnly ? "#fff" : undefined,
                     ["--tw-ring-color" as string]: primaryColor,
                   }}
+                  aria-label={showFavoritesOnly ? "Show all photos" : "Show favorites only"}
+                  aria-pressed={showFavoritesOnly}
                 >
                   <HeartIcon className={cn("h-4 w-4", showFavoritesOnly && "fill-current")} />
                   <span className="hidden sm:inline">
-                    {showFavoritesOnly ? "Show All" : "Favorites"}
+                    {showFavoritesOnly ? "All" : "Favorites"}
                   </span>
                   {favoriteAssetIds.size > 0 && (
                     <span
@@ -1184,27 +1263,30 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   )}
                 </button>
               )}
+
+              {/* Download / Pay Button */}
               {gallery.isPaid && gallery.allowDownload ? (
                 <div className="flex items-center gap-2">
-                  {/* Download Favorites button - only show when there are favorites */}
+                  {/* Download Favorites - hidden on mobile unless explicitly needed */}
                   {favoriteAssetIds.size > 0 && (
                     <button
                       onClick={handleDownloadFavoritesAsZip}
                       disabled={isDownloadingZip}
-                      className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                      className="hidden sm:flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50"
                       style={{
                         backgroundColor: colors.cardBg,
                         color: colors.textColor,
                         border: `1px solid ${colors.borderColor}`,
                       }}
                       title="Download favorites as ZIP"
+                      aria-label="Download favorites as ZIP"
                     >
                       {isDownloadingZip ? (
                         <LoadingSpinner className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
                           <ArchiveIcon className="h-4 w-4" />
-                          <span className="hidden sm:inline">Favorites</span>
+                          <span className="hidden lg:inline">Favorites</span>
                           <span className="text-xs opacity-70">({favoriteAssetIds.size})</span>
                         </>
                       )}
@@ -1214,18 +1296,19 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   <button
                     onClick={handleDownloadAllAsZip}
                     disabled={isDownloadingZip}
-                    className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
                     style={{ backgroundColor: accentColor }}
+                    aria-label="Download all photos"
                   >
                     {isDownloadingZip ? (
                       <>
                         <LoadingSpinner className="h-4 w-4 animate-spin" />
-                        Creating ZIP...
+                        <span className="hidden sm:inline">Creating ZIP...</span>
                       </>
                     ) : (
                       <>
                         <DownloadIcon className="h-4 w-4" />
-                        Download All
+                        <span className="hidden sm:inline">Download</span>
                       </>
                     )}
                   </button>

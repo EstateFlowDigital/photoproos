@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Database Migration Safety** - Replaced unsafe `prisma db push` prestart with safe migration script
+  - New `scripts/db-migrate.ts` handles duplicate cleanup before schema changes
+  - Prevents deployment failures from unique constraint conflicts
+  - Automatically removes duplicate GalleryFavorite records before applying schema
+
+### Changed
+- **Centralized Constants** - Created `/src/lib/constants.ts` for app-wide configuration values
+  - Moved BUNDLE_TYPES, PRICING_TYPES from inline definitions
+  - Centralized NOTIFICATION_TYPE_MAP with `getNotificationType` helper
+  - Added SPACER_PRESETS, FILE_SIZE_LIMITS, PAGINATION, TIMEOUTS
+  - Moved SUPPORTED_CURRENCIES from server action to constants (Next.js "use server" compliance)
+  - Type exports for BundleTypeValue, PricingTypeValue, SupportedCurrency
+
+- **Centralized Currency Formatting** - Enhanced `/src/lib/utils/units.ts`
+  - Added proper locale mapping for 9 currencies (USD, EUR, GBP, CAD, AUD, BRL, MXN, JPY, CHF)
+  - New `formatCurrency` with options for decimals and locale override
+  - New `formatCurrencyWhole` for UI display (no decimal places)
+  - Updated 27 files to use centralized formatCurrency instead of duplicates
+
+- **Type-Safe localStorage Utilities** - Created `/src/lib/utils/storage.ts`
+  - SSR-safe wrappers with `isBrowser()` check
+  - STORAGE_KEYS constant for centralized key management
+  - JSON serialization helpers: `getStorageItem`, `setStorageItem`
+  - Boolean helpers: `getStorageBoolean`, `setStorageBoolean`
+  - Array helpers: `getStorageArray`, `prependToStorageArray`
+  - Time-based helpers: `isWithinTimeWindow`, `setTimestamp`
+  - Utility functions: `getOrCreateVisitorId`, `clearAppStorage`
+
+- **Consolidated Icon System** - Enhanced `/src/components/ui/icons.tsx`
+  - Added 40+ commonly duplicated icons to centralized file
+  - New icons: SearchIcon, MoreIcon, MoreHorizontalIcon, ShareIcon, ArchiveIcon
+  - DuplicateIcon, DownloadIcon, UploadIcon, EyeIcon, EyeOffIcon, EditIcon, CopyIcon
+  - RefreshIcon, ChevronRightIcon, ChevronUpIcon, ChevronLeftIcon, ArrowLeftIcon
+  - ExternalLinkIcon, UserIcon, UsersIcon, BellIcon, MailIcon, SettingsIcon
+  - CalendarIcon, GlobeIcon, LockIcon, MenuIcon, FilterIcon, SortIcon
+  - InfoIcon, WarningIcon, XCircleIcon, LoadingSpinner, GalleryPlaceholderIcon
+  - CreditCardIcon, DocumentIcon, FolderIcon, HomeIcon, LinkIcon, TagIcon
+  - Updated `gallery-card.tsx` to use centralized icons (removed 8 local definitions)
+  - Reduces code duplication across 170+ files with inline icon definitions
+
 ### Added
 - **Currency Settings** - Organization-wide default currency configuration
   - New currency selector in Payment Settings page

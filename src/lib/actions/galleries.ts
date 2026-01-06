@@ -481,7 +481,7 @@ export async function deliverGallery(
   id: string,
   sendEmail: boolean = true,
   message?: string
-): Promise<ActionResult<{ deliveredAt: Date }>> {
+): Promise<ActionResult<{ deliveredAt: Date; emailSent?: boolean; emailError?: string }>> {
   try {
     deliverGallerySchema.parse({ id, sendEmail, message });
     const organizationId = await getOrganizationId();
@@ -552,6 +552,10 @@ export async function deliverGallery(
       { projectId: id, clientId: existing.clientId || undefined }
     );
 
+    // Track email status to return to caller
+    let emailSent = false;
+    let emailError: string | undefined;
+
     // Send email notification if requested (non-blocking - don't fail delivery if email fails)
     if (sendEmail && existing.client?.email) {
       try {
@@ -568,7 +572,7 @@ export async function deliverGallery(
           where: { projectId: id },
         });
 
-        await sendGalleryDeliveredEmail({
+        const emailResult = await sendGalleryDeliveredEmail({
           to: existing.client.email,
           clientName: existing.client.fullName || existing.client.company || "there",
           galleryName: existing.name,
@@ -577,18 +581,27 @@ export async function deliverGallery(
           photoCount,
           expiresAt: existing.expiresAt || undefined,
         });
-      } catch (emailError) {
+
+        if (emailResult.success) {
+          emailSent = true;
+        } else {
+          emailError = emailResult.error || "Failed to send email";
+          console.error("[Gallery Delivery] Email notification failed:", emailError);
+        }
+      } catch (err) {
         // Log email failure but don't fail the delivery operation
+        emailError = err instanceof Error ? err.message : "Unknown email error";
         console.error("[Gallery Delivery] Email notification failed:", emailError);
-        // Continue with delivery - email is a nice-to-have, not critical
       }
+    } else if (sendEmail && !existing.client?.email) {
+      emailError = "No client email address on file";
     }
 
     revalidatePath("/galleries");
     revalidatePath(`/galleries/${id}`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: { deliveredAt } };
+    return { success: true, data: { deliveredAt, emailSent, emailError } };
   } catch (error) {
     console.error("Error delivering gallery:", error);
     if (error instanceof Error) {

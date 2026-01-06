@@ -43,6 +43,7 @@ const RoadmapSection = dynamic(() =>
 );
 const FAQSection = dynamic(() => import("@/components/sections/faq").then((m) => m.FAQSection));
 const CTASection = dynamic(() => import("@/components/sections/cta").then((m) => m.CTASection));
+import { LazySection } from "@/components/sections/lazy-section";
 const ScrollProgress = dynamic(() =>
   import("@/components/ui/scroll-progress").then((m) => m.ScrollProgress)
 );
@@ -129,45 +130,63 @@ export default async function Home() {
       <div className="section-divider" />
 
       {/* Comparison Section - vs Competitors */}
-      <ComparisonSection />
+      <LazySection placeholderHeight={280}>
+        <ComparisonSection />
+      </LazySection>
 
       <div className="section-divider" />
 
       {/* Integrations Section - Third-party apps */}
-      <IntegrationsSection />
+      <LazySection placeholderHeight={260}>
+        <IntegrationsSection />
+      </LazySection>
 
       <div className="section-divider" />
 
       {/* ROI Calculator - Show potential savings */}
-      <ROICalculatorSection />
+      <LazySection placeholderHeight={320}>
+        <ROICalculatorSection />
+      </LazySection>
 
       <div className="section-divider" />
 
       {/* Pricing Section - Plans and pricing */}
-      <PricingSection />
+      <LazySection placeholderHeight={320}>
+        <PricingSection />
+      </LazySection>
 
       <div className="section-divider" />
 
       {/* Testimonials Section - Customer stories */}
-      <TestimonialsSection />
+      <LazySection placeholderHeight={320}>
+        <TestimonialsSection />
+      </LazySection>
 
       <div className="section-divider" />
 
       {/* Security Section - Trust and compliance */}
-      <SecuritySection />
+      <LazySection placeholderHeight={260}>
+        <SecuritySection />
+      </LazySection>
 
       <div className="section-divider" />
 
       {/* Roadmap Section - Upcoming features */}
-      <RoadmapSection />
+      <LazySection placeholderHeight={260}>
+        <RoadmapSection />
+      </LazySection>
 
       <div className="section-divider" />
 
       {/* FAQ Section */}
-      <FAQSection />
+      <LazySection placeholderHeight={280}>
+        <FAQSection />
+      </LazySection>
 
       {/* CTA Section - Final conversion */}
-      <CTASection />
+      <LazySection placeholderHeight={220}>
+        <CTASection />
+      </LazySection>
 
       {/* Footer */}
       <Footer />
