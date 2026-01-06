@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Leads Module Improvements: Kanban Board & Bulk Operations**
+  - **View Mode Toggle** - Switch between List and Board views
+    - Pill-style toggle buttons matching Projects module pattern
+    - Persists selection during session
+  - **Kanban Board View** - Visual pipeline for lead management
+    - Four fixed columns: New → Contacted → Qualified → Closed
+    - Drag-and-drop status updates for portfolio and chat leads
+    - Color-coded column headers with lead counts
+    - Booking submissions disabled from drag (different status model)
+  - **Enhanced Filtering** - More control over lead visibility
+    - Date range filter: All Time, Last 7/30/90 Days
+    - Sort options: Newest/Oldest First, Name A-Z/Z-A
+    - Combined with existing type and status filters
+  - **Bulk Selection & Actions** - Manage multiple leads at once
+    - Checkbox selection on list rows and Kanban cards
+    - Select all checkbox in list header
+    - Floating action bar with selected count
+    - Bulk status change for portfolio/chat leads
+  - **Design System Migration** - CSS variable tokens for colors
+    - Migrated hardcoded status colors to CSS variables
+    - Uses `--primary`, `--warning`, `--success`, `--error` tokens
+    - Consistent with Dovetail-inspired dark theme
+
 - **Projects Module Phase 5: Advanced Automation & Productivity Features**
   - **Automation Rules System** - Create rules to automate task management
     - Trigger types: task_created, task_moved, subtasks_complete, due_date_reached, priority_changed, assignee_changed

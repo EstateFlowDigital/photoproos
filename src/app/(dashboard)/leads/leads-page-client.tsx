@@ -89,16 +89,27 @@ const STATUS_LABELS: Record<LeadStatus | BookingFormSubmissionStatus, string> = 
 };
 
 const STATUS_COLORS: Record<LeadStatus | BookingFormSubmissionStatus, string> = {
-  new: "bg-blue-500/10 text-blue-500",
-  contacted: "bg-yellow-500/10 text-yellow-500",
-  qualified: "bg-green-500/10 text-green-500",
-  closed: "bg-gray-500/10 text-gray-400",
-  pending: "bg-blue-500/10 text-blue-500",
-  approved: "bg-green-500/10 text-green-500",
-  rejected: "bg-red-500/10 text-red-500",
-  converted: "bg-purple-500/10 text-purple-500",
-  expired: "bg-gray-500/10 text-gray-400",
+  new: "bg-[var(--primary)]/10 text-[var(--primary)]",
+  contacted: "bg-[var(--warning)]/10 text-[var(--warning)]",
+  qualified: "bg-[var(--success)]/10 text-[var(--success)]",
+  closed: "bg-[var(--foreground-muted)]/10 text-foreground-muted",
+  pending: "bg-[var(--primary)]/10 text-[var(--primary)]",
+  approved: "bg-[var(--success)]/10 text-[var(--success)]",
+  rejected: "bg-[var(--error)]/10 text-[var(--error)]",
+  converted: "bg-[var(--ai)]/10 text-[var(--ai)]",
+  expired: "bg-[var(--foreground-muted)]/10 text-foreground-muted",
 };
+
+// Kanban column configuration
+const KANBAN_COLUMNS = [
+  { id: "new", label: "New", statuses: ["new", "pending"] },
+  { id: "contacted", label: "Contacted", statuses: ["contacted", "approved"] },
+  { id: "qualified", label: "Qualified", statuses: ["qualified"] },
+  { id: "closed", label: "Closed", statuses: ["closed", "converted", "rejected", "expired"] },
+] as const;
+
+type SortOption = "newest" | "oldest" | "nameAsc" | "nameDesc";
+type DateRangeFilter = "all" | "7days" | "30days" | "90days";
 
 // Union type for combined inquiries
 type CombinedInquiry =
@@ -110,9 +121,11 @@ type CombinedInquiry =
 interface LeadRowProps {
   inquiry: CombinedInquiry;
   onView: (inquiry: CombinedInquiry) => void;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string, type: "portfolio" | "chat" | "booking") => void;
 }
 
-const LeadRow = memo(function LeadRow({ inquiry, onView }: LeadRowProps) {
+const LeadRow = memo(function LeadRow({ inquiry, onView, isSelected, onToggleSelect }: LeadRowProps) {
   const name = inquiry.type === "booking"
     ? (inquiry as BookingSubmission & { type: "booking" }).clientName || "Anonymous"
     : (inquiry as PortfolioInquiry | ChatInquiry).name || "Anonymous";
@@ -136,7 +149,18 @@ const LeadRow = memo(function LeadRow({ inquiry, onView }: LeadRowProps) {
     : "-";
 
   return (
-    <div className="grid grid-cols-[120px,1.3fr,2fr,1.1fr,1fr,150px,110px] items-center gap-3 border-b border-[var(--card-border)] px-4 py-3 last:border-b-0 hover:bg-[var(--background-hover)]">
+    <div className={cn(
+      "grid grid-cols-[40px,120px,1.3fr,2fr,1.1fr,1fr,150px,110px] items-center gap-3 border-b border-[var(--card-border)] px-4 py-3 last:border-b-0 hover:bg-[var(--background-hover)]",
+      isSelected && "bg-[var(--primary)]/5"
+    )}>
+      <div className="flex items-center justify-center">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect?.(inquiry.id, inquiry.type)}
+          className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+        />
+      </div>
       <div>
         <span
           className={cn(
@@ -207,9 +231,25 @@ export function LeadsPageClient({
 }: LeadsPageClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  // View mode state
+  const [viewMode, setViewMode] = useState<"list" | "board">("list");
+
+  // Filter state
   const [typeFilter, setTypeFilter] = useState<InquiryType>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>("all");
+
+  // Drag state for Kanban
+  const [draggedInquiry, setDraggedInquiry] = useState<CombinedInquiry | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
+  // Bulk selection state
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Map<string, "portfolio" | "chat" | "booking">>(new Map());
+  const [isBulkActionPending, setIsBulkActionPending] = useState(false);
+
   const [selectedInquiry, setSelectedInquiry] = useState<
     | (PortfolioInquiry & { type: "portfolio" })
     | (ChatInquiry & { type: "chat" })
@@ -228,6 +268,17 @@ export function LeadsPageClient({
   const filteredInquiries = allInquiries.filter((inquiry) => {
     if (typeFilter !== "all" && inquiry.type !== typeFilter) return false;
     if (statusFilter !== "all" && inquiry.status !== statusFilter) return false;
+
+    // Date range filter
+    if (dateRangeFilter !== "all") {
+      const now = new Date();
+      const inquiryDate = new Date(inquiry.createdAt);
+      const daysAgo = (now.getTime() - inquiryDate.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (dateRangeFilter === "7days" && daysAgo > 7) return false;
+      if (dateRangeFilter === "30days" && daysAgo > 30) return false;
+      if (dateRangeFilter === "90days" && daysAgo > 90) return false;
+    }
 
     // Search filter
     if (searchQuery.trim()) {
@@ -248,6 +299,137 @@ export function LeadsPageClient({
 
     return true;
   });
+
+  // Apply sorting
+  const sortedFilteredInquiries = [...filteredInquiries].sort((a, b) => {
+    const getName = (i: CombinedInquiry) =>
+      i.type === "booking"
+        ? (i as BookingSubmission & { type: "booking" }).clientName || ""
+        : (i as PortfolioInquiry | ChatInquiry).name || "";
+
+    switch (sortOption) {
+      case "oldest":
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "nameAsc":
+        return getName(a).localeCompare(getName(b));
+      case "nameDesc":
+        return getName(b).localeCompare(getName(a));
+      case "newest":
+      default:
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+  });
+
+  // Group leads by Kanban column
+  const getKanbanColumnLeads = (columnId: string) => {
+    const column = KANBAN_COLUMNS.find(c => c.id === columnId);
+    if (!column) return [];
+    return sortedFilteredInquiries.filter(i => (column.statuses as readonly string[]).includes(i.status));
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, inquiry: CombinedInquiry) => {
+    setDraggedInquiry(inquiry);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent, columnId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverColumn(columnId);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, columnId: string) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+
+    if (!draggedInquiry || draggedInquiry.type === "booking") {
+      setDraggedInquiry(null);
+      return;
+    }
+
+    // Map column to status
+    const statusMap: Record<string, LeadStatus> = {
+      new: "new",
+      contacted: "contacted",
+      qualified: "qualified",
+      closed: "closed",
+    };
+
+    const newStatus = statusMap[columnId];
+    if (!newStatus || draggedInquiry.status === newStatus) {
+      setDraggedInquiry(null);
+      return;
+    }
+
+    startTransition(async () => {
+      if (draggedInquiry.type === "portfolio") {
+        await updatePortfolioInquiryStatus(draggedInquiry.id, newStatus);
+      } else if (draggedInquiry.type === "chat") {
+        await updateChatInquiryStatus(draggedInquiry.id, newStatus);
+      }
+      router.refresh();
+      setDraggedInquiry(null);
+    });
+  };
+
+  // Bulk selection handlers
+  const toggleLeadSelection = (id: string, type: "portfolio" | "chat" | "booking") => {
+    setSelectedLeadIds(prev => {
+      const next = new Map(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.set(id, type);
+      }
+      return next;
+    });
+  };
+
+  const selectAllLeads = () => {
+    const allIds = new Map<string, "portfolio" | "chat" | "booking">();
+    sortedFilteredInquiries.forEach(i => allIds.set(i.id, i.type));
+    setSelectedLeadIds(allIds);
+  };
+
+  const clearSelection = () => {
+    setSelectedLeadIds(new Map());
+  };
+
+  const isAllSelected = sortedFilteredInquiries.length > 0 &&
+    sortedFilteredInquiries.every(i => selectedLeadIds.has(i.id));
+
+  // Bulk status change handler
+  const handleBulkStatusChange = async (newStatus: LeadStatus) => {
+    setIsBulkActionPending(true);
+
+    // Group selected leads by type
+    const portfolioIds: string[] = [];
+    const chatIds: string[] = [];
+
+    selectedLeadIds.forEach((type, id) => {
+      if (type === "portfolio") portfolioIds.push(id);
+      else if (type === "chat") chatIds.push(id);
+      // Booking status changes handled differently
+    });
+
+    try {
+      // Update all in parallel
+      await Promise.all([
+        ...portfolioIds.map(id => updatePortfolioInquiryStatus(id, newStatus)),
+        ...chatIds.map(id => updateChatInquiryStatus(id, newStatus)),
+      ]);
+
+      router.refresh();
+      clearSelection();
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  };
 
   // Stats
   const stats = {
@@ -348,6 +530,34 @@ export function LeadsPageClient({
           )}
         </div>
 
+        {/* View Mode Toggle */}
+        <div className="flex rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-1">
+          <button
+            onClick={() => setViewMode("list")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              viewMode === "list"
+                ? "bg-[var(--primary)] text-white"
+                : "text-foreground-muted hover:text-foreground"
+            )}
+          >
+            <ListIcon className="h-4 w-4" />
+            List
+          </button>
+          <button
+            onClick={() => setViewMode("board")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              viewMode === "board"
+                ? "bg-[var(--primary)] text-white"
+                : "text-foreground-muted hover:text-foreground"
+            )}
+          >
+            <BoardIcon className="h-4 w-4" />
+            Board
+          </button>
+        </div>
+
         <div className="flex items-center gap-2">
           <span className="text-sm text-foreground-muted">Type:</span>
           <div className="flex rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-1">
@@ -388,46 +598,171 @@ export function LeadsPageClient({
           </div>
         </div>
 
+        {/* Date Range Filter */}
+        <select
+          value={dateRangeFilter}
+          onChange={(e) => setDateRangeFilter(e.target.value as DateRangeFilter)}
+          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+        >
+          <option value="all">All Time</option>
+          <option value="7days">Last 7 Days</option>
+          <option value="30days">Last 30 Days</option>
+          <option value="90days">Last 90 Days</option>
+        </select>
+
+        {/* Sort Options */}
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value as SortOption)}
+          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+        >
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="nameAsc">Name A-Z</option>
+          <option value="nameDesc">Name Z-A</option>
+        </select>
       </div>
 
-      {/* Inquiries Table */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-        {filteredInquiries.length > 0 ? (
-          <VirtualList
-            className="max-h-[70vh]"
-            items={filteredInquiries}
-            getItemKey={(inquiry) => `${inquiry.type}-${inquiry.id}`}
-            itemGap={0}
-            estimateSize={() => 96}
-            prepend={
-              <div className="sticky top-0 z-10 grid grid-cols-[120px,1.3fr,2fr,1.1fr,1fr,150px,110px] items-center gap-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3 text-xs font-semibold uppercase text-foreground-muted">
-                <span>Type</span>
-                <span>Contact</span>
-                <span>Message</span>
-                <span>Source</span>
-                <span>Status</span>
-                <span>Date</span>
-                <span className="text-right">Actions</span>
+      {/* Inquiries List or Kanban Board */}
+      {viewMode === "list" ? (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+          {sortedFilteredInquiries.length > 0 ? (
+            <VirtualList
+              className="max-h-[70vh]"
+              items={sortedFilteredInquiries}
+              getItemKey={(inquiry) => `${inquiry.type}-${inquiry.id}`}
+              itemGap={0}
+              estimateSize={() => 96}
+              prepend={
+                <div className="sticky top-0 z-10 grid grid-cols-[40px,120px,1.3fr,2fr,1.1fr,1fr,150px,110px] items-center gap-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3 text-xs font-semibold uppercase text-foreground-muted">
+                  <span className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={() => isAllSelected ? clearSelection() : selectAllLeads()}
+                      className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+                    />
+                  </span>
+                  <span>Type</span>
+                  <span>Contact</span>
+                  <span>Message</span>
+                  <span>Source</span>
+                  <span>Status</span>
+                  <span>Date</span>
+                  <span className="text-right">Actions</span>
+                </div>
+              }
+              renderItem={(inquiry) => (
+                <LeadRow
+                  key={`${inquiry.type}-${inquiry.id}`}
+                  inquiry={inquiry}
+                  onView={handleViewInquiry}
+                  isSelected={selectedLeadIds.has(inquiry.id)}
+                  onToggleSelect={toggleLeadSelection}
+                />
+              )}
+            />
+          ) : (
+            <div className="p-8 text-center">
+              <MessageIcon className="mx-auto h-12 w-12 text-foreground-muted" />
+              <p className="mt-4 font-medium text-foreground">No leads yet</p>
+              <p className="mt-1 text-sm text-foreground-muted">
+                Inquiries from your portfolio contact forms and chat widget will appear here
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Kanban Board View */
+        <div className="grid grid-cols-4 gap-4">
+          {KANBAN_COLUMNS.map((column) => {
+            const columnLeads = getKanbanColumnLeads(column.id);
+            return (
+              <div
+                key={column.id}
+                className={cn(
+                  "flex flex-col rounded-xl border border-[var(--card-border)] bg-[var(--background-secondary)]",
+                  dragOverColumn === column.id && "ring-2 ring-[var(--primary)]"
+                )}
+                onDragOver={(e) => handleDragOver(e, column.id)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, column.id)}
+              >
+                {/* Column Header */}
+                <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "h-2 w-2 rounded-full",
+                      column.id === "new" && "bg-[var(--primary)]",
+                      column.id === "contacted" && "bg-[var(--warning)]",
+                      column.id === "qualified" && "bg-[var(--success)]",
+                      column.id === "closed" && "bg-foreground-muted"
+                    )} />
+                    <span className="font-medium text-foreground">{column.label}</span>
+                  </div>
+                  <span className="rounded-full bg-[var(--background-elevated)] px-2 py-0.5 text-xs font-medium text-foreground-muted">
+                    {columnLeads.length}
+                  </span>
+                </div>
+
+                {/* Column Content */}
+                <div className="flex-1 space-y-2 overflow-y-auto p-3" style={{ maxHeight: "calc(70vh - 52px)" }}>
+                  {columnLeads.length > 0 ? (
+                    columnLeads.map((inquiry) => (
+                      <KanbanCard
+                        key={`${inquiry.type}-${inquiry.id}`}
+                        inquiry={inquiry}
+                        onView={() => setSelectedInquiry(inquiry)}
+                        onDragStart={(e) => handleDragStart(e, inquiry)}
+                        isSelected={selectedLeadIds.has(inquiry.id)}
+                        onToggleSelect={toggleLeadSelection}
+                        isDragging={draggedInquiry?.id === inquiry.id}
+                      />
+                    ))
+                  ) : (
+                    <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-[var(--card-border)] text-sm text-foreground-muted">
+                      No leads
+                    </div>
+                  )}
+                </div>
               </div>
-            }
-            renderItem={(inquiry) => (
-              <LeadRow
-                key={`${inquiry.type}-${inquiry.id}`}
-                inquiry={inquiry}
-                onView={handleViewInquiry}
-              />
-            )}
-          />
-        ) : (
-          <div className="p-8 text-center">
-            <MessageIcon className="mx-auto h-12 w-12 text-foreground-muted" />
-            <p className="mt-4 font-medium text-foreground">No leads yet</p>
-            <p className="mt-1 text-sm text-foreground-muted">
-              Inquiries from your portfolio contact forms and chat widget will appear here
-            </p>
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Bulk Action Bar */}
+      {selectedLeadIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
+          <span className="text-sm font-medium text-foreground">
+            {selectedLeadIds.size} selected
+          </span>
+          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <select
+            disabled={isBulkActionPending}
+            onChange={(e) => {
+              if (e.target.value) {
+                handleBulkStatusChange(e.target.value as LeadStatus);
+                e.target.value = "";
+              }
+            }}
+            className="rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-1.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none disabled:opacity-50"
+          >
+            <option value="">Change Status...</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="qualified">Qualified</option>
+            <option value="closed">Closed</option>
+          </select>
+          <button
+            onClick={clearSelection}
+            disabled={isBulkActionPending}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
+          >
+            Clear
+          </button>
+        </div>
+      )}
 
       {/* Detail Modal */}
       {selectedInquiry && (
@@ -845,6 +1180,108 @@ function StatCard({
   );
 }
 
+// Kanban Card Component
+function KanbanCard({
+  inquiry,
+  onView,
+  onDragStart,
+  isSelected,
+  onToggleSelect,
+  isDragging,
+}: {
+  inquiry: CombinedInquiry;
+  onView: () => void;
+  onDragStart: (e: React.DragEvent) => void;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string, type: "portfolio" | "chat" | "booking") => void;
+  isDragging?: boolean;
+}) {
+  const name = inquiry.type === "booking"
+    ? (inquiry as BookingSubmission & { type: "booking" }).clientName || "Anonymous"
+    : (inquiry as PortfolioInquiry | ChatInquiry).name || "Anonymous";
+
+  const email = inquiry.type === "booking"
+    ? (inquiry as BookingSubmission & { type: "booking" }).clientEmail || "No email"
+    : (inquiry as PortfolioInquiry | ChatInquiry).email || "No email";
+
+  const isBooking = inquiry.type === "booking";
+
+  return (
+    <div
+      draggable={!isBooking}
+      onDragStart={onDragStart}
+      className={cn(
+        "group cursor-pointer rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3 transition-all",
+        isDragging && "opacity-50",
+        !isBooking && "hover:border-[var(--primary)]/50",
+        isSelected && "ring-2 ring-[var(--primary)]"
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              onToggleSelect?.(inquiry.id, inquiry.type);
+            }}
+            className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] opacity-0 transition-opacity group-hover:opacity-100 focus:ring-[var(--primary)] focus:ring-offset-0"
+            style={{ opacity: isSelected ? 1 : undefined }}
+          />
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+              inquiry.type === "portfolio"
+                ? "bg-purple-500/10 text-purple-400"
+                : inquiry.type === "chat"
+                ? "bg-cyan-500/10 text-cyan-400"
+                : "bg-orange-500/10 text-orange-400"
+            )}
+          >
+            {inquiry.type === "portfolio" ? (
+              <GlobeIcon className="h-2.5 w-2.5" />
+            ) : inquiry.type === "chat" ? (
+              <ChatIcon className="h-2.5 w-2.5" />
+            ) : (
+              <CalendarIcon className="h-2.5 w-2.5" />
+            )}
+            {inquiry.type === "portfolio" ? "Portfolio" : inquiry.type === "chat" ? "Chat" : "Booking"}
+          </span>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onView();
+          }}
+          className="shrink-0 text-xs text-[var(--primary)] opacity-0 transition-opacity group-hover:opacity-100 hover:underline"
+        >
+          View
+        </button>
+      </div>
+
+      <div className="mt-2" onClick={onView}>
+        <p className="font-medium text-foreground">{name}</p>
+        <p className="mt-0.5 text-xs text-foreground-muted">{email}</p>
+      </div>
+
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-[10px] text-foreground-muted">
+          {new Date(inquiry.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+        </span>
+        {isBooking && (
+          <span className="text-[10px] text-foreground-muted italic">
+            (drag disabled)
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Icons
 function SearchIcon({ className }: { className?: string }) {
   return (
@@ -1004,6 +1441,44 @@ function NoteIcon({ className }: { className?: string }) {
     >
       <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
       <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
+    </svg>
+  );
+}
+
+function ListIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={className}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.008v.008H3.75V6.75zm0 5.25h.008v.008H3.75V12zm0 5.25h.008v.008H3.75v-.008z"
+      />
+    </svg>
+  );
+}
+
+function BoardIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={className}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3.75 6.75h16.5M3.75 12h7.5m-7.5 5.25h16.5"
+      />
     </svg>
   );
 }
