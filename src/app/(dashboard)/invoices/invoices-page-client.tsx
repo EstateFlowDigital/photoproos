@@ -1,13 +1,18 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useMemo, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { InvoiceStatus } from "@prisma/client";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ChevronRightIcon, PlusIcon, DocumentIcon } from "@/components/ui/icons";
+import { ChevronRightIcon, PlusIcon, DocumentIcon, SearchIcon, XIcon as CloseIcon } from "@/components/ui/icons";
+import { updateInvoiceStatus, sendInvoiceReminder } from "@/lib/actions/invoices";
+
+type SortOption = "newest" | "oldest" | "amountHigh" | "amountLow" | "dueDate";
+type DateRangeFilter = "all" | "7days" | "30days" | "90days";
 
 // Helper to format date
 function formatDate(date: Date): string {
@@ -41,17 +46,123 @@ interface InvoicesPageClientProps {
 }
 
 export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClientProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const tableParentRef = useRef<HTMLDivElement | null>(null);
 
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>("all");
+
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkActionPending, setIsBulkActionPending] = useState(false);
+
+  // Filter and sort invoices
+  const filteredInvoices = useMemo(() => {
+    let result = [...invoices];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((inv) => {
+        const clientName = inv.client?.fullName || inv.client?.company || inv.clientName || "";
+        const clientEmail = inv.client?.email || "";
+        const searchableText = [inv.invoiceNumber, clientName, clientEmail].join(" ").toLowerCase();
+        return searchableText.includes(query);
+      });
+    }
+
+    // Date range filter
+    if (dateRangeFilter !== "all") {
+      const now = new Date();
+      result = result.filter((inv) => {
+        const issueDate = new Date(inv.issueDate);
+        const daysAgo = (now.getTime() - issueDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (dateRangeFilter === "7days") return daysAgo <= 7;
+        if (dateRangeFilter === "30days") return daysAgo <= 30;
+        if (dateRangeFilter === "90days") return daysAgo <= 90;
+        return true;
+      });
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      switch (sortOption) {
+        case "oldest":
+          return new Date(a.issueDate).getTime() - new Date(b.issueDate).getTime();
+        case "amountHigh":
+          return b.totalCents - a.totalCents;
+        case "amountLow":
+          return a.totalCents - b.totalCents;
+        case "dueDate":
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        case "newest":
+        default:
+          return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
+      }
+    });
+
+    return result;
+  }, [invoices, searchQuery, sortOption, dateRangeFilter]);
+
+  // Bulk selection helpers
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(filteredInvoices.map((inv) => inv.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const isAllSelected = filteredInvoices.length > 0 && filteredInvoices.every((inv) => selectedIds.has(inv.id));
+
+  // Bulk actions
+  const handleBulkMarkAsPaid = async () => {
+    setIsBulkActionPending(true);
+    try {
+      await Promise.all([...selectedIds].map((id) => updateInvoiceStatus(id, "paid")));
+      router.refresh();
+      clearSelection();
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  };
+
+  const handleBulkSendReminder = async () => {
+    setIsBulkActionPending(true);
+    try {
+      await Promise.all([...selectedIds].map((id) => sendInvoiceReminder(id)));
+      router.refresh();
+      clearSelection();
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  };
+
   const rowVirtualizer = useVirtualizer({
-    count: invoices.length,
+    count: filteredInvoices.length,
     getScrollElement: () => tableParentRef.current,
     estimateSize: () => 76,
     overscan: 8,
-    getItemKey: (index) => invoices[index]?.id ?? index,
+    getItemKey: (index) => filteredInvoices[index]?.id ?? index,
     measureElement: (el) => el?.getBoundingClientRect().height ?? 0,
   });
 
+  // Show empty state only if there are no invoices at all
   if (invoices.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
@@ -76,119 +187,236 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
   }
 
   return (
-    <div
-      ref={tableParentRef}
-      className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] max-h-[70vh] overflow-auto"
-    >
-      <table className="w-full min-w-[700px]">
-        <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] sticky top-0 z-10">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
-              Invoice
-            </th>
-            <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
-              Client
-            </th>
-            <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
-              Date
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
-              Status
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
-              Amount
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
-              <span className="sr-only">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody
-          style={{
-            position: "relative",
-            height: rowVirtualizer.getTotalSize(),
-          }}
+    <div className="space-y-4">
+      {/* Search and Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+          <input
+            type="text"
+            placeholder="Search invoices..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground"
+            >
+              <CloseIcon className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Date Range Filter */}
+        <select
+          value={dateRangeFilter}
+          onChange={(e) => setDateRangeFilter(e.target.value as DateRangeFilter)}
+          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
         >
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const invoice = invoices[virtualRow.index];
-            if (!invoice) return null;
+          <option value="all">All Time</option>
+          <option value="7days">Last 7 Days</option>
+          <option value="30days">Last 30 Days</option>
+          <option value="90days">Last 90 Days</option>
+        </select>
 
-            const clientName = invoice.client?.fullName || invoice.client?.company || invoice.clientName || "Unknown";
-            const isOverdue = invoice.status === "sent" && new Date(invoice.dueDate) < new Date();
-            const displayStatus = isOverdue && invoice.status !== "overdue" ? "overdue" : invoice.status;
-            const statusLabel = isOverdue && invoice.status !== "overdue"
-              ? "Overdue"
-              : formatStatusLabel(invoice.status);
+        {/* Sort Options */}
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value as SortOption)}
+          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+        >
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="amountHigh">Amount: High to Low</option>
+          <option value="amountLow">Amount: Low to High</option>
+          <option value="dueDate">Due Date</option>
+        </select>
 
-            return (
-              <tr
-                key={invoice.id}
-                ref={rowVirtualizer.measureElement}
-                data-index={virtualRow.index}
-                className="group relative table w-full cursor-pointer transition-colors hover:bg-[var(--background-hover)]"
-                style={{ transform: `translateY(${virtualRow.start}px)` }}
-              >
-                <td className="px-6 py-4">
-                  <Link
-                    href={`/invoices/${invoice.id}`}
-                    className="absolute inset-0 z-0"
-                    aria-label={`View invoice: ${invoice.invoiceNumber}`}
+        {/* Results count */}
+        <span className="text-sm text-foreground-muted">
+          {filteredInvoices.length} of {invoices.length}
+        </span>
+      </div>
+
+      {/* Invoices Table */}
+      {filteredInvoices.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-12 text-center">
+          <SearchIcon className="mx-auto h-10 w-10 text-foreground-muted" />
+          <p className="mt-4 font-medium text-foreground">No invoices found</p>
+          <p className="mt-1 text-sm text-foreground-muted">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      ) : (
+        <div
+          ref={tableParentRef}
+          className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] max-h-[70vh] overflow-auto"
+        >
+          <table className="w-full min-w-[700px]">
+            <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] sticky top-0 z-10">
+              <tr>
+                <th className="w-12 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={() => (isAllSelected ? clearSelection() : selectAll())}
+                    className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
                   />
-                  <div className="pointer-events-none relative z-10">
-                    <p className="font-medium text-foreground">{invoice.invoiceNumber}</p>
-                    <p className="text-sm text-foreground-muted md:hidden">
-                      {clientName}
-                    </p>
-                  </div>
-                </td>
-                <td className="hidden px-6 py-4 md:table-cell">
-                  <div className="pointer-events-none relative z-10 flex items-center gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full avatar-gradient text-xs font-medium text-white">
-                      {clientName.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{clientName}</p>
-                      {invoice.client?.email && (
-                        <p className="text-xs text-foreground-muted">{invoice.client.email}</p>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td className="hidden px-6 py-4 lg:table-cell">
-                  <div className="pointer-events-none relative z-10 text-sm">
-                    <p className="text-foreground">{formatDate(invoice.issueDate)}</p>
-                    <p className={cn(
-                      "text-xs",
-                      isOverdue ? "text-[var(--error)]" : "text-foreground-muted"
-                    )}>
-                      Due {formatDate(invoice.dueDate)}
-                    </p>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={cn(
-                    "pointer-events-none relative z-10 inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-                    getStatusBadgeClasses(displayStatus),
-                    invoice.status === "cancelled" && "line-through"
-                  )}>
-                    {statusLabel}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span className="pointer-events-none relative z-10 font-medium text-foreground">
-                    {formatCurrency(invoice.totalCents)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="pointer-events-none relative z-10">
-                    <ChevronRightIcon className="h-4 w-4 text-foreground-muted transition-colors group-hover:text-foreground" />
-                  </div>
-                </td>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                  Invoice
+                </th>
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
+                  Client
+                </th>
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                  Amount
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody
+              style={{
+                position: "relative",
+                height: rowVirtualizer.getTotalSize(),
+              }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const invoice = filteredInvoices[virtualRow.index];
+                if (!invoice) return null;
+
+                const clientName = invoice.client?.fullName || invoice.client?.company || invoice.clientName || "Unknown";
+                const isOverdue = invoice.status === "sent" && new Date(invoice.dueDate) < new Date();
+                const displayStatus = isOverdue && invoice.status !== "overdue" ? "overdue" : invoice.status;
+                const statusLabel = isOverdue && invoice.status !== "overdue"
+                  ? "Overdue"
+                  : formatStatusLabel(invoice.status);
+                const isSelected = selectedIds.has(invoice.id);
+
+                return (
+                  <tr
+                    key={invoice.id}
+                    ref={rowVirtualizer.measureElement}
+                    data-index={virtualRow.index}
+                    className={cn(
+                      "group relative table w-full cursor-pointer transition-colors hover:bg-[var(--background-hover)]",
+                      isSelected && "bg-[var(--primary)]/5"
+                    )}
+                    style={{ transform: `translateY(${virtualRow.start}px)` }}
+                  >
+                    <td className="w-12 px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelection(invoice.id)}
+                        className="relative z-20 h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+                      />
+                    </td>
+                    <td className="px-4 py-4">
+                      <Link
+                        href={`/invoices/${invoice.id}`}
+                        className="absolute inset-0 z-0"
+                        aria-label={`View invoice: ${invoice.invoiceNumber}`}
+                      />
+                      <div className="pointer-events-none relative z-10">
+                        <p className="font-medium text-foreground">{invoice.invoiceNumber}</p>
+                        <p className="text-sm text-foreground-muted md:hidden">
+                          {clientName}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="hidden px-4 py-4 md:table-cell">
+                      <div className="pointer-events-none relative z-10 flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full avatar-gradient text-xs font-medium text-white">
+                          {clientName.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{clientName}</p>
+                          {invoice.client?.email && (
+                            <p className="text-xs text-foreground-muted">{invoice.client.email}</p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="hidden px-4 py-4 lg:table-cell">
+                      <div className="pointer-events-none relative z-10 text-sm">
+                        <p className="text-foreground">{formatDate(invoice.issueDate)}</p>
+                        <p className={cn(
+                          "text-xs",
+                          isOverdue ? "text-[var(--error)]" : "text-foreground-muted"
+                        )}>
+                          Due {formatDate(invoice.dueDate)}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className={cn(
+                        "pointer-events-none relative z-10 inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                        getStatusBadgeClasses(displayStatus),
+                        invoice.status === "cancelled" && "line-through"
+                      )}>
+                        {statusLabel}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <span className="pointer-events-none relative z-10 font-medium text-foreground">
+                        {formatCurrency(invoice.totalCents)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <div className="pointer-events-none relative z-10">
+                        <ChevronRightIcon className="h-4 w-4 text-foreground-muted transition-colors group-hover:text-foreground" />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
+          <span className="text-sm font-medium text-foreground">
+            {selectedIds.size} selected
+          </span>
+          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <button
+            onClick={handleBulkMarkAsPaid}
+            disabled={isBulkActionPending}
+            className="rounded-lg bg-[var(--success)]/10 px-3 py-1.5 text-sm font-medium text-[var(--success)] hover:bg-[var(--success)]/20 disabled:opacity-50"
+          >
+            Mark as Paid
+          </button>
+          <button
+            onClick={handleBulkSendReminder}
+            disabled={isBulkActionPending}
+            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20 disabled:opacity-50"
+          >
+            Send Reminder
+          </button>
+          <button
+            onClick={clearSelection}
+            disabled={isBulkActionPending}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
+          >
+            Clear
+          </button>
+        </div>
+      )}
     </div>
   );
 }

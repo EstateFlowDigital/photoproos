@@ -8,6 +8,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Invoices Module Improvements: Search, Filters & Bulk Actions**
+  - **Search functionality** - Search by invoice number, client name, or email
+  - **Sorting options** - Sort by newest, oldest, amount (high/low), or due date
+  - **Date range filter** - Filter by all time, last 7/30/90 days
+  - **Bulk selection** - Checkbox selection with select all in header
+  - **Bulk actions** - Mark selected invoices as paid, send payment reminders
+  - **Floating action bar** - Shows selected count with quick action buttons
+  - **Results count** - Shows filtered count out of total
+
+- **Leads Module Improvements: Kanban Board & Bulk Operations**
+  - **View Mode Toggle** - Switch between List and Board views
+  - **Kanban Board View** - Four fixed columns (New/Contacted/Qualified/Closed)
+  - **Drag-and-drop** - Status updates via drag for portfolio/chat leads
+  - **Enhanced Filtering** - Date range filter (7/30/90 days), sort options
+  - **Bulk Selection & Actions** - Multi-select with floating action bar
+  - **CSS Variable Migration** - Status colors now use design system tokens
+
+- **Gallery Expiration Countdown**
+  - Warning banners on public galleries when expiring within 14 days
+  - Live countdown showing days/hours/minutes remaining
+  - Urgent styling (red) for galleries expiring in 3 days or less
+  - Contextual messaging based on download permissions
+  - Implemented for both server-rendered and auto-theme client galleries
+
+- **Download History Tab** in admin gallery detail
+  - New "Downloads" tab showing all download activity
+  - Displays date, format, file count, size, and client email
+  - Color-coded format badges (ZIP, Original, Web Size, High Res)
+  - Export to CSV functionality
+  - Badge showing download count in tab navigation
+
+### Fixed
+- **Next.js Build Race Condition** with Dropbox-synced directories
+  - Changed distDir to `/tmp/photoproos-next` for local builds
+  - Railway deployments continue using `.next` directory
+  - Eliminates `pages-manifest.json` ENOENT errors during build
+
+- Fixed TypeScript errors in multiple files:
+  - Fixed `params` type for Next.js 15 async params in `clients/[id]/edit/page.tsx`
+  - Fixed `params` type in `portfolios/[id]/page.tsx`
+  - Fixed `params` type in `portfolio/[slug]/page.tsx`
+  - Fixed `params` type in `portfolio/[slug]/opengraph-image.tsx`
+  - Fixed `column.statuses.includes()` type in `leads-page-client.tsx`
+  - Added missing `cn` import in `orders/page.tsx`
+
+### Added
+- **Unit Testing Infrastructure**
+  - Configured Vitest with jsdom for React component testing
+  - Added testing utilities: @testing-library/react, @testing-library/jest-dom
+  - Test scripts: `npm test` (watch mode), `npm run test:run` (single run)
+  - 163 unit tests covering utility functions and error handling
+
+- **Error Handling Module** (`src/lib/errors/`)
+  - Custom error classes: AppError, AuthError, ValidationError, NotFoundError, ConflictError, RateLimitError, ExternalServiceError
+  - Standard error codes for consistent error handling
+  - User-friendly error message mapping
+  - `handleActionError()` utility for server action error handling
+  - `withErrorHandling()` higher-order function for wrapping async actions
+  - Full test coverage for error utilities
+
+- **Standardized Action Result Types** (`src/lib/types/action-result.ts`)
+  - Discriminated union types for type-safe success/error handling
+  - Helper functions: `success()`, `ok()`, `fail()`
+  - Type guards: `isSuccess()`, `isError()`
+  - Utility functions: `unwrap()`, `getOrDefault()`, `mapResult()`
+  - Common result types: IdActionResult, UrlActionResult, MessageActionResult, CountActionResult
+  - Backwards compatibility aliases for existing code
+
+### Changed
 - **Leads Module Improvements: Kanban Board & Bulk Operations**
   - **View Mode Toggle** - Switch between List and Board views
     - Pill-style toggle buttons matching Projects module pattern
