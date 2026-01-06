@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **VirtualList Component** - Reusable virtualized list component for performance optimization
+  - Built on `@tanstack/react-virtual` for efficient rendering of large lists
+  - Supports custom item sizing, prepend/append content, and empty states
+  - Used in Projects board view for smooth scrolling of task columns
+
 - **Gallery Collections Tab** - Integrated collection management into gallery detail page
   - New "Collections" tab with full CRUD for creating, editing, deleting collections
   - Drag-to-reorder collections, cover photo selection
