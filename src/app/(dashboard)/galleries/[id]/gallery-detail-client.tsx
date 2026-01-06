@@ -247,6 +247,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const analytics = gallery.analytics;
   const invoices = gallery.invoices || [];
 
+  // Sync photos state when gallery prop changes (e.g., after router.refresh())
+  useEffect(() => {
+    setPhotos(gallery.photos);
+  }, [gallery.photos]);
+
   // Handle submitting a new comment
   const handleSubmitComment = () => {
     if (!newComment.trim()) return;
@@ -1726,45 +1731,96 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <h2 className="text-lg font-semibold text-foreground mb-4">Download Options</h2>
                 <div className="space-y-3">
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="resolution"
-                      checked={settings.downloadResolution === "full"}
-                      onChange={() => handleSettingsChange({ downloadResolution: "full" })}
-                      className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
-                    />
+                  <button
+                    type="button"
+                    onClick={() => handleSettingsChange({ downloadResolution: "full" })}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-all",
+                      settings.downloadResolution === "full"
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10"
+                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)]"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                        settings.downloadResolution === "full"
+                          ? "border-[var(--primary)] bg-[var(--primary)]"
+                          : "border-[var(--border-visible)]"
+                      )}
+                    >
+                      {settings.downloadResolution === "full" && (
+                        <CheckIcon className="h-3 w-3 text-white" />
+                      )}
+                    </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">Full Resolution Only</p>
+                      <p className={cn(
+                        "text-sm font-medium",
+                        settings.downloadResolution === "full" ? "text-[var(--primary)]" : "text-foreground"
+                      )}>Full Resolution Only</p>
                       <p className="text-xs text-foreground-muted">Clients can only download full-res files</p>
                     </div>
-                  </label>
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="resolution"
-                      checked={settings.downloadResolution === "web"}
-                      onChange={() => handleSettingsChange({ downloadResolution: "web" })}
-                      className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
-                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSettingsChange({ downloadResolution: "web" })}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-all",
+                      settings.downloadResolution === "web"
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10"
+                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)]"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                        settings.downloadResolution === "web"
+                          ? "border-[var(--primary)] bg-[var(--primary)]"
+                          : "border-[var(--border-visible)]"
+                      )}
+                    >
+                      {settings.downloadResolution === "web" && (
+                        <CheckIcon className="h-3 w-3 text-white" />
+                      )}
+                    </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">Web Resolution Only</p>
+                      <p className={cn(
+                        "text-sm font-medium",
+                        settings.downloadResolution === "web" ? "text-[var(--primary)]" : "text-foreground"
+                      )}>Web Resolution Only</p>
                       <p className="text-xs text-foreground-muted">Optimized for web (2048px max)</p>
                     </div>
-                  </label>
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="resolution"
-                      checked={settings.downloadResolution === "both"}
-                      onChange={() => handleSettingsChange({ downloadResolution: "both" })}
-                      className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
-                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSettingsChange({ downloadResolution: "both" })}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-all",
+                      settings.downloadResolution === "both"
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10"
+                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)]"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                        settings.downloadResolution === "both"
+                          ? "border-[var(--primary)] bg-[var(--primary)]"
+                          : "border-[var(--border-visible)]"
+                      )}
+                    >
+                      {settings.downloadResolution === "both" && (
+                        <CheckIcon className="h-3 w-3 text-white" />
+                      )}
+                    </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">Both Options</p>
+                      <p className={cn(
+                        "text-sm font-medium",
+                        settings.downloadResolution === "both" ? "text-[var(--primary)]" : "text-foreground"
+                      )}>Both Options</p>
                       <p className="text-xs text-foreground-muted">Let clients choose resolution</p>
                     </div>
-                  </label>
+                  </button>
                 </div>
               </div>
 

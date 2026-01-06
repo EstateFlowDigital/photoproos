@@ -267,7 +267,7 @@ enum SelectionStatus {
 
 enum GalleryDownloadOption {
   full // Only original resolution
-  web  // Only web-optimized resolution
+  web // Only web-optimized resolution
   both // Allow both options
 }
 
@@ -610,6 +610,7 @@ model Organization {
   homeBaseLocation   Location?            @relation("OrgHomeBase", fields: [homeBaseLocationId], references: [id])
   taskBoards         TaskBoard[]
   tasks              Task[]
+  taskTemplates      TaskTemplate[]
   discountCodes      DiscountCode[]
   paymentPlans       PaymentPlan[]
   invoiceTemplates   InvoiceTemplate[]
@@ -967,12 +968,13 @@ model Project {
   currency   String @default("USD")
 
   // Gallery Settings
-  coverImageUrl      String?
-  password           String?
-  expiresAt          DateTime?
-  allowDownloads     Boolean               @default(true)
-  showWatermark      Boolean               @default(false)
-  downloadResolution GalleryDownloadOption @default(both)
+  coverImageUrl           String?
+  password                String?
+  expiresAt               DateTime?
+  allowDownloads          Boolean               @default(true)
+  showWatermark           Boolean               @default(false)
+  downloadResolution      GalleryDownloadOption @default(both)
+  downloadRequiresPayment Boolean               @default(true) // If true, downloads require payment. If false, allow free downloads even when gallery has a price.
 
   // Selection Settings
   allowSelections     Boolean @default(true) // Allow clients to make selections
@@ -3063,6 +3065,38 @@ model TaskComment {
 
   @@index([taskId])
   @@index([authorId])
+}
+
+model TaskTemplate {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Template metadata
+  name        String
+  description String? // Description for the template itself
+  category    String? // Category for organization (e.g., "Gallery Delivery", "Post-Production")
+  icon        String? // Emoji or icon key
+  isGlobal    Boolean @default(false) // System templates vs org templates
+
+  // Template content (applied to new tasks)
+  taskTitle        String // Template for task title (can include placeholders)
+  taskDescription  String? // Template for task description
+  priority         TaskPriority @default(medium)
+  tags             String[]     @default([])
+  estimatedMinutes Int?
+
+  // Default subtasks (stored as JSON array)
+  subtasks Json? // [{title: string, position: number}]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([category])
+  @@index([isGlobal])
 }
 
 // ============================================================================

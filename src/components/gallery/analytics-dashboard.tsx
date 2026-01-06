@@ -444,9 +444,10 @@ export function AnalyticsDashboard({
                 style={{ backgroundColor: getHeatMapColor(photo.engagementScore) }}
               >
                 <img
-                  src={photo.thumbnailUrl}
+                  src={photo.thumbnailUrl || "/placeholder-image.svg"}
                   alt={photo.filename}
                   className="h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.src = "/placeholder-image.svg"; }}
                 />
                 {/* Overlay with stats on hover */}
                 <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 text-white text-xs">
@@ -484,9 +485,10 @@ export function AnalyticsDashboard({
                   {index + 1}
                 </span>
                 <img
-                  src={photo.thumbnailUrl}
+                  src={photo.thumbnailUrl || "/placeholder-image.svg"}
                   alt={photo.filename}
                   className="h-10 w-14 rounded object-cover"
+                  onError={(e) => { e.currentTarget.src = "/placeholder-image.svg"; }}
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{photo.filename}</p>

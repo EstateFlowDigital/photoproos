@@ -355,14 +355,14 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
         (g) =>
           g.name.toLowerCase().includes(searchLower) ||
           g.client.toLowerCase().includes(searchLower) ||
-          g.services.some((s) => s.name.toLowerCase().includes(searchLower))
+          (g.services || []).some((s) => s.name.toLowerCase().includes(searchLower))
       );
     }
 
     // Apply service filter
     if (serviceFilter.size > 0) {
       result = result.filter((g) =>
-        g.services.some((s) => serviceFilter.has(s.id))
+        (g.services || []).some((s) => serviceFilter.has(s.id))
       );
     }
 
@@ -775,7 +775,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                         </td>
                         <td className="px-4 py-3 text-sm text-foreground-secondary">{gallery.client}</td>
                         <td className="hidden px-4 py-3 md:table-cell">
-                          {gallery.services.length > 0 ? (
+                          {gallery.services && gallery.services.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {gallery.services.slice(0, 2).map((service) => (
                                 <span

@@ -1647,3 +1647,315 @@ export async function bulkDeleteTasks(
     };
   }
 }
+
+// ============================================================================
+// TASK TEMPLATE ACTIONS
+// ============================================================================
+
+interface SubtaskTemplate {
+  title: string;
+  position: number;
+}
+
+/**
+ * Get all task templates for the organization
+ */
+export async function getTaskTemplates() {
+  await requireAuth();
+  const organizationId = await requireOrganizationId();
+
+  const templates = await prisma.taskTemplate.findMany({
+    where: {
+      OR: [
+        { organizationId },
+        { isGlobal: true },
+      ],
+    },
+    orderBy: [
+      { category: "asc" },
+      { name: "asc" },
+    ],
+  });
+
+  return templates;
+}
+
+/**
+ * Create a task template
+ */
+export async function createTaskTemplate(data: {
+  name: string;
+  description?: string;
+  category?: string;
+  icon?: string;
+  taskTitle: string;
+  taskDescription?: string;
+  priority?: TaskPriority;
+  tags?: string[];
+  estimatedMinutes?: number;
+  subtasks?: SubtaskTemplate[];
+}): Promise<{ success: boolean; templateId?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const template = await prisma.taskTemplate.create({
+      data: {
+        organizationId,
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        icon: data.icon,
+        taskTitle: data.taskTitle,
+        taskDescription: data.taskDescription,
+        priority: data.priority || "medium",
+        tags: data.tags || [],
+        estimatedMinutes: data.estimatedMinutes,
+        subtasks: data.subtasks || [],
+      },
+    });
+
+    return { success: true, templateId: template.id };
+  } catch (error) {
+    console.error("Error creating task template:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create template",
+    };
+  }
+}
+
+/**
+ * Save an existing task as a template
+ */
+export async function saveTaskAsTemplate(
+  taskId: string,
+  templateData: {
+    name: string;
+    description?: string;
+    category?: string;
+    icon?: string;
+  }
+): Promise<{ success: boolean; templateId?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Get the task with subtasks
+    const task = await prisma.task.findFirst({
+      where: {
+        id: taskId,
+        organizationId,
+      },
+      include: {
+        subtasks: {
+          orderBy: { position: "asc" },
+        },
+      },
+    });
+
+    if (!task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    // Create template from task
+    const template = await prisma.taskTemplate.create({
+      data: {
+        organizationId,
+        name: templateData.name,
+        description: templateData.description,
+        category: templateData.category,
+        icon: templateData.icon,
+        taskTitle: task.title,
+        taskDescription: task.description,
+        priority: task.priority,
+        tags: task.tags,
+        estimatedMinutes: task.estimatedMinutes,
+        subtasks: task.subtasks.map((s, i) => ({
+          title: s.title,
+          position: i,
+        })),
+      },
+    });
+
+    return { success: true, templateId: template.id };
+  } catch (error) {
+    console.error("Error saving task as template:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save template",
+    };
+  }
+}
+
+/**
+ * Create a task from a template
+ */
+export async function createTaskFromTemplate(
+  templateId: string,
+  data: {
+    boardId: string;
+    columnId: string;
+    titleOverride?: string;
+    dueDate?: Date;
+    assigneeId?: string;
+  }
+): Promise<{ success: boolean; taskId?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Get the template
+    const template = await prisma.taskTemplate.findFirst({
+      where: {
+        id: templateId,
+        OR: [
+          { organizationId },
+          { isGlobal: true },
+        ],
+      },
+    });
+
+    if (!template) {
+      return { success: false, error: "Template not found" };
+    }
+
+    // Verify column exists
+    const column = await prisma.taskColumn.findFirst({
+      where: {
+        id: data.columnId,
+        boardId: data.boardId,
+      },
+    });
+
+    if (!column) {
+      return { success: false, error: "Column not found" };
+    }
+
+    // Get the highest position in the column
+    const lastTask = await prisma.task.findFirst({
+      where: { columnId: data.columnId },
+      orderBy: { position: "desc" },
+    });
+    const position = (lastTask?.position ?? -1) + 1;
+
+    // Create the task
+    const task = await prisma.task.create({
+      data: {
+        organizationId,
+        boardId: data.boardId,
+        columnId: data.columnId,
+        title: data.titleOverride || template.taskTitle,
+        description: template.taskDescription,
+        priority: template.priority,
+        tags: template.tags,
+        estimatedMinutes: template.estimatedMinutes,
+        dueDate: data.dueDate,
+        assigneeId: data.assigneeId,
+        position,
+        status: getStatusForColumn(column.name, "todo"),
+      },
+    });
+
+    // Create subtasks from template
+    const subtasks = (template.subtasks as SubtaskTemplate[]) || [];
+    if (subtasks.length > 0) {
+      await prisma.taskSubtask.createMany({
+        data: subtasks.map((s, i) => ({
+          taskId: task.id,
+          title: s.title,
+          position: i,
+        })),
+      });
+    }
+
+    revalidatePath("/projects");
+    return { success: true, taskId: task.id };
+  } catch (error) {
+    console.error("Error creating task from template:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create task",
+    };
+  }
+}
+
+/**
+ * Update a task template
+ */
+export async function updateTaskTemplate(
+  templateId: string,
+  data: {
+    name?: string;
+    description?: string;
+    category?: string;
+    icon?: string;
+    taskTitle?: string;
+    taskDescription?: string | null;
+    priority?: TaskPriority;
+    tags?: string[];
+    estimatedMinutes?: number | null;
+    subtasks?: SubtaskTemplate[];
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    await prisma.taskTemplate.update({
+      where: {
+        id: templateId,
+        organizationId,
+        isGlobal: false, // Can't edit global templates
+      },
+      data: {
+        ...(data.name && { name: data.name }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.category !== undefined && { category: data.category }),
+        ...(data.icon !== undefined && { icon: data.icon }),
+        ...(data.taskTitle && { taskTitle: data.taskTitle }),
+        ...(data.taskDescription !== undefined && { taskDescription: data.taskDescription }),
+        ...(data.priority && { priority: data.priority }),
+        ...(data.tags && { tags: data.tags }),
+        ...(data.estimatedMinutes !== undefined && { estimatedMinutes: data.estimatedMinutes }),
+        ...(data.subtasks && { subtasks: data.subtasks }),
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating task template:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update template",
+    };
+  }
+}
+
+/**
+ * Delete a task template
+ */
+export async function deleteTaskTemplate(
+  templateId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    await prisma.taskTemplate.delete({
+      where: {
+        id: templateId,
+        organizationId,
+        isGlobal: false, // Can't delete global templates
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting task template:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete template",
+    };
+  }
+}

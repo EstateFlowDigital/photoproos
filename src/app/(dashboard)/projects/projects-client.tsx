@@ -22,6 +22,9 @@ import {
   bulkUpdatePriority,
   bulkAssignTasks,
   bulkDeleteTasks,
+  getTaskTemplates,
+  saveTaskAsTemplate,
+  createTaskFromTemplate,
 } from "@/lib/actions/projects";
 import type { TaskPriority } from "@prisma/client";
 import { isSameDay, isToday } from "date-fns";
@@ -118,6 +121,21 @@ interface Gallery {
 
 type SortOption = "newest" | "oldest" | "dueDate" | "priority" | "updated";
 type DueDateFilter = "all" | "overdue" | "today" | "thisWeek" | "thisMonth" | "noDueDate";
+
+interface TaskTemplateData {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  icon: string | null;
+  taskTitle: string;
+  taskDescription: string | null;
+  priority: TaskPriority;
+  tags: string[];
+  estimatedMinutes: number | null;
+  subtasks: { title: string; position: number }[] | null;
+  isGlobal: boolean;
+}
 
 interface ProjectsClientProps {
   board: Board;
@@ -233,6 +251,28 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
   // Bulk selection state
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [isBulkActionPending, setIsBulkActionPending] = useState(false);
+
+  // Column settings state
+  const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
+
+  // Template state
+  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
+  const [templateTargetColumnId, setTemplateTargetColumnId] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<TaskTemplateData[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+
+  const loadTemplates = async () => {
+    setLoadingTemplates(true);
+    try {
+      const result = await getTaskTemplates();
+      setTemplates(result as TaskTemplateData[]);
+    } catch (error) {
+      console.error("Error loading templates:", error);
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
   const allTasks = useMemo(
     () => board.columns.flatMap((column) => column.tasks),
     [board.columns]
@@ -918,18 +958,101 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
                       style={{ backgroundColor: column.color || "#6b7280" }}
                     />
                     <h3 className="font-medium text-foreground">{column.name}</h3>
-                    <span className="rounded-full bg-[var(--background-hover)] px-2 py-0.5 text-xs text-foreground-muted">
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-xs",
+                        column.limit && column.tasks.length > column.limit
+                          ? "bg-[var(--error)]/10 text-[var(--error)] font-medium"
+                          : column.limit && column.tasks.length === column.limit
+                          ? "bg-[var(--warning)]/10 text-[var(--warning)]"
+                          : "bg-[var(--background-hover)] text-foreground-muted"
+                      )}
+                    >
                       {column.filteredTasks.length}
+                      {column.limit && (
+                        <span className="ml-0.5">/ {column.limit}</span>
+                      )}
                     </span>
+                    {/* WIP Limit Warning */}
+                    {column.limit && column.tasks.length > column.limit && (
+                      <span
+                        className="flex items-center gap-1 rounded-full bg-[var(--error)]/10 px-2 py-0.5 text-xs font-medium text-[var(--error)]"
+                        title={`WIP limit exceeded: ${column.tasks.length} of ${column.limit} tasks`}
+                      >
+                        <AlertIcon className="h-3 w-3" />
+                        Over limit
+                      </span>
+                    )}
                   </div>
-                  <button
-                    onClick={() => setShowAddTask(showAddTask === column.id ? null : column.id)}
-                    aria-label={`Add task to ${column.name}`}
-                    className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setEditingColumnId(editingColumnId === column.id ? null : column.id)}
+                      aria-label={`Column settings for ${column.name}`}
+                      className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
+                    >
+                      <SettingsIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTemplateTargetColumnId(column.id);
+                        setShowTemplateLibrary(true);
+                        loadTemplates();
+                      }}
+                      aria-label={`Create task from template in ${column.name}`}
+                      className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
+                      title="From template"
+                    >
+                      <TemplateIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setShowAddTask(showAddTask === column.id ? null : column.id)}
+                      aria-label={`Add task to ${column.name}`}
+                      className="rounded-lg bg-[var(--background-hover)] p-1.5 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
+
+                {/* Column Settings Popover */}
+                {editingColumnId === column.id && (
+                  <ColumnSettingsPopover
+                    column={column}
+                    onClose={() => setEditingColumnId(null)}
+                    onUpdate={async (data) => {
+                      startTransition(async () => {
+                        const result = await updateColumn(column.id, data);
+                        if (result.success) {
+                          showToast("Column updated", "success");
+                          setEditingColumnId(null);
+                          router.refresh();
+                        } else {
+                          showToast(result.error || "Failed to update column", "error");
+                        }
+                      });
+                    }}
+                    onDelete={async () => {
+                      const confirmed = await confirm({
+                        title: "Delete column",
+                        description: `Are you sure you want to delete "${column.name}"? All tasks will be moved to the first column.`,
+                        confirmText: "Delete",
+                        variant: "destructive",
+                      });
+                      if (!confirmed) return;
+
+                      startTransition(async () => {
+                        const result = await deleteColumn(column.id);
+                        if (result.success) {
+                          showToast("Column deleted", "success");
+                          setEditingColumnId(null);
+                          router.refresh();
+                        } else {
+                          showToast(result.error || "Failed to delete column", "error");
+                        }
+                      });
+                    }}
+                  />
+                )}
 
                 <VirtualList
                   items={column.filteredTasks}
@@ -1574,6 +1697,41 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
           onUpdateField={(field, value) => handleUpdateTaskField(selectedTask.id, field, value)}
           onAddSubtask={(title) => handleAddSubtask(selectedTask.id, title)}
           onToggleSubtask={handleToggleSubtask}
+          onSaveAsTemplate={async (name, category) => {
+            const result = await saveTaskAsTemplate(selectedTask.id, { name, category });
+            if (result.success) {
+              showToast("Template saved", "success");
+            } else {
+              showToast(result.error || "Failed to save template", "error");
+            }
+            return result.success;
+          }}
+        />
+      )}
+
+      {/* Template Library Modal */}
+      {showTemplateLibrary && templateTargetColumnId && (
+        <TemplateLibraryModal
+          templates={templates}
+          loading={loadingTemplates}
+          onClose={() => {
+            setShowTemplateLibrary(false);
+            setTemplateTargetColumnId(null);
+          }}
+          onSelectTemplate={async (templateId) => {
+            const result = await createTaskFromTemplate(templateId, {
+              boardId: board.id,
+              columnId: templateTargetColumnId,
+            });
+            if (result.success) {
+              showToast("Task created from template", "success");
+              setShowTemplateLibrary(false);
+              setTemplateTargetColumnId(null);
+              router.refresh();
+            } else {
+              showToast(result.error || "Failed to create task", "error");
+            }
+          }}
         />
       )}
     </div>
@@ -2079,5 +2237,188 @@ function ExpandIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M13.28 3.22a.75.75 0 0 1 0 1.06L6.56 11H13a.75.75 0 0 1 0 1.5H4.75a.75.75 0 0 1-.75-.75V4a.75.75 0 0 1 1.5 0v6.44l6.72-6.72a.75.75 0 0 1 1.06 0ZM6.72 16.78a.75.75 0 0 1 0-1.06l6.72-6.72H7a.75.75 0 0 1 0-1.5h8.25a.75.75 0 0 1 .75.75V16a.75.75 0 0 1-1.5 0V9.56l-6.72 6.72a.75.75 0 0 1-1.06 0Z" />
     </svg>
+  );
+}
+
+function AlertIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+      />
+    </svg>
+  );
+}
+
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+      />
+    </svg>
+  );
+}
+
+// Predefined color palette for columns
+const COLUMN_COLORS = [
+  "#6b7280", // Gray (default)
+  "#3b82f6", // Blue
+  "#22c55e", // Green
+  "#f97316", // Orange
+  "#ef4444", // Red
+  "#8b5cf6", // Purple
+  "#ec4899", // Pink
+  "#14b8a6", // Teal
+  "#eab308", // Yellow
+  "#06b6d4", // Cyan
+];
+
+function ColumnSettingsPopover({
+  column,
+  onClose,
+  onUpdate,
+  onDelete,
+}: {
+  column: Column;
+  onClose: () => void;
+  onUpdate: (data: { name?: string; color?: string; limit?: number | null }) => void;
+  onDelete: () => void;
+}) {
+  const [name, setName] = useState(column.name);
+  const [color, setColor] = useState(column.color || "#6b7280");
+  const [limit, setLimit] = useState(column.limit?.toString() || "");
+
+  const handleSave = () => {
+    const updates: { name?: string; color?: string; limit?: number | null } = {};
+
+    if (name.trim() !== column.name) {
+      updates.name = name.trim();
+    }
+    if (color !== (column.color || "#6b7280")) {
+      updates.color = color;
+    }
+    const limitNum = limit ? parseInt(limit, 10) : null;
+    if (limitNum !== column.limit) {
+      updates.limit = limitNum;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      onUpdate(updates);
+    } else {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
+      <div className="space-y-4">
+        {/* Column Name */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-foreground-muted">
+            Column Name
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+          />
+        </div>
+
+        {/* WIP Limit */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-foreground-muted">
+            WIP Limit
+          </label>
+          <input
+            type="number"
+            min="0"
+            placeholder="No limit"
+            value={limit}
+            onChange={(e) => setLimit(e.target.value)}
+            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+          />
+          <p className="mt-1 text-xs text-foreground-muted">
+            Maximum tasks allowed in this column (leave empty for no limit)
+          </p>
+        </div>
+
+        {/* Color Picker */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-foreground-muted">
+            Column Color
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {COLUMN_COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
+                className={cn(
+                  "h-7 w-7 rounded-full border-2 transition-all",
+                  color === c
+                    ? "border-white ring-2 ring-[var(--primary)] scale-110"
+                    : "border-transparent hover:scale-110"
+                )}
+                style={{ backgroundColor: c }}
+                title={c}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between pt-2">
+          <button
+            onClick={onDelete}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/10"
+          >
+            <TrashIcon className="h-4 w-4" />
+            Delete
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!name.trim()}
+              className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

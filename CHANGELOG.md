@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Error State Component Consolidation** - Created reusable ErrorState component
+  - Created `@/components/dashboard/error-state.tsx` with configurable title, description, icon, and logging
+  - Migrated 10 error.tsx files to use shared component (dashboard, galleries, clients, payments, services, invoices, scheduling, analytics, contracts, settings)
+  - Reduced duplicate error handling code by ~500 lines
+  - Pre-configured error variants for each dashboard section
+
 - **Icon Consolidation Complete** - Migrated all remaining inline icon files to centralized icon library
   - Migrated `settings-icons.tsx` (50+ icons) to re-exports from `@/components/ui/icons`
   - Migrated `gallery-icons.tsx` (30+ icons) to re-exports with QRCodeSVG kept in place

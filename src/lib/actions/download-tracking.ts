@@ -537,6 +537,7 @@ export async function getGalleryHeatMapData(projectId: string) {
             filename: true,
             thumbnailUrl: true,
             mediumUrl: true,
+            originalUrl: true,
           },
         },
         favorites: {
@@ -603,7 +604,7 @@ export async function getGalleryHeatMapData(projectId: string) {
       return {
         id: asset.id,
         filename: asset.filename,
-        thumbnailUrl: asset.thumbnailUrl || asset.mediumUrl || "",
+        thumbnailUrl: asset.thumbnailUrl || asset.mediumUrl || asset.originalUrl || "/placeholder-image.svg",
         views: 0, // Views aren't tracked per-photo currently
         downloads: downloadCounts.get(asset.id) || 0,
         favorites: favoriteCounts.get(asset.id) || 0,

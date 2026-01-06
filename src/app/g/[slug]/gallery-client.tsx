@@ -2140,7 +2140,6 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                         <StarIcon
                           className="h-6 w-6 transition-colors"
                           style={{ color: isActive ? "#fbbf24" : colors.mutedColor }}
-                          filled={isActive}
                         />
                       </button>
                     );

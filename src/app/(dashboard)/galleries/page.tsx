@@ -97,7 +97,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
     createdAt: gallery.createdAt.toISOString(),
     views: gallery.viewCount,
     downloads: gallery.downloadCount,
-    services: gallery.services.map((ps) => ({
+    services: (gallery.services || []).map((ps) => ({
       id: ps.service.id,
       name: ps.service.name,
       category: ps.service.category,

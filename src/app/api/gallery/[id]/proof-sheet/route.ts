@@ -9,12 +9,21 @@ const PLACEHOLDER_IMAGE =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIA1BQdCgAAAABJRU5ErkJggg==";
 
 // Fetch image and convert to base64 data URL for react-pdf compatibility
-async function fetchImageAsBase64(url: string): Promise<string> {
+async function fetchImageAsBase64(url: string | null | undefined): Promise<string> {
+  // Return placeholder for empty/invalid URLs
+  if (!url || typeof url !== "string" || url.trim() === "") {
+    console.warn("Empty or invalid image URL, using placeholder");
+    return PLACEHOLDER_IMAGE;
+  }
+
   try {
     const response = await fetch(url, {
-      signal: AbortSignal.timeout(10000), // 10 second timeout per image
+      signal: AbortSignal.timeout(15000), // 15 second timeout per image
     });
-    if (!response.ok) return PLACEHOLDER_IMAGE;
+    if (!response.ok) {
+      console.warn(`Image fetch failed with status ${response.status}: ${url.substring(0, 100)}`);
+      return PLACEHOLDER_IMAGE;
+    }
 
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -26,7 +35,7 @@ async function fetchImageAsBase64(url: string): Promise<string> {
 
     return `data:${mimeType};base64,${base64}`;
   } catch (error) {
-    console.error("Failed to fetch image:", url, error);
+    console.error("Failed to fetch image:", url.substring(0, 100), error);
     return PLACEHOLDER_IMAGE;
   }
 }
@@ -109,7 +118,12 @@ export async function GET(
       const batchResults = await Promise.all(
         batch.map(async (asset, batchIndex) => {
           const globalIndex = i + batchIndex;
-          const url = asset.thumbnailUrl || asset.mediumUrl || asset.originalUrl;
+          // Use first valid (non-empty) URL, preferring thumbnails for smaller size
+          const url = (asset.thumbnailUrl && asset.thumbnailUrl.trim() !== "")
+            ? asset.thumbnailUrl
+            : (asset.mediumUrl && asset.mediumUrl.trim() !== "")
+            ? asset.mediumUrl
+            : asset.originalUrl;
           const base64Url = await fetchImageAsBase64(url);
           return {
             id: asset.id,
