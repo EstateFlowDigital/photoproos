@@ -101,7 +101,7 @@ export function DashboardSidebar({
           onClick={onToggleCompact}
           className={cn(
             "sidebar-cascade-toggle absolute top-1/2 z-20 flex h-11 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--card-border)] bg-[var(--card)] text-foreground-muted shadow-md transition-colors hover:bg-[var(--background-hover)] hover:text-foreground",
-            sidebarPosition === "right" ? "left-[-18px]" : "right-[-18px]"
+            sidebarPosition === "right" ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
           )}
           aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
           title={isCompact ? "Expand sidebar" : "Collapse sidebar"}
