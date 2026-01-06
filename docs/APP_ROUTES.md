@@ -215,6 +215,7 @@ Complete directory of all pages in the application.
 | Route | Description |
 |-------|-------------|
 | `/leads` | Leads management |
+| `/leads/analytics` | Leads analytics dashboard |
 | `/brokerages` | Brokerages list |
 | `/brokerages/new` | Create brokerage |
 | `/brokerages/[id]` | Brokerage detail |

@@ -27,6 +27,8 @@ import {
   CameraIcon,
   LayersIcon,
   CodeIcon,
+  PackageIcon,
+  ImageIcon,
 } from "@/components/ui/settings-icons";
 import { SettingsPageClient } from "./settings-page-client";
 
@@ -55,6 +57,8 @@ const ICON_MAP: Record<SettingsIconName, React.FC<{ className?: string }>> = {
   camera: CameraIcon,
   layers: LayersIcon,
   code: CodeIcon,
+  package: PackageIcon,
+  image: ImageIcon,
 };
 
 // ============================================================================

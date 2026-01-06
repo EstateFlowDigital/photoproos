@@ -6,8 +6,66 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
+import { DateRangeFilter } from "./date-range-filter";
 
-export default async function BillingAnalyticsPage() {
+type DateRange = "this_month" | "last_month" | "this_quarter" | "this_year" | "last_year" | "custom";
+
+interface PageProps {
+  searchParams: Promise<{
+    range?: DateRange;
+    start?: string;
+    end?: string;
+  }>;
+}
+
+function getDateRange(range: DateRange, customStart?: string, customEnd?: string): { startDate: Date; endDate: Date; label: string } {
+  const now = new Date();
+
+  switch (range) {
+    case "last_month": {
+      const startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      return { startDate, endDate, label: "Last Month" };
+    }
+    case "this_quarter": {
+      const quarter = Math.floor(now.getMonth() / 3);
+      const startDate = new Date(now.getFullYear(), quarter * 3, 1);
+      const endDate = new Date(now.getFullYear(), quarter * 3 + 3, 0, 23, 59, 59, 999);
+      return { startDate, endDate, label: "This Quarter" };
+    }
+    case "this_year": {
+      const startDate = new Date(now.getFullYear(), 0, 1);
+      const endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+      return { startDate, endDate, label: "This Year" };
+    }
+    case "last_year": {
+      const startDate = new Date(now.getFullYear() - 1, 0, 1);
+      const endDate = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+      return { startDate, endDate, label: "Last Year" };
+    }
+    case "custom": {
+      if (customStart && customEnd) {
+        const startDate = new Date(customStart);
+        const endDate = new Date(customEnd);
+        endDate.setHours(23, 59, 59, 999);
+        return {
+          startDate,
+          endDate,
+          label: `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+        };
+      }
+      // Fall through to default if custom dates not provided
+    }
+    case "this_month":
+    default: {
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      return { startDate, endDate, label: "This Month" };
+    }
+  }
+}
+
+export default async function BillingAnalyticsPage({ searchParams }: PageProps) {
   const auth = await getAuthContext();
   if (!auth) {
     redirect("/sign-in");
@@ -26,58 +84,68 @@ export default async function BillingAnalyticsPage() {
     );
   }
 
-  // Get date ranges
+  // Get date range from params
+  const params = await searchParams;
+  const range = (params.range || "this_month") as DateRange;
+  const { startDate: selectedStart, endDate: selectedEnd, label: rangeLabel } = getDateRange(range, params.start, params.end);
+
+  // Get date ranges for comparison
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
   const thisYearStart = new Date(now.getFullYear(), 0, 1);
 
+  // Calculate comparison period (same duration before the selected range)
+  const rangeDuration = selectedEnd.getTime() - selectedStart.getTime();
+  const comparisonEnd = new Date(selectedStart.getTime() - 1);
+  const comparisonStart = new Date(comparisonEnd.getTime() - rangeDuration);
+
   // Fetch analytics data
   const [
-    thisMonthInvoiced,
-    lastMonthInvoiced,
-    thisMonthPaid,
-    lastMonthPaid,
+    selectedPeriodInvoiced,
+    comparisonPeriodInvoiced,
+    selectedPeriodPaid,
+    comparisonPeriodPaid,
     thisYearInvoiced,
     thisYearPaid,
     agingReport,
     topClients,
     monthlyRevenue,
   ] = await Promise.all([
-    // This month invoiced
+    // Selected period invoiced
     prisma.invoice.aggregate({
       where: {
         organizationId: organization.id,
-        issueDate: { gte: thisMonthStart },
+        issueDate: { gte: selectedStart, lte: selectedEnd },
       },
       _sum: { totalCents: true },
       _count: true,
     }),
-    // Last month invoiced
+    // Comparison period invoiced
     prisma.invoice.aggregate({
       where: {
         organizationId: organization.id,
-        issueDate: { gte: lastMonthStart, lt: thisMonthStart },
+        issueDate: { gte: comparisonStart, lte: comparisonEnd },
       },
       _sum: { totalCents: true },
       _count: true,
     }),
-    // This month paid
+    // Selected period paid
     prisma.payment.aggregate({
       where: {
         organizationId: organization.id,
-        createdAt: { gte: thisMonthStart },
+        createdAt: { gte: selectedStart, lte: selectedEnd },
         status: "paid",
       },
       _sum: { amountCents: true },
       _count: true,
     }),
-    // Last month paid
+    // Comparison period paid
     prisma.payment.aggregate({
       where: {
         organizationId: organization.id,
-        createdAt: { gte: lastMonthStart, lt: thisMonthStart },
+        createdAt: { gte: comparisonStart, lte: comparisonEnd },
         status: "paid",
       },
       _sum: { amountCents: true },
@@ -174,19 +242,19 @@ export default async function BillingAnalyticsPage() {
   const clientMap = new Map(clients.map((c) => [c.id, c]));
 
   // Calculate changes
-  const lastMonthInvoicedTotal = lastMonthInvoiced._sum?.totalCents ?? 0;
-  const thisMonthInvoicedTotal = thisMonthInvoiced._sum?.totalCents ?? 0;
-  const lastMonthPaidTotal = lastMonthPaid._sum?.amountCents ?? 0;
-  const thisMonthPaidTotal = thisMonthPaid._sum?.amountCents ?? 0;
+  const comparisonInvoicedTotal = comparisonPeriodInvoiced._sum?.totalCents ?? 0;
+  const selectedInvoicedTotal = selectedPeriodInvoiced._sum?.totalCents ?? 0;
+  const comparisonPaidTotal = comparisonPeriodPaid._sum?.amountCents ?? 0;
+  const selectedPaidTotal = selectedPeriodPaid._sum?.amountCents ?? 0;
 
   const invoicedChange =
-    lastMonthInvoicedTotal > 0
-      ? ((thisMonthInvoicedTotal - lastMonthInvoicedTotal) / lastMonthInvoicedTotal) * 100
+    comparisonInvoicedTotal > 0
+      ? ((selectedInvoicedTotal - comparisonInvoicedTotal) / comparisonInvoicedTotal) * 100
       : 0;
 
   const paidChange =
-    lastMonthPaidTotal > 0
-      ? ((thisMonthPaidTotal - lastMonthPaidTotal) / lastMonthPaidTotal) * 100
+    comparisonPaidTotal > 0
+      ? ((selectedPaidTotal - comparisonPaidTotal) / comparisonPaidTotal) * 100
       : 0;
 
   return (
@@ -206,12 +274,21 @@ export default async function BillingAnalyticsPage() {
         ]}
       />
 
-      {/* Monthly Stats */}
+      {/* Date Range Filter */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+        <DateRangeFilter
+          initialRange={range}
+          initialStartDate={params.start}
+          initialEndDate={params.end}
+        />
+      </div>
+
+      {/* Period Stats */}
       <div className="auto-grid grid-min-220 grid-gap-4">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-          <p className="text-sm font-medium text-foreground-muted">This Month Invoiced</p>
+          <p className="text-sm font-medium text-foreground-muted">{rangeLabel} Invoiced</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            {formatCurrency(thisMonthInvoicedTotal)}
+            {formatCurrency(selectedInvoicedTotal)}
           </p>
           <p className="mt-1 flex items-center gap-1 text-sm">
             <span
@@ -222,20 +299,20 @@ export default async function BillingAnalyticsPage() {
               {invoicedChange >= 0 ? "+" : ""}
               {invoicedChange.toFixed(1)}%
             </span>
-            <span className="text-foreground-muted">vs last month</span>
+            <span className="text-foreground-muted">vs prior period</span>
           </p>
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-          <p className="text-sm font-medium text-foreground-muted">This Month Collected</p>
+          <p className="text-sm font-medium text-foreground-muted">{rangeLabel} Collected</p>
           <p className="mt-2 text-2xl font-semibold text-[var(--success)]">
-            {formatCurrency(thisMonthPaidTotal)}
+            {formatCurrency(selectedPaidTotal)}
           </p>
           <p className="mt-1 flex items-center gap-1 text-sm">
             <span className={paidChange >= 0 ? "text-[var(--success)]" : "text-[var(--error)]"}>
               {paidChange >= 0 ? "+" : ""}
               {paidChange.toFixed(1)}%
             </span>
-            <span className="text-foreground-muted">vs last month</span>
+            <span className="text-foreground-muted">vs prior period</span>
           </p>
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
@@ -244,7 +321,7 @@ export default async function BillingAnalyticsPage() {
             {formatCurrency(thisYearInvoiced._sum?.totalCents ?? 0)}
           </p>
           <p className="mt-1 text-sm text-foreground-muted">
-            {thisMonthInvoiced._count ?? 0} invoices this month
+            {selectedPeriodInvoiced._count ?? 0} invoices in period
           </p>
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
@@ -253,7 +330,7 @@ export default async function BillingAnalyticsPage() {
             {formatCurrency(thisYearPaid._sum?.amountCents ?? 0)}
           </p>
           <p className="mt-1 text-sm text-foreground-muted">
-            {thisMonthPaid._count ?? 0} payments this month
+            {selectedPeriodPaid._count ?? 0} payments in period
           </p>
         </div>
       </div>

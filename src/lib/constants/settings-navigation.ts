@@ -54,7 +54,8 @@ export type SettingsIconName =
   | "camera"
   | "layers"
   | "code"
-  | "package";
+  | "package"
+  | "image";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -270,6 +271,13 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
         href: "/settings/features",
         iconName: "layers",
         description: "Module toggles and workflows",
+      },
+      {
+        id: "mls-presets",
+        label: "MLS Presets",
+        href: "/settings/mls-presets",
+        iconName: "image",
+        description: "Download dimension presets",
       },
     ],
   },
@@ -549,6 +557,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
         description: "Customize your workflow based on your focus",
         href: "/settings/features",
         iconName: "layers",
+      },
+      {
+        id: "mls-presets",
+        label: "MLS Presets",
+        description: "Configure image dimension presets for MLS downloads",
+        href: "/settings/mls-presets",
+        iconName: "image",
       },
     ],
   },

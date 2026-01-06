@@ -8,6 +8,191 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Leads Analytics Dashboard** - Comprehensive analytics for lead management
+  - **Route**: `/leads/analytics` - New analytics dashboard page
+  - **Summary Stats**: Total leads, conversion rate, average response time, new leads count
+  - **Month-over-month trend**: Percentage change from previous month with visual indicators
+  - **Conversion Funnel**: Visual funnel showing progression from New → Contacted → Qualified → Converted
+  - **Source Attribution**: Horizontal bar chart showing lead distribution by source (Portfolio, Chat, Booking)
+  - **Leads Over Time**: Stacked bar chart showing 6-month trend by source type
+  - **Status Distribution**: Color-coded bar showing current lead status breakdown
+  - **Recent Conversions**: List of recently converted leads with source and date
+  - **Navigation**: Added context nav to leads page linking to analytics
+  - **Loading State**: Skeleton loading animation for better perceived performance
+  - **Server Action**: `getLeadsAnalytics()` - Aggregates data from portfolio inquiries, chat inquiries, and booking submissions
+
+- **Extended Empty State Components** - Pre-configured empty states for common dashboard scenarios
+  - `EmptyLeads` - For leads page when no inquiries exist
+  - `EmptyInvoices` - For invoices page when no invoices exist
+  - `EmptyProjects` - For projects page when no projects exist
+  - `EmptyOrders` - For orders page when no orders exist
+  - `EmptyServices` - For services page when no services defined
+  - All include contextual icons, helpful descriptions, and action buttons
+
+- **Marketing Kit System** - Comprehensive marketing asset generation platform
+  - **Database Schema**
+    - Expanded `MarketingAssetType` enum with 30+ asset types across categories:
+      - Print Materials: flyers, postcards, feature sheets, brochures, yard signs, door hangers
+      - Social Media Static: square, landscape, Pinterest, LinkedIn, Twitter, story formats
+      - Social Tiles: Just Listed, Just Sold, Open House, Price Reduced, Coming Soon, Under Contract, Back on Market, New Price, Virtual Tour, Featured
+      - Video: slideshows, Reels, tour teasers, neighborhood videos, stats animations
+      - Email & Other: banners, templates, QR codes, virtual tour posters
+    - New `MarketingAssetVariant` enum: branded, unbranded (MLS-compliant), co_branded, photographer_only
+    - New `SocialTileStyle` enum: modern, classic, minimal, bold, elegant, playful
+    - New `AudioSource` enum: library, upload, ai_generated
+    - New `POICategory` enum with 21 point-of-interest categories
+    - New `MarketingKit` model for kit management with branding settings
+    - New `MarketingTemplate` model for reusable design templates
+    - New `AudioTrack` model for video soundtrack library
+    - New `NeighborhoodData` model for Walk Score, crime stats, school ratings
+    - New `PointOfInterest` model for nearby amenities with distance calculations
+    - Enhanced `MarketingAsset` model with editor state and customizations
+  - **Server Actions** (`marketing-kit.ts`):
+    - `createMarketingKit` - Create kit with auto-generation settings
+    - `getMarketingKit` / `getMarketingKitByPropertyWebsite` - Fetch kit data
+    - `updateMarketingKit` / `deleteMarketingKit` - Kit management
+    - `generateMarketingAssets` - Bulk asset generation with variants
+    - `regenerateAsset` - Single asset regeneration
+    - `getMarketingAssets` - List kit assets
+    - `updateMarketingAsset` - Save editor state changes
+    - `deleteMarketingAsset` - Remove assets
+    - `getMarketingTemplates` - Template library access
+    - `createTemplateFromAsset` - Save custom templates
+    - `getAudioTracks` - Audio library with genre/mood filters
+    - `purchaseMarketingKit` - Purchase flow support
+    - Asset dimension helpers for all 30+ asset types
+    - Asset name generation with variant labels
+
+- **Enhanced Neighborhood Section** - Interactive map with points of interest
+  - **Server Actions** (`neighborhood.ts`):
+    - `getNeighborhoodData` - Fetch or create neighborhood data
+    - `updateNeighborhoodScores` - Update Walk/Bike/Transit/Sound scores
+    - `updateCrimeData` - Update crime statistics
+    - `updateSchoolRatings` - Update nearby school ratings
+    - `addPointOfInterest` - Add single POI with all metadata
+    - `bulkAddPointsOfInterest` - Bulk import POIs
+    - `updatePointOfInterest` / `deletePointOfInterest` - POI management
+    - `clearAllPointsOfInterest` - Clear for re-import
+    - `fetchWalkScoreData` - Walk Score API integration
+    - `fetchNearbyPlaces` - Google Places API integration
+    - `getPOICategoryInfo` - Get icon/color/label for categories
+    - `getCrimeSafetyLabel` - Human-readable crime index labels
+    - Distance calculation helpers (Haversine formula)
+    - Google Places type to POI category mapping
+  - **UI Components**:
+    - `NeighborhoodConfig` - Section builder config panel with:
+      - Map settings (radius, style, zoom)
+      - POI category selection (17 toggleable categories)
+      - Display options (distances, driving/walking time, ratings, links)
+      - Score toggles (Walk, Bike, Transit, Crime, Schools)
+      - Marker style selection (emoji, dots, pins, minimal)
+      - Property marker customization
+      - Layout options (map-only, map-with-list, map-with-sidebar)
+    - `WalkScoreConfig` - Score display configuration with:
+      - Score toggles (Walk, Bike, Transit, Sound)
+      - Layout options (cards, badges, circles, bars)
+      - Size and label settings
+      - Attribution controls
+    - `NeighborhoodMap` - Public-facing interactive map component with:
+      - Score cards with progress bars
+      - Category filter pills with counts
+      - Grouped POI list with expandable details
+      - Click-to-expand POI cards showing ratings, hours, contact
+      - Get Directions links to Google Maps
+      - School ratings display
+      - Crime safety indicators
+      - Responsive layouts (map-only, map-with-list, map-with-sidebar)
+
+- **Canva-Style Design Editor** - Full-featured marketing asset editor
+  - **Core Editor** (`design-editor.tsx`):
+    - Three-panel layout: Elements palette, Canvas, Properties panel
+    - Canvas editing with drag-to-position elements
+    - Scale/zoom controls (25% to 150%)
+    - Multiple canvas presets (Instagram Post/Story, Facebook, YouTube, Flyer, Postcard)
+    - Layer management with reorder, visibility, and lock toggles
+    - Element types: Text, Placeholder, Image, Logo, Shape
+    - Properties panel with position, size, rotation controls
+    - Text styling: font family, size, weight, alignment, color
+    - Effects: opacity, border radius, background color
+    - Duplicate and delete element actions
+    - Save and export functionality (PNG, JPG, PDF)
+    - Accessibility: proper ARIA labels, form associations, keyboard support
+  - **Element Palette Categories**:
+    - Text: Heading, Subheading, Body, Caption presets
+    - Property Info: Address, Price, Bed/Bath, Sq Ft, Description placeholders
+    - Agent Info: Name, Phone, Email, Logo placeholders
+    - Shapes: Rectangle, Circle, Line, Divider
+    - Media: Property Photo, Upload Image
+  - **Design Templates** (`design-templates.ts`):
+    - Instagram Post - Just Listed template
+    - Instagram Story - Property Showcase template
+    - Facebook Post template
+    - Print Flyer (8.5x11) template
+    - Postcard (6x4) template
+    - Open House Sign template
+    - Template categories: Social Media, Print, Events
+    - Template by category and ID lookup utilities
+  - **Placeholder Auto-Fill**: Templates use `{{propertyData}}` syntax for auto-population
+
+- **Enhanced Portfolio Website Sections** - New configuration components for portfolio websites
+  - **Pricing Config** (`pricing-config.tsx`):
+    - Multiple pricing packages with features list
+    - Package details: name, price, description, price note
+    - Feature list management (add/remove/edit)
+    - "Popular" badge for recommended packages
+    - CTA button with customizable text and link
+    - Layout options: Cards, Table, Stacked
+    - "Starting at" prefix option
+  - **Stats Config** (`stats-config.tsx`):
+    - Social proof metrics display
+    - Stat items: value, label, prefix, suffix, icon
+    - Quick-add presets: Projects Completed, Years Experience, Client Satisfaction, etc.
+    - Layout options: Row, Grid, Cards, Compact Badges
+    - Number styles: Large, Animated Count-up, Gradient, Outlined
+    - Divider and icon toggle options
+    - Background styles: Transparent, Subtle, Dark, Gradient, Image
+  - **Process Config** (`process-config.tsx`):
+    - "How It Works" workflow display
+    - Process steps with title, description, icon, optional image
+    - Default steps template (Book, Photo Day, Editing, Delivery)
+    - Layout options: Timeline, Horizontal, Cards Grid, Numbered List, Alternating
+    - Step numbers, icons, and connector line toggles
+    - CTA button at section end
+    - Reset to defaults functionality
+
+- **Video Generator System** - Create property marketing videos with slideshow editor
+  - **Core Video Editor** (`video-generator.tsx`):
+    - Three-panel layout: Content panel, Preview/Timeline, Properties panel
+    - Multiple aspect ratios: 9:16 (Vertical), 16:9 (Landscape), 1:1 (Square), 4:5 (Portrait)
+    - Video presets: Instagram Reel, Instagram Story, YouTube Short, Facebook Video, TikTok, Square Social
+    - Slide types: Image, Title, Text
+    - Timeline with drag-to-reorder slides
+    - Playback controls with scrubber
+    - Save draft and export functionality
+  - **Slide Features**:
+    - Duration control (1-30 seconds per slide)
+    - Transitions: None, Fade, Slide Left/Right/Up, Zoom, Blur, Wipe
+    - Ken Burns effects with direction control (zoom-in/out, pan directions)
+    - Ken Burns intensity slider (1-10)
+  - **Text Overlay System**:
+    - Position options: Top, Center, Bottom
+    - Text styles: Minimal, Bold, Elegant, Modern
+    - Animations: None, Fade In, Slide Up, Slide Left, Typewriter
+    - Custom color and background color
+  - **Audio System**:
+    - Background music track selection
+    - Volume control (0-100%)
+    - Fade in/out options
+    - Sample tracks with genre/mood categorization
+  - **Branding Options**:
+    - Logo overlay with position control (4 corners)
+    - Primary and secondary color customization
+    - Optional watermark
+  - **Auto-Generation**:
+    - Generate from presets (Instagram Reel, Story, etc.)
+    - Auto-populate from property data (address, price, photos, bed/bath)
+    - Quick-add property placeholders
+
 - **Property Website Builder Enhancement** - Section-based drag-and-drop builder for property websites (like portfolio websites)
   - **Database Schema Updates**
     - New `PropertySectionType` enum with 25 section types across 6 categories (property, location, contact, marketing, tools, freeform)
@@ -103,6 +288,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Changed search inputs to `type="search"` for better semantics
     - Moved status style constants outside component to prevent recreation on each render
     - Used `useRef` for stable date reference to optimize useMemo dependency
+  - **Pagination** - Client-side pagination for large datasets
+    - Estimates list: Configurable page size (10, 25, 50, 100 items per page)
+    - Credit notes list: Same pagination controls with first/prev/next/last navigation
+    - Page resets to 1 when filters or search changes
+    - Accessible pagination nav with ARIA labels
+  - **Enhanced Credit Notes** - Full sorting, filtering, and bulk actions
+    - Sortable columns (number, client, status, amount, available amount)
+    - Status filter tabs with counts (All, Draft, Issued, Applied, Refunded, Voided)
+    - Bulk void functionality for issued credit notes
+    - Client links in table rows
+  - **CSV Export** - Download filtered data as spreadsheets
+    - Estimates: Export all filtered estimates with number, title, client, email, status, amount, dates
+    - Credit Notes: Export filtered credit notes with number, client, invoice, status, amounts
+    - Export respects current filters and search query
+    - Proper CSV escaping for special characters
 
 - **Client Portal Theme Toggle** - Light/dark mode support for the client portal
   - Theme toggle button in portal header with Sun/Moon icons
@@ -156,13 +356,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `resizeForMls` - Core resizing function with quality/size optimization
     - Progressive quality reduction to meet file size limits
     - Format conversion (JPEG, PNG, WebP)
+- **MLS Presets Settings UI** - Settings page for managing download dimension presets
+  - **Settings Page** (`/settings/mls-presets`) - Full preset management interface
+    - Presets grouped by provider (HAR, Zillow, Realtor.com, NWMLS, Social, Web, Print, etc.)
+    - Filter presets by provider with pill buttons
+    - Visual preset cards showing dimensions, format, quality, max file size
+    - System preset badges for built-in presets
+    - Option tags for maintain aspect ratio and letterboxing
+  - **Create/Edit Modal** - Full-featured preset configuration
+    - Name and provider fields with provider autocomplete
+    - Dimension inputs (width, height)
+    - Format selector (JPEG, PNG, WebP)
+    - Quality slider with visual feedback
+    - Max file size limit input
+    - Maintain aspect ratio toggle
+    - Letterbox toggle with color picker
+  - **Seed Presets** - One-click loading of 17 default system presets
+  - **Settings Navigation** - Added MLS Presets to workflow settings category
 - **AI Features Roadmap** - Documented future AI features in README for future implementation
   - AI Photo Editing Module (blur detection, duplicate detection, HDR, exposure analysis)
   - AI Content Generation (captions, property descriptions, SEO tags)
   - AI Business Intelligence (smart pricing, demand forecasting, churn prediction)
   - AI Automation (smart scheduling, auto-culling, intelligent delivery)
-  - Video Features (auto generation, music sync, social clips)
-- **Square Footage Pricing for Services** - Tiered and per-sqft pricing for real estate photography services
+- **Square Footage Pricing UI** - Services can now use flexible pricing models based on property size
+  - **Pricing Method Selector** - Three pricing models:
+    - **Fixed Price** - Single flat rate regardless of property size
+    - **Per Square Foot** - Price calculated based on property square footage
+    - **Tiered Pricing** - BICEP-style pricing with defined ranges (e.g., "Small Home 0-2000 sqft = $200")
+  - **Per Sqft Configuration**:
+    - Price per square foot input
+    - Minimum/maximum sqft bounds for pricing calculations
+    - Rounding increments (100, 250, 500, 1000 sqft)
+    - Live price calculator preview showing example prices
+  - **Tiered Pricing Management**:
+    - Add/edit/delete pricing tiers modal
+    - Tier name, sqft range, and price configuration
+    - Automatic sorting by sqft range
+    - Visual tier list with edit/delete actions
+  - **Form Validation** - Ensures pricing data is valid before submission
+  - **Service Detail Page** - Updated to load and pass pricing data to form
+- **Square Footage Pricing Backend** - Tiered and per-sqft pricing for real estate photography services
   - **Database Schema** - New `ServicePricingTier` model and `ServicePricingMethod` enum
   - **Three Pricing Methods**:
     - `fixed` - Traditional flat rate pricing (default)
@@ -214,6 +447,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Low balance alert threshold configuration
     - Actions: Add deposit, apply to invoice, process refund, deactivate
     - Transaction type badges (deposit, usage, refund, adjustment)
+    - **Table/Grid view toggle** - Switch between card grid and sortable table layouts
+    - **Sorting** - Sort by client name, balance, deposited, used, or date (asc/desc)
+    - **Pagination** - Configurable page sizes (10/25/50/100) with full navigation controls
+    - **CSV export** - Download filtered retainers with all account details
+  - **Billing Analytics Date Range Filters**
+    - Preset date range options: This Month, Last Month, This Quarter, This Year, Last Year
+    - Custom date range picker with start/end date inputs
+    - Dynamic period comparison (vs prior period of same duration)
+    - URL-based state for shareable/bookmarkable filtered views
   - **Tax Reports**
     - CSV export with monthly breakdown, summary, and tax by client
     - PDF export with print-ready formatting

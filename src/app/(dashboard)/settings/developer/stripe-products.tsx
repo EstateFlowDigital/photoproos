@@ -141,6 +141,11 @@ export function StripeProductsSection({
           .map((d) => d.trim())
           .filter(Boolean),
         isActive: true,
+        pricingMethod: "fixed",
+        pricePerSqftCents: null,
+        minSqft: null,
+        maxSqft: null,
+        sqftIncrements: 500,
       });
 
       if (result.success) {

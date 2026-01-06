@@ -137,17 +137,22 @@ export function DashboardSidebar({
         icon: Settings,
         category: "admin",
       },
+    ],
+    []
+  );
+
+  const topItems = React.useMemo<NavItem[]>(() => {
+    if (notificationCount <= 0) return [];
+    return [
       {
         id: "notifications",
         label: "Notifications",
         href: "/notifications",
         icon: Bell,
-        category: "admin",
         badge: notificationCount,
       },
-    ],
-    [notificationCount]
-  );
+    ];
+  }, [notificationCount]);
 
   const groupedItems = React.useMemo(() => {
     const groups: Record<string, NavItem[]> = {
@@ -246,6 +251,50 @@ export function DashboardSidebar({
         }}
       >
         <div className="space-y-5">
+          {topItems.length > 0 ? (
+            <div className="space-y-2">
+              {topItems.map((item) => {
+                const isActive = isActivePath(item.href);
+                const Icon = item.icon;
+                const badgeClassName =
+                  item.id === "notifications"
+                    ? "bg-red-500 text-white"
+                    : "bg-[var(--primary)]/15 text-[var(--primary)]";
+
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    onClick={onClose}
+                    className={cn(
+                      "sidebar-item-link group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors justify-start",
+                      isActive
+                        ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                        : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "h-5 w-5 shrink-0",
+                        isActive ? "text-[var(--primary)]" : "text-foreground-muted"
+                      )}
+                    />
+                    <span className="sidebar-label flex-1 truncate">
+                      {item.label}
+                    </span>
+                    <span
+                      className={cn(
+                        "sidebar-badge ml-auto rounded-full px-2 py-0.5 text-xs font-semibold",
+                        badgeClassName
+                      )}
+                    >
+                      {item.badge && item.badge > 99 ? "99+" : item.badge}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
           {SECTION_LABELS.map((section) => {
             const items = groupedItems[section.id] || [];
             if (!items.length) return null;

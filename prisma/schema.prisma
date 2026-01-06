@@ -97,6 +97,7 @@ enum ActivityType {
   order_created
   order_paid
   selections_submitted
+  message_sent
 }
 
 enum NotificationType {
@@ -128,6 +129,8 @@ enum NotificationType {
   // Referrals
   referral_signup
   referral_conversion
+  // Messages
+  message_received
   // System
   system
 }
@@ -213,13 +216,114 @@ enum LeadStatus {
 }
 
 enum MarketingAssetType {
+  // Print Materials
   flyer_portrait
   flyer_landscape
-  social_square
-  social_story
-  postcard
+  postcard_4x6
+  postcard_5x7
+  feature_sheet
+  brochure
+  window_sign
+  yard_sign_rider
+  door_hanger
+
+  // Social Media - Static
+  social_square // Instagram/Facebook (1080x1080)
+  social_landscape // Facebook/LinkedIn (1200x630)
+  social_pinterest // Pinterest (1000x1500)
+  social_linkedin // LinkedIn (1200x627)
+  social_twitter // Twitter/X (1600x900)
+  social_story // Instagram/FB Story (1080x1920)
+
+  // Social Media - Variants
+  tile_just_listed
+  tile_just_sold
+  tile_open_house
+  tile_price_reduced
+  tile_coming_soon
+  tile_under_contract
+  tile_back_on_market
+  tile_new_price
+  tile_virtual_tour
+  tile_featured
+
+  // Video
+  video_slideshow // Photo slideshow with music
+  video_reel // Instagram Reel format
+  video_tour_teaser // Virtual tour highlights
+  video_neighborhood // Neighborhood flyover
+  video_stats_animation // Animated property stats
+
+  // Email
   email_banner
-  video_slideshow
+  email_template
+
+  // Other
+  qr_code
+  virtual_tour_poster
+}
+
+enum MarketingAssetVariant {
+  branded // With agent/brokerage branding
+  unbranded // MLS-compliant, no branding
+  co_branded // Photographer + agent branding
+  photographer_only // Just photographer branding
+}
+
+enum SocialTileStyle {
+  modern
+  classic
+  luxury
+  minimal
+  bold
+  elegant
+}
+
+enum AudioSource {
+  library // Royalty-free library
+  uploaded // Client uploaded
+  ai_generated // AI generated music
+}
+
+enum POICategory {
+  school_elementary
+  school_middle
+  school_high
+  school_private
+  university
+  shopping_mall
+  shopping_grocery
+  shopping_retail
+  restaurant
+  cafe
+  bar
+  park
+  playground
+  gym_fitness
+  hospital
+  pharmacy
+  police
+  fire_station
+  transit_bus
+  transit_train
+  transit_subway
+  airport
+  beach
+  golf_course
+  church
+  mosque
+  synagogue
+  temple
+  library
+  museum
+  theater
+  cinema
+  entertainment
+  bank
+  post_office
+  gas_station
+  ev_charging
+  other
 }
 
 enum WatermarkPosition {
@@ -511,6 +615,11 @@ enum GalleryAddonRequestStatus {
   cancelled // Cancelled
 }
 
+enum MessageVisibility {
+  internal // Only visible to team members
+  client // Visible to client and team
+}
+
 // ============================================================================
 // CORE MODELS
 // ============================================================================
@@ -741,6 +850,12 @@ model Organization {
   galleryAddons        GalleryAddon[]
   galleryAddonRequests GalleryAddonRequest[]
   mlsPresets           MlsPreset[]
+  projectMessages      ProjectMessage[]
+
+  // Marketing Kit & Assets
+  marketingKits      MarketingKit[]
+  marketingTemplates MarketingTemplate[]
+  audioTracks        AudioTrack[]
 
   @@index([slug])
   @@index([plan])
@@ -1147,6 +1262,9 @@ model Project {
   // Phase 2: Client Questionnaire System
   questionnaires       ClientQuestionnaire[]
   galleryAddonRequests GalleryAddonRequest[]
+
+  // Project Chat
+  messages ProjectMessage[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -2754,13 +2872,15 @@ model PropertyWebsite {
   publishedAt DateTime?
 
   // Relations
-  project         Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sections        PropertyWebsiteSection[]
-  analytics       PropertyAnalytics[]
-  marketingAssets MarketingAsset[]
-  leads           PropertyLead[]
-  tasks           Task[]
-  views           PropertyWebsiteView[]
+  project          Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sections         PropertyWebsiteSection[]
+  analytics        PropertyAnalytics[]
+  marketingAssets  MarketingAsset[]
+  leads            PropertyLead[]
+  tasks            Task[]
+  views            PropertyWebsiteView[]
+  marketingKit     MarketingKit?
+  neighborhoodData NeighborhoodData?
 
   @@index([slug])
   @@index([isPublished])
@@ -2944,26 +3064,291 @@ model PropertyLead {
 }
 
 model MarketingAsset {
-  id                String @id @default(cuid())
-  propertyWebsiteId String
+  id                String  @id @default(cuid())
+  propertyWebsiteId String?
+  marketingKitId    String?
 
   // Asset info
   type         MarketingAssetType
+  variant      MarketingAssetVariant @default(branded)
   name         String
+  description  String?
   fileUrl      String
   thumbnailUrl String?
+  fileSize     Int? // in bytes
+  mimeType     String?
+  dimensions   Json? // { width, height } for images/videos
+  duration     Int? // seconds for videos
 
   // Generation metadata
-  templateUsed String?
-  settings     Json? // Custom settings used to generate
+  templateId      String?
+  templateUsed    String?
+  settings        Json? // Custom settings used to generate
+  isAutoGenerated Boolean @default(false)
+  isEdited        Boolean @default(false) // Has been edited in Canva-style editor
+  editData        Json? // Saved editor state for re-editing
+
+  // Video-specific
+  audioTrackId String?
+
+  // Status
+  status String @default("ready") // generating, ready, failed
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  propertyWebsite PropertyWebsite?     @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+  marketingKit    MarketingKit?        @relation(fields: [marketingKitId], references: [id], onDelete: Cascade)
+  audioTrack      AudioTrack?          @relation(fields: [audioTrackId], references: [id])
+  template        MarketingTemplate?   @relation(fields: [templateId], references: [id])
+  variants        MarketingAssetFile[]
+
+  @@index([propertyWebsiteId])
+  @@index([marketingKitId])
+  @@index([type])
+  @@index([variant])
+}
+
+// Multiple file variants for an asset (branded, unbranded, etc.)
+model MarketingAssetFile {
+  id               String @id @default(cuid())
+  marketingAssetId String
+
+  variant      MarketingAssetVariant
+  fileUrl      String
+  thumbnailUrl String?
+  fileSize     Int?
 
   createdAt DateTime @default(now())
 
   // Relations
-  propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+  marketingAsset MarketingAsset @relation(fields: [marketingAssetId], references: [id], onDelete: Cascade)
 
+  @@unique([marketingAssetId, variant])
+  @@index([marketingAssetId])
+}
+
+// ============================================================================
+// MARKETING KIT
+// ============================================================================
+
+model MarketingKit {
+  id                String  @id @default(cuid())
+  propertyWebsiteId String? @unique
+  organizationId    String
+
+  // Kit info
+  name        String
+  description String?
+  style       SocialTileStyle @default(modern)
+
+  // Pricing & Purchase
+  isPurchased    Boolean   @default(false)
+  purchasedAt    DateTime?
+  pricePaidCents Int?
+  purchaseType   String? // "bundled", "separate", "subscription", "credits"
+
+  // Auto-generation settings
+  autoGenerateOnCreate Boolean  @default(true)
+  autoGenerateTypes    String[] // Which asset types to auto-generate
+
+  // Branding settings
+  includeBranded   Boolean @default(true)
+  includeUnbranded Boolean @default(true) // MLS-compliant - MANDATORY
+  includeCoBranded Boolean @default(false)
+
+  // Agent/Brokerage branding info
+  agentName        String?
+  agentTitle       String?
+  agentPhone       String?
+  agentEmail       String?
+  agentPhotoUrl    String?
+  agentLicenseNo   String?
+  brokerageName    String?
+  brokerageLogo    String?
+  brokeragePhone   String?
+  brokerageAddress String?
+
+  // Custom colors (overrides template)
+  primaryColor   String?
+  secondaryColor String?
+  accentColor    String?
+
+  // Custom fonts
+  headingFont String?
+  bodyFont    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  propertyWebsite PropertyWebsite? @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assets          MarketingAsset[]
+
+  @@index([organizationId])
   @@index([propertyWebsiteId])
+}
+
+// Reusable marketing templates
+model MarketingTemplate {
+  id             String  @id @default(cuid())
+  organizationId String? // null = system template
+
+  // Template info
+  name         String
+  description  String?
+  type         MarketingAssetType
+  style        SocialTileStyle    @default(modern)
+  thumbnailUrl String?
+
+  // Template definition
+  canvasWidth  Int
+  canvasHeight Int
+  templateData Json // Full editor state/layers
+
+  // Categorization
+  category String? // "social", "print", "video", "email"
+  tags     String[]
+  isSystem Boolean  @default(false) // Built-in template
+  isPublic Boolean  @default(false) // Available to all orgs
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assets       MarketingAsset[]
+
+  @@index([organizationId])
   @@index([type])
+  @@index([style])
+  @@index([isSystem])
+}
+
+// ============================================================================
+// AUDIO LIBRARY
+// ============================================================================
+
+model AudioTrack {
+  id             String  @id @default(cuid())
+  organizationId String? // null = system library
+
+  // Track info
+  name        String
+  description String?
+  fileUrl     String
+  duration    Int // seconds
+  waveformUrl String? // Visual waveform image
+
+  // Metadata
+  source     AudioSource @default(library)
+  genre      String?
+  mood       String? // "upbeat", "calm", "dramatic", etc.
+  tempo      Int? // BPM
+  isLoopable Boolean     @default(false)
+
+  // Licensing
+  licenseType String? // "royalty_free", "creative_commons", "custom"
+  licenseUrl  String?
+  attribution String?
+
+  // Categorization
+  tags     String[]
+  isSystem Boolean  @default(false)
+  isPublic Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  organization Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assets       MarketingAsset[]
+
+  @@index([organizationId])
+  @@index([source])
+  @@index([genre])
+  @@index([mood])
+}
+
+// ============================================================================
+// NEIGHBORHOOD & POINTS OF INTEREST
+// ============================================================================
+
+model NeighborhoodData {
+  id                String @id @default(cuid())
+  propertyWebsiteId String @unique
+
+  // Scores (from Walk Score API or manual)
+  walkScore    Int?
+  bikeScore    Int?
+  transitScore Int?
+  soundScore   Int? // Noise level score
+
+  // Crime data
+  crimeIndex       Float? // Relative crime index
+  crimeDataSource  String?
+  crimeLastUpdated DateTime?
+
+  // School ratings
+  nearestElementaryRating Float?
+  nearestMiddleRating     Float?
+  nearestHighRating       Float?
+
+  // Cached at
+  lastFetched DateTime @default(now())
+
+  // Relations
+  propertyWebsite  PropertyWebsite   @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)
+  pointsOfInterest PointOfInterest[]
+}
+
+model PointOfInterest {
+  id                 String @id @default(cuid())
+  neighborhoodDataId String
+
+  // POI info
+  name        String
+  category    POICategory
+  subcategory String?
+
+  // Location
+  latitude  Float
+  longitude Float
+  address   String?
+
+  // Distance from property
+  distanceMiles Float
+  drivingMins   Int?
+  walkingMins   Int?
+  transitMins   Int?
+
+  // Additional info
+  rating      Float? // Google/Yelp rating
+  reviewCount Int?
+  priceLevel  Int? // 1-4 for restaurants
+  website     String?
+  phone       String?
+  photoUrl    String?
+
+  // School-specific
+  schoolGrades String? // "K-5", "6-8", etc.
+  schoolType   String? // "public", "private", "charter"
+  schoolRating Float? // GreatSchools rating
+  studentCount Int?
+
+  // Business hours
+  hoursJson Json? // { monday: "9am-5pm", ... }
+  isOpenNow Boolean?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  neighborhoodData NeighborhoodData @relation(fields: [neighborhoodDataId], references: [id], onDelete: Cascade)
+
+  @@index([neighborhoodDataId])
+  @@index([category])
+  @@index([distanceMiles])
 }
 
 // ============================================================================
@@ -6894,4 +7279,59 @@ model GalleryAddonRequest {
   @@index([addonId])
   @@index([clientId])
   @@index([status])
+}
+
+// ============================================================================
+// PROJECT CHAT / MESSAGING
+// ============================================================================
+
+// Messages for project-based communication
+model ProjectMessage {
+  id             String @id @default(cuid())
+  organizationId String
+  projectId      String
+
+  // Sender info - can be team member or client
+  senderType   String // "team" or "client"
+  senderUserId String? // Clerk user ID for team members
+  senderName   String // Display name
+  senderEmail  String? // Email (for clients without user ID)
+  senderAvatar String? // Avatar URL
+
+  // Message content
+  content String @db.Text
+
+  // Visibility toggle - internal (team only) or client (visible to all)
+  visibility MessageVisibility @default(client)
+
+  // Attachments (stored as JSON array of { filename, url, size, type })
+  attachments Json?
+
+  // Read receipts
+  readBy String[] // Array of user IDs who have read this message
+  readAt DateTime? // When client read (for client messages)
+
+  // Threading (optional - for replies)
+  parentId String? // Parent message ID for threading
+
+  // Status
+  isEdited  Boolean   @default(false)
+  editedAt  DateTime?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent       ProjectMessage?  @relation("MessageReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies      ProjectMessage[] @relation("MessageReplies")
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([visibility])
+  @@index([createdAt])
+  @@index([parentId])
 }

@@ -410,6 +410,7 @@ src/lib/actions/
 | Route | File Path | Client Component | Description |
 |-------|-----------|------------------|-------------|
 | `/leads` | `src/app/(dashboard)/leads/page.tsx` | `src/app/(dashboard)/leads/leads-page-client.tsx` | Leads management |
+| `/leads/analytics` | `src/app/(dashboard)/leads/analytics/page.tsx` | `src/app/(dashboard)/leads/analytics/leads-analytics-client.tsx` | Leads analytics dashboard |
 | `/brokerages` | `src/app/(dashboard)/brokerages/page.tsx` | - | Brokerages list |
 | `/brokerages/new` | `src/app/(dashboard)/brokerages/new/page.tsx` | - | Create brokerage |
 | `/brokerages/[id]` | `src/app/(dashboard)/brokerages/[id]/page.tsx` | - | Brokerage detail |
@@ -419,6 +420,7 @@ src/lib/actions/
 ```
 src/lib/actions/
 ├── leads.ts                       → Lead management
+├── leads-analytics.ts             → Leads analytics aggregation
 ├── brokerages.ts                  → Brokerage CRUD
 └── portfolio-websites.ts          → Portfolio inquiries
 ```

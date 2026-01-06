@@ -105,7 +105,7 @@ export interface SetPresetOverrideInput {
 // These are the app-level defaults that all organizations inherit
 // ============================================================================
 
-export const SYSTEM_MLS_PRESETS: CreateMlsPresetInput[] = [
+const SYSTEM_MLS_PRESETS: CreateMlsPresetInput[] = [
   // HAR (Houston Association of Realtors)
   {
     name: "HAR Standard",

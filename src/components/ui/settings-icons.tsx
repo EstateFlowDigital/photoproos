@@ -52,6 +52,7 @@ export {
   SettingsIcon,
   SparklesIcon,
   PackageIcon,
+  ImageIcon,
   // UI Icons
   EyeIcon,
   EyeOffIcon,

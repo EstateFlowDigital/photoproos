@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,26 @@ import { deleteEstimate, sendEstimate } from "@/lib/actions/estimates";
 type SortField = "createdAt" | "estimateNumber" | "client" | "totalCents" | "status" | "validUntil";
 type SortOrder = "asc" | "desc";
 type StatusFilter = "all" | "draft" | "sent" | "approved" | "rejected" | "expired" | "converted";
+
+const STATUS_STYLES: Record<string, string> = {
+  draft: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]",
+  sent: "bg-[var(--primary)]/10 text-[var(--primary)]",
+  viewed: "bg-[var(--ai)]/10 text-[var(--ai)]",
+  approved: "bg-[var(--success)]/10 text-[var(--success)]",
+  rejected: "bg-[var(--error)]/10 text-[var(--error)]",
+  expired: "bg-[var(--warning)]/10 text-[var(--warning)]",
+  converted: "bg-[var(--success)]/10 text-[var(--success)]",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  sent: "Sent",
+  viewed: "Viewed",
+  approved: "Approved",
+  rejected: "Rejected",
+  expired: "Expired",
+  converted: "Converted",
+};
 
 interface Estimate {
   id: string;
@@ -47,6 +67,8 @@ interface EstimatesListClientProps {
   stats: Stats;
 }
 
+const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
+
 export function EstimatesListClient({ estimates, stats }: EstimatesListClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,8 +78,12 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
-  const now = new Date();
+  // Use ref for now to avoid recreation on each render
+  const nowRef = useRef(new Date());
+  const now = nowRef.current;
 
   const filteredAndSorted = useMemo(() => {
     let result = [...estimates];
@@ -118,6 +144,29 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
     return result;
   }, [estimates, searchQuery, statusFilter, sortField, sortOrder, now]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAndSorted.length / itemsPerPage);
+  const paginatedResults = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredAndSorted.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredAndSorted, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (filter: StatusFilter) => {
+    setStatusFilter(filter);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (count: number) => {
+    setItemsPerPage(count);
+    setCurrentPage(1);
+  };
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -128,10 +177,10 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
   };
 
   const handleSelectAll = () => {
-    if (selectedIds.size === filteredAndSorted.length) {
+    if (selectedIds.size === paginatedResults.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredAndSorted.map((e) => e.id)));
+      setSelectedIds(new Set(paginatedResults.map((e) => e.id)));
     }
   };
 
@@ -175,33 +224,46 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
     setIsBulkLoading(false);
   };
 
+  const handleExportCSV = () => {
+    const headers = ["Estimate Number", "Title", "Client", "Email", "Status", "Amount", "Valid Until", "Created"];
+    const rows = filteredAndSorted.map((e) => {
+      const isExpired = e.validUntil < now && !["approved", "rejected", "converted"].includes(e.status);
+      const status = isExpired ? "Expired" : STATUS_LABELS[e.status] || e.status;
+      return [
+        e.estimateNumber,
+        e.title || "",
+        e.client?.fullName || e.client?.company || e.clientName || "",
+        e.client?.email || "",
+        status,
+        (e.totalCents / 100).toFixed(2),
+        new Date(e.validUntil).toLocaleDateString(),
+        new Date(e.createdAt).toLocaleDateString(),
+      ];
+    });
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `estimates-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const getStatusBadge = (estimate: Estimate) => {
     const isExpired = estimate.validUntil < now && !["approved", "rejected", "converted"].includes(estimate.status);
     const status = isExpired ? "expired" : estimate.status;
 
-    const styles: Record<string, string> = {
-      draft: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]",
-      sent: "bg-[var(--primary)]/10 text-[var(--primary)]",
-      viewed: "bg-[var(--ai)]/10 text-[var(--ai)]",
-      approved: "bg-[var(--success)]/10 text-[var(--success)]",
-      rejected: "bg-[var(--error)]/10 text-[var(--error)]",
-      expired: "bg-[var(--warning)]/10 text-[var(--warning)]",
-      converted: "bg-[var(--success)]/10 text-[var(--success)]",
-    };
-
-    const labels: Record<string, string> = {
-      draft: "Draft",
-      sent: "Sent",
-      viewed: "Viewed",
-      approved: "Approved",
-      rejected: "Rejected",
-      expired: "Expired",
-      converted: "Converted",
-    };
-
     return (
-      <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", styles[status])}>
-        {labels[status] || status}
+      <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_STYLES[status])}>
+        {STATUS_LABELS[status] || status}
       </span>
     );
   };
@@ -249,11 +311,14 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
   return (
     <div className="space-y-4">
       {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter estimates by status">
         {filterTabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setStatusFilter(tab.key)}
+            role="tab"
+            aria-selected={statusFilter === tab.key}
+            aria-controls="estimates-table"
+            onClick={() => handleFilterChange(tab.key)}
             className={cn(
               "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
               statusFilter === tab.key
@@ -270,103 +335,122 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
       {/* Search and Bulk Actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" aria-hidden="true" />
           <input
-            type="text"
+            type="search"
             placeholder="Search estimates..."
+            aria-label="Search estimates"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
           />
         </div>
 
-        {selectedIds.size > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-foreground-muted">{selectedIds.size} selected</span>
-            <button
-              onClick={handleBulkDelete}
-              disabled={isBulkLoading}
-              className="rounded-lg bg-[var(--error)] px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
-            >
-              {isBulkLoading ? "Deleting..." : "Delete Selected"}
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <span className="text-sm text-foreground-muted">{selectedIds.size} selected</span>
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkLoading}
+                className="rounded-lg bg-[var(--error)] px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+              >
+                {isBulkLoading ? "Deleting..." : "Delete Selected"}
+              </button>
+            </>
+          )}
+          <button
+            onClick={handleExportCSV}
+            className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+            aria-label="Export to CSV"
+          >
+            <span className="flex items-center gap-1.5">
+              <DownloadIcon className="h-4 w-4" />
+              Export
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+      <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]" id="estimates-table" role="tabpanel">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full" aria-label="Estimates list">
             <thead>
               <tr className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
-                <th className="w-10 px-4 py-3">
+                <th scope="col" className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
-                    checked={selectedIds.size === filteredAndSorted.length && filteredAndSorted.length > 0}
+                    aria-label="Select all estimates"
+                    checked={selectedIds.size === paginatedResults.length && paginatedResults.length > 0}
                     onChange={handleSelectAll}
                     className="rounded border-[var(--card-border)]"
                   />
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th scope="col" className="px-4 py-3 text-left">
                   <button
                     onClick={() => handleSort("estimateNumber")}
+                    aria-label={`Sort by estimate number, currently ${sortField === "estimateNumber" ? sortOrder : "unsorted"}`}
                     className="flex items-center text-xs font-medium uppercase tracking-wide text-foreground-muted hover:text-foreground"
                   >
                     Estimate
                     <SortIcon field="estimateNumber" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th scope="col" className="px-4 py-3 text-left">
                   <button
                     onClick={() => handleSort("client")}
+                    aria-label={`Sort by client, currently ${sortField === "client" ? sortOrder : "unsorted"}`}
                     className="flex items-center text-xs font-medium uppercase tracking-wide text-foreground-muted hover:text-foreground"
                   >
                     Client
                     <SortIcon field="client" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th scope="col" className="px-4 py-3 text-left">
                   <button
                     onClick={() => handleSort("status")}
+                    aria-label={`Sort by status, currently ${sortField === "status" ? sortOrder : "unsorted"}`}
                     className="flex items-center text-xs font-medium uppercase tracking-wide text-foreground-muted hover:text-foreground"
                   >
                     Status
                     <SortIcon field="status" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th scope="col" className="px-4 py-3 text-left">
                   <button
                     onClick={() => handleSort("totalCents")}
+                    aria-label={`Sort by amount, currently ${sortField === "totalCents" ? sortOrder : "unsorted"}`}
                     className="flex items-center text-xs font-medium uppercase tracking-wide text-foreground-muted hover:text-foreground"
                   >
                     Amount
                     <SortIcon field="totalCents" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th scope="col" className="px-4 py-3 text-left">
                   <button
                     onClick={() => handleSort("validUntil")}
+                    aria-label={`Sort by valid until date, currently ${sortField === "validUntil" ? sortOrder : "unsorted"}`}
                     className="flex items-center text-xs font-medium uppercase tracking-wide text-foreground-muted hover:text-foreground"
                   >
                     Valid Until
                     <SortIcon field="validUntil" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-foreground-muted">
+                <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--card-border)]">
-              {filteredAndSorted.length === 0 ? (
+              {paginatedResults.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-foreground-muted">
                     No estimates match your filters
                   </td>
                 </tr>
               ) : (
-                filteredAndSorted.map((estimate) => (
+                paginatedResults.map((estimate) => (
                   <tr
                     key={estimate.id}
                     className={cn(
@@ -377,6 +461,7 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
+                        aria-label={`Select estimate ${estimate.estimateNumber}`}
                         checked={selectedIds.has(estimate.id)}
                         onChange={() => handleSelect(estimate.id)}
                         className="rounded border-[var(--card-border)]"
@@ -453,26 +538,27 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
                             <Link
                               href={`/billing/estimates/${estimate.id}/edit`}
                               className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
+                              aria-label={`Edit estimate ${estimate.estimateNumber}`}
                             >
-                              <EditIcon className="h-4 w-4" />
+                              <EditIcon className="h-4 w-4" aria-hidden="true" />
                             </Link>
                           </>
                         )}
                         <Link
                           href={`/billing/estimates/new?duplicate=${estimate.id}`}
                           className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
-                          title="Duplicate"
+                          aria-label={`Duplicate estimate ${estimate.estimateNumber}`}
                         >
-                          <CopyIcon className="h-4 w-4" />
+                          <CopyIcon className="h-4 w-4" aria-hidden="true" />
                         </Link>
                         {estimate.status === "draft" && (
                           <button
                             onClick={() => handleDelete(estimate.id)}
                             disabled={isLoading === estimate.id}
                             className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)] disabled:opacity-50"
-                            title="Delete"
+                            aria-label={`Delete estimate ${estimate.estimateNumber}`}
                           >
-                            <TrashIcon className="h-4 w-4" />
+                            <TrashIcon className="h-4 w-4" aria-hidden="true" />
                           </button>
                         )}
                       </div>
@@ -485,10 +571,76 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
         </div>
       </div>
 
-      {/* Results summary */}
-      <p className="text-sm text-foreground-muted">
-        Showing {filteredAndSorted.length} of {estimates.length} estimates
-      </p>
+      {/* Pagination Controls */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-foreground-muted" aria-live="polite" aria-atomic="true">
+          Showing {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, filteredAndSorted.length)} of {filteredAndSorted.length} estimates
+        </p>
+
+        <div className="flex items-center gap-4">
+          {/* Items per page selector */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="items-per-page" className="text-sm text-foreground-muted">
+              Per page:
+            </label>
+            <select
+              id="items-per-page"
+              value={itemsPerPage}
+              onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+              className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-2 py-1 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            >
+              {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Page navigation */}
+          {totalPages > 1 && (
+            <nav className="flex items-center gap-1" aria-label="Pagination">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Go to first page"
+              >
+                <ChevronDoubleLeftIcon className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Go to previous page"
+              >
+                <ChevronLeftIcon className="h-4 w-4" />
+              </button>
+
+              <span className="px-3 text-sm text-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Go to next page"
+              >
+                <ChevronRightIcon className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Go to last page"
+              >
+                <ChevronDoubleRightIcon className="h-4 w-4" />
+              </button>
+            </nav>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -564,6 +716,47 @@ function SortDescIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M10 17a.75.75 0 0 1-.75-.75V5.612L5.29 9.77a.75.75 0 0 1-1.08-1.04l5.25-5.5a.75.75 0 0 1 1.08 0l5.25 5.5a.75.75 0 1 1-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0 1 10 17Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronDoubleLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M15.79 14.77a.75.75 0 0 1-1.06.02l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 1 1 1.04 1.08L11.832 10l3.938 3.71a.75.75 0 0 1 .02 1.06Zm-6 0a.75.75 0 0 1-1.06.02l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 1 1 1.04 1.08L5.832 10l3.938 3.71a.75.75 0 0 1 .02 1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronDoubleRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.21 5.23a.75.75 0 0 1 1.06-.02l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.04-1.08L8.168 10 4.23 6.29a.75.75 0 0 1-.02-1.06Zm6 0a.75.75 0 0 1 1.06-.02l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 1 1-1.04-1.08L14.168 10 10.23 6.29a.75.75 0 0 1-.02-1.06Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+      <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
     </svg>
   );
 }

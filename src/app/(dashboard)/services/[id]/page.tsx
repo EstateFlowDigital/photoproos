@@ -5,7 +5,7 @@ import { ServiceQuickActions } from "@/components/dashboard/service-quick-action
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type ServiceCategory } from "@/lib/services";
-import { getService } from "@/lib/actions/services";
+import { getServiceWithPricing } from "@/lib/actions/services";
 
 interface ServiceDetailPageProps {
   params: Promise<{ id: string }>;
@@ -14,8 +14,8 @@ interface ServiceDetailPageProps {
 export default async function ServiceDetailPage({ params }: ServiceDetailPageProps) {
   const { id } = await params;
 
-  // Fetch service from database
-  const service = await getService(id);
+  // Fetch service from database with pricing data
+  const service = await getServiceWithPricing(id);
 
   if (!service) {
     notFound();
@@ -53,6 +53,19 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
               isActive: service.isActive,
               isDefault: service.isDefault,
               usageCount: service.usageCount,
+              // Square footage pricing fields
+              pricingMethod: service.pricingMethod,
+              pricePerSqftCents: service.pricePerSqftCents,
+              minSqft: service.minSqft,
+              maxSqft: service.maxSqft,
+              sqftIncrements: service.sqftIncrements,
+              pricingTiers: service.pricingTiers.map((tier) => ({
+                id: tier.id,
+                minSqft: tier.minSqft,
+                maxSqft: tier.maxSqft,
+                priceCents: tier.priceCents,
+                tierName: tier.tierName || "",
+              })),
             }}
           />
         </div>
