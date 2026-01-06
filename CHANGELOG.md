@@ -52,6 +52,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Error handling with toast notifications
 
 ### Changed
+- **Projects Module CSS Variable Migration** - Replaced hardcoded Tailwind colors with design system tokens
+  - Priority colors now use `--error`, `--warning`, `--primary`, `--foreground-muted` CSS variables
+  - Status colors in analytics use `--success`, `--primary`, `--ai`, `--error` variables
+  - Updated across `projects-client.tsx`, `projects-analytics-client.tsx`, task detail pages
+  - Ensures consistent theming across light/dark modes
+
 - **Icon System Consolidation** - Migrated inline icon definitions to centralized icon library
   - Added 30+ new icons to `@/components/ui/icons` (FormIcon, TimeOffIcon, InboxIcon, ZoomIcon, PhotoIcon, ProjectIcon, QRIcon, CreateIcon, SendIcon, NoteIcon, InvoiceIcon, ChartIcon, DesktopIcon, MobileIcon, TabletIcon, HeartIcon, CommentIcon, CommentBubbleIcon, ExpiredIcon, GripIcon, FolderPlusIcon, and more)
   - Migrated `booking-forms-page-client.tsx` from 13 inline icons to centralized imports

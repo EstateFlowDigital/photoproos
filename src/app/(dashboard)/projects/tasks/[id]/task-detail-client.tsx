@@ -193,10 +193,10 @@ export function TaskDetailClient({ task: initialTask, teamMembers, clients, gall
   };
 
   const priorityColors = {
-    urgent: "bg-red-500/10 text-red-500 border-red-500/30",
-    high: "bg-orange-500/10 text-orange-500 border-orange-500/30",
-    medium: "bg-blue-500/10 text-blue-500 border-blue-500/30",
-    low: "bg-gray-500/10 text-gray-400 border-gray-500/30",
+    urgent: "bg-[var(--error)]/10 text-[var(--error)] border-[var(--error)]/30",
+    high: "bg-[var(--warning)]/10 text-[var(--warning)] border-[var(--warning)]/30",
+    medium: "bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/30",
+    low: "bg-[var(--foreground-muted)]/10 text-foreground-muted border-[var(--foreground-muted)]/30",
   };
 
   return (

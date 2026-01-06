@@ -32,18 +32,18 @@ function formatPriority(priority: string): string {
 }
 
 const priorityColors: Record<string, { bg: string; text: string }> = {
-  urgent: { bg: "bg-red-500/10", text: "text-red-500" },
-  high: { bg: "bg-orange-500/10", text: "text-orange-500" },
-  medium: { bg: "bg-blue-500/10", text: "text-blue-500" },
-  low: { bg: "bg-gray-500/10", text: "text-gray-400" },
+  urgent: { bg: "bg-[var(--error)]/10", text: "text-[var(--error)]" },
+  high: { bg: "bg-[var(--warning)]/10", text: "text-[var(--warning)]" },
+  medium: { bg: "bg-[var(--primary)]/10", text: "text-[var(--primary)]" },
+  low: { bg: "bg-[var(--foreground-muted)]/10", text: "text-foreground-muted" },
 };
 
 const statusColors: Record<string, string> = {
-  todo: "#6b7280",
-  in_progress: "#3b82f6",
-  in_review: "#8b5cf6",
-  completed: "#22c55e",
-  blocked: "#ef4444",
+  todo: "var(--foreground-muted)",
+  in_progress: "var(--primary)",
+  in_review: "var(--ai)",
+  completed: "var(--success)",
+  blocked: "var(--error)",
 };
 
 export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientProps) {

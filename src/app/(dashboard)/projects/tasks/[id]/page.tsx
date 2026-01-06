@@ -91,10 +91,10 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
   };
 
   const priorityColors = {
-    urgent: "bg-red-500/10 text-red-500",
-    high: "bg-orange-500/10 text-orange-500",
-    medium: "bg-blue-500/10 text-blue-500",
-    low: "bg-gray-500/10 text-gray-400",
+    urgent: "bg-[var(--error)]/10 text-[var(--error)]",
+    high: "bg-[var(--warning)]/10 text-[var(--warning)]",
+    medium: "bg-[var(--primary)]/10 text-[var(--primary)]",
+    low: "bg-[var(--foreground-muted)]/10 text-foreground-muted",
   };
 
   return (
