@@ -317,7 +317,7 @@ export function MobileMenuButton({ onClick, className }: MobileMenuButtonProps) 
     <button
       onClick={onClick}
       className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-lg text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground transition-colors lg:hidden",
+        "shell-menu-toggle flex h-9 w-9 items-center justify-center rounded-lg text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground transition-colors",
         className
       )}
       aria-label="Open menu"

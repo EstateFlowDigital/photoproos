@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
-import { MobileMenuButton, MobileNav } from "./mobile-nav";
+import { MobileMenuButton } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { useTheme } from "@/components/theme-provider";
@@ -45,6 +45,35 @@ export function DashboardLayoutClient({
   const handleCloseMenu = useCallback(() => {
     setMobileMenuOpen(false);
   }, []);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (!mobileMenuOpen) {
+      document.body.style.overflow = "";
+      return;
+    }
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     if (!pathname) return;
@@ -304,14 +333,24 @@ export function DashboardLayoutClient({
         />
       </div>
 
-      {/* Mobile Navigation */}
-      <MobileNav
-        isOpen={mobileMenuOpen}
-        onClose={handleCloseMenu}
-        enabledModules={enabledModules}
-        industries={industries}
-        notificationCount={unreadNotificationCount}
-      />
+      {mobileMenuOpen ? (
+        <>
+          <div
+            className="shell-mobile-overlay fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            onClick={handleCloseMenu}
+            aria-hidden="true"
+          />
+          <div className="shell-mobile-panel fixed inset-y-0 left-0 z-50">
+            <DashboardSidebar
+              enabledModules={enabledModules}
+              industries={industries}
+              notificationCount={unreadNotificationCount}
+              variant="overlay"
+              onClose={handleCloseMenu}
+            />
+          </div>
+        </>
+      ) : null}
 
       {/* Main content area */}
       <div className="shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
