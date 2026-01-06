@@ -9,7 +9,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -238,13 +238,13 @@ export async function getTeamAvailability(
       };
     });
 
-    return { success: true, data: result };
+    return success(result);
   } catch (error) {
     console.error("[TeamAvailability] Error:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get team availability" };
+    return fail("Failed to get team availability");
   }
 }
 
@@ -343,21 +343,18 @@ export async function getDailyTeamSummary(
       };
     });
 
-    return {
-      success: true,
-      data: {
-        date: dateStr,
-        teamMembers: memberAvailability,
-        totalAvailable: memberAvailability.filter((m) => m.isAvailable).length,
-        totalBooked: bookings.length,
-      },
-    };
+    return success({
+      date: dateStr,
+      teamMembers: memberAvailability,
+      totalAvailable: memberAvailability.filter((m) => m.isAvailable).length,
+      totalBooked: bookings.length,
+    });
   } catch (error) {
     console.error("[TeamAvailability] Error getting daily summary:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get daily summary" };
+    return fail("Failed to get daily summary");
   }
 }
 
@@ -480,16 +477,13 @@ export async function findAvailableTeamMembers(
       }
     });
 
-    return {
-      success: true,
-      data: { available, unavailable },
-    };
+    return success({ available, unavailable });
   } catch (error) {
     console.error("[TeamAvailability] Error finding available members:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to find available team members" };
+    return fail("Failed to find available team members");
   }
 }
 
@@ -651,27 +645,24 @@ export async function getTeamUtilization(
       };
     });
 
-    return {
-      success: true,
-      data: {
-        overall: {
-          totalCapacityHours: totalCapacity,
-          bookedHours: Math.round(totalBooked * 10) / 10,
-          utilizationPercent:
-            totalCapacity > 0
-              ? Math.round((totalBooked / totalCapacity) * 100)
-              : 0,
-        },
-        byMember,
-        byDay,
+    return success({
+      overall: {
+        totalCapacityHours: totalCapacity,
+        bookedHours: Math.round(totalBooked * 10) / 10,
+        utilizationPercent:
+          totalCapacity > 0
+            ? Math.round((totalBooked / totalCapacity) * 100)
+            : 0,
       },
-    };
+      byMember,
+      byDay,
+    });
   } catch (error) {
     console.error("[TeamAvailability] Error getting utilization:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get team utilization" };
+    return fail("Failed to get team utilization");
   }
 }
 
@@ -807,15 +798,12 @@ export async function getSuggestedBookingTimes(
       return b.availableTeamMembers.length - a.availableTeamMembers.length;
     });
 
-    return {
-      success: true,
-      data: { suggestions: suggestions.slice(0, 10) }, // Top 10 suggestions
-    };
+    return success({ suggestions: suggestions.slice(0, 10) }); // Top 10 suggestions
   } catch (error) {
     console.error("[TeamAvailability] Error getting suggestions:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get booking suggestions" };
+    return fail("Failed to get booking suggestions");
   }
 }

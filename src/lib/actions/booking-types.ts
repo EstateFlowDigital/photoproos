@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { revalidatePath } from "next/cache";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export interface BookingTypeInput {
   name: string;
@@ -55,7 +55,7 @@ export async function createBookingType(
 ): Promise<ActionResult<{ id: string }>> {
   const auth = await getAuthContext();
   if (!auth) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -77,7 +77,7 @@ export async function createBookingType(
     return { success: true, data: { id: bookingType.id } };
   } catch (error) {
     console.error("Error creating booking type:", error);
-    return { success: false, error: "Failed to create booking type" };
+    return fail("Failed to create booking type");
   }
 }
 
@@ -87,7 +87,7 @@ export async function updateBookingType(
 ): Promise<ActionResult> {
   const auth = await getAuthContext();
   if (!auth) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -112,14 +112,14 @@ export async function updateBookingType(
     return ok();
   } catch (error) {
     console.error("Error updating booking type:", error);
-    return { success: false, error: "Failed to update booking type" };
+    return fail("Failed to update booking type");
   }
 }
 
 export async function deleteBookingType(id: string): Promise<ActionResult> {
   const auth = await getAuthContext();
   if (!auth) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -129,10 +129,7 @@ export async function deleteBookingType(id: string): Promise<ActionResult> {
     });
 
     if (bookingsCount > 0) {
-      return {
-        success: false,
-        error: `Cannot delete booking type with ${bookingsCount} associated booking${bookingsCount > 1 ? "s" : ""}. Please remove or reassign bookings first.`,
-      };
+      return fail(`Cannot delete booking type with ${bookingsCount} associated booking${bookingsCount > 1 ? "s" : ""}. Please remove or reassign bookings first.`);
     }
 
     await prisma.bookingType.delete({
@@ -148,14 +145,14 @@ export async function deleteBookingType(id: string): Promise<ActionResult> {
     return ok();
   } catch (error) {
     console.error("Error deleting booking type:", error);
-    return { success: false, error: "Failed to delete booking type" };
+    return fail("Failed to delete booking type");
   }
 }
 
 export async function seedDefaultBookingTypes(): Promise<ActionResult> {
   const auth = await getAuthContext();
   if (!auth) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -215,6 +212,6 @@ export async function seedDefaultBookingTypes(): Promise<ActionResult> {
     return ok();
   } catch (error) {
     console.error("Error seeding booking types:", error);
-    return { success: false, error: "Failed to seed booking types" };
+    return fail("Failed to seed booking types");
   }
 }

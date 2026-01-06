@@ -26,12 +26,11 @@ import type { SignatureType, ContractStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { headers } from "next/headers";
 import crypto from "crypto";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import {
   sendContractSigningEmail,
   sendContractSignedConfirmationEmail,
 } from "@/lib/email/send";
-import type { ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -142,7 +141,7 @@ export async function getContractsWithSigningStatus(filters?: {
     };
   } catch (error) {
     console.error("[ContractSigning] Error fetching contracts:", error);
-    return { success: false as const, error: "Failed to fetch contracts" };
+    return fail("Failed to fetch contracts");
   }
 }
 
@@ -162,11 +161,11 @@ export async function addContractSigner(
     });
 
     if (!contract) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     if (contract.status === "signed") {
-      return { success: false, error: "Cannot add signers to a signed contract" };
+      return fail("Cannot add signers to a signed contract");
     }
 
     // Check if signer already exists
@@ -178,7 +177,7 @@ export async function addContractSigner(
     });
 
     if (existingSigner) {
-      return { success: false, error: "This email is already a signer on this contract" };
+      return fail("This email is already a signer on this contract");
     }
 
     // Generate signing token
@@ -230,20 +229,17 @@ export async function addContractSigner(
     revalidatePath(`/contracts/${input.contractId}`);
     revalidatePath("/contracts");
 
-    return {
-      success: true,
-      data: {
-        id: signer.id,
-        signingToken,
-        signingUrl,
-      },
-    };
+    return success({
+      id: signer.id,
+      signingToken,
+      signingUrl,
+    });
   } catch (error) {
     console.error("[ContractSigning] Error adding signer:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to add signer" };
+    return fail("Failed to add signer");
   }
 }
 
@@ -265,11 +261,11 @@ export async function removeContractSigner(signerId: string): Promise<ActionResu
     });
 
     if (!signer || signer.contract.organizationId !== organizationId) {
-      return { success: false, error: "Signer not found" };
+      return fail("Signer not found");
     }
 
     if (signer.signedAt) {
-      return { success: false, error: "Cannot remove a signer who has already signed" };
+      return fail("Cannot remove a signer who has already signed");
     }
 
     await prisma.contractSigner.delete({
@@ -292,9 +288,9 @@ export async function removeContractSigner(signerId: string): Promise<ActionResu
   } catch (error) {
     console.error("[ContractSigning] Error removing signer:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove signer" };
+    return fail("Failed to remove signer");
   }
 }
 
@@ -329,11 +325,11 @@ export async function resendSigningInvitation(
     });
 
     if (!signer || signer.contract.organizationId !== organizationId) {
-      return { success: false, error: "Signer not found" };
+      return fail("Signer not found");
     }
 
     if (signer.signedAt) {
-      return { success: false, error: "This signer has already signed the contract" };
+      return fail("This signer has already signed the contract");
     }
 
     // Get organization info for email
@@ -389,13 +385,13 @@ export async function resendSigningInvitation(
       // Don't fail the action - the token was regenerated successfully
     }
 
-    return { success: true, data: { signingUrl } };
+    return success({ signingUrl });
   } catch (error) {
     console.error("[ContractSigning] Error resending invitation:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to resend invitation" };
+    return fail("Failed to resend invitation");
   }
 }
 
@@ -441,26 +437,26 @@ export async function getContractForSigning(signingToken: string) {
     });
 
     if (!signer) {
-      return { success: false as const, error: "Invalid or expired signing link" };
+      return fail("Invalid or expired signing link");
     }
 
     // Check if token is expired
     if (signer.tokenExpiresAt && signer.tokenExpiresAt < new Date()) {
-      return { success: false as const, error: "This signing link has expired" };
+      return fail("This signing link has expired");
     }
 
     // Check if already signed
     if (signer.signedAt) {
-      return { success: false as const, error: "You have already signed this contract" };
+      return fail("You have already signed this contract");
     }
 
     // Check contract status
     if (signer.contract.status === "cancelled") {
-      return { success: false as const, error: "This contract has been cancelled" };
+      return fail("This contract has been cancelled");
     }
 
     if (signer.contract.status === "expired") {
-      return { success: false as const, error: "This contract has expired" };
+      return fail("This contract has expired");
     }
 
     // Get organization branding
@@ -497,7 +493,7 @@ export async function getContractForSigning(signingToken: string) {
     };
   } catch (error) {
     console.error("[ContractSigning] Error fetching contract for signing:", error);
-    return { success: false as const, error: "Failed to load contract" };
+    return fail("Failed to load contract");
   }
 }
 
@@ -542,24 +538,24 @@ export async function signContract(
     });
 
     if (!signer) {
-      return { success: false, error: "Invalid signing link" };
+      return fail("Invalid signing link");
     }
 
     if (signer.tokenExpiresAt && signer.tokenExpiresAt < new Date()) {
-      return { success: false, error: "This signing link has expired" };
+      return fail("This signing link has expired");
     }
 
     if (signer.signedAt) {
-      return { success: false, error: "You have already signed this contract" };
+      return fail("You have already signed this contract");
     }
 
     if (signer.contract.status === "cancelled" || signer.contract.status === "expired") {
-      return { success: false, error: "This contract is no longer valid" };
+      return fail("This contract is no longer valid");
     }
 
     // Validate signature data (should be base64 encoded image)
     if (!input.signatureData || !input.signatureData.startsWith("data:image/")) {
-      return { success: false, error: "Invalid signature format" };
+      return fail("Invalid signature format");
     }
 
     // Get organization info for email and activity logging
@@ -671,13 +667,13 @@ export async function signContract(
 
     const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/sign/${input.signingToken}/complete`;
 
-    return { success: true, data: { redirectUrl } };
+    return success({ redirectUrl });
   } catch (error) {
     console.error("[ContractSigning] Error signing contract:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to sign contract" };
+    return fail("Failed to sign contract");
   }
 }
 
@@ -701,7 +697,7 @@ export async function getSigningCompletion(signingToken: string) {
     });
 
     if (!signer || !signer.signedAt) {
-      return { success: false as const, error: "Signature not found" };
+      return fail("Signature not found");
     }
 
     const organization = await prisma.organization.findFirst({
@@ -725,7 +721,7 @@ export async function getSigningCompletion(signingToken: string) {
     };
   } catch (error) {
     console.error("[ContractSigning] Error fetching completion:", error);
-    return { success: false as const, error: "Failed to load completion status" };
+    return fail("Failed to load completion status");
   }
 }
 
@@ -747,7 +743,7 @@ export async function getContractAuditLog(contractId: string) {
     });
 
     if (!contract) {
-      return { success: false as const, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     const auditLogs = await prisma.contractAuditLog.findMany({
@@ -758,7 +754,7 @@ export async function getContractAuditLog(contractId: string) {
     return { success: true as const, data: auditLogs };
   } catch (error) {
     console.error("[ContractSigning] Error fetching audit log:", error);
-    return { success: false as const, error: "Failed to fetch audit log" };
+    return fail("Failed to fetch audit log");
   }
 }
 
@@ -776,7 +772,7 @@ export async function getContractSignatures(contractId: string) {
     });
 
     if (!contract) {
-      return { success: false as const, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     const signatures = await prisma.contractSignature.findMany({
@@ -802,7 +798,7 @@ export async function getContractSignatures(contractId: string) {
     };
   } catch (error) {
     console.error("[ContractSigning] Error fetching signatures:", error);
-    return { success: false as const, error: "Failed to fetch signatures" };
+    return fail("Failed to fetch signatures");
   }
 }
 
@@ -823,11 +819,11 @@ export async function cancelContract(contractId: string): Promise<ActionResult> 
     });
 
     if (!contract) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     if (contract.status === "signed") {
-      return { success: false, error: "Cannot cancel a signed contract" };
+      return fail("Cannot cancel a signed contract");
     }
 
     await prisma.contract.update({
@@ -850,9 +846,9 @@ export async function cancelContract(contractId: string): Promise<ActionResult> 
   } catch (error) {
     console.error("[ContractSigning] Error cancelling contract:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to cancel contract" };
+    return fail("Failed to cancel contract");
   }
 }
 
@@ -872,11 +868,11 @@ export async function extendContractExpiration(
     });
 
     if (!contract) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     if (contract.status === "signed" || contract.status === "cancelled") {
-      return { success: false, error: "Cannot extend this contract" };
+      return fail("Cannot extend this contract");
     }
 
     // Update contract and all signer tokens
@@ -915,8 +911,8 @@ export async function extendContractExpiration(
   } catch (error) {
     console.error("[ContractSigning] Error extending expiration:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to extend contract expiration" };
+    return fail("Failed to extend contract expiration");
   }
 }

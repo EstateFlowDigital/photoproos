@@ -9,7 +9,7 @@ import {
   type DropboxAccountInfo,
   type DropboxEntry,
 } from "@/lib/integrations/dropbox";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
@@ -178,7 +178,7 @@ export async function getDropboxConfig(): Promise<ActionResult<DropboxConfig | n
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.dropboxIntegration.findUnique({
@@ -203,7 +203,7 @@ export async function getDropboxConfig(): Promise<ActionResult<DropboxConfig | n
     return { success: true, data: config };
   } catch (error) {
     console.error("Error getting Dropbox config:", error);
-    return { success: false, error: "Failed to get Dropbox configuration" };
+    return fail("Failed to get Dropbox configuration");
   }
 }
 
@@ -213,7 +213,7 @@ export async function getDropboxConnectionStatus(): Promise<
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.dropboxIntegration.findUnique({
@@ -242,7 +242,7 @@ export async function getDropboxConnectionStatus(): Promise<
     };
   } catch (error) {
     console.error("Error checking Dropbox connection:", error);
-    return { success: false, error: "Failed to check connection status" };
+    return fail("Failed to check connection status");
   }
 }
 
@@ -258,13 +258,13 @@ export async function saveDropboxConfig(data: {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate the access token by getting account info
     const result = await testDropboxConnection(data.accessToken);
     if (!result.success || !result.account) {
-      return { success: false, error: result.error || "Invalid access token" };
+      return fail(result.error || "Invalid access token");
     }
 
     const account = result.account;
@@ -322,7 +322,7 @@ export async function saveDropboxConfig(data: {
     return { success: true, data: configResult };
   } catch (error) {
     console.error("Error saving Dropbox config:", error);
-    return { success: false, error: "Failed to save Dropbox configuration" };
+    return fail("Failed to save Dropbox configuration");
   }
 }
 
@@ -334,7 +334,7 @@ export async function updateDropboxSettings(data: {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.dropboxIntegration.findUnique({
@@ -342,7 +342,7 @@ export async function updateDropboxSettings(data: {
     });
 
     if (!config) {
-      return { success: false, error: "Dropbox integration not configured" };
+      return fail("Dropbox integration not configured");
     }
 
     await prisma.dropboxIntegration.update({
@@ -358,7 +358,7 @@ export async function updateDropboxSettings(data: {
     return ok();
   } catch (error) {
     console.error("Error updating Dropbox settings:", error);
-    return { success: false, error: "Failed to update settings" };
+    return fail("Failed to update settings");
   }
 }
 
@@ -366,7 +366,7 @@ export async function toggleDropboxIntegration(): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.dropboxIntegration.findUnique({
@@ -374,7 +374,7 @@ export async function toggleDropboxIntegration(): Promise<ActionResult<void>> {
     });
 
     if (!config) {
-      return { success: false, error: "Dropbox integration not configured" };
+      return fail("Dropbox integration not configured");
     }
 
     await prisma.dropboxIntegration.update({
@@ -386,7 +386,7 @@ export async function toggleDropboxIntegration(): Promise<ActionResult<void>> {
     return ok();
   } catch (error) {
     console.error("Error toggling Dropbox integration:", error);
-    return { success: false, error: "Failed to toggle integration" };
+    return fail("Failed to toggle integration");
   }
 }
 
@@ -394,24 +394,24 @@ export async function testDropboxIntegration(): Promise<ActionResult<{ account: 
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // This will automatically refresh the token if needed
     const accessToken = await getValidAccessToken(auth.organizationId);
     if (!accessToken) {
-      return { success: false, error: "Dropbox session expired. Please reconnect." };
+      return fail("Dropbox session expired. Please reconnect.");
     }
 
     const result = await testDropboxConnection(accessToken);
     if (!result.success || !result.account) {
-      return { success: false, error: result.error || "Connection failed" };
+      return fail(result.error || "Connection failed");
     }
 
     return { success: true, data: { account: result.account } };
   } catch (error) {
     console.error("Error testing Dropbox connection:", error);
-    return { success: false, error: "Failed to test connection" };
+    return fail("Failed to test connection");
   }
 }
 
@@ -419,7 +419,7 @@ export async function deleteDropboxIntegration(): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     await prisma.dropboxIntegration.delete({
@@ -430,7 +430,7 @@ export async function deleteDropboxIntegration(): Promise<ActionResult<void>> {
     return ok();
   } catch (error) {
     console.error("Error deleting Dropbox integration:", error);
-    return { success: false, error: "Failed to delete integration" };
+    return fail("Failed to delete integration");
   }
 }
 
@@ -444,7 +444,7 @@ export async function listDropboxFolder(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.dropboxIntegration.findUnique({
@@ -453,12 +453,12 @@ export async function listDropboxFolder(
     });
 
     if (!config) {
-      return { success: false, error: "Dropbox integration not configured" };
+      return fail("Dropbox integration not configured");
     }
 
     const client = await getDropboxClient(auth.organizationId);
     if (!client) {
-      return { success: false, error: "Dropbox session expired. Please reconnect." };
+      return fail("Dropbox session expired. Please reconnect.");
     }
 
     const fullPath = path || config.syncFolder;
@@ -467,7 +467,7 @@ export async function listDropboxFolder(
     return { success: true, data: entries };
   } catch (error) {
     console.error("Error listing Dropbox folder:", error);
-    return { success: false, error: "Failed to list folder" };
+    return fail("Failed to list folder");
   }
 }
 
@@ -478,7 +478,7 @@ export async function createDropboxFolder(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.dropboxIntegration.findUnique({
@@ -487,12 +487,12 @@ export async function createDropboxFolder(
     });
 
     if (!config) {
-      return { success: false, error: "Dropbox integration not configured" };
+      return fail("Dropbox integration not configured");
     }
 
     const client = await getDropboxClient(auth.organizationId);
     if (!client) {
-      return { success: false, error: "Dropbox session expired. Please reconnect." };
+      return fail("Dropbox session expired. Please reconnect.");
     }
 
     const basePath = parentPath || config.syncFolder;
@@ -503,7 +503,7 @@ export async function createDropboxFolder(
     return { success: true, data: { path: folder?.path_display || fullPath } };
   } catch (error) {
     console.error("Error creating Dropbox folder:", error);
-    return { success: false, error: "Failed to create folder" };
+    return fail("Failed to create folder");
   }
 }
 
@@ -513,12 +513,12 @@ export async function getDropboxDownloadLink(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const client = await getDropboxClient(auth.organizationId);
     if (!client) {
-      return { success: false, error: "Dropbox session expired. Please reconnect." };
+      return fail("Dropbox session expired. Please reconnect.");
     }
 
     const link = await client.getTemporaryLink(path);
@@ -526,7 +526,7 @@ export async function getDropboxDownloadLink(
     return { success: true, data: { link } };
   } catch (error) {
     console.error("Error getting download link:", error);
-    return { success: false, error: "Failed to get download link" };
+    return fail("Failed to get download link");
   }
 }
 
@@ -534,7 +534,7 @@ export async function ensureDropboxRootFolder(): Promise<ActionResult<{ path: st
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.dropboxIntegration.findUnique({
@@ -543,12 +543,12 @@ export async function ensureDropboxRootFolder(): Promise<ActionResult<{ path: st
     });
 
     if (!config) {
-      return { success: false, error: "Dropbox integration not configured" };
+      return fail("Dropbox integration not configured");
     }
 
     const client = await getDropboxClient(auth.organizationId);
     if (!client) {
-      return { success: false, error: "Dropbox session expired. Please reconnect." };
+      return fail("Dropbox session expired. Please reconnect.");
     }
 
     // Create root folder and subfolders
@@ -560,7 +560,7 @@ export async function ensureDropboxRootFolder(): Promise<ActionResult<{ path: st
     return { success: true, data: { path: config.syncFolder } };
   } catch (error) {
     console.error("Error ensuring root folder:", error);
-    return { success: false, error: "Failed to create folder structure" };
+    return fail("Failed to create folder structure");
   }
 }
 
@@ -572,7 +572,7 @@ export async function updateSyncCursor(cursor: string): Promise<ActionResult<voi
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     await prisma.dropboxIntegration.update({
@@ -587,7 +587,7 @@ export async function updateSyncCursor(cursor: string): Promise<ActionResult<voi
     return ok();
   } catch (error) {
     console.error("Error updating sync cursor:", error);
-    return { success: false, error: "Failed to update sync cursor" };
+    return fail("Failed to update sync cursor");
   }
 }
 
@@ -595,7 +595,7 @@ export async function recordSyncError(errorMessage: string): Promise<ActionResul
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     await prisma.dropboxIntegration.update({
@@ -608,7 +608,7 @@ export async function recordSyncError(errorMessage: string): Promise<ActionResul
     return ok();
   } catch (error) {
     console.error("Error recording sync error:", error);
-    return { success: false, error: "Failed to record error" };
+    return fail("Failed to record error");
   }
 }
 
@@ -671,7 +671,7 @@ export async function syncDropboxChangesForAccount(
             lastSyncError: "Failed to refresh token. Please reconnect Dropbox.",
           },
         });
-        return { success: false, error: "Token refresh failed" };
+        return fail("Token refresh failed");
       }
     }
 
@@ -755,10 +755,7 @@ export async function syncDropboxChangesForAccount(
     return { success: true, synced: syncedCount };
   } catch (error) {
     console.error("[Dropbox Sync] Error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Sync failed"
-    };
+    return fail(error instanceof Error ? error.message : "Sync failed");
   }
 }
 

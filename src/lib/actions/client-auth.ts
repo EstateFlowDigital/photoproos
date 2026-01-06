@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { randomBytes } from "crypto";
@@ -79,13 +80,13 @@ export async function sendClientMagicLink(email: string): Promise<{
 
     if (!emailResult.success) {
       console.error("Failed to send magic link email:", emailResult.error);
-      return { success: false, error: "Failed to send email. Please try again." };
+      return fail("Failed to send email. Please try again.");
     }
 
     return { success: true };
   } catch (error) {
     console.error("Error sending magic link:", error);
-    return { success: false, error: "An unexpected error occurred" };
+    return fail("An unexpected error occurred");
   }
 }
 
@@ -105,14 +106,14 @@ export async function validateMagicLinkToken(token: string): Promise<{
     });
 
     if (!session) {
-      return { success: false, error: "Invalid or expired link" };
+      return fail("Invalid or expired link");
     }
 
     // Check if token is expired
     if (session.expiresAt < new Date()) {
       // Delete the expired session
       await prisma.clientSession.delete({ where: { id: session.id } });
-      return { success: false, error: "This link has expired. Please request a new one." };
+      return fail("This link has expired. Please request a new one.");
     }
 
     // Generate a new long-lived session token
@@ -150,7 +151,7 @@ export async function validateMagicLinkToken(token: string): Promise<{
     return { success: true, clientId: session.clientId };
   } catch (error) {
     console.error("Error validating magic link:", error);
-    return { success: false, error: "An unexpected error occurred" };
+    return fail("An unexpected error occurred");
   }
 }
 

@@ -11,7 +11,7 @@ import {
   sendReferralRewardEarnedEmail,
 } from "@/lib/email/send";
 import { requireAdmin } from "@/lib/actions/auth-helper";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export type PlatformReferrerProfile = {
   id: string;
@@ -114,7 +114,7 @@ export async function getMyReferralProfile(): Promise<ActionResult<PlatformRefer
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Check if user has a referral profile
@@ -150,7 +150,7 @@ export async function getMyReferralProfile(): Promise<ActionResult<PlatformRefer
     };
   } catch (error) {
     console.error("[PlatformReferrals] Error getting profile:", error);
-    return { success: false, error: "Failed to get referral profile" };
+    return fail("Failed to get referral profile");
   }
 }
 
@@ -161,7 +161,7 @@ export async function getMyReferralStats(): Promise<ActionResult<PlatformReferra
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const profile = await prisma.platformReferrer.findUnique({
@@ -217,7 +217,7 @@ export async function getMyReferralStats(): Promise<ActionResult<PlatformReferra
     };
   } catch (error) {
     console.error("[PlatformReferrals] Error getting stats:", error);
-    return { success: false, error: "Failed to get referral stats" };
+    return fail("Failed to get referral stats");
   }
 }
 
@@ -228,7 +228,7 @@ export async function getMyReferrals(): Promise<ActionResult<PlatformReferralIte
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const profile = await prisma.platformReferrer.findUnique({
@@ -260,7 +260,7 @@ export async function getMyReferrals(): Promise<ActionResult<PlatformReferralIte
     };
   } catch (error) {
     console.error("[PlatformReferrals] Error getting referrals:", error);
-    return { success: false, error: "Failed to get referrals" };
+    return fail("Failed to get referrals");
   }
 }
 
@@ -271,7 +271,7 @@ export async function getMyRewards(): Promise<ActionResult<PlatformReward[]>> {
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const profile = await prisma.platformReferrer.findUnique({
@@ -302,7 +302,7 @@ export async function getMyRewards(): Promise<ActionResult<PlatformReward[]>> {
     };
   } catch (error) {
     console.error("[PlatformReferrals] Error getting rewards:", error);
-    return { success: false, error: "Failed to get rewards" };
+    return fail("Failed to get rewards");
   }
 }
 
@@ -322,7 +322,7 @@ export async function getMyReferralLink(): Promise<ActionResult<string>> {
     return { success: true, data: referralLink };
   } catch (error) {
     console.error("[PlatformReferrals] Error getting referral link:", error);
-    return { success: false, error: "Failed to get referral link" };
+    return fail("Failed to get referral link");
   }
 }
 
@@ -340,19 +340,19 @@ export async function sendReferralInvite(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Get platform settings
     const settings = await getPlatformSettings();
     if (!settings.isActive) {
-      return { success: false, error: "Referral program is currently paused" };
+      return fail("Referral program is currently paused");
     }
 
     // Get or create profile
     const profileResult = await getMyReferralProfile();
     if (!profileResult.success) {
-      return { success: false, error: profileResult.error };
+      return fail(profileResult.error);
     }
 
     // Check if this email was already referred
@@ -365,7 +365,7 @@ export async function sendReferralInvite(
     });
 
     if (existingReferral) {
-      return { success: false, error: "You've already invited this email" };
+      return fail("You've already invited this email");
     }
 
     // Check if this email is already a user
@@ -374,7 +374,7 @@ export async function sendReferralInvite(
     });
 
     if (existingUser) {
-      return { success: false, error: "This email is already registered" };
+      return fail("This email is already registered");
     }
 
     // Calculate expiration date
@@ -433,7 +433,7 @@ export async function sendReferralInvite(
     return { success: true, data: { referralId: referral.id } };
   } catch (error) {
     console.error("[PlatformReferrals] Error sending invite:", error);
-    return { success: false, error: "Failed to send invite" };
+    return fail("Failed to send invite");
   }
 }
 
@@ -456,7 +456,7 @@ export async function trackReferralClick(
     });
 
     if (!referrer || !referrer.isActive) {
-      return { success: false, error: "Invalid referral code" };
+      return fail("Invalid referral code");
     }
 
     // Store click data in session/cookie on the client side
@@ -465,7 +465,7 @@ export async function trackReferralClick(
     return { success: true, data: { referrerId: referrer.id } };
   } catch (error) {
     console.error("[PlatformReferrals] Error tracking click:", error);
-    return { success: false, error: "Failed to track click" };
+    return fail("Failed to track click");
   }
 }
 
@@ -484,7 +484,7 @@ export async function processReferralSignup(
     });
 
     if (!referrer || !referrer.isActive) {
-      return { success: false, error: "Invalid referral code" };
+      return fail("Invalid referral code");
     }
 
     const newUser = await prisma.user.findUnique({
@@ -493,7 +493,7 @@ export async function processReferralSignup(
     });
 
     if (!newUser) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
     // Check for existing referral or create one
@@ -591,7 +591,7 @@ export async function processReferralSignup(
     return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error processing signup:", error);
-    return { success: false, error: "Failed to process referral signup" };
+    return fail("Failed to process referral signup");
   }
 }
 
@@ -705,7 +705,7 @@ export async function processReferralConversion(
     return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error processing conversion:", error);
-    return { success: false, error: "Failed to process conversion" };
+    return fail("Failed to process conversion");
   }
 }
 
@@ -718,7 +718,7 @@ export async function applyReward(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const profile = await prisma.platformReferrer.findUnique({
@@ -726,7 +726,7 @@ export async function applyReward(
     });
 
     if (!profile) {
-      return { success: false, error: "No referral profile found" };
+      return fail("No referral profile found");
     }
 
     const reward = await prisma.platformReferralReward.findFirst({
@@ -738,12 +738,12 @@ export async function applyReward(
     });
 
     if (!reward) {
-      return { success: false, error: "Reward not found or already applied" };
+      return fail("Reward not found or already applied");
     }
 
     // Check if expired
     if (reward.expiresAt && reward.expiresAt < new Date()) {
-      return { success: false, error: "Reward has expired" };
+      return fail("Reward has expired");
     }
 
     // Mark as applied
@@ -775,7 +775,7 @@ export async function applyReward(
     return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error applying reward:", error);
-    return { success: false, error: "Failed to apply reward" };
+    return fail("Failed to apply reward");
   }
 }
 
@@ -795,7 +795,7 @@ export async function getPlatformReferralSettings(): Promise<ActionResult<Awaite
     return { success: true, data: settings };
   } catch (error) {
     console.error("[PlatformReferrals] Error getting settings:", error);
-    return { success: false, error: "Failed to get settings" };
+    return fail("Failed to get settings");
   }
 }
 
@@ -830,7 +830,7 @@ export async function updatePlatformReferralSettings(
     return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error updating settings:", error);
-    return { success: false, error: "Failed to update settings" };
+    return fail("Failed to update settings");
   }
 }
 
@@ -871,7 +871,7 @@ export async function getReferralLeaderboard(
     };
   } catch (error) {
     console.error("[PlatformReferrals] Error getting leaderboard:", error);
-    return { success: false, error: "Failed to get leaderboard" };
+    return fail("Failed to get leaderboard");
   }
 }
 
@@ -885,7 +885,7 @@ export async function processReferralFromCode(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Check if this user already has a processed referral
@@ -897,7 +897,7 @@ export async function processReferralFromCode(
     });
 
     if (existingReferral) {
-      return { success: false, error: "Referral already processed for this user" };
+      return fail("Referral already processed for this user");
     }
 
     // Find the referrer by code
@@ -906,12 +906,12 @@ export async function processReferralFromCode(
     });
 
     if (!referrer || !referrer.isActive) {
-      return { success: false, error: "Invalid referral code" };
+      return fail("Invalid referral code");
     }
 
     // Make sure referrer isn't referring themselves
     if (referrer.userId === user.id) {
-      return { success: false, error: "Cannot refer yourself" };
+      return fail("Cannot refer yourself");
     }
 
     // Get user's organization if any
@@ -977,6 +977,6 @@ export async function processReferralFromCode(
     return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error processing referral from code:", error);
-    return { success: false, error: "Failed to process referral" };
+    return fail("Failed to process referral");
   }
 }

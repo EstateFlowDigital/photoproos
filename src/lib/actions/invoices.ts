@@ -8,7 +8,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import { Resend } from "resend";
 import { InvoiceReminderEmail } from "@/emails/invoice-reminder";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 
 // Lazy initialize Resend to avoid build errors
@@ -101,7 +101,7 @@ export async function createInvoice(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Calculate totals
@@ -162,13 +162,13 @@ export async function createInvoice(
 
     revalidatePath("/invoices");
 
-    return { success: true, data: { id: invoice.id } };
+    return success({ id: invoice.id });
   } catch (error) {
     console.error("Error creating invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create invoice" };
+    return fail("Failed to create invoice");
   }
 }
 
@@ -195,11 +195,11 @@ export async function generateInvoiceFromBooking(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     if (!booking.clientId) {
-      return { success: false, error: "Booking must have a client to generate an invoice" };
+      return fail("Booking must have a client to generate an invoice");
     }
 
     // Get organization travel settings
@@ -242,7 +242,7 @@ export async function generateInvoiceFromBooking(
     }
 
     if (lineItems.length === 0) {
-      return { success: false, error: "No billable items found for this booking" };
+      return fail("No billable items found for this booking");
     }
 
     // Create the invoice
@@ -255,9 +255,9 @@ export async function generateInvoiceFromBooking(
   } catch (error) {
     console.error("Error generating invoice from booking:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to generate invoice" };
+    return fail("Failed to generate invoice");
   }
 }
 
@@ -283,11 +283,11 @@ export async function addTravelFeeToInvoice(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     if (invoice.status !== "draft") {
-      return { success: false, error: "Can only modify draft invoices" };
+      return fail("Can only modify draft invoices");
     }
 
     // Check if travel fee already exists for this booking
@@ -296,7 +296,7 @@ export async function addTravelFeeToInvoice(
     );
 
     if (existingTravelFee) {
-      return { success: false, error: "Travel fee already added for this booking" };
+      return fail("Travel fee already added for this booking");
     }
 
     // Get booking with travel data
@@ -308,11 +308,11 @@ export async function addTravelFeeToInvoice(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     if (!booking.distanceMiles || !booking.travelFeeCents || booking.travelFeeCents <= 0) {
-      return { success: false, error: "No travel fee for this booking" };
+      return fail("No travel fee for this booking");
     }
 
     // Get organization travel settings
@@ -357,9 +357,9 @@ export async function addTravelFeeToInvoice(
   } catch (error) {
     console.error("Error adding travel fee to invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to add travel fee" };
+    return fail("Failed to add travel fee");
   }
 }
 
@@ -493,7 +493,7 @@ export async function updateInvoiceStatus(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     const updateData: { status: InvoiceStatus; paidAt?: Date | null } = { status };
@@ -520,9 +520,9 @@ export async function updateInvoiceStatus(
   } catch (error) {
     console.error("Error updating invoice status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update invoice status" };
+    return fail("Failed to update invoice status");
   }
 }
 
@@ -541,11 +541,11 @@ export async function deleteInvoice(invoiceId: string): Promise<ActionResult> {
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     if (invoice.status !== "draft") {
-      return { success: false, error: "Can only delete draft invoices" };
+      return fail("Can only delete draft invoices");
     }
 
     await prisma.invoice.delete({
@@ -558,9 +558,9 @@ export async function deleteInvoice(invoiceId: string): Promise<ActionResult> {
   } catch (error) {
     console.error("Error deleting invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete invoice" };
+    return fail("Failed to delete invoice");
   }
 }
 
@@ -608,11 +608,11 @@ export async function updateInvoice(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     if (invoice.status !== "draft") {
-      return { success: false, error: "Can only edit draft invoices" };
+      return fail("Can only edit draft invoices");
     }
 
     // Verify client belongs to organization
@@ -624,7 +624,7 @@ export async function updateInvoice(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Calculate totals
@@ -724,13 +724,13 @@ export async function updateInvoice(
     revalidatePath(`/invoices/${invoiceId}`);
     revalidatePath("/invoices");
 
-    return { success: true, data: { id: invoiceId } };
+    return success({ id: invoiceId });
   } catch (error) {
     console.error("Error updating invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update invoice" };
+    return fail("Failed to update invoice");
   }
 }
 
@@ -757,11 +757,11 @@ export async function calculateTravelFeeForInvoice(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     if (!booking.distanceMiles) {
-      return { success: false, error: "No distance calculated for this booking" };
+      return fail("No distance calculated for this booking");
     }
 
     // Get organization travel settings
@@ -774,28 +774,25 @@ export async function calculateTravelFeeForInvoice(
     });
 
     if (!org?.travelFeePerMile) {
-      return { success: false, error: "Travel fees not configured" };
+      return fail("Travel fees not configured");
     }
 
     const freeThreshold = org.travelFeeThreshold || 0;
     const billableMiles = Math.max(0, booking.distanceMiles - freeThreshold);
     const travelFeeCents = Math.round(billableMiles * org.travelFeePerMile);
 
-    return {
-      success: true,
-      data: {
-        distanceMiles: booking.distanceMiles,
-        feePerMileCents: org.travelFeePerMile,
-        freeThresholdMiles: freeThreshold,
-        travelFeeCents,
-      },
-    };
+    return success({
+      distanceMiles: booking.distanceMiles,
+      feePerMileCents: org.travelFeePerMile,
+      freeThresholdMiles: freeThreshold,
+      travelFeeCents,
+    });
   } catch (error) {
     console.error("Error calculating travel fee:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to calculate travel fee" };
+    return fail("Failed to calculate travel fee");
   }
 }
 
@@ -829,20 +826,20 @@ export async function sendInvoiceReminder(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     if (invoice.status === "paid") {
-      return { success: false, error: "Invoice is already paid" };
+      return fail("Invoice is already paid");
     }
 
     if (invoice.status === "draft") {
-      return { success: false, error: "Cannot send reminder for draft invoice" };
+      return fail("Cannot send reminder for draft invoice");
     }
 
     const clientEmail = invoice.clientEmail || invoice.client?.email;
     if (!clientEmail) {
-      return { success: false, error: "No email address for client" };
+      return fail("No email address for client");
     }
 
     // Calculate if overdue
@@ -887,7 +884,7 @@ export async function sendInvoiceReminder(
 
     if (emailResult.error) {
       console.error("Failed to send invoice reminder:", emailResult.error);
-      return { success: false, error: "Failed to send reminder email" };
+      return fail("Failed to send reminder email");
     }
 
     // Update invoice reminder tracking
@@ -920,13 +917,13 @@ export async function sendInvoiceReminder(
 
     revalidatePath(`/invoices/${invoiceId}`);
 
-    return { success: true, data: { remindersSent: updatedInvoice.remindersSent } };
+    return success({ remindersSent: updatedInvoice.remindersSent });
   } catch (error) {
     console.error("Error sending invoice reminder:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to send reminder" };
+    return fail("Failed to send reminder");
   }
 }
 
@@ -1002,13 +999,13 @@ export async function getInvoicesNeedingReminders(): Promise<ActionResult<{
         lastReminderAt: inv.lastReminderAt,
       }));
 
-    return { success: true, data: { invoices: enrichedInvoices } };
+    return success({ invoices: enrichedInvoices });
   } catch (error) {
     console.error("Error getting invoices needing reminders:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get invoices" };
+    return fail("Failed to get invoices");
   }
 }
 
@@ -1113,13 +1110,13 @@ export async function sendBatchInvoiceReminders(
       }
     }
 
-    return { success: true, data: { sent, failed } };
+    return success({ sent, failed });
   } catch (error) {
     console.error("Error sending batch invoice reminders:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to send batch reminders" };
+    return fail("Failed to send batch reminders");
   }
 }
 
@@ -1141,7 +1138,7 @@ export async function toggleInvoiceAutoReminders(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     await prisma.invoice.update({
@@ -1155,9 +1152,9 @@ export async function toggleInvoiceAutoReminders(
   } catch (error) {
     console.error("Error toggling auto reminders:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update settings" };
+    return fail("Failed to update settings");
   }
 }
 
@@ -1184,15 +1181,955 @@ export async function updateAllOverdueInvoices(): Promise<ActionResult<{ count: 
 
     console.log(`[Invoice Cron] Marked ${result.count} invoices as overdue`);
 
-    return {
-      success: true,
-      data: { count: result.count },
-    };
+    return success({ count: result.count });
   } catch (error) {
     console.error("[Invoice Cron] Error updating overdue invoices:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update overdue invoices" };
+    return fail("Failed to update overdue invoices");
+  }
+}
+
+/**
+ * Get overdue invoices for dashboard widget
+ */
+export async function getOverdueInvoicesForDashboard(organizationId: string): Promise<
+  ActionResult<{
+    invoices: Array<{
+      id: string;
+      invoiceNumber: string;
+      clientName: string;
+      totalCents: number;
+      balanceCents: number;
+      dueDate: string;
+      daysOverdue: number;
+    }>;
+    totalOverdueCents: number;
+  }>
+> {
+  try {
+    const now = new Date();
+
+    // First, ensure sent invoices past due date are marked as overdue
+    await prisma.invoice.updateMany({
+      where: {
+        organizationId,
+        status: "sent",
+        dueDate: { lt: now },
+      },
+      data: { status: "overdue" },
+    });
+
+    // Fetch overdue invoices
+    const overdueInvoices = await prisma.invoice.findMany({
+      where: {
+        organizationId,
+        status: "overdue",
+      },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        clientName: true,
+        totalCents: true,
+        paidAmountCents: true,
+        dueDate: true,
+        client: {
+          select: { fullName: true, company: true },
+        },
+      },
+      orderBy: { dueDate: "asc" }, // Oldest first (most overdue)
+      take: 10,
+    });
+
+    const invoices = overdueInvoices.map((invoice) => {
+      const dueDate = new Date(invoice.dueDate);
+      const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const balanceCents = invoice.totalCents - (invoice.paidAmountCents || 0);
+
+      return {
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        clientName: invoice.clientName || invoice.client?.company || invoice.client?.fullName || "Unknown",
+        totalCents: invoice.totalCents,
+        balanceCents,
+        dueDate: invoice.dueDate.toISOString(),
+        daysOverdue: Math.max(0, daysOverdue),
+      };
+    });
+
+    const totalOverdueCents = invoices.reduce((sum, inv) => sum + inv.balanceCents, 0);
+
+    return success({ invoices, totalOverdueCents });
+  } catch (error) {
+    console.error("Error fetching overdue invoices for dashboard:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to fetch overdue invoices");
+  }
+}
+
+// ============================================================================
+// INVOICE SCHEDULING
+// ============================================================================
+
+/**
+ * Schedule an invoice to be sent at a future date
+ */
+export async function scheduleInvoice(
+  invoiceId: string,
+  scheduledSendAt: Date
+): Promise<ActionResult<{ scheduledSendAt: Date }>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Verify invoice belongs to organization and is in draft status
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        organizationId,
+      },
+      include: {
+        client: { select: { email: true, fullName: true } },
+      },
+    });
+
+    if (!invoice) {
+      return fail("Invoice not found");
+    }
+
+    if (invoice.status !== "draft") {
+      return fail("Only draft invoices can be scheduled");
+    }
+
+    // Validate scheduledSendAt is in the future
+    if (scheduledSendAt <= new Date()) {
+      return fail("Scheduled date must be in the future");
+    }
+
+    // Validate client has email
+    const clientEmail = invoice.clientEmail || invoice.client?.email;
+    if (!clientEmail) {
+      return fail("Cannot schedule invoice: client has no email address");
+    }
+
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        scheduledSendAt,
+        scheduledSentAt: null, // Reset in case rescheduling
+      },
+    });
+
+    revalidatePath("/invoices");
+    revalidatePath(`/invoices/${invoiceId}`);
+
+    return ok({ scheduledSendAt });
+  } catch (error) {
+    console.error("Error scheduling invoice:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to schedule invoice");
+  }
+}
+
+/**
+ * Cancel a scheduled invoice send
+ */
+export async function cancelScheduledInvoice(
+  invoiceId: string
+): Promise<ActionResult<void>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Verify invoice belongs to organization
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        organizationId,
+      },
+    });
+
+    if (!invoice) {
+      return fail("Invoice not found");
+    }
+
+    if (!invoice.scheduledSendAt) {
+      return fail("Invoice is not scheduled");
+    }
+
+    if (invoice.scheduledSentAt) {
+      return fail("Invoice has already been sent");
+    }
+
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        scheduledSendAt: null,
+        scheduledSentAt: null,
+      },
+    });
+
+    revalidatePath("/invoices");
+    revalidatePath(`/invoices/${invoiceId}`);
+
+    return ok();
+  } catch (error) {
+    console.error("Error cancelling scheduled invoice:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to cancel scheduled invoice");
+  }
+}
+
+/**
+ * Process scheduled invoices (called by cron job)
+ * Sends all invoices with scheduledSendAt <= now that haven't been sent yet
+ */
+export async function processScheduledInvoices(): Promise<
+  ActionResult<{ processed: number; errors: number }>
+> {
+  try {
+    const now = new Date();
+
+    // Find all invoices scheduled to be sent
+    const scheduledInvoices = await prisma.invoice.findMany({
+      where: {
+        scheduledSendAt: { lte: now },
+        scheduledSentAt: null,
+        status: "draft",
+      },
+      include: {
+        organization: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        client: {
+          select: {
+            email: true,
+            fullName: true,
+          },
+        },
+        lineItems: true,
+      },
+    });
+
+    let processed = 0;
+    let errors = 0;
+
+    for (const invoice of scheduledInvoices) {
+      try {
+        const clientEmail = invoice.clientEmail || invoice.client?.email;
+
+        if (!clientEmail) {
+          console.error(`[Scheduled Invoice] No email for invoice ${invoice.invoiceNumber}`);
+          errors++;
+          continue;
+        }
+
+        // Generate payment link if not exists
+        let paymentUrl = invoice.paymentLinkUrl;
+        if (!paymentUrl) {
+          paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoice.id}`;
+        }
+
+        // Send the invoice email
+        const resend = getResend();
+        await resend.emails.send({
+          from: `${invoice.organization.name} <invoices@mail.photoproos.com>`,
+          to: clientEmail,
+          subject: `Invoice ${invoice.invoiceNumber} from ${invoice.organization.name}`,
+          react: InvoiceReminderEmail({
+            invoiceNumber: invoice.invoiceNumber,
+            clientName: invoice.clientName || invoice.client?.fullName || "Customer",
+            businessName: invoice.organization.name,
+            amountDue: invoice.totalCents,
+            dueDate: invoice.dueDate,
+            paymentUrl,
+            isNewInvoice: true,
+          }),
+        });
+
+        // Update invoice status and mark as sent
+        await prisma.invoice.update({
+          where: { id: invoice.id },
+          data: {
+            status: "sent",
+            scheduledSentAt: now,
+            issueDate: now, // Update issue date to actual send date
+          },
+        });
+
+        // Log activity
+        await logActivity({
+          organizationId: invoice.organizationId,
+          type: "invoice_sent",
+          description: `Invoice ${invoice.invoiceNumber} was automatically sent (scheduled)`,
+          metadata: {
+            invoiceId: invoice.id,
+            invoiceNumber: invoice.invoiceNumber,
+            clientEmail,
+            scheduledSendAt: invoice.scheduledSendAt?.toISOString(),
+          },
+        });
+
+        processed++;
+      } catch (error) {
+        console.error(`[Scheduled Invoice] Error processing invoice ${invoice.id}:`, error);
+        errors++;
+      }
+    }
+
+    console.log(`[Scheduled Invoices] Processed ${processed} invoices, ${errors} errors`);
+
+    return ok({ processed, errors });
+  } catch (error) {
+    console.error("Error processing scheduled invoices:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to process scheduled invoices");
+  }
+}
+
+/**
+ * Get scheduled invoices for the organization
+ */
+export async function getScheduledInvoices(): Promise<
+  ActionResult<{
+    invoices: Array<{
+      id: string;
+      invoiceNumber: string;
+      clientName: string;
+      totalCents: number;
+      scheduledSendAt: Date;
+    }>;
+  }>
+> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        organizationId,
+        scheduledSendAt: { not: null },
+        scheduledSentAt: null,
+        status: "draft",
+      },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        clientName: true,
+        totalCents: true,
+        scheduledSendAt: true,
+        client: {
+          select: { fullName: true, company: true },
+        },
+      },
+      orderBy: { scheduledSendAt: "asc" },
+    });
+
+    return ok({
+      invoices: invoices.map((inv) => ({
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        clientName: inv.clientName || inv.client?.company || inv.client?.fullName || "Unknown",
+        totalCents: inv.totalCents,
+        scheduledSendAt: inv.scheduledSendAt!,
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching scheduled invoices:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to fetch scheduled invoices");
+  }
+}
+
+// ============================================================================
+// DEPOSIT INVOICES
+// ============================================================================
+
+/**
+ * Split an invoice into deposit and balance invoices
+ * Creates two new invoices: one for the deposit (due immediately) and one for the balance
+ */
+interface SplitInvoiceInput {
+  invoiceId: string;
+  depositPercent?: number; // Percentage (0-100), default 50
+  depositAmountCents?: number; // Or specify fixed amount
+  depositDueDate?: Date; // When deposit is due (default: immediately)
+  balanceDueDate?: Date; // When balance is due (default: original due date)
+}
+
+export async function splitInvoiceForDeposit(
+  input: SplitInvoiceInput
+): Promise<
+  ActionResult<{
+    depositInvoice: { id: string; invoiceNumber: string; totalCents: number };
+    balanceInvoice: { id: string; invoiceNumber: string; totalCents: number };
+  }>
+> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Get the original invoice
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: input.invoiceId,
+        organizationId,
+      },
+      include: {
+        lineItems: true,
+        client: true,
+      },
+    });
+
+    if (!invoice) {
+      return fail("Invoice not found");
+    }
+
+    if (invoice.status !== "draft") {
+      return fail("Only draft invoices can be split into deposit/balance");
+    }
+
+    if (invoice.isDeposit || invoice.isBalance) {
+      return fail("This invoice is already part of a deposit/balance split");
+    }
+
+    // Calculate deposit and balance amounts
+    let depositAmountCents: number;
+    let depositPercent: number;
+
+    if (input.depositAmountCents !== undefined) {
+      depositAmountCents = input.depositAmountCents;
+      depositPercent = (depositAmountCents / invoice.totalCents) * 100;
+    } else {
+      depositPercent = input.depositPercent || 50;
+      depositAmountCents = Math.round((invoice.totalCents * depositPercent) / 100);
+    }
+
+    const balanceAmountCents = invoice.totalCents - depositAmountCents;
+
+    if (depositAmountCents <= 0 || balanceAmountCents <= 0) {
+      return fail("Both deposit and balance must be greater than zero");
+    }
+
+    // Generate invoice numbers
+    const depositNumber = await generateInvoiceNumber(organizationId);
+    // Skip one number for balance
+    const balanceNumber = `${depositNumber.replace(/\d+$/, "")}${(parseInt(depositNumber.match(/\d+$/)?.[0] || "0", 10) + 1).toString().padStart(4, "0")}`;
+
+    // Dates
+    const depositDueDate = input.depositDueDate || new Date();
+    const balanceDueDate = input.balanceDueDate || invoice.dueDate;
+
+    // Create deposit and balance invoices in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create deposit invoice
+      const depositInvoice = await tx.invoice.create({
+        data: {
+          organizationId,
+          clientId: invoice.clientId,
+          invoiceNumber: depositNumber,
+          status: "draft",
+          subtotalCents: depositAmountCents,
+          taxCents: 0, // Tax typically goes on full invoice or balance
+          totalCents: depositAmountCents,
+          currency: invoice.currency,
+          issueDate: new Date(),
+          dueDate: depositDueDate,
+          clientName: invoice.clientName,
+          clientEmail: invoice.clientEmail,
+          clientAddress: invoice.clientAddress,
+          notes: `Deposit payment (${depositPercent.toFixed(0)}%) for ${invoice.invoiceNumber}`,
+          terms: invoice.terms,
+          isDeposit: true,
+          depositPercent,
+          parentInvoiceId: invoice.id,
+          autoReminders: invoice.autoReminders,
+        },
+      });
+
+      // Create deposit line item
+      await tx.invoiceLineItem.create({
+        data: {
+          invoiceId: depositInvoice.id,
+          itemType: "service",
+          description: `Deposit (${depositPercent.toFixed(0)}%) - ${invoice.lineItems.map(li => li.description).join(", ") || "Services"}`,
+          quantity: 1,
+          unitCents: depositAmountCents,
+          totalCents: depositAmountCents,
+        },
+      });
+
+      // Create balance invoice
+      const balanceInvoice = await tx.invoice.create({
+        data: {
+          organizationId,
+          clientId: invoice.clientId,
+          invoiceNumber: balanceNumber,
+          status: "draft",
+          subtotalCents: balanceAmountCents,
+          taxCents: invoice.taxCents, // Tax on balance
+          totalCents: balanceAmountCents + invoice.taxCents,
+          currency: invoice.currency,
+          issueDate: new Date(),
+          dueDate: balanceDueDate,
+          clientName: invoice.clientName,
+          clientEmail: invoice.clientEmail,
+          clientAddress: invoice.clientAddress,
+          notes: `Balance payment for ${invoice.invoiceNumber}. Deposit of ${depositPercent.toFixed(0)}% due separately.`,
+          terms: invoice.terms,
+          isBalance: true,
+          depositPercent,
+          parentInvoiceId: invoice.id,
+          autoReminders: invoice.autoReminders,
+          lateFeeEnabled: invoice.lateFeeEnabled,
+          lateFeeType: invoice.lateFeeType,
+          lateFeePercent: invoice.lateFeePercent,
+          lateFeeFlatCents: invoice.lateFeeFlatCents,
+        },
+      });
+
+      // Create balance line item
+      await tx.invoiceLineItem.create({
+        data: {
+          invoiceId: balanceInvoice.id,
+          itemType: "service",
+          description: `Balance (${(100 - depositPercent).toFixed(0)}%) - ${invoice.lineItems.map(li => li.description).join(", ") || "Services"}`,
+          quantity: 1,
+          unitCents: balanceAmountCents,
+          totalCents: balanceAmountCents,
+        },
+      });
+
+      // If there's tax, add it as a line item on the balance invoice
+      if (invoice.taxCents > 0) {
+        await tx.invoiceLineItem.create({
+          data: {
+            invoiceId: balanceInvoice.id,
+            itemType: "tax",
+            description: "Tax",
+            quantity: 1,
+            unitCents: invoice.taxCents,
+            totalCents: invoice.taxCents,
+          },
+        });
+      }
+
+      // Mark original invoice as voided/cancelled (it's been split)
+      await tx.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          status: "void",
+          notes: `${invoice.notes || ""}\n\n[Split into deposit ${depositNumber} and balance ${balanceNumber}]`.trim(),
+        },
+      });
+
+      return { depositInvoice, balanceInvoice };
+    });
+
+    // Log activity
+    await logActivity({
+      organizationId,
+      type: "invoice_split",
+      description: `Invoice ${invoice.invoiceNumber} split into deposit ${result.depositInvoice.invoiceNumber} and balance ${result.balanceInvoice.invoiceNumber}`,
+      metadata: {
+        originalInvoiceId: invoice.id,
+        originalInvoiceNumber: invoice.invoiceNumber,
+        depositInvoiceId: result.depositInvoice.id,
+        depositInvoiceNumber: result.depositInvoice.invoiceNumber,
+        depositAmountCents,
+        balanceInvoiceId: result.balanceInvoice.id,
+        balanceInvoiceNumber: result.balanceInvoice.invoiceNumber,
+        balanceAmountCents,
+        depositPercent,
+      },
+    });
+
+    revalidatePath("/invoices");
+    revalidatePath(`/invoices/${invoice.id}`);
+
+    return ok({
+      depositInvoice: {
+        id: result.depositInvoice.id,
+        invoiceNumber: result.depositInvoice.invoiceNumber,
+        totalCents: result.depositInvoice.totalCents,
+      },
+      balanceInvoice: {
+        id: result.balanceInvoice.id,
+        invoiceNumber: result.balanceInvoice.invoiceNumber,
+        totalCents: result.balanceInvoice.totalCents,
+      },
+    });
+  } catch (error) {
+    console.error("Error splitting invoice for deposit:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to split invoice for deposit");
+  }
+}
+
+/**
+ * Create an invoice with deposit option directly
+ * This creates both deposit and balance invoices at once
+ */
+interface CreateInvoiceWithDepositInput {
+  clientId: string;
+  depositPercent: number; // 0-100
+  depositDueDate?: Date;
+  balanceDueDate: Date;
+  notes?: string;
+  terms?: string;
+  lineItems: {
+    itemType: LineItemType;
+    description: string;
+    quantity: number;
+    unitCents: number;
+  }[];
+  taxCents?: number;
+}
+
+export async function createInvoiceWithDeposit(
+  input: CreateInvoiceWithDepositInput
+): Promise<
+  ActionResult<{
+    depositInvoice: { id: string; invoiceNumber: string; totalCents: number };
+    balanceInvoice: { id: string; invoiceNumber: string; totalCents: number };
+  }>
+> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Validate client
+    const client = await prisma.client.findFirst({
+      where: {
+        id: input.clientId,
+        organizationId,
+      },
+    });
+
+    if (!client) {
+      return fail("Client not found");
+    }
+
+    // Calculate totals
+    const subtotalCents = input.lineItems.reduce((sum, item) => sum + item.quantity * item.unitCents, 0);
+    const taxCents = input.taxCents || 0;
+
+    // Calculate deposit and balance
+    const depositPercent = input.depositPercent;
+    const depositAmountCents = Math.round((subtotalCents * depositPercent) / 100);
+    const balanceAmountCents = subtotalCents - depositAmountCents;
+
+    if (depositAmountCents <= 0 || balanceAmountCents <= 0) {
+      return fail("Both deposit and balance must be greater than zero");
+    }
+
+    // Generate invoice numbers
+    const depositNumber = await generateInvoiceNumber(organizationId);
+    const balanceNumber = `${depositNumber.replace(/\d+$/, "")}${(parseInt(depositNumber.match(/\d+$/)?.[0] || "0", 10) + 1).toString().padStart(4, "0")}`;
+
+    // Dates
+    const depositDueDate = input.depositDueDate || new Date();
+    const balanceDueDate = input.balanceDueDate;
+
+    // Create both invoices in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create deposit invoice
+      const depositInvoice = await tx.invoice.create({
+        data: {
+          organizationId,
+          clientId: input.clientId,
+          invoiceNumber: depositNumber,
+          status: "draft",
+          subtotalCents: depositAmountCents,
+          taxCents: 0,
+          totalCents: depositAmountCents,
+          currency: "USD",
+          issueDate: new Date(),
+          dueDate: depositDueDate,
+          clientName: client.company || client.fullName,
+          clientEmail: client.email,
+          notes: `Deposit payment (${depositPercent.toFixed(0)}%)\n${input.notes || ""}`.trim(),
+          terms: input.terms,
+          isDeposit: true,
+          depositPercent,
+        },
+      });
+
+      // Create deposit line item
+      const itemDescriptions = input.lineItems.map(li => li.description).join(", ");
+      await tx.invoiceLineItem.create({
+        data: {
+          invoiceId: depositInvoice.id,
+          itemType: "service",
+          description: `Deposit (${depositPercent.toFixed(0)}%) - ${itemDescriptions}`,
+          quantity: 1,
+          unitCents: depositAmountCents,
+          totalCents: depositAmountCents,
+        },
+      });
+
+      // Create balance invoice
+      const balanceInvoice = await tx.invoice.create({
+        data: {
+          organizationId,
+          clientId: input.clientId,
+          invoiceNumber: balanceNumber,
+          status: "draft",
+          subtotalCents: balanceAmountCents,
+          taxCents,
+          totalCents: balanceAmountCents + taxCents,
+          currency: "USD",
+          issueDate: new Date(),
+          dueDate: balanceDueDate,
+          clientName: client.company || client.fullName,
+          clientEmail: client.email,
+          notes: `Balance payment (${(100 - depositPercent).toFixed(0)}%). Deposit invoice: ${depositNumber}\n${input.notes || ""}`.trim(),
+          terms: input.terms,
+          isBalance: true,
+          depositPercent,
+        },
+      });
+
+      // Create balance line item
+      await tx.invoiceLineItem.create({
+        data: {
+          invoiceId: balanceInvoice.id,
+          itemType: "service",
+          description: `Balance (${(100 - depositPercent).toFixed(0)}%) - ${itemDescriptions}`,
+          quantity: 1,
+          unitCents: balanceAmountCents,
+          totalCents: balanceAmountCents,
+        },
+      });
+
+      // If there's tax, add it as a line item on the balance invoice
+      if (taxCents > 0) {
+        await tx.invoiceLineItem.create({
+          data: {
+            invoiceId: balanceInvoice.id,
+            itemType: "tax",
+            description: "Tax",
+            quantity: 1,
+            unitCents: taxCents,
+            totalCents: taxCents,
+          },
+        });
+      }
+
+      // Link the invoices together
+      await tx.invoice.update({
+        where: { id: depositInvoice.id },
+        data: { parentInvoiceId: balanceInvoice.id },
+      });
+      await tx.invoice.update({
+        where: { id: balanceInvoice.id },
+        data: { parentInvoiceId: depositInvoice.id },
+      });
+
+      return { depositInvoice, balanceInvoice };
+    });
+
+    // Log activity
+    await logActivity({
+      organizationId,
+      type: "invoice_created",
+      description: `Created deposit invoice ${result.depositInvoice.invoiceNumber} and balance invoice ${result.balanceInvoice.invoiceNumber}`,
+      metadata: {
+        depositInvoiceId: result.depositInvoice.id,
+        depositInvoiceNumber: result.depositInvoice.invoiceNumber,
+        depositAmountCents,
+        balanceInvoiceId: result.balanceInvoice.id,
+        balanceInvoiceNumber: result.balanceInvoice.invoiceNumber,
+        balanceAmountCents,
+        depositPercent,
+        clientId: input.clientId,
+      },
+    });
+
+    revalidatePath("/invoices");
+
+    return ok({
+      depositInvoice: {
+        id: result.depositInvoice.id,
+        invoiceNumber: result.depositInvoice.invoiceNumber,
+        totalCents: result.depositInvoice.totalCents,
+      },
+      balanceInvoice: {
+        id: result.balanceInvoice.id,
+        invoiceNumber: result.balanceInvoice.invoiceNumber,
+        totalCents: result.balanceInvoice.totalCents,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating invoice with deposit:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to create invoice with deposit");
+  }
+}
+
+/**
+ * Get deposit/balance pair for an invoice
+ */
+export async function getDepositBalancePair(invoiceId: string): Promise<
+  ActionResult<{
+    depositInvoice: {
+      id: string;
+      invoiceNumber: string;
+      totalCents: number;
+      status: InvoiceStatus;
+      paidAmountCents: number;
+    } | null;
+    balanceInvoice: {
+      id: string;
+      invoiceNumber: string;
+      totalCents: number;
+      status: InvoiceStatus;
+      paidAmountCents: number;
+    } | null;
+    parentInvoice: {
+      id: string;
+      invoiceNumber: string;
+      totalCents: number;
+    } | null;
+  }>
+> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        organizationId,
+      },
+      include: {
+        parentInvoice: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+            totalCents: true,
+            isDeposit: true,
+            isBalance: true,
+          },
+        },
+        childInvoices: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+            totalCents: true,
+            status: true,
+            paidAmountCents: true,
+            isDeposit: true,
+            isBalance: true,
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      return fail("Invoice not found");
+    }
+
+    let depositInvoice = null;
+    let balanceInvoice = null;
+    let parentInvoice = null;
+
+    // Check if this invoice is part of a deposit/balance pair
+    if (invoice.isDeposit || invoice.isBalance) {
+      // This invoice is either a deposit or balance
+      if (invoice.isDeposit) {
+        depositInvoice = {
+          id: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          totalCents: invoice.totalCents,
+          status: invoice.status,
+          paidAmountCents: invoice.paidAmountCents,
+        };
+        // Find the balance sibling
+        const sibling = invoice.childInvoices.find(i => i.isBalance) ||
+                       (invoice.parentInvoice?.isBalance ? invoice.parentInvoice : null);
+        if (sibling) {
+          balanceInvoice = {
+            id: sibling.id,
+            invoiceNumber: sibling.invoiceNumber,
+            totalCents: sibling.totalCents,
+            status: "status" in sibling ? sibling.status : "draft",
+            paidAmountCents: "paidAmountCents" in sibling ? sibling.paidAmountCents : 0,
+          };
+        }
+      } else {
+        balanceInvoice = {
+          id: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          totalCents: invoice.totalCents,
+          status: invoice.status,
+          paidAmountCents: invoice.paidAmountCents,
+        };
+        // Find the deposit sibling
+        const sibling = invoice.childInvoices.find(i => i.isDeposit) ||
+                       (invoice.parentInvoice?.isDeposit ? invoice.parentInvoice : null);
+        if (sibling) {
+          depositInvoice = {
+            id: sibling.id,
+            invoiceNumber: sibling.invoiceNumber,
+            totalCents: sibling.totalCents,
+            status: "status" in sibling ? sibling.status : "draft",
+            paidAmountCents: "paidAmountCents" in sibling ? sibling.paidAmountCents : 0,
+          };
+        }
+      }
+    } else {
+      // This might be a parent invoice that was split
+      const depositChild = invoice.childInvoices.find(i => i.isDeposit);
+      const balanceChild = invoice.childInvoices.find(i => i.isBalance);
+
+      if (depositChild) {
+        depositInvoice = {
+          id: depositChild.id,
+          invoiceNumber: depositChild.invoiceNumber,
+          totalCents: depositChild.totalCents,
+          status: depositChild.status,
+          paidAmountCents: depositChild.paidAmountCents,
+        };
+      }
+      if (balanceChild) {
+        balanceInvoice = {
+          id: balanceChild.id,
+          invoiceNumber: balanceChild.invoiceNumber,
+          totalCents: balanceChild.totalCents,
+          status: balanceChild.status,
+          paidAmountCents: balanceChild.paidAmountCents,
+        };
+      }
+      parentInvoice = {
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        totalCents: invoice.totalCents,
+      };
+    }
+
+    return ok({
+      depositInvoice,
+      balanceInvoice,
+      parentInvoice,
+    });
+  } catch (error) {
+    console.error("Error fetching deposit/balance pair:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to fetch deposit/balance pair");
   }
 }

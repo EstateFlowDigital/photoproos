@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
@@ -70,7 +70,7 @@ export async function getPortfolioComments(options?: {
     return { success: true, comments };
   } catch (error) {
     console.error("Error fetching comments:", error);
-    return { success: false, error: "Failed to fetch comments" };
+    return fail("Failed to fetch comments");
   }
 }
 
@@ -87,7 +87,7 @@ export async function approveComment(
     });
 
     if (!comment) {
-      return { success: false, error: "Comment not found" };
+      return fail("Comment not found");
     }
 
     await prisma.portfolioComment.update({
@@ -99,7 +99,7 @@ export async function approveComment(
     return ok();
   } catch (error) {
     console.error("Error approving comment:", error);
-    return { success: false, error: "Failed to approve comment" };
+    return fail("Failed to approve comment");
   }
 }
 
@@ -115,7 +115,7 @@ export async function hideComment(
     });
 
     if (!comment) {
-      return { success: false, error: "Comment not found" };
+      return fail("Comment not found");
     }
 
     await prisma.portfolioComment.update({
@@ -127,7 +127,7 @@ export async function hideComment(
     return ok();
   } catch (error) {
     console.error("Error hiding comment:", error);
-    return { success: false, error: "Failed to hide comment" };
+    return fail("Failed to hide comment");
   }
 }
 
@@ -143,7 +143,7 @@ export async function unhideComment(
     });
 
     if (!comment) {
-      return { success: false, error: "Comment not found" };
+      return fail("Comment not found");
     }
 
     await prisma.portfolioComment.update({
@@ -155,7 +155,7 @@ export async function unhideComment(
     return ok();
   } catch (error) {
     console.error("Error unhiding comment:", error);
-    return { success: false, error: "Failed to unhide comment" };
+    return fail("Failed to unhide comment");
   }
 }
 
@@ -171,7 +171,7 @@ export async function deleteComment(
     });
 
     if (!comment) {
-      return { success: false, error: "Comment not found" };
+      return fail("Comment not found");
     }
 
     await prisma.portfolioComment.delete({
@@ -182,7 +182,7 @@ export async function deleteComment(
     return ok();
   } catch (error) {
     console.error("Error deleting comment:", error);
-    return { success: false, error: "Failed to delete comment" };
+    return fail("Failed to delete comment");
   }
 }
 
@@ -221,7 +221,7 @@ export async function getCommentStats(): Promise<{
     };
   } catch (error) {
     console.error("Error fetching comment stats:", error);
-    return { success: false, error: "Failed to fetch comment stats" };
+    return fail("Failed to fetch comment stats");
   }
 }
 
@@ -242,7 +242,7 @@ export async function updateCommentSettings(
     });
 
     if (!portfolio) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     await prisma.portfolioWebsite.update({
@@ -255,6 +255,6 @@ export async function updateCommentSettings(
     return ok();
   } catch (error) {
     console.error("Error updating comment settings:", error);
-    return { success: false, error: "Failed to update settings" };
+    return fail("Failed to update settings");
   }
 }

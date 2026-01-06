@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import type { MemberRole } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "@/lib/constants";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -83,7 +83,7 @@ export async function updateOrganizationProfile(input: {
     return ok();
   } catch (error) {
     console.error("Error updating organization profile:", error);
-    return { success: false, error: "Failed to update profile" };
+    return fail("Failed to update profile");
   }
 }
 
@@ -101,6 +101,7 @@ export async function updateOrganizationBranding(input: {
   invoiceLogoUrl?: string | null;
   hidePlatformBranding?: boolean;
   customDomain?: string | null;
+  autoArchiveExpiredGalleries?: boolean;
 }) {
   try {
     const organizationId = await getOrganizationId();
@@ -131,17 +132,21 @@ export async function updateOrganizationBranding(input: {
           ? { hidePlatformBranding: input.hidePlatformBranding }
           : {}),
         customDomain: input.customDomain,
+        ...(input.autoArchiveExpiredGalleries !== undefined
+          ? { autoArchiveExpiredGalleries: input.autoArchiveExpiredGalleries }
+          : {}),
       },
     });
 
     revalidatePath("/settings");
     revalidatePath("/settings/branding");
+    revalidatePath("/galleries");
     revalidatePath("/g"); // Revalidate gallery pages
 
     return ok();
   } catch (error) {
     console.error("Error updating branding:", error);
-    return { success: false, error: "Failed to update branding" };
+    return fail("Failed to update branding");
   }
 }
 
@@ -171,7 +176,7 @@ export async function updateTravelSettings(input: {
     return ok();
   } catch (error) {
     console.error("Error updating travel settings:", error);
-    return { success: false, error: "Failed to update travel settings" };
+    return fail("Failed to update travel settings");
   }
 }
 
@@ -199,7 +204,7 @@ export async function updateTaxSettings(input: {
     return ok();
   } catch (error) {
     console.error("Error updating tax settings:", error);
-    return { success: false, error: "Failed to update tax settings" };
+    return fail("Failed to update tax settings");
   }
 }
 
@@ -218,16 +223,13 @@ export async function getTaxSettings() {
       },
     });
 
-    return {
-      success: true,
-      data: {
-        defaultTaxRate: org?.defaultTaxRate ?? 0,
-        taxLabel: org?.taxLabel ?? "Sales Tax",
-      },
-    };
+    return success({
+      defaultTaxRate: org?.defaultTaxRate ?? 0,
+      taxLabel: org?.taxLabel ?? "Sales Tax",
+    });
   } catch (error) {
     console.error("Error getting tax settings:", error);
-    return { success: false, error: "Failed to get tax settings" };
+    return fail("Failed to get tax settings");
   }
 }
 
@@ -250,15 +252,12 @@ export async function getCurrencySettings() {
       },
     });
 
-    return {
-      success: true,
-      data: {
-        currency: (org?.currency as SupportedCurrency) ?? "USD",
-      },
-    };
+    return success({
+      currency: (org?.currency as SupportedCurrency) ?? "USD",
+    });
   } catch (error) {
     console.error("Error getting currency settings:", error);
-    return { success: false, error: "Failed to get currency settings" };
+    return fail("Failed to get currency settings");
   }
 }
 
@@ -272,7 +271,7 @@ export async function updateCurrencySettings(input: { currency: SupportedCurrenc
     // Validate currency is supported
     const isValidCurrency = SUPPORTED_CURRENCIES.some((c) => c.code === input.currency);
     if (!isValidCurrency) {
-      return { success: false, error: "Invalid currency code" };
+      return fail("Invalid currency code");
     }
 
     await prisma.organization.update({
@@ -290,7 +289,7 @@ export async function updateCurrencySettings(input: { currency: SupportedCurrenc
     return ok();
   } catch (error) {
     console.error("Error updating currency settings:", error);
-    return { success: false, error: "Failed to update currency settings" };
+    return fail("Failed to update currency settings");
   }
 }
 
@@ -341,7 +340,7 @@ export async function updateMemberRole(memberId: string, role: MemberRole) {
     });
 
     if (!member) {
-      return { success: false, error: "Member not found" };
+      return fail("Member not found");
     }
 
     // Don't allow demoting the last owner
@@ -350,7 +349,7 @@ export async function updateMemberRole(memberId: string, role: MemberRole) {
         where: { organizationId, role: "owner" },
       });
       if (ownerCount <= 1) {
-        return { success: false, error: "Cannot demote the last owner" };
+        return fail("Cannot demote the last owner");
       }
     }
 
@@ -364,7 +363,7 @@ export async function updateMemberRole(memberId: string, role: MemberRole) {
     return ok();
   } catch (error) {
     console.error("Error updating member role:", error);
-    return { success: false, error: "Failed to update role" };
+    return fail("Failed to update role");
   }
 }
 
@@ -381,7 +380,7 @@ export async function removeMember(memberId: string) {
     });
 
     if (!member) {
-      return { success: false, error: "Member not found" };
+      return fail("Member not found");
     }
 
     // Don't allow removing the last owner
@@ -390,7 +389,7 @@ export async function removeMember(memberId: string) {
         where: { organizationId, role: "owner" },
       });
       if (ownerCount <= 1) {
-        return { success: false, error: "Cannot remove the last owner" };
+        return fail("Cannot remove the last owner");
       }
     }
 
@@ -403,7 +402,7 @@ export async function removeMember(memberId: string) {
     return ok();
   } catch (error) {
     console.error("Error removing member:", error);
-    return { success: false, error: "Failed to remove member" };
+    return fail("Failed to remove member");
   }
 }
 
@@ -453,7 +452,7 @@ export async function updateUserProfile(input: {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
     await prisma.user.update({
@@ -470,7 +469,7 @@ export async function updateUserProfile(input: {
     return ok();
   } catch (error) {
     console.error("Error updating user profile:", error);
-    return { success: false, error: "Failed to update profile" };
+    return fail("Failed to update profile");
   }
 }
 
@@ -647,10 +646,10 @@ export async function exportAllData() {
       })),
     };
 
-    return { success: true, data: exportData };
+    return success(exportData);
   } catch (error) {
     console.error("Error exporting data:", error);
-    return { success: false, error: "Failed to export data" };
+    return fail("Failed to export data");
   }
 }
 
@@ -673,7 +672,7 @@ export async function deleteAccount(confirmationText: string) {
     });
 
     if (!membership) {
-      return { success: false, error: "Only the owner can delete the account" };
+      return fail("Only the owner can delete the account");
     }
 
     // Verify confirmation text
@@ -683,7 +682,7 @@ export async function deleteAccount(confirmationText: string) {
     });
 
     if (confirmationText !== `delete ${org?.name}`) {
-      return { success: false, error: "Confirmation text does not match" };
+      return fail("Confirmation text does not match");
     }
 
     // Delete all related data in order (respecting foreign key constraints)
@@ -744,7 +743,7 @@ export async function deleteAccount(confirmationText: string) {
     return ok();
   } catch (error) {
     console.error("Error deleting account:", error);
-    return { success: false, error: "Failed to delete account" };
+    return fail("Failed to delete account");
   }
 }
 

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { sendGalleryReminderEmail } from "@/lib/email/send";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 import { logEmailSent } from "@/lib/actions/email-logs";
 import { EmailStatus, EmailType } from "@prisma/client";
 import { addDays, differenceInDays, isBefore, isAfter, startOfDay } from "date-fns";
@@ -246,7 +246,7 @@ export async function disableGalleryReminders(galleryId: string) {
     return ok();
   } catch (error) {
     console.error("Error disabling gallery reminders:", error);
-    return { success: false, error: "Failed to disable reminders" };
+    return fail("Failed to disable reminders");
   }
 }
 
@@ -262,7 +262,7 @@ export async function enableGalleryReminders(galleryId: string) {
     return ok();
   } catch (error) {
     console.error("Error enabling gallery reminders:", error);
-    return { success: false, error: "Failed to enable reminders" };
+    return fail("Failed to enable reminders");
   }
 }
 
@@ -282,7 +282,7 @@ export async function resetGalleryReminders(galleryId: string) {
     return ok();
   } catch (error) {
     console.error("Error resetting gallery reminders:", error);
-    return { success: false, error: "Failed to reset reminders" };
+    return fail("Failed to reset reminders");
   }
 }
 
@@ -299,7 +299,7 @@ export async function sendManualGalleryReminder(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -337,15 +337,15 @@ export async function sendManualGalleryReminder(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     if (!gallery.client?.email) {
-      return { success: false, error: "No client email associated with this gallery" };
+      return fail("No client email associated with this gallery");
     }
 
     if (gallery.status !== "delivered") {
-      return { success: false, error: "Gallery must be delivered before sending reminders" };
+      return fail("Gallery must be delivered before sending reminders");
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
@@ -425,10 +425,10 @@ export async function sendManualGalleryReminder(
       };
     }
 
-    return { success: false, error: emailResult.error || "Failed to send email" };
+    return fail(emailResult.error || "Failed to send email");
   } catch (error) {
     console.error("[Gallery Reminders] Error sending manual reminder:", error);
-    return { success: false, error: "Failed to send reminder" };
+    return fail("Failed to send reminder");
   }
 }
 
@@ -438,7 +438,7 @@ export async function sendManualGalleryReminder(
 export async function getGalleryReminderHistory(galleryId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -481,7 +481,7 @@ export async function getGalleryReminderHistory(galleryId: string) {
     };
   } catch (error) {
     console.error("[Gallery Reminders] Error fetching history:", error);
-    return { success: false, error: "Failed to fetch reminder history" };
+    return fail("Failed to fetch reminder history");
   }
 }
 
@@ -498,13 +498,13 @@ export async function updateGalleryExpiration(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
     // Validate expiration date is in the future
     if (expiresAt && isBefore(expiresAt, new Date())) {
-      return { success: false, error: "Expiration date must be in the future" };
+      return fail("Expiration date must be in the future");
     }
 
     await prisma.project.update({
@@ -528,7 +528,7 @@ export async function updateGalleryExpiration(
     return ok();
   } catch (error) {
     console.error("[Gallery Reminders] Error updating expiration:", error);
-    return { success: false, error: "Failed to update expiration" };
+    return fail("Failed to update expiration");
   }
 }
 
@@ -538,7 +538,7 @@ export async function updateGalleryExpiration(
 export async function extendGalleryExpiration(galleryId: string, days: number) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -548,7 +548,7 @@ export async function extendGalleryExpiration(galleryId: string, days: number) {
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const baseDate =
@@ -583,7 +583,7 @@ export async function extendGalleryExpiration(galleryId: string, days: number) {
     };
   } catch (error) {
     console.error("[Gallery Reminders] Error extending expiration:", error);
-    return { success: false, error: "Failed to extend expiration" };
+    return fail("Failed to extend expiration");
   }
 }
 
@@ -593,7 +593,7 @@ export async function extendGalleryExpiration(galleryId: string, days: number) {
 export async function getExpiringGalleries(withinDays: number = 7) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -641,7 +641,7 @@ export async function getExpiringGalleries(withinDays: number = 7) {
     };
   } catch (error) {
     console.error("[Gallery Reminders] Error fetching expiring galleries:", error);
-    return { success: false, error: "Failed to fetch expiring galleries" };
+    return fail("Failed to fetch expiring galleries");
   }
 }
 
@@ -651,7 +651,7 @@ export async function getExpiringGalleries(withinDays: number = 7) {
 export async function getUnviewedGalleries(withinDays: number = 7) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -698,7 +698,7 @@ export async function getUnviewedGalleries(withinDays: number = 7) {
     };
   } catch (error) {
     console.error("[Gallery Reminders] Error fetching unviewed galleries:", error);
-    return { success: false, error: "Failed to fetch unviewed galleries" };
+    return fail("Failed to fetch unviewed galleries");
   }
 }
 
@@ -708,7 +708,7 @@ export async function getUnviewedGalleries(withinDays: number = 7) {
 export async function getGalleryReminderStatus(galleryId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -726,7 +726,7 @@ export async function getGalleryReminderStatus(galleryId: string) {
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const today = new Date();
@@ -758,6 +758,6 @@ export async function getGalleryReminderStatus(galleryId: string) {
     };
   } catch (error) {
     console.error("[Gallery Reminders] Error fetching reminder status:", error);
-    return { success: false, error: "Failed to fetch reminder status" };
+    return fail("Failed to fetch reminder status");
   }
 }

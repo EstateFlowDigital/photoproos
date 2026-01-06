@@ -16,7 +16,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { nanoid } from "nanoid";
 import type Stripe from "stripe";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Helper Functions
@@ -104,7 +104,7 @@ export async function createOrder(
     });
 
     if (!orderPage) {
-      return { success: false, error: "Order page not found or not published" };
+      return fail("Order page not found or not published");
     }
 
     const organizationId = orderPage.organizationId;
@@ -182,16 +182,13 @@ export async function createOrder(
 
     revalidatePath(`/order/${orderPage.slug}`);
 
-    return {
-      success: true,
-      data: { orderId: order.id, sessionToken },
-    };
+    return success({ orderId: order.id, sessionToken });
   } catch (error) {
     console.error("[Orders] Error creating order:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create order" };
+    return fail("Failed to create order");
   }
 }
 
@@ -219,21 +216,15 @@ export async function createOrderCheckoutSession(
     });
 
     if (!order) {
-      return { success: false, error: "Order not found or already processed" };
+      return fail("Order not found or already processed");
     }
 
     if (!order.organization.stripeConnectAccountId) {
-      return {
-        success: false,
-        error: "Payment processing is not set up for this business",
-      };
+      return fail("Payment processing is not set up for this business",);
     }
 
     if (!order.organization.stripeConnectOnboarded) {
-      return {
-        success: false,
-        error: "Payment account is not fully configured",
-      };
+      return fail("Payment account is not fully configured",);
     }
 
     // Calculate platform fee
@@ -363,19 +354,16 @@ export async function createOrderCheckoutSession(
     });
 
     if (!session.url) {
-      return { success: false, error: "Failed to create checkout URL" };
+      return fail("Failed to create checkout URL");
     }
 
-    return {
-      success: true,
-      data: { checkoutUrl: session.url, sessionId: session.id },
-    };
+    return success({ checkoutUrl: session.url, sessionId: session.id });
   } catch (error) {
     console.error("[Orders] Error creating checkout session:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create checkout session" };
+    return fail("Failed to create checkout session");
   }
 }
 
@@ -418,34 +406,31 @@ export async function getOrderBySessionToken(
     });
 
     if (!order) {
-      return { success: false, error: "Order not found" };
+      return fail("Order not found");
     }
 
-    return {
-      success: true,
-      data: {
-        id: order.id,
-        orderNumber: order.orderNumber,
-        status: order.status,
-        totalCents: order.totalCents,
-        clientName: order.clientName,
-        clientEmail: order.clientEmail,
-        items: order.items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          itemType: item.itemType,
-          quantity: item.quantity,
-          totalCents: item.totalCents,
-          sqft: item.sqft,
-          pricingTierName: item.pricingTierName,
-        })),
-        paidAt: order.paidAt,
-        createdAt: order.createdAt,
-      },
-    };
+    return success({
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      totalCents: order.totalCents,
+      clientName: order.clientName,
+      clientEmail: order.clientEmail,
+      items: order.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        itemType: item.itemType,
+        quantity: item.quantity,
+        totalCents: item.totalCents,
+        sqft: item.sqft,
+        pricingTierName: item.pricingTierName,
+      })),
+      paidAt: order.paidAt,
+      createdAt: order.createdAt,
+    });
   } catch (error) {
     console.error("[Orders] Error fetching order:", error);
-    return { success: false, error: "Failed to fetch order" };
+    return fail("Failed to fetch order");
   }
 }
 
@@ -461,7 +446,7 @@ export async function verifyOrderPayment(
 
     const orderId = session.metadata?.orderId;
     if (!orderId) {
-      return { success: false, error: "Order ID not found in session" };
+      return fail("Order ID not found in session");
     }
 
     const order = await prisma.order.findUnique({
@@ -469,7 +454,7 @@ export async function verifyOrderPayment(
     });
 
     if (!order) {
-      return { success: false, error: "Order not found" };
+      return fail("Order not found");
     }
 
     if (session.payment_status === "paid" && order.status !== "paid") {
@@ -487,20 +472,17 @@ export async function verifyOrderPayment(
       revalidatePath("/orders");
     }
 
-    return {
-      success: true,
-      data: {
-        orderId,
-        orderNumber: order.orderNumber,
-        paid: session.payment_status === "paid",
-      },
-    };
+    return success({
+      orderId,
+      orderNumber: order.orderNumber,
+      paid: session.payment_status === "paid",
+    });
   } catch (error) {
     console.error("[Orders] Error verifying payment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to verify payment" };
+    return fail("Failed to verify payment");
   }
 }
 
@@ -693,7 +675,7 @@ export async function updateOrder(
     });
 
     if (!existing) {
-      return { success: false, error: "Order not found" };
+      return fail("Order not found");
     }
 
     const { id, ...updateData } = validated;
@@ -720,13 +702,13 @@ export async function updateOrder(
     revalidatePath("/orders");
     revalidatePath(`/orders/${id}`);
 
-    return { success: true, data: { id: order.id } };
+    return success({ id: order.id });
   } catch (error) {
     console.error("[Orders] Error updating order:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update order" };
+    return fail("Failed to update order");
   }
 }
 
@@ -745,11 +727,11 @@ export async function cancelOrder(id: string): Promise<ActionResult> {
     });
 
     if (!order) {
-      return { success: false, error: "Order not found" };
+      return fail("Order not found");
     }
 
     if (order.status === "completed") {
-      return { success: false, error: "Cannot cancel a completed order" };
+      return fail("Cannot cancel a completed order");
     }
 
     // If paid, process refund via Stripe first
@@ -776,10 +758,7 @@ export async function cancelOrder(id: string): Promise<ActionResult> {
       }
     } else if (order.status === "paid") {
       // Paid but no Stripe payment intent - manual refund required
-      return {
-        success: false,
-        error: "Cannot cancel a paid order without Stripe payment. Manual refund required.",
-      };
+      return fail("Cannot cancel a paid order without Stripe payment. Manual refund required.",);
     }
 
     await prisma.order.update({
@@ -793,9 +772,9 @@ export async function cancelOrder(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("[Orders] Error cancelling order:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to cancel order" };
+    return fail("Failed to cancel order");
   }
 }
 
@@ -977,30 +956,23 @@ export async function getSqftAnalytics() {
         ...data,
       }));
 
-    return {
-      success: true,
-      data: {
-        summary: {
-          totalSqft,
-          totalRevenue,
-          totalOrders: sqftItems.length,
-          avgSqftPerOrder,
-          revenuePerSqft,
-          recentSqft,
-          recentRevenue,
-          sqftTrend,
-        },
-        tiers,
-        distribution,
-        monthly,
+    return success({
+      summary: {
+        totalSqft,
+        totalRevenue,
+        totalOrders: sqftItems.length,
+        avgSqftPerOrder,
+        revenuePerSqft,
+        recentSqft,
+        recentRevenue,
+        sqftTrend,
       },
-    };
+      tiers,
+      distribution,
+      monthly,
+    });
   } catch (error) {
     console.error("[Orders] Error fetching sqft analytics:", error);
-    return {
-      success: false,
-      error: "Failed to fetch sqft analytics",
-      data: null,
-    };
+    return { success: false as const, error: "Failed to fetch sqft analytics", data: null };
   }
 }

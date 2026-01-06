@@ -1,13 +1,10 @@
 "use server";
 
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { nanoid } from "nanoid";
-
-type ActionResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 export interface CreateProjectBundleInput {
   // Client
@@ -63,24 +60,24 @@ export async function createProjectBundle(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate required fields
     if (!input.galleryName?.trim()) {
-      return { success: false, error: "Gallery name is required" };
+      return fail("Gallery name is required");
     }
 
     if (input.services.length === 0) {
-      return { success: false, error: "At least one service is required" };
+      return fail("At least one service is required");
     }
 
     if (input.clientMode === "new" && !input.newClient?.email) {
-      return { success: false, error: "Client email is required" };
+      return fail("Client email is required");
     }
 
     if (input.clientMode === "existing" && !input.clientId) {
-      return { success: false, error: "Please select a client" };
+      return fail("Please select a client");
     }
 
     // Calculate total price from services
@@ -225,13 +222,13 @@ export async function createProjectBundle(
     revalidatePath("/scheduling");
     revalidatePath("/payments");
 
-    return { success: true, data: result };
+    return success(result);
   } catch (error) {
     console.error("Error creating project bundle:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create project" };
+    return fail("Failed to create project");
   }
 }
 

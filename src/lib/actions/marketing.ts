@@ -1,7 +1,7 @@
 "use server";
 
 import { getResend, DEFAULT_FROM_EMAIL } from "@/lib/email/resend";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 /**
  * Subscribe to the newsletter
@@ -12,7 +12,7 @@ export async function subscribeToNewsletter(
   try {
     // Validate email
     if (!email || !email.includes("@")) {
-      return { success: false, error: "Please enter a valid email address" };
+      return fail("Please enter a valid email address");
     }
 
     // Add to Resend audience (if you have an audience set up)
@@ -51,13 +51,13 @@ export async function subscribeToNewsletter(
 
     if (error) {
       console.error("Newsletter signup error:", error);
-      return { success: false, error: "Failed to subscribe. Please try again." };
+      return fail("Failed to subscribe. Please try again.");
     }
 
     return { success: true, data: { id: data?.id || "sent" } };
   } catch (error) {
     console.error("Newsletter signup error:", error);
-    return { success: false, error: "An unexpected error occurred" };
+    return fail("An unexpected error occurred");
   }
 }
 
@@ -76,11 +76,11 @@ export async function submitContactForm(input: {
 
     // Validate required fields
     if (!name || !email || !message) {
-      return { success: false, error: "Please fill in all required fields" };
+      return fail("Please fill in all required fields");
     }
 
     if (!email.includes("@")) {
-      return { success: false, error: "Please enter a valid email address" };
+      return fail("Please enter a valid email address");
     }
 
     const subjectLabels: Record<string, string> = {
@@ -139,7 +139,7 @@ export async function submitContactForm(input: {
 
     if (teamError) {
       console.error("Contact form team notification error:", teamError);
-      return { success: false, error: "Failed to send message. Please try again." };
+      return fail("Failed to send message. Please try again.");
     }
 
     // Send confirmation to user
@@ -184,6 +184,6 @@ export async function submitContactForm(input: {
     return ok();
   } catch (error) {
     console.error("Contact form error:", error);
-    return { success: false, error: "An unexpected error occurred" };
+    return fail("An unexpected error occurred");
   }
 }

@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -51,11 +52,11 @@ export async function generateReceiptPdf(paymentId: string): Promise<{
     });
 
     if (!payment) {
-      return { success: false, error: "Payment not found or not yet paid" };
+      return fail("Payment not found or not yet paid");
     }
 
     if (!payment.paidAt) {
-      return { success: false, error: "Payment has no paid date" };
+      return fail("Payment has no paid date");
     }
 
     // Generate receipt number using shared utility
@@ -96,9 +97,6 @@ export async function generateReceiptPdf(paymentId: string): Promise<{
     };
   } catch (error) {
     console.error("Error generating receipt PDF:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to generate receipt PDF",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to generate receipt PDF",);
   }
 }

@@ -6,7 +6,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import type { ClientIndustry } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 export interface CSVClientRow {
   email: string;
@@ -157,7 +157,7 @@ export async function previewClientImport(
     // Parse CSV
     const rows = parseCSV(csvContent);
     if (rows.length < 2) {
-      return { success: false, error: "CSV must have a header row and at least one data row" };
+      return fail("CSV must have a header row and at least one data row");
     }
 
     // Extract headers (first row)
@@ -168,7 +168,7 @@ export async function previewClientImport(
     // Check for required headers
     const emailIndex = headers.findIndex((h) => h === "email" || h === "e-mail");
     if (emailIndex === -1) {
-      return { success: false, error: "CSV must have an 'email' column" };
+      return fail("CSV must have an 'email' column");
     }
 
     // Map headers to indices
@@ -244,9 +244,9 @@ export async function previewClientImport(
   } catch (error) {
     console.error("Error previewing import:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to preview import" };
+    return fail("Failed to preview import");
   }
 }
 
@@ -270,7 +270,7 @@ export async function importClients(
     // First, get preview to validate
     const previewResult = await previewClientImport(csvContent);
     if (!previewResult.success) {
-      return { success: false, error: previewResult.error };
+      return fail(previewResult.error);
     }
 
     const { validationResults } = previewResult.data;
@@ -401,9 +401,9 @@ export async function importClients(
   } catch (error) {
     console.error("Error importing clients:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to import clients" };
+    return fail("Failed to import clients");
   }
 }
 

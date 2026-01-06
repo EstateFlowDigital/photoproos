@@ -16,7 +16,7 @@ import {
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
 import type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Re-export the type for consumers who import from this file
 export type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
@@ -72,7 +72,7 @@ export async function getClientQuestionnairesForPortal(): Promise<
     const clientId = await getPortalClientId();
 
     if (!clientId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const questionnaires = await prisma.clientQuestionnaire.findMany({
@@ -117,7 +117,7 @@ export async function getClientQuestionnairesForPortal(): Promise<
     return { success: true, data: questionnaires as PortalQuestionnaireWithRelations[] };
   } catch (error) {
     console.error("Error fetching portal questionnaires:", error);
-    return { success: false, error: "Failed to fetch questionnaires" };
+    return fail("Failed to fetch questionnaires");
   }
 }
 
@@ -131,7 +131,7 @@ export async function getQuestionnaireForCompletion(
     const clientId = await getPortalClientId();
 
     if (!clientId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const questionnaire = await prisma.clientQuestionnaire.findFirst({
@@ -191,7 +191,7 @@ export async function getQuestionnaireForCompletion(
     return { success: true, data: questionnaire as PortalQuestionnaireWithRelations };
   } catch (error) {
     console.error("Error fetching questionnaire for completion:", error);
-    return { success: false, error: "Failed to fetch questionnaire" };
+    return fail("Failed to fetch questionnaire");
   }
 }
 
@@ -210,7 +210,7 @@ export async function saveQuestionnaireProgress(
     const clientId = await getPortalClientId();
 
     if (!clientId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify questionnaire belongs to client and is in progress
@@ -223,7 +223,7 @@ export async function saveQuestionnaireProgress(
     });
 
     if (!questionnaire) {
-      return { success: false, error: "Questionnaire not found or already submitted" };
+      return fail("Questionnaire not found or already submitted");
     }
 
     // Upsert responses
@@ -261,9 +261,9 @@ export async function saveQuestionnaireProgress(
   } catch (error) {
     console.error("Error saving questionnaire progress:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to save progress" };
+    return fail("Failed to save progress");
   }
 }
 
@@ -278,7 +278,7 @@ export async function acceptAgreement(
     const clientId = await getPortalClientId();
 
     if (!clientId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify questionnaire belongs to client
@@ -291,7 +291,7 @@ export async function acceptAgreement(
     });
 
     if (!questionnaire) {
-      return { success: false, error: "Questionnaire not found or already submitted" };
+      return fail("Questionnaire not found or already submitted");
     }
 
     // Get client info for audit
@@ -314,9 +314,9 @@ export async function acceptAgreement(
   } catch (error) {
     console.error("Error accepting agreement:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to accept agreement" };
+    return fail("Failed to accept agreement");
   }
 }
 
@@ -331,7 +331,7 @@ export async function submitQuestionnaireResponses(
     const clientId = await getPortalClientId();
 
     if (!clientId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify questionnaire belongs to client and is in progress
@@ -353,7 +353,7 @@ export async function submitQuestionnaireResponses(
     });
 
     if (!questionnaire) {
-      return { success: false, error: "Questionnaire not found or already submitted" };
+      return fail("Questionnaire not found or already submitted");
     }
 
     // Validate required fields
@@ -365,10 +365,7 @@ export async function submitQuestionnaireResponses(
     for (const field of requiredFields) {
       const value = responseMap.get(field.label);
       if (value === undefined || value === null || value === "") {
-        return {
-          success: false,
-          error: `Required field "${field.label}" is missing`,
-        };
+        return fail(`Required field "${field.label}" is missing`);
       }
     }
 
@@ -382,10 +379,7 @@ export async function submitQuestionnaireResponses(
 
     for (const agreement of requiredAgreements) {
       if (!agreement.accepted) {
-        return {
-          success: false,
-          error: `Required agreement "${agreement.title}" must be accepted`,
-        };
+        return fail(`Required agreement "${agreement.title}" must be accepted`);
       }
     }
 
@@ -513,9 +507,9 @@ export async function submitQuestionnaireResponses(
   } catch (error) {
     console.error("Error submitting questionnaire responses:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to submit questionnaire" };
+    return fail("Failed to submit questionnaire");
   }
 }
 
@@ -537,7 +531,7 @@ export async function getQuestionnaireCompletionStatus(
     const clientId = await getPortalClientId();
 
     if (!clientId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const questionnaire = await prisma.clientQuestionnaire.findFirst({
@@ -558,7 +552,7 @@ export async function getQuestionnaireCompletionStatus(
     });
 
     if (!questionnaire) {
-      return { success: false, error: "Questionnaire not found" };
+      return fail("Questionnaire not found");
     }
 
     const totalFields = questionnaire.template.fields.filter((f) => f.isRequired).length;
@@ -592,6 +586,6 @@ export async function getQuestionnaireCompletionStatus(
     };
   } catch (error) {
     console.error("Error getting completion status:", error);
-    return { success: false, error: "Failed to get completion status" };
+    return fail("Failed to get completion status");
   }
 }

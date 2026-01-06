@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
@@ -103,7 +103,7 @@ export async function getNotificationPreferences(): Promise<{
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
     const organizationId = auth.organizationId;
 
@@ -122,7 +122,7 @@ export async function getNotificationPreferences(): Promise<{
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Parse notification preferences from JSON or use defaults
@@ -152,7 +152,7 @@ export async function getNotificationPreferences(): Promise<{
     };
   } catch (error) {
     console.error("Error getting notification preferences:", error);
-    return { success: false, error: "Failed to get notification preferences" };
+    return fail("Failed to get notification preferences");
   }
 }
 
@@ -165,7 +165,7 @@ export async function updateNotificationPreferences(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     await prisma.organization.update({
@@ -179,7 +179,7 @@ export async function updateNotificationPreferences(
     return ok();
   } catch (error) {
     console.error("Error updating notification preferences:", error);
-    return { success: false, error: "Failed to update notification preferences" };
+    return fail("Failed to update notification preferences");
   }
 }
 
@@ -192,7 +192,7 @@ export async function updateDigestSettings(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     await prisma.organization.update({
@@ -209,7 +209,7 @@ export async function updateDigestSettings(
     return ok();
   } catch (error) {
     console.error("Error updating digest settings:", error);
-    return { success: false, error: "Failed to update digest settings" };
+    return fail("Failed to update digest settings");
   }
 }
 
@@ -222,7 +222,7 @@ export async function updateQuietHoursSettings(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     await prisma.organization.update({
@@ -238,7 +238,7 @@ export async function updateQuietHoursSettings(
     return ok();
   } catch (error) {
     console.error("Error updating quiet hours settings:", error);
-    return { success: false, error: "Failed to update quiet hours settings" };
+    return fail("Failed to update quiet hours settings");
   }
 }
 
@@ -253,7 +253,7 @@ export async function updateAllNotificationSettings(data: {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     await prisma.organization.update({
@@ -274,7 +274,7 @@ export async function updateAllNotificationSettings(data: {
     return ok();
   } catch (error) {
     console.error("Error updating notification settings:", error);
-    return { success: false, error: "Failed to update notification settings" };
+    return fail("Failed to update notification settings");
   }
 }
 

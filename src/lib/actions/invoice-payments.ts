@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // PARTIAL PAYMENT OPERATIONS
@@ -39,15 +39,15 @@ export async function recordInvoicePayment(input: {
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     if (invoice.status === "draft") {
-      return { success: false, error: "Cannot record payment for draft invoice" };
+      return fail("Cannot record payment for draft invoice");
     }
 
     if (invoice.status === "cancelled") {
-      return { success: false, error: "Cannot record payment for cancelled invoice" };
+      return fail("Cannot record payment for cancelled invoice");
     }
 
     // Calculate outstanding balance (including late fees)
@@ -55,14 +55,11 @@ export async function recordInvoicePayment(input: {
     const currentBalance = totalDue - invoice.paidAmountCents;
 
     if (input.amountCents <= 0) {
-      return { success: false, error: "Payment amount must be greater than zero" };
+      return fail("Payment amount must be greater than zero");
     }
 
     if (input.amountCents > currentBalance) {
-      return {
-        success: false,
-        error: `Payment amount exceeds outstanding balance of $${(currentBalance / 100).toFixed(2)}`,
-      };
+      return fail(`Payment amount exceeds outstanding balance of $${(currentBalance / 100).toFixed(2)}`);
     }
 
     // Create the payment record
@@ -123,9 +120,9 @@ export async function recordInvoicePayment(input: {
   } catch (error) {
     console.error("Error recording invoice payment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to record payment" };
+    return fail("Failed to record payment");
   }
 }
 
@@ -166,7 +163,7 @@ export async function getInvoicePayments(invoiceId: string): Promise<
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     const payments = await prisma.payment.findMany({
@@ -203,9 +200,9 @@ export async function getInvoicePayments(invoiceId: string): Promise<
   } catch (error) {
     console.error("Error fetching invoice payments:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch payments" };
+    return fail("Failed to fetch payments");
   }
 }
 
@@ -228,14 +225,11 @@ export async function voidPayment(paymentId: string): Promise<ActionResult> {
     });
 
     if (!payment) {
-      return { success: false, error: "Payment not found" };
+      return fail("Payment not found");
     }
 
     if (payment.stripePaymentIntentId) {
-      return {
-        success: false,
-        error: "Cannot void Stripe payments. Use refund instead.",
-      };
+      return fail("Cannot void Stripe payments. Use refund instead.",);
     }
 
     // Update invoice paid amount
@@ -282,9 +276,9 @@ export async function voidPayment(paymentId: string): Promise<ActionResult> {
   } catch (error) {
     console.error("Error voiding payment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to void payment" };
+    return fail("Failed to void payment");
   }
 }
 
@@ -313,11 +307,11 @@ export async function configureLateFee(input: {
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     if (invoice.status === "paid") {
-      return { success: false, error: "Cannot configure late fees for paid invoice" };
+      return fail("Cannot configure late fees for paid invoice");
     }
 
     await prisma.invoice.update({
@@ -336,9 +330,9 @@ export async function configureLateFee(input: {
   } catch (error) {
     console.error("Error configuring late fee:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to configure late fee" };
+    return fail("Failed to configure late fee");
   }
 }
 
@@ -360,25 +354,25 @@ export async function applyLateFee(invoiceId: string): Promise<
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     if (invoice.status === "paid") {
-      return { success: false, error: "Cannot apply late fee to paid invoice" };
+      return fail("Cannot apply late fee to paid invoice");
     }
 
     if (invoice.status === "draft") {
-      return { success: false, error: "Cannot apply late fee to draft invoice" };
+      return fail("Cannot apply late fee to draft invoice");
     }
 
     if (!invoice.lateFeeEnabled) {
-      return { success: false, error: "Late fees are not enabled for this invoice" };
+      return fail("Late fees are not enabled for this invoice");
     }
 
     // Check if invoice is actually overdue
     const now = new Date();
     if (invoice.dueDate > now) {
-      return { success: false, error: "Invoice is not overdue yet" };
+      return fail("Invoice is not overdue yet");
     }
 
     // Calculate late fee
@@ -392,7 +386,7 @@ export async function applyLateFee(invoiceId: string): Promise<
     }
 
     if (lateFee <= 0) {
-      return { success: false, error: "Late fee amount is zero" };
+      return fail("Late fee amount is zero");
     }
 
     // Apply the late fee
@@ -434,9 +428,9 @@ export async function applyLateFee(invoiceId: string): Promise<
   } catch (error) {
     console.error("Error applying late fee:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to apply late fee" };
+    return fail("Failed to apply late fee");
   }
 }
 
@@ -509,9 +503,9 @@ export async function applyBatchLateFees(): Promise<
   } catch (error) {
     console.error("[Late Fee Cron] Error applying batch late fees:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to apply batch late fees" };
+    return fail("Failed to apply batch late fees");
   }
 }
 
@@ -534,13 +528,13 @@ export async function waiveLateFees(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     const waivedAmount = invoice.lateFeeAppliedCents;
 
     if (waivedAmount <= 0) {
-      return { success: false, error: "No late fees to waive" };
+      return fail("No late fees to waive");
     }
 
     await prisma.invoice.update({
@@ -572,9 +566,9 @@ export async function waiveLateFees(
   } catch (error) {
     console.error("Error waiving late fees:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to waive late fees" };
+    return fail("Failed to waive late fees");
   }
 }
 
@@ -611,7 +605,7 @@ export async function getInvoiceBalance(invoiceId: string): Promise<
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     const totalDue = invoice.totalCents + invoice.lateFeeAppliedCents;
@@ -635,8 +629,8 @@ export async function getInvoiceBalance(invoiceId: string): Promise<
   } catch (error) {
     console.error("Error fetching invoice balance:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch invoice balance" };
+    return fail("Failed to fetch invoice balance");
   }
 }

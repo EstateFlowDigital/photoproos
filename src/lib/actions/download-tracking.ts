@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { sendDownloadReceiptEmail } from "@/lib/email/send";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -79,7 +79,7 @@ export async function logDownload(input: LogDownloadInput) {
     });
 
     if (!project) {
-      return { success: false, error: "Project not found" };
+      return fail("Project not found");
     }
 
     // Create download log entry
@@ -157,7 +157,7 @@ export async function logDownload(input: LogDownloadInput) {
     return { success: true, downloadLogId: downloadLog.id };
   } catch (error) {
     console.error("[Download Tracking] Error logging:", error);
-    return { success: false, error: "Failed to log download" };
+    return fail("Failed to log download");
   }
 }
 
@@ -167,7 +167,7 @@ export async function logDownload(input: LogDownloadInput) {
 export async function sendReceiptForDownload(downloadLogId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -176,7 +176,7 @@ export async function sendReceiptForDownload(downloadLogId: string) {
     });
 
     if (!downloadLog) {
-      return { success: false, error: "Download log not found" };
+      return fail("Download log not found");
     }
 
     // Fetch related project details
@@ -213,13 +213,13 @@ export async function sendReceiptForDownload(downloadLogId: string) {
       : null;
 
     if (!project) {
-      return { success: false, error: "Project not found for download" };
+      return fail("Project not found for download");
     }
 
     // Determine recipient email
     const recipientEmail = downloadLog.clientEmail || project.client?.email;
     if (!recipientEmail) {
-      return { success: false, error: "No client email available for this download" };
+      return fail("No client email available for this download");
     }
 
     // Build gallery URL
@@ -252,7 +252,7 @@ export async function sendReceiptForDownload(downloadLogId: string) {
     return ok();
   } catch (error) {
     console.error("[Download Tracking] Error sending receipt:", error);
-    return { success: false, error: "Failed to send download receipt" };
+    return fail("Failed to send download receipt");
   }
 }
 
@@ -264,7 +264,7 @@ export async function getGalleryDownloadAnalytics(
 ): Promise<{ success: boolean; data?: DownloadAnalytics; error?: string }> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -274,7 +274,7 @@ export async function getGalleryDownloadAnalytics(
     });
 
     if (!project) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Get all downloads for this gallery
@@ -350,7 +350,7 @@ export async function getGalleryDownloadAnalytics(
     };
   } catch (error) {
     console.error("[Download Tracking] Error fetching analytics:", error);
-    return { success: false, error: "Failed to fetch download analytics" };
+    return fail("Failed to fetch download analytics");
   }
 }
 
@@ -363,7 +363,7 @@ export async function getDownloadHistory(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -395,7 +395,7 @@ export async function getDownloadHistory(
     };
   } catch (error) {
     console.error("[Download Tracking] Error fetching history:", error);
-    return { success: false, error: "Failed to fetch download history" };
+    return fail("Failed to fetch download history");
   }
 }
 
@@ -405,7 +405,7 @@ export async function getDownloadHistory(
 export async function exportDownloadHistory(projectId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -452,7 +452,7 @@ export async function exportDownloadHistory(projectId: string) {
     return { success: true, data: csv };
   } catch (error) {
     console.error("[Download Tracking] Error exporting:", error);
-    return { success: false, error: "Failed to export download history" };
+    return fail("Failed to export download history");
   }
 }
 
@@ -464,7 +464,7 @@ export async function getOrganizationDownloadStats(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -514,7 +514,7 @@ export async function getOrganizationDownloadStats(
     };
   } catch (error) {
     console.error("[Download Tracking] Error fetching org stats:", error);
-    return { success: false, error: "Failed to fetch organization download stats" };
+    return fail("Failed to fetch organization download stats");
   }
 }
 
@@ -524,7 +524,7 @@ export async function getOrganizationDownloadStats(
 export async function getGalleryHeatMapData(projectId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -550,7 +550,7 @@ export async function getGalleryHeatMapData(projectId: string) {
     });
 
     if (!project) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Get download counts by asset
@@ -629,6 +629,6 @@ export async function getGalleryHeatMapData(projectId: string) {
     };
   } catch (error) {
     console.error("[Download Tracking] Error fetching heat map data:", error);
-    return { success: false, error: "Failed to fetch heat map data" };
+    return fail("Failed to fetch heat map data");
   }
 }

@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import crypto from "crypto";
 import { Prisma } from "@prisma/client";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // ============================================================================
 // WEBHOOK ENDPOINT ACTIONS
@@ -61,7 +61,7 @@ function generateWebhookSecret(): string {
 export async function getWebhookEndpoints() {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -69,7 +69,7 @@ export async function getWebhookEndpoints() {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -99,7 +99,7 @@ export async function getWebhookEndpoints() {
     return { success: true, webhooks };
   } catch (error) {
     console.error("Failed to get webhook endpoints:", error);
-    return { success: false, error: "Failed to fetch webhook endpoints" };
+    return fail("Failed to fetch webhook endpoints");
   }
 }
 
@@ -113,7 +113,7 @@ export async function createWebhookEndpoint(params: {
 }) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -121,28 +121,28 @@ export async function createWebhookEndpoint(params: {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   // Validate URL
   try {
     const url = new URL(params.url);
     if (!["https:", "http:"].includes(url.protocol)) {
-      return { success: false, error: "URL must use HTTP or HTTPS" };
+      return fail("URL must use HTTP or HTTPS");
     }
   } catch {
-    return { success: false, error: "Invalid URL format" };
+    return fail("Invalid URL format");
   }
 
   // Validate events
   if (!params.events || params.events.length === 0) {
-    return { success: false, error: "At least one event must be selected" };
+    return fail("At least one event must be selected");
   }
 
   const validEventIds = WEBHOOK_EVENT_TYPES.map((e) => e.id);
   const invalidEvents = params.events.filter((e) => !validEventIds.includes(e as WebhookEventId));
   if (invalidEvents.length > 0) {
-    return { success: false, error: `Invalid events: ${invalidEvents.join(", ")}` };
+    return fail(`Invalid events: ${invalidEvents.join(", ")}`);
   }
 
   try {
@@ -174,7 +174,7 @@ export async function createWebhookEndpoint(params: {
     };
   } catch (error) {
     console.error("Failed to create webhook endpoint:", error);
-    return { success: false, error: "Failed to create webhook endpoint" };
+    return fail("Failed to create webhook endpoint");
   }
 }
 
@@ -192,7 +192,7 @@ export async function updateWebhookEndpoint(
 ) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -200,7 +200,7 @@ export async function updateWebhookEndpoint(
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -210,7 +210,7 @@ export async function updateWebhookEndpoint(
     });
 
     if (!webhook || webhook.organizationId !== organization.id) {
-      return { success: false, error: "Webhook endpoint not found" };
+      return fail("Webhook endpoint not found");
     }
 
     // Validate URL if provided
@@ -218,22 +218,22 @@ export async function updateWebhookEndpoint(
       try {
         const url = new URL(params.url);
         if (!["https:", "http:"].includes(url.protocol)) {
-          return { success: false, error: "URL must use HTTP or HTTPS" };
+          return fail("URL must use HTTP or HTTPS");
         }
       } catch {
-        return { success: false, error: "Invalid URL format" };
+        return fail("Invalid URL format");
       }
     }
 
     // Validate events if provided
     if (params.events) {
       if (params.events.length === 0) {
-        return { success: false, error: "At least one event must be selected" };
+        return fail("At least one event must be selected");
       }
       const validEventIds = WEBHOOK_EVENT_TYPES.map((e) => e.id);
       const invalidEvents = params.events.filter((e) => !validEventIds.includes(e as WebhookEventId));
       if (invalidEvents.length > 0) {
-        return { success: false, error: `Invalid events: ${invalidEvents.join(", ")}` };
+        return fail(`Invalid events: ${invalidEvents.join(", ")}`);
       }
     }
 
@@ -251,7 +251,7 @@ export async function updateWebhookEndpoint(
     return { success: true, webhook: updated };
   } catch (error) {
     console.error("Failed to update webhook endpoint:", error);
-    return { success: false, error: "Failed to update webhook endpoint" };
+    return fail("Failed to update webhook endpoint");
   }
 }
 
@@ -261,7 +261,7 @@ export async function updateWebhookEndpoint(
 export async function deleteWebhookEndpoint(webhookId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -269,7 +269,7 @@ export async function deleteWebhookEndpoint(webhookId: string) {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -279,7 +279,7 @@ export async function deleteWebhookEndpoint(webhookId: string) {
     });
 
     if (!webhook || webhook.organizationId !== organization.id) {
-      return { success: false, error: "Webhook endpoint not found" };
+      return fail("Webhook endpoint not found");
     }
 
     await prisma.webhookEndpoint.delete({
@@ -290,7 +290,7 @@ export async function deleteWebhookEndpoint(webhookId: string) {
     return ok();
   } catch (error) {
     console.error("Failed to delete webhook endpoint:", error);
-    return { success: false, error: "Failed to delete webhook endpoint" };
+    return fail("Failed to delete webhook endpoint");
   }
 }
 
@@ -300,7 +300,7 @@ export async function deleteWebhookEndpoint(webhookId: string) {
 export async function regenerateWebhookSecret(webhookId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -308,7 +308,7 @@ export async function regenerateWebhookSecret(webhookId: string) {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -318,7 +318,7 @@ export async function regenerateWebhookSecret(webhookId: string) {
     });
 
     if (!webhook || webhook.organizationId !== organization.id) {
-      return { success: false, error: "Webhook endpoint not found" };
+      return fail("Webhook endpoint not found");
     }
 
     const newSecret = generateWebhookSecret();
@@ -332,7 +332,7 @@ export async function regenerateWebhookSecret(webhookId: string) {
     return { success: true, secret: newSecret };
   } catch (error) {
     console.error("Failed to regenerate webhook secret:", error);
-    return { success: false, error: "Failed to regenerate webhook secret" };
+    return fail("Failed to regenerate webhook secret");
   }
 }
 
@@ -342,7 +342,7 @@ export async function regenerateWebhookSecret(webhookId: string) {
 export async function testWebhookEndpoint(webhookId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -350,7 +350,7 @@ export async function testWebhookEndpoint(webhookId: string) {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -360,7 +360,7 @@ export async function testWebhookEndpoint(webhookId: string) {
     });
 
     if (!webhook || webhook.organizationId !== organization.id) {
-      return { success: false, error: "Webhook endpoint not found" };
+      return fail("Webhook endpoint not found");
     }
 
     // Create test payload
@@ -452,7 +452,7 @@ export async function testWebhookEndpoint(webhookId: string) {
     };
   } catch (error) {
     console.error("Failed to test webhook:", error);
-    return { success: false, error: "Failed to test webhook" };
+    return fail("Failed to test webhook");
   }
 }
 
@@ -468,7 +468,7 @@ export async function getWebhookDeliveries(
 ) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -476,7 +476,7 @@ export async function getWebhookDeliveries(
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -486,7 +486,7 @@ export async function getWebhookDeliveries(
     });
 
     if (!webhook || webhook.organizationId !== organization.id) {
-      return { success: false, error: "Webhook endpoint not found" };
+      return fail("Webhook endpoint not found");
     }
 
     const [deliveries, total] = await Promise.all([
@@ -514,7 +514,7 @@ export async function getWebhookDeliveries(
     return { success: true, deliveries, total };
   } catch (error) {
     console.error("Failed to get webhook deliveries:", error);
-    return { success: false, error: "Failed to fetch webhook deliveries" };
+    return fail("Failed to fetch webhook deliveries");
   }
 }
 
@@ -524,7 +524,7 @@ export async function getWebhookDeliveries(
 export async function getWebhookDelivery(deliveryId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -532,7 +532,7 @@ export async function getWebhookDelivery(deliveryId: string) {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -549,13 +549,13 @@ export async function getWebhookDelivery(deliveryId: string) {
     });
 
     if (!delivery || delivery.endpoint.organizationId !== organization.id) {
-      return { success: false, error: "Webhook delivery not found" };
+      return fail("Webhook delivery not found");
     }
 
     return { success: true, delivery };
   } catch (error) {
     console.error("Failed to get webhook delivery:", error);
-    return { success: false, error: "Failed to fetch webhook delivery" };
+    return fail("Failed to fetch webhook delivery");
   }
 }
 
@@ -670,6 +670,6 @@ export async function dispatchWebhookEvent(
     };
   } catch (error) {
     console.error("Failed to dispatch webhook event:", error);
-    return { success: false, error: "Failed to dispatch webhook event" };
+    return fail("Failed to dispatch webhook event");
   }
 }

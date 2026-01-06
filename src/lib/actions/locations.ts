@@ -13,7 +13,7 @@ import {
   getTravelInfo,
 } from "@/lib/google-maps/distance";
 import { GoogleMapsError } from "@/lib/google-maps/types";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID (simplified for now - will integrate with auth later)
 async function getOrganizationId(): Promise<string> {
@@ -87,9 +87,9 @@ export async function createLocation(
   } catch (error) {
     console.error("Error creating location:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create location" };
+    return fail("Failed to create location");
   }
 }
 
@@ -166,12 +166,12 @@ export async function createLocationFromAddress(
   } catch (error) {
     console.error("Error creating location from address:", error);
     if (error instanceof GoogleMapsError) {
-      return { success: false, error: `Geocoding failed: ${error.message}` };
+      return fail(`Geocoding failed: ${error.message}`);
     }
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create location" };
+    return fail("Failed to create location");
   }
 }
 
@@ -194,7 +194,7 @@ export async function updateLocation(
     });
 
     if (!existing) {
-      return { success: false, error: "Location not found" };
+      return fail("Location not found");
     }
 
     const { id, ...updateData } = validated;
@@ -221,9 +221,9 @@ export async function updateLocation(
   } catch (error) {
     console.error("Error updating location:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update location" };
+    return fail("Failed to update location");
   }
 }
 
@@ -243,7 +243,7 @@ export async function deleteLocation(id: string): Promise<ActionResult> {
     });
 
     if (!existing) {
-      return { success: false, error: "Location not found" };
+      return fail("Location not found");
     }
 
     await prisma.location.delete({
@@ -256,9 +256,9 @@ export async function deleteLocation(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("Error deleting location:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete location" };
+    return fail("Failed to delete location");
   }
 }
 
@@ -348,10 +348,10 @@ export async function calculateTravelBetweenLocations(
     ]);
 
     if (!fromLocation) {
-      return { success: false, error: "Origin location not found" };
+      return fail("Origin location not found");
     }
     if (!toLocation) {
-      return { success: false, error: "Destination location not found" };
+      return fail("Destination location not found");
     }
 
     // Calculate distance using Google Maps API
@@ -375,12 +375,12 @@ export async function calculateTravelBetweenLocations(
   } catch (error) {
     console.error("Error calculating travel:", error);
     if (error instanceof GoogleMapsError) {
-      return { success: false, error: `Distance calculation failed: ${error.message}` };
+      return fail(`Distance calculation failed: ${error.message}`);
     }
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to calculate travel" };
+    return fail("Failed to calculate travel");
   }
 }
 
@@ -408,7 +408,7 @@ export async function calculateTravelFromHomeBase(
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Check if assigned user has a home base override
@@ -426,7 +426,7 @@ export async function calculateTravelFromHomeBase(
     }
 
     if (!homeBase) {
-      return { success: false, error: "No home base location configured" };
+      return fail("No home base location configured");
     }
 
     // Get destination location
@@ -435,7 +435,7 @@ export async function calculateTravelFromHomeBase(
     });
 
     if (!toLocation) {
-      return { success: false, error: "Destination location not found" };
+      return fail("Destination location not found");
     }
 
     // Calculate distance
@@ -460,12 +460,12 @@ export async function calculateTravelFromHomeBase(
   } catch (error) {
     console.error("Error calculating travel from home base:", error);
     if (error instanceof GoogleMapsError) {
-      return { success: false, error: `Distance calculation failed: ${error.message}` };
+      return fail(`Distance calculation failed: ${error.message}`);
     }
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to calculate travel" };
+    return fail("Failed to calculate travel");
   }
 }
 
@@ -494,7 +494,7 @@ export async function calculateTravelPreview(
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Check if assigned user has a home base override
@@ -512,7 +512,7 @@ export async function calculateTravelPreview(
     }
 
     if (!homeBase) {
-      return { success: false, error: "No home base location configured" };
+      return fail("No home base location configured");
     }
 
     // Calculate distance
@@ -537,12 +537,12 @@ export async function calculateTravelPreview(
   } catch (error) {
     console.error("Error calculating travel preview:", error);
     if (error instanceof GoogleMapsError) {
-      return { success: false, error: `Distance calculation failed: ${error.message}` };
+      return fail(`Distance calculation failed: ${error.message}`);
     }
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to calculate travel" };
+    return fail("Failed to calculate travel");
   }
 }
 
@@ -568,7 +568,7 @@ export async function setOrganizationHomeBase(
     });
 
     if (!location) {
-      return { success: false, error: "Location not found" };
+      return fail("Location not found");
     }
 
     await prisma.organization.update({
@@ -583,9 +583,9 @@ export async function setOrganizationHomeBase(
   } catch (error) {
     console.error("Error setting home base:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set home base" };
+    return fail("Failed to set home base");
   }
 }
 
@@ -600,23 +600,23 @@ export async function createAndSetHomeBase(
     const result = await createLocationFromAddress(address, "Organization home base");
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      return fail(result.error);
     }
 
     // Set as home base
     const setResult = await setOrganizationHomeBase(result.data.id);
 
     if (!setResult.success) {
-      return { success: false, error: setResult.error };
+      return fail(setResult.error);
     }
 
     return { success: true, data: { locationId: result.data.id } };
   } catch (error) {
     console.error("Error creating and setting home base:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create and set home base" };
+    return fail("Failed to create and set home base");
   }
 }
 
@@ -661,9 +661,9 @@ export async function validateAddressAction(
   } catch (error) {
     console.error("Error validating address:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to validate address" };
+    return fail("Failed to validate address");
   }
 }
 

@@ -5,7 +5,7 @@ import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
 import { Prisma, type CustomFormFieldType } from "@prisma/client";
 import { sendFormSubmissionNotificationEmail } from "@/lib/email/send";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
@@ -172,7 +172,7 @@ export async function getForms(portfolioId?: string) {
     return { success: true, forms };
   } catch (error) {
     console.error("Error fetching forms:", error);
-    return { success: false, error: "Failed to fetch forms" };
+    return fail("Failed to fetch forms");
   }
 }
 
@@ -197,13 +197,13 @@ export async function getForm(formId: string) {
     });
 
     if (!form) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     return { success: true, form };
   } catch (error) {
     console.error("Error fetching form:", error);
-    return { success: false, error: "Failed to fetch form" };
+    return fail("Failed to fetch form");
   }
 }
 
@@ -257,7 +257,7 @@ export async function createForm(input: CreateFormInput) {
     return { success: true, form };
   } catch (error) {
     console.error("Error creating form:", error);
-    return { success: false, error: "Failed to create form" };
+    return fail("Failed to create form");
   }
 }
 
@@ -271,7 +271,7 @@ export async function updateForm(formId: string, input: UpdateFormInput) {
     });
 
     if (!existing) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     // Handle slug update
@@ -294,7 +294,7 @@ export async function updateForm(formId: string, input: UpdateFormInput) {
     return { success: true, form };
   } catch (error) {
     console.error("Error updating form:", error);
-    return { success: false, error: "Failed to update form" };
+    return fail("Failed to update form");
   }
 }
 
@@ -308,7 +308,7 @@ export async function deleteForm(formId: string) {
     });
 
     if (!form) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     await prisma.customForm.delete({
@@ -319,7 +319,7 @@ export async function deleteForm(formId: string) {
     return ok();
   } catch (error) {
     console.error("Error deleting form:", error);
-    return { success: false, error: "Failed to delete form" };
+    return fail("Failed to delete form");
   }
 }
 
@@ -334,7 +334,7 @@ export async function duplicateForm(formId: string) {
     });
 
     if (!form) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     const newSlug = await getUniqueSlug(`${form.slug}-copy`);
@@ -379,7 +379,7 @@ export async function duplicateForm(formId: string) {
     return { success: true, form: newForm };
   } catch (error) {
     console.error("Error duplicating form:", error);
-    return { success: false, error: "Failed to duplicate form" };
+    return fail("Failed to duplicate form");
   }
 }
 
@@ -398,7 +398,7 @@ export async function addFormField(formId: string, field: FormFieldInput) {
     });
 
     if (!form) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     const lastPosition = form.fields[0]?.position ?? -1;
@@ -429,7 +429,7 @@ export async function addFormField(formId: string, field: FormFieldInput) {
     return { success: true, field: newField };
   } catch (error) {
     console.error("Error adding field:", error);
-    return { success: false, error: "Failed to add field" };
+    return fail("Failed to add field");
   }
 }
 
@@ -444,7 +444,7 @@ export async function updateFormField(fieldId: string, updates: Partial<FormFiel
     });
 
     if (!field || field.form.organizationId !== organizationId) {
-      return { success: false, error: "Field not found" };
+      return fail("Field not found");
     }
 
     // Transform updates to handle JSON fields properly
@@ -465,7 +465,7 @@ export async function updateFormField(fieldId: string, updates: Partial<FormFiel
     return { success: true, field: updatedField };
   } catch (error) {
     console.error("Error updating field:", error);
-    return { success: false, error: "Failed to update field" };
+    return fail("Failed to update field");
   }
 }
 
@@ -480,7 +480,7 @@ export async function deleteFormField(fieldId: string) {
     });
 
     if (!field || field.form.organizationId !== organizationId) {
-      return { success: false, error: "Field not found" };
+      return fail("Field not found");
     }
 
     await prisma.customFormField.delete({
@@ -491,7 +491,7 @@ export async function deleteFormField(fieldId: string) {
     return ok();
   } catch (error) {
     console.error("Error deleting field:", error);
-    return { success: false, error: "Failed to delete field" };
+    return fail("Failed to delete field");
   }
 }
 
@@ -505,7 +505,7 @@ export async function reorderFormFields(formId: string, fieldIds: string[]) {
     });
 
     if (!form) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     // Update positions
@@ -522,7 +522,7 @@ export async function reorderFormFields(formId: string, fieldIds: string[]) {
     return ok();
   } catch (error) {
     console.error("Error reordering fields:", error);
-    return { success: false, error: "Failed to reorder fields" };
+    return fail("Failed to reorder fields");
   }
 }
 
@@ -545,7 +545,7 @@ export async function getFormBySlug(slug: string) {
     });
 
     if (!form || !form.isActive) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     // Check max submissions
@@ -554,14 +554,14 @@ export async function getFormBySlug(slug: string) {
         where: { formId: form.id },
       });
       if (count >= form.maxSubmissions) {
-        return { success: false, error: "This form is no longer accepting submissions" };
+        return fail("This form is no longer accepting submissions");
       }
     }
 
     return { success: true, form };
   } catch (error) {
     console.error("Error fetching form:", error);
-    return { success: false, error: "Failed to fetch form" };
+    return fail("Failed to fetch form");
   }
 }
 
@@ -587,7 +587,7 @@ export async function submitForm(
     });
 
     if (!form || !form.isActive) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     // Check max submissions
@@ -596,7 +596,7 @@ export async function submitForm(
         where: { formId: form.id },
       });
       if (count >= form.maxSubmissions) {
-        return { success: false, error: "This form is no longer accepting submissions" };
+        return fail("This form is no longer accepting submissions");
       }
     }
 
@@ -609,7 +609,7 @@ export async function submitForm(
         },
       });
       if (userCount >= form.submissionsPerUser) {
-        return { success: false, error: "You have reached the submission limit for this form" };
+        return fail("You have reached the submission limit for this form");
       }
     }
 
@@ -618,7 +618,7 @@ export async function submitForm(
       if (field.isRequired) {
         const value = data[field.name];
         if (value === undefined || value === null || value === "") {
-          return { success: false, error: `${field.label} is required` };
+          return fail(`${field.label} is required`);
         }
       }
     }
@@ -691,7 +691,7 @@ export async function submitForm(
     };
   } catch (error) {
     console.error("Error submitting form:", error);
-    return { success: false, error: "Failed to submit form" };
+    return fail("Failed to submit form");
   }
 }
 
@@ -712,7 +712,7 @@ export async function getFormSubmissions(
     });
 
     if (!form) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     const where: { formId: string; isRead?: boolean; isArchived?: boolean } = { formId };
@@ -740,7 +740,7 @@ export async function getFormSubmissions(
     return { success: true, submissions, total };
   } catch (error) {
     console.error("Error fetching submissions:", error);
-    return { success: false, error: "Failed to fetch submissions" };
+    return fail("Failed to fetch submissions");
   }
 }
 
@@ -755,7 +755,7 @@ export async function markSubmissionRead(submissionId: string) {
     });
 
     if (!submission || submission.form.organizationId !== organizationId) {
-      return { success: false, error: "Submission not found" };
+      return fail("Submission not found");
     }
 
     await prisma.formSubmission.update({
@@ -766,7 +766,7 @@ export async function markSubmissionRead(submissionId: string) {
     return ok();
   } catch (error) {
     console.error("Error marking submission read:", error);
-    return { success: false, error: "Failed to mark submission read" };
+    return fail("Failed to mark submission read");
   }
 }
 
@@ -781,7 +781,7 @@ export async function archiveSubmission(submissionId: string) {
     });
 
     if (!submission || submission.form.organizationId !== organizationId) {
-      return { success: false, error: "Submission not found" };
+      return fail("Submission not found");
     }
 
     await prisma.formSubmission.update({
@@ -792,7 +792,7 @@ export async function archiveSubmission(submissionId: string) {
     return ok();
   } catch (error) {
     console.error("Error archiving submission:", error);
-    return { success: false, error: "Failed to archive submission" };
+    return fail("Failed to archive submission");
   }
 }
 
@@ -807,7 +807,7 @@ export async function deleteSubmission(submissionId: string) {
     });
 
     if (!submission || submission.form.organizationId !== organizationId) {
-      return { success: false, error: "Submission not found" };
+      return fail("Submission not found");
     }
 
     await prisma.formSubmission.delete({
@@ -817,7 +817,7 @@ export async function deleteSubmission(submissionId: string) {
     return ok();
   } catch (error) {
     console.error("Error deleting submission:", error);
-    return { success: false, error: "Failed to delete submission" };
+    return fail("Failed to delete submission");
   }
 }
 
@@ -835,7 +835,7 @@ export async function getFormStats(formId: string) {
     });
 
     if (!form) {
-      return { success: false, error: "Form not found" };
+      return fail("Form not found");
     }
 
     const now = new Date();
@@ -863,6 +863,6 @@ export async function getFormStats(formId: string) {
     };
   } catch (error) {
     console.error("Error fetching form stats:", error);
-    return { success: false, error: "Failed to fetch stats" };
+    return fail("Failed to fetch stats");
   }
 }

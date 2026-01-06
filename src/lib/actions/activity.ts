@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import type { ActivityData } from "@/lib/utils/activity";
 import { ActivityType, Prisma } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 // Note: Types can be re-exported but functions cannot from "use server" files
 // Import getActivityLinkUrl and getActivityIcon directly from "@/lib/utils/activity"
@@ -85,9 +85,9 @@ export async function getActivityLogs(
   } catch (error) {
     console.error("[Activity] Error fetching activity logs:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch activity logs" };
+    return fail("Failed to fetch activity logs");
   }
 }
 
@@ -182,9 +182,9 @@ export async function getActivityFeed(
   } catch (error) {
     console.error("[Activity] Error fetching activity feed:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch activity feed" };
+    return fail("Failed to fetch activity feed");
   }
 }
 
@@ -268,9 +268,9 @@ export async function getActivitySummary(): Promise<ActionResult<ActivitySummary
   } catch (error) {
     console.error("[Activity] Error fetching activity summary:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch activity summary" };
+    return fail("Failed to fetch activity summary");
   }
 }
 
@@ -344,9 +344,9 @@ export async function getActivityTimeline(
   } catch (error) {
     console.error("[Activity] Error fetching activity timeline:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch activity timeline" };
+    return fail("Failed to fetch activity timeline");
   }
 }
 
@@ -402,9 +402,9 @@ export async function searchActivities(
   } catch (error) {
     console.error("[Activity] Error searching activities:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to search activities" };
+    return fail("Failed to search activities");
   }
 }
 
@@ -466,8 +466,8 @@ export async function getEntityActivities(
   } catch (error) {
     console.error("[Activity] Error fetching entity activities:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch entity activities" };
+    return fail("Failed to fetch entity activities");
   }
 }

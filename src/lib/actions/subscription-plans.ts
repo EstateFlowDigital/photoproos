@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
 import type { PlanName, ExperimentStatus } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface SubscriptionPlanInput {
   name: string;
@@ -80,10 +80,7 @@ export async function getSubscriptionPlans() {
     return { success: true as const, data: plans };
   } catch (error) {
     console.error("[SubscriptionPlans] Error fetching plans:", error);
-    return {
-      success: false as const,
-      error: error instanceof Error ? error.message : "Failed to fetch plans",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to fetch plans",);
   }
 }
 
@@ -105,16 +102,13 @@ export async function getSubscriptionPlan(idOrSlug: string) {
     });
 
     if (!plan) {
-      return { success: false as const, error: "Plan not found" };
+      return fail("Plan not found");
     }
 
     return { success: true as const, data: plan };
   } catch (error) {
     console.error("[SubscriptionPlans] Error fetching plan:", error);
-    return {
-      success: false as const,
-      error: error instanceof Error ? error.message : "Failed to fetch plan",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to fetch plan",);
   }
 }
 
@@ -131,7 +125,7 @@ export async function createSubscriptionPlan(
     });
 
     if (existing) {
-      return { success: false, error: "A plan with this slug already exists" };
+      return fail("A plan with this slug already exists");
     }
 
     const plan = await prisma.subscriptionPlan.create({
@@ -153,13 +147,10 @@ export async function createSubscriptionPlan(
       },
     });
 
-    return { success: true, data: { id: plan.id } };
+    return success({ id: plan.id });
   } catch (error) {
     console.error("[SubscriptionPlans] Error creating plan:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create plan",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create plan",);
   }
 }
 
@@ -177,7 +168,7 @@ export async function updateSubscriptionPlan(
     });
 
     if (!existing) {
-      return { success: false, error: "Plan not found" };
+      return fail("Plan not found");
     }
 
     // If updating slug, check it's unique
@@ -186,7 +177,7 @@ export async function updateSubscriptionPlan(
         where: { slug: input.slug },
       });
       if (slugExists) {
-        return { success: false, error: "A plan with this slug already exists" };
+        return fail("A plan with this slug already exists");
       }
     }
 
@@ -210,13 +201,10 @@ export async function updateSubscriptionPlan(
       },
     });
 
-    return { success: true, data: { id: plan.id } };
+    return success({ id: plan.id });
   } catch (error) {
     console.error("[SubscriptionPlans] Error updating plan:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update plan",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update plan",);
   }
 }
 
@@ -234,10 +222,7 @@ export async function deleteSubscriptionPlan(
     return ok();
   } catch (error) {
     console.error("[SubscriptionPlans] Error deleting plan:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete plan",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete plan",);
   }
 }
 
@@ -266,13 +251,10 @@ export async function addPlanFeature(
       },
     });
 
-    return { success: true, data: { id: feature.id } };
+    return success({ id: feature.id });
   } catch (error) {
     console.error("[SubscriptionPlans] Error adding feature:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to add feature",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to add feature",);
   }
 }
 
@@ -298,13 +280,10 @@ export async function updatePlanFeature(
       },
     });
 
-    return { success: true, data: { id: feature.id } };
+    return success({ id: feature.id });
   } catch (error) {
     console.error("[SubscriptionPlans] Error updating feature:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update feature",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update feature",);
   }
 }
 
@@ -320,10 +299,7 @@ export async function deletePlanFeature(id: string): Promise<ActionResult> {
     return ok();
   } catch (error) {
     console.error("[SubscriptionPlans] Error deleting feature:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete feature",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete feature",);
   }
 }
 
@@ -346,7 +322,7 @@ export async function syncPlanToStripe(
     });
 
     if (!plan) {
-      return { success: false, error: "Plan not found" };
+      return fail("Plan not found");
     }
 
     let stripeProductId = plan.stripeProductId;
@@ -441,13 +417,10 @@ export async function syncPlanToStripe(
       },
     });
 
-    return { success: true, data: { stripeProductId } };
+    return success({ stripeProductId });
   } catch (error) {
     console.error("[SubscriptionPlans] Error syncing to Stripe:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to sync to Stripe",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to sync to Stripe",);
   }
 }
 
@@ -476,13 +449,10 @@ export async function syncAllPlansToStripe(): Promise<
       }
     }
 
-    return { success: true, data: { synced, failed, errors } };
+    return success({ synced, failed, errors });
   } catch (error) {
     console.error("[SubscriptionPlans] Error syncing all plans:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to sync plans",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to sync plans",);
   }
 }
 
@@ -509,10 +479,7 @@ export async function getPricingExperiments() {
     return { success: true as const, data: experiments };
   } catch (error) {
     console.error("[SubscriptionPlans] Error fetching experiments:", error);
-    return {
-      success: false as const,
-      error: error instanceof Error ? error.message : "Failed to fetch experiments",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to fetch experiments",);
   }
 }
 
@@ -534,13 +501,10 @@ export async function createPricingExperiment(
       },
     });
 
-    return { success: true, data: { id: experiment.id } };
+    return success({ id: experiment.id });
   } catch (error) {
     console.error("[SubscriptionPlans] Error creating experiment:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create experiment",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create experiment",);
   }
 }
 
@@ -565,13 +529,10 @@ export async function updateExperimentStatus(
       data: updateData,
     });
 
-    return { success: true, data: { id: experiment.id } };
+    return success({ id: experiment.id });
   } catch (error) {
     console.error("[SubscriptionPlans] Error updating experiment status:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update experiment",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update experiment",);
   }
 }
 
@@ -601,13 +562,10 @@ export async function createPricingVariant(
       },
     });
 
-    return { success: true, data: { id: variant.id } };
+    return success({ id: variant.id });
   } catch (error) {
     console.error("[SubscriptionPlans] Error creating variant:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create variant",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create variant",);
   }
 }
 
@@ -626,11 +584,11 @@ export async function syncVariantToStripe(
     });
 
     if (!variant) {
-      return { success: false, error: "Variant not found" };
+      return fail("Variant not found");
     }
 
     if (!variant.plan.stripeProductId) {
-      return { success: false, error: "Plan must be synced to Stripe first" };
+      return fail("Plan must be synced to Stripe first");
     }
 
     const monthlyPrice = variant.monthlyPriceCents ?? variant.plan.monthlyPriceCents;
@@ -683,13 +641,10 @@ export async function syncVariantToStripe(
       },
     });
 
-    return { success: true, data: { stripeMonthlyPriceId: stripeMonthlyPriceId ?? undefined, stripeYearlyPriceId: stripeYearlyPriceId ?? undefined } };
+    return success({ stripeMonthlyPriceId: stripeMonthlyPriceId ?? undefined, stripeYearlyPriceId: stripeYearlyPriceId ?? undefined });
   } catch (error) {
     console.error("[SubscriptionPlans] Error syncing variant to Stripe:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to sync variant",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to sync variant",);
   }
 }
 
@@ -783,10 +738,7 @@ export async function getPublicPricingPlans(experimentSlug?: string) {
     return { success: true as const, data: plans };
   } catch (error) {
     console.error("[SubscriptionPlans] Error fetching public plans:", error);
-    return {
-      success: false as const,
-      error: error instanceof Error ? error.message : "Failed to fetch plans",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to fetch plans",);
   }
 }
 
@@ -934,13 +886,10 @@ export async function seedDefaultPlans(): Promise<
       created++;
     }
 
-    return { success: true, data: { created, skipped } };
+    return success({ created, skipped });
   } catch (error) {
     console.error("[SubscriptionPlans] Error seeding default plans:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to seed plans",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to seed plans",);
   }
 }
 
@@ -964,7 +913,7 @@ export async function cloneSubscriptionPlan(
     });
 
     if (!sourcePlan) {
-      return { success: false, error: "Source plan not found" };
+      return fail("Source plan not found");
     }
 
     // Generate new name and slug if not provided
@@ -977,7 +926,7 @@ export async function cloneSubscriptionPlan(
     });
 
     if (existing) {
-      return { success: false, error: "A plan with this slug already exists" };
+      return fail("A plan with this slug already exists");
     }
 
     // Create the cloned plan
@@ -1017,13 +966,10 @@ export async function cloneSubscriptionPlan(
       });
     }
 
-    return { success: true, data: { id: clonedPlan.id } };
+    return success({ id: clonedPlan.id });
   } catch (error) {
     console.error("[SubscriptionPlans] Error cloning plan:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to clone plan",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to clone plan",);
   }
 }
 
@@ -1043,10 +989,7 @@ export async function deletePricingVariant(id: string): Promise<ActionResult> {
     return ok();
   } catch (error) {
     console.error("[SubscriptionPlans] Error deleting variant:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete variant",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete variant",);
   }
 }
 

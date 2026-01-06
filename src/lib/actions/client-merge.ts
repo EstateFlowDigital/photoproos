@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 export interface DuplicateGroup {
   matchType: "email" | "phone" | "name";
@@ -197,9 +197,9 @@ export async function findDuplicateClients(): Promise<ActionResult<{
   } catch (error) {
     console.error("Error finding duplicate clients:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to find duplicates" };
+    return fail("Failed to find duplicates");
   }
 }
 
@@ -285,11 +285,11 @@ export async function getClientMergePreview(
     ]);
 
     if (!primary || !secondary) {
-      return { success: false, error: "One or both clients not found" };
+      return fail("One or both clients not found");
     }
 
     if (primaryClientId === secondaryClientId) {
-      return { success: false, error: "Cannot merge a client with itself" };
+      return fail("Cannot merge a client with itself");
     }
 
     return {
@@ -335,9 +335,9 @@ export async function getClientMergePreview(
   } catch (error) {
     console.error("Error getting merge preview:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get merge preview" };
+    return fail("Failed to get merge preview");
   }
 }
 
@@ -379,11 +379,11 @@ export async function mergeClients(
     ]);
 
     if (!primary || !secondary) {
-      return { success: false, error: "One or both clients not found" };
+      return fail("One or both clients not found");
     }
 
     if (primaryClientId === secondaryClientId) {
-      return { success: false, error: "Cannot merge a client with itself" };
+      return fail("Cannot merge a client with itself");
     }
 
     // Build notes update if keeping secondary info
@@ -525,9 +525,9 @@ export async function mergeClients(
   } catch (error) {
     console.error("Error merging clients:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to merge clients" };
+    return fail("Failed to merge clients");
   }
 }
 
@@ -543,7 +543,7 @@ export async function getDuplicateCount(): Promise<ActionResult<{
     const result = await findDuplicateClients();
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      return fail(result.error);
     }
 
     const highConfidence = result.data.duplicates.filter(
@@ -564,8 +564,8 @@ export async function getDuplicateCount(): Promise<ActionResult<{
   } catch (error) {
     console.error("Error getting duplicate count:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get duplicate count" };
+    return fail("Failed to get duplicate count");
   }
 }

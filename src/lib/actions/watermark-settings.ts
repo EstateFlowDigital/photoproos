@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -51,7 +51,7 @@ async function getOrganization() {
 export async function getWatermarkSettings() {
   const org = await getOrganization();
   if (!org) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   return {
@@ -74,7 +74,7 @@ export async function getWatermarkSettings() {
 export async function updateWatermarkSettings(settings: Partial<WatermarkSettings>) {
   const org = await getOrganization();
   if (!org) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -95,7 +95,7 @@ export async function updateWatermarkSettings(settings: Partial<WatermarkSetting
     return ok();
   } catch (error) {
     console.error("[Watermark Settings] Error updating:", error);
-    return { success: false, error: "Failed to update watermark settings" };
+    return fail("Failed to update watermark settings");
   }
 }
 
@@ -105,7 +105,7 @@ export async function updateWatermarkSettings(settings: Partial<WatermarkSetting
 export async function toggleWatermarks(enabled: boolean) {
   const org = await getOrganization();
   if (!org) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -118,7 +118,7 @@ export async function toggleWatermarks(enabled: boolean) {
     return ok();
   } catch (error) {
     console.error("[Watermark Settings] Error toggling:", error);
-    return { success: false, error: "Failed to toggle watermarks" };
+    return fail("Failed to toggle watermarks");
   }
 }
 
@@ -129,12 +129,12 @@ export async function toggleWatermarks(enabled: boolean) {
 export async function getWatermarkUploadUrl(filename: string, contentType: string) {
   const org = await getOrganization();
   if (!org) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   // Validate content type
   if (!["image/png", "image/svg+xml"].includes(contentType)) {
-    return { success: false, error: "Watermark must be PNG or SVG" };
+    return fail("Watermark must be PNG or SVG");
   }
 
   try {
@@ -160,7 +160,7 @@ export async function getWatermarkUploadUrl(filename: string, contentType: strin
     };
   } catch (error) {
     console.error("[Watermark Settings] Error generating upload URL:", error);
-    return { success: false, error: "Failed to generate upload URL" };
+    return fail("Failed to generate upload URL");
   }
 }
 
@@ -170,7 +170,7 @@ export async function getWatermarkUploadUrl(filename: string, contentType: strin
 export async function setWatermarkImage(imageUrl: string) {
   const org = await getOrganization();
   if (!org) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -186,7 +186,7 @@ export async function setWatermarkImage(imageUrl: string) {
     return ok();
   } catch (error) {
     console.error("[Watermark Settings] Error setting image:", error);
-    return { success: false, error: "Failed to set watermark image" };
+    return fail("Failed to set watermark image");
   }
 }
 
@@ -196,7 +196,7 @@ export async function setWatermarkImage(imageUrl: string) {
 export async function getWatermarkPreviewStyles() {
   const org = await getOrganization();
   if (!org) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   const positionStyles: Record<string, string> = {
@@ -231,7 +231,7 @@ export async function getWatermarkPreviewStyles() {
 export async function generateDefaultWatermarkText() {
   const org = await getOrganization();
   if (!org) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   const year = new Date().getFullYear();

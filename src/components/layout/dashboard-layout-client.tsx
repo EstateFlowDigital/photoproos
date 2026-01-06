@@ -8,6 +8,7 @@ import { MobileNav, MobileMenuButton } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { useTheme } from "@/components/theme-provider";
+import { enableNavGuard } from "@/lib/utils/nav-guard";
 
 interface AutoThemeConfig {
   enabled: boolean;
@@ -114,7 +115,7 @@ export function DashboardLayoutClient({
       const top = document.elementFromPoint(evt.clientX, evt.clientY) as HTMLElement | null;
       const href = anchor?.getAttribute("href");
 
-      // eslint-disable-next-line no-console
+       
       console.log("[nav-debug click]", {
         href,
         defaultPrevented: evt.defaultPrevented,
@@ -137,7 +138,7 @@ export function DashboardLayoutClient({
         setTimeout(() => {
           const samePath = window.location.pathname === startPath;
           if (samePath) {
-            // eslint-disable-next-line no-console
+             
             console.warn("[nav-debug stalled]", { href, path: startPath });
             window.location.href = href;
           }
@@ -153,7 +154,7 @@ export function DashboardLayoutClient({
       label: "pushState" | "replaceState"
     ) {
       return function wrapped(this: History, ...args: Parameters<typeof window.history.pushState>) {
-        // eslint-disable-next-line no-console
+         
         console.log(`[nav-debug ${label}]`, {
           from: window.location.href,
           to: args[2],
@@ -167,14 +168,14 @@ export function DashboardLayoutClient({
     window.history.replaceState = wrapHistory(origReplace, "replaceState");
 
     const popHandler = () => {
-      // eslint-disable-next-line no-console
+       
       console.log("[nav-debug popstate]", { path: window.location.pathname });
     };
 
     document.addEventListener("click", clickHandler, true);
     window.addEventListener("popstate", popHandler);
 
-    // eslint-disable-next-line no-console
+     
     console.log("[nav-debug enabled]", { path: window.location.pathname });
 
     return () => {
@@ -193,7 +194,7 @@ export function DashboardLayoutClient({
       typeof (window as any).__ppos_nav_last_click === "number"
         ? Math.round(performance.now() - (window as any).__ppos_nav_last_click)
         : undefined;
-    // eslint-disable-next-line no-console
+     
     console.log("[nav-debug route]", { path: pathname, sinceClickMs: sinceClickMs ?? "n/a" });
   }, [pathname]);
 
@@ -205,7 +206,7 @@ export function DashboardLayoutClient({
     const navEntries = performance.getEntriesByType("navigation");
     if (navEntries.length > 0) {
       const nav = navEntries[0] as PerformanceNavigationTiming;
-      // eslint-disable-next-line no-console
+       
       console.log("[nav-debug perf]", {
         type: nav.type,
         domContentLoaded: Math.round(nav.domContentLoadedEventEnd),
@@ -219,7 +220,7 @@ export function DashboardLayoutClient({
         ? new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
               if (entry.entryType === "largest-contentful-paint") {
-                // eslint-disable-next-line no-console
+                 
                 console.log("[nav-debug lcp]", {
                   value: Math.round(entry.startTime),
                   size: (entry as any).size,
@@ -244,11 +245,56 @@ export function DashboardLayoutClient({
     };
   }, []);
 
+  // Navigation guard to detect blocked clicks and auto-retry when needed.
+  useEffect(() => {
+    const cleanup = enableNavGuard();
+    return cleanup;
+  }, []);
+
+  // Opportunistic prefetch of the most common dashboard routes to reduce perceived latency.
+  useEffect(() => {
+    const routesToPrefetch = [
+      "/dashboard",
+      "/projects",
+      "/forms",
+      "/galleries",
+      "/scheduling",
+      "/clients",
+      "/invoices",
+      "/payments",
+    ];
+
+    // Defer to idle time so we do not compete with initial render.
+    const run = () => {
+      for (const href of routesToPrefetch) {
+        if (href !== pathname) {
+          router.prefetch(href).catch(() => {
+            // Prefetch failures are non-fatal; ignore.
+          });
+        }
+      }
+    };
+
+    if ("requestIdleCallback" in window) {
+      const id = (window as any).requestIdleCallback(run, { timeout: 2000 });
+      return () => (window as any).cancelIdleCallback?.(id);
+    }
+
+    const handle = window.setTimeout(run, 350);
+    return () => window.clearTimeout(handle);
+  }, [pathname, router]);
+
   return (
     <div
       ref={shellRef}
       className={`shell-container flex min-h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
     >
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[20000] focus:rounded-md focus:bg-[var(--card)] focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-foreground focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       {/* Desktop Sidebar */}
       <div className="shell-sidebar hidden lg:block">
         <DashboardSidebar
@@ -286,7 +332,10 @@ export function DashboardLayoutClient({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 min-h-0 min-w-0 overflow-y-auto bg-[var(--background)] p-4 sm:p-6 lg:p-8">
+        <main
+          id="main"
+          className="flex-1 min-h-0 min-w-0 overflow-y-auto bg-[var(--background)] p-4 sm:p-6 lg:p-8"
+        >
           {children}
         </main>
       </div>

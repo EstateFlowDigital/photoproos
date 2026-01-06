@@ -13,7 +13,7 @@ import { prisma } from "@/lib/db";
 import { nanoid } from "nanoid";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 async function getOrganizationId(): Promise<string> {
   return requireOrganizationId();
@@ -79,9 +79,9 @@ export async function getCalendarFeeds(): Promise<
   } catch (error) {
     console.error("Error fetching calendar feeds:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch calendar feeds" };
+    return fail("Failed to fetch calendar feeds");
   }
 }
 
@@ -142,9 +142,9 @@ export async function createCalendarFeed(params: {
   } catch (error) {
     console.error("Error creating calendar feed:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create calendar feed" };
+    return fail("Failed to create calendar feed");
   }
 }
 
@@ -164,7 +164,7 @@ export async function regenerateCalendarFeedToken(
     });
 
     if (!existing) {
-      return { success: false, error: "Calendar feed not found" };
+      return fail("Calendar feed not found");
     }
 
     // Generate new token
@@ -187,9 +187,9 @@ export async function regenerateCalendarFeedToken(
   } catch (error) {
     console.error("Error regenerating calendar feed token:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to regenerate token" };
+    return fail("Failed to regenerate token");
   }
 }
 
@@ -213,7 +213,7 @@ export async function updateCalendarFeed(
     });
 
     if (!existing) {
-      return { success: false, error: "Calendar feed not found" };
+      return fail("Calendar feed not found");
     }
 
     await prisma.calendarFeed.update({
@@ -231,9 +231,9 @@ export async function updateCalendarFeed(
   } catch (error) {
     console.error("Error updating calendar feed:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update calendar feed" };
+    return fail("Failed to update calendar feed");
   }
 }
 
@@ -252,7 +252,7 @@ export async function deleteCalendarFeed(
     });
 
     if (!existing) {
-      return { success: false, error: "Calendar feed not found" };
+      return fail("Calendar feed not found");
     }
 
     await prisma.calendarFeed.delete({
@@ -265,9 +265,9 @@ export async function deleteCalendarFeed(
   } catch (error) {
     console.error("Error deleting calendar feed:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete calendar feed" };
+    return fail("Failed to delete calendar feed");
   }
 }
 
@@ -283,7 +283,7 @@ export async function createMyCalendarFeed(params?: {
     const auth = await getAuthContext();
 
     if (!auth?.userId) {
-      return { success: false, error: "User not authenticated" };
+      return fail("User not authenticated");
     }
 
     // Get user ID from org membership
@@ -293,7 +293,7 @@ export async function createMyCalendarFeed(params?: {
     });
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
     // Check if user already has a feed
@@ -305,7 +305,7 @@ export async function createMyCalendarFeed(params?: {
     });
 
     if (existingFeed) {
-      return { success: false, error: "You already have a calendar feed. Delete it first to create a new one." };
+      return fail("You already have a calendar feed. Delete it first to create a new one.");
     }
 
     return createCalendarFeed({
@@ -316,9 +316,9 @@ export async function createMyCalendarFeed(params?: {
   } catch (error) {
     console.error("Error creating personal calendar feed:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create personal calendar feed" };
+    return fail("Failed to create personal calendar feed");
   }
 }
 
@@ -334,7 +334,7 @@ export async function getMyCalendarFeed(): Promise<
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
 
     if (!auth?.userId) {
-      return { success: false, error: "User not authenticated" };
+      return fail("User not authenticated");
     }
 
     const user = await prisma.user.findFirst({
@@ -343,7 +343,7 @@ export async function getMyCalendarFeed(): Promise<
     });
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
     const feed = await prisma.calendarFeed.findFirst({
@@ -384,8 +384,8 @@ export async function getMyCalendarFeed(): Promise<
   } catch (error) {
     console.error("Error getting personal calendar feed:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get personal calendar feed" };
+    return fail("Failed to get personal calendar feed");
   }
 }

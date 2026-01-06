@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { InvoiceSplitType } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -101,7 +101,7 @@ export async function getInvoiceSplit(
     };
   } catch (error) {
     console.error("[InvoiceSplits] Error fetching split:", error);
-    return { success: false, error: "Failed to fetch invoice split" };
+    return fail("Failed to fetch invoice split");
   }
 }
 
@@ -146,7 +146,7 @@ export async function getInvoiceSplits(options?: {
     };
   } catch (error) {
     console.error("[InvoiceSplits] Error fetching splits:", error);
-    return { success: false, error: "Failed to fetch invoice splits" };
+    return fail("Failed to fetch invoice splits");
   }
 }
 
@@ -183,15 +183,12 @@ export async function createInvoiceSplit(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     // Validate that client has a brokerage for split invoices
     if (input.splitType !== "single" && !invoice.client?.brokerageId) {
-      return {
-        success: false,
-        error: "Cannot create split invoice for client without a brokerage",
-      };
+      return fail("Cannot create split invoice for client without a brokerage",);
     }
 
     // Calculate split amounts based on type
@@ -296,7 +293,7 @@ export async function createInvoiceSplit(
     };
   } catch (error) {
     console.error("[InvoiceSplits] Error creating split:", error);
-    return { success: false, error: "Failed to create invoice split" };
+    return fail("Failed to create invoice split");
   }
 }
 
@@ -315,7 +312,7 @@ export async function deleteInvoiceSplit(invoiceId: string): Promise<ActionResul
     });
 
     if (!split) {
-      return { success: false, error: "Invoice split not found" };
+      return fail("Invoice split not found");
     }
 
     // If there's a secondary invoice, delete it first
@@ -333,7 +330,7 @@ export async function deleteInvoiceSplit(invoiceId: string): Promise<ActionResul
     return ok();
   } catch (error) {
     console.error("[InvoiceSplits] Error deleting split:", error);
-    return { success: false, error: "Failed to delete invoice split" };
+    return fail("Failed to delete invoice split");
   }
 }
 
@@ -442,7 +439,7 @@ export async function previewInvoiceSplit(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     const calculation = calculateSplitAmounts(
@@ -456,7 +453,7 @@ export async function previewInvoiceSplit(
     return { success: true, data: calculation };
   } catch (error) {
     console.error("[InvoiceSplits] Error previewing split:", error);
-    return { success: false, error: "Failed to calculate split preview" };
+    return fail("Failed to calculate split preview");
   }
 }
 
@@ -491,7 +488,7 @@ export async function getInvoiceSplitSummary(invoiceId: string): Promise<
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     const split = await prisma.invoiceSplit.findUnique({
@@ -536,6 +533,6 @@ export async function getInvoiceSplitSummary(invoiceId: string): Promise<
     };
   } catch (error) {
     console.error("[InvoiceSplits] Error fetching split summary:", error);
-    return { success: false, error: "Failed to fetch split summary" };
+    return fail("Failed to fetch split summary");
   }
 }

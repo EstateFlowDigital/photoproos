@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { formatCurrency } from "@/lib/utils/units";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
@@ -38,7 +38,7 @@ export async function getSlackConfig(): Promise<ActionResult<SlackConfig | null>
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.slackIntegration.findFirst({
@@ -74,7 +74,7 @@ export async function getSlackConfig(): Promise<ActionResult<SlackConfig | null>
     return { success: true, data: extendedConfig };
   } catch (error) {
     console.error("Error getting Slack config:", error);
-    return { success: false, error: "Failed to get Slack configuration" };
+    return fail("Failed to get Slack configuration");
   }
 }
 
@@ -94,12 +94,12 @@ export async function saveSlackConfig(data: {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate webhook URL format
     if (!data.webhookUrl.startsWith("https://hooks.slack.com/")) {
-      return { success: false, error: "Invalid Slack webhook URL" };
+      return fail("Invalid Slack webhook URL");
     }
 
     const existing = await prisma.slackIntegration.findFirst({
@@ -150,7 +150,7 @@ export async function saveSlackConfig(data: {
     return { success: true, data: extendedConfig };
   } catch (error) {
     console.error("Error saving Slack config:", error);
-    return { success: false, error: "Failed to save Slack configuration" };
+    return fail("Failed to save Slack configuration");
   }
 }
 
@@ -158,7 +158,7 @@ export async function toggleSlackIntegration(): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.slackIntegration.findFirst({
@@ -166,7 +166,7 @@ export async function toggleSlackIntegration(): Promise<ActionResult<void>> {
     });
 
     if (!config) {
-      return { success: false, error: "Slack integration not configured" };
+      return fail("Slack integration not configured");
     }
 
     await prisma.slackIntegration.update({
@@ -178,7 +178,7 @@ export async function toggleSlackIntegration(): Promise<ActionResult<void>> {
     return ok();
   } catch (error) {
     console.error("Error toggling Slack integration:", error);
-    return { success: false, error: "Failed to toggle integration" };
+    return fail("Failed to toggle integration");
   }
 }
 
@@ -186,7 +186,7 @@ export async function testSlackConnection(): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.slackIntegration.findFirst({
@@ -194,7 +194,7 @@ export async function testSlackConnection(): Promise<ActionResult<void>> {
     });
 
     if (!config?.incomingWebhookUrl) {
-      return { success: false, error: "Slack webhook not configured" };
+      return fail("Slack webhook not configured");
     }
 
     // Send a test message to verify the webhook works
@@ -216,13 +216,13 @@ export async function testSlackConnection(): Promise<ActionResult<void>> {
     });
 
     if (!response.ok) {
-      return { success: false, error: "Failed to send test message to Slack" };
+      return fail("Failed to send test message to Slack");
     }
 
     return ok();
   } catch (error) {
     console.error("Error testing Slack connection:", error);
-    return { success: false, error: "Failed to test connection" };
+    return fail("Failed to test connection");
   }
 }
 
@@ -230,7 +230,7 @@ export async function deleteSlackIntegration(): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     await prisma.slackIntegration.deleteMany({
@@ -241,7 +241,7 @@ export async function deleteSlackIntegration(): Promise<ActionResult<void>> {
     return ok();
   } catch (error) {
     console.error("Error deleting Slack integration:", error);
-    return { success: false, error: "Failed to delete integration" };
+    return fail("Failed to delete integration");
   }
 }
 

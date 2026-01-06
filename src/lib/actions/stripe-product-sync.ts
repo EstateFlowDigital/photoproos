@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
@@ -51,7 +51,7 @@ export async function syncSingleProductToStripe(
 ): Promise<VoidActionResult> {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -60,7 +60,7 @@ export async function syncSingleProductToStripe(
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -70,34 +70,31 @@ export async function syncSingleProductToStripe(
       });
 
       if (!service) {
-        return { success: false, error: "Service not found" };
+        return fail("Service not found");
       }
 
       const result = await syncServiceToStripe(service, organization.id);
       if (result.success) {
         return ok();
       }
-      return { success: false, error: result.error || "Failed to sync service" };
+      return fail(result.error || "Failed to sync service");
     } else {
       const bundle = await prisma.serviceBundle.findFirst({
         where: { id: productId, organizationId: organization.id },
       });
 
       if (!bundle) {
-        return { success: false, error: "Bundle not found" };
+        return fail("Bundle not found");
       }
 
       const result = await syncBundleToStripe(bundle, organization.id);
       if (result.success) {
         return ok();
       }
-      return { success: false, error: result.error || "Failed to sync bundle" };
+      return fail(result.error || "Failed to sync bundle");
     }
   } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to sync product",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to sync product");
   }
 }
 

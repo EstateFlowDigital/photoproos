@@ -27,7 +27,7 @@ import {
   archiveStripeProduct,
   reactivateStripeProduct,
 } from "@/lib/stripe/product-sync";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -65,7 +65,7 @@ export async function createBundle(
     });
 
     if (existing) {
-      return { success: false, error: "A bundle with this slug already exists" };
+      return fail("A bundle with this slug already exists");
     }
 
     const bundle = await prisma.serviceBundle.create({
@@ -91,13 +91,13 @@ export async function createBundle(
     revalidatePath("/services/bundles");
     revalidatePath("/order-pages");
 
-    return { success: true, data: { id: bundle.id, slug: bundle.slug } };
+    return success({ id: bundle.id, slug: bundle.slug });
   } catch (error) {
     console.error("Error creating bundle:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create bundle" };
+    return fail("Failed to create bundle");
   }
 }
 
@@ -120,7 +120,7 @@ export async function updateBundle(
     });
 
     if (!existing) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     // Check for duplicate slug if slug is being updated
@@ -134,7 +134,7 @@ export async function updateBundle(
       });
 
       if (duplicateSlug) {
-        return { success: false, error: "A bundle with this slug already exists" };
+        return fail("A bundle with this slug already exists");
       }
     }
 
@@ -184,13 +184,13 @@ export async function updateBundle(
     revalidatePath(`/services/bundles/${id}`);
     revalidatePath("/order-pages");
 
-    return { success: true, data: { id: bundle.id } };
+    return success({ id: bundle.id });
   } catch (error) {
     console.error("Error updating bundle:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update bundle" };
+    return fail("Failed to update bundle");
   }
 }
 
@@ -222,7 +222,7 @@ export async function deleteBundle(
     });
 
     if (!existing) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     const usageCount = existing._count.orderItems + existing._count.orderPages;
@@ -264,9 +264,9 @@ export async function deleteBundle(
   } catch (error) {
     console.error("Error deleting bundle:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete bundle" };
+    return fail("Failed to delete bundle");
   }
 }
 
@@ -294,7 +294,7 @@ export async function duplicateBundle(
     });
 
     if (!original) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     const name = newName || `${original.name} (Copy)`;
@@ -309,7 +309,7 @@ export async function duplicateBundle(
     });
 
     if (existingSlug) {
-      return { success: false, error: "A bundle with this slug already exists" };
+      return fail("A bundle with this slug already exists");
     }
 
     // Create duplicate with services (without Stripe IDs - will get new ones)
@@ -345,13 +345,13 @@ export async function duplicateBundle(
 
     revalidatePath("/services/bundles");
 
-    return { success: true, data: { id: duplicate.id, slug: duplicate.slug } };
+    return success({ id: duplicate.id, slug: duplicate.slug });
   } catch (error) {
     console.error("Error duplicating bundle:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to duplicate bundle" };
+    return fail("Failed to duplicate bundle");
   }
 }
 
@@ -372,7 +372,7 @@ export async function toggleBundleStatus(
     });
 
     if (!existing) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     const updated = await prisma.serviceBundle.update({
@@ -396,13 +396,13 @@ export async function toggleBundleStatus(
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${id}`);
 
-    return { success: true, data: { isActive: updated.isActive } };
+    return success({ isActive: updated.isActive });
   } catch (error) {
     console.error("Error toggling bundle status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to toggle bundle status" };
+    return fail("Failed to toggle bundle status");
   }
 }
 
@@ -425,7 +425,7 @@ export async function setBundleServices(
     });
 
     if (!bundle) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     // Verify all services exist and belong to organization
@@ -438,7 +438,7 @@ export async function setBundleServices(
     });
 
     if (services.length !== serviceIds.length) {
-      return { success: false, error: "One or more services not found" };
+      return fail("One or more services not found");
     }
 
     // Replace all bundle services
@@ -465,13 +465,13 @@ export async function setBundleServices(
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${validated.bundleId}`);
 
-    return { success: true, data: { count: validated.services.length } };
+    return success({ count: validated.services.length });
   } catch (error) {
     console.error("Error setting bundle services:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set bundle services" };
+    return fail("Failed to set bundle services");
   }
 }
 
@@ -498,11 +498,11 @@ export async function addServiceToBundle(
     ]);
 
     if (!bundle) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     if (!service) {
-      return { success: false, error: "Service not found" };
+      return fail("Service not found");
     }
 
     // Check if already added
@@ -511,7 +511,7 @@ export async function addServiceToBundle(
     });
 
     if (existing) {
-      return { success: false, error: "Service already in bundle" };
+      return fail("Service already in bundle");
     }
 
     // Get current max sort order
@@ -540,9 +540,9 @@ export async function addServiceToBundle(
   } catch (error) {
     console.error("Error adding service to bundle:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to add service to bundle" };
+    return fail("Failed to add service to bundle");
   }
 }
 
@@ -562,7 +562,7 @@ export async function removeServiceFromBundle(
     });
 
     if (!bundle) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     await prisma.serviceBundleItem.deleteMany({
@@ -579,9 +579,9 @@ export async function removeServiceFromBundle(
   } catch (error) {
     console.error("Error removing service from bundle:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove service from bundle" };
+    return fail("Failed to remove service from bundle");
   }
 }
 
@@ -602,7 +602,7 @@ export async function reorderBundleItems(
     });
 
     if (!bundle) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     // Update sort order for each item
@@ -622,9 +622,9 @@ export async function reorderBundleItems(
   } catch (error) {
     console.error("Error reordering bundle items:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to reorder bundle items" };
+    return fail("Failed to reorder bundle items");
   }
 }
 
@@ -647,7 +647,7 @@ export async function calculateBundleSavings(
     });
 
     if (!bundle) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     // Calculate original price (sum of all services at full price)
@@ -673,19 +673,16 @@ export async function calculateBundleSavings(
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${bundleId}`);
 
-    return {
-      success: true,
-      data: {
-        originalPriceCents,
-        savingsPercent: Math.round(savingsPercent * 100) / 100,
-      },
-    };
+    return success({
+      originalPriceCents,
+      savingsPercent: Math.round(savingsPercent * 100) / 100,
+    });
   } catch (error) {
     console.error("Error calculating bundle savings:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to calculate bundle savings" };
+    return fail("Failed to calculate bundle savings");
   }
 }
 
@@ -936,7 +933,7 @@ export async function setBundlePricingTiers(
     });
 
     if (!bundle) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     // Validate tier ranges don't overlap
@@ -945,10 +942,7 @@ export async function setBundlePricingTiers(
       const currentTier = sortedTiers[i];
       const nextTier = sortedTiers[i + 1];
       if (currentTier.maxSqft && currentTier.maxSqft >= nextTier.minSqft) {
-        return {
-          success: false,
-          error: `Tier ranges overlap: ${currentTier.minSqft}-${currentTier.maxSqft} and ${nextTier.minSqft}-${nextTier.maxSqft}`,
-        };
+        return fail(`Tier ranges overlap: ${currentTier.minSqft}-${currentTier.maxSqft} and ${nextTier.minSqft}-${nextTier.maxSqft}`);
       }
     }
 
@@ -982,13 +976,13 @@ export async function setBundlePricingTiers(
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${validated.bundleId}`);
 
-    return { success: true, data: { count: validated.tiers.length } };
+    return success({ count: validated.tiers.length });
   } catch (error) {
     console.error("Error setting bundle pricing tiers:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set pricing tiers" };
+    return fail("Failed to set pricing tiers");
   }
 }
 
@@ -1044,7 +1038,7 @@ export async function deletePricingTier(id: string): Promise<ActionResult> {
     });
 
     if (!tier || tier.bundle.organizationId !== organizationId) {
-      return { success: false, error: "Pricing tier not found" };
+      return fail("Pricing tier not found");
     }
 
     await prisma.bundlePricingTier.delete({
@@ -1058,9 +1052,9 @@ export async function deletePricingTier(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("Error deleting pricing tier:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete pricing tier" };
+    return fail("Failed to delete pricing tier");
   }
 }
 
@@ -1100,7 +1094,7 @@ export async function calculateBundlePrice(
     });
 
     if (!bundle) {
-      return { success: false, error: "Bundle not found" };
+      return fail("Bundle not found");
     }
 
     const sqft = validated.sqft;
@@ -1109,14 +1103,11 @@ export async function calculateBundlePrice(
     switch (bundle.pricingMethod) {
       case "fixed": {
         // Fixed pricing - sqft doesn't matter
-        return {
-          success: true,
-          data: {
-            priceCents: bundle.priceCents,
-            pricingMethod: "fixed",
-            sqftUsed: sqft,
-          },
-        };
+        return success({
+          priceCents: bundle.priceCents,
+          pricingMethod: "fixed",
+          sqftUsed: sqft,
+        });
       }
 
       case "per_sqft": {
@@ -1137,23 +1128,17 @@ export async function calculateBundlePrice(
 
         const priceCents = adjustedSqft * pricePerSqft;
 
-        return {
-          success: true,
-          data: {
-            priceCents,
-            pricingMethod: "per_sqft",
-            sqftUsed: adjustedSqft,
-          },
-        };
+        return success({
+          priceCents,
+          pricingMethod: "per_sqft",
+          sqftUsed: adjustedSqft,
+        });
       }
 
       case "tiered": {
         // Tiered pricing (BICEP-style)
         if (bundle.pricingTiers.length === 0) {
-          return {
-            success: false,
-            error: "No pricing tiers configured for this bundle",
-          };
+          return fail("No pricing tiers configured for this bundle",);
         }
 
         // Find the applicable tier
@@ -1166,47 +1151,41 @@ export async function calculateBundlePrice(
         if (!applicableTier) {
           // If no tier matches, use the highest tier (for properties larger than defined tiers)
           const highestTier = bundle.pricingTiers[bundle.pricingTiers.length - 1];
-          return {
-            success: true,
-            data: {
-              priceCents: highestTier.priceCents,
-              pricingMethod: "tiered",
-              appliedTier: {
-                id: highestTier.id,
-                name: highestTier.tierName,
-                minSqft: highestTier.minSqft,
-                maxSqft: highestTier.maxSqft,
-              },
-              sqftUsed: sqft,
-            },
-          };
-        }
-
-        return {
-          success: true,
-          data: {
-            priceCents: applicableTier.priceCents,
+          return success({
+            priceCents: highestTier.priceCents,
             pricingMethod: "tiered",
             appliedTier: {
-              id: applicableTier.id,
-              name: applicableTier.tierName,
-              minSqft: applicableTier.minSqft,
-              maxSqft: applicableTier.maxSqft,
+              id: highestTier.id,
+              name: highestTier.tierName,
+              minSqft: highestTier.minSqft,
+              maxSqft: highestTier.maxSqft,
             },
             sqftUsed: sqft,
+          });
+        }
+
+        return success({
+          priceCents: applicableTier.priceCents,
+          pricingMethod: "tiered",
+          appliedTier: {
+            id: applicableTier.id,
+            name: applicableTier.tierName,
+            minSqft: applicableTier.minSqft,
+            maxSqft: applicableTier.maxSqft,
           },
-        };
+          sqftUsed: sqft,
+        });
       }
 
       default:
-        return { success: false, error: "Invalid pricing method" };
+        return fail("Invalid pricing method");
     }
   } catch (error) {
     console.error("Error calculating bundle price:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to calculate bundle price" };
+    return fail("Failed to calculate bundle price");
   }
 }
 
@@ -1403,30 +1382,27 @@ export async function getPackageAnalytics(
       0
     );
 
-    return {
-      success: true,
-      data: {
-        totalPackages: bundles.length,
-        activePackages,
-        totalPackageRevenueCents: totalRevenue,
-        topPerformers: sortedByRevenue.slice(0, 5),
-        underperformers: sortedByRevenue
-          .filter((p) => p.totalOrders > 0)
-          .slice(-5)
-          .reverse(),
-        revenueByPackage: sortedByRevenue.map((p) => ({
-          bundleId: p.bundleId,
-          name: p.bundleName,
-          revenueCents: p.totalRevenueCents,
-        })),
-      },
-    };
+    return success({
+      totalPackages: bundles.length,
+      activePackages,
+      totalPackageRevenueCents: totalRevenue,
+      topPerformers: sortedByRevenue.slice(0, 5),
+      underperformers: sortedByRevenue
+        .filter((p) => p.totalOrders > 0)
+        .slice(-5)
+        .reverse(),
+      revenueByPackage: sortedByRevenue.map((p) => ({
+        bundleId: p.bundleId,
+        name: p.bundleName,
+        revenueCents: p.totalRevenueCents,
+      })),
+    });
   } catch (error) {
     console.error("Error getting package analytics:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get package analytics" };
+    return fail("Failed to get package analytics");
   }
 }
 
@@ -1518,16 +1494,13 @@ export async function getPackageRecommendations(): Promise<
       };
     });
 
-    return {
-      success: true,
-      data: { recommendations },
-    };
+    return success({ recommendations });
   } catch (error) {
     console.error("Error getting package recommendations:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get package recommendations" };
+    return fail("Failed to get package recommendations");
   }
 }
 
@@ -1555,7 +1528,7 @@ export async function createPackageFromRecommendation(
     });
 
     if (services.length !== serviceIds.length) {
-      return { success: false, error: "One or more services not found" };
+      return fail("One or more services not found");
     }
 
     // Calculate original price for savings display
@@ -1597,13 +1570,13 @@ export async function createPackageFromRecommendation(
     revalidatePath("/services/bundles");
     revalidatePath("/order-pages");
 
-    return { success: true, data: { id: bundle.id, slug: bundle.slug } };
+    return success({ id: bundle.id, slug: bundle.slug });
   } catch (error) {
     console.error("Error creating package from recommendation:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create package" };
+    return fail("Failed to create package");
   }
 }
 
@@ -1666,5 +1639,5 @@ export async function getPackageTemplates(): Promise<
     },
   ];
 
-  return { success: true, data: { templates } };
+  return success({ templates });
 }

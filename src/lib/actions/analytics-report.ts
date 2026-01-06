@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -49,7 +50,7 @@ export async function generateAnalyticsReportPdf(): Promise<{
   try {
     const org = await getOrganizationWithDetails();
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const now = new Date();
@@ -196,10 +197,7 @@ export async function generateAnalyticsReportPdf(): Promise<{
     };
   } catch (error) {
     console.error("Error generating analytics report PDF:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to generate report",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to generate report",);
   }
 }
 

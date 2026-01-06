@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -62,7 +62,7 @@ export async function getAllFeedback(options?: {
 }): Promise<{ success: boolean; data?: { feedback: FeedbackItem[]; total: number }; error?: string }> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -114,7 +114,7 @@ export async function getAllFeedback(options?: {
     return { success: true, data: { feedback, total } };
   } catch (error) {
     console.error("[Gallery Feedback] Error fetching feedback:", error);
-    return { success: false, error: "Failed to fetch feedback" };
+    return fail("Failed to fetch feedback");
   }
 }
 
@@ -124,7 +124,7 @@ export async function getAllFeedback(options?: {
 export async function getFeedbackStats(): Promise<{ success: boolean; data?: FeedbackStats; error?: string }> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -150,7 +150,7 @@ export async function getFeedbackStats(): Promise<{ success: boolean; data?: Fee
     };
   } catch (error) {
     console.error("[Gallery Feedback] Error fetching stats:", error);
-    return { success: false, error: "Failed to fetch feedback stats" };
+    return fail("Failed to fetch feedback stats");
   }
 }
 
@@ -160,7 +160,7 @@ export async function getFeedbackStats(): Promise<{ success: boolean; data?: Fee
 export async function markFeedbackAsRead(feedbackId: string): Promise<VoidActionResult> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -176,7 +176,7 @@ export async function markFeedbackAsRead(feedbackId: string): Promise<VoidAction
     return ok();
   } catch (error) {
     console.error("[Gallery Feedback] Error marking as read:", error);
-    return { success: false, error: "Failed to mark feedback as read" };
+    return fail("Failed to mark feedback as read");
   }
 }
 
@@ -186,7 +186,7 @@ export async function markFeedbackAsRead(feedbackId: string): Promise<VoidAction
 export async function markFeedbackAsResolved(feedbackId: string): Promise<VoidActionResult> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -202,7 +202,7 @@ export async function markFeedbackAsResolved(feedbackId: string): Promise<VoidAc
     return ok();
   } catch (error) {
     console.error("[Gallery Feedback] Error marking as resolved:", error);
-    return { success: false, error: "Failed to mark feedback as resolved" };
+    return fail("Failed to mark feedback as resolved");
   }
 }
 
@@ -212,7 +212,7 @@ export async function markFeedbackAsResolved(feedbackId: string): Promise<VoidAc
 export async function markAllFeedbackAsRead(): Promise<VoidActionResult> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -228,7 +228,7 @@ export async function markAllFeedbackAsRead(): Promise<VoidActionResult> {
     return ok();
   } catch (error) {
     console.error("[Gallery Feedback] Error marking all as read:", error);
-    return { success: false, error: "Failed to mark all feedback as read" };
+    return fail("Failed to mark all feedback as read");
   }
 }
 
@@ -238,7 +238,7 @@ export async function markAllFeedbackAsRead(): Promise<VoidActionResult> {
 export async function deleteFeedback(feedbackId: string): Promise<VoidActionResult> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -253,6 +253,6 @@ export async function deleteFeedback(feedbackId: string): Promise<VoidActionResu
     return ok();
   } catch (error) {
     console.error("[Gallery Feedback] Error deleting feedback:", error);
-    return { success: false, error: "Failed to delete feedback" };
+    return fail("Failed to delete feedback");
   }
 }

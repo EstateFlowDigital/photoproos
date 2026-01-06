@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import type { AvailabilityBlockType, TimeOffRequestStatus } from "@prisma/client";
 import { requireOrganizationId, requireAuth } from "./auth-helper";
 import { RRule, RRuleSet, rrulestr } from "rrule";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -83,7 +83,7 @@ export async function getAvailabilityBlocks(filters?: {
     return { success: true as const, data: blocks };
   } catch (error) {
     console.error("[Availability] Error fetching blocks:", error);
-    return { success: false as const, error: "Failed to fetch availability blocks" };
+    return fail("Failed to fetch availability blocks");
   }
 }
 
@@ -102,13 +102,13 @@ export async function getAvailabilityBlock(id: string) {
     });
 
     if (!block) {
-      return { success: false as const, error: "Availability block not found" };
+      return fail("Availability block not found");
     }
 
     return { success: true as const, data: block };
   } catch (error) {
     console.error("[Availability] Error fetching block:", error);
-    return { success: false as const, error: "Failed to fetch availability block" };
+    return fail("Failed to fetch availability block");
   }
 }
 
@@ -126,7 +126,7 @@ export async function createAvailabilityBlock(
       try {
         rrulestr(input.recurrenceRule);
       } catch {
-        return { success: false, error: "Invalid recurrence rule format" };
+        return fail("Invalid recurrence rule format");
       }
     }
 
@@ -153,9 +153,9 @@ export async function createAvailabilityBlock(
   } catch (error) {
     console.error("[Availability] Error creating block:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create availability block" };
+    return fail("Failed to create availability block");
   }
 }
 
@@ -177,7 +177,7 @@ export async function updateAvailabilityBlock(
     });
 
     if (!existing) {
-      return { success: false, error: "Availability block not found" };
+      return fail("Availability block not found");
     }
 
     // Validate recurrence rule if provided
@@ -185,7 +185,7 @@ export async function updateAvailabilityBlock(
       try {
         rrulestr(input.recurrenceRule);
       } catch {
-        return { success: false, error: "Invalid recurrence rule format" };
+        return fail("Invalid recurrence rule format");
       }
     }
 
@@ -213,9 +213,9 @@ export async function updateAvailabilityBlock(
   } catch (error) {
     console.error("[Availability] Error updating block:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update availability block" };
+    return fail("Failed to update availability block");
   }
 }
 
@@ -235,7 +235,7 @@ export async function deleteAvailabilityBlock(id: string): Promise<ActionResult>
     });
 
     if (!existing) {
-      return { success: false, error: "Availability block not found" };
+      return fail("Availability block not found");
     }
 
     await prisma.availabilityBlock.delete({
@@ -249,9 +249,9 @@ export async function deleteAvailabilityBlock(id: string): Promise<ActionResult>
   } catch (error) {
     console.error("[Availability] Error deleting block:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete availability block" };
+    return fail("Failed to delete availability block");
   }
 }
 
@@ -273,7 +273,7 @@ export async function getBookingBuffers() {
     return { success: true as const, data: buffers };
   } catch (error) {
     console.error("[BookingBuffer] Error fetching buffers:", error);
-    return { success: false as const, error: "Failed to fetch booking buffers" };
+    return fail("Failed to fetch booking buffers");
   }
 }
 
@@ -307,7 +307,7 @@ export async function getDefaultBookingBuffer() {
     return { success: true as const, data: buffer };
   } catch (error) {
     console.error("[BookingBuffer] Error fetching default buffer:", error);
-    return { success: false as const, error: "Failed to fetch default booking buffer" };
+    return fail("Failed to fetch default booking buffer");
   }
 }
 
@@ -352,7 +352,7 @@ export async function getBookingBufferForService(serviceId: string) {
     return { success: true as const, data: buffer };
   } catch (error) {
     console.error("[BookingBuffer] Error fetching buffer for service:", error);
-    return { success: false as const, error: "Failed to fetch booking buffer" };
+    return fail("Failed to fetch booking buffer");
   }
 }
 
@@ -404,9 +404,9 @@ export async function upsertBookingBuffer(
   } catch (error) {
     console.error("[BookingBuffer] Error upserting buffer:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update booking buffer" };
+    return fail("Failed to update booking buffer");
   }
 }
 
@@ -426,7 +426,7 @@ export async function deleteBookingBuffer(id: string): Promise<ActionResult> {
     });
 
     if (!existing) {
-      return { success: false, error: "Booking buffer not found" };
+      return fail("Booking buffer not found");
     }
 
     await prisma.bookingBuffer.delete({
@@ -440,9 +440,9 @@ export async function deleteBookingBuffer(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("[BookingBuffer] Error deleting buffer:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete booking buffer" };
+    return fail("Failed to delete booking buffer");
   }
 }
 
@@ -531,7 +531,7 @@ export async function checkBookingConflicts(
     };
   } catch (error) {
     console.error("[Availability] Error checking conflicts:", error);
-    return { success: false, error: "Failed to check booking conflicts" };
+    return fail("Failed to check booking conflicts");
   }
 }
 
@@ -686,7 +686,7 @@ export async function getExpandedAvailabilityBlocks(
     return { success: true as const, data: expandedBlocks };
   } catch (error) {
     console.error("[Availability] Error getting expanded blocks:", error);
-    return { success: false as const, error: "Failed to get availability blocks" };
+    return fail("Failed to get availability blocks");
   }
 }
 
@@ -807,9 +807,9 @@ export async function submitTimeOffRequest(
   } catch (error) {
     console.error("[TimeOff] Error submitting request:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to submit time-off request" };
+    return fail("Failed to submit time-off request");
   }
 }
 
@@ -832,9 +832,9 @@ export async function getPendingTimeOffCount(): Promise<ActionResult<number>> {
   } catch (error) {
     console.error("[TimeOff] Error getting pending count:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get pending count" };
+    return fail("Failed to get pending count");
   }
 }
 
@@ -872,7 +872,7 @@ export async function getPendingTimeOffRequests() {
     };
   } catch (error) {
     console.error("[TimeOff] Error fetching pending requests:", error);
-    return { success: false as const, error: "Failed to fetch pending requests" };
+    return fail("Failed to fetch pending requests");
   }
 }
 
@@ -918,7 +918,7 @@ export async function getTimeOffRequests(filters?: {
     };
   } catch (error) {
     console.error("[TimeOff] Error fetching requests:", error);
-    return { success: false as const, error: "Failed to fetch time-off requests" };
+    return fail("Failed to fetch time-off requests");
   }
 }
 
@@ -940,7 +940,7 @@ export async function approveTimeOffRequest(id: string): Promise<ActionResult> {
     });
 
     if (!existing) {
-      return { success: false, error: "Time-off request not found or already processed" };
+      return fail("Time-off request not found or already processed");
     }
 
     await prisma.availabilityBlock.update({
@@ -959,9 +959,9 @@ export async function approveTimeOffRequest(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("[TimeOff] Error approving request:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to approve time-off request" };
+    return fail("Failed to approve time-off request");
   }
 }
 
@@ -986,7 +986,7 @@ export async function rejectTimeOffRequest(
     });
 
     if (!existing) {
-      return { success: false, error: "Time-off request not found or already processed" };
+      return fail("Time-off request not found or already processed");
     }
 
     await prisma.availabilityBlock.update({
@@ -1006,9 +1006,9 @@ export async function rejectTimeOffRequest(
   } catch (error) {
     console.error("[TimeOff] Error rejecting request:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to reject time-off request" };
+    return fail("Failed to reject time-off request");
   }
 }
 
@@ -1032,7 +1032,7 @@ export async function getMyTimeOffRequests() {
     return { success: true as const, data: requests };
   } catch (error) {
     console.error("[TimeOff] Error fetching my requests:", error);
-    return { success: false as const, error: "Failed to fetch your time-off requests" };
+    return fail("Failed to fetch your time-off requests");
   }
 }
 
@@ -1055,7 +1055,7 @@ export async function cancelTimeOffRequest(id: string): Promise<ActionResult> {
     });
 
     if (!existing) {
-      return { success: false, error: "Request not found or cannot be cancelled" };
+      return fail("Request not found or cannot be cancelled");
     }
 
     await prisma.availabilityBlock.delete({
@@ -1069,8 +1069,8 @@ export async function cancelTimeOffRequest(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("[TimeOff] Error cancelling request:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to cancel time-off request" };
+    return fail("Failed to cancel time-off request");
   }
 }

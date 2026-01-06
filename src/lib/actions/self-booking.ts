@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { combineDateAndTime } from "@/lib/dates";
 import { validateBookingTime } from "./bookings";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
@@ -73,13 +73,13 @@ export async function getPublicOrganization(slug: string): Promise<
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     return { success: true, data: org };
   } catch (error) {
     console.error("Error getting public organization:", error);
-    return { success: false, error: "Failed to get organization" };
+    return fail("Failed to get organization");
   }
 }
 
@@ -94,7 +94,7 @@ export async function getPublicServices(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const services = await prisma.service.findMany({
@@ -117,7 +117,7 @@ export async function getPublicServices(
     return { success: true, data: services };
   } catch (error) {
     console.error("Error getting public services:", error);
-    return { success: false, error: "Failed to get services" };
+    return fail("Failed to get services");
   }
 }
 
@@ -135,7 +135,7 @@ export async function getAvailableSlots(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const timezone = org.timezone || "America/New_York";
@@ -184,7 +184,7 @@ export async function getAvailableSlots(
     return { success: true, data: slots };
   } catch (error) {
     console.error("Error getting available slots:", error);
-    return { success: false, error: "Failed to get available slots" };
+    return fail("Failed to get available slots");
   }
 }
 
@@ -207,7 +207,7 @@ export async function submitBooking(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const service = await prisma.service.findFirst({
@@ -219,7 +219,7 @@ export async function submitBooking(
     });
 
     if (!service) {
-      return { success: false, error: "Service not found" };
+      return fail("Service not found");
     }
 
     // Find or create client
@@ -255,11 +255,11 @@ export async function submitBooking(
     });
 
     if (!validation.success) {
-      return { success: false, error: validation.error || "Failed to validate booking" };
+      return fail(validation.error || "Failed to validate booking");
     }
 
     if (!validation.data.valid) {
-      return { success: false, error: validation.data.message || "This time is not available" };
+      return fail(validation.data.message || "This time is not available");
     }
 
     // Create booking
@@ -288,6 +288,6 @@ export async function submitBooking(
     };
   } catch (error) {
     console.error("Error submitting booking:", error);
-    return { success: false, error: "Failed to submit booking" };
+    return fail("Failed to submit booking");
   }
 }

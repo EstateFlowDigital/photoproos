@@ -18,7 +18,7 @@ import {
   archiveStripeProduct,
   reactivateStripeProduct,
 } from "@/lib/stripe/product-sync";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -57,13 +57,13 @@ export async function createService(
     revalidatePath("/services");
     revalidatePath("/galleries");
 
-    return { success: true, data: { id: service.id } };
+    return success({ id: service.id });
   } catch (error) {
     console.error("Error creating service:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create service" };
+    return fail("Failed to create service");
   }
 }
 
@@ -86,7 +86,7 @@ export async function updateService(
     });
 
     if (!existing) {
-      return { success: false, error: "Service not found" };
+      return fail("Service not found");
     }
 
     const { id, ...updateData } = validated;
@@ -133,13 +133,13 @@ export async function updateService(
     revalidatePath(`/services/${id}`);
     revalidatePath("/galleries");
 
-    return { success: true, data: { id: service.id } };
+    return success({ id: service.id });
   } catch (error) {
     console.error("Error updating service:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update service" };
+    return fail("Failed to update service");
   }
 }
 
@@ -171,7 +171,7 @@ export async function deleteService(
     });
 
     if (!existing) {
-      return { success: false, error: "Service not found" };
+      return fail("Service not found");
     }
 
     const usageCount = existing._count.projects + existing._count.bookings;
@@ -216,9 +216,9 @@ export async function deleteService(
   } catch (error) {
     console.error("Error deleting service:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete service" };
+    return fail("Failed to delete service");
   }
 }
 
@@ -242,7 +242,7 @@ export async function duplicateService(
     });
 
     if (!original) {
-      return { success: false, error: "Service not found" };
+      return fail("Service not found");
     }
 
     // Create duplicate (without Stripe IDs - will get new ones)
@@ -267,13 +267,13 @@ export async function duplicateService(
 
     revalidatePath("/services");
 
-    return { success: true, data: { id: duplicate.id } };
+    return success({ id: duplicate.id });
   } catch (error) {
     console.error("Error duplicating service:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to duplicate service" };
+    return fail("Failed to duplicate service");
   }
 }
 
@@ -294,7 +294,7 @@ export async function toggleServiceStatus(
     });
 
     if (!existing) {
-      return { success: false, error: "Service not found" };
+      return fail("Service not found");
     }
 
     const updated = await prisma.service.update({
@@ -318,13 +318,13 @@ export async function toggleServiceStatus(
     revalidatePath("/services");
     revalidatePath(`/services/${id}`);
 
-    return { success: true, data: { isActive: updated.isActive } };
+    return success({ isActive: updated.isActive });
   } catch (error) {
     console.error("Error toggling service status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to toggle service status" };
+    return fail("Failed to toggle service status");
   }
 }
 
@@ -449,7 +449,7 @@ export async function seedDefaultServices(): Promise<ActionResult<{ count: numbe
     });
 
     if (existingDefaults > 0) {
-      return { success: false, error: "Default services already exist" };
+      return fail("Default services already exist");
     }
 
     // Create all default services
@@ -470,13 +470,13 @@ export async function seedDefaultServices(): Promise<ActionResult<{ count: numbe
 
     revalidatePath("/services");
 
-    return { success: true, data: { count: result.count } };
+    return success({ count: result.count });
   } catch (error) {
     console.error("Error seeding default services:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to seed default services" };
+    return fail("Failed to seed default services");
   }
 }
 
@@ -492,7 +492,7 @@ export async function bulkToggleServiceStatus(
 ): Promise<ActionResult<{ count: number }>> {
   try {
     if (!ids.length) {
-      return { success: false, error: "No services selected" };
+      return fail("No services selected");
     }
 
     const organizationId = await getOrganizationId();
@@ -507,7 +507,7 @@ export async function bulkToggleServiceStatus(
     });
 
     if (services.length === 0) {
-      return { success: false, error: "No services found" };
+      return fail("No services found");
     }
 
     // Determine action: if ANY are active, deactivate all; otherwise activate all
@@ -525,13 +525,13 @@ export async function bulkToggleServiceStatus(
     revalidatePath("/services");
     revalidatePath("/services");
 
-    return { success: true, data: { count: result.count } };
+    return success({ count: result.count });
   } catch (error) {
     console.error("Error toggling service statuses:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to toggle service statuses" };
+    return fail("Failed to toggle service statuses");
   }
 }
 
@@ -544,7 +544,7 @@ export async function bulkArchiveServices(
 ): Promise<ActionResult<{ count: number }>> {
   try {
     if (!ids.length) {
-      return { success: false, error: "No services selected" };
+      return fail("No services selected");
     }
 
     const organizationId = await getOrganizationId();
@@ -560,13 +560,13 @@ export async function bulkArchiveServices(
     revalidatePath("/services");
     revalidatePath("/services");
 
-    return { success: true, data: { count: result.count } };
+    return success({ count: result.count });
   } catch (error) {
     console.error("Error archiving services:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to archive services" };
+    return fail("Failed to archive services");
   }
 }
 
@@ -578,7 +578,7 @@ export async function bulkDeleteServices(
 ): Promise<ActionResult<{ count: number }>> {
   try {
     if (!ids.length) {
-      return { success: false, error: "No services selected" };
+      return fail("No services selected");
     }
 
     const organizationId = await getOrganizationId();
@@ -600,7 +600,7 @@ export async function bulkDeleteServices(
     });
 
     if (services.length === 0) {
-      return { success: false, error: "No services found" };
+      return fail("No services found");
     }
 
     // Separate into deletable and archivable
@@ -645,12 +645,12 @@ export async function bulkDeleteServices(
     revalidatePath("/services");
     revalidatePath("/services");
 
-    return { success: true, data: { count: deletedCount + archivedCount } };
+    return success({ count: deletedCount + archivedCount });
   } catch (error) {
     console.error("Error deleting services:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete services" };
+    return fail("Failed to delete services");
   }
 }

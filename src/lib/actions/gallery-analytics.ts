@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { getGalleryHeatMapData, getGalleryDownloadAnalytics, getDownloadHistory } from "./download-tracking";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Helper Functions
@@ -75,7 +75,7 @@ export interface ViewingSession {
 export async function getComprehensiveGalleryAnalytics(projectId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -99,7 +99,7 @@ export async function getComprehensiveGalleryAnalytics(projectId: string) {
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Get heat map data, download analytics, and download history in parallel
@@ -241,7 +241,7 @@ export async function getComprehensiveGalleryAnalytics(projectId: string) {
     };
   } catch (error) {
     console.error("[Gallery Analytics] Error fetching analytics:", error);
-    return { success: false, error: "Failed to fetch gallery analytics" };
+    return fail("Failed to fetch gallery analytics");
   }
 }
 
@@ -263,7 +263,7 @@ export async function logGalleryView(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Increment view count
@@ -290,7 +290,7 @@ export async function logGalleryView(
     return ok();
   } catch (error) {
     console.error("[Gallery Analytics] Error logging view:", error);
-    return { success: false, error: "Failed to log view" };
+    return fail("Failed to log view");
   }
 }
 
@@ -311,7 +311,7 @@ export async function logPhotoView(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Log to activity
@@ -331,7 +331,7 @@ export async function logPhotoView(
     return ok();
   } catch (error) {
     console.error("[Gallery Analytics] Error logging photo view:", error);
-    return { success: false, error: "Failed to log photo view" };
+    return fail("Failed to log photo view");
   }
 }
 
@@ -345,7 +345,7 @@ export async function exportGalleryAnalyticsReport(
   const analyticsResult = await getComprehensiveGalleryAnalytics(projectId);
 
   if (!analyticsResult.success || !analyticsResult.data) {
-    return { success: false, error: analyticsResult.error || "Failed to fetch analytics" };
+    return fail(analyticsResult.error || "Failed to fetch analytics");
   }
 
   const { overview, photoEngagement, downloadHistory, downloadsByDay, downloadsByFormat } =

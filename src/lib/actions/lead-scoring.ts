@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Lead Scoring Configuration
@@ -92,7 +92,7 @@ export async function trackLeadEngagement(
     });
 
     if (!lead) {
-      return { success: false, error: "Lead not found" };
+      return fail("Lead not found");
     }
 
     const updates: Record<string, number | Date> = {
@@ -135,7 +135,7 @@ export async function trackLeadEngagement(
     return ok();
   } catch (error) {
     console.error("[Lead Scoring] Error tracking engagement:", error);
-    return { success: false, error: "Failed to track engagement" };
+    return fail("Failed to track engagement");
   }
 }
 
@@ -145,7 +145,7 @@ export async function trackLeadEngagement(
 export async function getLeadsByTemperature(propertyWebsiteId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -158,7 +158,7 @@ export async function getLeadsByTemperature(propertyWebsiteId: string) {
     });
 
     if (!property) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     const leads = await prisma.propertyLead.findMany({
@@ -187,7 +187,7 @@ export async function getLeadsByTemperature(propertyWebsiteId: string) {
     };
   } catch (error) {
     console.error("[Lead Scoring] Error fetching leads:", error);
-    return { success: false, error: "Failed to fetch leads" };
+    return fail("Failed to fetch leads");
   }
 }
 
@@ -200,7 +200,7 @@ export async function updateLeadStatus(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -214,7 +214,7 @@ export async function updateLeadStatus(
     });
 
     if (!lead || lead.propertyWebsite.project.organizationId !== organizationId) {
-      return { success: false, error: "Lead not found" };
+      return fail("Lead not found");
     }
 
     const updateData: Record<string, Date | string> = { status };
@@ -231,7 +231,7 @@ export async function updateLeadStatus(
     return ok();
   } catch (error) {
     console.error("[Lead Scoring] Error updating status:", error);
-    return { success: false, error: "Failed to update lead status" };
+    return fail("Failed to update lead status");
   }
 }
 
@@ -241,7 +241,7 @@ export async function updateLeadStatus(
 export async function addLeadNotes(leadId: string, notes: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -255,7 +255,7 @@ export async function addLeadNotes(leadId: string, notes: string) {
     });
 
     if (!lead || lead.propertyWebsite.project.organizationId !== organizationId) {
-      return { success: false, error: "Lead not found" };
+      return fail("Lead not found");
     }
 
     await prisma.propertyLead.update({
@@ -266,7 +266,7 @@ export async function addLeadNotes(leadId: string, notes: string) {
     return ok();
   } catch (error) {
     console.error("[Lead Scoring] Error adding notes:", error);
-    return { success: false, error: "Failed to add notes" };
+    return fail("Failed to add notes");
   }
 }
 
@@ -276,7 +276,7 @@ export async function addLeadNotes(leadId: string, notes: string) {
 export async function setLeadFollowUp(leadId: string, followUpDate: Date) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -290,7 +290,7 @@ export async function setLeadFollowUp(leadId: string, followUpDate: Date) {
     });
 
     if (!lead || lead.propertyWebsite.project.organizationId !== organizationId) {
-      return { success: false, error: "Lead not found" };
+      return fail("Lead not found");
     }
 
     await prisma.propertyLead.update({
@@ -301,7 +301,7 @@ export async function setLeadFollowUp(leadId: string, followUpDate: Date) {
     return ok();
   } catch (error) {
     console.error("[Lead Scoring] Error setting follow-up:", error);
-    return { success: false, error: "Failed to set follow-up date" };
+    return fail("Failed to set follow-up date");
   }
 }
 
@@ -311,7 +311,7 @@ export async function setLeadFollowUp(leadId: string, followUpDate: Date) {
 export async function getLeadsForFollowUp() {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -343,7 +343,7 @@ export async function getLeadsForFollowUp() {
     return { success: true, data: leads };
   } catch (error) {
     console.error("[Lead Scoring] Error fetching follow-ups:", error);
-    return { success: false, error: "Failed to fetch follow-ups" };
+    return fail("Failed to fetch follow-ups");
   }
 }
 
@@ -353,7 +353,7 @@ export async function getLeadsForFollowUp() {
 export async function getLeadAnalytics(dateRange?: { from: Date; to: Date }) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -421,6 +421,6 @@ export async function getLeadAnalytics(dateRange?: { from: Date; to: Date }) {
     };
   } catch (error) {
     console.error("[Lead Scoring] Error fetching analytics:", error);
-    return { success: false, error: "Failed to fetch lead analytics" };
+    return fail("Failed to fetch lead analytics");
   }
 }

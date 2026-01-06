@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -57,7 +58,7 @@ export async function generateContractPdf(contractId: string): Promise<{
     });
 
     if (!contract) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     // Determine logo URL using shared utility
@@ -105,9 +106,6 @@ export async function generateContractPdf(contractId: string): Promise<{
     };
   } catch (error) {
     console.error("Error generating contract PDF:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to generate contract PDF",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to generate contract PDF",);
   }
 }

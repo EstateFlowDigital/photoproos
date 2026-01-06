@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { EmailType, EmailStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // ============================================================================
 // EMAIL LOGGING ACTIONS
@@ -49,7 +49,7 @@ export async function createEmailLog(params: {
     return { success: true, logId: log.id };
   } catch (error) {
     console.error("Failed to create email log:", error);
-    return { success: false, error: "Failed to create email log" };
+    return fail("Failed to create email log");
   }
 }
 
@@ -107,7 +107,7 @@ export async function getEmailLogs(options?: {
 }) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -115,7 +115,7 @@ export async function getEmailLogs(options?: {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -158,7 +158,7 @@ export async function getEmailLogs(options?: {
     return { success: true, logs, total };
   } catch (error) {
     console.error("Failed to get email logs:", error);
-    return { success: false, error: "Failed to fetch email logs" };
+    return fail("Failed to fetch email logs");
   }
 }
 
@@ -168,7 +168,7 @@ export async function getEmailLogs(options?: {
 export async function getEmailStats() {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -176,7 +176,7 @@ export async function getEmailStats() {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -232,7 +232,7 @@ export async function getEmailStats() {
     };
   } catch (error) {
     console.error("Failed to get email stats:", error);
-    return { success: false, error: "Failed to fetch email stats" };
+    return fail("Failed to fetch email stats");
   }
 }
 
@@ -272,7 +272,7 @@ export async function logEmailSent(params: {
 export async function getQuestionnaireEmailActivity(questionnaireId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -284,7 +284,7 @@ export async function getQuestionnaireEmailActivity(questionnaireId: string) {
     return { success: true, logs };
   } catch (error) {
     console.error("Failed to get questionnaire email activity:", error);
-    return { success: false, error: "Failed to fetch email activity" };
+    return fail("Failed to fetch email activity");
   }
 }
 
@@ -294,7 +294,7 @@ export async function getQuestionnaireEmailActivity(questionnaireId: string) {
 export async function getClientEmailLogs(clientId: string, options?: { limit?: number }) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated", logs: [] };
+    return { success: false as const, error: "Not authenticated", logs: [] };
   }
 
   try {
@@ -304,7 +304,7 @@ export async function getClientEmailLogs(clientId: string, options?: { limit?: n
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found", logs: [] };
+      return { success: false as const, error: "Organization not found", logs: [] };
     }
 
     const logs = await prisma.emailLog.findMany({
@@ -328,7 +328,7 @@ export async function getClientEmailLogs(clientId: string, options?: { limit?: n
     return { success: true, logs };
   } catch (error) {
     console.error("Failed to get client email logs:", error);
-    return { success: false, error: "Failed to fetch email logs", logs: [] };
+    return { success: false as const, error: "Failed to fetch email logs", logs: [] };
   }
 }
 
@@ -427,7 +427,7 @@ export async function getQuestionnaireDigestData(organizationId: string) {
     };
   } catch (error) {
     console.error("Failed to get questionnaire digest data:", error);
-    return { success: false, error: "Failed to fetch digest data" };
+    return fail("Failed to fetch digest data");
   }
 }
 
@@ -437,7 +437,7 @@ export async function getQuestionnaireDigestData(organizationId: string) {
 export async function resendEmail(logId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -457,7 +457,7 @@ export async function resendEmail(logId: string) {
     });
 
     if (!emailLog) {
-      return { success: false, error: "Email log not found" };
+      return fail("Email log not found");
     }
 
     // Verify organization access
@@ -466,12 +466,12 @@ export async function resendEmail(logId: string) {
     });
 
     if (!organization || emailLog.organizationId !== organization.id) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Only allow resending failed or bounced emails
     if (!["failed", "bounced"].includes(emailLog.status)) {
-      return { success: false, error: "Can only resend failed or bounced emails" };
+      return fail("Can only resend failed or bounced emails");
     }
 
     // Fetch additional related data based on email type
@@ -517,7 +517,7 @@ export async function resendEmail(logId: string) {
     switch (emailLog.emailType) {
       case "questionnaire_assigned": {
         if (!emailLog.questionnaire) {
-          return { success: false, error: "Questionnaire not found for this email" };
+          return fail("Questionnaire not found for this email");
         }
 
         const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/portal/questionnaires/${emailLog.questionnaire.id}`;
@@ -539,7 +539,7 @@ export async function resendEmail(logId: string) {
 
       case "questionnaire_reminder": {
         if (!emailLog.questionnaire) {
-          return { success: false, error: "Questionnaire not found for this email" };
+          return fail("Questionnaire not found for this email");
         }
 
         const isOverdue = emailLog.questionnaire.dueDate
@@ -566,7 +566,7 @@ export async function resendEmail(logId: string) {
 
       case "questionnaire_completed": {
         if (!emailLog.questionnaire) {
-          return { success: false, error: "Questionnaire not found for this email" };
+          return fail("Questionnaire not found for this email");
         }
 
         const viewResponsesUrl = `${process.env.NEXT_PUBLIC_APP_URL}/questionnaires/assigned/${emailLog.questionnaire.id}`;
@@ -600,7 +600,7 @@ export async function resendEmail(logId: string) {
 
       case "gallery_delivered": {
         if (!project) {
-          return { success: false, error: "Gallery not found for this email" };
+          return fail("Gallery not found for this email");
         }
 
         const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/gallery/${project.id}`;
@@ -618,7 +618,7 @@ export async function resendEmail(logId: string) {
 
       case "booking_confirmation": {
         if (!booking) {
-          return { success: false, error: "Booking not found for this email" };
+          return fail("Booking not found for this email");
         }
 
         // Format time string from start/end times
@@ -646,10 +646,7 @@ export async function resendEmail(logId: string) {
 
       case "order_confirmation": {
         if (!order || !order.items || order.items.length === 0) {
-          return {
-            success: false,
-            error: "Order details not found. Cannot resend order confirmation without item details.",
-          };
+          return fail("Order details not found. Cannot resend order confirmation without item details.",);
         }
 
         // Map order items to the expected format
@@ -676,13 +673,13 @@ export async function resendEmail(logId: string) {
 
       case "contract_signing": {
         if (!contract) {
-          return { success: false, error: "Contract not found for this email" };
+          return fail("Contract not found for this email");
         }
 
         // Find the signer for this email
         const contractSigner = contract.signers.find((s) => s.email === emailLog.toEmail);
         if (!contractSigner) {
-          return { success: false, error: "Signer not found for this contract" };
+          return fail("Signer not found for this contract");
         }
 
         const signingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/sign/${contractSigner.signingToken}`;
@@ -700,14 +697,11 @@ export async function resendEmail(logId: string) {
 
       case "payment_receipt": {
         // Payment receipts need invoice/payment data which isn't stored for security
-        return {
-          success: false,
-          error: "Payment receipts cannot be resent. The original payment data is not stored for security reasons.",
-        };
+        return fail("Payment receipts cannot be resent. The original payment data is not stored for security reasons.",);
       }
 
       default:
-        return { success: false, error: `Resending ${emailLog.emailType} emails is not yet supported` };
+        return fail(`Resending ${emailLog.emailType} emails is not yet supported`);
     }
 
     // Update the email log
@@ -736,7 +730,7 @@ export async function resendEmail(logId: string) {
     return result;
   } catch (error) {
     console.error("Failed to resend email:", error);
-    return { success: false, error: "Failed to resend email" };
+    return fail("Failed to resend email");
   }
 }
 
@@ -746,7 +740,7 @@ export async function resendEmail(logId: string) {
 export async function getEmailLog(logId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -754,7 +748,7 @@ export async function getEmailLog(logId: string) {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -782,12 +776,12 @@ export async function getEmailLog(logId: string) {
     });
 
     if (!log || log.organizationId !== organization.id) {
-      return { success: false, error: "Email log not found" };
+      return fail("Email log not found");
     }
 
     return { success: true, log };
   } catch (error) {
     console.error("Failed to get email log:", error);
-    return { success: false, error: "Failed to fetch email log" };
+    return fail("Failed to fetch email log");
   }
 }

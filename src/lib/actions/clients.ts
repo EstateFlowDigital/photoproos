@@ -10,7 +10,7 @@ import type {
   AcquisitionStats,
   AcquisitionOverview,
 } from "@/lib/constants/acquisition-sources";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -200,7 +200,7 @@ export async function createClient(
     });
 
     if (existing) {
-      return { success: false, error: "A client with this email already exists" };
+      return fail("A client with this email already exists");
     }
 
     const client = await prisma.client.create({
@@ -227,13 +227,13 @@ export async function createClient(
     revalidatePath("/clients");
     revalidatePath("/dashboard");
 
-    return { success: true, data: { id: client.id } };
+    return success({ id: client.id });
   } catch (error) {
     console.error("Error creating client:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create client" };
+    return fail("Failed to create client");
   }
 }
 
@@ -255,7 +255,7 @@ export async function updateClient(
     });
 
     if (!existing) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // If changing email, check for duplicates
@@ -269,7 +269,7 @@ export async function updateClient(
       });
 
       if (duplicate) {
-        return { success: false, error: "A client with this email already exists" };
+        return fail("A client with this email already exists");
       }
     }
 
@@ -293,13 +293,13 @@ export async function updateClient(
     revalidatePath(`/clients/${id}/edit`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: { id: client.id } };
+    return success({ id: client.id });
   } catch (error) {
     console.error("Error updating client:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update client" };
+    return fail("Failed to update client");
   }
 }
 
@@ -321,7 +321,7 @@ export async function impersonateClientPortal(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     const token = randomBytes(32).toString("hex");
@@ -345,10 +345,10 @@ export async function impersonateClientPortal(
       path: "/",
     });
 
-    return { success: true, data: { portalUrl: "/portal" } };
+    return success({ portalUrl: "/portal" });
   } catch (error) {
     console.error("Error impersonating client portal:", error);
-    return { success: false, error: "Failed to start client portal session" };
+    return fail("Failed to start client portal session");
   }
 }
 
@@ -378,7 +378,7 @@ export async function updateClientEmailPreferences(
     });
 
     if (!existing) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     const client = await prisma.client.update({
@@ -398,13 +398,13 @@ export async function updateClientEmailPreferences(
     revalidatePath("/clients");
     revalidatePath(`/clients/${input.clientId}`);
 
-    return { success: true, data: { id: client.id } };
+    return success({ id: client.id });
   } catch (error) {
     console.error("Error updating client preferences:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update preferences" };
+    return fail("Failed to update preferences");
   }
 }
 
@@ -467,15 +467,12 @@ export async function deleteClient(
     });
 
     if (!existing) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Check if client has related data
     if (!force && (existing._count.projects > 0 || existing._count.bookings > 0)) {
-      return {
-        success: false,
-        error: "Cannot delete client with existing projects or bookings. Use force delete to proceed.",
-      };
+      return fail("Cannot delete client with existing projects or bookings. Use force delete to proceed.",);
     }
 
     // Delete the client (will cascade to related records if configured)
@@ -490,9 +487,9 @@ export async function deleteClient(
   } catch (error) {
     console.error("Error deleting client:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete client" };
+    return fail("Failed to delete client");
   }
 }
 
@@ -523,13 +520,13 @@ export async function updateClientSource(
     revalidatePath("/clients");
     revalidatePath(`/clients/${clientId}`);
 
-    return { success: true, data: { id: clientId } };
+    return success({ id: clientId });
   } catch (error) {
     console.error("Error updating client source:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update client source" };
+    return fail("Failed to update client source");
   }
 }
 
@@ -659,29 +656,26 @@ export async function getAcquisitionAnalytics(options?: {
     const completed = clients.filter((c) => c._count.projects > 0).length;
     const repeat = clients.filter((c) => c.totalProjects > 1).length;
 
-    return {
-      success: true,
-      data: {
-        totalClients,
-        totalRevenue,
-        bySource,
-        topSources,
-        monthlyTrend,
-        conversionFunnel: {
-          leads,
-          contacted,
-          booked,
-          completed,
-          repeat,
-        },
+    return success({
+      totalClients,
+      totalRevenue,
+      bySource,
+      topSources,
+      monthlyTrend,
+      conversionFunnel: {
+        leads,
+        contacted,
+        booked,
+        completed,
+        repeat,
       },
-    };
+    });
   } catch (error) {
     console.error("Error getting acquisition analytics:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get acquisition analytics" };
+    return fail("Failed to get acquisition analytics");
   }
 }
 
@@ -737,16 +731,13 @@ export async function getClientsBySource(
       }),
     ]);
 
-    return {
-      success: true,
-      data: { clients, total },
-    };
+    return success({ clients, total });
   } catch (error) {
     console.error("Error getting clients by source:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get clients by source" };
+    return fail("Failed to get clients by source");
   }
 }
 
@@ -831,15 +822,12 @@ export async function getSourcePerformance(
     // Sort by revenue
     sources.sort((a, b) => b.totalRevenue - a.totalRevenue);
 
-    return {
-      success: true,
-      data: { sources },
-    };
+    return success({ sources });
   } catch (error) {
     console.error("Error getting source performance:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get source performance" };
+    return fail("Failed to get source performance");
   }
 }

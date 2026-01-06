@@ -53,6 +53,7 @@ export default async function BrandingSettingsPage() {
           hidePlatformBranding: org?.hidePlatformBranding || false,
           customDomain: org?.customDomain || null,
           slug: org?.slug || "",
+          autoArchiveExpiredGalleries: org?.autoArchiveExpiredGalleries ?? true,
         }}
         colorPresets={colorPresets}
         isPaidPlan={isPaidPlan}

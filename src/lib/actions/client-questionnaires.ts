@@ -22,7 +22,7 @@ import {
   createEmailLog,
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export type ClientQuestionnaireWithRelations = {
   id: string;
@@ -190,7 +190,7 @@ export async function getClientQuestionnaires(
     return { success: true, data: questionnaires as ClientQuestionnaireWithRelations[] };
   } catch (error) {
     console.error("Error fetching client questionnaires:", error);
-    return { success: false, error: "Failed to fetch client questionnaires" };
+    return fail("Failed to fetch client questionnaires");
   }
 }
 
@@ -253,7 +253,7 @@ export async function getClientQuestionnairesByClient(
     return { success: true, data: questionnaires as ClientQuestionnaireWithRelations[] };
   } catch (error) {
     console.error("Error fetching client questionnaires:", error);
-    return { success: false, error: "Failed to fetch client questionnaires" };
+    return fail("Failed to fetch client questionnaires");
   }
 }
 
@@ -315,7 +315,7 @@ export async function getClientQuestionnaire(
     return { success: true, data: questionnaire as ClientQuestionnaireWithRelations | null };
   } catch (error) {
     console.error("Error fetching client questionnaire:", error);
-    return { success: false, error: "Failed to fetch client questionnaire" };
+    return fail("Failed to fetch client questionnaire");
   }
 }
 
@@ -365,7 +365,7 @@ export async function getQuestionnaireStats(): Promise<
     };
   } catch (error) {
     console.error("Error fetching questionnaire stats:", error);
-    return { success: false, error: "Failed to fetch questionnaire stats" };
+    return fail("Failed to fetch questionnaire stats");
   }
 }
 
@@ -399,7 +399,7 @@ export async function assignQuestionnaireToClient(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Check if client has opted out of emails
@@ -418,7 +418,7 @@ export async function assignQuestionnaireToClient(
     });
 
     if (!template) {
-      return { success: false, error: "Template not found or not available" };
+      return fail("Template not found or not available");
     }
 
     // Verify booking exists if provided
@@ -431,7 +431,7 @@ export async function assignQuestionnaireToClient(
       });
 
       if (!booking) {
-        return { success: false, error: "Booking not found" };
+        return fail("Booking not found");
       }
     }
 
@@ -445,7 +445,7 @@ export async function assignQuestionnaireToClient(
       });
 
       if (!project) {
-        return { success: false, error: "Project not found" };
+        return fail("Project not found");
       }
     }
 
@@ -568,9 +568,9 @@ export async function assignQuestionnaireToClient(
   } catch (error) {
     console.error("Error assigning questionnaire:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to assign questionnaire" };
+    return fail("Failed to assign questionnaire");
   }
 }
 
@@ -593,7 +593,7 @@ export async function updateClientQuestionnaire(
     });
 
     if (!existing) {
-      return { success: false, error: "Questionnaire not found" };
+      return fail("Questionnaire not found");
     }
 
     const { id, ...updateData } = validated;
@@ -621,9 +621,9 @@ export async function updateClientQuestionnaire(
   } catch (error) {
     console.error("Error updating client questionnaire:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update questionnaire" };
+    return fail("Failed to update questionnaire");
   }
 }
 
@@ -647,7 +647,7 @@ export async function approveQuestionnaire(
     });
 
     if (!existing) {
-      return { success: false, error: "Questionnaire not found or not in completed status" };
+      return fail("Questionnaire not found or not in completed status");
     }
 
     await prisma.clientQuestionnaire.update({
@@ -663,7 +663,7 @@ export async function approveQuestionnaire(
     return ok();
   } catch (error) {
     console.error("Error approving questionnaire:", error);
-    return { success: false, error: "Failed to approve questionnaire" };
+    return fail("Failed to approve questionnaire");
   }
 }
 
@@ -686,7 +686,7 @@ export async function deleteClientQuestionnaire(
     });
 
     if (!existing) {
-      return { success: false, error: "Questionnaire not found" };
+      return fail("Questionnaire not found");
     }
 
     await prisma.clientQuestionnaire.delete({
@@ -698,7 +698,7 @@ export async function deleteClientQuestionnaire(
     return ok();
   } catch (error) {
     console.error("Error deleting client questionnaire:", error);
-    return { success: false, error: "Failed to delete questionnaire" };
+    return fail("Failed to delete questionnaire");
   }
 }
 
@@ -736,12 +736,12 @@ export async function sendQuestionnaireReminder(
     });
 
     if (!questionnaire) {
-      return { success: false, error: "Questionnaire not found or not in remindable status" };
+      return fail("Questionnaire not found or not in remindable status");
     }
 
     // Check if client has opted out of emails
     if (!questionnaire.client.emailOptIn || !questionnaire.client.questionnaireEmailsOptIn) {
-      return { success: false, error: "Client has opted out of questionnaire emails" };
+      return fail("Client has opted out of questionnaire emails");
     }
 
     // Get organization info for the email
@@ -810,7 +810,7 @@ export async function sendQuestionnaireReminder(
       }
 
       if (!emailResult.success) {
-        return { success: false, error: "Failed to send reminder email" };
+        return fail("Failed to send reminder email");
       }
     } catch (emailError) {
       console.error("Failed to send questionnaire reminder email:", emailError);
@@ -822,7 +822,7 @@ export async function sendQuestionnaireReminder(
           emailError instanceof Error ? emailError.message : "Unknown error"
         );
       }
-      return { success: false, error: "Failed to send reminder email" };
+      return fail("Failed to send reminder email");
     }
 
     // Update reminder count after successful email send
@@ -839,7 +839,7 @@ export async function sendQuestionnaireReminder(
     return ok();
   } catch (error) {
     console.error("Error sending questionnaire reminder:", error);
-    return { success: false, error: "Failed to send reminder" };
+    return fail("Failed to send reminder");
   }
 }
 
@@ -867,7 +867,7 @@ export async function markExpiredQuestionnaires(): Promise<ActionResult<{ count:
     return { success: true, data: { count: result.count } };
   } catch (error) {
     console.error("Error marking expired questionnaires:", error);
-    return { success: false, error: "Failed to mark expired questionnaires" };
+    return fail("Failed to mark expired questionnaires");
   }
 }
 
@@ -1031,7 +1031,7 @@ export async function sendBatchReminders(options?: {
     return { success: true, data: results };
   } catch (error) {
     console.error("Error sending batch reminders:", error);
-    return { success: false, error: "Failed to send batch reminders" };
+    return fail("Failed to send batch reminders");
   }
 }
 
@@ -1067,6 +1067,6 @@ export async function getRemindableQuestionnairesCount(): Promise<
     };
   } catch (error) {
     console.error("Error getting remindable questionnaires count:", error);
-    return { success: false, error: "Failed to get count" };
+    return fail("Failed to get count");
   }
 }

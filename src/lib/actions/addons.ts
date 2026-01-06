@@ -14,7 +14,7 @@ import {
 } from "@/lib/validations/addons";
 import type { AddonTrigger } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -53,9 +53,9 @@ export async function createAddon(
   } catch (error) {
     console.error("Error creating addon:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create addon" };
+    return fail("Failed to create addon");
   }
 }
 
@@ -78,7 +78,7 @@ export async function updateAddon(
     });
 
     if (!existing) {
-      return { success: false, error: "Addon not found" };
+      return fail("Addon not found");
     }
 
     const { id, ...updateData } = validated;
@@ -106,9 +106,9 @@ export async function updateAddon(
   } catch (error) {
     console.error("Error updating addon:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update addon" };
+    return fail("Failed to update addon");
   }
 }
 
@@ -139,7 +139,7 @@ export async function deleteAddon(
     });
 
     if (!existing) {
-      return { success: false, error: "Addon not found" };
+      return fail("Addon not found");
     }
 
     if (existing._count.orderItems > 0 && !force) {
@@ -165,9 +165,9 @@ export async function deleteAddon(
   } catch (error) {
     console.error("Error deleting addon:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete addon" };
+    return fail("Failed to delete addon");
   }
 }
 
@@ -188,7 +188,7 @@ export async function toggleAddonStatus(
     });
 
     if (!existing) {
-      return { success: false, error: "Addon not found" };
+      return fail("Addon not found");
     }
 
     const updated = await prisma.serviceAddon.update({
@@ -203,9 +203,9 @@ export async function toggleAddonStatus(
   } catch (error) {
     console.error("Error toggling addon status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to toggle addon status" };
+    return fail("Failed to toggle addon status");
   }
 }
 
@@ -228,7 +228,7 @@ export async function setAddonCompatibility(
     });
 
     if (!addon) {
-      return { success: false, error: "Addon not found" };
+      return fail("Addon not found");
     }
 
     // Verify all services exist and belong to organization
@@ -240,7 +240,7 @@ export async function setAddonCompatibility(
     });
 
     if (services.length !== validated.serviceIds.length) {
-      return { success: false, error: "One or more services not found" };
+      return fail("One or more services not found");
     }
 
     // Replace all addon compatibility
@@ -265,9 +265,9 @@ export async function setAddonCompatibility(
   } catch (error) {
     console.error("Error setting addon compatibility:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set addon compatibility" };
+    return fail("Failed to set addon compatibility");
   }
 }
 
@@ -341,9 +341,9 @@ export async function getCompatibleAddons(
   } catch (error) {
     console.error("Error getting compatible addons:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get compatible addons" };
+    return fail("Failed to get compatible addons");
   }
 }
 
@@ -560,7 +560,7 @@ export async function reorderAddons(
     });
 
     if (addons.length !== addonIds.length) {
-      return { success: false, error: "One or more addons not found" };
+      return fail("One or more addons not found");
     }
 
     // Update sort order for each addon
@@ -579,8 +579,8 @@ export async function reorderAddons(
   } catch (error) {
     console.error("Error reordering addons:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to reorder addons" };
+    return fail("Failed to reorder addons");
   }
 }

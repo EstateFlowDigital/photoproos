@@ -24,6 +24,7 @@ interface BrandingSettingsFormProps {
     hidePlatformBranding: boolean;
     customDomain: string | null;
     slug: string;
+    autoArchiveExpiredGalleries: boolean;
   };
   colorPresets: { name: string; primary: string; secondary: string; accent: string }[];
   isPaidPlan: boolean;
@@ -57,6 +58,9 @@ export function BrandingSettingsForm({
 
   // White-label (paid only)
   const [hidePlatformBranding, setHidePlatformBranding] = useState(settings.hidePlatformBranding);
+
+  // Gallery automation
+  const [autoArchiveExpiredGalleries, setAutoArchiveExpiredGalleries] = useState(settings.autoArchiveExpiredGalleries);
 
   // Watermark settings (local for now)
   const [showWatermark, setShowWatermark] = useState(true);
@@ -108,6 +112,7 @@ export function BrandingSettingsForm({
         invoiceLogoUrl,
         hidePlatformBranding: isPaidPlan ? hidePlatformBranding : false,
         customDomain: null, // Custom domain requires separate verification
+        autoArchiveExpiredGalleries,
       });
 
       if (result.success) {
@@ -718,6 +723,31 @@ export function BrandingSettingsForm({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Gallery Automation */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-2">Gallery Automation</h2>
+            <p className="text-sm text-foreground-muted mb-6">
+              Automate gallery lifecycle management
+            </p>
+
+            <div className="flex flex-col gap-3 p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-foreground">Auto-Archive Expired Galleries</h3>
+                <p className="text-xs text-foreground-muted">
+                  Automatically archive galleries when they reach their expiration date
+                </p>
+              </div>
+              <Switch
+                checked={autoArchiveExpiredGalleries}
+                onCheckedChange={setAutoArchiveExpiredGalleries}
+              />
+            </div>
+
+            <p className="mt-3 text-xs text-foreground-muted">
+              Archived galleries are hidden from clients but preserved for your records
+            </p>
           </div>
 
           {/* Save Button */}

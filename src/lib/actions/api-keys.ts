@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import crypto from "crypto";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // ============================================================================
 // API KEY ACTIONS
@@ -41,7 +41,7 @@ function getKeyPrefix(key: string): string {
 export async function getApiKeys() {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -49,7 +49,7 @@ export async function getApiKeys() {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -73,7 +73,7 @@ export async function getApiKeys() {
     return { success: true, apiKeys };
   } catch (error) {
     console.error("Failed to get API keys:", error);
-    return { success: false, error: "Failed to fetch API keys" };
+    return fail("Failed to fetch API keys");
   }
 }
 
@@ -87,7 +87,7 @@ export async function generateNewApiKey(params: {
 }) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -95,7 +95,7 @@ export async function generateNewApiKey(params: {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -132,7 +132,7 @@ export async function generateNewApiKey(params: {
     };
   } catch (error) {
     console.error("Failed to generate API key:", error);
-    return { success: false, error: "Failed to generate API key" };
+    return fail("Failed to generate API key");
   }
 }
 
@@ -142,7 +142,7 @@ export async function generateNewApiKey(params: {
 export async function revokeApiKey(keyId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -150,7 +150,7 @@ export async function revokeApiKey(keyId: string) {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -160,7 +160,7 @@ export async function revokeApiKey(keyId: string) {
     });
 
     if (!apiKey || apiKey.organizationId !== organization.id) {
-      return { success: false, error: "API key not found" };
+      return fail("API key not found");
     }
 
     // Soft delete by setting isActive to false
@@ -173,7 +173,7 @@ export async function revokeApiKey(keyId: string) {
     return ok();
   } catch (error) {
     console.error("Failed to revoke API key:", error);
-    return { success: false, error: "Failed to revoke API key" };
+    return fail("Failed to revoke API key");
   }
 }
 
@@ -183,7 +183,7 @@ export async function revokeApiKey(keyId: string) {
 export async function deleteApiKey(keyId: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -191,7 +191,7 @@ export async function deleteApiKey(keyId: string) {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -201,7 +201,7 @@ export async function deleteApiKey(keyId: string) {
     });
 
     if (!apiKey || apiKey.organizationId !== organization.id) {
-      return { success: false, error: "API key not found" };
+      return fail("API key not found");
     }
 
     await prisma.apiKey.delete({
@@ -212,7 +212,7 @@ export async function deleteApiKey(keyId: string) {
     return ok();
   } catch (error) {
     console.error("Failed to delete API key:", error);
-    return { success: false, error: "Failed to delete API key" };
+    return fail("Failed to delete API key");
   }
 }
 
@@ -278,7 +278,7 @@ export async function updateApiKey(
 ) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -286,7 +286,7 @@ export async function updateApiKey(
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -296,7 +296,7 @@ export async function updateApiKey(
     });
 
     if (!apiKey || apiKey.organizationId !== organization.id) {
-      return { success: false, error: "API key not found" };
+      return fail("API key not found");
     }
 
     const updated = await prisma.apiKey.update({
@@ -311,6 +311,6 @@ export async function updateApiKey(
     return { success: true, apiKey: updated };
   } catch (error) {
     console.error("Failed to update API key:", error);
-    return { success: false, error: "Failed to update API key" };
+    return fail("Failed to update API key");
   }
 }

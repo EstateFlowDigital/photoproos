@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 export interface GalleryCollectionInput {
   name: string;
@@ -16,7 +16,7 @@ export interface GalleryCollectionInput {
 export async function getGalleryCollections(projectId: string) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -26,7 +26,7 @@ export async function getGalleryCollections(projectId: string) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify the gallery belongs to this organization
@@ -35,7 +35,7 @@ export async function getGalleryCollections(projectId: string) {
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const collections = await prisma.galleryCollection.findMany({
@@ -56,7 +56,7 @@ export async function getGalleryCollections(projectId: string) {
     return { success: true, data: collections };
   } catch (error) {
     console.error("Error fetching gallery collections:", error);
-    return { success: false, error: "Failed to fetch collections" };
+    return fail("Failed to fetch collections");
   }
 }
 
@@ -67,7 +67,7 @@ export async function createGalleryCollection(
 ) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -77,7 +77,7 @@ export async function createGalleryCollection(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify the gallery belongs to this organization
@@ -86,7 +86,7 @@ export async function createGalleryCollection(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Get max sort order
@@ -111,7 +111,7 @@ export async function createGalleryCollection(
     return { success: true, data: collection };
   } catch (error) {
     console.error("Error creating gallery collection:", error);
-    return { success: false, error: "Failed to create collection" };
+    return fail("Failed to create collection");
   }
 }
 
@@ -122,7 +122,7 @@ export async function updateGalleryCollection(
 ) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -132,7 +132,7 @@ export async function updateGalleryCollection(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Get collection and verify it belongs to this org's gallery
@@ -142,7 +142,7 @@ export async function updateGalleryCollection(
     });
 
     if (!existing || existing.project.organizationId !== org.id) {
-      return { success: false, error: "Collection not found" };
+      return fail("Collection not found");
     }
 
     const collection = await prisma.galleryCollection.update({
@@ -160,7 +160,7 @@ export async function updateGalleryCollection(
     return { success: true, data: collection };
   } catch (error) {
     console.error("Error updating gallery collection:", error);
-    return { success: false, error: "Failed to update collection" };
+    return fail("Failed to update collection");
   }
 }
 
@@ -168,7 +168,7 @@ export async function updateGalleryCollection(
 export async function deleteGalleryCollection(collectionId: string) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -178,7 +178,7 @@ export async function deleteGalleryCollection(collectionId: string) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Get collection and verify it belongs to this org's gallery
@@ -188,7 +188,7 @@ export async function deleteGalleryCollection(collectionId: string) {
     });
 
     if (!existing || existing.project.organizationId !== org.id) {
-      return { success: false, error: "Collection not found" };
+      return fail("Collection not found");
     }
 
     // Clear collection reference from all assets before deleting
@@ -206,7 +206,7 @@ export async function deleteGalleryCollection(collectionId: string) {
     return ok();
   } catch (error) {
     console.error("Error deleting gallery collection:", error);
-    return { success: false, error: "Failed to delete collection" };
+    return fail("Failed to delete collection");
   }
 }
 
@@ -217,7 +217,7 @@ export async function addAssetsToCollection(
 ) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -227,7 +227,7 @@ export async function addAssetsToCollection(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Get collection and verify it belongs to this org's gallery
@@ -237,7 +237,7 @@ export async function addAssetsToCollection(
     });
 
     if (!collection || collection.project.organizationId !== org.id) {
-      return { success: false, error: "Collection not found" };
+      return fail("Collection not found");
     }
 
     // Update assets to belong to this collection
@@ -254,7 +254,7 @@ export async function addAssetsToCollection(
     return ok();
   } catch (error) {
     console.error("Error adding assets to collection:", error);
-    return { success: false, error: "Failed to add assets to collection" };
+    return fail("Failed to add assets to collection");
   }
 }
 
@@ -262,7 +262,7 @@ export async function addAssetsToCollection(
 export async function removeAssetsFromCollection(assetIds: string[]) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -272,7 +272,7 @@ export async function removeAssetsFromCollection(assetIds: string[]) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify assets belong to this org's galleries
@@ -286,7 +286,7 @@ export async function removeAssetsFromCollection(assetIds: string[]) {
       .map((a) => a.id);
 
     if (validAssetIds.length === 0) {
-      return { success: false, error: "No valid assets found" };
+      return fail("No valid assets found");
     }
 
     await prisma.asset.updateMany({
@@ -303,7 +303,7 @@ export async function removeAssetsFromCollection(assetIds: string[]) {
     return ok();
   } catch (error) {
     console.error("Error removing assets from collection:", error);
-    return { success: false, error: "Failed to remove assets from collection" };
+    return fail("Failed to remove assets from collection");
   }
 }
 
@@ -314,7 +314,7 @@ export async function reorderGalleryCollections(
 ) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -324,7 +324,7 @@ export async function reorderGalleryCollections(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify the gallery belongs to this organization
@@ -333,7 +333,7 @@ export async function reorderGalleryCollections(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Update sort orders
@@ -351,6 +351,6 @@ export async function reorderGalleryCollections(
     return ok();
   } catch (error) {
     console.error("Error reordering collections:", error);
-    return { success: false, error: "Failed to reorder collections" };
+    return fail("Failed to reorder collections");
   }
 }

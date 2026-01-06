@@ -9,7 +9,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -274,9 +274,9 @@ export async function getRevenueForecast(
   } catch (error) {
     console.error("[RevenueForecast] Error:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to generate forecast" };
+    return fail("Failed to generate forecast");
   }
 }
 
@@ -364,9 +364,9 @@ export async function getHistoricalTrends(
   } catch (error) {
     console.error("[RevenueForecast] Error getting trends:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get historical trends" };
+    return fail("Failed to get historical trends");
   }
 }
 
@@ -434,9 +434,9 @@ export async function getSeasonalPatterns(): Promise<
   } catch (error) {
     console.error("[RevenueForecast] Error getting patterns:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get seasonal patterns" };
+    return fail("Failed to get seasonal patterns");
   }
 }
 
@@ -565,9 +565,9 @@ export async function getRevenueGoals(
   } catch (error) {
     console.error("[RevenueForecast] Error getting goals:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get revenue goals" };
+    return fail("Failed to get revenue goals");
   }
 }
 
@@ -675,8 +675,8 @@ export async function getRevenueInsights(): Promise<
   } catch (error) {
     console.error("[RevenueForecast] Error getting insights:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get insights" };
+    return fail("Failed to get insights");
   }
 }

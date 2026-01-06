@@ -12,7 +12,7 @@ import {
   TaskStatus,
   TaskPriority,
 } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Sample data for seeding
 const SAMPLE_CLIENTS = [
@@ -828,9 +828,9 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
   } catch (error) {
     console.error("[Seed] Error seeding database:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to seed database" };
+    return fail("Failed to seed database");
   }
 }
 
@@ -954,8 +954,8 @@ export async function clearSeededData(): Promise<ActionResult> {
   } catch (error) {
     console.error("[Seed] Error clearing data:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to clear data" };
+    return fail("Failed to clear data");
   }
 }

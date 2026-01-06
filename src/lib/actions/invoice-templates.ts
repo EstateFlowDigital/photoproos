@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -50,7 +50,7 @@ async function getOrganizationId(): Promise<string | null> {
 export async function createInvoiceTemplate(input: InvoiceTemplateInput) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -84,7 +84,7 @@ export async function createInvoiceTemplate(input: InvoiceTemplateInput) {
     return { success: true, data: template };
   } catch (error) {
     console.error("[Invoice Template] Error creating:", error);
-    return { success: false, error: "Failed to create invoice template" };
+    return fail("Failed to create invoice template");
   }
 }
 
@@ -94,7 +94,7 @@ export async function createInvoiceTemplate(input: InvoiceTemplateInput) {
 export async function getInvoiceTemplates() {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -106,7 +106,7 @@ export async function getInvoiceTemplates() {
     return { success: true, data: templates };
   } catch (error) {
     console.error("[Invoice Template] Error fetching:", error);
-    return { success: false, error: "Failed to fetch invoice templates" };
+    return fail("Failed to fetch invoice templates");
   }
 }
 
@@ -116,7 +116,7 @@ export async function getInvoiceTemplates() {
 export async function getInvoiceTemplate(templateId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -125,13 +125,13 @@ export async function getInvoiceTemplate(templateId: string) {
     });
 
     if (!template) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     return { success: true, data: template };
   } catch (error) {
     console.error("[Invoice Template] Error fetching:", error);
-    return { success: false, error: "Failed to fetch invoice template" };
+    return fail("Failed to fetch invoice template");
   }
 }
 
@@ -144,7 +144,7 @@ export async function updateInvoiceTemplate(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -178,7 +178,7 @@ export async function updateInvoiceTemplate(
     return { success: true, data: template };
   } catch (error) {
     console.error("[Invoice Template] Error updating:", error);
-    return { success: false, error: "Failed to update invoice template" };
+    return fail("Failed to update invoice template");
   }
 }
 
@@ -188,7 +188,7 @@ export async function updateInvoiceTemplate(
 export async function deleteInvoiceTemplate(templateId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -200,7 +200,7 @@ export async function deleteInvoiceTemplate(templateId: string) {
     return ok();
   } catch (error) {
     console.error("[Invoice Template] Error deleting:", error);
-    return { success: false, error: "Failed to delete invoice template" };
+    return fail("Failed to delete invoice template");
   }
 }
 
@@ -210,7 +210,7 @@ export async function deleteInvoiceTemplate(templateId: string) {
 export async function getDefaultInvoiceTemplate() {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -253,7 +253,7 @@ export async function getDefaultInvoiceTemplate() {
     return { success: true, data: template };
   } catch (error) {
     console.error("[Invoice Template] Error fetching default:", error);
-    return { success: false, error: "Failed to fetch default template" };
+    return fail("Failed to fetch default template");
   }
 }
 
@@ -263,7 +263,7 @@ export async function getDefaultInvoiceTemplate() {
 export async function duplicateInvoiceTemplate(templateId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -272,7 +272,7 @@ export async function duplicateInvoiceTemplate(templateId: string) {
     });
 
     if (!original) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     const duplicate = await prisma.invoiceTemplate.create({
@@ -297,6 +297,6 @@ export async function duplicateInvoiceTemplate(templateId: string) {
     return { success: true, data: duplicate };
   } catch (error) {
     console.error("[Invoice Template] Error duplicating:", error);
-    return { success: false, error: "Failed to duplicate invoice template" };
+    return fail("Failed to duplicate invoice template");
   }
 }

@@ -10,7 +10,7 @@
 
 import { prisma } from "@/lib/db";
 import { ClientNotificationType } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export interface ClientNotificationData {
   id: string;
@@ -41,7 +41,7 @@ export async function getClientNotifications(
     });
 
     if (!client) {
-      return { success: false, error: "Invalid access token" };
+      return fail("Invalid access token");
     }
 
     const [notifications, unreadCount] = await Promise.all([
@@ -71,9 +71,9 @@ export async function getClientNotifications(
   } catch (error) {
     console.error("[ClientNotifications] Error fetching notifications:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch notifications" };
+    return fail("Failed to fetch notifications");
   }
 }
 
@@ -90,7 +90,7 @@ export async function getClientUnreadCount(
     });
 
     if (!client) {
-      return { success: false, error: "Invalid access token" };
+      return fail("Invalid access token");
     }
 
     const count = await prisma.clientNotification.count({
@@ -101,9 +101,9 @@ export async function getClientUnreadCount(
   } catch (error) {
     console.error("[ClientNotifications] Error getting unread count:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get unread count" };
+    return fail("Failed to get unread count");
   }
 }
 
@@ -121,7 +121,7 @@ export async function markClientNotificationAsRead(
     });
 
     if (!client) {
-      return { success: false, error: "Invalid access token" };
+      return fail("Invalid access token");
     }
 
     await prisma.clientNotification.update({
@@ -139,9 +139,9 @@ export async function markClientNotificationAsRead(
   } catch (error) {
     console.error("[ClientNotifications] Error marking notification as read:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to mark notification as read" };
+    return fail("Failed to mark notification as read");
   }
 }
 
@@ -158,7 +158,7 @@ export async function markAllClientNotificationsAsRead(
     });
 
     if (!client) {
-      return { success: false, error: "Invalid access token" };
+      return fail("Invalid access token");
     }
 
     await prisma.clientNotification.updateMany({
@@ -176,9 +176,9 @@ export async function markAllClientNotificationsAsRead(
   } catch (error) {
     console.error("[ClientNotifications] Error marking all notifications as read:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to mark all notifications as read" };
+    return fail("Failed to mark all notifications as read");
   }
 }
 
@@ -220,9 +220,9 @@ export async function createClientNotification(
   } catch (error) {
     console.error("[ClientNotifications] Error creating notification:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create notification" };
+    return fail("Failed to create notification");
   }
 }
 
@@ -251,9 +251,9 @@ export async function createClientNotificationsBatch(
   } catch (error) {
     console.error("[ClientNotifications] Error creating batch notifications:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create batch notifications" };
+    return fail("Failed to create batch notifications");
   }
 }
 
@@ -281,9 +281,9 @@ export async function cleanupOldClientNotifications(
   } catch (error) {
     console.error("[ClientNotifications] Error cleaning up notifications:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to cleanup notifications" };
+    return fail("Failed to cleanup notifications");
   }
 }
 

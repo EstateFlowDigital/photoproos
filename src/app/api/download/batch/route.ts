@@ -4,6 +4,7 @@ import archiver from "archiver";
 import { batchDownloadRatelimit, checkRateLimit, getClientIP } from "@/lib/ratelimit";
 import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
 import { getClientSession } from "@/lib/actions/client-auth";
+import { logDownload } from "@/lib/actions/download-tracking";
 import { applyWatermark, type WatermarkSettings } from "@/lib/watermark";
 import { PassThrough } from "stream";
 
@@ -338,6 +339,18 @@ export async function POST(request: NextRequest) {
               failedCount: failedAssets.length,
             },
           },
+        }),
+        // Log download for client history
+        logDownload({
+          projectId: gallery.id,
+          assetIds: gallery.assets.map(a => a.id),
+          format: "zip_all",
+          fileCount: successCount,
+          clientEmail: clientSession?.client.email,
+          clientName: clientSession?.client.fullName || undefined,
+          sessionId: clientSession?.clientId,
+          ipAddress: clientIP,
+          userAgent: request.headers.get("user-agent") || undefined,
         }),
       ]).catch(err => {
         console.error("Failed to record download analytics:", err);

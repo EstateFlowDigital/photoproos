@@ -28,10 +28,9 @@ import {
 import { requireOrganizationId } from "./auth-helper";
 import { validateBookingTime } from "@/lib/actions/bookings";
 import { sendBookingConfirmationEmail } from "@/lib/email/send";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import type { Industry, FormFieldType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -57,7 +56,7 @@ export async function createBookingForm(
     });
 
     if (existingSlug) {
-      return { success: false, error: "A booking form with this slug already exists" };
+      return fail("A booking form with this slug already exists");
     }
 
     const bookingForm = await prisma.bookingForm.create({
@@ -81,13 +80,13 @@ export async function createBookingForm(
 
     revalidatePath("/scheduling/booking-forms");
 
-    return { success: true, data: { id: bookingForm.id } };
+    return success({ id: bookingForm.id });
   } catch (error) {
     console.error("Error creating booking form:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create booking form" };
+    return fail("Failed to create booking form");
   }
 }
 
@@ -110,7 +109,7 @@ export async function updateBookingForm(
     });
 
     if (!existing) {
-      return { success: false, error: "Booking form not found" };
+      return fail("Booking form not found");
     }
 
     // Check for duplicate slug if slug is being changed
@@ -124,7 +123,7 @@ export async function updateBookingForm(
       });
 
       if (existingSlug) {
-        return { success: false, error: "A booking form with this slug already exists" };
+        return fail("A booking form with this slug already exists");
       }
     }
 
@@ -152,13 +151,13 @@ export async function updateBookingForm(
     revalidatePath("/scheduling/booking-forms");
     revalidatePath(`/scheduling/booking-forms/${id}`);
 
-    return { success: true, data: { id: bookingForm.id } };
+    return success({ id: bookingForm.id });
   } catch (error) {
     console.error("Error updating booking form:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update booking form" };
+    return fail("Failed to update booking form");
   }
 }
 
@@ -189,7 +188,7 @@ export async function deleteBookingForm(
     });
 
     if (!existing) {
-      return { success: false, error: "Booking form not found" };
+      return fail("Booking form not found");
     }
 
     if (existing._count.submissions > 0 && !force) {
@@ -214,9 +213,9 @@ export async function deleteBookingForm(
   } catch (error) {
     console.error("Error deleting booking form:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete booking form" };
+    return fail("Failed to delete booking form");
   }
 }
 
@@ -245,7 +244,7 @@ export async function duplicateBookingForm(
     });
 
     if (!original) {
-      return { success: false, error: "Booking form not found" };
+      return fail("Booking form not found");
     }
 
     // Generate unique slug
@@ -313,13 +312,13 @@ export async function duplicateBookingForm(
 
     revalidatePath("/scheduling/booking-forms");
 
-    return { success: true, data: { id: duplicate.id } };
+    return success({ id: duplicate.id });
   } catch (error) {
     console.error("Error duplicating booking form:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to duplicate booking form" };
+    return fail("Failed to duplicate booking form");
   }
 }
 
@@ -340,7 +339,7 @@ export async function toggleBookingFormStatus(
     });
 
     if (!existing) {
-      return { success: false, error: "Booking form not found" };
+      return fail("Booking form not found");
     }
 
     const updated = await prisma.bookingForm.update({
@@ -351,13 +350,13 @@ export async function toggleBookingFormStatus(
     revalidatePath("/scheduling/booking-forms");
     revalidatePath(`/scheduling/booking-forms/${id}`);
 
-    return { success: true, data: { isPublished: updated.isPublished } };
+    return success({ isPublished: updated.isPublished });
   } catch (error) {
     console.error("Error toggling booking form status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to toggle booking form status" };
+    return fail("Failed to toggle booking form status");
   }
 }
 
@@ -380,7 +379,7 @@ export async function updateBookingFormFields(
     });
 
     if (!bookingForm) {
-      return { success: false, error: "Booking form not found" };
+      return fail("Booking form not found");
     }
 
     // Replace all fields
@@ -410,13 +409,13 @@ export async function updateBookingFormFields(
     revalidatePath("/scheduling/booking-forms");
     revalidatePath(`/scheduling/booking-forms/${validated.bookingFormId}`);
 
-    return { success: true, data: { count: validated.fields.length } };
+    return success({ count: validated.fields.length });
   } catch (error) {
     console.error("Error updating booking form fields:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update booking form fields" };
+    return fail("Failed to update booking form fields");
   }
 }
 
@@ -439,7 +438,7 @@ export async function reorderBookingFormFields(
     });
 
     if (!bookingForm) {
-      return { success: false, error: "Booking form not found" };
+      return fail("Booking form not found");
     }
 
     // Update sort order for each field
@@ -459,9 +458,9 @@ export async function reorderBookingFormFields(
   } catch (error) {
     console.error("Error reordering booking form fields:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to reorder booking form fields" };
+    return fail("Failed to reorder booking form fields");
   }
 }
 
@@ -484,7 +483,7 @@ export async function setBookingFormServices(
     });
 
     if (!bookingForm) {
-      return { success: false, error: "Booking form not found" };
+      return fail("Booking form not found");
     }
 
     // Verify all services exist and belong to organization
@@ -497,7 +496,7 @@ export async function setBookingFormServices(
     });
 
     if (services.length !== serviceIds.length) {
-      return { success: false, error: "One or more services not found" };
+      return fail("One or more services not found");
     }
 
     // Replace all service associations
@@ -520,13 +519,13 @@ export async function setBookingFormServices(
     revalidatePath("/scheduling/booking-forms");
     revalidatePath(`/scheduling/booking-forms/${validated.bookingFormId}`);
 
-    return { success: true, data: { count: validated.services.length } };
+    return success({ count: validated.services.length });
   } catch (error) {
     console.error("Error setting booking form services:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set booking form services" };
+    return fail("Failed to set booking form services");
   }
 }
 
@@ -822,7 +821,7 @@ export async function submitBookingForm(
     });
 
     if (!bookingForm) {
-      return { success: false, error: "Booking form not found or not published" };
+      return fail("Booking form not found or not published");
     }
 
     // Create submission
@@ -889,13 +888,13 @@ export async function submitBookingForm(
       }
     }
 
-    return { success: true, data: { submissionId: submission.id } };
+    return success({ submissionId: submission.id });
   } catch (error) {
     console.error("Error submitting booking form:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to submit booking form" };
+    return fail("Failed to submit booking form");
   }
 }
 
@@ -934,11 +933,11 @@ export async function convertSubmissionToBooking(
     });
 
     if (!submission) {
-      return { success: false, error: "Submission not found" };
+      return fail("Submission not found");
     }
 
     if (submission.status === "converted") {
-      return { success: false, error: "Submission has already been converted to a booking" };
+      return fail("Submission has already been converted to a booking");
     }
 
     const startTime = new Date(validated.bookingData.startTime);
@@ -961,11 +960,11 @@ export async function convertSubmissionToBooking(
     });
 
     if (!validation.success) {
-      return { success: false, error: validation.error || "Failed to validate booking" };
+      return fail(validation.error || "Failed to validate booking");
     }
 
     if (!validation.data.valid) {
-      return { success: false, error: validation.data.message || "This time is not available" };
+      return fail(validation.data.message || "This time is not available");
     }
 
     const status = submission.bookingForm.requireApproval ? "pending" : "confirmed";
@@ -1025,13 +1024,13 @@ export async function convertSubmissionToBooking(
     revalidatePath("/scheduling/booking-forms");
     revalidatePath("/scheduling");
 
-    return { success: true, data: { bookingId: booking.id } };
+    return success({ bookingId: booking.id });
   } catch (error) {
     console.error("Error converting submission to booking:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to convert submission to booking" };
+    return fail("Failed to convert submission to booking");
   }
 }
 
@@ -1056,11 +1055,11 @@ export async function rejectSubmission(
     });
 
     if (!submission) {
-      return { success: false, error: "Submission not found" };
+      return fail("Submission not found");
     }
 
     if (submission.status === "converted") {
-      return { success: false, error: "Cannot reject a converted submission" };
+      return fail("Cannot reject a converted submission");
     }
 
     // Update submission status
@@ -1079,9 +1078,9 @@ export async function rejectSubmission(
   } catch (error) {
     console.error("Error rejecting submission:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to reject submission" };
+    return fail("Failed to reject submission");
   }
 }
 
@@ -1246,11 +1245,11 @@ export async function convertBookingSubmissionToClient(
     });
 
     if (!submission) {
-      return { success: false, error: "Submission not found" };
+      return fail("Submission not found");
     }
 
     if (!submission.clientEmail) {
-      return { success: false, error: "Email is required to create a client" };
+      return fail("Email is required to create a client");
     }
 
     // Check if client with this email already exists
@@ -1300,6 +1299,6 @@ export async function convertBookingSubmissionToClient(
     return { success: true, clientId: client.id };
   } catch (error) {
     console.error("Error converting booking submission to client:", error);
-    return { success: false, error: "Failed to convert submission to client" };
+    return fail("Failed to convert submission to client");
   }
 }

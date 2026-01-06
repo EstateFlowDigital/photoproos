@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { BookingCrewRole } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 interface AddCrewMemberInput {
   bookingId: string;
@@ -80,7 +80,7 @@ export async function getBookingCrew(bookingId: string): Promise<ActionResult<{
   try {
     const organizationId = await getOrganizationId();
     if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify booking belongs to organization
@@ -93,7 +93,7 @@ export async function getBookingCrew(bookingId: string): Promise<ActionResult<{
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     const crew = await prisma.bookingCrew.findMany({
@@ -121,7 +121,7 @@ export async function getBookingCrew(bookingId: string): Promise<ActionResult<{
     };
   } catch (error) {
     console.error("Error getting booking crew:", error);
-    return { success: false, error: "Failed to get crew members" };
+    return fail("Failed to get crew members");
   }
 }
 
@@ -142,7 +142,7 @@ export async function getAvailableCrewMembers(
   try {
     const organizationId = await getOrganizationId();
     if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Get all org members
@@ -191,7 +191,7 @@ export async function getAvailableCrewMembers(
     };
   } catch (error) {
     console.error("Error getting available crew members:", error);
-    return { success: false, error: "Failed to get team members" };
+    return fail("Failed to get team members");
   }
 }
 
@@ -204,7 +204,7 @@ export async function addCrewMember(
   try {
     const organizationId = await getOrganizationId();
     if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify booking belongs to organization
@@ -217,7 +217,7 @@ export async function addCrewMember(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Verify user is in the organization
@@ -229,7 +229,7 @@ export async function addCrewMember(
     });
 
     if (!member) {
-      return { success: false, error: "User is not a member of this organization" };
+      return fail("User is not a member of this organization");
     }
 
     // Check if already assigned
@@ -243,7 +243,7 @@ export async function addCrewMember(
     });
 
     if (existing) {
-      return { success: false, error: "User is already assigned to this booking" };
+      return fail("User is already assigned to this booking");
     }
 
     const crew = await prisma.bookingCrew.create({
@@ -265,7 +265,7 @@ export async function addCrewMember(
     };
   } catch (error) {
     console.error("Error adding crew member:", error);
-    return { success: false, error: "Failed to add crew member" };
+    return fail("Failed to add crew member");
   }
 }
 
@@ -278,7 +278,7 @@ export async function updateCrewMember(
   try {
     const organizationId = await getOrganizationId();
     if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify crew assignment belongs to org's booking
@@ -290,7 +290,7 @@ export async function updateCrewMember(
     });
 
     if (!crew) {
-      return { success: false, error: "Crew assignment not found" };
+      return fail("Crew assignment not found");
     }
 
     await prisma.bookingCrew.update({
@@ -310,7 +310,7 @@ export async function updateCrewMember(
     return ok();
   } catch (error) {
     console.error("Error updating crew member:", error);
-    return { success: false, error: "Failed to update crew member" };
+    return fail("Failed to update crew member");
   }
 }
 
@@ -321,7 +321,7 @@ export async function removeCrewMember(crewId: string): Promise<ActionResult<voi
   try {
     const organizationId = await getOrganizationId();
     if (!organizationId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify crew assignment belongs to org's booking
@@ -333,7 +333,7 @@ export async function removeCrewMember(crewId: string): Promise<ActionResult<voi
     });
 
     if (!crew) {
-      return { success: false, error: "Crew assignment not found" };
+      return fail("Crew assignment not found");
     }
 
     await prisma.bookingCrew.delete({
@@ -346,7 +346,7 @@ export async function removeCrewMember(crewId: string): Promise<ActionResult<voi
     return ok();
   } catch (error) {
     console.error("Error removing crew member:", error);
-    return { success: false, error: "Failed to remove crew member" };
+    return fail("Failed to remove crew member");
   }
 }
 
@@ -357,7 +357,7 @@ export async function confirmCrewAssignment(crewId: string): Promise<ActionResul
   try {
     const userId = await getCurrentUserId();
     if (!userId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const crew = await prisma.bookingCrew.findFirst({
@@ -368,7 +368,7 @@ export async function confirmCrewAssignment(crewId: string): Promise<ActionResul
     });
 
     if (!crew) {
-      return { success: false, error: "Assignment not found" };
+      return fail("Assignment not found");
     }
 
     await prisma.bookingCrew.update({
@@ -387,7 +387,7 @@ export async function confirmCrewAssignment(crewId: string): Promise<ActionResul
     return ok();
   } catch (error) {
     console.error("Error confirming crew assignment:", error);
-    return { success: false, error: "Failed to confirm assignment" };
+    return fail("Failed to confirm assignment");
   }
 }
 
@@ -401,7 +401,7 @@ export async function declineCrewAssignment(
   try {
     const userId = await getCurrentUserId();
     if (!userId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const crew = await prisma.bookingCrew.findFirst({
@@ -412,7 +412,7 @@ export async function declineCrewAssignment(
     });
 
     if (!crew) {
-      return { success: false, error: "Assignment not found" };
+      return fail("Assignment not found");
     }
 
     await prisma.bookingCrew.update({
@@ -431,7 +431,7 @@ export async function declineCrewAssignment(
     return ok();
   } catch (error) {
     console.error("Error declining crew assignment:", error);
-    return { success: false, error: "Failed to decline assignment" };
+    return fail("Failed to decline assignment");
   }
 }
 
@@ -460,7 +460,7 @@ export async function getMyCrewAssignments(): Promise<ActionResult<{
   try {
     const userId = await getCurrentUserId();
     if (!userId) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     const assignments = await prisma.bookingCrew.findMany({
@@ -499,6 +499,6 @@ export async function getMyCrewAssignments(): Promise<ActionResult<{
     };
   } catch (error) {
     console.error("Error getting crew assignments:", error);
-    return { success: false, error: "Failed to get assignments" };
+    return fail("Failed to get assignments");
   }
 }

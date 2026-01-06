@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface CreateTagInput {
   name: string;
@@ -48,7 +48,7 @@ export async function getClientTags() {
     };
   } catch (error) {
     console.error("[ClientTags] Error fetching tags:", error);
-    return { success: false as const, error: "Failed to fetch tags" };
+    return fail("Failed to fetch tags");
   }
 }
 
@@ -79,7 +79,7 @@ export async function getClientTag(id: string) {
     });
 
     if (!tag) {
-      return { success: false as const, error: "Tag not found" };
+      return fail("Tag not found");
     }
 
     return {
@@ -91,7 +91,7 @@ export async function getClientTag(id: string) {
     };
   } catch (error) {
     console.error("[ClientTags] Error fetching tag:", error);
-    return { success: false as const, error: "Failed to fetch tag" };
+    return fail("Failed to fetch tag");
   }
 }
 
@@ -113,7 +113,7 @@ export async function createClientTag(
     });
 
     if (existing) {
-      return { success: false, error: "A tag with this name already exists" };
+      return fail("A tag with this name already exists");
     }
 
     const tag = await prisma.clientTag.create({
@@ -128,13 +128,13 @@ export async function createClientTag(
     revalidatePath("/clients");
     revalidatePath("/settings/tags");
 
-    return { success: true, data: { id: tag.id } };
+    return success({ id: tag.id });
   } catch (error) {
     console.error("[ClientTags] Error creating tag:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create tag" };
+    return fail("Failed to create tag");
   }
 }
 
@@ -153,7 +153,7 @@ export async function updateClientTag(
     });
 
     if (!existing) {
-      return { success: false, error: "Tag not found" };
+      return fail("Tag not found");
     }
 
     // Check for duplicate name if name is being changed
@@ -167,7 +167,7 @@ export async function updateClientTag(
       });
 
       if (duplicate) {
-        return { success: false, error: "A tag with this name already exists" };
+        return fail("A tag with this name already exists");
       }
     }
 
@@ -185,13 +185,13 @@ export async function updateClientTag(
     revalidatePath("/clients");
     revalidatePath("/settings/tags");
 
-    return { success: true, data: { id: tag.id } };
+    return success({ id: tag.id });
   } catch (error) {
     console.error("[ClientTags] Error updating tag:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update tag" };
+    return fail("Failed to update tag");
   }
 }
 
@@ -208,7 +208,7 @@ export async function deleteClientTag(id: string): Promise<ActionResult> {
     });
 
     if (!existing) {
-      return { success: false, error: "Tag not found" };
+      return fail("Tag not found");
     }
 
     // Delete tag (cascade will remove assignments)
@@ -223,9 +223,9 @@ export async function deleteClientTag(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("[ClientTags] Error deleting tag:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete tag" };
+    return fail("Failed to delete tag");
   }
 }
 
@@ -247,7 +247,7 @@ export async function getTagsForClient(clientId: string) {
     });
 
     if (!client) {
-      return { success: false as const, error: "Client not found" };
+      return fail("Client not found");
     }
 
     const assignments = await prisma.clientTagAssignment.findMany({
@@ -263,7 +263,7 @@ export async function getTagsForClient(clientId: string) {
     };
   } catch (error) {
     console.error("[ClientTags] Error fetching client tags:", error);
-    return { success: false as const, error: "Failed to fetch client tags" };
+    return fail("Failed to fetch client tags");
   }
 }
 
@@ -284,7 +284,7 @@ export async function assignTagToClient(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Verify tag belongs to organization
@@ -294,7 +294,7 @@ export async function assignTagToClient(
     });
 
     if (!tag) {
-      return { success: false, error: "Tag not found" };
+      return fail("Tag not found");
     }
 
     // Check if already assigned
@@ -303,7 +303,7 @@ export async function assignTagToClient(
     });
 
     if (existing) {
-      return { success: true, data: { id: existing.id } };
+      return success({ id: existing.id });
     }
 
     const assignment = await prisma.clientTagAssignment.create({
@@ -316,13 +316,13 @@ export async function assignTagToClient(
     revalidatePath(`/clients/${clientId}`);
     revalidatePath("/clients");
 
-    return { success: true, data: { id: assignment.id } };
+    return success({ id: assignment.id });
   } catch (error) {
     console.error("[ClientTags] Error assigning tag:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to assign tag" };
+    return fail("Failed to assign tag");
   }
 }
 
@@ -343,7 +343,7 @@ export async function removeTagFromClient(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Find and delete the assignment
@@ -366,9 +366,9 @@ export async function removeTagFromClient(
   } catch (error) {
     console.error("[ClientTags] Error removing tag:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove tag" };
+    return fail("Failed to remove tag");
   }
 }
 
@@ -389,7 +389,7 @@ export async function setClientTags(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Verify all tags belong to organization
@@ -424,9 +424,9 @@ export async function setClientTags(
   } catch (error) {
     console.error("[ClientTags] Error setting tags:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set client tags" };
+    return fail("Failed to set client tags");
   }
 }
 
@@ -451,7 +451,7 @@ export async function bulkAssignTag(
     });
 
     if (!tag) {
-      return { success: false, error: "Tag not found" };
+      return fail("Tag not found");
     }
 
     // Verify all clients belong to organization
@@ -487,13 +487,13 @@ export async function bulkAssignTag(
 
     revalidatePath("/clients");
 
-    return { success: true, data: { assignedCount: newClientIds.length } };
+    return success({ assignedCount: newClientIds.length });
   } catch (error) {
     console.error("[ClientTags] Error bulk assigning tag:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to assign tag to clients" };
+    return fail("Failed to assign tag to clients");
   }
 }
 
@@ -514,7 +514,7 @@ export async function bulkRemoveTag(
     });
 
     if (!tag) {
-      return { success: false, error: "Tag not found" };
+      return fail("Tag not found");
     }
 
     // Verify all clients belong to organization
@@ -538,13 +538,13 @@ export async function bulkRemoveTag(
 
     revalidatePath("/clients");
 
-    return { success: true, data: { removedCount: result.count } };
+    return success({ removedCount: result.count });
   } catch (error) {
     console.error("[ClientTags] Error bulk removing tag:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove tag from clients" };
+    return fail("Failed to remove tag from clients");
   }
 }
 
@@ -566,7 +566,7 @@ export async function getClientsByTag(tagId: string) {
     });
 
     if (!tag) {
-      return { success: false as const, error: "Tag not found" };
+      return fail("Tag not found");
     }
 
     const assignments = await prisma.clientTagAssignment.findMany({
@@ -596,7 +596,7 @@ export async function getClientsByTag(tagId: string) {
     };
   } catch (error) {
     console.error("[ClientTags] Error fetching clients by tag:", error);
-    return { success: false as const, error: "Failed to fetch clients" };
+    return fail("Failed to fetch clients");
   }
 }
 
@@ -608,7 +608,7 @@ export async function getClientsByTags(tagIds: string[]) {
     const organizationId = await requireOrganizationId();
 
     if (tagIds.length === 0) {
-      return { success: false as const, error: "No tags specified" };
+      return fail("No tags specified");
     }
 
     // Verify tags belong to organization
@@ -621,7 +621,7 @@ export async function getClientsByTags(tagIds: string[]) {
     });
 
     if (tags.length !== tagIds.length) {
-      return { success: false as const, error: "Some tags not found" };
+      return fail("Some tags not found");
     }
 
     // Find clients that have ALL specified tags
@@ -649,7 +649,7 @@ export async function getClientsByTags(tagIds: string[]) {
     return { success: true as const, data: clients };
   } catch (error) {
     console.error("[ClientTags] Error fetching clients by tags:", error);
-    return { success: false as const, error: "Failed to fetch clients" };
+    return fail("Failed to fetch clients");
   }
 }
 
@@ -685,7 +685,7 @@ export async function createDefaultTags(): Promise<ActionResult<{ count: number 
     const newTags = defaultTags.filter((t) => !existingNames.has(t.name));
 
     if (newTags.length === 0) {
-      return { success: true, data: { count: 0 } };
+      return success({ count: 0 });
     }
 
     await prisma.clientTag.createMany({
@@ -698,12 +698,12 @@ export async function createDefaultTags(): Promise<ActionResult<{ count: number 
     revalidatePath("/clients");
     revalidatePath("/settings/tags");
 
-    return { success: true, data: { count: newTags.length } };
+    return success({ count: newTags.length });
   } catch (error) {
     console.error("[ClientTags] Error creating default tags:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create default tags" };
+    return fail("Failed to create default tags");
   }
 }

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { ReferralStatus, ReferralRewardType } from "@prisma/client";
 import { nanoid } from "nanoid";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export type ReferralProgram = {
   id: string;
@@ -72,7 +72,7 @@ export async function getReferralProgram(): Promise<ActionResult<ReferralProgram
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const program = await prisma.referralProgram.findUnique({
@@ -82,7 +82,7 @@ export async function getReferralProgram(): Promise<ActionResult<ReferralProgram
     return { success: true, data: program };
   } catch (error) {
     console.error("Error getting referral program:", error);
-    return { success: false, error: "Failed to get referral program" };
+    return fail("Failed to get referral program");
   }
 }
 
@@ -90,7 +90,7 @@ export async function getReferrers(): Promise<ActionResult<Referrer[]>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const program = await prisma.referralProgram.findUnique({
@@ -101,7 +101,7 @@ export async function getReferrers(): Promise<ActionResult<Referrer[]>> {
     return { success: true, data: program?.referrers || [] };
   } catch (error) {
     console.error("Error getting referrers:", error);
-    return { success: false, error: "Failed to get referrers" };
+    return fail("Failed to get referrers");
   }
 }
 
@@ -109,7 +109,7 @@ export async function getReferrals(): Promise<ActionResult<Referral[]>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const program = await prisma.referralProgram.findUnique({
@@ -125,7 +125,7 @@ export async function getReferrals(): Promise<ActionResult<Referral[]>> {
     return { success: true, data: program?.referrals || [] };
   } catch (error) {
     console.error("Error getting referrals:", error);
-    return { success: false, error: "Failed to get referrals" };
+    return fail("Failed to get referrals");
   }
 }
 
@@ -143,7 +143,7 @@ export async function getReferralStats(): Promise<
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const program = await prisma.referralProgram.findUnique({
@@ -196,7 +196,7 @@ export async function getReferralStats(): Promise<
     };
   } catch (error) {
     console.error("Error getting referral stats:", error);
-    return { success: false, error: "Failed to get referral stats" };
+    return fail("Failed to get referral stats");
   }
 }
 
@@ -217,7 +217,7 @@ export async function upsertReferralProgram(data: {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const program = await prisma.referralProgram.upsert({
@@ -246,7 +246,7 @@ export async function upsertReferralProgram(data: {
     return { success: true, data: program };
   } catch (error) {
     console.error("Error upserting referral program:", error);
-    return { success: false, error: "Failed to save referral program" };
+    return fail("Failed to save referral program");
   }
 }
 
@@ -254,7 +254,7 @@ export async function toggleReferralProgram(): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const program = await prisma.referralProgram.findUnique({
@@ -262,7 +262,7 @@ export async function toggleReferralProgram(): Promise<ActionResult<void>> {
     });
 
     if (!program) {
-      return { success: false, error: "Program not found" };
+      return fail("Program not found");
     }
 
     await prisma.referralProgram.update({
@@ -274,7 +274,7 @@ export async function toggleReferralProgram(): Promise<ActionResult<void>> {
     return ok();
   } catch (error) {
     console.error("Error toggling referral program:", error);
-    return { success: false, error: "Failed to toggle program status" };
+    return fail("Failed to toggle program status");
   }
 }
 
@@ -287,7 +287,7 @@ export async function createReferrer(data: {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const program = await prisma.referralProgram.findUnique({
@@ -295,7 +295,7 @@ export async function createReferrer(data: {
     });
 
     if (!program) {
-      return { success: false, error: "Referral program not found" };
+      return fail("Referral program not found");
     }
 
     const referralCode = nanoid(8).toUpperCase();
@@ -315,7 +315,7 @@ export async function createReferrer(data: {
     return { success: true, data: referrer };
   } catch (error) {
     console.error("Error creating referrer:", error);
-    return { success: false, error: "Failed to create referrer" };
+    return fail("Failed to create referrer");
   }
 }
 
@@ -325,7 +325,7 @@ export async function toggleReferrerStatus(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const referrer = await prisma.referrer.findFirst({
@@ -336,7 +336,7 @@ export async function toggleReferrerStatus(
     });
 
     if (!referrer) {
-      return { success: false, error: "Referrer not found" };
+      return fail("Referrer not found");
     }
 
     await prisma.referrer.update({
@@ -348,7 +348,7 @@ export async function toggleReferrerStatus(
     return ok();
   } catch (error) {
     console.error("Error toggling referrer status:", error);
-    return { success: false, error: "Failed to toggle referrer status" };
+    return fail("Failed to toggle referrer status");
   }
 }
 
@@ -358,7 +358,7 @@ export async function deleteReferrer(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const referrer = await prisma.referrer.findFirst({
@@ -369,7 +369,7 @@ export async function deleteReferrer(
     });
 
     if (!referrer) {
-      return { success: false, error: "Referrer not found" };
+      return fail("Referrer not found");
     }
 
     await prisma.referrer.delete({ where: { id: referrerId } });
@@ -378,7 +378,7 @@ export async function deleteReferrer(
     return ok();
   } catch (error) {
     console.error("Error deleting referrer:", error);
-    return { success: false, error: "Failed to delete referrer" };
+    return fail("Failed to delete referrer");
   }
 }
 
@@ -388,7 +388,7 @@ export async function regenerateReferralCode(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const referrer = await prisma.referrer.findFirst({
@@ -399,7 +399,7 @@ export async function regenerateReferralCode(
     });
 
     if (!referrer) {
-      return { success: false, error: "Referrer not found" };
+      return fail("Referrer not found");
     }
 
     const newCode = nanoid(8).toUpperCase();
@@ -413,7 +413,7 @@ export async function regenerateReferralCode(
     return { success: true, data: { code: newCode } };
   } catch (error) {
     console.error("Error regenerating referral code:", error);
-    return { success: false, error: "Failed to regenerate code" };
+    return fail("Failed to regenerate code");
   }
 }
 
@@ -424,7 +424,7 @@ export async function updateReferralStatus(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const referral = await prisma.referral.findFirst({
@@ -435,7 +435,7 @@ export async function updateReferralStatus(
     });
 
     if (!referral) {
-      return { success: false, error: "Referral not found" };
+      return fail("Referral not found");
     }
 
     const updateData: { status: ReferralStatus; qualifiedAt?: Date; completedAt?: Date } = {
@@ -464,6 +464,6 @@ export async function updateReferralStatus(
     return ok();
   } catch (error) {
     console.error("Error updating referral status:", error);
-    return { success: false, error: "Failed to update referral status" };
+    return fail("Failed to update referral status");
   }
 }

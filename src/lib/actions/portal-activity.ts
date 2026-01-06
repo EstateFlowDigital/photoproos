@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -88,7 +88,7 @@ export async function createPortalActivity(input: CreateActivityInput) {
     return ok();
   } catch (error) {
     console.error("[Portal Activity] Error creating:", error);
-    return { success: false, error: "Failed to create activity" };
+    return fail("Failed to create activity");
   }
 }
 
@@ -101,7 +101,7 @@ export async function getClientActivities(options?: {
 }) {
   const session = await getClientFromSession();
   if (!session) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -132,7 +132,7 @@ export async function getClientActivities(options?: {
     };
   } catch (error) {
     console.error("[Portal Activity] Error fetching:", error);
-    return { success: false, error: "Failed to fetch activities" };
+    return fail("Failed to fetch activities");
   }
 }
 
@@ -142,7 +142,7 @@ export async function getClientActivities(options?: {
 export async function markActivitiesAsRead(activityIds?: string[]) {
   const session = await getClientFromSession();
   if (!session) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -175,7 +175,7 @@ export async function markActivitiesAsRead(activityIds?: string[]) {
     return ok();
   } catch (error) {
     console.error("[Portal Activity] Error marking read:", error);
-    return { success: false, error: "Failed to mark activities as read" };
+    return fail("Failed to mark activities as read");
   }
 }
 
@@ -185,7 +185,7 @@ export async function markActivitiesAsRead(activityIds?: string[]) {
 export async function getUnreadActivityCount() {
   const session = await getClientFromSession();
   if (!session) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -199,7 +199,7 @@ export async function getUnreadActivityCount() {
     return { success: true, data: count };
   } catch (error) {
     console.error("[Portal Activity] Error counting:", error);
-    return { success: false, error: "Failed to count activities" };
+    return fail("Failed to count activities");
   }
 }
 

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import type { CapabilityLevel } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID
 async function getOrganizationId(): Promise<string> {
@@ -55,7 +55,7 @@ export async function assignServiceCapability(
     });
 
     if (!membership) {
-      return { success: false, error: "User is not a member of this organization" };
+      return fail("User is not a member of this organization");
     }
 
     // Verify service belongs to organization
@@ -67,7 +67,7 @@ export async function assignServiceCapability(
     });
 
     if (!service) {
-      return { success: false, error: "Service not found" };
+      return fail("Service not found");
     }
 
     // Create or update capability
@@ -93,13 +93,13 @@ export async function assignServiceCapability(
     revalidatePath(`/settings/team/${validated.userId}`);
     revalidatePath(`/settings/team/${validated.userId}/capabilities`);
 
-    return { success: true, data: { id: capability.id } };
+    return success({ id: capability.id });
   } catch (error) {
     console.error("Error assigning service capability:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to assign capability" };
+    return fail("Failed to assign capability");
   }
 }
 
@@ -133,9 +133,9 @@ export async function updateServiceCapability(
   } catch (error) {
     console.error("Error updating service capability:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update capability" };
+    return fail("Failed to update capability");
   }
 }
 
@@ -163,9 +163,9 @@ export async function removeServiceCapability(
   } catch (error) {
     console.error("Error removing service capability:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove capability" };
+    return fail("Failed to remove capability");
   }
 }
 
@@ -391,7 +391,7 @@ export async function bulkAssignCapabilities(
     });
 
     if (!membership) {
-      return { success: false, error: "User is not a member of this organization" };
+      return fail("User is not a member of this organization");
     }
 
     // Verify all services belong to organization
@@ -408,7 +408,7 @@ export async function bulkAssignCapabilities(
     const invalidServices = serviceIds.filter((id) => !validServiceIds.has(id));
 
     if (invalidServices.length > 0) {
-      return { success: false, error: "Some services were not found" };
+      return fail("Some services were not found");
     }
 
     // Upsert all capabilities
@@ -438,13 +438,13 @@ export async function bulkAssignCapabilities(
     revalidatePath(`/settings/team/${userId}`);
     revalidatePath(`/settings/team/${userId}/capabilities`);
 
-    return { success: true, data: { count } };
+    return success({ count });
   } catch (error) {
     console.error("Error bulk assigning capabilities:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to assign capabilities" };
+    return fail("Failed to assign capabilities");
   }
 }
 
@@ -467,7 +467,7 @@ export async function setUserHomeBase(
     });
 
     if (!membership) {
-      return { success: false, error: "User is not a member of this organization" };
+      return fail("User is not a member of this organization");
     }
 
     // If locationId provided, verify it belongs to organization
@@ -480,7 +480,7 @@ export async function setUserHomeBase(
       });
 
       if (!location) {
-        return { success: false, error: "Location not found" };
+        return fail("Location not found");
       }
     }
 
@@ -495,9 +495,9 @@ export async function setUserHomeBase(
   } catch (error) {
     console.error("Error setting user home base:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set home base" };
+    return fail("Failed to set home base");
   }
 }
 

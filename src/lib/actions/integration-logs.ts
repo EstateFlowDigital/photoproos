@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
@@ -71,7 +72,7 @@ export async function logIntegrationEvent(params: {
     return { success: true, logId: log.id };
   } catch (error) {
     console.error("Failed to log integration event:", error);
-    return { success: false, error: "Failed to log integration event" };
+    return fail("Failed to log integration event");
   }
 }
 
@@ -86,7 +87,7 @@ export async function getIntegrationLogs(options?: {
 }) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -94,7 +95,7 @@ export async function getIntegrationLogs(options?: {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -118,7 +119,7 @@ export async function getIntegrationLogs(options?: {
     return { success: true, logs, total };
   } catch (error) {
     console.error("Failed to get integration logs:", error);
-    return { success: false, error: "Failed to fetch integration logs" };
+    return fail("Failed to fetch integration logs");
   }
 }
 
@@ -145,7 +146,7 @@ export async function getProviderLogs(
 export async function getIntegrationActivitySummary() {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -153,7 +154,7 @@ export async function getIntegrationActivitySummary() {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -215,7 +216,7 @@ export async function getIntegrationActivitySummary() {
     };
   } catch (error) {
     console.error("Failed to get integration activity summary:", error);
-    return { success: false, error: "Failed to fetch activity summary" };
+    return fail("Failed to fetch activity summary");
   }
 }
 
@@ -225,7 +226,7 @@ export async function getIntegrationActivitySummary() {
 export async function getIntegrationSyncStatus() {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   const organization = await prisma.organization.findUnique({
@@ -233,7 +234,7 @@ export async function getIntegrationSyncStatus() {
   });
 
   if (!organization) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -261,7 +262,7 @@ export async function getIntegrationSyncStatus() {
     return { success: true, status: results };
   } catch (error) {
     console.error("Failed to get integration sync status:", error);
-    return { success: false, error: "Failed to fetch sync status" };
+    return fail("Failed to fetch sync status");
   }
 }
 
@@ -283,6 +284,6 @@ export async function cleanupOldIntegrationLogs(organizationId: string) {
     return { success: true, deletedCount: result.count };
   } catch (error) {
     console.error("Failed to cleanup old integration logs:", error);
-    return { success: false, error: "Failed to cleanup old logs" };
+    return fail("Failed to cleanup old logs");
   }
 }

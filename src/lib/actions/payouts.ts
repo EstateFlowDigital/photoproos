@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { PayoutStatus, EarningStatus } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -87,7 +87,7 @@ export async function getPayoutBatches(options?: {
     return { success: true, data: batches };
   } catch (error) {
     console.error("[Payouts] Error fetching batches:", error);
-    return { success: false, error: "Failed to fetch payout batches" };
+    return fail("Failed to fetch payout batches");
   }
 }
 
@@ -118,7 +118,7 @@ export async function getPayoutBatch(
     });
 
     if (!batch) {
-      return { success: false, error: "Payout batch not found" };
+      return fail("Payout batch not found");
     }
 
     // Fetch user data separately for each item
@@ -143,7 +143,7 @@ export async function getPayoutBatch(
     return { success: true, data: { ...batch, items: itemsWithUsers } };
   } catch (error) {
     console.error("[Payouts] Error fetching batch:", error);
-    return { success: false, error: "Failed to fetch payout batch" };
+    return fail("Failed to fetch payout batch");
   }
 }
 
@@ -225,7 +225,7 @@ export async function getPendingPayouts(): Promise<
     return { success: true, data: Array.from(grouped.values()) };
   } catch (error) {
     console.error("[Payouts] Error fetching pending payouts:", error);
-    return { success: false, error: "Failed to fetch pending payouts" };
+    return fail("Failed to fetch pending payouts");
   }
 }
 
@@ -257,7 +257,7 @@ export async function createPayoutBatch(
     });
 
     if (earnings.length === 0) {
-      return { success: false, error: "No approved earnings to process" };
+      return fail("No approved earnings to process");
     }
 
     // Get unique user IDs and their Connect status
@@ -297,10 +297,7 @@ export async function createPayoutBatch(
       }
 
       if (earningsByUser.size === 0) {
-        return {
-          success: false,
-          error: "No photographers have completed Stripe Connect onboarding",
-        };
+        return fail("No photographers have completed Stripe Connect onboarding",);
       }
     }
 
@@ -372,7 +369,7 @@ export async function createPayoutBatch(
     return { success: true, data: { ...batch, items: itemsWithUsers } };
   } catch (error) {
     console.error("[Payouts] Error creating batch:", error);
-    return { success: false, error: "Failed to create payout batch" };
+    return fail("Failed to create payout batch");
   }
 }
 
@@ -397,11 +394,11 @@ export async function processPayoutBatch(
     });
 
     if (!batch) {
-      return { success: false, error: "Payout batch not found" };
+      return fail("Payout batch not found");
     }
 
     if (batch.status !== "pending") {
-      return { success: false, error: `Batch is already ${batch.status}` };
+      return fail(`Batch is already ${batch.status}`);
     }
 
     // Get user data for items
@@ -542,7 +539,7 @@ export async function processPayoutBatch(
       },
     });
 
-    return { success: false, error: "Failed to process payout batch" };
+    return fail("Failed to process payout batch");
   }
 }
 
@@ -565,11 +562,11 @@ export async function cancelPayoutBatch(batchId: string): Promise<ActionResult<v
     });
 
     if (!batch) {
-      return { success: false, error: "Payout batch not found" };
+      return fail("Payout batch not found");
     }
 
     if (batch.status !== "pending") {
-      return { success: false, error: "Can only cancel pending batches" };
+      return fail("Can only cancel pending batches");
     }
 
     // Disconnect earnings from payout items
@@ -593,7 +590,7 @@ export async function cancelPayoutBatch(batchId: string): Promise<ActionResult<v
     return ok();
   } catch (error) {
     console.error("[Payouts] Error canceling batch:", error);
-    return { success: false, error: "Failed to cancel payout batch" };
+    return fail("Failed to cancel payout batch");
   }
 }
 
@@ -663,6 +660,6 @@ export async function getPayoutStats(): Promise<
     };
   } catch (error) {
     console.error("[Payouts] Error fetching stats:", error);
-    return { success: false, error: "Failed to fetch payout statistics" };
+    return fail("Failed to fetch payout statistics");
   }
 }

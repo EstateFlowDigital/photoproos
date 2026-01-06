@@ -4,7 +4,7 @@ import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -61,7 +61,7 @@ export async function createConnectAccount(): Promise<
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Check if already has a Connect account
@@ -138,7 +138,7 @@ export async function createConnectAccount(): Promise<
     };
   } catch (error) {
     console.error("Error creating Connect account:", error);
-    return { success: false, error: formatStripeError(error) };
+    return fail(formatStripeError(error));
   }
 }
 
@@ -165,7 +165,7 @@ export async function getConnectAccountStatus(): Promise<
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     if (!organization.stripeConnectAccountId) {
@@ -217,9 +217,9 @@ export async function getConnectAccountStatus(): Promise<
   } catch (error) {
     console.error("Error getting Connect account status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get account status" };
+    return fail("Failed to get account status");
   }
 }
 
@@ -238,7 +238,7 @@ export async function createAccountLink(): Promise<
     });
 
     if (!organization?.stripeConnectAccountId) {
-      return { success: false, error: "No Connect account found" };
+      return fail("No Connect account found");
     }
 
     const accountLink = await getStripe().accountLinks.create({
@@ -252,9 +252,9 @@ export async function createAccountLink(): Promise<
   } catch (error) {
     console.error("Error creating account link:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create account link" };
+    return fail("Failed to create account link");
   }
 }
 
@@ -273,7 +273,7 @@ export async function createDashboardLink(): Promise<
     });
 
     if (!organization?.stripeConnectAccountId) {
-      return { success: false, error: "No Connect account found" };
+      return fail("No Connect account found");
     }
 
     const loginLink = await getStripe().accounts.createLoginLink(
@@ -284,9 +284,9 @@ export async function createDashboardLink(): Promise<
   } catch (error) {
     console.error("Error creating dashboard link:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create dashboard link" };
+    return fail("Failed to create dashboard link");
   }
 }
 
@@ -356,7 +356,7 @@ export async function getConnectAccountDetails(): Promise<
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const defaultResult: ConnectAccountDetails = {
@@ -494,8 +494,8 @@ export async function getConnectAccountDetails(): Promise<
   } catch (error) {
     console.error("Error getting Connect account details:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get account details" };
+    return fail("Failed to get account details");
   }
 }

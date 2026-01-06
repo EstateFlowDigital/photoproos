@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 const emailSettingsSchema = z.object({
   emailSenderName: z.string().max(100).optional().nullable(),
@@ -24,7 +24,7 @@ export type EmailSettings = z.infer<typeof emailSettingsSchema>;
 export async function getEmailSettings() {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -44,7 +44,7 @@ export async function getEmailSettings() {
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     return {
@@ -61,7 +61,7 @@ export async function getEmailSettings() {
     };
   } catch (error) {
     console.error("Failed to get email settings:", error);
-    return { success: false, error: "Failed to fetch email settings" };
+    return fail("Failed to fetch email settings");
   }
 }
 
@@ -71,7 +71,7 @@ export async function getEmailSettings() {
 export async function updateEmailSettings(data: EmailSettings) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -83,7 +83,7 @@ export async function updateEmailSettings(data: EmailSettings) {
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     await prisma.organization.update({
@@ -103,10 +103,10 @@ export async function updateEmailSettings(data: EmailSettings) {
     return ok();
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.issues[0].message };
+      return fail(error.issues[0].message);
     }
     console.error("Failed to update email settings:", error);
-    return { success: false, error: "Failed to update email settings" };
+    return fail("Failed to update email settings");
   }
 }
 
@@ -116,7 +116,7 @@ export async function updateEmailSettings(data: EmailSettings) {
 export async function sendTestEmail(toEmail: string) {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -131,7 +131,7 @@ export async function sendTestEmail(toEmail: string) {
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Import send function
@@ -152,10 +152,10 @@ export async function sendTestEmail(toEmail: string) {
     if (result.success) {
       return ok();
     } else {
-      return { success: false, error: result.error || "Failed to send test email" };
+      return fail(result.error || "Failed to send test email");
     }
   } catch (error) {
     console.error("Failed to send test email:", error);
-    return { success: false, error: "Failed to send test email" };
+    return fail("Failed to send test email");
   }
 }

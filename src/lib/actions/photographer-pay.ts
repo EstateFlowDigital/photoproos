@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { EarningStatus } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -84,7 +84,7 @@ export async function getPhotographerRates(options?: {
     return { success: true, data: rates };
   } catch (error) {
     console.error("[PhotographerPay] Error fetching rates:", error);
-    return { success: false, error: "Failed to fetch photographer rates" };
+    return fail("Failed to fetch photographer rates");
   }
 }
 
@@ -113,7 +113,7 @@ export async function getPhotographerRateForService(
     return { success: true, data: rate };
   } catch (error) {
     console.error("[PhotographerPay] Error fetching rate:", error);
-    return { success: false, error: "Failed to fetch photographer rate" };
+    return fail("Failed to fetch photographer rate");
   }
 }
 
@@ -170,7 +170,7 @@ export async function upsertPhotographerRate(
     return { success: true, data: rate };
   } catch (error) {
     console.error("[PhotographerPay] Error upserting rate:", error);
-    return { success: false, error: "Failed to save photographer rate" };
+    return fail("Failed to save photographer rate");
   }
 }
 
@@ -186,7 +186,7 @@ export async function deletePhotographerRate(id: string): Promise<ActionResult<v
     });
 
     if (!rate) {
-      return { success: false, error: "Rate not found" };
+      return fail("Rate not found");
     }
 
     await prisma.photographerRate.delete({ where: { id } });
@@ -195,7 +195,7 @@ export async function deletePhotographerRate(id: string): Promise<ActionResult<v
     return ok();
   } catch (error) {
     console.error("[PhotographerPay] Error deleting rate:", error);
-    return { success: false, error: "Failed to delete photographer rate" };
+    return fail("Failed to delete photographer rate");
   }
 }
 
@@ -229,7 +229,7 @@ export async function getPhotographerEarnings(options?: {
     return { success: true, data: earnings };
   } catch (error) {
     console.error("[PhotographerPay] Error fetching earnings:", error);
-    return { success: false, error: "Failed to fetch photographer earnings" };
+    return fail("Failed to fetch photographer earnings");
   }
 }
 
@@ -259,7 +259,7 @@ export async function getMyEarnings(options?: {
     return { success: true, data: earnings };
   } catch (error) {
     console.error("[PhotographerPay] Error fetching my earnings:", error);
-    return { success: false, error: "Failed to fetch earnings" };
+    return fail("Failed to fetch earnings");
   }
 }
 
@@ -281,7 +281,7 @@ export async function calculateBookingEarnings(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Get the photographer's rate
@@ -291,7 +291,7 @@ export async function calculateBookingEarnings(
     );
 
     if (!rateResult.success) {
-      return { success: false, error: rateResult.error };
+      return fail(rateResult.error);
     }
 
     const rate = rateResult.data;
@@ -341,7 +341,7 @@ export async function calculateBookingEarnings(
     };
   } catch (error) {
     console.error("[PhotographerPay] Error calculating earnings:", error);
-    return { success: false, error: "Failed to calculate earnings" };
+    return fail("Failed to calculate earnings");
   }
 }
 
@@ -381,7 +381,7 @@ export async function recordPhotographerEarning(input: {
     return { success: true, data: earning };
   } catch (error) {
     console.error("[PhotographerPay] Error recording earning:", error);
-    return { success: false, error: "Failed to record earning" };
+    return fail("Failed to record earning");
   }
 }
 
@@ -408,7 +408,7 @@ export async function approveEarnings(earningIds: string[]): Promise<ActionResul
     return ok();
   } catch (error) {
     console.error("[PhotographerPay] Error approving earnings:", error);
-    return { success: false, error: "Failed to approve earnings" };
+    return fail("Failed to approve earnings");
   }
 }
 
@@ -472,7 +472,7 @@ export async function getEarningStats(options?: {
     };
   } catch (error) {
     console.error("[PhotographerPay] Error fetching stats:", error);
-    return { success: false, error: "Failed to fetch earning statistics" };
+    return fail("Failed to fetch earning statistics");
   }
 }
 
@@ -498,7 +498,7 @@ export async function getMyEarningStats(): Promise<
 
     const allTimeResult = await getEarningStats({ userId });
     if (!allTimeResult.success) {
-      return { success: false, error: allTimeResult.error };
+      return fail(allTimeResult.error);
     }
 
     const currentMonthAggregate = await prisma.photographerEarning.aggregate({
@@ -519,6 +519,6 @@ export async function getMyEarningStats(): Promise<
     };
   } catch (error) {
     console.error("[PhotographerPay] Error fetching my stats:", error);
-    return { success: false, error: "Failed to fetch earning statistics" };
+    return fail("Failed to fetch earning statistics");
   }
 }

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -103,7 +103,7 @@ export async function getBrokerages(options?: {
     return { success: true, data: brokerages };
   } catch (error) {
     console.error("[Brokerages] Error fetching brokerages:", error);
-    return { success: false, error: "Failed to fetch brokerages" };
+    return fail("Failed to fetch brokerages");
   }
 }
 
@@ -130,13 +130,13 @@ export async function getBrokerage(
     });
 
     if (!brokerage) {
-      return { success: false, error: "Brokerage not found" };
+      return fail("Brokerage not found");
     }
 
     return { success: true, data: brokerage };
   } catch (error) {
     console.error("[Brokerages] Error fetching brokerage:", error);
-    return { success: false, error: "Failed to fetch brokerage" };
+    return fail("Failed to fetch brokerage");
   }
 }
 
@@ -163,13 +163,13 @@ export async function getBrokerageBySlug(
     });
 
     if (!brokerage) {
-      return { success: false, error: "Brokerage not found" };
+      return fail("Brokerage not found");
     }
 
     return { success: true, data: brokerage };
   } catch (error) {
     console.error("[Brokerages] Error fetching brokerage:", error);
-    return { success: false, error: "Failed to fetch brokerage" };
+    return fail("Failed to fetch brokerage");
   }
 }
 
@@ -198,7 +198,7 @@ export async function getBrokerageAgents(brokerageId: string): Promise<
     });
 
     if (!brokerage) {
-      return { success: false, error: "Brokerage not found" };
+      return fail("Brokerage not found");
     }
 
     const agents = await prisma.client.findMany({
@@ -218,7 +218,7 @@ export async function getBrokerageAgents(brokerageId: string): Promise<
     return { success: true, data: agents };
   } catch (error) {
     console.error("[Brokerages] Error fetching agents:", error);
-    return { success: false, error: "Failed to fetch agents" };
+    return fail("Failed to fetch agents");
   }
 }
 
@@ -241,7 +241,7 @@ export async function createBrokerage(
     });
 
     if (existing) {
-      return { success: false, error: "A brokerage with this slug already exists" };
+      return fail("A brokerage with this slug already exists");
     }
 
     const brokerage = await prisma.brokerage.create({
@@ -277,7 +277,7 @@ export async function createBrokerage(
     return { success: true, data: brokerage };
   } catch (error) {
     console.error("[Brokerages] Error creating brokerage:", error);
-    return { success: false, error: "Failed to create brokerage" };
+    return fail("Failed to create brokerage");
   }
 }
 
@@ -296,7 +296,7 @@ export async function updateBrokerage(
     });
 
     if (!existing) {
-      return { success: false, error: "Brokerage not found" };
+      return fail("Brokerage not found");
     }
 
     // Check slug uniqueness if being changed
@@ -306,7 +306,7 @@ export async function updateBrokerage(
       });
 
       if (slugExists) {
-        return { success: false, error: "A brokerage with this slug already exists" };
+        return fail("A brokerage with this slug already exists");
       }
     }
 
@@ -345,7 +345,7 @@ export async function updateBrokerage(
     return { success: true, data: brokerage };
   } catch (error) {
     console.error("[Brokerages] Error updating brokerage:", error);
-    return { success: false, error: "Failed to update brokerage" };
+    return fail("Failed to update brokerage");
   }
 }
 
@@ -367,15 +367,12 @@ export async function deleteBrokerage(id: string): Promise<ActionResult<void>> {
     });
 
     if (!brokerage) {
-      return { success: false, error: "Brokerage not found" };
+      return fail("Brokerage not found");
     }
 
     // Check if brokerage has agents
     if (brokerage._count.agents > 0) {
-      return {
-        success: false,
-        error: "Cannot delete brokerage with active agents. Remove or reassign agents first.",
-      };
+      return fail("Cannot delete brokerage with active agents. Remove or reassign agents first.",);
     }
 
     await prisma.brokerage.delete({
@@ -386,7 +383,7 @@ export async function deleteBrokerage(id: string): Promise<ActionResult<void>> {
     return ok();
   } catch (error) {
     console.error("[Brokerages] Error deleting brokerage:", error);
-    return { success: false, error: "Failed to delete brokerage" };
+    return fail("Failed to delete brokerage");
   }
 }
 
@@ -406,7 +403,7 @@ export async function assignAgentToBrokerage(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // If assigning to a brokerage, verify it exists
@@ -416,7 +413,7 @@ export async function assignAgentToBrokerage(
       });
 
       if (!brokerage) {
-        return { success: false, error: "Brokerage not found" };
+        return fail("Brokerage not found");
       }
     }
 
@@ -439,7 +436,7 @@ export async function assignAgentToBrokerage(
     return ok();
   } catch (error) {
     console.error("[Brokerages] Error assigning agent:", error);
-    return { success: false, error: "Failed to assign agent to brokerage" };
+    return fail("Failed to assign agent to brokerage");
   }
 }
 
@@ -496,9 +493,6 @@ export async function getBrokerageStats(): Promise<
     };
   } catch (error) {
     console.error("[Brokerages] Error fetching stats:", error);
-    return {
-      success: false,
-      error: "Failed to fetch brokerage statistics",
-    };
+    return fail("Failed to fetch brokerage statistics",);
   }
 }

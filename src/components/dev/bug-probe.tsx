@@ -480,23 +480,25 @@ export function BugProbe() {
   return (
     <>
       {/* Inline HUD for quick debugging */}
-      <div className="fixed top-4 left-4 z-[9998] rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] px-3 py-2 text-[11px] text-white shadow-lg space-y-1 w-[260px]">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-[var(--primary)]">Click HUD</span>
-          <span className="text-[10px] text-[#9ca3af]">path: {pathname}</span>
-        </div>
-        <div className="space-y-1 text-[#d1d5db]">
-          <div>Href: {hud.href || "—"}</div>
-          <div>DefaultPrevented: {hud.defaultPrevented || "—"}</div>
-          <div>Target: {hud.target || "—"}</div>
-          <div>Overlay: {hud.overlay || "—"}</div>
-          <div>Route events: start {hud.routeStarted || "no"}, complete {hud.routeCompleted || "no"}</div>
+      <div className="pointer-events-none fixed top-4 left-4 z-[9998] w-[260px]">
+        <div className="pointer-events-auto rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] px-3 py-2 text-[11px] text-white shadow-lg space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-[var(--primary)]">Click HUD</span>
+            <span className="text-[10px] text-[#9ca3af]">path: {pathname}</span>
+          </div>
+          <div className="space-y-1 text-[#d1d5db]">
+            <div>Href: {hud.href || "—"}</div>
+            <div>DefaultPrevented: {hud.defaultPrevented || "—"}</div>
+            <div>Target: {hud.target || "—"}</div>
+            <div>Overlay: {hud.overlay || "—"}</div>
+            <div>Route events: start {hud.routeStarted || "no"}, complete {hud.routeCompleted || "no"}</div>
+          </div>
         </div>
       </div>
 
-      <div className="fixed bottom-4 right-4 z-[9999] w-full max-w-[360px] text-sm">
+      <div className="pointer-events-none fixed bottom-4 right-4 z-[9999] w-full max-w-[360px] text-sm">
         {isOpen ? (
-          <div className="rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] text-white shadow-2xl">
+          <div className="pointer-events-auto rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] text-white shadow-2xl">
           <div className="flex items-center justify-between gap-2 border-b border-[rgba(255,255,255,0.12)] px-3 py-2">
             <div className="flex items-center gap-2">
               <Bug className="h-4 w-4 text-[var(--primary)]" />
@@ -676,13 +678,15 @@ export function BugProbe() {
           </div>
         </div>
       ) : (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] px-3 py-2 text-xs text-white shadow-2xl hover:bg-[#161617]"
-        >
-          <Bug className="h-4 w-4 text-[var(--primary)]" />
-          <span>Bug Probe</span>
-        </button>
+        <div className="pointer-events-auto">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] px-3 py-2 text-xs text-white shadow-2xl hover:bg-[#161617]"
+          >
+            <Bug className="h-4 w-4 text-[var(--primary)]" />
+            <span>Bug Probe</span>
+          </button>
+        </div>
       )}
       </div>
     </>

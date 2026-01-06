@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export interface NotificationData {
   id: string;
@@ -51,9 +51,9 @@ export async function getNotifications(
   } catch (error) {
     console.error("[Notifications] Error fetching notifications:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch notifications" };
+    return fail("Failed to fetch notifications");
   }
 }
 
@@ -82,9 +82,9 @@ export async function markNotificationAsRead(
   } catch (error) {
     console.error("[Notifications] Error marking notification as read:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to mark notification as read" };
+    return fail("Failed to mark notification as read");
   }
 }
 
@@ -103,9 +103,9 @@ export async function getUnreadNotificationCount(): Promise<ActionResult<number>
   } catch (error) {
     console.error("[Notifications] Error getting unread count:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get unread count" };
+    return fail("Failed to get unread count");
   }
 }
 
@@ -132,9 +132,9 @@ export async function markAllNotificationsAsRead(): Promise<ActionResult> {
   } catch (error) {
     console.error("[Notifications] Error marking all notifications as read:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to mark all notifications as read" };
+    return fail("Failed to mark all notifications as read");
   }
 }
 
@@ -200,9 +200,9 @@ export async function createNotification(
   } catch (error) {
     console.error("[Notifications] Error creating notification:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create notification" };
+    return fail("Failed to create notification");
   }
 }
 
@@ -227,9 +227,9 @@ export async function deleteNotification(
   } catch (error) {
     console.error("[Notifications] Error deleting notification:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete notification" };
+    return fail("Failed to delete notification");
   }
 }
 
@@ -252,8 +252,8 @@ export async function deleteReadNotifications(): Promise<ActionResult<{ count: n
   } catch (error) {
     console.error("[Notifications] Error deleting read notifications:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete read notifications" };
+    return fail("Failed to delete read notifications");
   }
 }

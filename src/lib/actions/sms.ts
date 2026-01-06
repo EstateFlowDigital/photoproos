@@ -10,7 +10,7 @@ import {
   TEMPLATE_VARIABLES,
 } from "@/lib/sms/send";
 import type { SMSTemplateType, SMSDeliveryStatus } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // SMS SETTINGS
@@ -51,7 +51,7 @@ export async function getSMSSettings(): Promise<ActionResult<SMSSettings>> {
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     return {
@@ -70,7 +70,7 @@ export async function getSMSSettings(): Promise<ActionResult<SMSSettings>> {
     };
   } catch (error) {
     console.error("Error getting SMS settings:", error);
-    return { success: false, error: "Failed to get SMS settings" };
+    return fail("Failed to get SMS settings");
   }
 }
 
@@ -115,7 +115,7 @@ export async function getSMSStats(): Promise<ActionResult<SMSStats>> {
     };
   } catch (error) {
     console.error("Error getting SMS stats:", error);
-    return { success: false, error: "Failed to get SMS stats" };
+    return fail("Failed to get SMS stats");
   }
 }
 
@@ -146,7 +146,7 @@ export async function updateSMSSettings(data: {
     return ok();
   } catch (error) {
     console.error("Error updating SMS settings:", error);
-    return { success: false, error: "Failed to update SMS settings" };
+    return fail("Failed to update SMS settings");
   }
 }
 
@@ -166,13 +166,13 @@ export async function sendTestSMS(toPhone: string): Promise<ActionResult> {
     });
 
     if (!result.success) {
-      return { success: false, error: result.error || "Failed to send test SMS" };
+      return fail(result.error || "Failed to send test SMS");
     }
 
     return ok();
   } catch (error) {
     console.error("Error sending test SMS:", error);
-    return { success: false, error: "Failed to send test SMS" };
+    return fail("Failed to send test SMS");
   }
 }
 
@@ -221,7 +221,7 @@ export async function getSMSTemplates(): Promise<
     return { success: true, data: templates };
   } catch (error) {
     console.error("Error getting SMS templates:", error);
-    return { success: false, error: "Failed to get SMS templates" };
+    return fail("Failed to get SMS templates");
   }
 }
 
@@ -287,7 +287,7 @@ export async function seedDefaultTemplates(): Promise<ActionResult> {
     return ok();
   } catch (error) {
     console.error("Error seeding default templates:", error);
-    return { success: false, error: "Failed to create default templates" };
+    return fail("Failed to create default templates");
   }
 }
 
@@ -410,7 +410,7 @@ export async function upsertSMSTemplate(data: {
     }
   } catch (error) {
     console.error("Error upserting SMS template:", error);
-    return { success: false, error: "Failed to save SMS template" };
+    return fail("Failed to save SMS template");
   }
 }
 
@@ -430,7 +430,7 @@ export async function deleteSMSTemplate(id: string): Promise<ActionResult> {
     return ok();
   } catch (error) {
     console.error("Error deleting SMS template:", error);
-    return { success: false, error: "Failed to delete SMS template" };
+    return fail("Failed to delete SMS template");
   }
 }
 
@@ -508,7 +508,7 @@ export async function getSMSLogs(params?: {
     };
   } catch (error) {
     console.error("Error getting SMS logs:", error);
-    return { success: false, error: "Failed to get SMS logs" };
+    return fail("Failed to get SMS logs");
   }
 }
 
@@ -540,14 +540,14 @@ export async function sendSMSToClientAction(data: {
     });
 
     if (!result.success) {
-      return { success: false, error: result.error || "Failed to send SMS" };
+      return fail(result.error || "Failed to send SMS");
     }
 
     revalidatePath("/settings/sms");
     return { success: true, data: { smsLogId: result.smsLogId! } };
   } catch (error) {
     console.error("Error sending SMS to client:", error);
-    return { success: false, error: "Failed to send SMS" };
+    return fail("Failed to send SMS");
   }
 }
 
@@ -573,13 +573,13 @@ export async function sendCustomSMS(data: {
     });
 
     if (!result.success) {
-      return { success: false, error: result.error || "Failed to send SMS" };
+      return fail(result.error || "Failed to send SMS");
     }
 
     revalidatePath("/settings/sms");
     return { success: true, data: { smsLogId: result.smsLogId! } };
   } catch (error) {
     console.error("Error sending custom SMS:", error);
-    return { success: false, error: "Failed to send SMS" };
+    return fail("Failed to send SMS");
   }
 }

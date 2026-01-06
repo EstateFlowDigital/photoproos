@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -53,7 +53,7 @@ async function getOrganizationId(): Promise<string | null> {
 export async function createDiscountCode(input: CreateDiscountCodeInput) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -66,7 +66,7 @@ export async function createDiscountCode(input: CreateDiscountCodeInput) {
     });
 
     if (existing) {
-      return { success: false, error: "Discount code already exists" };
+      return fail("Discount code already exists");
     }
 
     const discountCode = await prisma.discountCode.create({
@@ -90,7 +90,7 @@ export async function createDiscountCode(input: CreateDiscountCodeInput) {
     return { success: true, data: discountCode };
   } catch (error) {
     console.error("[Discount Code] Error creating:", error);
-    return { success: false, error: "Failed to create discount code" };
+    return fail("Failed to create discount code");
   }
 }
 
@@ -100,7 +100,7 @@ export async function createDiscountCode(input: CreateDiscountCodeInput) {
 export async function getDiscountCodes() {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -117,7 +117,7 @@ export async function getDiscountCodes() {
     return { success: true, data: codes };
   } catch (error) {
     console.error("[Discount Code] Error fetching:", error);
-    return { success: false, error: "Failed to fetch discount codes" };
+    return fail("Failed to fetch discount codes");
   }
 }
 
@@ -130,7 +130,7 @@ export async function updateDiscountCode(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -159,7 +159,7 @@ export async function updateDiscountCode(
     return { success: true, data: discountCode };
   } catch (error) {
     console.error("[Discount Code] Error updating:", error);
-    return { success: false, error: "Failed to update discount code" };
+    return fail("Failed to update discount code");
   }
 }
 
@@ -169,7 +169,7 @@ export async function updateDiscountCode(
 export async function deleteDiscountCode(codeId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -184,7 +184,7 @@ export async function deleteDiscountCode(codeId: string) {
     return ok();
   } catch (error) {
     console.error("[Discount Code] Error deleting:", error);
-    return { success: false, error: "Failed to delete discount code" };
+    return fail("Failed to delete discount code");
   }
 }
 
@@ -199,7 +199,7 @@ export async function validateDiscountCode(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -212,42 +212,42 @@ export async function validateDiscountCode(
     });
 
     if (!discountCode) {
-      return { success: false, error: "Invalid discount code" };
+      return fail("Invalid discount code");
     }
 
     // Check validity period
     const now = new Date();
     if (discountCode.validFrom > now) {
-      return { success: false, error: "Discount code is not yet active" };
+      return fail("Discount code is not yet active");
     }
     if (discountCode.validUntil && discountCode.validUntil < now) {
-      return { success: false, error: "Discount code has expired" };
+      return fail("Discount code has expired");
     }
 
     // Check usage limit
     if (discountCode.maxUses && discountCode.maxUses > 0) {
       if (discountCode.usedCount >= discountCode.maxUses) {
-        return { success: false, error: "Discount code has reached its usage limit" };
+        return fail("Discount code has reached its usage limit");
       }
     }
 
     // Check minimum purchase
     if (discountCode.minPurchase && amountCents < discountCode.minPurchase) {
       const minAmount = (discountCode.minPurchase / 100).toFixed(2);
-      return { success: false, error: `Minimum purchase of $${minAmount} required` };
+      return fail(`Minimum purchase of $${minAmount} required`);
     }
 
     // Check applicable services
     if (discountCode.applicableServices.length > 0 && serviceId) {
       if (!discountCode.applicableServices.includes(serviceId)) {
-        return { success: false, error: "Discount code not valid for this service" };
+        return fail("Discount code not valid for this service");
       }
     }
 
     // Check applicable clients
     if (discountCode.applicableClients.length > 0 && clientEmail) {
       if (!discountCode.applicableClients.includes(clientEmail)) {
-        return { success: false, error: "Discount code not valid for this client" };
+        return fail("Discount code not valid for this client");
       }
     }
 
@@ -280,7 +280,7 @@ export async function validateDiscountCode(
     };
   } catch (error) {
     console.error("[Discount Code] Error validating:", error);
-    return { success: false, error: "Failed to validate discount code" };
+    return fail("Failed to validate discount code");
   }
 }
 
@@ -314,6 +314,6 @@ export async function recordDiscountCodeUsage(
     return ok();
   } catch (error) {
     console.error("[Discount Code] Error recording usage:", error);
-    return { success: false, error: "Failed to record discount code usage" };
+    return fail("Failed to record discount code usage");
   }
 }

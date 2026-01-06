@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getClientSession } from "@/lib/actions/client-auth";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // Types for selections
 export interface Selection {
@@ -38,7 +38,7 @@ export interface SelectionSummary {
 export async function getGallerySelections(projectId: string) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -48,7 +48,7 @@ export async function getGallerySelections(projectId: string) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify gallery belongs to this organization
@@ -62,7 +62,7 @@ export async function getGallerySelections(projectId: string) {
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Get all selections (type = selection)
@@ -105,7 +105,7 @@ export async function getGallerySelections(projectId: string) {
     };
   } catch (error) {
     console.error("Error fetching gallery selections:", error);
-    return { success: false, error: "Failed to fetch selections" };
+    return fail("Failed to fetch selections");
   }
 }
 
@@ -122,7 +122,7 @@ export async function updateSelectionSettings(
 ) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -132,7 +132,7 @@ export async function updateSelectionSettings(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify gallery belongs to this organization
@@ -141,7 +141,7 @@ export async function updateSelectionSettings(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     await prisma.project.update({
@@ -154,7 +154,7 @@ export async function updateSelectionSettings(
     return ok();
   } catch (error) {
     console.error("Error updating selection settings:", error);
-    return { success: false, error: "Failed to update settings" };
+    return fail("Failed to update settings");
   }
 }
 
@@ -167,7 +167,7 @@ export async function reviewSelections(
 ) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -177,7 +177,7 @@ export async function reviewSelections(
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify gallery belongs to this organization
@@ -186,7 +186,7 @@ export async function reviewSelections(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Update all submitted selections
@@ -204,7 +204,7 @@ export async function reviewSelections(
     return ok();
   } catch (error) {
     console.error("Error reviewing selections:", error);
-    return { success: false, error: "Failed to review selections" };
+    return fail("Failed to review selections");
   }
 }
 
@@ -214,7 +214,7 @@ export async function reviewSelections(
 export async function exportSelectionsCSV(projectId: string) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -224,7 +224,7 @@ export async function exportSelectionsCSV(projectId: string) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify gallery belongs to this organization
@@ -234,7 +234,7 @@ export async function exportSelectionsCSV(projectId: string) {
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Get all selections
@@ -278,7 +278,7 @@ export async function exportSelectionsCSV(projectId: string) {
     };
   } catch (error) {
     console.error("Error exporting selections:", error);
-    return { success: false, error: "Failed to export selections" };
+    return fail("Failed to export selections");
   }
 }
 
@@ -311,7 +311,7 @@ export async function getClientSelections(projectId: string, deliverySlug?: stri
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Check access
@@ -319,11 +319,11 @@ export async function getClientSelections(projectId: string, deliverySlug?: stri
     const hasDeliveryAccess = deliverySlug && gallery.deliveryLinks.some((l) => l.slug === deliverySlug);
 
     if (!hasClientAccess && !hasDeliveryAccess) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     if (!gallery.allowSelections) {
-      return { success: false, error: "Selections not enabled for this gallery" };
+      return fail("Selections not enabled for this gallery");
     }
 
     // Get client's selections
@@ -366,7 +366,7 @@ export async function getClientSelections(projectId: string, deliverySlug?: stri
     };
   } catch (error) {
     console.error("Error fetching client selections:", error);
-    return { success: false, error: "Failed to fetch selections" };
+    return fail("Failed to fetch selections");
   }
 }
 
@@ -401,7 +401,7 @@ export async function toggleSelection(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Check access
@@ -409,15 +409,15 @@ export async function toggleSelection(
     const hasDeliveryAccess = deliverySlug && gallery.deliveryLinks.some((l) => l.slug === deliverySlug);
 
     if (!hasClientAccess && !hasDeliveryAccess) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     if (!gallery.allowSelections) {
-      return { success: false, error: "Selections not enabled" };
+      return fail("Selections not enabled");
     }
 
     if (gallery.selectionsSubmitted) {
-      return { success: false, error: "Selections already submitted" };
+      return fail("Selections already submitted");
     }
 
     const clientEmail = clientSession?.client?.email || null;
@@ -452,10 +452,7 @@ export async function toggleSelection(
       });
 
       if (currentCount >= gallery.selectionLimit) {
-        return {
-          success: false,
-          error: `Selection limit reached (${gallery.selectionLimit} photos)`,
-        };
+        return fail(`Selection limit reached (${gallery.selectionLimit} photos)`);
       }
     }
 
@@ -473,7 +470,7 @@ export async function toggleSelection(
     return { success: true, data: { selected: true } };
   } catch (error) {
     console.error("Error toggling selection:", error);
-    return { success: false, error: "Failed to update selection" };
+    return fail("Failed to update selection");
   }
 }
 
@@ -507,18 +504,18 @@ export async function updateSelectionNotes(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const hasClientAccess = clientSession && gallery.client?.id === clientSession.clientId;
     const hasDeliveryAccess = deliverySlug && gallery.deliveryLinks.some((l) => l.slug === deliverySlug);
 
     if (!hasClientAccess && !hasDeliveryAccess) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     if (gallery.selectionsSubmitted) {
-      return { success: false, error: "Cannot edit notes after submission" };
+      return fail("Cannot edit notes after submission");
     }
 
     const clientEmail = clientSession?.client?.email || null;
@@ -536,7 +533,7 @@ export async function updateSelectionNotes(
     return ok();
   } catch (error) {
     console.error("Error updating selection notes:", error);
-    return { success: false, error: "Failed to update notes" };
+    return fail("Failed to update notes");
   }
 }
 
@@ -566,18 +563,18 @@ export async function submitSelections(projectId: string, deliverySlug?: string)
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const hasClientAccess = clientSession && gallery.client?.id === clientSession.clientId;
     const hasDeliveryAccess = deliverySlug && gallery.deliveryLinks.some((l) => l.slug === deliverySlug);
 
     if (!hasClientAccess && !hasDeliveryAccess) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     if (gallery.selectionsSubmitted) {
-      return { success: false, error: "Selections already submitted" };
+      return fail("Selections already submitted");
     }
 
     const clientEmail = clientSession?.client?.email || null;
@@ -592,7 +589,7 @@ export async function submitSelections(projectId: string, deliverySlug?: string)
     });
 
     if (selectionCount === 0) {
-      return { success: false, error: "No selections to submit" };
+      return fail("No selections to submit");
     }
 
     const now = new Date();
@@ -640,7 +637,7 @@ export async function submitSelections(projectId: string, deliverySlug?: string)
     return { success: true, data: { count: selectionCount } };
   } catch (error) {
     console.error("Error submitting selections:", error);
-    return { success: false, error: "Failed to submit selections" };
+    return fail("Failed to submit selections");
   }
 }
 
@@ -668,18 +665,18 @@ export async function resetSelections(projectId: string, deliverySlug?: string) 
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const hasClientAccess = clientSession && gallery.client?.id === clientSession.clientId;
     const hasDeliveryAccess = deliverySlug && gallery.deliveryLinks.some((l) => l.slug === deliverySlug);
 
     if (!hasClientAccess && !hasDeliveryAccess) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     if (gallery.selectionsSubmitted) {
-      return { success: false, error: "Cannot reset after submission" };
+      return fail("Cannot reset after submission");
     }
 
     const clientEmail = clientSession?.client?.email || null;
@@ -695,6 +692,6 @@ export async function resetSelections(projectId: string, deliverySlug?: string) 
     return ok();
   } catch (error) {
     console.error("Error resetting selections:", error);
-    return { success: false, error: "Failed to reset selections" };
+    return fail("Failed to reset selections");
   }
 }

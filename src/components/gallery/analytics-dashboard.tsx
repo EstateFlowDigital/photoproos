@@ -188,29 +188,48 @@ export function AnalyticsDashboard({
   }, [galleryId, isDelivered, showToast]);
 
   // Export analytics
-  const handleExport = async (format: "csv" | "json") => {
+  const handleExport = async (format: "csv" | "json" | "pdf") => {
     setIsExporting(true);
     try {
-      const result = await exportGalleryAnalyticsReport(galleryId, format);
-      if (result.success && result.data && result.filename) {
-        // Create download
-        const blob = new Blob([result.data], {
-          type: format === "csv" ? "text/csv" : "application/json",
-        });
+      if (format === "pdf") {
+        // PDF export via API route
+        const response = await fetch(`/api/gallery/${galleryId}/analytics-report`);
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.error || "Failed to generate PDF");
+        }
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = result.filename;
+        a.download = `${galleryName}-analytics.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast("Analytics exported successfully", "success");
+        showToast("Analytics PDF exported successfully", "success");
       } else {
-        showToast(result.error || "Export failed", "error");
+        const result = await exportGalleryAnalyticsReport(galleryId, format);
+        if (result.success && result.data && result.filename) {
+          // Create download
+          const blob = new Blob([result.data], {
+            type: format === "csv" ? "text/csv" : "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = result.filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast("Analytics exported successfully", "success");
+        } else {
+          showToast(result.error || "Export failed", "error");
+        }
       }
-    } catch {
-      showToast("Export failed", "error");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Export failed", "error");
     } finally {
       setIsExporting(false);
     }
@@ -313,14 +332,24 @@ export function AnalyticsDashboard({
             <RefreshIcon className={cn("h-4 w-4", isLoading && "animate-spin")} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
-          <div className="relative">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => handleExport("csv")}
               disabled={isExporting}
               className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              title="Export as CSV"
             >
               <ExportIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Export</span>
+              <span className="hidden sm:inline">CSV</span>
+            </button>
+            <button
+              onClick={() => handleExport("pdf")}
+              disabled={isExporting}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+              title="Export as PDF Report"
+            >
+              <ExportIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">PDF</span>
             </button>
           </div>
         </div>

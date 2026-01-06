@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { addMonths, addWeeks } from "date-fns";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -61,7 +61,7 @@ function calculateNextDueDate(
 export async function createPaymentPlan(input: CreatePaymentPlanInput) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -116,7 +116,7 @@ export async function createPaymentPlan(input: CreatePaymentPlanInput) {
     return { success: true, data: paymentPlan };
   } catch (error) {
     console.error("[Payment Plan] Error creating:", error);
-    return { success: false, error: "Failed to create payment plan" };
+    return fail("Failed to create payment plan");
   }
 }
 
@@ -129,7 +129,7 @@ export async function getPaymentPlans(filters?: {
 }) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -150,7 +150,7 @@ export async function getPaymentPlans(filters?: {
     return { success: true, data: plans };
   } catch (error) {
     console.error("[Payment Plan] Error fetching:", error);
-    return { success: false, error: "Failed to fetch payment plans" };
+    return fail("Failed to fetch payment plans");
   }
 }
 
@@ -160,7 +160,7 @@ export async function getPaymentPlans(filters?: {
 export async function getPaymentPlan(planId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -177,13 +177,13 @@ export async function getPaymentPlan(planId: string) {
     });
 
     if (!plan) {
-      return { success: false, error: "Payment plan not found" };
+      return fail("Payment plan not found");
     }
 
     return { success: true, data: plan };
   } catch (error) {
     console.error("[Payment Plan] Error fetching:", error);
-    return { success: false, error: "Failed to fetch payment plan" };
+    return fail("Failed to fetch payment plan");
   }
 }
 
@@ -196,7 +196,7 @@ export async function markInstallmentPaid(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -206,7 +206,7 @@ export async function markInstallmentPaid(
     });
 
     if (!installment || installment.paymentPlan.organizationId !== organizationId) {
-      return { success: false, error: "Installment not found" };
+      return fail("Installment not found");
     }
 
     // Update the installment
@@ -245,7 +245,7 @@ export async function markInstallmentPaid(
     return ok();
   } catch (error) {
     console.error("[Payment Plan] Error marking paid:", error);
-    return { success: false, error: "Failed to mark installment as paid" };
+    return fail("Failed to mark installment as paid");
   }
 }
 
@@ -255,7 +255,7 @@ export async function markInstallmentPaid(
 export async function cancelPaymentPlan(planId: string) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -273,7 +273,7 @@ export async function cancelPaymentPlan(planId: string) {
     return ok();
   } catch (error) {
     console.error("[Payment Plan] Error cancelling:", error);
-    return { success: false, error: "Failed to cancel payment plan" };
+    return fail("Failed to cancel payment plan");
   }
 }
 
@@ -312,7 +312,7 @@ export async function checkOverdueInstallments() {
     return { success: true, overdueCount: overduePlans.length };
   } catch (error) {
     console.error("[Payment Plan] Error checking overdue:", error);
-    return { success: false, error: "Failed to check overdue installments" };
+    return fail("Failed to check overdue installments");
   }
 }
 
@@ -322,7 +322,7 @@ export async function checkOverdueInstallments() {
 export async function getUpcomingInstallments(daysAhead: number = 3) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -352,6 +352,6 @@ export async function getUpcomingInstallments(daysAhead: number = 3) {
     return { success: true, data: installments };
   } catch (error) {
     console.error("[Payment Plan] Error fetching upcoming:", error);
-    return { success: false, error: "Failed to fetch upcoming installments" };
+    return fail("Failed to fetch upcoming installments");
   }
 }

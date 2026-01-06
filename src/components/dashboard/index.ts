@@ -69,3 +69,4 @@ export { getChecklistItems } from "@/lib/utils/checklist-items";
 export { ReferralWidget } from "./referral-widget";
 export { CollapsibleSection } from "./collapsible-section";
 export { DashboardCustomizePanel } from "./dashboard-customize-panel";
+export { OverdueInvoicesWidget } from "./overdue-invoices-widget";

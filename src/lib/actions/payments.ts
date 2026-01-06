@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -172,7 +172,7 @@ export async function markPaymentAsPaid(id: string) {
     });
 
     if (!existing) {
-      return { success: false, error: "Payment not found" };
+      return fail("Payment not found");
     }
 
     await prisma.payment.update({
@@ -205,7 +205,7 @@ export async function markPaymentAsPaid(id: string) {
     return ok();
   } catch (error) {
     console.error("Error marking payment as paid:", error);
-    return { success: false, error: "Failed to update payment" };
+    return fail("Failed to update payment");
   }
 }
 
@@ -221,7 +221,7 @@ export async function updatePaymentStatus(id: string, status: PaymentStatus) {
     });
 
     if (!existing) {
-      return { success: false, error: "Payment not found" };
+      return fail("Payment not found");
     }
 
     const updateData: { status: PaymentStatus; paidAt?: Date | null } = { status };
@@ -245,7 +245,7 @@ export async function updatePaymentStatus(id: string, status: PaymentStatus) {
     return ok();
   } catch (error) {
     console.error("Error updating payment status:", error);
-    return { success: false, error: "Failed to update payment status" };
+    return fail("Failed to update payment status");
   }
 }
 
@@ -262,7 +262,7 @@ export async function getPaymentLinkUrl(id: string): Promise<{ success: boolean;
     });
 
     if (!payment) {
-      return { success: false, error: "Payment not found" };
+      return fail("Payment not found");
     }
 
     // Generate a client-facing payment URL
@@ -272,7 +272,7 @@ export async function getPaymentLinkUrl(id: string): Promise<{ success: boolean;
     return { success: true, url };
   } catch (error) {
     console.error("Error getting payment link:", error);
-    return { success: false, error: "Failed to get payment link" };
+    return fail("Failed to get payment link");
   }
 }
 
@@ -295,16 +295,16 @@ export async function sendPaymentReminder(id: string): Promise<VoidActionResult>
     });
 
     if (!payment) {
-      return { success: false, error: "Payment not found" };
+      return fail("Payment not found");
     }
 
     const clientEmail = payment.project?.client?.email;
     if (!clientEmail) {
-      return { success: false, error: "No client email address found" };
+      return fail("No client email address found");
     }
 
     if (payment.status === "paid") {
-      return { success: false, error: "Payment has already been paid" };
+      return fail("Payment has already been paid");
     }
 
     // Get organization name for the email
@@ -339,7 +339,7 @@ export async function sendPaymentReminder(id: string): Promise<VoidActionResult>
 
     if (!emailResult.success) {
       console.error("Failed to send payment reminder email:", emailResult.error);
-      return { success: false, error: "Failed to send reminder email" };
+      return fail("Failed to send reminder email");
     }
 
     // Log the activity
@@ -362,7 +362,7 @@ export async function sendPaymentReminder(id: string): Promise<VoidActionResult>
     return ok();
   } catch (error) {
     console.error("Error sending payment reminder:", error);
-    return { success: false, error: "Failed to send reminder" };
+    return fail("Failed to send reminder");
   }
 }
 
@@ -390,11 +390,11 @@ export async function getPaymentReceiptData(id: string) {
     });
 
     if (!payment) {
-      return { success: false, error: "Payment not found" };
+      return fail("Payment not found");
     }
 
     if (payment.status !== "paid") {
-      return { success: false, error: "Payment has not been completed" };
+      return fail("Payment has not been completed");
     }
 
     const client = payment.project?.client;
@@ -417,7 +417,7 @@ export async function getPaymentReceiptData(id: string) {
     return { success: true, data: receiptData };
   } catch (error) {
     console.error("Error getting receipt data:", error);
-    return { success: false, error: "Failed to get receipt data" };
+    return fail("Failed to get receipt data");
   }
 }
 
@@ -489,7 +489,7 @@ export async function exportPaymentsToCSV(paymentIds?: string[]): Promise<{ succ
     return { success: true, csv };
   } catch (error) {
     console.error("Error exporting payments:", error);
-    return { success: false, error: "Failed to export payments" };
+    return fail("Failed to export payments");
   }
 }
 
@@ -510,15 +510,15 @@ export async function issueRefund(
     });
 
     if (!payment) {
-      return { success: false, error: "Payment not found" };
+      return fail("Payment not found");
     }
 
     if (payment.status !== "paid") {
-      return { success: false, error: "Can only refund paid payments" };
+      return fail("Can only refund paid payments");
     }
 
     if (!payment.stripePaymentIntentId) {
-      return { success: false, error: "No Stripe payment to refund. Manual refund required." };
+      return fail("No Stripe payment to refund. Manual refund required.");
     }
 
     // Process refund via Stripe
@@ -540,10 +540,7 @@ export async function issueRefund(
       });
     } catch (stripeError) {
       console.error("[Refund] Stripe refund failed:", stripeError);
-      return {
-        success: false,
-        error: stripeError instanceof Error ? stripeError.message : "Stripe refund failed",
-      };
+      return fail(stripeError instanceof Error ? stripeError.message : "Stripe refund failed",);
     }
 
     // Update payment status in database
@@ -573,6 +570,6 @@ export async function issueRefund(
     return ok();
   } catch (error) {
     console.error("Error issuing refund:", error);
-    return { success: false, error: "Failed to process refund" };
+    return fail("Failed to process refund");
   }
 }

@@ -17,7 +17,7 @@ import {
   type Testimonial,
 } from "@/lib/validations/order-pages";
 import { requireOrganizationId } from "./auth-helper";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -43,7 +43,7 @@ export async function createOrderPage(
     });
 
     if (existingSlug) {
-      return { success: false, error: "An order page with this slug already exists" };
+      return fail("An order page with this slug already exists");
     }
 
     const orderPage = await prisma.orderPage.create({
@@ -76,9 +76,9 @@ export async function createOrderPage(
   } catch (error) {
     console.error("Error creating order page:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create order page" };
+    return fail("Failed to create order page");
   }
 }
 
@@ -101,7 +101,7 @@ export async function updateOrderPage(
     });
 
     if (!existing) {
-      return { success: false, error: "Order page not found" };
+      return fail("Order page not found");
     }
 
     // Check for duplicate slug if slug is being changed
@@ -115,7 +115,7 @@ export async function updateOrderPage(
       });
 
       if (existingSlug) {
-        return { success: false, error: "An order page with this slug already exists" };
+        return fail("An order page with this slug already exists");
       }
     }
 
@@ -152,9 +152,9 @@ export async function updateOrderPage(
   } catch (error) {
     console.error("Error updating order page:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update order page" };
+    return fail("Failed to update order page");
   }
 }
 
@@ -185,7 +185,7 @@ export async function deleteOrderPage(
     });
 
     if (!existing) {
-      return { success: false, error: "Order page not found" };
+      return fail("Order page not found");
     }
 
     if (existing._count.orders > 0 && !force) {
@@ -210,9 +210,9 @@ export async function deleteOrderPage(
   } catch (error) {
     console.error("Error deleting order page:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete order page" };
+    return fail("Failed to delete order page");
   }
 }
 
@@ -241,7 +241,7 @@ export async function duplicateOrderPage(
     });
 
     if (!original) {
-      return { success: false, error: "Order page not found" };
+      return fail("Order page not found");
     }
 
     // Generate unique slug
@@ -309,9 +309,9 @@ export async function duplicateOrderPage(
   } catch (error) {
     console.error("Error duplicating order page:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to duplicate order page" };
+    return fail("Failed to duplicate order page");
   }
 }
 
@@ -332,7 +332,7 @@ export async function toggleOrderPageStatus(
     });
 
     if (!existing) {
-      return { success: false, error: "Order page not found" };
+      return fail("Order page not found");
     }
 
     const updated = await prisma.orderPage.update({
@@ -347,9 +347,9 @@ export async function toggleOrderPageStatus(
   } catch (error) {
     console.error("Error toggling order page status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to toggle order page status" };
+    return fail("Failed to toggle order page status");
   }
 }
 
@@ -372,7 +372,7 @@ export async function setOrderPageBundles(
     });
 
     if (!orderPage) {
-      return { success: false, error: "Order page not found" };
+      return fail("Order page not found");
     }
 
     // Verify all bundles exist and belong to organization
@@ -384,7 +384,7 @@ export async function setOrderPageBundles(
     });
 
     if (bundles.length !== validated.bundleIds.length) {
-      return { success: false, error: "One or more bundles not found" };
+      return fail("One or more bundles not found");
     }
 
     // Replace all bundle associations
@@ -410,9 +410,9 @@ export async function setOrderPageBundles(
   } catch (error) {
     console.error("Error setting order page bundles:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set order page bundles" };
+    return fail("Failed to set order page bundles");
   }
 }
 
@@ -435,7 +435,7 @@ export async function setOrderPageServices(
     });
 
     if (!orderPage) {
-      return { success: false, error: "Order page not found" };
+      return fail("Order page not found");
     }
 
     // Verify all services exist and belong to organization
@@ -448,7 +448,7 @@ export async function setOrderPageServices(
     });
 
     if (services.length !== serviceIds.length) {
-      return { success: false, error: "One or more services not found" };
+      return fail("One or more services not found");
     }
 
     // Replace all service associations
@@ -474,9 +474,9 @@ export async function setOrderPageServices(
   } catch (error) {
     console.error("Error setting order page services:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set order page services" };
+    return fail("Failed to set order page services");
   }
 }
 

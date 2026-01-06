@@ -11,7 +11,7 @@ import {
   type CreateCatalogInput,
   type CreateProductInput,
 } from "@/lib/validations/products";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export async function listProductCatalogs() {
   await requireAuth();
@@ -83,7 +83,7 @@ export async function createProductCatalog(input: CreateCatalogInput): Promise<A
     return { success: true, data: { id: catalog.id } };
   } catch (error) {
     console.error("[Products] create catalog error:", error);
-    return { success: false, error: "Failed to create catalog" };
+    return fail("Failed to create catalog");
   }
 }
 
@@ -100,7 +100,7 @@ export async function createProduct(input: CreateProductInput): Promise<ActionRe
     });
 
     if (!catalog) {
-      return { success: false, error: "Catalog not found" };
+      return fail("Catalog not found");
     }
 
     const product = await prisma.productItem.create({
@@ -119,7 +119,7 @@ export async function createProduct(input: CreateProductInput): Promise<ActionRe
     return { success: true, data: { id: product.id } };
   } catch (error) {
     console.error("[Products] create product error:", error);
-    return { success: false, error: "Failed to create product" };
+    return fail("Failed to create product");
   }
 }
 
@@ -135,7 +135,7 @@ export async function attachPhotoToProduct(input: AttachPhotoInput): Promise<Act
       select: { id: true, catalogId: true },
     });
     if (!product) {
-      return { success: false, error: "Product not found" };
+      return fail("Product not found");
     }
 
     // Verify asset belongs to org (via project)
@@ -147,7 +147,7 @@ export async function attachPhotoToProduct(input: AttachPhotoInput): Promise<Act
       select: { id: true },
     });
     if (!asset) {
-      return { success: false, error: "Asset not found" };
+      return fail("Asset not found");
     }
 
     // If variant is provided, validate it
@@ -162,7 +162,7 @@ export async function attachPhotoToProduct(input: AttachPhotoInput): Promise<Act
         select: { id: true },
       });
       if (!variant) {
-        return { success: false, error: "Variant not found" };
+        return fail("Variant not found");
       }
     }
 
@@ -191,7 +191,7 @@ export async function attachPhotoToProduct(input: AttachPhotoInput): Promise<Act
     return { success: true, data: { id: photo.id } };
   } catch (error) {
     console.error("[Products] attach photo error:", error);
-    return { success: false, error: "Failed to attach photo" };
+    return fail("Failed to attach photo");
   }
 }
 
@@ -206,7 +206,7 @@ export async function updateProductStatus(productId: string, status: "pending" |
       select: { catalogId: true },
     });
     if (!product) {
-      return { success: false, error: "Product not found" };
+      return fail("Product not found");
     }
 
     await prisma.productItem.update({
@@ -218,6 +218,6 @@ export async function updateProductStatus(productId: string, status: "pending" |
     return ok();
   } catch (error) {
     console.error("[Products] update status error:", error);
-    return { success: false, error: "Failed to update product" };
+    return fail("Failed to update product");
   }
 }

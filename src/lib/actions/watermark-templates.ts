@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -40,23 +41,23 @@ export async function createWatermarkTemplate(data: WatermarkTemplateInput) {
     const organizationId = await getOrganizationId();
 
     if (!userId || !organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate watermark type has corresponding data
     if (data.watermarkType === "text" && !data.watermarkText) {
-      return { success: false, error: "Text watermarks require watermark text" };
+      return fail("Text watermarks require watermark text");
     }
     if (data.watermarkType === "image" && !data.watermarkImageUrl) {
-      return { success: false, error: "Image watermarks require an image URL" };
+      return fail("Image watermarks require an image URL");
     }
 
     // Validate opacity and scale ranges
     if (data.watermarkOpacity < 0 || data.watermarkOpacity > 1) {
-      return { success: false, error: "Opacity must be between 0 and 1" };
+      return fail("Opacity must be between 0 and 1");
     }
     if (data.watermarkScale <= 0) {
-      return { success: false, error: "Scale must be greater than 0" };
+      return fail("Scale must be greater than 0");
     }
 
     // If setting as default, unset any existing default
@@ -95,10 +96,7 @@ export async function createWatermarkTemplate(data: WatermarkTemplateInput) {
     };
   } catch (error) {
     console.error("Error creating watermark template:", error);
-    return {
-      success: false,
-      error: "Failed to create watermark template",
-    };
+    return fail("Failed to create watermark template",);
   }
 }
 
@@ -114,7 +112,7 @@ export async function updateWatermarkTemplate(
     const organizationId = await getOrganizationId();
 
     if (!userId || !organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Verify template belongs to organization
@@ -126,7 +124,7 @@ export async function updateWatermarkTemplate(
     });
 
     if (!existing) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     // Validate if type or data is being changed
@@ -135,21 +133,21 @@ export async function updateWatermarkTemplate(
     const finalImageUrl = data.watermarkImageUrl ?? existing.watermarkImageUrl;
 
     if (finalType === "text" && !finalText) {
-      return { success: false, error: "Text watermarks require watermark text" };
+      return fail("Text watermarks require watermark text");
     }
     if (finalType === "image" && !finalImageUrl) {
-      return { success: false, error: "Image watermarks require an image URL" };
+      return fail("Image watermarks require an image URL");
     }
 
     // Validate ranges if provided
     if (data.watermarkOpacity !== undefined) {
       if (data.watermarkOpacity < 0 || data.watermarkOpacity > 1) {
-        return { success: false, error: "Opacity must be between 0 and 1" };
+        return fail("Opacity must be between 0 and 1");
       }
     }
     if (data.watermarkScale !== undefined) {
       if (data.watermarkScale <= 0) {
-        return { success: false, error: "Scale must be greater than 0" };
+        return fail("Scale must be greater than 0");
       }
     }
 
@@ -190,10 +188,7 @@ export async function updateWatermarkTemplate(
     };
   } catch (error) {
     console.error("Error updating watermark template:", error);
-    return {
-      success: false,
-      error: "Failed to update watermark template",
-    };
+    return fail("Failed to update watermark template",);
   }
 }
 
@@ -206,7 +201,7 @@ export async function deleteWatermarkTemplate(templateId: string) {
     const organizationId = await getOrganizationId();
 
     if (!userId || !organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Verify template belongs to organization
@@ -218,7 +213,7 @@ export async function deleteWatermarkTemplate(templateId: string) {
     });
 
     if (!existing) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     await prisma.watermarkTemplate.delete({
@@ -233,10 +228,7 @@ export async function deleteWatermarkTemplate(templateId: string) {
     };
   } catch (error) {
     console.error("Error deleting watermark template:", error);
-    return {
-      success: false,
-      error: "Failed to delete watermark template",
-    };
+    return fail("Failed to delete watermark template",);
   }
 }
 
@@ -249,7 +241,7 @@ export async function listWatermarkTemplates() {
     const organizationId = await getOrganizationId();
 
     if (!userId || !organizationId) {
-      return { success: false, error: "Unauthorized", data: [] };
+      return { success: false as const, error: "Unauthorized", data: [] };
     }
 
     const templates = await prisma.watermarkTemplate.findMany({
@@ -266,11 +258,7 @@ export async function listWatermarkTemplates() {
     };
   } catch (error) {
     console.error("Error listing watermark templates:", error);
-    return {
-      success: false,
-      error: "Failed to list watermark templates",
-      data: [],
-    };
+    return { success: false as const, error: "Failed to list watermark templates", data: [] };
   }
 }
 
@@ -283,7 +271,7 @@ export async function getWatermarkTemplate(templateId: string) {
     const organizationId = await getOrganizationId();
 
     if (!userId || !organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const template = await prisma.watermarkTemplate.findFirst({
@@ -294,7 +282,7 @@ export async function getWatermarkTemplate(templateId: string) {
     });
 
     if (!template) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     return {
@@ -303,10 +291,7 @@ export async function getWatermarkTemplate(templateId: string) {
     };
   } catch (error) {
     console.error("Error getting watermark template:", error);
-    return {
-      success: false,
-      error: "Failed to get watermark template",
-    };
+    return fail("Failed to get watermark template",);
   }
 }
 
@@ -319,7 +304,7 @@ export async function setDefaultTemplate(templateId: string) {
     const organizationId = await getOrganizationId();
 
     if (!userId || !organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Verify template belongs to organization
@@ -331,7 +316,7 @@ export async function setDefaultTemplate(templateId: string) {
     });
 
     if (!existing) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     // Unset any existing default
@@ -360,10 +345,7 @@ export async function setDefaultTemplate(templateId: string) {
     };
   } catch (error) {
     console.error("Error setting default template:", error);
-    return {
-      success: false,
-      error: "Failed to set default template",
-    };
+    return fail("Failed to set default template",);
   }
 }
 
@@ -376,7 +358,7 @@ export async function getDefaultWatermarkTemplate() {
     const organizationId = await getOrganizationId();
 
     if (!userId || !organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const template = await prisma.watermarkTemplate.findFirst({
@@ -392,10 +374,7 @@ export async function getDefaultWatermarkTemplate() {
     };
   } catch (error) {
     console.error("Error getting default template:", error);
-    return {
-      success: false,
-      error: "Failed to get default template",
-    };
+    return fail("Failed to get default template",);
   }
 }
 
@@ -408,7 +387,7 @@ export async function applyTemplateToOrganization(templateId: string) {
     const organizationId = await getOrganizationId();
 
     if (!userId || !organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Get the template
@@ -420,7 +399,7 @@ export async function applyTemplateToOrganization(templateId: string) {
     });
 
     if (!template) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     // Map template position format to organization settings format
@@ -464,9 +443,6 @@ export async function applyTemplateToOrganization(templateId: string) {
     };
   } catch (error) {
     console.error("Error applying template to organization:", error);
-    return {
-      success: false,
-      error: "Failed to apply template",
-    };
+    return fail("Failed to apply template",);
   }
 }

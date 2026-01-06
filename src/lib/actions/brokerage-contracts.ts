@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { InvoiceSplitType } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -73,7 +73,7 @@ export async function getBrokerageContracts(
     });
 
     if (!brokerage) {
-      return { success: false, error: "Brokerage not found" };
+      return fail("Brokerage not found");
     }
 
     const contracts = await prisma.brokerageContract.findMany({
@@ -99,7 +99,7 @@ export async function getBrokerageContracts(
     };
   } catch (error) {
     console.error("[BrokerageContracts] Error fetching contracts:", error);
-    return { success: false, error: "Failed to fetch contracts" };
+    return fail("Failed to fetch contracts");
   }
 }
 
@@ -127,7 +127,7 @@ export async function getBrokerageContract(
     });
 
     if (!contract || contract.brokerage.organizationId !== organizationId) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     return {
@@ -144,7 +144,7 @@ export async function getBrokerageContract(
     };
   } catch (error) {
     console.error("[BrokerageContracts] Error fetching contract:", error);
-    return { success: false, error: "Failed to fetch contract" };
+    return fail("Failed to fetch contract");
   }
 }
 
@@ -163,7 +163,7 @@ export async function getActiveBrokerageContract(
     });
 
     if (!brokerage) {
-      return { success: false, error: "Brokerage not found" };
+      return fail("Brokerage not found");
     }
 
     const now = new Date();
@@ -199,7 +199,7 @@ export async function getActiveBrokerageContract(
     };
   } catch (error) {
     console.error("[BrokerageContracts] Error fetching active contract:", error);
-    return { success: false, error: "Failed to fetch active contract" };
+    return fail("Failed to fetch active contract");
   }
 }
 
@@ -222,7 +222,7 @@ export async function createBrokerageContract(
     });
 
     if (!brokerage) {
-      return { success: false, error: "Brokerage not found" };
+      return fail("Brokerage not found");
     }
 
     const contract = await prisma.brokerageContract.create({
@@ -261,7 +261,7 @@ export async function createBrokerageContract(
     };
   } catch (error) {
     console.error("[BrokerageContracts] Error creating contract:", error);
-    return { success: false, error: "Failed to create contract" };
+    return fail("Failed to create contract");
   }
 }
 
@@ -285,7 +285,7 @@ export async function updateBrokerageContract(
     });
 
     if (!existing || existing.brokerage.organizationId !== organizationId) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     const contract = await prisma.brokerageContract.update({
@@ -325,7 +325,7 @@ export async function updateBrokerageContract(
     };
   } catch (error) {
     console.error("[BrokerageContracts] Error updating contract:", error);
-    return { success: false, error: "Failed to update contract" };
+    return fail("Failed to update contract");
   }
 }
 
@@ -347,7 +347,7 @@ export async function deleteBrokerageContract(id: string): Promise<ActionResult<
     });
 
     if (!contract || contract.brokerage.organizationId !== organizationId) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     await prisma.brokerageContract.delete({
@@ -358,7 +358,7 @@ export async function deleteBrokerageContract(id: string): Promise<ActionResult<
     return ok();
   } catch (error) {
     console.error("[BrokerageContracts] Error deleting contract:", error);
-    return { success: false, error: "Failed to delete contract" };
+    return fail("Failed to delete contract");
   }
 }
 
@@ -380,7 +380,7 @@ export async function calculateBrokeragePrice(
     // Get active contract
     const contractResult = await getActiveBrokerageContract(brokerageId);
     if (!contractResult.success) {
-      return { success: false, error: contractResult.error };
+      return fail(contractResult.error);
     }
 
     const contract = contractResult.data;
@@ -446,6 +446,6 @@ export async function calculateBrokeragePrice(
     };
   } catch (error) {
     console.error("[BrokerageContracts] Error calculating price:", error);
-    return { success: false, error: "Failed to calculate price" };
+    return fail("Failed to calculate price");
   }
 }

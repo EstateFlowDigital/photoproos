@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
@@ -37,7 +37,7 @@ export async function triggerEmailSync(options?: {
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const results = await syncOrganizationEmails(auth.organizationId, {
@@ -60,10 +60,7 @@ export async function triggerEmailSync(options?: {
     };
   } catch (error) {
     console.error("Email sync error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Sync failed",
-    };
+    return fail(error instanceof Error ? error.message : "Sync failed",);
   }
 }
 
@@ -111,7 +108,7 @@ export async function getEmailThreads(options?: {
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const {
@@ -219,7 +216,7 @@ export async function getEmailThreads(options?: {
     };
   } catch (error) {
     console.error("Error fetching email threads:", error);
-    return { success: false, error: "Failed to fetch threads" };
+    return fail("Failed to fetch threads");
   }
 }
 
@@ -267,7 +264,7 @@ export async function getEmailThread(threadId: string): Promise<{
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const thread = await prisma.emailThread.findFirst({
@@ -301,7 +298,7 @@ export async function getEmailThread(threadId: string): Promise<{
     });
 
     if (!thread) {
-      return { success: false, error: "Thread not found" };
+      return fail("Thread not found");
     }
 
     return {
@@ -333,7 +330,7 @@ export async function getEmailThread(threadId: string): Promise<{
     };
   } catch (error) {
     console.error("Error fetching email thread:", error);
-    return { success: false, error: "Failed to fetch thread" };
+    return fail("Failed to fetch thread");
   }
 }
 
@@ -347,7 +344,7 @@ export async function markThreadRead(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const thread = await prisma.emailThread.findFirst({
@@ -364,7 +361,7 @@ export async function markThreadRead(
     });
 
     if (!thread) {
-      return { success: false, error: "Thread not found" };
+      return fail("Thread not found");
     }
 
     // Update in Gmail
@@ -392,7 +389,7 @@ export async function markThreadRead(
     return ok();
   } catch (error) {
     console.error("Error marking thread read:", error);
-    return { success: false, error: "Failed to update thread" };
+    return fail("Failed to update thread");
   }
 }
 
@@ -405,7 +402,7 @@ export async function toggleThreadStar(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const thread = await prisma.emailThread.findFirst({
@@ -422,7 +419,7 @@ export async function toggleThreadStar(
     });
 
     if (!thread) {
-      return { success: false, error: "Thread not found" };
+      return fail("Thread not found");
     }
 
     const newStarred = !thread.isStarred;
@@ -444,7 +441,7 @@ export async function toggleThreadStar(
     return { success: true, isStarred: newStarred };
   } catch (error) {
     console.error("Error toggling star:", error);
-    return { success: false, error: "Failed to update thread" };
+    return fail("Failed to update thread");
   }
 }
 
@@ -457,7 +454,7 @@ export async function toggleThreadArchive(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const thread = await prisma.emailThread.findFirst({
@@ -474,7 +471,7 @@ export async function toggleThreadArchive(
     });
 
     if (!thread) {
-      return { success: false, error: "Thread not found" };
+      return fail("Thread not found");
     }
 
     const newArchived = !thread.isArchived;
@@ -496,7 +493,7 @@ export async function toggleThreadArchive(
     return { success: true, isArchived: newArchived };
   } catch (error) {
     console.error("Error toggling archive:", error);
-    return { success: false, error: "Failed to update thread" };
+    return fail("Failed to update thread");
   }
 }
 
@@ -510,7 +507,7 @@ export async function sendEmailReply(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const thread = await prisma.emailThread.findFirst({
@@ -528,12 +525,12 @@ export async function sendEmailReply(
     });
 
     if (!thread) {
-      return { success: false, error: "Thread not found" };
+      return fail("Thread not found");
     }
 
     const lastMessage = thread.messages[0];
     if (!lastMessage) {
-      return { success: false, error: "No messages in thread" };
+      return fail("No messages in thread");
     }
 
     // Determine recipient (reply to sender or original recipients)
@@ -556,7 +553,7 @@ export async function sendEmailReply(
       });
 
       if (!result) {
-        return { success: false, error: "Failed to send email" };
+        return fail("Failed to send email");
       }
 
       // Trigger a sync to get the sent message
@@ -568,7 +565,7 @@ export async function sendEmailReply(
     return ok();
   } catch (error) {
     console.error("Error sending reply:", error);
-    return { success: false, error: "Failed to send reply" };
+    return fail("Failed to send reply");
   }
 }
 
@@ -585,7 +582,7 @@ export async function sendNewEmail(options: {
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Verify account belongs to organization
@@ -597,7 +594,7 @@ export async function sendNewEmail(options: {
     });
 
     if (!account) {
-      return { success: false, error: "Account not found" };
+      return fail("Account not found");
     }
 
     // Send via Gmail
@@ -611,7 +608,7 @@ export async function sendNewEmail(options: {
       });
 
       if (!result) {
-        return { success: false, error: "Failed to send email" };
+        return fail("Failed to send email");
       }
 
       // Trigger a sync to get the sent message
@@ -623,7 +620,7 @@ export async function sendNewEmail(options: {
     return ok();
   } catch (error) {
     console.error("Error sending email:", error);
-    return { success: false, error: "Failed to send email" };
+    return fail("Failed to send email");
   }
 }
 
@@ -634,14 +631,14 @@ export async function getOrganizationSyncStatus() {
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const status = await getEmailSyncStatus(auth.organizationId);
     return { success: true, ...status };
   } catch (error) {
     console.error("Error getting sync status:", error);
-    return { success: false, error: "Failed to get sync status" };
+    return fail("Failed to get sync status");
   }
 }
 
@@ -655,7 +652,7 @@ export async function linkThreadToClient(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Verify thread belongs to organization
@@ -667,7 +664,7 @@ export async function linkThreadToClient(
     });
 
     if (!thread) {
-      return { success: false, error: "Thread not found" };
+      return fail("Thread not found");
     }
 
     // If linking to a client, verify client exists
@@ -680,7 +677,7 @@ export async function linkThreadToClient(
       });
 
       if (!client) {
-        return { success: false, error: "Client not found" };
+        return fail("Client not found");
       }
     }
 
@@ -694,6 +691,6 @@ export async function linkThreadToClient(
     return ok();
   } catch (error) {
     console.error("Error linking thread to client:", error);
-    return { success: false, error: "Failed to link thread" };
+    return fail("Failed to link thread");
   }
 }

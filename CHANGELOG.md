@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gallery Auto-Archive** - Automatically archive galleries when they expire
+  - New cron endpoint `/api/cron/gallery-auto-archive` for daily processing
+  - Organization setting `autoArchiveExpiredGalleries` (default: true)
+  - Toggle in Branding settings under "Gallery Automation" section
+  - Respects per-organization preferences
+  - New `archivedAt` field on Project model to track archive time
+
+- **Client Download History** - Clients can view their download history in galleries
+  - New API endpoint `/api/gallery/[id]/download-history`
+  - Download history panel component for gallery client
+  - Download logging integrated into batch download route
+  - Tracks downloads by session/client
+
+- **Analytics PDF Export** - Export gallery analytics as professional PDF reports
+  - New API endpoint `/api/gallery/[id]/analytics-report`
+  - PDF document with metrics overview, top photos, download charts
+  - CSV and PDF export buttons in analytics dashboard
+  - Includes organization branding in reports
+
 - **Questionnaires Search & Filters** - Enhanced questionnaires page with search and filtering
   - Search by template name, description, industry, client name, or email
   - Status filter pills (All, Pending, In Progress, Completed, Approved) with counts
@@ -41,6 +60,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Cron endpoint at `/api/cron/scheduled-invoices` processes scheduled invoices
   - Activity logging for scheduled sends
   - New schema fields: `scheduledSendAt`, `scheduledSentAt`
+
+- **Credit Notes** - Issue refunds and credits to clients
+  - Create credit notes linked to invoices or clients
+  - Apply credit notes to outstanding invoices
+  - Track partial applications and refunds
+  - Void unused credit notes
+  - View available credit balance per client
+  - New `CreditNote` model with full status workflow (draft → issued → applied/refunded/voided)
+
+- **Deposit Invoices** - Split invoices into deposit and balance payments
+  - Split existing draft invoices into deposit + balance
+  - Create invoice pairs with configurable deposit percentage
+  - Tax automatically applied to balance invoice
+  - Track related invoices with parent/child relationships
+  - New schema fields: `isDeposit`, `isBalance`, `depositPercent`, `parentInvoiceId`
 
 ### Fixed
 - **TypeScript Errors Eliminated** - Fixed remaining type errors for clean build

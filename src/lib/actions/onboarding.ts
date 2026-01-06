@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
@@ -21,7 +21,7 @@ export async function saveOnboardingStep(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Get the organization
@@ -31,7 +31,7 @@ export async function saveOnboardingStep(
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Update based on step
@@ -92,7 +92,7 @@ export async function saveOnboardingStep(
       case 3: // Branding step
         const publicEmail = (data.publicEmail as string | undefined)?.trim();
         if (publicEmail && !EMAIL_REGEX.test(publicEmail)) {
-          return { success: false, error: "Please enter a valid email address" };
+          return fail("Please enter a valid email address");
         }
         await prisma.$transaction([
           prisma.organization.update({
@@ -223,7 +223,7 @@ export async function saveOnboardingStep(
     return ok();
   } catch (error) {
     console.error("Error saving onboarding step:", error);
-    return { success: false, error: "Failed to save progress" };
+    return fail("Failed to save progress");
   }
 }
 
@@ -236,13 +236,13 @@ export async function completeOnboarding(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate organizationId
     if (!organizationId || organizationId === "") {
       console.error("Error completing onboarding: organizationId is empty");
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify the organization exists first
@@ -252,7 +252,7 @@ export async function completeOnboarding(
 
     if (!organization) {
       console.error("Error completing onboarding: Organization not found for id:", organizationId);
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const now = new Date();
@@ -289,7 +289,7 @@ export async function completeOnboarding(
     return ok();
   } catch (error) {
     console.error("Error completing onboarding:", error);
-    return { success: false, error: "Failed to complete onboarding" };
+    return fail("Failed to complete onboarding");
   }
 }
 
@@ -304,7 +304,7 @@ export async function updateIndustries(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const existing = await prisma.organization.findUnique({
@@ -313,7 +313,7 @@ export async function updateIndustries(
     });
 
     if (!existing) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const availableModules = getModulesForIndustries(industries);
@@ -333,7 +333,7 @@ export async function updateIndustries(
     return ok();
   } catch (error) {
     console.error("Error updating industries:", error);
-    return { success: false, error: "Failed to update industries" };
+    return fail("Failed to update industries");
   }
 }
 
@@ -347,7 +347,7 @@ export async function updateModules(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const organization = await prisma.organization.findUnique({
@@ -356,7 +356,7 @@ export async function updateModules(
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const availableModules = getModulesForIndustries(organization.industries as string[]);
@@ -373,7 +373,7 @@ export async function updateModules(
     return ok();
   } catch (error) {
     console.error("Error updating modules:", error);
-    return { success: false, error: "Failed to update modules" };
+    return fail("Failed to update modules");
   }
 }
 
@@ -386,7 +386,7 @@ export async function resetOnboarding(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Reset the organization's onboarding status
@@ -432,6 +432,6 @@ export async function resetOnboarding(
     return ok();
   } catch (error) {
     console.error("Error resetting onboarding:", error);
-    return { success: false, error: "Failed to reset onboarding" };
+    return fail("Failed to reset onboarding");
   }
 }

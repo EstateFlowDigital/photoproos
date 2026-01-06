@@ -10,7 +10,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Types
 export type ContractCategory =
@@ -191,7 +191,7 @@ export async function getContractTemplates(
     return { success: true, data: templates };
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
-    return { success: false, error: "Failed to get templates" };
+    return fail("Failed to get templates");
   }
 }
 
@@ -235,7 +235,7 @@ export async function useContractTemplate(
     const template = SYSTEM_TEMPLATES[index];
 
     if (!template) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     let content = template.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n");
@@ -257,7 +257,7 @@ export async function useContractTemplate(
     return { success: true, data: { contractId: contract.id } };
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
-    return { success: false, error: "Failed to create contract" };
+    return fail("Failed to create contract");
   }
 }
 
@@ -270,7 +270,7 @@ export async function getContractTemplateById(
   try {
     const index = parseInt(id.replace("system-", ""));
     if (isNaN(index) || index < 0 || index >= SYSTEM_TEMPLATES.length) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     const template = SYSTEM_TEMPLATES[index];
@@ -289,7 +289,7 @@ export async function getContractTemplateById(
     };
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
-    return { success: false, error: "Failed to get template" };
+    return fail("Failed to get template");
   }
 }
 
@@ -313,7 +313,7 @@ export async function createContractTemplate(data: {
     };
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
-    return { success: false, error: "Failed to create template" };
+    return fail("Failed to create template");
   }
 }
 
@@ -336,7 +336,7 @@ export async function updateContractTemplate(
     return ok();
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
-    return { success: false, error: "Failed to update template" };
+    return fail("Failed to update template");
   }
 }
 
@@ -349,13 +349,13 @@ export async function deleteContractTemplate(
   try {
     // System templates cannot be deleted
     if (id.startsWith("system-")) {
-      return { success: false, error: "System templates cannot be deleted" };
+      return fail("System templates cannot be deleted");
     }
     console.log("[ContractTemplates] Deleting template:", id);
     return ok();
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
-    return { success: false, error: "Failed to delete template" };
+    return fail("Failed to delete template");
   }
 }
 
@@ -373,7 +373,7 @@ export async function duplicateContractTemplate(
     };
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
-    return { success: false, error: "Failed to duplicate template" };
+    return fail("Failed to duplicate template");
   }
 }
 

@@ -4,7 +4,7 @@ import { getForecastForDate, getWeatherForecast } from "@/lib/weather/forecast";
 import { calculateGoldenHourLocal } from "@/lib/weather/golden-hour";
 import { isConfigured } from "@/lib/weather/client";
 import type { WeatherForecast, GoldenHourInfo } from "@/lib/weather/types";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 /**
  * Get weather forecast for a specific booking
@@ -20,10 +20,7 @@ export async function getBookingWeather(
 }>> {
   try {
     if (!isConfigured()) {
-      return {
-        success: false,
-        error: "Weather API is not configured",
-      };
+      return fail("Weather API is not configured",);
     }
 
     // Check if booking is within 5-day forecast range
@@ -42,20 +39,17 @@ export async function getBookingWeather(
       forecast = await getForecastForDate(latitude, longitude, bookingDate);
     }
 
-    return {
-      success: true,
-      data: {
-        forecast,
-        goldenHour,
-        isWithinForecastRange,
-      },
-    };
+    return success({
+      forecast,
+      goldenHour,
+      isWithinForecastRange,
+    });
   } catch (error) {
     console.error("Error fetching booking weather:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch weather data" };
+    return fail("Failed to fetch weather data");
   }
 }
 
@@ -68,20 +62,17 @@ export async function getLocationForecast(
 ): Promise<ActionResult<WeatherForecast[]>> {
   try {
     if (!isConfigured()) {
-      return {
-        success: false,
-        error: "Weather API is not configured",
-      };
+      return fail("Weather API is not configured",);
     }
 
     const forecasts = await getWeatherForecast(latitude, longitude);
-    return { success: true, data: forecasts };
+    return success(forecasts);
   } catch (error) {
     console.error("Error fetching location forecast:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch weather forecast" };
+    return fail("Failed to fetch weather forecast");
   }
 }
 
@@ -95,13 +86,13 @@ export async function getGoldenHour(
 ): Promise<ActionResult<GoldenHourInfo>> {
   try {
     const goldenHour = calculateGoldenHourLocal(latitude, longitude, date);
-    return { success: true, data: goldenHour };
+    return success(goldenHour);
   } catch (error) {
     console.error("Error calculating golden hour:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to calculate golden hour" };
+    return fail("Failed to calculate golden hour");
   }
 }
 

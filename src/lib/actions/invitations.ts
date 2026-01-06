@@ -23,7 +23,7 @@ import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendTeamInvitationEmail } from "@/lib/email/send";
 import { logActivity } from "@/lib/utils/activity";
 import type { MemberRole, InvitationStatus } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Generate a secure random token
 function generateToken(): string {
@@ -71,7 +71,7 @@ export async function createInvitation(
     });
 
     if (!currentMembership) {
-      return { success: false, error: "Only owners and admins can invite team members" };
+      return fail("Only owners and admins can invite team members");
     }
 
     // Get organization and inviter details
@@ -87,7 +87,7 @@ export async function createInvitation(
     ]);
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Check if user is already a member
@@ -105,7 +105,7 @@ export async function createInvitation(
       });
 
       if (existingMembership) {
-        return { success: false, error: "This user is already a member of your team" };
+        return fail("This user is already a member of your team");
       }
     }
 
@@ -119,10 +119,7 @@ export async function createInvitation(
     });
 
     if (existingInvitation) {
-      return {
-        success: false,
-        error: "An invitation has already been sent to this email. You can resend it if needed.",
-      };
+      return fail("An invitation has already been sent to this email. You can resend it if needed.",);
     }
 
     // Create the invitation
@@ -181,9 +178,9 @@ export async function createInvitation(
   } catch (error) {
     console.error("[Invitations] Error creating invitation:", error);
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.issues[0].message };
+      return fail(error.issues[0].message);
     }
-    return { success: false, error: "Failed to send invitation" };
+    return fail("Failed to send invitation");
   }
 }
 
@@ -213,7 +210,7 @@ export async function resendInvitation(
     });
 
     if (!currentMembership) {
-      return { success: false, error: "Only owners and admins can resend invitations" };
+      return fail("Only owners and admins can resend invitations");
     }
 
     // Get the invitation
@@ -229,7 +226,7 @@ export async function resendInvitation(
     });
 
     if (!invitation) {
-      return { success: false, error: "Invitation not found" };
+      return fail("Invitation not found");
     }
 
     // Get inviter details
@@ -277,7 +274,7 @@ export async function resendInvitation(
     return ok();
   } catch (error) {
     console.error("[Invitations] Error resending invitation:", error);
-    return { success: false, error: "Failed to resend invitation" };
+    return fail("Failed to resend invitation");
   }
 }
 
@@ -307,7 +304,7 @@ export async function revokeInvitation(
     });
 
     if (!currentMembership) {
-      return { success: false, error: "Only owners and admins can revoke invitations" };
+      return fail("Only owners and admins can revoke invitations");
     }
 
     // Get the invitation
@@ -320,7 +317,7 @@ export async function revokeInvitation(
     });
 
     if (!invitation) {
-      return { success: false, error: "Invitation not found" };
+      return fail("Invitation not found");
     }
 
     // Revoke the invitation
@@ -337,7 +334,7 @@ export async function revokeInvitation(
     return ok();
   } catch (error) {
     console.error("[Invitations] Error revoking invitation:", error);
-    return { success: false, error: "Failed to revoke invitation" };
+    return fail("Failed to revoke invitation");
   }
 }
 
@@ -365,16 +362,16 @@ export async function acceptInvitation(
     });
 
     if (!invitation) {
-      return { success: false, error: "Invalid invitation link" };
+      return fail("Invalid invitation link");
     }
 
     // Check invitation status
     if (invitation.status === "accepted") {
-      return { success: false, error: "This invitation has already been accepted" };
+      return fail("This invitation has already been accepted");
     }
 
     if (invitation.status === "revoked") {
-      return { success: false, error: "This invitation has been revoked" };
+      return fail("This invitation has been revoked");
     }
 
     if (invitation.status === "expired" || invitation.expiresAt < new Date()) {
@@ -385,15 +382,12 @@ export async function acceptInvitation(
           data: { status: "expired" },
         });
       }
-      return { success: false, error: "This invitation has expired" };
+      return fail("This invitation has expired");
     }
 
     // Verify email matches
     if (invitation.email.toLowerCase() !== userData.email.toLowerCase()) {
-      return {
-        success: false,
-        error: "This invitation was sent to a different email address",
-      };
+      return fail("This invitation was sent to a different email address",);
     }
 
     // Find or create the user
@@ -504,7 +498,7 @@ export async function acceptInvitation(
     };
   } catch (error) {
     console.error("[Invitations] Error accepting invitation:", error);
-    return { success: false, error: "Failed to accept invitation" };
+    return fail("Failed to accept invitation");
   }
 }
 

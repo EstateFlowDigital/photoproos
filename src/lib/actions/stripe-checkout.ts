@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -144,25 +144,19 @@ export async function createGalleryCheckoutSession(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     if (!gallery.priceCents || gallery.priceCents <= 0) {
-      return { success: false, error: "Gallery is free or has no price set" };
+      return fail("Gallery is free or has no price set");
     }
 
     if (!gallery.organization.stripeConnectAccountId) {
-      return {
-        success: false,
-        error: "Photographer has not set up payment processing",
-      };
+      return fail("Photographer has not set up payment processing",);
     }
 
     if (!gallery.organization.stripeConnectOnboarded) {
-      return {
-        success: false,
-        error: "Photographer payment account is not fully set up",
-      };
+      return fail("Photographer payment account is not fully set up",);
     }
 
     // Calculate platform fee
@@ -223,7 +217,7 @@ export async function createGalleryCheckoutSession(
     });
 
     if (!session.url) {
-      return { success: false, error: "Failed to create checkout URL" };
+      return fail("Failed to create checkout URL");
     }
 
     return {
@@ -236,9 +230,9 @@ export async function createGalleryCheckoutSession(
   } catch (error) {
     console.error("Error creating checkout session:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create checkout session" };
+    return fail("Failed to create checkout session");
   }
 }
 
@@ -264,7 +258,7 @@ export async function verifyPayment(
 
     const galleryId = session.metadata?.galleryId;
     if (!galleryId) {
-      return { success: false, error: "Gallery ID not found in session" };
+      return fail("Gallery ID not found in session");
     }
 
     // Check if we already recorded this payment
@@ -304,9 +298,9 @@ export async function verifyPayment(
   } catch (error) {
     console.error("Error verifying payment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to verify payment" };
+    return fail("Failed to verify payment");
   }
 }
 
@@ -330,19 +324,19 @@ export async function createInvoiceCheckoutSession(
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     if (invoice.status === "draft") {
-      return { success: false, error: "Invoice has not been sent yet" };
+      return fail("Invoice has not been sent yet");
     }
 
     if (invoice.status === "paid") {
-      return { success: false, error: "Invoice has already been paid" };
+      return fail("Invoice has already been paid");
     }
 
     if (invoice.status === "cancelled") {
-      return { success: false, error: "Invoice has been cancelled" };
+      return fail("Invoice has been cancelled");
     }
 
     // Calculate outstanding balance (including late fees)
@@ -350,21 +344,15 @@ export async function createInvoiceCheckoutSession(
     const outstandingBalance = totalDue - invoice.paidAmountCents;
 
     if (outstandingBalance <= 0) {
-      return { success: false, error: "Invoice has no outstanding balance" };
+      return fail("Invoice has no outstanding balance");
     }
 
     if (!invoice.organization.stripeConnectAccountId) {
-      return {
-        success: false,
-        error: "Business has not set up payment processing",
-      };
+      return fail("Business has not set up payment processing",);
     }
 
     if (!invoice.organization.stripeConnectOnboarded) {
-      return {
-        success: false,
-        error: "Business payment account is not fully set up",
-      };
+      return fail("Business payment account is not fully set up",);
     }
 
     // Calculate platform fee
@@ -434,7 +422,7 @@ export async function createInvoiceCheckoutSession(
     });
 
     if (!session.url) {
-      return { success: false, error: "Failed to create checkout URL" };
+      return fail("Failed to create checkout URL");
     }
 
     return {
@@ -447,9 +435,9 @@ export async function createInvoiceCheckoutSession(
   } catch (error) {
     console.error("Error creating invoice checkout session:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create checkout session" };
+    return fail("Failed to create checkout session");
   }
 }
 
@@ -474,7 +462,7 @@ export async function verifyInvoicePayment(
 
     const invoiceId = session.metadata?.invoiceId;
     if (!invoiceId) {
-      return { success: false, error: "Invoice ID not found in session" };
+      return fail("Invoice ID not found in session");
     }
 
     // Check if we already recorded this payment
@@ -534,9 +522,9 @@ export async function verifyInvoicePayment(
   } catch (error) {
     console.error("Error verifying invoice payment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to verify payment" };
+    return fail("Failed to verify payment");
   }
 }
 
@@ -558,7 +546,7 @@ export async function checkGalleryPaymentStatus(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Gallery is paid if price is 0 or there's a successful payment
@@ -568,8 +556,8 @@ export async function checkGalleryPaymentStatus(
   } catch (error) {
     console.error("Error checking payment status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to check payment status" };
+    return fail("Failed to check payment status");
   }
 }

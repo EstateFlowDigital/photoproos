@@ -12,7 +12,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import { WaitlistStatus, Prisma } from "@prisma/client";
 import { sendWaitlistNotificationEmail } from "@/lib/email/send";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -108,37 +108,34 @@ export async function getWaitlistEntries(
       prisma.bookingWaitlist.count({ where }),
     ]);
 
-    return {
-      success: true,
-      data: {
-        entries: entries.map((e) => ({
-          id: e.id,
-          clientId: e.clientId,
-          clientName: e.clientName,
-          clientEmail: e.clientEmail,
-          clientPhone: e.clientPhone,
-          serviceId: e.serviceId,
-          serviceName: e.service?.name || null,
-          preferredDate: e.preferredDate,
-          alternateDate: e.alternateDate,
-          flexibleDates: e.flexibleDates,
-          notes: e.notes,
-          status: e.status,
-          priority: e.priority,
-          position: e.position,
-          notifiedAt: e.notifiedAt,
-          expiresAt: e.expiresAt,
-          createdAt: e.createdAt,
-        })),
-        total,
-      },
-    };
+    return success({
+      entries: entries.map((e) => ({
+        id: e.id,
+        clientId: e.clientId,
+        clientName: e.clientName,
+        clientEmail: e.clientEmail,
+        clientPhone: e.clientPhone,
+        serviceId: e.serviceId,
+        serviceName: e.service?.name || null,
+        preferredDate: e.preferredDate,
+        alternateDate: e.alternateDate,
+        flexibleDates: e.flexibleDates,
+        notes: e.notes,
+        status: e.status,
+        priority: e.priority,
+        position: e.position,
+        notifiedAt: e.notifiedAt,
+        expiresAt: e.expiresAt,
+        createdAt: e.createdAt,
+      })),
+      total,
+    });
   } catch (error) {
     console.error("[Waitlist] Error fetching entries:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch waitlist entries" };
+    return fail("Failed to fetch waitlist entries");
   }
 }
 
@@ -190,16 +187,13 @@ export async function addToWaitlist(
 
     revalidatePath("/scheduling/waitlist");
 
-    return {
-      success: true,
-      data: { id: entry.id, position: existingCount + 1 },
-    };
+    return success({ id: entry.id, position: existingCount + 1 });
   } catch (error) {
     console.error("[Waitlist] Error adding entry:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to add to waitlist" };
+    return fail("Failed to add to waitlist");
   }
 }
 
@@ -218,7 +212,7 @@ export async function updateWaitlistStatus(
     });
 
     if (!existing) {
-      return { success: false, error: "Waitlist entry not found" };
+      return fail("Waitlist entry not found");
     }
 
     await prisma.bookingWaitlist.update({
@@ -231,13 +225,13 @@ export async function updateWaitlistStatus(
 
     revalidatePath("/scheduling/waitlist");
 
-    return { success: true, data: { id: entryId } };
+    return success({ id: entryId });
   } catch (error) {
     console.error("[Waitlist] Error updating status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update waitlist status" };
+    return fail("Failed to update waitlist status");
   }
 }
 
@@ -256,7 +250,7 @@ export async function updateWaitlistPriority(
     });
 
     if (!existing) {
-      return { success: false, error: "Waitlist entry not found" };
+      return fail("Waitlist entry not found");
     }
 
     await prisma.bookingWaitlist.update({
@@ -266,13 +260,13 @@ export async function updateWaitlistPriority(
 
     revalidatePath("/scheduling/waitlist");
 
-    return { success: true, data: { id: entryId } };
+    return success({ id: entryId });
   } catch (error) {
     console.error("[Waitlist] Error updating priority:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update priority" };
+    return fail("Failed to update priority");
   }
 }
 
@@ -290,7 +284,7 @@ export async function removeFromWaitlist(
     });
 
     if (!existing) {
-      return { success: false, error: "Waitlist entry not found" };
+      return fail("Waitlist entry not found");
     }
 
     await prisma.bookingWaitlist.delete({
@@ -299,13 +293,13 @@ export async function removeFromWaitlist(
 
     revalidatePath("/scheduling/waitlist");
 
-    return { success: true, data: { id: entryId } };
+    return success({ id: entryId });
   } catch (error) {
     console.error("[Waitlist] Error removing entry:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove from waitlist" };
+    return fail("Failed to remove from waitlist");
   }
 }
 
@@ -341,11 +335,11 @@ export async function notifyWaitlistClient(
     });
 
     if (!entry) {
-      return { success: false, error: "Waitlist entry not found" };
+      return fail("Waitlist entry not found");
     }
 
     if (entry.status !== "pending") {
-      return { success: false, error: "Entry is not in pending status" };
+      return fail("Entry is not in pending status");
     }
 
     const expiresAt = new Date();
@@ -378,13 +372,13 @@ export async function notifyWaitlistClient(
 
     revalidatePath("/scheduling/waitlist");
 
-    return { success: true, data: { id: entryId } };
+    return success({ id: entryId });
   } catch (error) {
     console.error("[Waitlist] Error notifying client:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to notify client" };
+    return fail("Failed to notify client");
   }
 }
 
@@ -409,11 +403,11 @@ export async function convertWaitlistToBooking(
     });
 
     if (!entry) {
-      return { success: false, error: "Waitlist entry not found" };
+      return fail("Waitlist entry not found");
     }
 
     if (entry.status !== "pending" && entry.status !== "notified") {
-      return { success: false, error: "Entry cannot be converted (already processed)" };
+      return fail("Entry cannot be converted (already processed)");
     }
 
     // Create the booking
@@ -457,16 +451,13 @@ export async function convertWaitlistToBooking(
     revalidatePath("/scheduling/waitlist");
     revalidatePath("/scheduling");
 
-    return {
-      success: true,
-      data: { bookingId: booking.id, waitlistId: entryId },
-    };
+    return success({ bookingId: booking.id, waitlistId: entryId });
   } catch (error) {
     console.error("[Waitlist] Error converting to booking:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to convert to booking" };
+    return fail("Failed to convert to booking");
   }
 }
 
@@ -518,16 +509,13 @@ export async function processExpiredNotifications(): Promise<
       }
     }
 
-    return {
-      success: true,
-      data: { expired: expiredCount, nextInLine: nextInLineCount },
-    };
+    return success({ expired: expiredCount, nextInLine: nextInLineCount });
   } catch (error) {
     console.error("[Waitlist] Error processing expired:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to process expired notifications" };
+    return fail("Failed to process expired notifications");
   }
 }
 
@@ -635,34 +623,31 @@ export async function getWaitlistStats(
       }
     });
 
-    return {
-      success: true,
-      data: {
-        totalPending,
-        totalNotified,
-        totalConverted,
-        totalExpired,
-        conversionRate:
-          totalProcessed > 0
-            ? Math.round((totalConverted / totalProcessed) * 100)
-            : 0,
-        averageWaitDays,
-        byService: byService.map((s) => ({
-          serviceId: s.serviceId!,
-          serviceName: serviceMap.get(s.serviceId!) || "Unknown",
-          count: s._count.id,
-        })),
-        byMonth: Array.from(byMonth.entries())
-          .sort((a, b) => a[0].localeCompare(b[0]))
-          .map(([month, data]) => ({ month, ...data })),
-      },
-    };
+    return success({
+      totalPending,
+      totalNotified,
+      totalConverted,
+      totalExpired,
+      conversionRate:
+        totalProcessed > 0
+          ? Math.round((totalConverted / totalProcessed) * 100)
+          : 0,
+      averageWaitDays,
+      byService: byService.map((s) => ({
+        serviceId: s.serviceId!,
+        serviceName: serviceMap.get(s.serviceId!) || "Unknown",
+        count: s._count.id,
+      })),
+      byMonth: Array.from(byMonth.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([month, data]) => ({ month, ...data })),
+    });
   } catch (error) {
     console.error("[Waitlist] Error getting stats:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get waitlist stats" };
+    return fail("Failed to get waitlist stats");
   }
 }
 
@@ -745,17 +730,14 @@ export async function getWaitlistMatches(): Promise<
       })
     );
 
-    return {
-      success: true,
-      data: {
-        matches: matches.filter((m) => m.availableSlots.length > 0),
-      },
-    };
+    return success({
+      matches: matches.filter((m) => m.availableSlots.length > 0),
+    });
   } catch (error) {
     console.error("[Waitlist] Error getting matches:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get waitlist matches" };
+    return fail("Failed to get waitlist matches");
   }
 }

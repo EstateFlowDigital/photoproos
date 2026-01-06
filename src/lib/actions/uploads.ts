@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -94,11 +94,11 @@ export async function getUploadPresignedUrls(
 
     // Validate inputs
     if (!galleryId) {
-      return { success: false, error: "Missing gallery ID" };
+      return fail("Missing gallery ID");
     }
 
     if (!files || files.length === 0) {
-      return { success: false, error: "No files provided" };
+      return fail("No files provided");
     }
 
     // Validate each file
@@ -111,10 +111,7 @@ export async function getUploadPresignedUrls(
       }
 
       if (!isValidFileSize(file.size)) {
-        return {
-          success: false,
-          error: `File "${file.filename}" exceeds maximum size of 50MB`,
-        };
+        return fail(`File "${file.filename}" exceeds maximum size of 50MB`);
       }
     }
 
@@ -128,7 +125,7 @@ export async function getUploadPresignedUrls(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Generate keys and presigned URLs for each file
@@ -161,10 +158,7 @@ export async function getUploadPresignedUrls(
     };
   } catch (error) {
     console.error("[Upload] Error generating presigned URLs:", error);
-    return {
-      success: false,
-      error: "Failed to generate upload URLs. Please try again.",
-    };
+    return fail("Failed to generate upload URLs. Please try again.",);
   }
 }
 
@@ -193,7 +187,7 @@ export async function createAsset(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Create the asset record
@@ -238,10 +232,7 @@ export async function createAsset(
     };
   } catch (error) {
     console.error("[Upload] Error creating asset:", error);
-    return {
-      success: false,
-      error: "Failed to save photo. Please try again.",
-    };
+    return fail("Failed to save photo. Please try again.",);
   }
 }
 
@@ -269,7 +260,7 @@ export async function createAssets(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const startingSortOrder = gallery._count.assets;
@@ -322,10 +313,7 @@ export async function createAssets(
     };
   } catch (error) {
     console.error("[Upload] Error creating assets:", error);
-    return {
-      success: false,
-      error: "Failed to save photos. Please try again.",
-    };
+    return fail("Failed to save photos. Please try again.",);
   }
 }
 
@@ -360,7 +348,7 @@ export async function deleteAsset(
     });
 
     if (!asset) {
-      return { success: false, error: "Asset not found" };
+      return fail("Asset not found");
     }
 
     // Extract keys from URLs and delete from R2
@@ -392,10 +380,7 @@ export async function deleteAsset(
     return ok();
   } catch (error) {
     console.error("[Upload] Error deleting asset:", error);
-    return {
-      success: false,
-      error: "Failed to delete photo. Please try again.",
-    };
+    return fail("Failed to delete photo. Please try again.",);
   }
 }
 
@@ -454,7 +439,7 @@ export async function updateAssetUrls(
     });
 
     if (!asset) {
-      return { success: false, error: "Asset not found" };
+      return fail("Asset not found");
     }
 
     await prisma.asset.update({
@@ -465,9 +450,6 @@ export async function updateAssetUrls(
     return ok();
   } catch (error) {
     console.error("[Upload] Error updating asset URLs:", error);
-    return {
-      success: false,
-      error: "Failed to update photo. Please try again.",
-    };
+    return fail("Failed to update photo. Please try again.",);
   }
 }

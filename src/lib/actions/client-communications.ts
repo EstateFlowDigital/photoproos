@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { CommunicationType, CommunicationDirection } from "@prisma/client";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export interface CreateCommunicationInput {
   clientId: string;
@@ -53,7 +53,7 @@ export async function getClientCommunications(
     });
 
     if (!client) {
-      return { success: false as const, error: "Client not found" };
+      return fail("Client not found");
     }
 
     const communications = await prisma.clientCommunication.findMany({
@@ -71,7 +71,7 @@ export async function getClientCommunications(
     return { success: true as const, data: communications };
   } catch (error) {
     console.error("[ClientCommunication] Error fetching communications:", error);
-    return { success: false as const, error: "Failed to fetch communications" };
+    return fail("Failed to fetch communications");
   }
 }
 
@@ -97,13 +97,13 @@ export async function getCommunication(id: string) {
     });
 
     if (!communication || communication.client.organizationId !== organizationId) {
-      return { success: false as const, error: "Communication not found" };
+      return fail("Communication not found");
     }
 
     return { success: true as const, data: communication };
   } catch (error) {
     console.error("[ClientCommunication] Error fetching communication:", error);
-    return { success: false as const, error: "Failed to fetch communication" };
+    return fail("Failed to fetch communication");
   }
 }
 
@@ -124,7 +124,7 @@ export async function createCommunication(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     const communication = await prisma.clientCommunication.create({
@@ -154,9 +154,9 @@ export async function createCommunication(
   } catch (error) {
     console.error("[ClientCommunication] Error creating communication:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to log communication" };
+    return fail("Failed to log communication");
   }
 }
 
@@ -180,7 +180,7 @@ export async function updateCommunication(
     });
 
     if (!existing || existing.client.organizationId !== organizationId) {
-      return { success: false, error: "Communication not found" };
+      return fail("Communication not found");
     }
 
     const { id, ...updateData } = input;
@@ -201,9 +201,9 @@ export async function updateCommunication(
   } catch (error) {
     console.error("[ClientCommunication] Error updating communication:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update communication" };
+    return fail("Failed to update communication");
   }
 }
 
@@ -225,7 +225,7 @@ export async function deleteCommunication(id: string): Promise<ActionResult> {
     });
 
     if (!existing || existing.client.organizationId !== organizationId) {
-      return { success: false, error: "Communication not found" };
+      return fail("Communication not found");
     }
 
     await prisma.clientCommunication.delete({
@@ -238,9 +238,9 @@ export async function deleteCommunication(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("[ClientCommunication] Error deleting communication:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete communication" };
+    return fail("Failed to delete communication");
   }
 }
 
@@ -340,7 +340,7 @@ export async function getClientCommunicationStats(clientId: string) {
     });
 
     if (!client) {
-      return { success: false as const, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Get counts by type
@@ -377,7 +377,7 @@ export async function getClientCommunicationStats(clientId: string) {
     };
   } catch (error) {
     console.error("[ClientCommunication] Error fetching stats:", error);
-    return { success: false as const, error: "Failed to fetch communication stats" };
+    return fail("Failed to fetch communication stats");
   }
 }
 
@@ -411,6 +411,6 @@ export async function getRecentCommunications(limit: number = 10) {
     return { success: true as const, data: communications };
   } catch (error) {
     console.error("[ClientCommunication] Error fetching recent communications:", error);
-    return { success: false as const, error: "Failed to fetch recent communications" };
+    return fail("Failed to fetch recent communications");
   }
 }

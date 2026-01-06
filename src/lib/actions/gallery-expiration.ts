@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { addDays, differenceInDays } from "date-fns";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -46,7 +46,7 @@ async function getOrganizationId(): Promise<string | null> {
 export async function getExpiringSoonGalleries(daysAhead: number = 7) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -88,7 +88,7 @@ export async function getExpiringSoonGalleries(daysAhead: number = 7) {
     return { success: true, data: expiring };
   } catch (error) {
     console.error("[Gallery Expiration] Error fetching:", error);
-    return { success: false, error: "Failed to fetch expiring galleries" };
+    return fail("Failed to fetch expiring galleries");
   }
 }
 
@@ -130,7 +130,7 @@ export async function scheduleExpirationNotifications(
     return ok();
   } catch (error) {
     console.error("[Gallery Expiration] Error scheduling notifications:", error);
-    return { success: false, error: "Failed to schedule notifications" };
+    return fail("Failed to schedule notifications");
   }
 }
 
@@ -202,7 +202,7 @@ export async function getPendingExpirationNotifications() {
     return { success: true, data: pending };
   } catch (error) {
     console.error("[Gallery Expiration] Error fetching pending:", error);
-    return { success: false, error: "Failed to fetch pending notifications" };
+    return fail("Failed to fetch pending notifications");
   }
 }
 
@@ -219,7 +219,7 @@ export async function markNotificationSent(notificationId: string) {
     return ok();
   } catch (error) {
     console.error("[Gallery Expiration] Error marking sent:", error);
-    return { success: false, error: "Failed to mark notification as sent" };
+    return fail("Failed to mark notification as sent");
   }
 }
 
@@ -232,7 +232,7 @@ export async function extendGalleryExpiration(
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -241,7 +241,7 @@ export async function extendGalleryExpiration(
     });
 
     if (!project) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const currentExpiry = project.expiresAt || new Date();
@@ -278,7 +278,7 @@ export async function extendGalleryExpiration(
     return { success: true, data: { newExpiresAt: newExpiry } };
   } catch (error) {
     console.error("[Gallery Expiration] Error extending:", error);
-    return { success: false, error: "Failed to extend gallery expiration" };
+    return fail("Failed to extend gallery expiration");
   }
 }
 
@@ -317,7 +317,7 @@ export async function sendExpirationWarningEmail(
     return ok();
   } catch (error) {
     console.error("[Gallery Expiration] Error sending email:", error);
-    return { success: false, error: "Failed to send expiration warning email" };
+    return fail("Failed to send expiration warning email");
   }
 }
 
@@ -328,7 +328,7 @@ export async function processExpirationNotifications() {
   try {
     const result = await getPendingExpirationNotifications();
     if (!result.success || !result.data) {
-      return { success: false, error: result.error };
+      return fail(result.error);
     }
 
     let sent = 0;
@@ -359,6 +359,6 @@ export async function processExpirationNotifications() {
     };
   } catch (error) {
     console.error("[Gallery Expiration] Error processing:", error);
-    return { success: false, error: "Failed to process expiration notifications" };
+    return fail("Failed to process expiration notifications");
   }
 }

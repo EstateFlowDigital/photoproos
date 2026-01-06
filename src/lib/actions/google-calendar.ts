@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import type { SyncDirection } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export interface GoogleCalendarConfig {
   id: string;
@@ -175,7 +175,7 @@ export async function getGoogleCalendarConfig(): Promise<
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const config = await prisma.calendarIntegration.findFirst({
@@ -203,7 +203,7 @@ export async function getGoogleCalendarConfig(): Promise<
     return { success: true, data: config };
   } catch (error) {
     console.error("[GoogleCalendar] Error getting config:", error);
-    return { success: false, error: "Failed to get Google Calendar configuration" };
+    return fail("Failed to get Google Calendar configuration");
   }
 }
 
@@ -216,12 +216,12 @@ export async function getGoogleCalendars(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const accessToken = await getValidAccessToken(integrationId);
     if (!accessToken) {
-      return { success: false, error: "Session expired. Please reconnect." };
+      return fail("Session expired. Please reconnect.");
     }
 
     const response = await fetch(
@@ -234,7 +234,7 @@ export async function getGoogleCalendars(
     );
 
     if (!response.ok) {
-      return { success: false, error: "Failed to fetch calendars" };
+      return fail("Failed to fetch calendars");
     }
 
     const data = await response.json();
@@ -252,7 +252,7 @@ export async function getGoogleCalendars(
     return { success: true, data: calendars };
   } catch (error) {
     console.error("[GoogleCalendar] Error fetching calendars:", error);
-    return { success: false, error: "Failed to fetch calendars" };
+    return fail("Failed to fetch calendars");
   }
 }
 
@@ -265,7 +265,7 @@ export async function testGoogleCalendarConnection(): Promise<
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const integration = await prisma.calendarIntegration.findFirst({
@@ -276,12 +276,12 @@ export async function testGoogleCalendarConnection(): Promise<
     });
 
     if (!integration) {
-      return { success: false, error: "No Google Calendar connected" };
+      return fail("No Google Calendar connected");
     }
 
     const accessToken = await getValidAccessToken(integration.id);
     if (!accessToken) {
-      return { success: false, error: "Session expired. Please reconnect." };
+      return fail("Session expired. Please reconnect.");
     }
 
     // Test by fetching user info
@@ -295,7 +295,7 @@ export async function testGoogleCalendarConnection(): Promise<
     );
 
     if (!response.ok) {
-      return { success: false, error: "Connection test failed" };
+      return fail("Connection test failed");
     }
 
     const userInfo = await response.json();
@@ -308,7 +308,7 @@ export async function testGoogleCalendarConnection(): Promise<
     };
   } catch (error) {
     console.error("[GoogleCalendar] Error testing connection:", error);
-    return { success: false, error: "Connection test failed" };
+    return fail("Connection test failed");
   }
 }
 
@@ -328,7 +328,7 @@ export async function updateGoogleCalendarSettings(data: {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const integration = await prisma.calendarIntegration.findFirst({
@@ -339,7 +339,7 @@ export async function updateGoogleCalendarSettings(data: {
     });
 
     if (!integration) {
-      return { success: false, error: "Integration not found" };
+      return fail("Integration not found");
     }
 
     await prisma.calendarIntegration.update({
@@ -355,7 +355,7 @@ export async function updateGoogleCalendarSettings(data: {
     return ok();
   } catch (error) {
     console.error("[GoogleCalendar] Error updating settings:", error);
-    return { success: false, error: "Failed to update settings" };
+    return fail("Failed to update settings");
   }
 }
 
@@ -366,7 +366,7 @@ export async function disconnectGoogleCalendar(): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const integration = await prisma.calendarIntegration.findFirst({
@@ -377,7 +377,7 @@ export async function disconnectGoogleCalendar(): Promise<ActionResult<void>> {
     });
 
     if (!integration) {
-      return { success: false, error: "No Google Calendar connected" };
+      return fail("No Google Calendar connected");
     }
 
     // Delete synced events
@@ -394,7 +394,7 @@ export async function disconnectGoogleCalendar(): Promise<ActionResult<void>> {
     return ok();
   } catch (error) {
     console.error("[GoogleCalendar] Error disconnecting:", error);
-    return { success: false, error: "Failed to disconnect" };
+    return fail("Failed to disconnect");
   }
 }
 
@@ -407,7 +407,7 @@ export async function syncGoogleCalendar(
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const integration = await prisma.calendarIntegration.findFirst({
@@ -418,16 +418,16 @@ export async function syncGoogleCalendar(
     });
 
     if (!integration) {
-      return { success: false, error: "Integration not found" };
+      return fail("Integration not found");
     }
 
     if (!integration.syncEnabled) {
-      return { success: false, error: "Sync is disabled" };
+      return fail("Sync is disabled");
     }
 
     const accessToken = await getValidAccessToken(integrationId);
     if (!accessToken) {
-      return { success: false, error: "Session expired. Please reconnect." };
+      return fail("Session expired. Please reconnect.");
     }
 
     const result: SyncResult = {
@@ -640,6 +640,6 @@ export async function syncGoogleCalendar(
     return { success: true, data: result };
   } catch (error) {
     console.error("[GoogleCalendar] Error syncing:", error);
-    return { success: false, error: "Failed to sync calendar" };
+    return fail("Failed to sync calendar");
   }
 }

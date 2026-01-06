@@ -22,7 +22,7 @@ import {
 import { getAuthContext } from "@/lib/auth/clerk";
 import { Prisma, Industry, LegalAgreementType } from "@prisma/client";
 import type { QuestionnaireTemplateWithRelations } from "./questionnaire-types";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Re-export the type for consumers who import from this file
 export type { QuestionnaireTemplateWithRelations } from "./questionnaire-types";
@@ -97,7 +97,7 @@ export async function getQuestionnaireTemplates(
     return { success: true, data: templates as QuestionnaireTemplateWithRelations[] };
   } catch (error) {
     console.error("Error fetching questionnaire templates:", error);
-    return { success: false, error: "Failed to fetch questionnaire templates" };
+    return fail("Failed to fetch questionnaire templates");
   }
 }
 
@@ -131,7 +131,7 @@ export async function getSystemTemplates(
     return { success: true, data: templates as QuestionnaireTemplateWithRelations[] };
   } catch (error) {
     console.error("Error fetching system templates:", error);
-    return { success: false, error: "Failed to fetch system templates" };
+    return fail("Failed to fetch system templates");
   }
 }
 
@@ -165,7 +165,7 @@ export async function getQuestionnaireTemplate(
     return { success: true, data: template as QuestionnaireTemplateWithRelations | null };
   } catch (error) {
     console.error("Error fetching questionnaire template:", error);
-    return { success: false, error: "Failed to fetch questionnaire template" };
+    return fail("Failed to fetch questionnaire template");
   }
 }
 
@@ -192,7 +192,7 @@ export async function createQuestionnaireTemplate(
     });
 
     if (existingSlug) {
-      return { success: false, error: "A template with this slug already exists" };
+      return fail("A template with this slug already exists");
     }
 
     const template = await prisma.questionnaireTemplate.create({
@@ -213,9 +213,9 @@ export async function createQuestionnaireTemplate(
   } catch (error) {
     console.error("Error creating questionnaire template:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create questionnaire template" };
+    return fail("Failed to create questionnaire template");
   }
 }
 
@@ -239,7 +239,7 @@ export async function updateQuestionnaireTemplate(
     });
 
     if (!existing) {
-      return { success: false, error: "Template not found or cannot be edited" };
+      return fail("Template not found or cannot be edited");
     }
 
     // Check for duplicate slug if slug is being changed
@@ -253,7 +253,7 @@ export async function updateQuestionnaireTemplate(
       });
 
       if (existingSlug) {
-        return { success: false, error: "A template with this slug already exists" };
+        return fail("A template with this slug already exists");
       }
     }
 
@@ -307,9 +307,9 @@ export async function updateQuestionnaireTemplate(
   } catch (error) {
     console.error("Error updating questionnaire template:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update questionnaire template" };
+    return fail("Failed to update questionnaire template");
   }
 }
 
@@ -336,7 +336,7 @@ export async function duplicateQuestionnaireTemplate(
     });
 
     if (!source) {
-      return { success: false, error: "Source template not found" };
+      return fail("Source template not found");
     }
 
     const newName = validated.newName || `${source.name} (Copy)`;
@@ -404,9 +404,9 @@ export async function duplicateQuestionnaireTemplate(
   } catch (error) {
     console.error("Error duplicating questionnaire template:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to duplicate questionnaire template" };
+    return fail("Failed to duplicate questionnaire template");
   }
 }
 
@@ -435,15 +435,12 @@ export async function deleteQuestionnaireTemplate(
     });
 
     if (!existing) {
-      return { success: false, error: "Template not found or cannot be deleted" };
+      return fail("Template not found or cannot be deleted");
     }
 
     // Check for active questionnaires
     if (existing._count.questionnaires > 0 && !validated.force) {
-      return {
-        success: false,
-        error: `This template has ${existing._count.questionnaires} assigned questionnaire(s). Use force delete to remove.`,
-      };
+      return fail(`This template has ${existing._count.questionnaires} assigned questionnaire(s). Use force delete to remove.`);
     }
 
     await prisma.questionnaireTemplate.delete({
@@ -456,9 +453,9 @@ export async function deleteQuestionnaireTemplate(
   } catch (error) {
     console.error("Error deleting questionnaire template:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete questionnaire template" };
+    return fail("Failed to delete questionnaire template");
   }
 }
 
@@ -480,7 +477,7 @@ export async function toggleQuestionnaireTemplateStatus(
     });
 
     if (!template) {
-      return { success: false, error: "Template not found or cannot be modified" };
+      return fail("Template not found or cannot be modified");
     }
 
     await prisma.questionnaireTemplate.update({
@@ -493,7 +490,7 @@ export async function toggleQuestionnaireTemplateStatus(
     return ok();
   } catch (error) {
     console.error("Error toggling template status:", error);
-    return { success: false, error: "Failed to toggle template status" };
+    return fail("Failed to toggle template status");
   }
 }
 
@@ -521,7 +518,7 @@ export async function updateQuestionnaireFields(
     });
 
     if (!template) {
-      return { success: false, error: "Template not found or cannot be modified" };
+      return fail("Template not found or cannot be modified");
     }
 
     // Delete existing fields and create new ones in a transaction
@@ -558,9 +555,9 @@ export async function updateQuestionnaireFields(
   } catch (error) {
     console.error("Error updating questionnaire fields:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update questionnaire fields" };
+    return fail("Failed to update questionnaire fields");
   }
 }
 
@@ -584,7 +581,7 @@ export async function reorderQuestionnaireFields(
     });
 
     if (!template) {
-      return { success: false, error: "Template not found or cannot be modified" };
+      return fail("Template not found or cannot be modified");
     }
 
     // Update sort order for each field
@@ -602,7 +599,7 @@ export async function reorderQuestionnaireFields(
     return ok();
   } catch (error) {
     console.error("Error reordering questionnaire fields:", error);
-    return { success: false, error: "Failed to reorder fields" };
+    return fail("Failed to reorder fields");
   }
 }
 
@@ -630,7 +627,7 @@ export async function updateQuestionnaireAgreements(
     });
 
     if (!template) {
-      return { success: false, error: "Template not found or cannot be modified" };
+      return fail("Template not found or cannot be modified");
     }
 
     // Delete existing agreements and create new ones in a transaction
@@ -662,9 +659,9 @@ export async function updateQuestionnaireAgreements(
   } catch (error) {
     console.error("Error updating questionnaire agreements:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update questionnaire agreements" };
+    return fail("Failed to update questionnaire agreements");
   }
 }
 
@@ -713,6 +710,6 @@ export async function getTemplatesByIndustry(): Promise<
     return { success: true, data: grouped };
   } catch (error) {
     console.error("Error fetching templates by industry:", error);
-    return { success: false, error: "Failed to fetch templates" };
+    return fail("Failed to fetch templates");
   }
 }

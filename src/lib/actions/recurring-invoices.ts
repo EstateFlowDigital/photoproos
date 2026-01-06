@@ -6,7 +6,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import type { RecurringFrequency, LineItemType } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export interface RecurringInvoiceLineItem {
   itemType: LineItemType;
@@ -55,7 +55,7 @@ function calculateNextRunDate(
   dayOfWeek?: number | null
 ): Date {
   const now = new Date();
-  let nextDate = new Date(anchorDate);
+  const nextDate = new Date(anchorDate);
 
   // If anchor date is in the past, calculate next occurrence
   if (nextDate < now) {
@@ -146,7 +146,7 @@ export async function createRecurringInvoice(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Get organization tax rate if not provided
@@ -209,9 +209,9 @@ export async function createRecurringInvoice(
   } catch (error) {
     console.error("Error creating recurring invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create recurring invoice" };
+    return fail("Failed to create recurring invoice");
   }
 }
 
@@ -229,7 +229,7 @@ export async function updateRecurringInvoice(
     });
 
     if (!existing) {
-      return { success: false, error: "Recurring invoice not found" };
+      return fail("Recurring invoice not found");
     }
 
     const updateData: Record<string, unknown> = {};
@@ -304,9 +304,9 @@ export async function updateRecurringInvoice(
   } catch (error) {
     console.error("Error updating recurring invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update recurring invoice" };
+    return fail("Failed to update recurring invoice");
   }
 }
 
@@ -322,7 +322,7 @@ export async function deleteRecurringInvoice(id: string): Promise<ActionResult> 
     });
 
     if (!existing) {
-      return { success: false, error: "Recurring invoice not found" };
+      return fail("Recurring invoice not found");
     }
 
     await prisma.recurringInvoice.delete({
@@ -336,9 +336,9 @@ export async function deleteRecurringInvoice(id: string): Promise<ActionResult> 
   } catch (error) {
     console.error("Error deleting recurring invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete recurring invoice" };
+    return fail("Failed to delete recurring invoice");
   }
 }
 
@@ -357,7 +357,7 @@ export async function pauseRecurringInvoice(
     });
 
     if (!existing) {
-      return { success: false, error: "Recurring invoice not found" };
+      return fail("Recurring invoice not found");
     }
 
     await prisma.recurringInvoice.update({
@@ -376,9 +376,9 @@ export async function pauseRecurringInvoice(
   } catch (error) {
     console.error("Error pausing recurring invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to pause recurring invoice" };
+    return fail("Failed to pause recurring invoice");
   }
 }
 
@@ -394,7 +394,7 @@ export async function resumeRecurringInvoice(id: string): Promise<ActionResult> 
     });
 
     if (!existing) {
-      return { success: false, error: "Recurring invoice not found" };
+      return fail("Recurring invoice not found");
     }
 
     // Recalculate next run date from now
@@ -422,9 +422,9 @@ export async function resumeRecurringInvoice(id: string): Promise<ActionResult> 
   } catch (error) {
     console.error("Error resuming recurring invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to resume recurring invoice" };
+    return fail("Failed to resume recurring invoice");
   }
 }
 
@@ -478,9 +478,9 @@ export async function getRecurringInvoices(): Promise<
   } catch (error) {
     console.error("Error fetching recurring invoices:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch recurring invoices" };
+    return fail("Failed to fetch recurring invoices");
   }
 }
 
@@ -529,7 +529,7 @@ export async function getRecurringInvoice(id: string): Promise<
     });
 
     if (!recurring) {
-      return { success: false, error: "Recurring invoice not found" };
+      return fail("Recurring invoice not found");
     }
 
     return {
@@ -542,9 +542,9 @@ export async function getRecurringInvoice(id: string): Promise<
   } catch (error) {
     console.error("Error fetching recurring invoice:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch recurring invoice" };
+    return fail("Failed to fetch recurring invoice");
   }
 }
 
@@ -629,9 +629,9 @@ export async function getRecurringInvoicesDueToRun(): Promise<
   } catch (error) {
     console.error("Error fetching due recurring invoices:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch due recurring invoices" };
+    return fail("Failed to fetch due recurring invoices");
   }
 }
 
@@ -653,7 +653,7 @@ export async function createInvoiceFromRecurring(
     });
 
     if (!recurring) {
-      return { success: false, error: "Recurring invoice not found" };
+      return fail("Recurring invoice not found");
     }
 
     const lineItems = recurring.lineItems as unknown as RecurringInvoiceLineItem[];
@@ -740,9 +740,9 @@ export async function createInvoiceFromRecurring(
   } catch (error) {
     console.error("Error creating invoice from recurring:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create invoice from recurring" };
+    return fail("Failed to create invoice from recurring");
   }
 }
 
@@ -755,7 +755,7 @@ export async function processRecurringInvoices(): Promise<
   try {
     const dueResult = await getRecurringInvoicesDueToRun();
     if (!dueResult.success) {
-      return { success: false, error: dueResult.error };
+      return fail(dueResult.error);
     }
 
     let processed = 0;
@@ -775,8 +775,8 @@ export async function processRecurringInvoices(): Promise<
   } catch (error) {
     console.error("Error processing recurring invoices:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to process recurring invoices" };
+    return fail("Failed to process recurring invoices");
   }
 }

@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -59,7 +60,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     // Determine display status (check if overdue)
@@ -146,10 +147,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<{
     };
   } catch (error) {
     console.error("Error generating invoice PDF:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to generate invoice PDF",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to generate invoice PDF",);
   }
 }
 
@@ -205,7 +203,7 @@ export async function generateInvoicePdfBuffer(invoiceId: string): Promise<{
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     // Determine display status (check if overdue)
@@ -291,9 +289,6 @@ export async function generateInvoicePdfBuffer(invoiceId: string): Promise<{
     };
   } catch (error) {
     console.error("Error generating invoice PDF buffer:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to generate invoice PDF",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to generate invoice PDF",);
   }
 }

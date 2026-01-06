@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -120,15 +120,15 @@ export async function createPropertyWebsite(
     });
 
     if (!project) {
-      return { success: false, error: "Project not found" };
+      return fail("Project not found");
     }
 
     if (project.propertyWebsite) {
-      return { success: false, error: "Property website already exists for this project" };
+      return fail("Property website already exists for this project");
     }
 
     // Generate unique slug
-    let slug = generateSlug(data.address);
+    const slug = generateSlug(data.address);
     let counter = 0;
     let uniqueSlug = slug;
 
@@ -172,7 +172,7 @@ export async function createPropertyWebsite(
     return { success: true, id: propertyWebsite.id };
   } catch (error) {
     console.error("Error creating property website:", error);
-    return { success: false, error: "Failed to create property website" };
+    return fail("Failed to create property website");
   }
 }
 
@@ -184,7 +184,7 @@ export async function updatePropertyWebsite(
   try {
     const existing = await prisma.propertyWebsite.findUnique({ where: { id } });
     if (!existing) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     await prisma.propertyWebsite.update({
@@ -225,7 +225,7 @@ export async function updatePropertyWebsite(
     return ok();
   } catch (error) {
     console.error("Error updating property website:", error);
-    return { success: false, error: "Failed to update property website" };
+    return fail("Failed to update property website");
   }
 }
 
@@ -236,7 +236,7 @@ export async function togglePropertyWebsitePublish(
   try {
     const existing = await prisma.propertyWebsite.findUnique({ where: { id } });
     if (!existing) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     const updated = await prisma.propertyWebsite.update({
@@ -254,7 +254,7 @@ export async function togglePropertyWebsitePublish(
     return { success: true, isPublished: updated.isPublished };
   } catch (error) {
     console.error("Error toggling publish:", error);
-    return { success: false, error: "Failed to toggle publish status" };
+    return fail("Failed to toggle publish status");
   }
 }
 
@@ -265,7 +265,7 @@ export async function deletePropertyWebsite(
   try {
     const existing = await prisma.propertyWebsite.findUnique({ where: { id } });
     if (!existing) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     await prisma.propertyWebsite.delete({ where: { id } });
@@ -275,7 +275,7 @@ export async function deletePropertyWebsite(
     return ok();
   } catch (error) {
     console.error("Error deleting property website:", error);
-    return { success: false, error: "Failed to delete property website" };
+    return fail("Failed to delete property website");
   }
 }
 
@@ -537,7 +537,7 @@ export async function submitPropertyLead(data: {
     });
 
     if (!propertyWebsite) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     // Create the lead
@@ -579,7 +579,7 @@ export async function submitPropertyLead(data: {
     return ok();
   } catch (error) {
     console.error("Error submitting lead:", error);
-    return { success: false, error: "Failed to submit inquiry" };
+    return fail("Failed to submit inquiry");
   }
 }
 
@@ -614,7 +614,7 @@ export async function updateLeadStatus(
     return ok();
   } catch (error) {
     console.error("Error updating lead status:", error);
-    return { success: false, error: "Failed to update lead status" };
+    return fail("Failed to update lead status");
   }
 }
 
@@ -826,11 +826,11 @@ export async function duplicatePropertyWebsite(
     });
 
     if (!existing) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     // Generate unique slug for the copy
-    let baseSlug = generateSlug(existing.address);
+    const baseSlug = generateSlug(existing.address);
     let counter = 1;
     let uniqueSlug = `${baseSlug}-copy`;
 
@@ -878,7 +878,7 @@ export async function duplicatePropertyWebsite(
     return { success: true, id: duplicate.id };
   } catch (error) {
     console.error("Error duplicating property website:", error);
-    return { success: false, error: "Failed to duplicate property website" };
+    return fail("Failed to duplicate property website");
   }
 }
 

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import type { EquipmentCategory } from "@prisma/client";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID
 async function getOrganizationId(): Promise<string> {
@@ -82,9 +82,9 @@ export async function createEquipment(
   } catch (error) {
     console.error("Error creating equipment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create equipment" };
+    return fail("Failed to create equipment");
   }
 }
 
@@ -107,7 +107,7 @@ export async function updateEquipment(
     });
 
     if (!existing) {
-      return { success: false, error: "Equipment not found" };
+      return fail("Equipment not found");
     }
 
     const { id, ...updateData } = validated;
@@ -130,9 +130,9 @@ export async function updateEquipment(
   } catch (error) {
     console.error("Error updating equipment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update equipment" };
+    return fail("Failed to update equipment");
   }
 }
 
@@ -152,7 +152,7 @@ export async function deleteEquipment(id: string): Promise<ActionResult> {
     });
 
     if (!existing) {
-      return { success: false, error: "Equipment not found" };
+      return fail("Equipment not found");
     }
 
     await prisma.equipment.delete({
@@ -165,9 +165,9 @@ export async function deleteEquipment(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("Error deleting equipment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete equipment" };
+    return fail("Failed to delete equipment");
   }
 }
 
@@ -331,7 +331,7 @@ export async function assignEquipmentToUser(
     });
 
     if (!equipment) {
-      return { success: false, error: "Equipment not found" };
+      return fail("Equipment not found");
     }
 
     // Verify user is a member of the organization
@@ -343,7 +343,7 @@ export async function assignEquipmentToUser(
     });
 
     if (!membership) {
-      return { success: false, error: "User is not a member of this organization" };
+      return fail("User is not a member of this organization");
     }
 
     // Create assignment (upsert to handle duplicates)
@@ -371,9 +371,9 @@ export async function assignEquipmentToUser(
   } catch (error) {
     console.error("Error assigning equipment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to assign equipment" };
+    return fail("Failed to assign equipment");
   }
 }
 
@@ -401,9 +401,9 @@ export async function unassignEquipmentFromUser(
   } catch (error) {
     console.error("Error unassigning equipment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to unassign equipment" };
+    return fail("Failed to unassign equipment");
   }
 }
 
@@ -461,10 +461,10 @@ export async function addServiceEquipmentRequirement(
     ]);
 
     if (!service) {
-      return { success: false, error: "Service not found" };
+      return fail("Service not found");
     }
     if (!equipment) {
-      return { success: false, error: "Equipment not found" };
+      return fail("Equipment not found");
     }
 
     // Create requirement (upsert to handle duplicates)
@@ -492,9 +492,9 @@ export async function addServiceEquipmentRequirement(
   } catch (error) {
     console.error("Error adding service equipment requirement:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to add equipment requirement" };
+    return fail("Failed to add equipment requirement");
   }
 }
 
@@ -522,9 +522,9 @@ export async function removeServiceEquipmentRequirement(
   } catch (error) {
     console.error("Error removing service equipment requirement:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove equipment requirement" };
+    return fail("Failed to remove equipment requirement");
   }
 }
 

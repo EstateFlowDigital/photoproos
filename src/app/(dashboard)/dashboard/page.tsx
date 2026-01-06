@@ -1,8 +1,9 @@
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import nextDynamic from "next/dynamic";
-import { StatCard, ActivityItem, PageHeader, EmptyGalleries, ReferralWidget, CollapsibleSection, QuickActionsSkeleton, UpcomingBookingsSkeleton } from "@/components/dashboard";
+import { StatCard, ActivityItem, PageHeader, EmptyGalleries, ReferralWidget, CollapsibleSection, QuickActionsSkeleton, UpcomingBookingsSkeleton, OverdueInvoicesWidget } from "@/components/dashboard";
 import { ExpiringGalleriesWidget } from "@/components/dashboard/expiring-galleries-widget";
+import { getOverdueInvoicesForDashboard } from "@/lib/actions/invoices";
 import { getChecklistItems } from "@/lib/utils/checklist-items";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { TourStarter } from "@/components/tour";
@@ -192,6 +193,7 @@ export default async function DashboardPage() {
     platformReferrer,
     dashboardConfigResult,
     expiringGalleriesResult,
+    overdueInvoicesResult,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -359,6 +361,9 @@ export default async function DashboardPage() {
 
     // Expiring galleries
     getExpiringSoonGalleries(),
+
+    // Overdue invoices for widget
+    getOverdueInvoicesForDashboard(organization.id),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
@@ -366,6 +371,9 @@ export default async function DashboardPage() {
   const pendingInvoicesValue = pendingInvoices._sum.totalCents || 0;
   const dashboardConfig = dashboardConfigResult.data!;
   const expiringGalleries = expiringGalleriesResult.data || [];
+  const overdueInvoices = overdueInvoicesResult.success
+    ? overdueInvoicesResult.data
+    : { invoices: [], totalOverdueCents: 0 };
 
   // Calculate changes for stats
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
@@ -574,6 +582,14 @@ export default async function DashboardPage() {
             >
               <UpcomingBookings bookings={formattedBookings} />
             </CollapsibleSection>
+          )}
+
+          {/* Overdue Invoices */}
+          {overdueInvoices.invoices.length > 0 && (
+            <OverdueInvoicesWidget
+              invoices={overdueInvoices.invoices}
+              totalOverdueCents={overdueInvoices.totalOverdueCents}
+            />
           )}
 
           {/* Expiring Galleries */}

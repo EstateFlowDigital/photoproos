@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
@@ -211,10 +211,7 @@ export async function createBoard(data: {
     return { success: true, boardId: board.id };
   } catch (error) {
     console.error("Error creating board:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create board",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create board",);
   }
 }
 
@@ -241,10 +238,7 @@ export async function updateBoard(
     return ok();
   } catch (error) {
     console.error("Error updating board:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update board",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update board",);
   }
 }
 
@@ -264,7 +258,7 @@ export async function archiveBoard(
     });
 
     if (board?.isDefault) {
-      return { success: false, error: "Cannot archive the default board" };
+      return fail("Cannot archive the default board");
     }
 
     await prisma.taskBoard.update({
@@ -279,10 +273,7 @@ export async function archiveBoard(
     return ok();
   } catch (error) {
     console.error("Error archiving board:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to archive board",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to archive board",);
   }
 }
 
@@ -308,7 +299,7 @@ export async function createColumn(
     });
 
     if (!board) {
-      return { success: false, error: "Board not found" };
+      return fail("Board not found");
     }
 
     const maxPosition = Math.max(...board.columns.map((c) => c.position), -1);
@@ -326,10 +317,7 @@ export async function createColumn(
     return { success: true, columnId: column.id };
   } catch (error) {
     console.error("Error creating column:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create column",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create column",);
   }
 }
 
@@ -353,7 +341,7 @@ export async function updateColumn(
     });
 
     if (!column) {
-      return { success: false, error: "Column not found" };
+      return fail("Column not found");
     }
 
     await prisma.taskColumn.update({
@@ -365,10 +353,7 @@ export async function updateColumn(
     return ok();
   } catch (error) {
     console.error("Error updating column:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update column",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update column",);
   }
 }
 
@@ -389,7 +374,7 @@ export async function reorderColumns(
     });
 
     if (!board) {
-      return { success: false, error: "Board not found" };
+      return fail("Board not found");
     }
 
     // Update all column positions in transaction
@@ -406,10 +391,7 @@ export async function reorderColumns(
     return ok();
   } catch (error) {
     console.error("Error reordering columns:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to reorder columns",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to reorder columns",);
   }
 }
 
@@ -433,14 +415,11 @@ export async function deleteColumn(
     });
 
     if (!column) {
-      return { success: false, error: "Column not found" };
+      return fail("Column not found");
     }
 
     if (column._count.tasks > 0) {
-      return {
-        success: false,
-        error: "Cannot delete column with tasks. Move or delete tasks first.",
-      };
+      return fail("Cannot delete column with tasks. Move or delete tasks first.",);
     }
 
     await prisma.taskColumn.delete({
@@ -451,10 +430,7 @@ export async function deleteColumn(
     return ok();
   } catch (error) {
     console.error("Error deleting column:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete column",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete column",);
   }
 }
 
@@ -601,7 +577,7 @@ export async function createTask(data: {
     });
 
     if (!column) {
-      return { success: false, error: "Column not found" };
+      return fail("Column not found");
     }
 
     const maxPosition = Math.max(...column.tasks.map((t) => t.position), -1);
@@ -634,10 +610,7 @@ export async function createTask(data: {
     return { success: true, taskId: task.id };
   } catch (error) {
     console.error("Error creating task:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create task",);
   }
 }
 
@@ -677,7 +650,7 @@ export async function updateTask(
       });
 
       if (!existing) {
-        return { success: false, error: "Task not found" };
+        return fail("Task not found");
       }
 
       if (data.status === "completed") {
@@ -702,10 +675,7 @@ export async function updateTask(
     return ok();
   } catch (error) {
     console.error("Error updating task:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update task",);
   }
 }
 
@@ -735,11 +705,11 @@ export async function moveTask(
     ]);
 
     if (!task) {
-      return { success: false, error: "Task not found" };
+      return fail("Task not found");
     }
 
     if (!targetColumn) {
-      return { success: false, error: "Target column not found" };
+      return fail("Target column not found");
     }
 
     const sourceColumnId = task.columnId;
@@ -815,10 +785,7 @@ export async function moveTask(
     return ok();
   } catch (error) {
     console.error("Error moving task:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to move task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to move task",);
   }
 }
 
@@ -843,10 +810,7 @@ export async function deleteTask(
     return ok();
   } catch (error) {
     console.error("Error deleting task:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete task",);
   }
 }
 
@@ -872,7 +836,7 @@ export async function addSubtask(
     });
 
     if (!task) {
-      return { success: false, error: "Task not found" };
+      return fail("Task not found");
     }
 
     const maxPosition = Math.max(...task.subtasks.map((s) => s.position), -1);
@@ -889,10 +853,7 @@ export async function addSubtask(
     return { success: true, subtaskId: subtask.id };
   } catch (error) {
     console.error("Error adding subtask:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to add subtask",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to add subtask",);
   }
 }
 
@@ -915,7 +876,7 @@ export async function toggleSubtask(
     });
 
     if (!subtask) {
-      return { success: false, error: "Subtask not found" };
+      return fail("Subtask not found");
     }
 
     await prisma.taskSubtask.update({
@@ -927,10 +888,7 @@ export async function toggleSubtask(
     return ok();
   } catch (error) {
     console.error("Error toggling subtask:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to toggle subtask",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to toggle subtask",);
   }
 }
 
@@ -953,7 +911,7 @@ export async function deleteSubtask(
     });
 
     if (!subtask) {
-      return { success: false, error: "Subtask not found" };
+      return fail("Subtask not found");
     }
 
     await prisma.taskSubtask.delete({
@@ -964,10 +922,7 @@ export async function deleteSubtask(
     return ok();
   } catch (error) {
     console.error("Error deleting subtask:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete subtask",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete subtask",);
   }
 }
 
@@ -992,7 +947,7 @@ export async function addComment(
     });
 
     if (!task) {
-      return { success: false, error: "Task not found" };
+      return fail("Task not found");
     }
 
     // Get user ID
@@ -1001,7 +956,7 @@ export async function addComment(
     });
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
     const comment = await prisma.taskComment.create({
@@ -1016,10 +971,7 @@ export async function addComment(
     return { success: true, commentId: comment.id };
   } catch (error) {
     console.error("Error adding comment:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to add comment",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to add comment",);
   }
 }
 
@@ -1041,7 +993,7 @@ export async function deleteComment(
     });
 
     if (!comment) {
-      return { success: false, error: "Comment not found or not authorized" };
+      return fail("Comment not found or not authorized");
     }
 
     await prisma.taskComment.delete({
@@ -1052,10 +1004,7 @@ export async function deleteComment(
     return ok();
   } catch (error) {
     console.error("Error deleting comment:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete comment",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete comment",);
   }
 }
 
@@ -1081,7 +1030,7 @@ export async function createTaskFromGallery(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Get or create default board
@@ -1089,7 +1038,7 @@ export async function createTaskFromGallery(
     const columnId = options?.columnId || board.columns[0]?.id;
 
     if (!columnId) {
-      return { success: false, error: "No columns available" };
+      return fail("No columns available");
     }
 
     const result = await createTask({
@@ -1104,10 +1053,7 @@ export async function createTaskFromGallery(
     return result;
   } catch (error) {
     console.error("Error creating task from gallery:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create task",);
   }
 }
 
@@ -1129,7 +1075,7 @@ export async function createTaskFromBooking(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Get or create default board
@@ -1137,7 +1083,7 @@ export async function createTaskFromBooking(
     const columnId = options?.columnId || board.columns[0]?.id;
 
     if (!columnId) {
-      return { success: false, error: "No columns available" };
+      return fail("No columns available");
     }
 
     const result = await createTask({
@@ -1153,10 +1099,7 @@ export async function createTaskFromBooking(
     return result;
   } catch (error) {
     console.error("Error creating task from booking:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create task",);
   }
 }
 
@@ -1177,7 +1120,7 @@ export async function createTaskFromClient(
     });
 
     if (!client) {
-      return { success: false, error: "Client not found" };
+      return fail("Client not found");
     }
 
     // Get or create default board
@@ -1185,7 +1128,7 @@ export async function createTaskFromClient(
     const columnId = options?.columnId || board.columns[0]?.id;
 
     if (!columnId) {
-      return { success: false, error: "No columns available" };
+      return fail("No columns available");
     }
 
     const result = await createTask({
@@ -1198,10 +1141,7 @@ export async function createTaskFromClient(
     return result;
   } catch (error) {
     console.error("Error creating task from client:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create task",);
   }
 }
 
@@ -1477,10 +1417,7 @@ export async function getTaskAnalytics(): Promise<{
     };
   } catch (error) {
     console.error("Error fetching task analytics:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch analytics",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to fetch analytics",);
   }
 }
 
@@ -1509,7 +1446,7 @@ export async function bulkMoveTasks(
     });
 
     if (tasks.length !== taskIds.length) {
-      return { success: false, error: "Some tasks not found or unauthorized" };
+      return fail("Some tasks not found or unauthorized");
     }
 
     // Get the target column
@@ -1521,7 +1458,7 @@ export async function bulkMoveTasks(
     });
 
     if (!column) {
-      return { success: false, error: "Column not found" };
+      return fail("Column not found");
     }
 
     // Get max position in target column
@@ -1550,10 +1487,7 @@ export async function bulkMoveTasks(
     return { success: true, count: taskIds.length };
   } catch (error) {
     console.error("Error bulk moving tasks:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to move tasks",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to move tasks",);
   }
 }
 
@@ -1580,10 +1514,7 @@ export async function bulkUpdatePriority(
     return { success: true, count: result.count };
   } catch (error) {
     console.error("Error bulk updating priority:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update priority",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update priority",);
   }
 }
 
@@ -1604,7 +1535,7 @@ export async function bulkAssignTasks(
         where: { id: assigneeId },
       });
       if (!user) {
-        return { success: false, error: "Assignee not found" };
+        return fail("Assignee not found");
       }
     }
 
@@ -1620,10 +1551,7 @@ export async function bulkAssignTasks(
     return { success: true, count: result.count };
   } catch (error) {
     console.error("Error bulk assigning tasks:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to assign tasks",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to assign tasks",);
   }
 }
 
@@ -1648,10 +1576,7 @@ export async function bulkDeleteTasks(
     return { success: true, count: result.count };
   } catch (error) {
     console.error("Error bulk deleting tasks:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete tasks",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete tasks",);
   }
 }
 
@@ -1725,10 +1650,7 @@ export async function createTaskTemplate(data: {
     return { success: true, templateId: template.id };
   } catch (error) {
     console.error("Error creating task template:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create template",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create template",);
   }
 }
 
@@ -1762,7 +1684,7 @@ export async function saveTaskAsTemplate(
     });
 
     if (!task) {
-      return { success: false, error: "Task not found" };
+      return fail("Task not found");
     }
 
     // Create template from task
@@ -1788,10 +1710,7 @@ export async function saveTaskAsTemplate(
     return { success: true, templateId: template.id };
   } catch (error) {
     console.error("Error saving task as template:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to save template",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to save template",);
   }
 }
 
@@ -1824,7 +1743,7 @@ export async function createTaskFromTemplate(
     });
 
     if (!template) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     // Verify column exists
@@ -1836,7 +1755,7 @@ export async function createTaskFromTemplate(
     });
 
     if (!column) {
-      return { success: false, error: "Column not found" };
+      return fail("Column not found");
     }
 
     // Get the highest position in the column
@@ -1880,10 +1799,7 @@ export async function createTaskFromTemplate(
     return { success: true, taskId: task.id };
   } catch (error) {
     console.error("Error creating task from template:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create task",);
   }
 }
 
@@ -1932,10 +1848,7 @@ export async function updateTaskTemplate(
     return ok();
   } catch (error) {
     console.error("Error updating task template:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update template",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update template",);
   }
 }
 
@@ -1960,10 +1873,7 @@ export async function deleteTaskTemplate(
     return ok();
   } catch (error) {
     console.error("Error deleting task template:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete template",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete template",);
   }
 }
 
@@ -2040,7 +1950,7 @@ export async function createAutomation(data: {
     });
 
     if (!board) {
-      return { success: false, error: "Board not found" };
+      return fail("Board not found");
     }
 
     const automation = await prisma.taskAutomation.create({
@@ -2058,10 +1968,7 @@ export async function createAutomation(data: {
     return { success: true, automation: { id: automation.id } };
   } catch (error) {
     console.error("Error creating automation:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create automation",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create automation",);
   }
 }
 
@@ -2100,10 +2007,7 @@ export async function updateAutomation(
     return ok();
   } catch (error) {
     console.error("Error updating automation:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update automation",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update automation",);
   }
 }
 
@@ -2128,10 +2032,7 @@ export async function deleteAutomation(
     return ok();
   } catch (error) {
     console.error("Error deleting automation:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete automation",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete automation",);
   }
 }
 
@@ -2315,7 +2216,7 @@ export async function createRecurringTask(data: {
     });
 
     if (!board) {
-      return { success: false, error: "Board not found" };
+      return fail("Board not found");
     }
 
     // Calculate next run date
@@ -2351,10 +2252,7 @@ export async function createRecurringTask(data: {
     return { success: true, recurringTask: { id: recurringTask.id } };
   } catch (error) {
     console.error("Error creating recurring task:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create recurring task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to create recurring task",);
   }
 }
 
@@ -2427,10 +2325,7 @@ export async function updateRecurringTask(
     return ok();
   } catch (error) {
     console.error("Error updating recurring task:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update recurring task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to update recurring task",);
   }
 }
 
@@ -2455,10 +2350,7 @@ export async function deleteRecurringTask(
     return ok();
   } catch (error) {
     console.error("Error deleting recurring task:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete recurring task",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete recurring task",);
   }
 }
 
@@ -2555,7 +2447,7 @@ function calculateNextRunDate(
 ): Date {
   const [hours, minutes] = time.split(":").map(Number);
   const now = new Date();
-  let next = new Date(now);
+  const next = new Date(now);
 
   // Set time
   next.setHours(hours, minutes, 0, 0);
@@ -2658,7 +2550,7 @@ export async function startTimeTracking(
     });
 
     if (!task) {
-      return { success: false, error: "Task not found" };
+      return fail("Task not found");
     }
 
     // Check if there's already an active timer for this user
@@ -2704,10 +2596,7 @@ export async function startTimeTracking(
     return { success: true, entryId: entry.id };
   } catch (error) {
     console.error("Error starting time tracking:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to start timer",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to start timer",);
   }
 }
 
@@ -2729,7 +2618,7 @@ export async function stopTimeTracking(
     });
 
     if (!entry) {
-      return { success: false, error: "Active timer not found" };
+      return fail("Active timer not found");
     }
 
     const elapsed = Math.round(
@@ -2757,10 +2646,7 @@ export async function stopTimeTracking(
     return { success: true, minutes: elapsed };
   } catch (error) {
     console.error("Error stopping time tracking:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to stop timer",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to stop timer",);
   }
 }
 
@@ -2783,7 +2669,7 @@ export async function addManualTimeEntry(data: {
     });
 
     if (!task) {
-      return { success: false, error: "Task not found" };
+      return fail("Task not found");
     }
 
     const startedAt = data.date || new Date();
@@ -2813,10 +2699,7 @@ export async function addManualTimeEntry(data: {
     return { success: true, entryId: entry.id };
   } catch (error) {
     console.error("Error adding manual time entry:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to add time entry",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to add time entry",);
   }
 }
 
@@ -2837,7 +2720,7 @@ export async function deleteTimeEntry(
     });
 
     if (!entry) {
-      return { success: false, error: "Time entry not found" };
+      return fail("Time entry not found");
     }
 
     // If entry had minutes recorded, decrement from task
@@ -2858,10 +2741,7 @@ export async function deleteTimeEntry(
     return ok();
   } catch (error) {
     console.error("Error deleting time entry:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete time entry",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete time entry",);
   }
 }
 
@@ -2924,7 +2804,7 @@ export async function addTaskDependency(
     ]);
 
     if (!task || !blockedByTask) {
-      return { success: false, error: "Task not found" };
+      return fail("Task not found");
     }
 
     // Prevent circular dependencies
@@ -2934,7 +2814,7 @@ export async function addTaskDependency(
       organizationId
     );
     if (wouldCreateCycle) {
-      return { success: false, error: "This would create a circular dependency" };
+      return fail("This would create a circular dependency");
     }
 
     // Add the dependency
@@ -2951,10 +2831,7 @@ export async function addTaskDependency(
     return ok();
   } catch (error) {
     console.error("Error adding task dependency:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to add dependency",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to add dependency",);
   }
 }
 
@@ -2975,7 +2852,7 @@ export async function removeTaskDependency(
     });
 
     if (!task) {
-      return { success: false, error: "Task not found" };
+      return fail("Task not found");
     }
 
     await prisma.task.update({
@@ -2991,10 +2868,7 @@ export async function removeTaskDependency(
     return ok();
   } catch (error) {
     console.error("Error removing task dependency:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to remove dependency",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to remove dependency",);
   }
 }
 

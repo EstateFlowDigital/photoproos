@@ -25,9 +25,39 @@ export function reportWebVitals(metric: NextWebVitalsMetric) {
   } catch {
     // no-op if dispatch fails
   }
+  // Ship vitals to telemetry endpoint (fire-and-forget).
+  try {
+    const payload = JSON.stringify({
+      route: window.location.pathname,
+      name: metric.name,
+      value: metric.value,
+      label: metric.label,
+      id: metric.id,
+      timestamp: entry.timestamp,
+    });
+    const headers = { type: "application/json" };
+    const url = "/api/telemetry";
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(url, payload);
+    } else {
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-ppos-route": window.location.pathname,
+        },
+        body: payload,
+        keepalive: true,
+      }).catch(() => {
+        /* ignore */
+      });
+    }
+  } catch {
+    // ignore telemetry failures
+  }
   if (shouldLog) {
     const value = typeof metric.value === "number" ? metric.value.toFixed(2) : metric.value;
-    // eslint-disable-next-line no-console
+     
     console.log("[perf]", metric.name, value, entry);
   }
 }

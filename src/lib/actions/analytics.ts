@@ -1,5 +1,6 @@
 "use server";
 
+import { fail, success } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import {
@@ -37,7 +38,7 @@ async function getOrganizationId(): Promise<string | null> {
 export async function getRevenueForecast() {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -141,20 +142,17 @@ export async function getRevenueForecast() {
       });
     }
 
-    return {
-      success: true,
-      data: {
-        expectedFromPending,
-        pendingInvoicesCount: pendingInvoices.length,
-        paymentRate: Math.round(paymentRate * 100),
-        monthlyRevenue,
-        projectedMonths,
-        monthlyGrowthRate: Math.round(growthRate * 100),
-      },
-    };
+    return success({
+      expectedFromPending,
+      pendingInvoicesCount: pendingInvoices.length,
+      paymentRate: Math.round(paymentRate * 100),
+      monthlyRevenue,
+      projectedMonths,
+      monthlyGrowthRate: Math.round(growthRate * 100),
+    });
   } catch (error) {
     console.error("[Analytics] Error forecasting revenue:", error);
-    return { success: false, error: "Failed to generate revenue forecast" };
+    return fail("Failed to generate revenue forecast");
   }
 }
 
@@ -168,7 +166,7 @@ export async function getRevenueForecast() {
 export async function getClientLTVMetrics() {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -250,24 +248,21 @@ export async function getClientLTVMetrics() {
       return monthsSincePayment >= 6 && c.totalRevenue > 0;
     });
 
-    return {
-      success: true,
-      data: {
-        summary: {
-          totalClients,
-          totalRevenue,
-          avgLTV,
-          repeatRate: Math.round(repeatRate * 100),
-          repeatClients,
-        },
-        topClients,
-        atRiskClients: atRiskClients.slice(0, 10),
-        allClients: clientMetrics,
+    return success({
+      summary: {
+        totalClients,
+        totalRevenue,
+        avgLTV,
+        repeatRate: Math.round(repeatRate * 100),
+        repeatClients,
       },
-    };
+      topClients,
+      atRiskClients: atRiskClients.slice(0, 10),
+      allClients: clientMetrics,
+    });
   } catch (error) {
     console.error("[Analytics] Error calculating LTV:", error);
-    return { success: false, error: "Failed to calculate client LTV metrics" };
+    return fail("Failed to calculate client LTV metrics");
   }
 }
 
@@ -281,7 +276,7 @@ export async function getClientLTVMetrics() {
 export async function getDashboardAnalytics() {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -381,38 +376,35 @@ export async function getDashboardAnalytics() {
           )
         : 0;
 
-    return {
-      success: true,
-      data: {
-        revenue: {
-          thisMonth: thisMonthRevenueValue,
-          lastMonth: lastMonthRevenueValue,
-          ytd: ytdRevenue._sum.amountCents || 0,
-          change: revenueChange,
+    return success({
+      revenue: {
+        thisMonth: thisMonthRevenueValue,
+        lastMonth: lastMonthRevenueValue,
+        ytd: ytdRevenue._sum.amountCents || 0,
+        change: revenueChange,
+      },
+      projects: {
+        thisMonth: thisMonthProjects,
+        lastMonth: lastMonthProjects,
+        change: projectsChange,
+      },
+      clients: {
+        newThisMonth: thisMonthClients,
+      },
+      invoices: {
+        pending: {
+          count: pendingInvoices._count,
+          total: pendingInvoices._sum.totalCents || 0,
         },
-        projects: {
-          thisMonth: thisMonthProjects,
-          lastMonth: lastMonthProjects,
-          change: projectsChange,
-        },
-        clients: {
-          newThisMonth: thisMonthClients,
-        },
-        invoices: {
-          pending: {
-            count: pendingInvoices._count,
-            total: pendingInvoices._sum.totalCents || 0,
-          },
-          overdue: {
-            count: overdueInvoices._count,
-            total: overdueInvoices._sum.totalCents || 0,
-          },
+        overdue: {
+          count: overdueInvoices._count,
+          total: overdueInvoices._sum.totalCents || 0,
         },
       },
-    };
+    });
   } catch (error) {
     console.error("[Analytics] Error fetching dashboard:", error);
-    return { success: false, error: "Failed to fetch dashboard analytics" };
+    return fail("Failed to fetch dashboard analytics");
   }
 }
 
@@ -431,7 +423,7 @@ export async function generateRevenueReport(options: {
 }) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
-    return { success: false, error: "Organization not found" };
+    return fail("Organization not found");
   }
 
   try {
@@ -489,24 +481,21 @@ export async function generateRevenueReport(options: {
     const avgTransaction =
       payments.length > 0 ? totalRevenue / payments.length : 0;
 
-    return {
-      success: true,
-      data: {
-        periods: data,
-        summary: {
-          totalRevenue,
-          transactionCount: payments.length,
-          avgTransaction,
-          dateRange: {
-            from: options.startDate,
-            to: options.endDate,
-          },
+    return success({
+      periods: data,
+      summary: {
+        totalRevenue,
+        transactionCount: payments.length,
+        avgTransaction,
+        dateRange: {
+          from: options.startDate,
+          to: options.endDate,
         },
       },
-    };
+    });
   } catch (error) {
     console.error("[Analytics] Error generating report:", error);
-    return { success: false, error: "Failed to generate revenue report" };
+    return fail("Failed to generate revenue report");
   }
 }
 
@@ -530,5 +519,5 @@ export async function exportReportAsCSV(reportData: {
 
   const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
 
-  return { success: true, data: csv };
+  return success(csv);
 }

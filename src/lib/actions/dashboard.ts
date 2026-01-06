@@ -1,11 +1,12 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { unstable_cache } from "next/cache";
 import {
   type DashboardConfig,
   type DashboardSectionId,
@@ -17,6 +18,23 @@ import {
 /**
  * Get user's dashboard configuration
  */
+const getDashboardConfigCached = unstable_cache(
+  async (clerkUserId: string) => {
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId },
+      select: { dashboardConfig: true },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return mergeDashboardConfig(user.dashboardConfig as Partial<DashboardConfig> | null);
+  },
+  ["dashboard-config"],
+  { revalidate: 60 } // refresh every 60s; revalidated explicitly on updates
+);
+
 export async function getDashboardConfig(): Promise<{
   success: boolean;
   data?: DashboardConfig;
@@ -25,26 +43,18 @@ export async function getDashboardConfig(): Promise<{
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId: userId },
-      select: { dashboardConfig: true },
-    });
-
-    if (!user) {
-      return { success: false, error: "User not found" };
+    const config = await getDashboardConfigCached(userId);
+    if (!config) {
+      return fail("User not found");
     }
-
-    const config = mergeDashboardConfig(
-      user.dashboardConfig as Partial<DashboardConfig> | null
-    );
 
     return { success: true, data: config };
   } catch (error) {
     console.error("Error fetching dashboard config:", error);
-    return { success: false, error: "Failed to fetch dashboard config" };
+    return fail("Failed to fetch dashboard config");
   }
 }
 
@@ -57,14 +67,14 @@ export async function updateDashboardConfig(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate section IDs
     const validSectionIds = DASHBOARD_SECTIONS.map((s) => s.id);
     for (const section of config.sections) {
       if (!validSectionIds.includes(section.id)) {
-        return { success: false, error: `Invalid section ID: ${section.id}` };
+        return fail(`Invalid section ID: ${section.id}`);
       }
     }
 
@@ -77,7 +87,7 @@ export async function updateDashboardConfig(
     return ok();
   } catch (error) {
     console.error("Error updating dashboard config:", error);
-    return { success: false, error: "Failed to update dashboard config" };
+    return fail("Failed to update dashboard config");
   }
 }
 
@@ -90,17 +100,17 @@ export async function toggleSectionVisibility(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate section ID
     const sectionMeta = DASHBOARD_SECTIONS.find((s) => s.id === sectionId);
     if (!sectionMeta) {
-      return { success: false, error: "Invalid section ID" };
+      return fail("Invalid section ID");
     }
 
     if (!sectionMeta.canHide) {
-      return { success: false, error: "This section cannot be hidden" };
+      return fail("This section cannot be hidden");
     }
 
     const user = await prisma.user.findUnique({
@@ -109,7 +119,7 @@ export async function toggleSectionVisibility(
     });
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
     const currentConfig = mergeDashboardConfig(
@@ -132,7 +142,7 @@ export async function toggleSectionVisibility(
     return ok();
   } catch (error) {
     console.error("Error toggling section visibility:", error);
-    return { success: false, error: "Failed to toggle section visibility" };
+    return fail("Failed to toggle section visibility");
   }
 }
 
@@ -145,17 +155,17 @@ export async function toggleSectionCollapsed(
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate section ID
     const sectionMeta = DASHBOARD_SECTIONS.find((s) => s.id === sectionId);
     if (!sectionMeta) {
-      return { success: false, error: "Invalid section ID" };
+      return fail("Invalid section ID");
     }
 
     if (!sectionMeta.canCollapse) {
-      return { success: false, error: "This section cannot be collapsed" };
+      return fail("This section cannot be collapsed");
     }
 
     const user = await prisma.user.findUnique({
@@ -164,7 +174,7 @@ export async function toggleSectionCollapsed(
     });
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
     const currentConfig = mergeDashboardConfig(
@@ -187,7 +197,7 @@ export async function toggleSectionCollapsed(
     return ok();
   } catch (error) {
     console.error("Error toggling section collapsed state:", error);
-    return { success: false, error: "Failed to toggle section collapsed state" };
+    return fail("Failed to toggle section collapsed state");
   }
 }
 
@@ -198,7 +208,7 @@ export async function resetDashboardConfig(): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     await prisma.user.update({
@@ -210,6 +220,6 @@ export async function resetDashboardConfig(): Promise<VoidActionResult> {
     return ok();
   } catch (error) {
     console.error("Error resetting dashboard config:", error);
-    return { success: false, error: "Failed to reset dashboard config" };
+    return fail("Failed to reset dashboard config");
   }
 }

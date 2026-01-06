@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { getClientSession } from "./client-auth";
@@ -28,7 +29,7 @@ export async function getGalleryZipDownload(galleryId: string): Promise<{
     const session = await getClientSession();
 
     if (!session) {
-      return { success: false, error: "Please log in to download" };
+      return fail("Please log in to download");
     }
 
     // Verify gallery belongs to client and is downloadable
@@ -50,7 +51,7 @@ export async function getGalleryZipDownload(galleryId: string): Promise<{
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found or not available for download" };
+      return fail("Gallery not found or not available for download");
     }
 
     const totalSize = gallery.assets.reduce((sum, a) => sum + (a.sizeBytes || 0), 0);
@@ -66,7 +67,7 @@ export async function getGalleryZipDownload(galleryId: string): Promise<{
     };
   } catch (error) {
     console.error("[Portal Download] Error getting gallery info:", error);
-    return { success: false, error: "Failed to prepare download" };
+    return fail("Failed to prepare download");
   }
 }
 
@@ -87,7 +88,7 @@ export async function getWebSizeDownload(galleryId: string): Promise<{
     const session = await getClientSession();
 
     if (!session) {
-      return { success: false, error: "Please log in to download" };
+      return fail("Please log in to download");
     }
 
     const gallery = await prisma.project.findFirst({
@@ -110,7 +111,7 @@ export async function getWebSizeDownload(galleryId: string): Promise<{
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found or not available for download" };
+      return fail("Gallery not found or not available for download");
     }
 
     // Use medium URL if available, otherwise thumbnail
@@ -142,7 +143,7 @@ export async function getWebSizeDownload(galleryId: string): Promise<{
     };
   } catch (error) {
     console.error("[Portal Download] Error getting web size photos:", error);
-    return { success: false, error: "Failed to prepare download" };
+    return fail("Failed to prepare download");
   }
 }
 
@@ -163,7 +164,7 @@ export async function getHighResDownload(galleryId: string): Promise<{
     const session = await getClientSession();
 
     if (!session) {
-      return { success: false, error: "Please log in to download" };
+      return fail("Please log in to download");
     }
 
     const gallery = await prisma.project.findFirst({
@@ -186,7 +187,7 @@ export async function getHighResDownload(galleryId: string): Promise<{
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found or not available for download" };
+      return fail("Gallery not found or not available for download");
     }
 
     const photos = await Promise.all(
@@ -217,7 +218,7 @@ export async function getHighResDownload(galleryId: string): Promise<{
     };
   } catch (error) {
     console.error("[Portal Download] Error getting high res photos:", error);
-    return { success: false, error: "Failed to prepare download" };
+    return fail("Failed to prepare download");
   }
 }
 
@@ -244,7 +245,7 @@ export async function getMarketingKitDownload(propertyId: string): Promise<{
     const session = await getClientSession();
 
     if (!session) {
-      return { success: false, error: "Please log in to download" };
+      return fail("Please log in to download");
     }
 
     // Get property with marketing assets
@@ -275,7 +276,7 @@ export async function getMarketingKitDownload(propertyId: string): Promise<{
     });
 
     if (!property) {
-      return { success: false, error: "Property not found" };
+      return fail("Property not found");
     }
 
     return {
@@ -294,7 +295,7 @@ export async function getMarketingKitDownload(propertyId: string): Promise<{
     };
   } catch (error) {
     console.error("[Portal Download] Error getting marketing kit:", error);
-    return { success: false, error: "Failed to prepare marketing kit" };
+    return fail("Failed to prepare marketing kit");
   }
 }
 
@@ -311,7 +312,7 @@ export async function getInvoicePaymentLink(invoiceId: string): Promise<{
     const session = await getClientSession();
 
     if (!session) {
-      return { success: false, error: "Please log in to pay" };
+      return fail("Please log in to pay");
     }
 
     // Get invoice for this client
@@ -336,12 +337,12 @@ export async function getInvoicePaymentLink(invoiceId: string): Promise<{
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found or already paid" };
+      return fail("Invoice not found or already paid");
     }
 
     // Check if Stripe is configured
     if (!invoice.organization.stripeConnectAccountId) {
-      return { success: false, error: "Payment not available for this invoice" };
+      return fail("Payment not available for this invoice");
     }
 
     // Use the existing payment link if available
@@ -396,7 +397,7 @@ export async function getInvoicePaymentLink(invoiceId: string): Promise<{
     });
 
     if (!checkoutSession.url) {
-      return { success: false, error: "Failed to create payment link" };
+      return fail("Failed to create payment link");
     }
 
     // Store the payment link URL for future use
@@ -411,7 +412,7 @@ export async function getInvoicePaymentLink(invoiceId: string): Promise<{
     return { success: true, paymentUrl: checkoutSession.url };
   } catch (error) {
     console.error("[Portal Payment] Error getting payment link:", error);
-    return { success: false, error: "Failed to get payment link" };
+    return fail("Failed to get payment link");
   }
 }
 
@@ -429,7 +430,7 @@ export async function getInvoicePdfDownload(invoiceId: string): Promise<{
     const session = await getClientSession();
 
     if (!session) {
-      return { success: false, error: "Please log in to download" };
+      return fail("Please log in to download");
     }
 
     // Get invoice for this client
@@ -468,7 +469,7 @@ export async function getInvoicePdfDownload(invoiceId: string): Promise<{
     });
 
     if (!invoice) {
-      return { success: false, error: "Invoice not found" };
+      return fail("Invoice not found");
     }
 
     // Format dates
@@ -565,6 +566,6 @@ export async function getInvoicePdfDownload(invoiceId: string): Promise<{
     };
   } catch (error) {
     console.error("[Portal Download] Error generating invoice PDF:", error);
-    return { success: false, error: "Failed to generate invoice PDF" };
+    return fail("Failed to generate invoice PDF");
   }
 }

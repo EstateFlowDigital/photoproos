@@ -303,6 +303,7 @@ See `prisma/schema.prisma` for the complete schema.
 | `/api/webhooks/stripe` | POST | Stripe webhook handler |
 | `/api/auth/client` | POST/GET | Client portal authentication |
 | `/api/cron/late-fees` | GET/POST | Late fee automation (cron) |
+| `/api/cron/scheduled-invoices` | GET/POST | Scheduled invoice sending (cron) |
 
 ## Cron Jobs
 
@@ -345,6 +346,44 @@ curl -X GET "http://localhost:3000/api/cron/late-fees" \
   "lateFeesApplied": 3,
   "totalFeesAppliedCents": 15000,
   "totalFeesFormatted": "$150.00"
+}
+```
+
+### Scheduled Invoice Sending
+
+**Endpoint:** `GET /api/cron/scheduled-invoices`
+
+**Recommended Schedule:** Every 15 minutes or hourly
+
+**What it does:**
+1. Finds all draft invoices with `scheduledSendAt <= now`
+2. Sends the invoice email to the client
+3. Updates invoice status to "sent"
+4. Logs activity for audit trail
+
+**Railway Setup:**
+
+1. Create a new service in Railway with type "Cron Job"
+2. Configure the cron expression: `*/15 * * * *` (every 15 minutes) or `0 * * * *` (hourly)
+3. Set the command:
+   ```bash
+   curl -X GET "https://your-domain.railway.app/api/cron/scheduled-invoices" \
+     -H "Authorization: Bearer $CRON_SECRET"
+   ```
+4. Uses the same `CRON_SECRET` as other cron endpoints
+
+**Manual Testing:**
+```bash
+curl -X GET "http://localhost:3000/api/cron/scheduled-invoices" \
+  -H "Authorization: Bearer your-cron-secret"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "processed": 3,
+  "errors": 0
 }
 ```
 

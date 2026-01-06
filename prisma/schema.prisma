@@ -545,6 +545,9 @@ model Organization {
   // PHASE 3: SMS & FIELD OPERATIONS SETTINGS
   // ============================================================================
 
+  // Gallery Settings
+  autoArchiveExpiredGalleries Boolean @default(true) // Auto-archive galleries when they expire
+
   // Email Settings
   emailSenderName           String? // Custom "from" name for emails
   emailReplyTo              String? // Custom reply-to email address
@@ -597,6 +600,7 @@ model Organization {
   bookings           Booking[]
   bookingTypes       BookingType[]
   invoices           Invoice[]
+  creditNotes        CreditNote[]
   contracts          Contract[]
   contractTemplates  ContractTemplate[]
   activityLogs       ActivityLog[]
@@ -839,6 +843,7 @@ model Client {
   projects       Project[]
   bookings       Booking[]
   invoices       Invoice[]
+  creditNotes    CreditNote[]
   contracts      Contract[]
   payments       Payment[]
   clientSessions ClientSession[]
@@ -988,6 +993,7 @@ model Project {
 
   // Delivery
   deliveredAt   DateTime?
+  archivedAt    DateTime? // When gallery was archived (auto or manual)
   viewCount     Int       @default(0)
   downloadCount Int       @default(0)
 
@@ -1702,6 +1708,22 @@ model Invoice {
   nextReminderAt DateTime?
   autoReminders  Boolean   @default(true) // Enable/disable auto reminders
 
+  // Invoice Scheduling
+  scheduledSendAt DateTime? // When to automatically send the invoice
+  scheduledSentAt DateTime? // When the scheduled send was processed
+
+  // Credit Notes
+  creditNotesOriginal CreditNote[] @relation("CreditNoteOriginalInvoice") // Credit notes issued for this invoice
+  creditNotesApplied  CreditNote[] @relation("CreditNoteAppliedInvoice")  // Credit notes applied to this invoice
+
+  // Deposit/Balance Invoice Split
+  isDeposit        Boolean  @default(false) // Is this a deposit invoice?
+  isBalance        Boolean  @default(false) // Is this a balance invoice?
+  depositPercent   Float?   // Deposit percentage (e.g., 50 for 50%)
+  parentInvoiceId  String?  // Link to the original invoice (for deposit/balance invoices)
+  parentInvoice    Invoice? @relation("InvoiceDepositBalance", fields: [parentInvoiceId], references: [id], onDelete: SetNull)
+  childInvoices    Invoice[] @relation("InvoiceDepositBalance") // Deposit and balance invoices
+
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
   @@index([clientId])
@@ -1729,6 +1751,66 @@ model InvoiceLineItem {
   @@index([invoiceId])
   @@index([bookingId])
   @@index([itemType])
+}
+
+// Credit Note - for refunds, credits, and invoice adjustments
+model CreditNote {
+  id             String @id @default(cuid())
+  organizationId String
+  clientId       String?
+  invoiceId      String? // Optional link to original invoice
+
+  // Credit note number
+  creditNoteNumber String
+
+  // Status
+  status CreditNoteStatus @default(draft)
+
+  // Amounts
+  amountCents Int    @default(0)
+  currency    String @default("USD")
+
+  // Client info (cached from invoice or client)
+  clientName    String?
+  clientEmail   String?
+
+  // Details
+  reason      String?  // Reason for the credit note
+  description String?  // Detailed description
+  notes       String?  // Internal notes
+
+  // Application
+  appliedToInvoiceId String?   // If applied to a different invoice
+  appliedAmountCents Int       @default(0) // Amount applied from this credit note
+  appliedAt          DateTime?
+  refundedAmountCents Int      @default(0) // Amount refunded to client
+  refundedAt          DateTime?
+
+  // Dates
+  issueDate DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client           Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  invoice          Invoice?     @relation("CreditNoteOriginalInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
+  appliedToInvoice Invoice?     @relation("CreditNoteAppliedInvoice", fields: [appliedToInvoiceId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, creditNoteNumber])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([invoiceId])
+  @@index([status])
+}
+
+enum CreditNoteStatus {
+  draft
+  issued      // Sent to client
+  applied     // Applied to an invoice
+  refunded    // Refunded to client
+  voided      // Cancelled/voided
 }
 
 // Recurring Invoice Template - for subscription/retainer billing

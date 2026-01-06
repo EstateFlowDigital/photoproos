@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 export type FieldBooking = {
   id: string;
@@ -45,7 +45,7 @@ export async function getTodaysBookings(): Promise<ActionResult<FieldBooking[]>>
 
     const auth = await getAuthContext();
     if (!auth?.userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const today = new Date();
@@ -84,7 +84,7 @@ export async function getTodaysBookings(): Promise<ActionResult<FieldBooking[]>>
     return { success: true, data: fieldBookings };
   } catch (error) {
     console.error("Error getting today's bookings:", error);
-    return { success: false, error: "Failed to get bookings" };
+    return fail("Failed to get bookings");
   }
 }
 
@@ -97,7 +97,7 @@ export async function getUpcomingBookings(days: number = 7): Promise<ActionResul
 
     const auth = await getAuthContext();
     if (!auth?.userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const today = new Date();
@@ -136,7 +136,7 @@ export async function getUpcomingBookings(days: number = 7): Promise<ActionResul
     return { success: true, data: fieldBookings };
   } catch (error) {
     console.error("Error getting upcoming bookings:", error);
-    return { success: false, error: "Failed to get bookings" };
+    return fail("Failed to get bookings");
   }
 }
 
@@ -148,7 +148,7 @@ export async function checkIn(data: CheckInData): Promise<ActionResult<{ checkIn
   try {
     const auth = await getAuthContext();
     if (!auth?.userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const booking = await prisma.booking.findFirst({
@@ -159,7 +159,7 @@ export async function checkIn(data: CheckInData): Promise<ActionResult<{ checkIn
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     const checkInTime = new Date();
@@ -180,7 +180,7 @@ export async function checkIn(data: CheckInData): Promise<ActionResult<{ checkIn
     return { success: true, data: { checkInTime } };
   } catch (error) {
     console.error("Error checking in:", error);
-    return { success: false, error: "Failed to check in" };
+    return fail("Failed to check in");
   }
 }
 
@@ -188,7 +188,7 @@ export async function checkOut(data: CheckOutData): Promise<ActionResult<{ check
   try {
     const auth = await getAuthContext();
     if (!auth?.userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const booking = await prisma.booking.findFirst({
@@ -199,7 +199,7 @@ export async function checkOut(data: CheckOutData): Promise<ActionResult<{ check
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     const checkOutTime = new Date();
@@ -226,7 +226,7 @@ export async function checkOut(data: CheckOutData): Promise<ActionResult<{ check
     return { success: true, data: { checkOutTime } };
   } catch (error) {
     console.error("Error checking out:", error);
-    return { success: false, error: "Failed to check out" };
+    return fail("Failed to check out");
   }
 }
 
@@ -237,7 +237,7 @@ export async function addFieldNote(
   try {
     const auth = await getAuthContext();
     if (!auth?.userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const booking = await prisma.booking.findFirst({
@@ -248,7 +248,7 @@ export async function addFieldNote(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     const existingNotes = booking.description || "";
@@ -266,6 +266,6 @@ export async function addFieldNote(
     return ok();
   } catch (error) {
     console.error("Error adding field note:", error);
-    return { success: false, error: "Failed to add note" };
+    return fail("Failed to add note");
   }
 }

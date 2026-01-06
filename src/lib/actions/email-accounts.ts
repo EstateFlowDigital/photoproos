@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
@@ -27,7 +27,7 @@ export async function getConnectedEmailAccounts(): Promise<{
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const accounts = await prisma.emailAccount.findMany({
@@ -46,7 +46,7 @@ export async function getConnectedEmailAccounts(): Promise<{
     return { success: true, accounts };
   } catch (error) {
     console.error("Error fetching email accounts:", error);
-    return { success: false, error: "Failed to fetch email accounts" };
+    return fail("Failed to fetch email accounts");
   }
 }
 
@@ -59,7 +59,7 @@ export async function disconnectEmailAccount(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Verify the account belongs to this organization
@@ -71,14 +71,14 @@ export async function disconnectEmailAccount(
     });
 
     if (!account) {
-      return { success: false, error: "Account not found" };
+      return fail("Account not found");
     }
 
     // Disconnect based on provider
     if (account.provider === "GMAIL") {
       const success = await disconnectGmailAccount(accountId);
       if (!success) {
-        return { success: false, error: "Failed to disconnect Gmail account" };
+        return fail("Failed to disconnect Gmail account");
       }
     } else if (account.provider === "OUTLOOK") {
       // TODO: Implement Outlook disconnect
@@ -93,7 +93,7 @@ export async function disconnectEmailAccount(
     return ok();
   } catch (error) {
     console.error("Error disconnecting email account:", error);
-    return { success: false, error: "Failed to disconnect email account" };
+    return fail("Failed to disconnect email account");
   }
 }
 
@@ -107,7 +107,7 @@ export async function toggleEmailAccountSync(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Verify the account belongs to this organization
@@ -119,7 +119,7 @@ export async function toggleEmailAccountSync(
     });
 
     if (!account) {
-      return { success: false, error: "Account not found" };
+      return fail("Account not found");
     }
 
     await prisma.emailAccount.update({
@@ -132,7 +132,7 @@ export async function toggleEmailAccountSync(
     return ok();
   } catch (error) {
     console.error("Error toggling email sync:", error);
-    return { success: false, error: "Failed to update sync setting" };
+    return fail("Failed to update sync setting");
   }
 }
 
@@ -145,7 +145,7 @@ export async function getEmailAccount(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const account = await prisma.emailAccount.findFirst({
@@ -164,12 +164,12 @@ export async function getEmailAccount(
     });
 
     if (!account) {
-      return { success: false, error: "Account not found" };
+      return fail("Account not found");
     }
 
     return { success: true, account };
   } catch (error) {
     console.error("Error fetching email account:", error);
-    return { success: false, error: "Failed to fetch email account" };
+    return fail("Failed to fetch email account");
   }
 }

@@ -22,7 +22,7 @@ import { prisma } from "@/lib/db";
 import type { ContractStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { sendContractSigningEmail } from "@/lib/email/send";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -152,9 +152,9 @@ export async function createContract(
   } catch (error) {
     console.error("[Contracts] Error creating contract:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create contract" };
+    return fail("Failed to create contract");
   }
 }
 
@@ -174,11 +174,11 @@ export async function updateContract(
     });
 
     if (!contract) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     if (contract.status === "signed") {
-      return { success: false, error: "Cannot edit a signed contract" };
+      return fail("Cannot edit a signed contract");
     }
 
     await prisma.contract.update({
@@ -207,9 +207,9 @@ export async function updateContract(
   } catch (error) {
     console.error("[Contracts] Error updating contract:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update contract" };
+    return fail("Failed to update contract");
   }
 }
 
@@ -226,11 +226,11 @@ export async function deleteContract(id: string): Promise<ActionResult> {
     });
 
     if (!contract) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     if (contract.status === "signed") {
-      return { success: false, error: "Cannot delete a signed contract" };
+      return fail("Cannot delete a signed contract");
     }
 
     // Delete related records first (cascade should handle this but being explicit)
@@ -247,9 +247,9 @@ export async function deleteContract(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("[Contracts] Error deleting contract:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete contract" };
+    return fail("Failed to delete contract");
   }
 }
 
@@ -287,15 +287,15 @@ export async function sendContract(id: string): Promise<ActionResult> {
     });
 
     if (!contract) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     if (contract.status !== "draft") {
-      return { success: false, error: "Contract has already been sent" };
+      return fail("Contract has already been sent");
     }
 
     if (contract.signers.length === 0) {
-      return { success: false, error: "Add at least one signer before sending" };
+      return fail("Add at least one signer before sending");
     }
 
     // Get organization name for email
@@ -377,9 +377,9 @@ export async function sendContract(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("[Contracts] Error sending contract:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to send contract" };
+    return fail("Failed to send contract");
   }
 }
 
@@ -403,7 +403,7 @@ export async function duplicateContract(
     });
 
     if (!original) {
-      return { success: false, error: "Contract not found" };
+      return fail("Contract not found");
     }
 
     const newContract = await prisma.contract.create({
@@ -432,8 +432,8 @@ export async function duplicateContract(
   } catch (error) {
     console.error("[Contracts] Error duplicating contract:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to duplicate contract" };
+    return fail("Failed to duplicate contract");
   }
 }

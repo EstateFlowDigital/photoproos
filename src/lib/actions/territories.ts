@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export type ServiceTerritory = {
   id: string;
@@ -49,7 +49,7 @@ export type TerritoryServiceOverride = {
 export async function getTerritories(): Promise<ActionResult<ServiceTerritory[]>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const territories = await prisma.serviceTerritory.findMany({
       where: { organizationId: auth.organizationId },
@@ -80,7 +80,7 @@ export async function getTerritories(): Promise<ActionResult<ServiceTerritory[]>
     return { success: true, data: serialized };
   } catch (error) {
     console.error("Error fetching territories:", error);
-    return { success: false, error: "Failed to fetch territories" };
+    return fail("Failed to fetch territories");
   }
 }
 
@@ -89,7 +89,7 @@ export async function findTerritoryByZipCode(
 ): Promise<ActionResult<ServiceTerritory | null>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const territory = await prisma.serviceTerritory.findFirst({
       where: {
@@ -125,7 +125,7 @@ export async function findTerritoryByZipCode(
     return { success: true, data: serialized };
   } catch (error) {
     console.error("Error finding territory:", error);
-    return { success: false, error: "Failed to find territory" };
+    return fail("Failed to find territory");
   }
 }
 
@@ -143,7 +143,7 @@ export async function createTerritory(data: {
 }): Promise<ActionResult<ServiceTerritory>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const territory = await prisma.serviceTerritory.create({
       data: {
@@ -182,7 +182,7 @@ export async function createTerritory(data: {
     return { success: true, data: serialized };
   } catch (error) {
     console.error("Error creating territory:", error);
-    return { success: false, error: "Failed to create territory" };
+    return fail("Failed to create territory");
   }
 }
 
@@ -199,13 +199,13 @@ export async function updateTerritory(
 ): Promise<ActionResult<ServiceTerritory>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const existing = await prisma.serviceTerritory.findFirst({
       where: { id, organizationId: auth.organizationId },
     });
 
-    if (!existing) return { success: false, error: "Territory not found" };
+    if (!existing) return fail("Territory not found");
 
     const territory = await prisma.serviceTerritory.update({
       where: { id },
@@ -244,20 +244,20 @@ export async function updateTerritory(
     return { success: true, data: serialized };
   } catch (error) {
     console.error("Error updating territory:", error);
-    return { success: false, error: "Failed to update territory" };
+    return fail("Failed to update territory");
   }
 }
 
 export async function deleteTerritory(id: string): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const existing = await prisma.serviceTerritory.findFirst({
       where: { id, organizationId: auth.organizationId },
     });
 
-    if (!existing) return { success: false, error: "Territory not found" };
+    if (!existing) return fail("Territory not found");
 
     await prisma.serviceTerritory.delete({ where: { id } });
 
@@ -265,20 +265,20 @@ export async function deleteTerritory(id: string): Promise<ActionResult<void>> {
     return ok();
   } catch (error) {
     console.error("Error deleting territory:", error);
-    return { success: false, error: "Failed to delete territory" };
+    return fail("Failed to delete territory");
   }
 }
 
 export async function toggleTerritoryStatus(id: string): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const territory = await prisma.serviceTerritory.findFirst({
       where: { id, organizationId: auth.organizationId },
     });
 
-    if (!territory) return { success: false, error: "Territory not found" };
+    if (!territory) return fail("Territory not found");
 
     await prisma.serviceTerritory.update({
       where: { id },
@@ -289,7 +289,7 @@ export async function toggleTerritoryStatus(id: string): Promise<ActionResult<vo
     return ok();
   } catch (error) {
     console.error("Error toggling territory status:", error);
-    return { success: false, error: "Failed to update territory" };
+    return fail("Failed to update territory");
   }
 }
 
@@ -299,13 +299,13 @@ export async function importZipCodes(
 ): Promise<ActionResult<{ added: number; total: number }>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const territory = await prisma.serviceTerritory.findFirst({
       where: { id: territoryId, organizationId: auth.organizationId },
     });
 
-    if (!territory) return { success: false, error: "Territory not found" };
+    if (!territory) return fail("Territory not found");
 
     const zipCodes = zipCodesString
       .split(/[\s,\n]+/)
@@ -325,7 +325,7 @@ export async function importZipCodes(
     return { success: true, data: { added: newZips.length, total: allZips.length } };
   } catch (error) {
     console.error("Error importing ZIP codes:", error);
-    return { success: false, error: "Failed to import ZIP codes" };
+    return fail("Failed to import ZIP codes");
   }
 }
 
@@ -338,13 +338,13 @@ export async function setServiceOverride(data: {
 }): Promise<ActionResult<TerritoryServiceOverride>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const territory = await prisma.serviceTerritory.findFirst({
       where: { id: data.territoryId, organizationId: auth.organizationId },
     });
 
-    if (!territory) return { success: false, error: "Territory not found" };
+    if (!territory) return fail("Territory not found");
 
     const override = await prisma.territoryServiceOverride.upsert({
       where: {
@@ -386,7 +386,7 @@ export async function setServiceOverride(data: {
     return { success: true, data: serialized };
   } catch (error) {
     console.error("Error setting service override:", error);
-    return { success: false, error: "Failed to set service override" };
+    return fail("Failed to set service override");
   }
 }
 
@@ -396,13 +396,13 @@ export async function removeServiceOverride(
 ): Promise<ActionResult<void>> {
   try {
     const auth = await getAuthContext();
-    if (!auth) return { success: false, error: "Unauthorized" };
+    if (!auth) return fail("Unauthorized");
 
     const territory = await prisma.serviceTerritory.findFirst({
       where: { id: territoryId, organizationId: auth.organizationId },
     });
 
-    if (!territory) return { success: false, error: "Territory not found" };
+    if (!territory) return fail("Territory not found");
 
     await prisma.territoryServiceOverride.delete({
       where: { territoryId_serviceId: { territoryId, serviceId } },
@@ -412,7 +412,7 @@ export async function removeServiceOverride(
     return ok();
   } catch (error) {
     console.error("Error removing service override:", error);
-    return { success: false, error: "Failed to remove service override" };
+    return fail("Failed to remove service override");
   }
 }
 
@@ -426,7 +426,7 @@ export async function checkServiceAreaPublic(
 ): Promise<ActionResult<{ inServiceArea: boolean; territory: string | null; travelFee: number | null }>> {
   try {
     const org = await prisma.organization.findFirst({ where: { slug: orgSlug } });
-    if (!org) return { success: false, error: "Organization not found" };
+    if (!org) return fail("Organization not found");
 
     const territory = await prisma.serviceTerritory.findFirst({
       where: {
@@ -446,6 +446,6 @@ export async function checkServiceAreaPublic(
     };
   } catch (error) {
     console.error("Error checking service area:", error);
-    return { success: false, error: "Failed to check service area" };
+    return fail("Failed to check service area");
   }
 }

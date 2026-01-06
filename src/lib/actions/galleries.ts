@@ -20,7 +20,7 @@ import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendGalleryDeliveredEmail } from "@/lib/email/send";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 import { extractKeyFromUrl, generatePresignedDownloadUrl, deleteFiles } from "@/lib/storage";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -147,9 +147,9 @@ export async function createGallery(
   } catch (error) {
     console.error("Error creating gallery:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create gallery" };
+    return fail("Failed to create gallery");
   }
 }
 
@@ -172,7 +172,7 @@ export async function updateGallery(
     });
 
     if (!existing) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const { id, ...updateData } = validated;
@@ -215,9 +215,9 @@ export async function updateGallery(
   } catch (error) {
     console.error("Error updating gallery:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update gallery" };
+    return fail("Failed to update gallery");
   }
 }
 
@@ -249,7 +249,7 @@ export async function deleteGallery(
     });
 
     if (!existing) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // If has payments, archive instead of delete
@@ -329,9 +329,9 @@ export async function deleteGallery(
   } catch (error) {
     console.error("Error deleting gallery:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete gallery" };
+    return fail("Failed to delete gallery");
   }
 }
 
@@ -359,7 +359,7 @@ export async function duplicateGallery(
     });
 
     if (!original) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Create duplicate gallery
@@ -424,9 +424,9 @@ export async function duplicateGallery(
   } catch (error) {
     console.error("Error duplicating gallery:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to duplicate gallery" };
+    return fail("Failed to duplicate gallery");
   }
 }
 
@@ -449,7 +449,7 @@ export async function archiveGallery(
     });
 
     if (!existing) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const newStatus: ProjectStatus = archive ? "archived" : "draft";
@@ -466,9 +466,9 @@ export async function archiveGallery(
   } catch (error) {
     console.error("Error archiving gallery:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to archive gallery" };
+    return fail("Failed to archive gallery");
   }
 }
 
@@ -499,7 +499,7 @@ export async function deliverGallery(
     });
 
     if (!existing) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     const deliveredAt = new Date();
@@ -603,9 +603,9 @@ export async function deliverGallery(
   } catch (error) {
     console.error("Error delivering gallery:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to deliver gallery" };
+    return fail("Failed to deliver gallery");
   }
 }
 
@@ -635,9 +635,9 @@ export async function bulkArchiveGalleries(
   } catch (error) {
     console.error("Error bulk archiving galleries:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to archive galleries" };
+    return fail("Failed to archive galleries");
   }
 }
 
@@ -693,9 +693,9 @@ export async function bulkDeleteGalleries(
   } catch (error) {
     console.error("Error bulk deleting galleries:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete galleries" };
+    return fail("Failed to delete galleries");
   }
 }
 
@@ -931,7 +931,7 @@ export async function reorderPhotos(
     });
 
     if (!gallery) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Update sort order for each asset
@@ -950,9 +950,9 @@ export async function reorderPhotos(
   } catch (error) {
     console.error("Error reordering photos:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to reorder photos" };
+    return fail("Failed to reorder photos");
   }
 }
 
@@ -985,7 +985,7 @@ export async function deletePhoto(
     });
 
     if (!asset) {
-      return { success: false, error: "Photo not found" };
+      return fail("Photo not found");
     }
 
     // Extract R2 keys from URLs and delete files
@@ -1018,9 +1018,9 @@ export async function deletePhoto(
   } catch (error) {
     console.error("Error deleting photo:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete photo" };
+    return fail("Failed to delete photo");
   }
 }
 
@@ -1338,7 +1338,7 @@ export async function recordGalleryView(slug: string): Promise<ActionResult> {
     });
 
     if (!deliveryLink || !deliveryLink.isActive) {
-      return { success: false, error: "Gallery not found" };
+      return fail("Gallery not found");
     }
 
     // Increment view count
@@ -1367,7 +1367,7 @@ export async function recordGalleryView(slug: string): Promise<ActionResult> {
     return ok();
   } catch (error) {
     console.error("Error recording gallery view:", error);
-    return { success: false, error: "Failed to record view" };
+    return fail("Failed to record view");
   }
 }
 
@@ -1390,7 +1390,7 @@ export async function recordDownload(
     return ok();
   } catch (error) {
     console.error("Error recording download:", error);
-    return { success: false, error: "Failed to record download" };
+    return fail("Failed to record download");
   }
 }
 

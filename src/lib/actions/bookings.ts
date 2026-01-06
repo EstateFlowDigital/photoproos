@@ -28,8 +28,7 @@ import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import { logActivity } from "@/lib/utils/activity";
 import { sendSMSToClient } from "@/lib/sms/send";
 import { notifySlackNewBooking, notifySlackCancellation } from "@/lib/actions/slack";
-import { ok } from "@/lib/types/action-result";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -233,11 +232,11 @@ export async function createBooking(
     });
 
     if (!validation.success) {
-      return { success: false, error: validation.error || "Failed to validate booking time" };
+      return fail(validation.error || "Failed to validate booking time");
     }
 
     if (!validation.data.valid) {
-      return { success: false, error: validation.data.message || "This time is not available" };
+      return fail(validation.data.message || "This time is not available");
     }
 
     const booking = await prisma.booking.create({
@@ -294,13 +293,13 @@ export async function createBooking(
     revalidatePath("/scheduling");
     revalidatePath("/dashboard");
 
-    return { success: true, data: { id: booking.id } };
+    return success({ id: booking.id });
   } catch (error) {
     console.error("Error creating booking:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create booking" };
+    return fail("Failed to create booking");
   }
 }
 
@@ -322,7 +321,7 @@ export async function updateBooking(
     });
 
     if (!existing) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     const { id, ...updateData } = input;
@@ -350,11 +349,11 @@ export async function updateBooking(
       });
 
       if (!validation.success) {
-        return { success: false, error: validation.error || "Failed to validate booking time" };
+        return fail(validation.error || "Failed to validate booking time");
       }
 
       if (!validation.data.valid) {
-        return { success: false, error: validation.data.message || "This time is not available" };
+        return fail(validation.data.message || "This time is not available");
       }
     }
 
@@ -384,13 +383,13 @@ export async function updateBooking(
     revalidatePath(`/scheduling/${id}/edit`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: { id: booking.id } };
+    return success({ id: booking.id });
   } catch (error) {
     console.error("Error updating booking:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update booking" };
+    return fail("Failed to update booking");
   }
 }
 
@@ -431,7 +430,7 @@ export async function updateBookingStatus(
     });
 
     if (!existing) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     await prisma.booking.update({
@@ -546,9 +545,9 @@ export async function updateBookingStatus(
   } catch (error) {
     console.error("Error updating booking status:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update booking status" };
+    return fail("Failed to update booking status");
   }
 }
 
@@ -589,15 +588,15 @@ export async function confirmBooking(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     if (booking.status === "confirmed") {
-      return { success: false, error: "Booking is already confirmed" };
+      return fail("Booking is already confirmed");
     }
 
     if (booking.status === "cancelled" || booking.status === "completed") {
-      return { success: false, error: `Cannot confirm a ${booking.status} booking` };
+      return fail(`Cannot confirm a ${booking.status} booking`);
     }
 
     // Update status
@@ -712,9 +711,9 @@ export async function confirmBooking(
   } catch (error) {
     console.error("Error confirming booking:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to confirm booking" };
+    return fail("Failed to confirm booking");
   }
 }
 
@@ -734,7 +733,7 @@ export async function deleteBooking(id: string): Promise<ActionResult> {
     });
 
     if (!existing) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Delete reminders first
@@ -754,9 +753,9 @@ export async function deleteBooking(id: string): Promise<ActionResult> {
   } catch (error) {
     console.error("Error deleting booking:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete booking" };
+    return fail("Failed to delete booking");
   }
 }
 
@@ -1019,7 +1018,7 @@ export async function createRecurringBooking(
     const timezone = input.timezone || await getOrganizationTimezone(organizationId);
 
     if (!input.isRecurring || !input.recurrencePattern) {
-      return { success: false, error: "Recurrence pattern is required" };
+      return fail("Recurrence pattern is required");
     }
 
     // Generate series ID
@@ -1050,11 +1049,11 @@ export async function createRecurringBooking(
       });
 
       if (!validation.success) {
-        return { success: false, error: validation.error || "Failed to validate booking time" };
+        return fail(validation.error || "Failed to validate booking time");
       }
 
       if (!validation.data.valid) {
-        return { success: false, error: validation.data.message || "This time is not available" };
+        return fail(validation.data.message || "This time is not available");
       }
     }
 
@@ -1126,20 +1125,17 @@ export async function createRecurringBooking(
     revalidatePath("/scheduling");
     revalidatePath("/dashboard");
 
-    return {
-      success: true,
-      data: {
-        id: parentBooking.id,
-        seriesId,
-        count: dates.length,
-      },
-    };
+    return success({
+      id: parentBooking.id,
+      seriesId,
+      count: dates.length,
+    });
   } catch (error) {
     console.error("Error creating recurring booking:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create recurring booking" };
+    return fail("Failed to create recurring booking");
   }
 }
 
@@ -1226,13 +1222,13 @@ export async function updateBookingSeries(
     revalidatePath("/scheduling");
     revalidatePath("/dashboard");
 
-    return { success: true, data: { updated: result.count } };
+    return success({ updated: result.count });
   } catch (error) {
     console.error("Error updating booking series:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update booking series" };
+    return fail("Failed to update booking series");
   }
 }
 
@@ -1276,13 +1272,13 @@ export async function deleteBookingSeries(
     revalidatePath("/scheduling");
     revalidatePath("/dashboard");
 
-    return { success: true, data: { deleted: result.count } };
+    return success({ deleted: result.count });
   } catch (error) {
     console.error("Error deleting booking series:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete booking series" };
+    return fail("Failed to delete booking series");
   }
 }
 
@@ -1301,7 +1297,7 @@ export async function removeFromSeries(bookingId: string): Promise<ActionResult>
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // First delete reminders
@@ -1321,9 +1317,9 @@ export async function removeFromSeries(bookingId: string): Promise<ActionResult>
   } catch (error) {
     console.error("Error removing booking from series:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove booking from series" };
+    return fail("Failed to remove booking from series");
   }
 }
 
@@ -1351,7 +1347,7 @@ export async function createBookingReminders(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify the booking belongs to this organization
@@ -1367,7 +1363,7 @@ export async function createBookingReminders(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Create reminders
@@ -1403,13 +1399,13 @@ export async function createBookingReminders(
 
     const count = createdReminders.filter(Boolean).length;
 
-    return { success: true, data: { count } };
+    return success({ count });
   } catch (error) {
     console.error("Error creating booking reminders:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create reminders" };
+    return fail("Failed to create reminders");
   }
 }
 
@@ -1431,7 +1427,7 @@ export async function getBookingReminders(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify the booking belongs to this organization
@@ -1444,7 +1440,7 @@ export async function getBookingReminders(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     const reminders = await prisma.bookingReminder.findMany({
@@ -1462,13 +1458,13 @@ export async function getBookingReminders(
       },
     });
 
-    return { success: true, data: reminders };
+    return success(reminders);
   } catch (error) {
     console.error("Error fetching booking reminders:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch reminders" };
+    return fail("Failed to fetch reminders");
   }
 }
 
@@ -1481,7 +1477,7 @@ export async function deleteBookingReminder(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify the reminder belongs to a booking in this organization
@@ -1495,7 +1491,7 @@ export async function deleteBookingReminder(
     });
 
     if (!reminder || reminder.booking.organizationId !== auth.organizationId) {
-      return { success: false, error: "Reminder not found" };
+      return fail("Reminder not found");
     }
 
     await prisma.bookingReminder.delete({
@@ -1506,9 +1502,9 @@ export async function deleteBookingReminder(
   } catch (error) {
     console.error("Error deleting reminder:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete reminder" };
+    return fail("Failed to delete reminder");
   }
 }
 
@@ -1522,7 +1518,7 @@ export async function updateBookingReminders(
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return { success: false, error: "Not authenticated" };
+      return fail("Not authenticated");
     }
 
     // Verify the booking belongs to this organization
@@ -1538,7 +1534,7 @@ export async function updateBookingReminders(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Delete existing unsent reminders
@@ -1582,13 +1578,13 @@ export async function updateBookingReminders(
 
     const count = createdReminders.filter(Boolean).length;
 
-    return { success: true, data: { count } };
+    return success({ count });
   } catch (error) {
     console.error("Error updating booking reminders:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update reminders" };
+    return fail("Failed to update reminders");
   }
 }
 
@@ -1663,13 +1659,13 @@ export async function getPendingReminders(): Promise<ActionResult<{
       take: 100,
     });
 
-    return { success: true, data: reminders };
+    return success(reminders);
   } catch (error) {
     console.error("Error fetching pending reminders:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch pending reminders" };
+    return fail("Failed to fetch pending reminders");
   }
 }
 
@@ -1694,9 +1690,9 @@ export async function markReminderSent(
   } catch (error) {
     console.error("Error marking reminder as sent:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to mark reminder as sent" };
+    return fail("Failed to mark reminder as sent");
   }
 }
 
@@ -1737,7 +1733,7 @@ export async function createMultiDayEvent(
     const organizationId = await getOrganizationId();
 
     if (!input.sessions || input.sessions.length === 0) {
-      return { success: false, error: "At least one session is required" };
+      return fail("At least one session is required");
     }
 
     // Sort sessions by start time
@@ -1801,13 +1797,13 @@ export async function createMultiDayEvent(
     });
 
     revalidatePath("/scheduling");
-    return { success: true, data: result };
+    return success(result);
   } catch (error) {
     console.error("Error creating multi-day event:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to create multi-day event" };
+    return fail("Failed to create multi-day event");
   }
 }
 
@@ -1838,7 +1834,7 @@ export async function getMultiDayEvent(
     });
 
     if (!parentEvent) {
-      return { success: false, error: "Multi-day event not found" };
+      return fail("Multi-day event not found");
     }
 
     const sessions = await prisma.booking.findMany({
@@ -1853,13 +1849,13 @@ export async function getMultiDayEvent(
       orderBy: { startTime: "asc" },
     });
 
-    return { success: true, data: { parent: parentEvent, sessions } };
+    return success({ parent: parentEvent, sessions });
   } catch (error) {
     console.error("Error fetching multi-day event:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch multi-day event" };
+    return fail("Failed to fetch multi-day event");
   }
 }
 
@@ -1883,7 +1879,7 @@ export async function addSessionToMultiDayEvent(
     });
 
     if (!parentEvent) {
-      return { success: false, error: "Multi-day event not found" };
+      return fail("Multi-day event not found");
     }
 
     // Create the session
@@ -1927,13 +1923,13 @@ export async function addSessionToMultiDayEvent(
     });
 
     revalidatePath("/scheduling");
-    return { success: true, data: { sessionId: result } };
+    return success({ sessionId: result });
   } catch (error) {
     console.error("Error adding session to multi-day event:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to add session" };
+    return fail("Failed to add session");
   }
 }
 
@@ -1959,7 +1955,7 @@ export async function updateMultiDaySession(
     });
 
     if (!session || !session.multiDayParentId) {
-      return { success: false, error: "Session not found" };
+      return fail("Session not found");
     }
 
     await prisma.$transaction(async (tx) => {
@@ -1999,9 +1995,9 @@ export async function updateMultiDaySession(
   } catch (error) {
     console.error("Error updating multi-day session:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update session" };
+    return fail("Failed to update session");
   }
 }
 
@@ -2022,7 +2018,7 @@ export async function deleteMultiDaySession(
     });
 
     if (!session || !session.multiDayParentId) {
-      return { success: false, error: "Session not found" };
+      return fail("Session not found");
     }
 
     const parentId = session.multiDayParentId;
@@ -2057,9 +2053,9 @@ export async function deleteMultiDaySession(
   } catch (error) {
     console.error("Error deleting multi-day session:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete session" };
+    return fail("Failed to delete session");
   }
 }
 
@@ -2081,7 +2077,7 @@ export async function deleteMultiDayEvent(
     });
 
     if (!parentEvent) {
-      return { success: false, error: "Multi-day event not found" };
+      return fail("Multi-day event not found");
     }
 
     await prisma.$transaction(async (tx) => {
@@ -2099,9 +2095,9 @@ export async function deleteMultiDayEvent(
   } catch (error) {
     console.error("Error deleting multi-day event:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to delete multi-day event" };
+    return fail("Failed to delete multi-day event");
   }
 }
 
@@ -2148,13 +2144,13 @@ export async function getMultiDayEvents(): Promise<
       client: event.client,
     }));
 
-    return { success: true, data: result };
+    return success(result);
   } catch (error) {
     console.error("Error fetching multi-day events:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch multi-day events" };
+    return fail("Failed to fetch multi-day events");
   }
 }
 
@@ -2313,20 +2309,17 @@ export async function checkBookingConflicts(params: {
       }
     }
 
-    return {
-      success: true,
-      data: {
-        hasConflicts: conflicts.length > 0,
-        conflicts,
-        suggestions,
-      },
-    };
+    return success({
+      hasConflicts: conflicts.length > 0,
+      conflicts,
+      suggestions,
+    });
   } catch (error) {
     console.error("Error checking booking conflicts:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to check booking conflicts" };
+    return fail("Failed to check booking conflicts");
   }
 }
 
@@ -2414,16 +2407,13 @@ export async function getConflictsInRange(params: {
       }
     }
 
-    return {
-      success: true,
-      data: { conflicts: conflictPairs },
-    };
+    return success({ conflicts: conflictPairs });
   } catch (error) {
     console.error("Error getting conflicts in range:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to get conflicts" };
+    return fail("Failed to get conflicts");
   }
 }
 
@@ -2531,26 +2521,20 @@ export async function validateBookingTime(params: {
     if (bufferSettings.minAdvanceHours !== null) {
       const earliestAllowed = new Date(now.getTime() + bufferSettings.minAdvanceHours * 60 * 60 * 1000);
       if (params.startTime < earliestAllowed) {
-        return {
-          success: true,
-          data: {
-            valid: false,
-            message: `Bookings must be scheduled at least ${bufferSettings.minAdvanceHours} hours in advance.`,
-          },
-        };
+        return success({
+          valid: false,
+          message: `Bookings must be scheduled at least ${bufferSettings.minAdvanceHours} hours in advance.`,
+        });
       }
     }
 
     if (bufferSettings.maxAdvanceDays !== null) {
       const latestAllowed = new Date(now.getTime() + bufferSettings.maxAdvanceDays * 24 * 60 * 60 * 1000);
       if (params.startTime > latestAllowed) {
-        return {
-          success: true,
-          data: {
-            valid: false,
-            message: `Bookings cannot be scheduled more than ${bufferSettings.maxAdvanceDays} days out.`,
-          },
-        };
+        return success({
+          valid: false,
+          message: `Bookings cannot be scheduled more than ${bufferSettings.maxAdvanceDays} days out.`,
+        });
       }
     }
 
@@ -2562,13 +2546,10 @@ export async function validateBookingTime(params: {
     });
 
     if (availabilityConflict) {
-      return {
-        success: true,
-        data: {
-          valid: false,
-          message: `This time conflicts with "${availabilityConflict.title}"`,
-        },
-      };
+      return success({
+        valid: false,
+        message: `This time conflicts with "${availabilityConflict.title}"`,
+      });
     }
 
     const result = await checkBookingConflicts({
@@ -2587,25 +2568,19 @@ export async function validateBookingTime(params: {
           `"${c.title}"${c.clientName ? ` with ${c.clientName}` : ""} (${c.overlapMinutes}min overlap)`
       );
 
-      return {
-        success: true,
-        data: {
-          valid: false,
-          message: `This time conflicts with: ${conflictMessages.join(", ")}`,
-          conflicts: result.data.conflicts,
-        },
-      };
+      return success({
+        valid: false,
+        message: `This time conflicts with: ${conflictMessages.join(", ")}`,
+        conflicts: result.data.conflicts,
+      });
     }
 
-    return {
-      success: true,
-      data: { valid: true },
-    };
+    return success({ valid: true });
   } catch (error) {
     console.error("Error validating booking time:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to validate booking time" };
+    return fail("Failed to validate booking time");
   }
 }

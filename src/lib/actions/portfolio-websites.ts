@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
@@ -77,7 +77,7 @@ export async function createPortfolioWebsite(data: {
     return { success: true, id: website.id };
   } catch (error) {
     console.error("Error creating portfolio website:", error);
-    return { success: false, error: "Failed to create portfolio website" };
+    return fail("Failed to create portfolio website");
   }
 }
 
@@ -157,7 +157,7 @@ export async function updatePortfolioWebsite(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     let slug = website.slug;
@@ -184,7 +184,7 @@ export async function updatePortfolioWebsite(
     return ok();
   } catch (error) {
     console.error("Error updating portfolio website:", error);
-    return { success: false, error: "Failed to update portfolio website" };
+    return fail("Failed to update portfolio website");
   }
 }
 
@@ -201,7 +201,7 @@ export async function updatePortfolioWebsiteProjects(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     const validProjectIds = projectIds.filter(Boolean);
@@ -239,7 +239,7 @@ export async function updatePortfolioWebsiteProjects(
     return ok();
   } catch (error) {
     console.error("Error updating portfolio projects:", error);
-    return { success: false, error: "Failed to update portfolio projects" };
+    return fail("Failed to update portfolio projects");
   }
 }
 
@@ -256,7 +256,7 @@ export async function publishPortfolioWebsite(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     await prisma.portfolioWebsite.update({
@@ -272,7 +272,7 @@ export async function publishPortfolioWebsite(
     return ok();
   } catch (error) {
     console.error("Error publishing portfolio website:", error);
-    return { success: false, error: "Failed to update publish status" };
+    return fail("Failed to update publish status");
   }
 }
 
@@ -288,7 +288,7 @@ export async function deletePortfolioWebsite(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     await prisma.portfolioWebsite.delete({ where: { id } });
@@ -296,7 +296,7 @@ export async function deletePortfolioWebsite(
     return ok();
   } catch (error) {
     console.error("Error deleting portfolio website:", error);
-    return { success: false, error: "Failed to delete portfolio website" };
+    return fail("Failed to delete portfolio website");
   }
 }
 
@@ -321,7 +321,7 @@ export async function duplicatePortfolioWebsite(
     });
 
     if (!original) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     // Generate a unique slug for the copy
@@ -388,7 +388,7 @@ export async function duplicatePortfolioWebsite(
     return { success: true, id: duplicate.id };
   } catch (error) {
     console.error("Error duplicating portfolio website:", error);
-    return { success: false, error: "Failed to duplicate portfolio website" };
+    return fail("Failed to duplicate portfolio website");
   }
 }
 
@@ -464,7 +464,7 @@ export async function updatePortfolioWebsiteSettings(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     const validated = updatePortfolioSettingsSchema.parse(data);
@@ -493,7 +493,7 @@ export async function updatePortfolioWebsiteSettings(
     return ok();
   } catch (error) {
     console.error("Error updating portfolio settings:", error);
-    return { success: false, error: "Failed to update portfolio settings" };
+    return fail("Failed to update portfolio settings");
   }
 }
 
@@ -535,7 +535,7 @@ export async function createPortfolioSection(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     // Get the next position if not provided
@@ -566,7 +566,7 @@ export async function createPortfolioSection(
     return { success: true, id: section.id };
   } catch (error) {
     console.error("Error creating portfolio section:", error);
-    return { success: false, error: "Failed to create section" };
+    return fail("Failed to create section");
   }
 }
 
@@ -593,14 +593,14 @@ export async function updatePortfolioSection(
     });
 
     if (!section || section.portfolioWebsite.organizationId !== organizationId) {
-      return { success: false, error: "Section not found" };
+      return fail("Section not found");
     }
 
     // Validate config if provided
     if (data.config) {
       const validation = validateSectionConfig(section.sectionType, data.config);
       if (!validation.success) {
-        return { success: false, error: validation.error };
+        return fail(validation.error);
       }
     }
 
@@ -619,7 +619,7 @@ export async function updatePortfolioSection(
     return ok();
   } catch (error) {
     console.error("Error updating portfolio section:", error);
-    return { success: false, error: "Failed to update section" };
+    return fail("Failed to update section");
   }
 }
 
@@ -640,7 +640,7 @@ export async function deletePortfolioSection(
     });
 
     if (!section || section.portfolioWebsite.organizationId !== organizationId) {
-      return { success: false, error: "Section not found" };
+      return fail("Section not found");
     }
 
     await prisma.portfolioWebsiteSection.delete({ where: { id } });
@@ -663,7 +663,7 @@ export async function deletePortfolioSection(
     return ok();
   } catch (error) {
     console.error("Error deleting portfolio section:", error);
-    return { success: false, error: "Failed to delete section" };
+    return fail("Failed to delete section");
   }
 }
 
@@ -680,7 +680,7 @@ export async function reorderPortfolioSections(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     await prisma.$transaction(
@@ -697,7 +697,7 @@ export async function reorderPortfolioSections(
     return ok();
   } catch (error) {
     console.error("Error reordering portfolio sections:", error);
-    return { success: false, error: "Failed to reorder sections" };
+    return fail("Failed to reorder sections");
   }
 }
 
@@ -714,7 +714,7 @@ export async function initializePortfolioSections(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     // Don't initialize if sections already exist
@@ -757,7 +757,7 @@ export async function initializePortfolioSections(
     return ok();
   } catch (error) {
     console.error("Error initializing portfolio sections:", error);
-    return { success: false, error: "Failed to initialize sections" };
+    return fail("Failed to initialize sections");
   }
 }
 
@@ -778,7 +778,7 @@ export async function duplicatePortfolioSection(
     });
 
     if (!section || section.portfolioWebsite.organizationId !== organizationId) {
-      return { success: false, error: "Section not found" };
+      return fail("Section not found");
     }
 
     // Get the next position after this section
@@ -811,7 +811,7 @@ export async function duplicatePortfolioSection(
     return { success: true, id: duplicate.id };
   } catch (error) {
     console.error("Error duplicating portfolio section:", error);
-    return { success: false, error: "Failed to duplicate section" };
+    return fail("Failed to duplicate section");
   }
 }
 
@@ -832,7 +832,7 @@ export async function toggleSectionVisibility(
     });
 
     if (!section || section.portfolioWebsite.organizationId !== organizationId) {
-      return { success: false, error: "Section not found" };
+      return fail("Section not found");
     }
 
     const updated = await prisma.portfolioWebsiteSection.update({
@@ -845,7 +845,7 @@ export async function toggleSectionVisibility(
     return { success: true, isVisible: updated.isVisible };
   } catch (error) {
     console.error("Error toggling section visibility:", error);
-    return { success: false, error: "Failed to toggle visibility" };
+    return fail("Failed to toggle visibility");
   }
 }
 
@@ -869,12 +869,12 @@ export async function setPortfolioPassword(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     // If enabling password protection, password is required
     if (data.isPasswordProtected && !data.password && !website.password) {
-      return { success: false, error: "Password is required" };
+      return fail("Password is required");
     }
 
     // Hash the password if provided (simple hash for demo - in production use bcrypt)
@@ -900,7 +900,7 @@ export async function setPortfolioPassword(
     return ok();
   } catch (error) {
     console.error("Error setting portfolio password:", error);
-    return { success: false, error: "Failed to set password" };
+    return fail("Failed to set password");
   }
 }
 
@@ -915,7 +915,7 @@ export async function verifyPortfolioPassword(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     if (!website.isPasswordProtected) {
@@ -930,13 +930,13 @@ export async function verifyPortfolioPassword(
     const hashedInput = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
     if (hashedInput !== website.password) {
-      return { success: false, error: "Incorrect password" };
+      return fail("Incorrect password");
     }
 
     return ok();
   } catch (error) {
     console.error("Error verifying portfolio password:", error);
-    return { success: false, error: "Failed to verify password" };
+    return fail("Failed to verify password");
   }
 }
 
@@ -964,7 +964,7 @@ export async function updatePortfolioAdvancedSettings(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     await prisma.portfolioWebsite.update({
@@ -984,7 +984,7 @@ export async function updatePortfolioAdvancedSettings(
     return ok();
   } catch (error) {
     console.error("Error updating advanced settings:", error);
-    return { success: false, error: "Failed to update settings" };
+    return fail("Failed to update settings");
   }
 }
 
@@ -1001,12 +1001,12 @@ export async function schedulePortfolioPublish(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     // Validate scheduled date is in the future
     if (scheduledAt && scheduledAt <= new Date()) {
-      return { success: false, error: "Scheduled time must be in the future" };
+      return fail("Scheduled time must be in the future");
     }
 
     await prisma.portfolioWebsite.update({
@@ -1020,7 +1020,7 @@ export async function schedulePortfolioPublish(
     return ok();
   } catch (error) {
     console.error("Error scheduling portfolio publish:", error);
-    return { success: false, error: "Failed to schedule publication" };
+    return fail("Failed to schedule publication");
   }
 }
 
@@ -1066,7 +1066,7 @@ export async function getScheduledPortfolios(): Promise<{
     };
   } catch (error) {
     console.error("Error getting scheduled portfolios:", error);
-    return { success: false, error: "Failed to get scheduled portfolios" };
+    return fail("Failed to get scheduled portfolios");
   }
 }
 
@@ -1138,16 +1138,16 @@ export async function trackPortfolioView(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     // Check if portfolio is published and not expired
     if (!website.isPublished) {
-      return { success: false, error: "Portfolio not published" };
+      return fail("Portfolio not published");
     }
 
     if (website.expiresAt && website.expiresAt < new Date()) {
-      return { success: false, error: "Portfolio expired" };
+      return fail("Portfolio expired");
     }
 
     const view = await prisma.portfolioWebsiteView.create({
@@ -1167,7 +1167,7 @@ export async function trackPortfolioView(
     return { success: true, viewId: view.id };
   } catch (error) {
     console.error("Error tracking portfolio view:", error);
-    return { success: false, error: "Failed to track view" };
+    return fail("Failed to track view");
   }
 }
 
@@ -1190,7 +1190,7 @@ export async function updatePortfolioViewEngagement(
     return ok();
   } catch (error) {
     console.error("Error updating view engagement:", error);
-    return { success: false, error: "Failed to update engagement" };
+    return fail("Failed to update engagement");
   }
 }
 
@@ -1230,7 +1230,7 @@ export async function getPortfolioAnalytics(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio website not found" };
+      return fail("Portfolio website not found");
     }
 
     // Calculate date range
@@ -1355,7 +1355,7 @@ export async function getPortfolioAnalytics(
     };
   } catch (error) {
     console.error("Error getting portfolio analytics:", error);
-    return { success: false, error: "Failed to get analytics" };
+    return fail("Failed to get analytics");
   }
 }
 
@@ -1393,13 +1393,13 @@ export async function submitPortfolioContactForm(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     // Get owner's email
     const owner = website.organization.members[0]?.user;
     if (!owner) {
-      return { success: false, error: "No recipient found" };
+      return fail("No recipient found");
     }
 
     // Build the portfolio URL
@@ -1445,7 +1445,7 @@ export async function submitPortfolioContactForm(
     return ok();
   } catch (error) {
     console.error("Error submitting contact form:", error);
-    return { success: false, error: "Failed to send message" };
+    return fail("Failed to send message");
   }
 }
 
@@ -1489,7 +1489,7 @@ export async function addCustomDomain(
     const cleanDomain = domain.toLowerCase().trim().replace(/^(https?:\/\/)?(www\.)?/, "").replace(/\/$/, "");
 
     if (!isValidDomain(cleanDomain)) {
-      return { success: false, error: "Invalid domain format. Please enter a valid domain like 'portfolio.example.com'" };
+      return fail("Invalid domain format. Please enter a valid domain like 'portfolio.example.com'");
     }
 
     // Check if portfolio exists and belongs to org
@@ -1498,7 +1498,7 @@ export async function addCustomDomain(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     // Check if domain is already in use by another portfolio
@@ -1510,7 +1510,7 @@ export async function addCustomDomain(
     });
 
     if (existingDomain) {
-      return { success: false, error: "This domain is already in use by another portfolio" };
+      return fail("This domain is already in use by another portfolio");
     }
 
     // Generate verification token
@@ -1531,7 +1531,7 @@ export async function addCustomDomain(
     return { success: true, verificationToken };
   } catch (error) {
     console.error("Error adding custom domain:", error);
-    return { success: false, error: "Failed to add custom domain" };
+    return fail("Failed to add custom domain");
   }
 }
 
@@ -1556,11 +1556,11 @@ export async function verifyCustomDomain(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     if (!website.customDomain) {
-      return { success: false, error: "No custom domain configured" };
+      return fail("No custom domain configured");
     }
 
     if (website.customDomainVerified) {
@@ -1601,7 +1601,7 @@ export async function verifyCustomDomain(
     }
   } catch (error) {
     console.error("Error verifying custom domain:", error);
-    return { success: false, error: "Failed to verify domain" };
+    return fail("Failed to verify domain");
   }
 }
 
@@ -1620,7 +1620,7 @@ export async function removeCustomDomain(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     await prisma.portfolioWebsite.update({
@@ -1637,7 +1637,7 @@ export async function removeCustomDomain(
     return ok();
   } catch (error) {
     console.error("Error removing custom domain:", error);
-    return { success: false, error: "Failed to remove custom domain" };
+    return fail("Failed to remove custom domain");
   }
 }
 
@@ -1673,7 +1673,7 @@ export async function getCustomDomainStatus(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     return {
@@ -1688,7 +1688,7 @@ export async function getCustomDomainStatus(
     };
   } catch (error) {
     console.error("Error getting custom domain status:", error);
-    return { success: false, error: "Failed to get domain status" };
+    return fail("Failed to get domain status");
   }
 }
 
@@ -1718,18 +1718,18 @@ export async function getPortfolioByCustomDomain(
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     // Check if expired
     if (website.expiresAt && website.expiresAt < new Date()) {
-      return { success: false, error: "Portfolio expired" };
+      return fail("Portfolio expired");
     }
 
     return { success: true, slug: website.slug };
   } catch (error) {
     console.error("Error finding portfolio by domain:", error);
-    return { success: false, error: "Failed to find portfolio" };
+    return fail("Failed to find portfolio");
   }
 }
 
@@ -1751,19 +1751,19 @@ export async function submitPortfolioInquiry(input: {
   try {
     // Validate required fields
     if (!input.name?.trim()) {
-      return { success: false, error: "Name is required" };
+      return fail("Name is required");
     }
     if (!input.email?.trim()) {
-      return { success: false, error: "Email is required" };
+      return fail("Email is required");
     }
     if (!input.message?.trim()) {
-      return { success: false, error: "Message is required" };
+      return fail("Message is required");
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(input.email)) {
-      return { success: false, error: "Invalid email address" };
+      return fail("Invalid email address");
     }
 
     // Get the portfolio website to verify it exists and get org ID
@@ -1792,11 +1792,11 @@ export async function submitPortfolioInquiry(input: {
     });
 
     if (!website) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     if (!website.isPublished) {
-      return { success: false, error: "Portfolio is not published" };
+      return fail("Portfolio is not published");
     }
 
     // Create the inquiry
@@ -1840,7 +1840,7 @@ export async function submitPortfolioInquiry(input: {
     return ok();
   } catch (error) {
     console.error("Error submitting portfolio inquiry:", error);
-    return { success: false, error: "Failed to submit inquiry" };
+    return fail("Failed to submit inquiry");
   }
 }
 
@@ -1894,7 +1894,7 @@ export async function updatePortfolioInquiryStatus(
     });
 
     if (!inquiry) {
-      return { success: false, error: "Inquiry not found" };
+      return fail("Inquiry not found");
     }
 
     await prisma.portfolioInquiry.update({
@@ -1910,7 +1910,7 @@ export async function updatePortfolioInquiryStatus(
     return ok();
   } catch (error) {
     console.error("Error updating inquiry status:", error);
-    return { success: false, error: "Failed to update inquiry" };
+    return fail("Failed to update inquiry");
   }
 }
 
@@ -1943,7 +1943,7 @@ export async function convertPortfolioInquiryToClient(
     });
 
     if (!inquiry) {
-      return { success: false, error: "Inquiry not found" };
+      return fail("Inquiry not found");
     }
 
     // Check if client with this email already exists
@@ -2008,6 +2008,6 @@ export async function convertPortfolioInquiryToClient(
     return { success: true, clientId: client.id };
   } catch (error) {
     console.error("Error converting inquiry to client:", error);
-    return { success: false, error: "Failed to convert inquiry to client" };
+    return fail("Failed to convert inquiry to client");
   }
 }

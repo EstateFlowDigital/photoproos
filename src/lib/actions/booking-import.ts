@@ -10,7 +10,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { BookingStatus } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
+import { fail, type ActionResult } from "@/lib/types/action-result";
 
 // CSV row structure for booking import
 interface CSVBookingRow {
@@ -354,29 +354,26 @@ export async function previewBookingImport(
 
     const rows = parseCSV(csvContent);
     if (rows.length < 2) {
-      return { success: false, error: "CSV must have headers and at least one data row" };
+      return fail("CSV must have headers and at least one data row");
     }
 
     const headers = rows[0];
     const headerMapping = mapHeaders(headers);
 
     if (!headerMapping.size) {
-      return {
-        success: false,
-        error: "Could not recognize any valid headers. Expected: title, startDate, startTime, endTime",
-      };
+      return fail("Could not recognize any valid headers. Expected: title, startDate, startTime, endTime",);
     }
 
     // Check for required headers
     const mappedFields = new Set(headerMapping.values());
     if (!mappedFields.has("title")) {
-      return { success: false, error: "Missing required header: title (or name, event)" };
+      return fail("Missing required header: title (or name, event)");
     }
     if (!mappedFields.has("startDate")) {
-      return { success: false, error: "Missing required header: startDate (or date)" };
+      return fail("Missing required header: startDate (or date)");
     }
     if (!mappedFields.has("startTime")) {
-      return { success: false, error: "Missing required header: startTime (or time)" };
+      return fail("Missing required header: startTime (or time)");
     }
 
     // Load existing clients and services for matching
@@ -444,9 +441,9 @@ export async function previewBookingImport(
   } catch (error) {
     console.error("[BookingImport] Preview error:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to preview import" };
+    return fail("Failed to preview import");
   }
 }
 
@@ -467,7 +464,7 @@ export async function importBookings(
     // First, run the preview to get validation results
     const previewResult = await previewBookingImport(csvContent);
     if (!previewResult.success) {
-      return { success: false, error: previewResult.error };
+      return fail(previewResult.error);
     }
 
     const { validationResults } = previewResult.data;
@@ -475,10 +472,7 @@ export async function importBookings(
     // Check for invalid rows
     const invalidRows = validationResults.filter((r) => !r.isValid);
     if (invalidRows.length > 0 && !options?.skipInvalid) {
-      return {
-        success: false,
-        error: `${invalidRows.length} row(s) have validation errors. Fix them or enable "Skip Invalid Rows".`,
-      };
+      return fail(`${invalidRows.length} row(s) have validation errors. Fix them or enable "Skip Invalid Rows".`);
     }
 
     // Import valid rows
@@ -567,9 +561,9 @@ export async function importBookings(
   } catch (error) {
     console.error("[BookingImport] Import error:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to import bookings" };
+    return fail("Failed to import bookings");
   }
 }
 
@@ -587,8 +581,8 @@ export async function getBookingImportTemplate(): Promise<ActionResult<string>> 
   } catch (error) {
     console.error("[BookingImport] Template error:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to generate template" };
+    return fail("Failed to generate template");
   }
 }

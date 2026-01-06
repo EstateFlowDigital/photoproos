@@ -1,5 +1,6 @@
 "use server";
 
+import { fail } from "@/lib/types/action-result";
 import { auth } from "@clerk/nextjs/server";
 import {
   generatePresignedUploadUrl,
@@ -46,25 +47,19 @@ export async function getServiceImageUploadUrl(
     const { orgId } = await auth();
 
     if (!orgId) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const { filename, contentType, size, entityType, entityId } = request;
 
     // Validate file type
     if (!isAllowedImageType(contentType)) {
-      return {
-        success: false,
-        error: "Invalid file type. Allowed: JPEG, PNG, GIF, WEBP",
-      };
+      return fail("Invalid file type. Allowed: JPEG, PNG, GIF, WEBP",);
     }
 
     // Validate file size
     if (!isValidFileSize(size)) {
-      return {
-        success: false,
-        error: "File too large. Maximum size is 50MB",
-      };
+      return fail("File too large. Maximum size is 50MB",);
     }
 
     // Generate unique file key
@@ -92,9 +87,6 @@ export async function getServiceImageUploadUrl(
     };
   } catch (error) {
     console.error("[ServiceImages] Error generating presigned URL:", error);
-    return {
-      success: false,
-      error: "Failed to generate upload URL. Please try again.",
-    };
+    return fail("Failed to generate upload URL. Please try again.",);
   }
 }

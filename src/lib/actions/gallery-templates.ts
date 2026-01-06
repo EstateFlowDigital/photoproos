@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { ok } from "@/lib/types/action-result";
+import { ok, fail } from "@/lib/types/action-result";
 
 export interface GalleryTemplateInput {
   name: string;
@@ -25,7 +25,7 @@ export interface GalleryTemplateInput {
 export async function getGalleryTemplates() {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -35,7 +35,7 @@ export async function getGalleryTemplates() {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const templates = await prisma.galleryTemplate.findMany({
@@ -51,7 +51,7 @@ export async function getGalleryTemplates() {
     return { success: true, data: templates };
   } catch (error) {
     console.error("Error fetching gallery templates:", error);
-    return { success: false, error: "Failed to fetch templates" };
+    return fail("Failed to fetch templates");
   }
 }
 
@@ -59,7 +59,7 @@ export async function getGalleryTemplates() {
 export async function getGalleryTemplate(id: string) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -69,7 +69,7 @@ export async function getGalleryTemplate(id: string) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     const template = await prisma.galleryTemplate.findFirst({
@@ -82,13 +82,13 @@ export async function getGalleryTemplate(id: string) {
     });
 
     if (!template) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     return { success: true, data: template };
   } catch (error) {
     console.error("Error fetching gallery template:", error);
-    return { success: false, error: "Failed to fetch template" };
+    return fail("Failed to fetch template");
   }
 }
 
@@ -96,7 +96,7 @@ export async function getGalleryTemplate(id: string) {
 export async function createGalleryTemplate(input: GalleryTemplateInput) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -106,7 +106,7 @@ export async function createGalleryTemplate(input: GalleryTemplateInput) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // If this is set as default, unset other defaults
@@ -142,7 +142,7 @@ export async function createGalleryTemplate(input: GalleryTemplateInput) {
     return { success: true, data: template };
   } catch (error) {
     console.error("Error creating gallery template:", error);
-    return { success: false, error: "Failed to create template" };
+    return fail("Failed to create template");
   }
 }
 
@@ -150,7 +150,7 @@ export async function createGalleryTemplate(input: GalleryTemplateInput) {
 export async function updateGalleryTemplate(id: string, input: Partial<GalleryTemplateInput>) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -160,7 +160,7 @@ export async function updateGalleryTemplate(id: string, input: Partial<GalleryTe
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify template belongs to this organization
@@ -169,7 +169,7 @@ export async function updateGalleryTemplate(id: string, input: Partial<GalleryTe
     });
 
     if (!existing) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     // If this is set as default, unset other defaults
@@ -205,7 +205,7 @@ export async function updateGalleryTemplate(id: string, input: Partial<GalleryTe
     return { success: true, data: template };
   } catch (error) {
     console.error("Error updating gallery template:", error);
-    return { success: false, error: "Failed to update template" };
+    return fail("Failed to update template");
   }
 }
 
@@ -213,7 +213,7 @@ export async function updateGalleryTemplate(id: string, input: Partial<GalleryTe
 export async function deleteGalleryTemplate(id: string) {
   const { orgId } = await auth();
   if (!orgId) {
-    return { success: false, error: "Not authenticated" };
+    return fail("Not authenticated");
   }
 
   try {
@@ -223,7 +223,7 @@ export async function deleteGalleryTemplate(id: string) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Verify template belongs to this organization
@@ -232,7 +232,7 @@ export async function deleteGalleryTemplate(id: string) {
     });
 
     if (!existing) {
-      return { success: false, error: "Template not found" };
+      return fail("Template not found");
     }
 
     await prisma.galleryTemplate.delete({
@@ -245,7 +245,7 @@ export async function deleteGalleryTemplate(id: string) {
     return ok();
   } catch (error) {
     console.error("Error deleting gallery template:", error);
-    return { success: false, error: "Failed to delete template" };
+    return fail("Failed to delete template");
   }
 }
 

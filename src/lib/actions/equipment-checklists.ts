@@ -12,7 +12,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
-import { ok, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -61,7 +61,7 @@ export async function getBookingTypeEquipmentRequirements(
     });
 
     if (!bookingType) {
-      return { success: false, error: "Booking type not found" };
+      return fail("Booking type not found");
     }
 
     const requirements = await prisma.bookingTypeEquipmentRequirement.findMany({
@@ -83,9 +83,9 @@ export async function getBookingTypeEquipmentRequirements(
   } catch (error) {
     console.error("Error fetching equipment requirements:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch equipment requirements" };
+    return fail("Failed to fetch equipment requirements");
   }
 }
 
@@ -105,7 +105,7 @@ export async function setBookingTypeEquipmentRequirements(
     });
 
     if (!bookingType) {
-      return { success: false, error: "Booking type not found" };
+      return fail("Booking type not found");
     }
 
     // Verify all equipment belongs to organization
@@ -118,7 +118,7 @@ export async function setBookingTypeEquipmentRequirements(
     });
 
     if (equipment.length !== equipmentIds.length) {
-      return { success: false, error: "Some equipment items not found" };
+      return fail("Some equipment items not found");
     }
 
     // Replace all requirements in a transaction
@@ -147,9 +147,9 @@ export async function setBookingTypeEquipmentRequirements(
   } catch (error) {
     console.error("Error setting equipment requirements:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to set equipment requirements" };
+    return fail("Failed to set equipment requirements");
   }
 }
 
@@ -174,10 +174,10 @@ export async function addEquipmentRequirement(
     ]);
 
     if (!bookingType) {
-      return { success: false, error: "Booking type not found" };
+      return fail("Booking type not found");
     }
     if (!equipment) {
-      return { success: false, error: "Equipment not found" };
+      return fail("Equipment not found");
     }
 
     const created = await prisma.bookingTypeEquipmentRequirement.create({
@@ -195,9 +195,9 @@ export async function addEquipmentRequirement(
   } catch (error) {
     console.error("Error adding equipment requirement:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to add equipment requirement" };
+    return fail("Failed to add equipment requirement");
   }
 }
 
@@ -217,7 +217,7 @@ export async function removeEquipmentRequirement(
     });
 
     if (!requirement || requirement.bookingType.organizationId !== organizationId) {
-      return { success: false, error: "Requirement not found" };
+      return fail("Requirement not found");
     }
 
     await prisma.bookingTypeEquipmentRequirement.delete({
@@ -229,9 +229,9 @@ export async function removeEquipmentRequirement(
   } catch (error) {
     console.error("Error removing equipment requirement:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to remove equipment requirement" };
+    return fail("Failed to remove equipment requirement");
   }
 }
 
@@ -313,7 +313,7 @@ export async function getBookingEquipmentChecklist(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Get requirements from booking type
@@ -364,9 +364,9 @@ export async function getBookingEquipmentChecklist(
   } catch (error) {
     console.error("Error fetching equipment checklist:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch equipment checklist" };
+    return fail("Failed to fetch equipment checklist");
   }
 }
 
@@ -388,7 +388,7 @@ export async function toggleEquipmentCheck(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Verify equipment belongs to organization
@@ -397,7 +397,7 @@ export async function toggleEquipmentCheck(
     });
 
     if (!equipment) {
-      return { success: false, error: "Equipment not found" };
+      return fail("Equipment not found");
     }
 
     // Get current user
@@ -438,9 +438,9 @@ export async function toggleEquipmentCheck(
   } catch (error) {
     console.error("Error toggling equipment check:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to toggle equipment check" };
+    return fail("Failed to toggle equipment check");
   }
 }
 
@@ -467,7 +467,7 @@ export async function checkAllEquipment(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     const requirements = booking.bookingType?.equipmentRequirements || [];
@@ -516,9 +516,9 @@ export async function checkAllEquipment(
   } catch (error) {
     console.error("Error checking all equipment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to check all equipment" };
+    return fail("Failed to check all equipment");
   }
 }
 
@@ -537,7 +537,7 @@ export async function uncheckAllEquipment(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     // Delete all check records for this booking
@@ -550,9 +550,9 @@ export async function uncheckAllEquipment(
   } catch (error) {
     console.error("Error unchecking all equipment:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to uncheck all equipment" };
+    return fail("Failed to uncheck all equipment");
   }
 }
 
@@ -618,9 +618,9 @@ export async function getBookingChecklistSummaries(
   } catch (error) {
     console.error("Error fetching checklist summaries:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to fetch checklist summaries" };
+    return fail("Failed to fetch checklist summaries");
   }
 }
 
@@ -641,7 +641,7 @@ export async function updateEquipmentCheckNote(
     });
 
     if (!booking) {
-      return { success: false, error: "Booking not found" };
+      return fail("Booking not found");
     }
 
     await prisma.bookingEquipmentCheck.upsert({
@@ -667,8 +667,8 @@ export async function updateEquipmentCheckNote(
   } catch (error) {
     console.error("Error updating equipment check note:", error);
     if (error instanceof Error) {
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: false, error: "Failed to update equipment check note" };
+    return fail("Failed to update equipment check note");
   }
 }

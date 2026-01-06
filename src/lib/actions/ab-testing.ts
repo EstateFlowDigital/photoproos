@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
@@ -76,7 +76,7 @@ export async function getABTests(portfolioId?: string) {
     return { success: true, tests };
   } catch (error) {
     console.error("Error fetching A/B tests:", error);
-    return { success: false, error: "Failed to fetch A/B tests" };
+    return fail("Failed to fetch A/B tests");
   }
 }
 
@@ -106,13 +106,13 @@ export async function getABTest(testId: string) {
     });
 
     if (!test) {
-      return { success: false, error: "A/B test not found" };
+      return fail("A/B test not found");
     }
 
     return { success: true, test };
   } catch (error) {
     console.error("Error fetching A/B test:", error);
-    return { success: false, error: "Failed to fetch A/B test" };
+    return fail("Failed to fetch A/B test");
   }
 }
 
@@ -127,7 +127,7 @@ export async function createABTest(input: CreateABTestInput) {
     });
 
     if (!portfolio) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     // Check for existing active test
@@ -139,7 +139,7 @@ export async function createABTest(input: CreateABTestInput) {
     });
 
     if (existingTest) {
-      return { success: false, error: "Portfolio already has an active A/B test. Complete or delete it first." };
+      return fail("Portfolio already has an active A/B test. Complete or delete it first.");
     }
 
     // Validate traffic split
@@ -147,7 +147,7 @@ export async function createABTest(input: CreateABTestInput) {
     const variantPercent = input.variantTrafficPercent ?? 50;
 
     if (controlPercent + variantPercent !== 100) {
-      return { success: false, error: "Traffic percentages must add up to 100" };
+      return fail("Traffic percentages must add up to 100");
     }
 
     const test = await prisma.portfolioABTest.create({
@@ -173,7 +173,7 @@ export async function createABTest(input: CreateABTestInput) {
     return { success: true, test };
   } catch (error) {
     console.error("Error creating A/B test:", error);
-    return { success: false, error: "Failed to create A/B test" };
+    return fail("Failed to create A/B test");
   }
 }
 
@@ -187,12 +187,12 @@ export async function updateABTest(testId: string, input: UpdateABTestInput) {
     });
 
     if (!existing) {
-      return { success: false, error: "A/B test not found" };
+      return fail("A/B test not found");
     }
 
     // Can only update draft tests
     if (existing.status !== "draft") {
-      return { success: false, error: "Cannot update a running or completed test" };
+      return fail("Cannot update a running or completed test");
     }
 
     // Validate traffic split if provided
@@ -201,7 +201,7 @@ export async function updateABTest(testId: string, input: UpdateABTestInput) {
       const variantPercent = input.variantTrafficPercent ?? existing.variantTrafficPercent;
 
       if (controlPercent + variantPercent !== 100) {
-        return { success: false, error: "Traffic percentages must add up to 100" };
+        return fail("Traffic percentages must add up to 100");
       }
     }
 
@@ -214,7 +214,7 @@ export async function updateABTest(testId: string, input: UpdateABTestInput) {
     return { success: true, test };
   } catch (error) {
     console.error("Error updating A/B test:", error);
-    return { success: false, error: "Failed to update A/B test" };
+    return fail("Failed to update A/B test");
   }
 }
 
@@ -228,7 +228,7 @@ export async function deleteABTest(testId: string) {
     });
 
     if (!test) {
-      return { success: false, error: "A/B test not found" };
+      return fail("A/B test not found");
     }
 
     await prisma.portfolioABTest.delete({
@@ -239,7 +239,7 @@ export async function deleteABTest(testId: string) {
     return ok();
   } catch (error) {
     console.error("Error deleting A/B test:", error);
-    return { success: false, error: "Failed to delete A/B test" };
+    return fail("Failed to delete A/B test");
   }
 }
 
@@ -257,11 +257,11 @@ export async function startABTest(testId: string) {
     });
 
     if (!test) {
-      return { success: false, error: "A/B test not found" };
+      return fail("A/B test not found");
     }
 
     if (test.status !== "draft" && test.status !== "paused") {
-      return { success: false, error: "Can only start draft or paused tests" };
+      return fail("Can only start draft or paused tests");
     }
 
     await prisma.portfolioABTest.update({
@@ -276,7 +276,7 @@ export async function startABTest(testId: string) {
     return ok();
   } catch (error) {
     console.error("Error starting A/B test:", error);
-    return { success: false, error: "Failed to start A/B test" };
+    return fail("Failed to start A/B test");
   }
 }
 
@@ -290,11 +290,11 @@ export async function pauseABTest(testId: string) {
     });
 
     if (!test) {
-      return { success: false, error: "A/B test not found" };
+      return fail("A/B test not found");
     }
 
     if (test.status !== "running") {
-      return { success: false, error: "Can only pause running tests" };
+      return fail("Can only pause running tests");
     }
 
     await prisma.portfolioABTest.update({
@@ -306,7 +306,7 @@ export async function pauseABTest(testId: string) {
     return ok();
   } catch (error) {
     console.error("Error pausing A/B test:", error);
-    return { success: false, error: "Failed to pause A/B test" };
+    return fail("Failed to pause A/B test");
   }
 }
 
@@ -320,7 +320,7 @@ export async function completeABTest(testId: string, winningVariant?: "control" 
     });
 
     if (!test) {
-      return { success: false, error: "A/B test not found" };
+      return fail("A/B test not found");
     }
 
     await prisma.portfolioABTest.update({
@@ -336,7 +336,7 @@ export async function completeABTest(testId: string, winningVariant?: "control" 
     return ok();
   } catch (error) {
     console.error("Error completing A/B test:", error);
-    return { success: false, error: "Failed to complete A/B test" };
+    return fail("Failed to complete A/B test");
   }
 }
 
@@ -367,7 +367,7 @@ export async function getABTestVariant(
     });
 
     if (!portfolio) {
-      return { success: false, error: "Portfolio not found" };
+      return fail("Portfolio not found");
     }
 
     // Check for active A/B test
@@ -441,7 +441,7 @@ export async function getABTestVariant(
     };
   } catch (error) {
     console.error("Error getting A/B test variant:", error);
-    return { success: false, error: "Failed to get variant" };
+    return fail("Failed to get variant");
   }
 }
 
@@ -479,7 +479,7 @@ export async function recordABTestConversion(
     return ok();
   } catch (error) {
     console.error("Error recording conversion:", error);
-    return { success: false, error: "Failed to record conversion" };
+    return fail("Failed to record conversion");
   }
 }
 
@@ -502,7 +502,7 @@ export async function getABTestStats(testId: string) {
     });
 
     if (!test) {
-      return { success: false, error: "A/B test not found" };
+      return fail("A/B test not found");
     }
 
     // Calculate conversion rates
@@ -571,7 +571,7 @@ export async function getABTestStats(testId: string) {
     };
   } catch (error) {
     console.error("Error fetching A/B test stats:", error);
-    return { success: false, error: "Failed to fetch stats" };
+    return fail("Failed to fetch stats");
   }
 }
 

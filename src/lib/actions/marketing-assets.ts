@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -75,12 +75,12 @@ export async function generatePropertyFlyer(input: GenerateFlyerInput): Promise<
     });
 
     if (!propertyWebsite) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     const client = propertyWebsite.project.client;
     if (!client) {
-      return { success: false, error: "No client associated with this property" };
+      return fail("No client associated with this property");
     }
 
     // Get photo URLs
@@ -122,10 +122,7 @@ export async function generatePropertyFlyer(input: GenerateFlyerInput): Promise<
     };
   } catch (error) {
     console.error("Error generating flyer:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to generate flyer",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to generate flyer",);
   }
 }
 
@@ -173,12 +170,12 @@ export async function generateSocialSquare(input: GenerateSocialInput): Promise<
     });
 
     if (!propertyWebsite) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     const client = propertyWebsite.project.client;
     if (!client) {
-      return { success: false, error: "No client associated with this property" };
+      return fail("No client associated with this property");
     }
 
     const photo = propertyWebsite.project.assets[0]?.thumbnailUrl ||
@@ -214,10 +211,7 @@ export async function generateSocialSquare(input: GenerateSocialInput): Promise<
     };
   } catch (error) {
     console.error("Error generating social square:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to generate social graphic",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to generate social graphic",);
   }
 }
 
@@ -246,7 +240,7 @@ export async function saveMarketingAsset(input: {
     });
 
     if (!propertyWebsite) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     const asset = await prisma.marketingAsset.create({
@@ -262,10 +256,7 @@ export async function saveMarketingAsset(input: {
     return { success: true, assetId: asset.id };
   } catch (error) {
     console.error("Error saving marketing asset:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to save marketing asset",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to save marketing asset",);
   }
 }
 
@@ -306,7 +297,7 @@ export async function getPropertyMarketingAssets(propertyWebsiteId: string): Pro
     });
 
     if (!propertyWebsite) {
-      return { success: false, error: "Property website not found" };
+      return fail("Property website not found");
     }
 
     return {
@@ -315,10 +306,7 @@ export async function getPropertyMarketingAssets(propertyWebsiteId: string): Pro
     };
   } catch (error) {
     console.error("Error fetching marketing assets:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch marketing assets",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to fetch marketing assets",);
   }
 }
 
@@ -343,7 +331,7 @@ export async function deleteMarketingAsset(assetId: string): Promise<VoidActionR
     });
 
     if (!asset) {
-      return { success: false, error: "Marketing asset not found" };
+      return fail("Marketing asset not found");
     }
 
     await prisma.marketingAsset.delete({
@@ -353,9 +341,6 @@ export async function deleteMarketingAsset(assetId: string): Promise<VoidActionR
     return ok();
   } catch (error) {
     console.error("Error deleting marketing asset:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete marketing asset",
-    };
+    return fail(error instanceof Error ? error.message : "Failed to delete marketing asset",);
   }
 }

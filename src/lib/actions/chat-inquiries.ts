@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
@@ -19,14 +19,14 @@ export async function submitChatInquiry(input: {
   try {
     // Validate required fields
     if (!input.message?.trim()) {
-      return { success: false, error: "Message is required" };
+      return fail("Message is required");
     }
 
     // Validate email format if provided
     if (input.email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(input.email)) {
-        return { success: false, error: "Invalid email address" };
+        return fail("Invalid email address");
       }
     }
 
@@ -61,7 +61,7 @@ export async function submitChatInquiry(input: {
     return ok();
   } catch (error) {
     console.error("Error submitting chat inquiry:", error);
-    return { success: false, error: "Failed to submit message" };
+    return fail("Failed to submit message");
   }
 }
 
@@ -111,7 +111,7 @@ export async function updateChatInquiryStatus(
     return ok();
   } catch (error) {
     console.error("Error updating chat inquiry status:", error);
-    return { success: false, error: "Failed to update inquiry" };
+    return fail("Failed to update inquiry");
   }
 }
 
@@ -138,13 +138,13 @@ export async function convertChatInquiryToClient(
     });
 
     if (!inquiry) {
-      return { success: false, error: "Inquiry not found" };
+      return fail("Inquiry not found");
     }
 
     // Determine email to use
     const email = additionalData?.email || inquiry.email;
     if (!email) {
-      return { success: false, error: "Email is required to create a client" };
+      return fail("Email is required to create a client");
     }
 
     // Check if client with this email already exists
@@ -209,7 +209,7 @@ export async function convertChatInquiryToClient(
     return { success: true, clientId: client.id };
   } catch (error) {
     console.error("Error converting chat inquiry to client:", error);
-    return { success: false, error: "Failed to convert inquiry to client" };
+    return fail("Failed to convert inquiry to client");
   }
 }
 
