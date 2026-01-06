@@ -1476,3 +1476,174 @@ export async function getTaskAnalytics(): Promise<{
     };
   }
 }
+
+// ============================================================================
+// BULK OPERATIONS
+// ============================================================================
+
+/**
+ * Bulk move tasks to a column
+ */
+export async function bulkMoveTasks(
+  taskIds: string[],
+  columnId: string
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Verify all tasks belong to the organization
+    const tasks = await prisma.task.findMany({
+      where: {
+        id: { in: taskIds },
+        organizationId,
+      },
+      select: { id: true },
+    });
+
+    if (tasks.length !== taskIds.length) {
+      return { success: false, error: "Some tasks not found or unauthorized" };
+    }
+
+    // Get the target column
+    const column = await prisma.taskColumn.findFirst({
+      where: {
+        id: columnId,
+        board: { organizationId },
+      },
+    });
+
+    if (!column) {
+      return { success: false, error: "Column not found" };
+    }
+
+    // Get max position in target column
+    const maxPosition = await prisma.task.aggregate({
+      where: { columnId },
+      _max: { position: true },
+    });
+
+    let position = (maxPosition._max.position || 0) + 1;
+
+    // Update all tasks
+    await prisma.$transaction(
+      taskIds.map((taskId) =>
+        prisma.task.update({
+          where: { id: taskId },
+          data: {
+            columnId,
+            position: position++,
+            status: getStatusForColumn(column.name, "todo"),
+          },
+        })
+      )
+    );
+
+    revalidatePath("/projects");
+    return { success: true, count: taskIds.length };
+  } catch (error) {
+    console.error("Error bulk moving tasks:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to move tasks",
+    };
+  }
+}
+
+/**
+ * Bulk update task priority
+ */
+export async function bulkUpdatePriority(
+  taskIds: string[],
+  priority: TaskPriority
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const result = await prisma.task.updateMany({
+      where: {
+        id: { in: taskIds },
+        organizationId,
+      },
+      data: { priority },
+    });
+
+    revalidatePath("/projects");
+    return { success: true, count: result.count };
+  } catch (error) {
+    console.error("Error bulk updating priority:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update priority",
+    };
+  }
+}
+
+/**
+ * Bulk assign tasks to a team member
+ */
+export async function bulkAssignTasks(
+  taskIds: string[],
+  assigneeId: string | null
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // If assigning to someone, verify they exist
+    if (assigneeId) {
+      const user = await prisma.user.findUnique({
+        where: { id: assigneeId },
+      });
+      if (!user) {
+        return { success: false, error: "Assignee not found" };
+      }
+    }
+
+    const result = await prisma.task.updateMany({
+      where: {
+        id: { in: taskIds },
+        organizationId,
+      },
+      data: { assigneeId },
+    });
+
+    revalidatePath("/projects");
+    return { success: true, count: result.count };
+  } catch (error) {
+    console.error("Error bulk assigning tasks:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to assign tasks",
+    };
+  }
+}
+
+/**
+ * Bulk delete tasks
+ */
+export async function bulkDeleteTasks(
+  taskIds: string[]
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const result = await prisma.task.deleteMany({
+      where: {
+        id: { in: taskIds },
+        organizationId,
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true, count: result.count };
+  } catch (error) {
+    console.error("Error bulk deleting tasks:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete tasks",
+    };
+  }
+}

@@ -71,6 +71,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Time tracking summary (when time data is available)
   - Navigation link from projects board page
 
+- **Projects Bulk Operations** - Efficient multi-task management
+  - Checkbox selection on task cards (appears on hover, persists when selected)
+  - Floating action bar at bottom of screen when tasks are selected
+  - Bulk move tasks to any column via dropdown
+  - Bulk change priority (urgent, high, medium, low)
+  - Bulk assign/unassign tasks to team members
+  - Bulk delete with confirmation dialog
+  - Selection counter shows number of tasks selected
+  - Clear selection button to deselect all
+  - Server actions for efficient batch updates using Prisma transactions
+
 - **Loading States for Gallery Operations** - Comprehensive loading feedback for async actions
   - Settings toggles now show "Saving..." indicator with disabled state during save
   - Settings actually persist to database (was only updating local state before)

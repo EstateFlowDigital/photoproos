@@ -18,6 +18,10 @@ import {
   deleteColumn,
   addSubtask,
   toggleSubtask,
+  bulkMoveTasks,
+  bulkUpdatePriority,
+  bulkAssignTasks,
+  bulkDeleteTasks,
 } from "@/lib/actions/projects";
 import type { TaskPriority } from "@prisma/client";
 import { isSameDay, isToday } from "date-fns";
@@ -225,6 +229,10 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
   const [newTaskDueDate, setNewTaskDueDate] = useState<string>("");
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>("medium");
   const [newTaskAssignee, setNewTaskAssignee] = useState<string>("");
+
+  // Bulk selection state
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
+  const [isBulkActionPending, setIsBulkActionPending] = useState(false);
   const allTasks = useMemo(
     () => board.columns.flatMap((column) => column.tasks),
     [board.columns]
@@ -345,6 +353,108 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
     setAssigneeFilter("all");
     setClientFilter("all");
     setDueDateFilter("all");
+  };
+
+  // Bulk selection helpers
+  const toggleTaskSelection = (taskId: string) => {
+    setSelectedTaskIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllFilteredTasks = () => {
+    setSelectedTaskIds(new Set(filteredTasks.map((t) => t.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedTaskIds(new Set());
+  };
+
+  const isAllSelected = filteredTasks.length > 0 && selectedTaskIds.size === filteredTasks.length;
+
+  // Bulk action handlers
+  const handleBulkMove = async (columnId: string) => {
+    if (selectedTaskIds.size === 0) return;
+    setIsBulkActionPending(true);
+    try {
+      const result = await bulkMoveTasks(Array.from(selectedTaskIds), columnId);
+      if (result.success) {
+        showToast(`Moved ${result.count} tasks`, "success");
+        clearSelection();
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to move tasks", "error");
+      }
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  };
+
+  const handleBulkPriority = async (priority: TaskPriority) => {
+    if (selectedTaskIds.size === 0) return;
+    setIsBulkActionPending(true);
+    try {
+      const result = await bulkUpdatePriority(Array.from(selectedTaskIds), priority);
+      if (result.success) {
+        showToast(`Updated ${result.count} tasks`, "success");
+        clearSelection();
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to update priority", "error");
+      }
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  };
+
+  const handleBulkAssign = async (assigneeId: string | null) => {
+    if (selectedTaskIds.size === 0) return;
+    setIsBulkActionPending(true);
+    try {
+      const result = await bulkAssignTasks(Array.from(selectedTaskIds), assigneeId);
+      if (result.success) {
+        showToast(`Assigned ${result.count} tasks`, "success");
+        clearSelection();
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to assign tasks", "error");
+      }
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedTaskIds.size === 0) return;
+
+    const confirmed = await confirm({
+      title: "Delete Tasks",
+      description: `Are you sure you want to delete ${selectedTaskIds.size} tasks? This action cannot be undone.`,
+      confirmText: "Delete",
+      variant: "destructive",
+    });
+
+    if (!confirmed) return;
+
+    setIsBulkActionPending(true);
+    try {
+      const result = await bulkDeleteTasks(Array.from(selectedTaskIds));
+      if (result.success) {
+        showToast(`Deleted ${result.count} tasks`, "success");
+        clearSelection();
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to delete tasks", "error");
+      }
+    } finally {
+      setIsBulkActionPending(false);
+    }
   };
 
   // Handlers
@@ -942,14 +1052,31 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
                   renderItem={(task) => (
                     <div
                       key={task.id}
-                      draggable
+                      draggable={!selectedTaskIds.size}
                       onDragStart={() => handleDragStart(task)}
                       onClick={() => setSelectedTask(task)}
                       className={cn(
-                        "cursor-pointer rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3 transition-all hover:border-[var(--border-hover)] hover:shadow-sm",
-                        draggedTask?.id === task.id && "opacity-50"
+                        "group relative cursor-pointer rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3 transition-all hover:border-[var(--border-hover)] hover:shadow-sm",
+                        draggedTask?.id === task.id && "opacity-50",
+                        selectedTaskIds.has(task.id) && "border-[var(--primary)] bg-[var(--primary)]/5"
                       )}
                     >
+                      {/* Selection checkbox */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleTaskSelection(task.id);
+                        }}
+                        className={cn(
+                          "absolute -left-1 -top-1 z-10 flex h-5 w-5 items-center justify-center rounded border-2 transition-all",
+                          selectedTaskIds.has(task.id)
+                            ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                            : "border-[var(--card-border)] bg-[var(--card)] opacity-0 group-hover:opacity-100"
+                        )}
+                      >
+                        {selectedTaskIds.has(task.id) && <CheckIcon className="h-3 w-3" />}
+                      </button>
+
                       <div className="mb-2 flex items-center gap-2">
                         <PriorityBadge priority={task.priority} />
                         {task.tags.slice(0, 2).map((tag) => (
@@ -1331,6 +1458,105 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Bulk Action Bar */}
+      {selectedTaskIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
+          <div className="flex items-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-xl">
+            <span className="mr-2 text-sm font-medium text-foreground">
+              {selectedTaskIds.size} selected
+            </span>
+
+            <div className="h-5 w-px bg-[var(--card-border)]" />
+
+            {/* Move to dropdown */}
+            <div className="relative">
+              <select
+                disabled={isBulkActionPending}
+                onChange={(e) => {
+                  if (e.target.value) handleBulkMove(e.target.value);
+                  e.target.value = "";
+                }}
+                className="cursor-pointer appearance-none rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-1.5 pr-8 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] focus:border-[var(--primary)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                defaultValue=""
+              >
+                <option value="" disabled>Move to...</option>
+                {board.columns.map((col) => (
+                  <option key={col.id} value={col.id}>{col.name}</option>
+                ))}
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+            </div>
+
+            {/* Priority dropdown */}
+            <div className="relative">
+              <select
+                disabled={isBulkActionPending}
+                onChange={(e) => {
+                  if (e.target.value) handleBulkPriority(e.target.value as TaskPriority);
+                  e.target.value = "";
+                }}
+                className="cursor-pointer appearance-none rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-1.5 pr-8 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] focus:border-[var(--primary)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                defaultValue=""
+              >
+                <option value="" disabled>Set priority...</option>
+                <option value="urgent">Urgent</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+            </div>
+
+            {/* Assign dropdown */}
+            <div className="relative">
+              <select
+                disabled={isBulkActionPending}
+                onChange={(e) => {
+                  if (e.target.value === "unassign") {
+                    handleBulkAssign(null);
+                  } else if (e.target.value) {
+                    handleBulkAssign(e.target.value);
+                  }
+                  e.target.value = "";
+                }}
+                className="cursor-pointer appearance-none rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-1.5 pr-8 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] focus:border-[var(--primary)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                defaultValue=""
+              >
+                <option value="" disabled>Assign to...</option>
+                <option value="unassign">Unassign</option>
+                {teamMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.fullName || member.email}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+            </div>
+
+            <div className="h-5 w-px bg-[var(--card-border)]" />
+
+            {/* Delete button */}
+            <button
+              onClick={handleBulkDelete}
+              disabled={isBulkActionPending}
+              className="rounded-lg bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Delete
+            </button>
+
+            {/* Clear selection button */}
+            <button
+              onClick={clearSelection}
+              disabled={isBulkActionPending}
+              className="rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              title="Clear selection"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
           </div>
         </div>
       )}
@@ -1799,6 +2025,14 @@ function XIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
     </svg>
   );
 }
