@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Icon Consolidation Complete** - Migrated all remaining inline icon files to centralized icon library
+  - Migrated `settings-icons.tsx` (50+ icons) to re-exports from `@/components/ui/icons`
+  - Migrated `gallery-icons.tsx` (30+ icons) to re-exports with QRCodeSVG kept in place
+  - Migrated `gallery-detail-icons.tsx` to centralized re-exports
+  - Migrated `portal/components/icons.tsx` (13+ icons) to centralized re-exports
+  - Added 25+ new icons to centralized library: PrintIcon, ZoomInIcon, ZoomOutIcon, PauseIcon, SelectIcon, CompareIcon, ResetIcon, FeedbackIcon, FacebookIcon, TwitterXIcon, PinterestIcon, QRCodeIcon, ImageIcon, FileIcon, ReceiptIcon, LogoutIcon, ClipboardIcon
+  - Updated StarIcon to support `filled` prop for outline/filled variants
+  - Added selection fields (allowSelections, selectionLimit, selectionsSubmitted) to getGallery action
+
+### Fixed
+- Fixed TypeScript error in projects-client.tsx with confirm dialog variant prop
+- Fixed SettingsIcon import in gallery-detail-client.tsx
+
 ### Added
 - **Streaming ZIP Downloads** - Refactored batch download API for large galleries
   - Changed from memory buffering to true streaming using PassThrough and ReadableStream
