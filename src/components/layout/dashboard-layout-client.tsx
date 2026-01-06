@@ -318,12 +318,7 @@ export function DashboardLayoutClient({
       for (const href of routesToPrefetch) {
         if (href !== pathname) {
           try {
-            const maybePromise = router.prefetch(href);
-            if (maybePromise && typeof (maybePromise as Promise<unknown>).catch === "function") {
-              (maybePromise as Promise<unknown>).catch(() => {
-                // Prefetch failures are non-fatal; ignore.
-              });
-            }
+            router.prefetch(href);
           } catch {
             // Prefetch failures are non-fatal; ignore.
           }
@@ -332,12 +327,12 @@ export function DashboardLayoutClient({
     };
 
     if ("requestIdleCallback" in window) {
-      const id = (window as any).requestIdleCallback(run, { timeout: 2000 });
-      return () => (window as any).cancelIdleCallback?.(id);
+      const id = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(run, { timeout: 2000 });
+      return () => (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
     }
 
-    const handle = window.setTimeout(run, 350);
-    return () => window.clearTimeout(handle);
+    const handle = globalThis.setTimeout(run, 350);
+    return () => globalThis.clearTimeout(handle);
   }, [pathname, router]);
 
   return (

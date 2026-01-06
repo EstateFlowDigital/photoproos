@@ -171,6 +171,7 @@ export async function POST(request: NextRequest) {
         showWatermark: true,
         downloadRequiresPayment: true, // For paylock bypass feature
         clientId: true,
+        organizationId: true,
         payments: {
           where: { status: "paid" },
           take: 1,

@@ -3,8 +3,8 @@
 A comprehensive mapping of every route to its data flow: Route → Page → Client → Actions → Models.
 
 **Last Updated:** 2026-01-06
-**Total Routes Mapped:** 33 / 192
-**Verification Status:** IN PROGRESS (17% complete)
+**Total Routes Mapped:** 74 / 192
+**Verification Status:** IN PROGRESS (39% complete)
 
 ---
 
@@ -179,12 +179,99 @@ Auth Check → Load Organization → Promise.all([
 
 ---
 
-### `/notifications` ❌ 🔒
+### `/notifications` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/notifications/page.tsx`
-**Client:** `NotificationsPageClient`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `notifications/page.tsx` | Server component, fetch notifications + activity |
+| Client | `notifications/notifications-page-client.tsx` | Tabs, filters, mark read actions |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getNotifications()` | `notifications.ts` | Fetch notifications (limit 100) |
+| `markNotificationAsRead()` | `notifications.ts` | Mark single as read |
+| `markAllNotificationsAsRead()` | `notifications.ts` | Mark all as read |
+| `getUnreadNotificationCount()` | `notifications.ts` | Badge count |
+| `deleteNotification()` | `notifications.ts` | Delete single |
+| `deleteReadNotifications()` | `notifications.ts` | Cleanup read |
+| `getActivityLogs()` | `activity.ts` | Fetch activity logs |
+| `getActivityFeed()` | `activity.ts` | Filtered activity feed |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Notification | findMany, update, delete | Notification CRUD |
+| ActivityLog | findMany | Activity history |
+| User | include | Activity author info |
+
+**Notification Types:**
+- Payments: `payment_received`, `payment_failed`
+- Galleries: `gallery_viewed`, `gallery_delivered`
+- Bookings: `booking_created`, `booking_confirmed`, `booking_cancelled`
+- Contracts: `contract_sent`, `contract_signed`
+- Invoices: `invoice_sent`, `invoice_paid`, `invoice_overdue`
+- Leads: `lead_received`, `client_added`
+- System: `task_automation`, `system`
+
+**Features:**
+- Notifications/Activity Log tabs
+- 8 filter categories with counts
+- Mark as read (single + all)
+- Virtual list for performance
+- Activity grouping by date
+
+---
+
+### `/create` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/create/page.tsx`
+**Dynamic:** Default dynamic (no cache)
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `create/page.tsx` | Server component, fetch wizard data |
+| Client | `create/create-wizard-client.tsx` | 5-step wizard UI |
+| Steps | `create-wizard/steps/*.tsx` | ClientStep, ServicesStep, GalleryStep, SchedulingStep, ReviewStep |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getWizardData()` | `create-wizard.ts` | Fetch clients, services, locations, booking types |
+| `createProjectBundle()` | `create-wizard.ts` | Transaction: create client/gallery/booking/invoice |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Client | findMany, findFirst, create | Client lookup + creation |
+| Service | findMany | Available services |
+| BookingType | findMany | Booking type dropdown |
+| Location | findMany | Location dropdown |
+| Project | create | Gallery record |
+| ProjectService | createMany | Link services |
+| DeliveryLink | create | Gallery slug (nanoid) |
+| Booking | create | Optional booking |
+| Invoice | create | Optional invoice |
+
+**Wizard Steps:**
+1. **Client** - Select existing or create new
+2. **Services** - Multi-select with primary
+3. **Gallery** - Name, description, password
+4. **Scheduling** - Optional booking + invoice
+5. **Review** - Summary before submit
+
+**Transaction Features:**
+- `prisma.$transaction()` for atomicity
+- Duplicate email check
+- Auto-generated invoice number
+- Auto-generated delivery slug
+- 30-day default due date
+
+**Cache Invalidation:**
+- `/galleries`, `/clients`, `/scheduling`, `/payments`
 
 ---
 
@@ -236,12 +323,53 @@ Project.include = {
 
 ---
 
-### `/galleries/new` ❌ 🔒
+### `/galleries/new` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/galleries/new/page.tsx`
-**Client:** `gallery-new-form.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `galleries/new/page.tsx` | Server component, 3-column layout |
+| Client | `galleries/new/gallery-new-form.tsx` | Multi-section creation form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createGallery()` | `galleries.ts` | Create gallery with all settings |
+| `getClients()` | `clients.ts` | Client dropdown |
+| `getGalleryTemplates()` | `gallery-templates.ts` | Template presets |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Project | create | Gallery record |
+| ProjectService | createMany | Service associations |
+| DeliveryLink | create | Public sharing link |
+| ActivityLog | create | Creation event |
+| Client | findMany | Client selection |
+| GalleryTemplate | findMany | Template presets |
+| Service | findMany | Service options |
+
+**Form Sections:**
+1. **Template Selector** - Default template support
+2. **Gallery Details** - Name, description, client
+3. **Service & Pricing** - Service selection with custom options
+4. **Access Control** - Public/password-protected
+5. **Settings Toggles:**
+   - Downloads enabled
+   - Favorites enabled
+   - Comments enabled
+   - Watermarks
+   - Notifications
+6. **Download Resolution** - Full, web, both
+7. **Gallery Expiration** - Never, 30/60/90 days, custom
+
+**Features:**
+- Auto-generate unique delivery slug
+- Cover image upload placeholder
+- Sidebar with tips and recent clients
+- Stats display
 
 ---
 
@@ -333,11 +461,57 @@ Photos | Collections | Selections | Chat | Financials | Activity | Analytics | D
 
 ---
 
-### `/invoices/new` ❌ 🔒
+### `/invoices/new` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/invoices/new/page.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `invoices/new/page.tsx` | Server component, optional order context |
+| Client | `invoices/new/invoice-form.tsx` | Client selection, line items |
+
+**Query Params:** `?fromOrder=` (pre-fill from order)
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createInvoice()` | `invoices.ts` | Create with line items |
+| `getOrder()` | `orders.ts` | Pre-fill from order (if fromOrder) |
+
+**Page-Level Queries:**
+```prisma
+client.findMany({ select: { id, fullName, company, email } })
+service.findMany({ where: { isActive: true }, select: { id, name, priceCents } })
+```
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Client | findMany | Dropdown options |
+| Service | findMany | Quick-add services |
+| Invoice | create | New invoice record |
+| InvoiceLineItem | create | Line items (nested create) |
+| ActivityLog | create | Audit trail |
+
+**Form Fields:**
+- Client selection (required)
+- Line items (dynamic add/remove)
+- Due date (default: 30 days)
+- Notes (optional)
+- Terms & Conditions (optional)
+
+**Line Item Types (LineItemType enum):**
+- service, travel, custom, tax, discount, other
+
+**Invoice Number Format:**
+- `INV-YYYY-####` (e.g., INV-2024-0001)
+
+**Invoice Status Flow:**
+`draft` → `sent` → `partial` → `paid` | `overdue` | `cancelled`
+
+**Cache Invalidation:**
+- `/invoices`
 
 ---
 
@@ -382,54 +556,289 @@ Photos | Collections | Selections | Chat | Financials | Activity | Analytics | D
 
 ---
 
-### `/invoices/recurring` ❌ 🔒
+### `/invoices/recurring` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/invoices/recurring/page.tsx`
-**Client:** `recurring-invoices-client.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `invoices/recurring/page.tsx` | Server component with Suspense |
+| Client | `invoices/recurring/recurring-invoices-client.tsx` | List, create modal, stats |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getRecurringInvoices()` | `recurring-invoices.ts` | Fetch all with client info |
+| `createRecurringInvoice()` | `recurring-invoices.ts` | Create with line items + schedule |
+| `pauseRecurringInvoice()` | `recurring-invoices.ts` | Pause subscription |
+| `resumeRecurringInvoice()` | `recurring-invoices.ts` | Resume paused |
+| `deleteRecurringInvoice()` | `recurring-invoices.ts` | Delete subscription |
+| `getRecurringInvoice()` | `recurring-invoices.ts` | Single by ID |
+| `getRecurringInvoicesDueToRun()` | `recurring-invoices.ts` | Fetch due for cron |
+| `createInvoiceFromRecurring()` | `recurring-invoices.ts` | Auto-generate invoice |
+| `processRecurringInvoices()` | `recurring-invoices.ts` | Process all due |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| RecurringInvoice | findMany, create, update, delete | Subscription CRUD |
+| Client | include | Customer info |
+| Invoice | create | Generated invoices |
+
+**Frequency Options:**
+`weekly` | `biweekly` | `monthly` | `quarterly` | `yearly`
+
+**RecurringInvoice Fields:**
+- Schedule: `dayOfMonth`, `dayOfWeek`, `anchorDate`, `nextRunDate`
+- Status: `isActive`, `isPaused`, `pausedAt`, `pauseUntil`
+- Financials: `subtotalCents`, `taxCents`, `totalCents`, `currency`
+- Line items stored as JSON
+- History: `invoicesCreated`, `lastInvoiceAt`, `lastInvoiceId`
+- Termination: `endDate`, `maxInvoices`
+
+**Stats Displayed:**
+- Active Subscriptions count
+- Paused count
+- Estimated Monthly Revenue
+- Total Invoices Created
 
 ---
 
-### `/billing/analytics` ❌ 🔒 📊
+### `/billing/analytics` ✅ 🔒 📊
 
 **Page:** `src/app/(dashboard)/billing/analytics/page.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `billing/analytics/page.tsx` | Server component, period comparison |
+| Client | `billing/analytics/date-range-filter.tsx` | Date range selection |
+
+**Query Params:** `?range=`, `?start=`, `?end=`
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Invoice | aggregate | Period invoiced amounts |
+| Payment | aggregate, groupBy | Period collected, top clients |
+| Client | findMany | Top clients details |
+
+**Metrics:**
+- Period comparison (selected vs previous)
+- Accounts Receivable Aging (5 buckets)
+- Top 5 Clients by Revenue
+- Monthly Revenue (12-month chart)
 
 ---
 
-### `/billing/credit-notes` ❌ 🔒
+### `/billing/credit-notes` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/billing/credit-notes/page.tsx`
-**Client:** `credit-notes-page-client.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `billing/credit-notes/page.tsx` | Server component, status filter |
+| Client | `billing/credit-notes/credit-notes-page-client.tsx` | List, search, pagination |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createCreditNote()` | `credit-notes.ts` | Create credit note |
+| `getCreditNote()` | `credit-notes.ts` | Fetch single |
+| `voidCreditNote()` | `credit-notes.ts` | Void/cancel |
+| `issueCreditNote()` | `credit-notes.ts` | Issue draft |
+| `applyCreditNote()` | `credit-notes.ts` | Apply to invoice |
+| `refundCreditNote()` | `credit-notes.ts` | Refund to client |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| CreditNote | findMany, create, update | Credit note CRUD |
+| Client | include | Client details |
+| Invoice | include | Original + applied invoice |
+
+**Status Flow:** `draft` → `issued` → `applied`/`refunded`/`voided`
 
 ---
 
-### `/billing/estimates` ❌ 🔒
+### `/billing/estimates` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/billing/estimates/page.tsx`
-**Client:** `estimates-list-client.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `billing/estimates/page.tsx` | Server component, fetch estimates |
+| Client | `billing/estimates/estimates-list-client.tsx` | List, filters, bulk actions |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createEstimate()` | `estimates.ts` | Create with line items |
+| `updateEstimate()` | `estimates.ts` | Update details |
+| `deleteEstimate()` | `estimates.ts` | Delete draft |
+| `sendEstimate()` | `estimates.ts` | Send to client |
+| `generateEstimateNumber()` | `estimates.ts` | Auto-generate EST-#### |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Estimate | findMany | All estimates with relations |
+| EstimateLineItem | include | Line items |
+| Client | include | Client details |
+| Invoice | include | Conversion tracking |
+
+**Status Flow:** `draft` → `sent` → `viewed` → `approved`/`rejected`/`expired` → `converted`
 
 ---
 
-### `/billing/retainers` ❌ 🔒
+### `/billing/retainers` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/billing/retainers/page.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `billing/retainers/page.tsx` | Server component, filter param |
+| Client | `billing/retainers/retainers-page-client.tsx` | Grid/table, deposit modal |
+
+**Query Params:** `?filter=` (all, active, inactive, low_balance)
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createRetainer()` | `retainers.ts` | Create with initial deposit |
+| `getRetainer()` | `retainers.ts` | Fetch by id or clientId |
+| `listRetainers()` | `retainers.ts` | List with filters |
+| `addDeposit()` | `retainers.ts` | Add deposit |
+| `applyToInvoice()` | `retainers.ts` | Apply balance to invoice |
+| `updateRetainer()` | `retainers.ts` | Update settings |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ClientRetainer | findMany | Retainer accounts |
+| Client | include | Client details |
+| RetainerTransaction | include | Transaction history |
+
+**Stats Displayed:**
+- Total Balance, Total Deposited, Total Used
+- Low Balance Alerts count
 
 ---
 
-### `/billing/reports` ❌ 🔒 📊
+### `/billing/reports` ✅ 🔒 📊
 
 **Page:** `src/app/(dashboard)/billing/reports/page.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `billing/reports/page.tsx` | Server component, tax aggregations |
+| Client | `billing/reports/export-buttons.tsx` | CSV/PDF export |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Invoice | aggregate | Tax by period (month/quarter/YTD) |
+| Invoice | groupBy | Tax by client |
+| Client | findMany | Client details for report |
+
+**Reports Generated:**
+- Tax Summary (This Month, Quarter, YTD)
+- Monthly Tax Breakdown table
+- Tax by Client breakdown
+- Quarterly Estimates (Q1-Q4)
+
+---
+
+### `/payments` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/payments/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `payments/page.tsx` | Server component, stats + filtered list |
+| Client | `payments/payments-page-client.tsx` | Search, sort, bulk actions, export |
+
+**Query Params:** `?status=` (all, paid, pending, overdue)
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getPayments()` | `payments.ts` | Fetch filtered payments with relations |
+
+**Page-Level Queries (Promise.all):**
+```prisma
+payment.findMany({ where: { status }, include: { project } })
+payment.aggregate({ where: { status: "paid", createdAt: thisMonth } }) // Monthly total
+payment.aggregate({ where: { status: "pending" } }) // Pending amount
+payment.aggregate({ where: { status: "overdue" } }) // Overdue amount
+payment.groupBy({ by: ["status"], _count: true }) // Tab counts
+```
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Payment | findMany, aggregate, groupBy | Filtered list + metrics |
+| Project | include | Gallery/project name |
+
+**Client State:**
+- `searchQuery` - filter by project name, description, email
+- `sortOption` - newest, oldest, amountHigh, amountLow
+- `dateRangeFilter` - all, 7days, 30days, 90days
+- `selectedIds` - bulk selection
+
+**Features:**
+- Stats cards: Monthly paid, Pending, Overdue
+- Status tabs with counts
+- Virtual list rendering
+- Bulk CSV export
+- Bulk PDF receipts
+
+---
+
+### `/payments/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/payments/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `payments/[id]/page.tsx` | Server component, 3-column layout |
+| Client | `payments/[id]/payment-actions.tsx` | Receipt, reminder, refund, export |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getPayment()` | `payments.ts` | Fetch payment with relations |
+| `generateReceiptPdf()` | `receipt-pdf.ts` | Generate PDF receipt |
+| `sendPaymentReminder()` | `payments.ts` | Send reminder email |
+| `issueRefund()` | `payments.ts` | Process Stripe refund |
+| `exportPaymentsToCSV()` | `payments.ts` | Single payment CSV |
+| `getPaymentLinkUrl()` | `payments.ts` | Generate payment URL |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Payment | findFirst | Full payment with relations |
+| Project | include | Gallery/project info |
+| Client | include | Customer details |
+| ActivityLog | create | Log interactions |
+
+**Payment Status:** `pending` | `paid` | `failed` | `refunded` | `overdue`
+
+**Features:**
+- Status-specific actions (paid: receipt, pending: reminder)
+- Refund modal with reason input
+- Fee breakdown (3% processing)
+- Stripe transaction ID display
+- Activity timeline
+- Client sidebar with avatar
+- Gallery link
 
 ---
 
@@ -486,9 +895,54 @@ Client.include = {
 
 ---
 
-### `/clients/new` ❌ 🔒
+### `/clients/new` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/clients/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `clients/new/page.tsx` | Server component, stats sidebar |
+| Client | `clients/new/client-new-form.tsx` | Multi-field form, validation |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createClient()` | `clients.ts` | Create client with duplicate check |
+
+**Page-Level Queries (Promise.all):**
+```prisma
+client.count({ where: { organizationId } })
+client.groupBy({ by: ["industry"], _count: { industry: true }, take: 5 })
+client.aggregate({ _sum: { lifetimeRevenueCents: true } })
+client.count({ where: { projects OR bookings this month } })
+```
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Client | findFirst | Duplicate email check |
+| Client | create | New client record |
+| ActivityLog | create | Audit trail |
+
+**Form Fields:**
+- Required: firstName, lastName, email, industry
+- Optional: phone, company, address1, address2, city, state, zip, notes
+
+**Validation:**
+- Email regex validation
+- Duplicate email check server-side
+- Field-level error display
+
+**Industry Options (ClientIndustry enum):**
+- real_estate, commercial, architecture, wedding, events, headshots, portrait, product, food_hospitality, other
+
+**Post-Submit Options:**
+- Navigate to `/clients/{id}`
+- Create gallery: `/galleries/new?client={id}`
+
+**Cache Invalidation:**
+- `/clients`, `/dashboard`
 
 ---
 
@@ -534,15 +988,94 @@ Client.include = {
 
 ---
 
-### `/clients/import` ❌ 🔒
+### `/clients/import` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/clients/import/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `clients/import/page.tsx` | Server component, Suspense wrapper |
+| Client | `clients/import/client-import-client.tsx` | 4-step import wizard |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `previewClientImport()` | `client-import.ts` | Parse CSV, validate, detect duplicates |
+| `importClients()` | `client-import.ts` | Create/update clients |
+| `getImportTemplate()` | `client-import.ts` | CSV template download |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Client | findMany | Duplicate detection |
+| Client | create, update | Import records |
+| ActivityLog | create | Audit trail |
+
+**Import Steps:**
+1. Upload CSV file
+2. Preview with validation results
+3. Import with options
+4. Completion summary
+
+**CSV Columns:**
+- Required: email
+- Optional: fullName, company, phone, address, industry, notes, source, isVIP
+
+**Import Options:**
+- Skip duplicates (default)
+- Update existing clients
+
+**Validation:**
+- Email format regex
+- Industry normalization
+- Phone digit count warning
 
 ---
 
-### `/clients/merge` ❌ 🔒
+### `/clients/merge` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/clients/merge/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `clients/merge/page.tsx` | Server component, Suspense wrapper |
+| Client | `clients/merge/client-merge-client.tsx` | Duplicate detection, merge UI |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `findDuplicateClients()` | `client-merge.ts` | Detect by email, phone, name |
+| `getClientMergePreview()` | `client-merge.ts` | Preview records to transfer |
+| `mergeClients()` | `client-merge.ts` | Transfer + delete secondary |
+| `getDuplicateCount()` | `client-merge.ts` | Badge count |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Client | findMany, groupBy | Duplicate detection |
+| Client | update, delete | Merge operation |
+| Project | updateMany | Transfer to primary |
+| Booking | updateMany | Transfer to primary |
+| Invoice | updateMany | Transfer to primary |
+| Contract | updateMany | Transfer to primary |
+| Payment | updateMany | Transfer to primary |
+
+**Duplicate Detection:**
+- High confidence: Email match, Phone match
+- Medium confidence: Name match
+
+**Merge Transaction:**
+1. Transfer all relationships to primary
+2. Sum metrics (revenue, project count)
+3. Append merge notes
+4. Delete secondary client
+
+**Records Transferred:**
+- Projects, Bookings, Invoices
+- Contracts, Tasks, Orders
+- Questionnaires, Payments, Communications
 
 ---
 
@@ -785,9 +1318,45 @@ sendContract() → for each signer:
 
 ---
 
-### `/contracts/templates` ❌ 🔒
+### `/contracts/templates` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/contracts/templates/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `contracts/templates/page.tsx` | Server component, auto-seed defaults |
+| Client | `contracts/templates/templates-list-client.tsx` | Search, duplicate, delete |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getContractTemplates()` | `contract-templates.ts` | Fetch all with contract counts |
+| `seedDefaultContractTemplates()` | `contract-templates.ts` | Seed 5 system templates |
+| `duplicateContractTemplate()` | `contract-templates.ts` | Clone template |
+| `deleteContractTemplate()` | `contract-templates.ts` | Delete (system protected) |
+| `getContractTemplateById()` | `contract-templates.ts` | Single template details |
+| `useContractTemplate()` | `contract-templates.ts` | Create contract from template |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ContractTemplate | findMany, create, update, delete | Template CRUD |
+| Contract | _count | Usage count per template |
+
+**Default Templates Seeded:**
+- Wedding Photography
+- Portrait Photography
+- Event Photography
+- Real Estate Photography
+- Corporate Photography
+
+**Features:**
+- System templates (protected from delete)
+- Custom template creation
+- Variable substitution ({{client_name}}, {{date}}, etc.)
+- Contract count per template
+- Search and filter
 
 ---
 
@@ -847,6 +1416,76 @@ sendContract() → for each signer:
 
 ---
 
+### `/products` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/products/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `products/page.tsx` | Server component, auth check, fetch catalogs |
+| Client | `products/products-client.tsx` | Search, filter, create catalog form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `listProductCatalogs()` | `products.ts` | Fetch catalogs with product counts |
+| `createProductCatalog()` | `products.ts` | Create new catalog |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ProductCatalog | findMany with _count | List catalogs with product aggregation |
+
+**Features:**
+- Catalog grid with status badges
+- Summary metrics (Total, Active, Drafts, Products)
+- Status filter pills (All, Active, Draft, Archived)
+- Live search (name, description, tags)
+- Create catalog form (name, description)
+
+---
+
+### `/products/[catalogId]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/products/[catalogId]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `products/[catalogId]/page.tsx` | Server component, fetch catalog by ID |
+| Client | `products/[catalogId]/catalog-client.tsx` | Product CRUD, variants, photo attachment |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getProductCatalog()` | `products.ts` | Fetch catalog with all products |
+| `createProduct()` | `products.ts` | Create SKU product |
+| `attachPhotoToProduct()` | `products.ts` | Attach asset to product/angle |
+| `updateProductStatus()` | `products.ts` | Update product workflow status |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ProductCatalog | findFirst | Catalog with nested relations |
+| ProductItem | include | Products with status, angles |
+| ProductVariant | include | Color/size variants |
+| ProductPhoto | include | Photos with angle tags |
+| Asset | include | Image URLs, metadata |
+
+**Product Status Workflow:**
+`pending` → `shot` → `edited` → `approved` → `delivered` → `archived`
+
+**Features:**
+- Product table (SKU, status, angles, photos, variants)
+- Angle requirement tracking
+- Variant management (color, size)
+- Photo attachment with angle tagging
+- Primary photo selection
+- Ownership validation chain
+
+---
+
 ## Orders
 
 ### `/orders` ✅ 🔒
@@ -898,9 +1537,112 @@ sendContract() → for each signer:
 
 ---
 
-### `/order-pages` ❌ 🔒
+### `/order-pages` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/order-pages/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `order-pages/page.tsx` | Server component, fetch order pages grid |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getOrderPages()` | `order-pages.ts` | Fetch pages with filters, counts |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| OrderPage | findMany | Pages with relations |
+| Client | select | Client name display |
+| OrderPageBundle | include | Bundle count |
+| OrderPageService | include | Service count |
+| Order | _count | Total orders |
+
+**Features:**
+- Grid layout with status badges (Published/Draft)
+- Metrics: bundle count, service count, orders
+- Client assignment display
+- Create page CTA
+
+---
+
+### `/order-pages/new` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/order-pages/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `order-pages/new/page.tsx` | Server component, create form layout |
+| Client | `order-page-form.tsx` | Tabbed form (Content, Products, Settings) |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createOrderPage()` | `order-pages.ts` | Create with slug uniqueness check |
+| `setOrderPageBundles()` | `order-pages.ts` | Associate bundles |
+| `setOrderPageServices()` | `order-pages.ts` | Associate services |
+| `getBundles()` | `bundles.ts` | Load available bundles |
+| `getServices()` | `services.ts` | Load available services |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| OrderPage | create | New order page |
+| ServiceBundle | findMany | Bundle selection |
+| Service | findMany | Service selection |
+| OrderPageBundle | createMany | Bundle associations |
+| OrderPageService | createMany | Service associations |
+
+**Form Tabs:**
+1. **Content** - Name, slug, headline, hero image, testimonials
+2. **Products** - Bundle & service selection
+3. **Settings** - Branding, contact, SEO, publication
+
+**Features:**
+- Testimonial management (add/edit/remove)
+- Logo URL + primary color override
+- Show/hide phone/email toggles
+- Meta title/description for SEO
+- Published + Require Login toggles
+
+---
+
+### `/order-pages/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/order-pages/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `order-pages/[id]/page.tsx` | Server component, fetch by ID |
+| Client | `order-page-form.tsx` | Edit form with initialData |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getOrderPage()` | `order-pages.ts` | Fetch with all relations |
+| `updateOrderPage()` | `order-pages.ts` | Update with validation |
+| `deleteOrderPage()` | `order-pages.ts` | Delete or archive |
+| `setOrderPageBundles()` | `order-pages.ts` | Replace bundles |
+| `setOrderPageServices()` | `order-pages.ts` | Replace services |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| OrderPage | findFirst, update | Page CRUD |
+| OrderPageBundle | include | Associated bundles |
+| OrderPageService | include | Associated services |
+| Order | _count | Archive logic check |
+
+**Features:**
+- Stats sidebar (Orders, Products, Views)
+- Quick actions (View Public, Copy Link)
+- Status indicator (Live/Unpublished)
+- Archive vs Delete logic (orders present = archive)
+- Delete confirmation modal
 
 ---
 
@@ -1145,22 +1887,151 @@ sendContract() → for each signer:
 
 ---
 
-### `/forms` ❌ 🔒
+### `/forms` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/forms/page.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `forms/page.tsx` | Server component, fetch forms |
+| Client | `forms/forms-page-client.tsx` | Grid, search, CRUD modals |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getForms()` | `custom-forms.ts` | List forms with stats |
+| `createForm()` | `custom-forms.ts` | Create new form |
+| `deleteForm()` | `custom-forms.ts` | Delete form |
+| `duplicateForm()` | `custom-forms.ts` | Clone form |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| CustomForm | findMany | Forms with counts |
+| PortfolioWebsite | include | Portfolio link |
+
+**Form Card Stats:**
+- Field count, Submission count
+- Active/Inactive status
+- Portfolio website link (if assigned)
+
+---
+
+### `/forms/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/forms/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `forms/[id]/page.tsx` | Server component, fetch form + fields |
+| Client | `forms/[id]/form-editor-client.tsx` | Drag-drop editor, 3 tabs |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getForm()` | `custom-forms.ts` | Form with all fields |
+| `updateForm()` | `custom-forms.ts` | Save metadata |
+| `addFormField()` | `custom-forms.ts` | Add field |
+| `updateFormField()` | `custom-forms.ts` | Update field |
+| `deleteFormField()` | `custom-forms.ts` | Remove field |
+| `reorderFormFields()` | `custom-forms.ts` | Reorder fields |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| CustomForm | findUnique, update | Form CRUD |
+| CustomFormField | create, update, delete | Field management |
+| FormSubmission | _count | Submission stats |
+
+**Field Types (CustomFormFieldType enum):**
+- Basic: text, email, phone, number, textarea
+- Choice: select, multiselect, radio, checkbox
+- Date/Time: date, time, datetime
+- Advanced: url, file, hidden
+- Layout: heading, paragraph, divider
+
+**Editor Tabs:**
+1. Fields - Drag-drop field canvas
+2. Settings - Form metadata, notifications
+3. Preview - Live form preview
+
+**Field Properties:**
+- label, placeholder, helpText
+- isRequired, minLength, maxLength
+- pattern, patternError
+- options (JSON), conditionalLogic (JSON)
+- position, width
+
+**Email Notifications:**
+- `sendEmailOnSubmission` - Toggle
+- `notificationEmails` - Custom recipients
+
+---
+
+### `/f/[slug]` 🌐
+
+**Public form submission route**
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getFormBySlug()` | `custom-forms.ts` | Fetch active form |
+| `submitForm()` | `custom-forms.ts` | Submit with validation |
+
+**Submission Process:**
+1. Validate form is active
+2. Check max submissions limit
+3. Validate required fields
+4. Create FormSubmission record
+5. Send notification email (if enabled)
 
 ---
 
 ## Leads & CRM
 
-### `/leads` ❌ 🔒
+### `/leads` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/leads/page.tsx`
-**Client:** `leads-page-client.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `leads/page.tsx` | Server component, parallel fetch 3 lead types |
+| Client | `leads/leads-page-client.tsx` | List/Kanban views, filtering, bulk actions |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getPortfolioInquiries()` | `portfolio-websites.ts` | Portfolio contact submissions |
+| `getChatInquiries()` | `chat-inquiries.ts` | Website chat inquiries |
+| `getAllSubmissions()` | `booking-forms.ts` | Booking form submissions |
+| `updatePortfolioInquiryStatus()` | `portfolio-websites.ts` | Update status + notes |
+| `updateChatInquiryStatus()` | `chat-inquiries.ts` | Update status + notes |
+| `convertPortfolioInquiryToClient()` | `portfolio-websites.ts` | Convert to Client |
+| `convertChatInquiryToClient()` | `chat-inquiries.ts` | Convert to Client |
+| `convertBookingSubmissionToClient()` | `booking-forms.ts` | Convert to Client |
+| `bulkDeletePortfolioInquiries()` | `portfolio-websites.ts` | Bulk delete |
+| `bulkDeleteChatInquiries()` | `chat-inquiries.ts` | Bulk delete |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| PortfolioInquiry | findMany | Portfolio website leads |
+| WebsiteChatInquiry | findMany | Chat widget leads |
+| BookingFormSubmission | findMany | Booking form leads |
+| Client | create | Conversion target |
+
+**Lead Statuses:** `new` → `contacted` → `qualified` → `closed`
+
+**Features:**
+- List and Kanban board views
+- Drag-drop status changes (Kanban)
+- Bulk selection and actions
+- Convert to client workflow
+- Filter by type, status, date range
+- Virtual list for performance
 
 ---
 
@@ -1256,55 +2127,749 @@ interface LeadsAnalytics {
 
 ---
 
-### `/settings/profile` ❌ 🔒
+### `/settings/profile` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/settings/profile/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/profile/page.tsx` | Server component, 2-column layout |
+| Client | `settings/profile/profile-settings-form.tsx` | Avatar upload, form fields |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getCurrentUser()` | `settings.ts` | User + org + role |
+| `getBillingStats()` | `settings.ts` | Plan usage stats |
+| `updateUserProfile()` | `settings.ts` | Update name, phone, avatar |
+| `updateOrganizationProfile()` | `settings.ts` | Update business name, timezone |
+
+**API Routes:**
+| Route | Purpose |
+|-------|---------|
+| `POST /api/upload/profile-photo` | Get presigned URL for R2 upload |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| OrganizationMember | findFirst | With user + org relations |
+| Organization | findUnique | Plan, Stripe info |
+| Project | count | Gallery usage |
+| Client | count | Client usage |
+| User | update | Profile changes |
+
+**Features:**
+- Profile photo upload (presigned R2 URL)
+- Personal info (name, email, phone)
+- Business info (business name, timezone)
+- Account status sidebar (plan, role, member since)
+- Password management (links to Clerk)
+
+**Timezone Groups:**
+- North America, Canada, Europe, Asia Pacific, Australia & NZ, South America, Middle East & Africa
 
 ---
 
-### `/settings/team` ❌ 🔒
+### `/settings/team` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/settings/team/page.tsx`
+**Dynamic:** `force-dynamic`
 
----
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/team/page.tsx` | Server component, fetch members + invitations |
+| Client | `settings/team/team-page-client.tsx` | Member list, invite modal |
+| Modal | `settings/team/invite-modal.tsx` | Invitation form + pending list |
 
-### `/settings/branding` ❌ 🔒
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getTeamMembers()` | `settings.ts` | Fetch org members with users |
+| `getBillingStats()` | `settings.ts` | Plan limits and usage |
+| `updateMemberRole()` | `settings.ts` | Change member role |
+| `removeMember()` | `settings.ts` | Remove from org |
+| `createInvitation()` | `invitations.ts` | Send team invite |
+| `resendInvitation()` | `invitations.ts` | Resend with new token |
+| `revokeInvitation()` | `invitations.ts` | Cancel invitation |
+| `getPendingInvitations()` | `invitations.ts` | Pending invite list |
 
-*To be mapped*
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| OrganizationMember | findMany, update, delete | Member CRUD |
+| User | include | User details |
+| Invitation | findMany, create, update | Invitation management |
+| Organization | findUnique | Plan limits |
 
----
-
-### `/settings/payments` ❌ 🔒
-
-**Client:** `payments-settings-client.tsx`
-
-*To be mapped*
-
----
-
-### `/settings/gallery-templates` ❌ 🔒
-
-*To be mapped*
-
----
-
-### `/settings/integrations` ❌ 🔒
-
-*To be mapped*
-
----
-
-### `/settings/developer` ❌ 🔒
-
-*To be mapped*
+**Member Roles:** `owner` | `admin` | `member`
 
 ---
 
-### `/settings/mls-presets` ❌ 🔒
+### `/settings/team/[id]/capabilities` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/team/[id]/capabilities/page.tsx`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/team/[id]/capabilities/page.tsx` | Server component |
+| Client | `settings/team/[id]/capabilities/capabilities-form.tsx` | Skills + equipment tabs |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getUserServiceCapabilities()` | `team-capabilities.ts` | User's service capabilities |
+| `assignServiceCapability()` | `team-capabilities.ts` | Assign skill level |
+| `removeServiceCapability()` | `team-capabilities.ts` | Remove skill |
+| `getUserEquipment()` | `equipment.ts` | User's assigned equipment |
+| `assignEquipmentToUser()` | `equipment.ts` | Assign equipment |
+| `unassignEquipmentFromUser()` | `equipment.ts` | Unassign equipment |
+| `getEquipmentList()` | `equipment.ts` | All org equipment |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| User | findUnique | User with memberships |
+| UserServiceCapability | findMany, upsert, delete | Skill assignments |
+| UserEquipment | findMany, upsert, delete | Equipment assignments |
+| Service | findMany | Available services |
+| Equipment | findMany | Available equipment |
+
+**Capability Levels:** `learning` | `capable` | `expert`
+
+---
+
+### `/settings/branding` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/branding/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/branding/page.tsx` | Server component, fetch settings |
+| Client | `settings/branding/branding-settings-form.tsx` | Logo uploads, colors, theme |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getOrganizationSettings()` | `settings.ts` | Fetch all org settings |
+| `updateOrganizationBranding()` | `settings.ts` | Save branding settings |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Organization | findUnique | All branding fields |
+| Organization | update | Save branding changes |
+
+**Branding Fields:**
+| Field | Type | Purpose |
+|-------|------|---------|
+| `logoUrl` | string | Dark mode logo |
+| `logoLightUrl` | string | Light mode logo |
+| `faviconUrl` | string | Browser tab icon |
+| `primaryColor` | hex | Action buttons (#3b82f6) |
+| `secondaryColor` | hex | Headers, accents (#8b5cf6) |
+| `accentColor` | hex | Success states (#22c55e) |
+| `portalMode` | enum | light, dark, auto |
+| `invoiceLogoUrl` | string | Invoice header logo |
+| `hidePlatformBranding` | boolean | White-label (Pro+) |
+| `customDomain` | string | Custom gallery URL |
+| `autoArchiveExpiredGalleries` | boolean | Gallery automation |
+
+**Color Presets (8 built-in):**
+- Ocean Blue, Forest Green, Sunset Orange
+- Royal Purple, Rose Pink, Midnight
+- Sage Green, Terracotta
+
+**Plan-Gated Features:**
+- `hidePlatformBranding` - Pro/Studio/Enterprise only
+- `customDomain` - Pro/Studio/Enterprise only
+
+**Cache Invalidation:**
+- `/settings`, `/settings/branding`, `/galleries`, `/g`
+
+---
+
+### `/settings/payments` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/payments/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/payments/page.tsx` | Server component, fetch Stripe status |
+| Client | `settings/payments/payments-settings-client.tsx` | Connect flow, tax, currency |
+| Client | `settings/payments/connect-button.tsx` | Stripe Connect button |
+| Client | `settings/payments/tax-settings-form.tsx` | Tax rate config |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getConnectAccountDetails()` | `stripe-connect.ts` | Stripe account status |
+| `createConnectAccount()` | `stripe-connect.ts` | Create Express account |
+| `createAccountLink()` | `stripe-connect.ts` | Onboarding resume URL |
+| `createDashboardLink()` | `stripe-connect.ts` | Dashboard login link |
+| `getTaxSettings()` | `settings.ts` | Tax rate + label |
+| `updateTaxSettings()` | `settings.ts` | Save tax config |
+| `getCurrencySettings()` | `settings.ts` | Default currency |
+| `updateCurrencySettings()` | `settings.ts` | Save currency |
+
+**API Routes:**
+| Route | Purpose |
+|-------|---------|
+| `POST /api/webhooks/stripe` | Handle Stripe events |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Organization | findUnique | Stripe IDs, tax, currency |
+| Organization | update | Save settings |
+
+**Stripe Connect Flow:**
+1. Create Express account
+2. Generate onboarding URL
+3. Redirect to Stripe hosted flow
+4. Webhook: `account.updated` → sync status
+
+**Supported Currencies:**
+USD, EUR, GBP, CAD, AUD, BRL, MXN, JPY, CHF
+
+---
+
+### `/settings/gallery-templates` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/gallery-templates/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/gallery-templates/page.tsx` | Server component, fetch templates |
+| Client | `settings/gallery-templates/gallery-templates-client.tsx` | CRUD modals, template grid |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getGalleryTemplates()` | `gallery-templates.ts` | List all templates |
+| `createGalleryTemplate()` | `gallery-templates.ts` | Create new template |
+| `updateGalleryTemplate()` | `gallery-templates.ts` | Update template |
+| `deleteGalleryTemplate()` | `gallery-templates.ts` | Delete template |
+| `incrementTemplateUsage()` | `gallery-templates.ts` | Track usage count |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| GalleryTemplate | findMany, create, update, delete | Template CRUD |
+| Service | findMany | Service dropdown |
+
+**Template Settings:**
+- Default price, password protection
+- Allow downloads, favorites, watermark
+- Email notifications
+- Expiration days
+- Default service selection
+- Is default template flag
+
+**Cache Invalidation:**
+- `/settings/templates`, `/galleries/new`
+
+---
+
+### `/settings/integrations` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/integrations/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/integrations/page.tsx` | Server component, fetch connected status |
+| Client | `settings/integrations/integrations-client.tsx` | Integration grid, API/webhook panels |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getApiKeys()` | `api-keys.ts` | List API keys |
+| `generateNewApiKey()` | `api-keys.ts` | Create new key |
+| `revokeApiKey()` | `api-keys.ts` | Soft delete |
+| `getWebhookEndpoints()` | `webhooks.ts` | List webhooks |
+| `createWebhookEndpoint()` | `webhooks.ts` | Create endpoint |
+| `testWebhookEndpoint()` | `webhooks.ts` | Send test payload |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| CalendarIntegration | findFirst | Google Calendar status |
+| DropboxIntegration | findFirst | Dropbox status |
+| SlackIntegration | findMany | Slack channels |
+| ApiKey | findMany, create | API key management |
+| WebhookEndpoint | findMany, create | Webhook CRUD |
+| WebhookDelivery | findMany | Delivery history |
+
+**Available Integrations:**
+- Google Calendar (OAuth, bidirectional sync)
+- Dropbox (OAuth, auto backup)
+- Slack (OAuth, notifications)
+- Stripe (payments)
+- Zapier (automation)
+
+**API Key Features:**
+- SHA-256 hash storage (never plaintext)
+- Scopes: read, write, admin
+- Expiration dates, usage tracking
+
+**Webhook Events:**
+- Gallery: created, delivered, viewed, paid
+- Booking: created, confirmed, cancelled, completed
+- Invoice: created, sent, paid, overdue
+- Payment: received, failed, refunded
+- Client/Contract/Project events
+
+---
+
+### `/settings/calendar` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/calendar/page.tsx`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/calendar/page.tsx` | Server component, fetch config |
+| Client | `settings/calendar/calendar-settings-client.tsx` | OAuth, sync settings |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getGoogleCalendarConfig()` | `google-calendar.ts` | Current integration config |
+| `getGoogleCalendars()` | `google-calendar.ts` | List user's calendars |
+| `testGoogleCalendarConnection()` | `google-calendar.ts` | Test connection |
+| `updateGoogleCalendarSettings()` | `google-calendar.ts` | Update sync direction |
+| `disconnectGoogleCalendar()` | `google-calendar.ts` | Remove integration |
+| `syncGoogleCalendar()` | `google-calendar.ts` | Bidirectional sync |
+
+**API Routes:**
+| Route | Purpose |
+|-------|---------|
+| `/api/integrations/google/authorize` | OAuth authorization with PKCE |
+| `/api/integrations/google/callback` | OAuth callback, token exchange |
+| `/api/calendar/ical/[token]` | iCal feed export (RFC 5545) |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| CalendarIntegration | findFirst, create, update | Integration management |
+| CalendarEvent | findMany, create, update | Synced events |
+| CalendarFeed | findMany, create | iCal subscriptions |
+| Booking | findMany | Events to export |
+
+**Sync Directions:** `import_only` | `export_only` | `both`
+
+**Features:**
+- Google Calendar OAuth integration
+- Bidirectional sync (import/export)
+- iCal feed generation for subscriptions
+- PKCE security for OAuth
+
+---
+
+### `/settings/developer` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/developer/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/developer/page.tsx` | Server component, fetch sync status |
+| Client | `settings/developer/seed-buttons.tsx` | Seed/clear database |
+| Client | `settings/developer/stripe-products.tsx` | Product sync management |
+| Client | `settings/developer/subscription-plans.tsx` | Plan CRUD, A/B testing |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `seedDatabase()` | `seed.ts` | Create sample data |
+| `clearSeededData()` | `seed.ts` | Remove sample data |
+| `getApiKeys()` | `api-keys.ts` | API key list |
+| `generateNewApiKey()` | `api-keys.ts` | Create API key |
+| `validateApiKey()` | `api-keys.ts` | Verify key hash |
+| `getWebhookEndpoints()` | `webhooks.ts` | Webhook list |
+| `createWebhookEndpoint()` | `webhooks.ts` | Create endpoint |
+| `dispatchWebhookEvent()` | `webhooks.ts` | Send event to subscribers |
+| `getSubscriptionPlans()` | `subscription-plans.ts` | Pricing plans |
+| `createPricingExperiment()` | `subscription-plans.ts` | A/B test setup |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ApiKey | findMany, create, delete | Key management |
+| WebhookEndpoint | findMany, create | Webhook CRUD |
+| WebhookDelivery | findMany, create | Delivery logs |
+| SubscriptionPlan | findMany, create | Pricing tiers |
+| PricingExperiment | findMany, create | A/B experiments |
+
+**API Key Security:**
+- SHA-256 hash storage
+- Format: `sk_live_[base64url]`
+- Prefix visible, full key shown once
+
+**Webhook System:**
+- HMAC-SHA256 signature
+- Automatic retry with failure tracking
+- Event dispatch to all subscribers
+
+---
+
+### `/settings/mls-presets` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/settings/mls-presets/page.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/mls-presets/page.tsx` | Server component, fetch presets |
+| Client | `settings/mls-presets/mls-presets-client.tsx` | CRUD, filter by provider |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getMlsPresets()` | `mls-presets.ts` | Fetch system + org presets |
+| `getMlsProviders()` | `mls-presets.ts` | Unique provider names |
+| `createMlsPreset()` | `mls-presets.ts` | Create custom preset |
+| `updateMlsPreset()` | `mls-presets.ts` | Update preset |
+| `deleteMlsPreset()` | `mls-presets.ts` | Delete custom preset |
+| `seedSystemMlsPresets()` | `mls-presets.ts` | Seed 18 default presets |
+| `getEffectivePresetsForClient()` | `mls-presets.ts` | Resolved presets with overrides |
+| `setPresetOverride()` | `mls-presets.ts` | Client/brokerage override |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| MlsPreset | findMany, create, update, delete | Preset CRUD |
+| MlsPresetOverride | findMany, upsert | Override management |
+| Client | findFirst | Client lookup for overrides |
+| Brokerage | findFirst | Brokerage lookup for overrides |
+
+**Default Providers (18 presets):**
+- HAR (Houston), Zillow, Realtor.com, NWMLS
+- MLS PIN, Bright MLS, CRMLS
+- Social Media (Square, Landscape)
+- Web (Full HD, 4K), Print (8x10, 11x14)
+- Marketing (Flyer)
+
+**Preset Fields:**
+- Dimensions (width, height)
+- Quality (10-100)
+- Format (jpeg, png, webp)
+- Max file size, Aspect ratio, Letterboxing
+
+**Override Hierarchy:** System → Organization → Brokerage → Client
+
+---
+
+### `/settings/travel` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/travel/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/travel/page.tsx` | Server component, fetch travel config |
+| Client | `settings/travel/travel-settings-form.tsx` | Home base, mileage rates |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getOrganizationSettings()` | `settings.ts` | Fetch travel config |
+| `updateTravelSettings()` | `settings.ts` | Update mileage rates |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Organization | findUnique, update | homeBaseLocation, travelFeePerMile, travelFeeThreshold |
+| Location | findUnique, create | Home base coordinates |
+
+**Features:**
+- Google Maps address autocomplete
+- Live map preview
+- Fee calculator (5, 15, 25, 50 mile examples)
+- Default: 65 cents/mile, 15 miles free
+
+---
+
+### `/settings/sms` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/sms/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/sms/page.tsx` | Server component, fetch Twilio config |
+| Client | `settings/sms/sms-settings-client.tsx` | Credentials, test messaging |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getSMSSettings()` | `sms.ts` | Twilio config (accountSid, authToken, phone) |
+| `getSMSStats()` | `sms.ts` | Delivery stats (sent, delivered, failed) |
+| `getSMSTemplates()` | `sms.ts` | Message templates list |
+| `getSMSLogs()` | `sms.ts` | Recent delivery history |
+| `updateSMSSettings()` | `sms.ts` | Save Twilio config |
+| `sendTestSMS()` | `sms.ts` | Test connection |
+| `seedDefaultTemplates()` | `sms.ts` | Create default templates |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Organization | findUnique, update | Twilio credentials |
+| SMSTemplate | findMany | Template list |
+| SMSLog | findMany | Delivery history |
+
+**SMS Status:** `queued` | `sent` | `delivered` | `failed` | `undelivered`
+
+---
+
+### `/settings/sms/templates` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/sms/templates/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/sms/templates/page.tsx` | Server component, fetch templates |
+| Client | `settings/sms/templates/sms-templates-client.tsx` | Grid display, search |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getSMSTemplates()` | `sms.ts` | All templates with metadata |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| SMSTemplate | findMany | Templates with _count.smsLogs |
+
+**Features:**
+- 2-column responsive grid
+- Search (name, type, content)
+- Active/inactive status badges
+- Available variables as tags
+- Messages sent count
+
+---
+
+### `/settings/territories` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/territories/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/territories/page.tsx` | Server component, fetch territories |
+| Client | `settings/territories/territories-client.tsx` | CRUD modals |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getTerritories()` | `territories.ts` | All territories with ZIP codes |
+| `getServices()` | `services.ts` | Services for linking |
+| `createTerritory()` | `territories.ts` | Create with pricing modifier |
+| `updateTerritory()` | `territories.ts` | Modify settings |
+| `deleteTerritory()` | `territories.ts` | Remove territory |
+| `toggleTerritoryStatus()` | `territories.ts` | Activate/deactivate |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ServiceTerritory | findMany, create, update, delete | Zone CRUD |
+| Service | findMany | Available services |
+
+**Territory Fields:**
+- Name, description, zipCodes (array)
+- pricingModifier (1.0 = base, 1.1 = +10%)
+- travelFee (cents), color, isActive
+
+---
+
+### `/settings/referrals` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/referrals/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/referrals/page.tsx` | Server component, fetch program |
+| Client | `settings/referrals/referrals-client.tsx` | Tabbed interface |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getReferralProgram()` | `referrals.ts` | Program config |
+| `getReferrers()` | `referrals.ts` | Referral partners |
+| `getReferrals()` | `referrals.ts` | All referrals |
+| `getReferralStats()` | `referrals.ts` | Metrics (totalReferrers, conversionRate) |
+| `upsertReferralProgram()` | `referrals.ts` | Create/update program |
+| `toggleReferralProgram()` | `referrals.ts` | Enable/disable |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ReferralProgram | findUnique, upsert | Program config |
+| Referrer | findMany | Partners |
+| Referral | findMany | Transactions |
+
+**Reward Types:** `percentage` | `fixed` | `credit` | `gift_card`
+
+**Tabs:** Settings, Referrers, Referrals
+
+---
+
+### `/settings/my-referrals` ✅ 🔒 📊
+
+**Page:** `src/app/(dashboard)/settings/my-referrals/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/my-referrals/page.tsx` | Server component, fetch user stats |
+| Client | `settings/my-referrals/my-referrals-client.tsx` | Multi-tab interface |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getMyReferralProfile()` | `platform-referrals.ts` | User's referral code |
+| `getMyReferralStats()` | `platform-referrals.ts` | Metrics (totalReferrals, pendingCredit) |
+| `getMyReferrals()` | `platform-referrals.ts` | User's invites |
+| `getMyRewards()` | `platform-referrals.ts` | Available rewards |
+| `getMyReferralLink()` | `platform-referrals.ts` | Shareable URL |
+| `getReferralLeaderboard()` | `platform-referrals.ts` | Top 10 referrers |
+| `sendReferralInvite()` | `platform-referrals.ts` | Email invite |
+| `applyReward()` | `platform-referrals.ts` | Apply credit |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| PlatformReferrer | findUnique | User's profile |
+| PlatformReferral | findMany | User's referrals |
+| PlatformReward | findMany | Reward items |
+
+**Features:**
+- "$25 Share & Earn" hero
+- Quick share (Email, Twitter, LinkedIn, WhatsApp, QR)
+- QR code modal with download
+- 4 tabs: How It Works, Referrals, Rewards, Leaderboard
+- Milestone progress (1, 5, 10, 25, 50 referrals)
+
+---
+
+### `/settings/appearance` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/appearance/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/appearance/page.tsx` | Server component, fetch preferences |
+| Client | `settings/appearance/appearance-settings-form.tsx` | Theme, font, density preview |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getAppearancePreferences()` | `appearance.ts` | Saved preferences |
+| `updateAppearancePreferences()` | `appearance.ts` | Save changes |
+| `applyThemePreset()` | `appearance.ts` | Apply preset |
+| `resetAppearancePreferences()` | `appearance.ts` | Restore defaults |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| AppearancePreference | findUnique, update | User preferences |
+
+**Preference Fields:**
+- dashboardTheme, dashboardAccent
+- sidebarCompact, sidebarPosition
+- fontFamily, density, fontSize
+- highContrast, reduceMotion
+- autoThemeEnabled, autoThemeDarkStart/End
+
+**Features:**
+- 8+ preset themes with preview
+- Custom color picker
+- Typography selector (serif/sans)
+- Content density (compact/comfortable/spacious)
+- Text size (small/normal/large/xlarge)
+- Accessibility: high contrast, reduce motion
+- Automatic time-based theme switching
+- Settings backup/restore (JSON export)
+
+---
+
+### `/settings/features` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/features/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/features/page.tsx` | Server component, fetch industries/modules |
+| Client | `settings/features/features-settings-form.tsx` | Industry + module selector |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `updateIndustries()` | `onboarding.ts` | Update org industries |
+| `updateModules()` | `onboarding.ts` | Enable/disable modules |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Organization | findUnique, update | industries, primaryIndustry, enabledModules |
+
+**Industry Options:**
+- Real Estate, Commercial, Architecture
+- Wedding, Events, Headshots
+- Portrait, Product, Food/Hospitality
+
+**Module Categories:**
+- Operations
+- Client Management
+- Industry-Specific
+
+**Features:**
+- Multi-select industry grid
+- Primary industry badge
+- Module availability filtered by industry
+- "Coming soon" indicators
+- URL param highlight + scroll-into-view
+
+---
+
+### `/settings/billing/upgrade` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/settings/billing/upgrade/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `settings/billing/upgrade/page.tsx` | Server component, plan display |
+| Client | `settings/billing/upgrade/upgrade-form.tsx` | Stripe checkout button |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createCheckoutSession()` | `stripe-checkout.ts` | Create Stripe Checkout |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Organization | findUnique | stripeCustomerId, stripeSubscriptionId |
+
+**Plan Options:**
+- Pro: $49/month ("Most Popular")
+- Studio: $99/month
+
+**Features:**
+- Auto-redirect if already subscribed
+- Feature comparison lists
+- Stripe Checkout integration
+- Success/Cancel URL handling
+- FAQ section (4 common questions)
 
 ---
 
@@ -1402,13 +2967,63 @@ interface LeadsAnalytics {
 
 ---
 
-### `/portfolio/[slug]` ❌ 🌐
+### `/portfolio/[slug]` ✅ 🌐 📊
 
 **Page:** `src/app/portfolio/[slug]/page.tsx`
+**Dynamic:** `force-dynamic`
 
-Portfolio website.
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `portfolio/[slug]/page.tsx` | Server component, access gates |
+| Client | `portfolio/[slug]/portfolio-renderer.tsx` | Section rendering, analytics |
+| Client | `portfolio/[slug]/password-gate.tsx` | Password verification |
+| Client | `portfolio/[slug]/lead-gate.tsx` | Lead capture form |
+| Client | `portfolio/[slug]/comments-section.tsx` | Comment submission |
 
-*To be mapped*
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getPortfolioWebsiteBySlug()` | `portfolio-websites.ts` | Fetch portfolio with sections |
+| `verifyPortfolioPassword()` | `portfolio-websites.ts` | SHA-256 password check |
+| `trackPortfolioView()` | `portfolio-websites.ts` | Create view record |
+| `updatePortfolioViewEngagement()` | `portfolio-websites.ts` | Update duration, scroll depth |
+| `submitPortfolioInquiry()` | `portfolio-websites.ts` | Contact form submission |
+
+**API Routes:**
+| Route | Purpose |
+|-------|---------|
+| `POST /api/portfolio/track` | Record page view |
+| `POST /api/portfolio/lead-capture` | Submit lead + grant access |
+| `GET /api/portfolio/comments` | Fetch approved comments |
+| `POST /api/portfolio/comments` | Submit comment for moderation |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| PortfolioWebsite | findUnique | Portfolio data + sections |
+| PortfolioWebsiteView | create, update | Analytics tracking |
+| PortfolioLead | create | Lead gate submissions |
+| PortfolioInquiry | create | Contact form submissions |
+| PortfolioComment | findMany, create | Comments (moderated) |
+
+**Access Gates (Sequential):**
+1. Publication check → 404 if unpublished
+2. Expiration check → expired notice
+3. Password protection → cookie-based access
+4. Lead capture gate → email required
+
+**Analytics Tracking:**
+- Visitor ID (localStorage)
+- Session ID (sessionStorage)
+- Scroll depth, duration
+- Geolocation (IP → country/city)
+
+**Section Types:**
+- hero, about, gallery, services
+- testimonials, contact, faq
+- text, image, video, spacer, awards
+
+**OG Image:** Dynamic social preview (1200x630)
 
 ---
 
@@ -1771,24 +3386,24 @@ Quick reference of all 129 server action files by domain.
 
 | Section | Routes | Mapped | Percentage |
 |---------|--------|--------|------------|
-| Dashboard Core | 6 | 3 | 50% |
-| Galleries | 7 | 2 | 29% |
-| Invoices & Billing | 12 | 2 | 17% |
-| Clients | 6 | 2 | 33% |
-| Scheduling | 10 | 1 | 10% |
-| Contracts | 7 | 1 | 14% |
-| Services | 9 | 1 | 11% |
-| Orders | 6 | 1 | 17% |
+| Dashboard Core | 6 | 5 | 83% |
+| Galleries | 7 | 3 | 43% |
+| Invoices & Billing | 14 | 10 | 71% |
+| Clients | 6 | 6 | 100% |
+| Scheduling | 10 | 4 | 40% |
+| Contracts | 7 | 2 | 29% |
+| Services & Products | 11 | 3 | 27% |
+| Orders | 6 | 4 | 67% |
 | Projects | 3 | 1 | 33% |
 | Properties | 4 | 1 | 25% |
 | Portfolios | 3 | 1 | 33% |
 | Questionnaires | 7 | 1 | 14% |
-| Leads | 6 | 2 | 33% |
-| Settings | 35 | 0 | 0% |
-| Public | 15 | 5 | 33% |
+| Leads | 6 | 3 | 50% |
+| Settings | 35 | 14 | 40% |
+| Public | 15 | 7 | 47% |
 | Client Portal | 3 | 1 | 33% |
-| API Routes | 58 | 2 | 3% |
-| **TOTAL** | **192** | **26** | **14%** |
+| API Routes | 58 | 3 | 5% |
+| **TOTAL** | **192** | **74** | **39%** |
 
 ---
 

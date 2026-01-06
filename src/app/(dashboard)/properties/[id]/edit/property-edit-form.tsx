@@ -117,6 +117,21 @@ const ACCENT_COLOR_PRESETS = [
   { value: "#0ea5e9", label: "Sky" },
 ];
 
+// Font options for customization
+const FONT_OPTIONS = [
+  { value: "", label: "Default (Template)", preview: "The quick brown fox" },
+  { value: "inter", label: "Inter", preview: "The quick brown fox" },
+  { value: "playfair", label: "Playfair Display", preview: "The quick brown fox" },
+  { value: "montserrat", label: "Montserrat", preview: "The quick brown fox" },
+  { value: "lora", label: "Lora", preview: "The quick brown fox" },
+  { value: "roboto", label: "Roboto", preview: "The quick brown fox" },
+  { value: "opensans", label: "Open Sans", preview: "The quick brown fox" },
+  { value: "raleway", label: "Raleway", preview: "The quick brown fox" },
+  { value: "merriweather", label: "Merriweather", preview: "The quick brown fox" },
+  { value: "poppins", label: "Poppins", preview: "The quick brown fox" },
+  { value: "cormorant", label: "Cormorant Garamond", preview: "The quick brown fox" },
+];
+
 // Helper to format date for datetime-local input
 function formatDateTimeLocal(date: Date): string {
   const year = date.getFullYear();
@@ -160,6 +175,8 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
   const [showPrice, setShowPrice] = useState(website.showPrice);
   const [showAgent, setShowAgent] = useState(website.showAgent);
   const [accentColor, setAccentColor] = useState(website.accentColor || "");
+  const [fontHeading, setFontHeading] = useState(website.fontHeading || "");
+  const [fontBody, setFontBody] = useState(website.fontBody || "");
 
   // Open House Scheduling
   const [openHouseDate, setOpenHouseDate] = useState(
@@ -216,6 +233,8 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
           metaTitle: metaTitle || null,
           metaDescription: metaDescription || null,
           accentColor: accentColor || null,
+          fontHeading: fontHeading || null,
+          fontBody: fontBody || null,
           openHouseDate: openHouseDate ? new Date(openHouseDate) : null,
           openHouseEndDate: openHouseEndDate ? new Date(openHouseEndDate) : null,
         });
@@ -667,6 +686,83 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
                     Button
                   </span>
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Typography */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Typography</h2>
+            <p className="text-xs text-foreground-muted mb-4">
+              Customize the fonts used on your property website
+            </p>
+            <div className="space-y-4">
+              {/* Heading Font */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Heading Font
+                </label>
+                <select
+                  value={fontHeading}
+                  onChange={(e) => setFontHeading(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                >
+                  {FONT_OPTIONS.map((font) => (
+                    <option key={font.value} value={font.value}>
+                      {font.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-foreground-muted">
+                  Used for property address and section titles
+                </p>
+              </div>
+
+              {/* Body Font */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Body Font
+                </label>
+                <select
+                  value={fontBody}
+                  onChange={(e) => setFontBody(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                >
+                  {FONT_OPTIONS.map((font) => (
+                    <option key={font.value} value={font.value}>
+                      {font.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-foreground-muted">
+                  Used for descriptions and general text
+                </p>
+              </div>
+
+              {/* Font Preview */}
+              {(fontHeading || fontBody) && (
+                <div className="mt-4 p-4 rounded-lg bg-[var(--background-tertiary)] border border-[var(--card-border)]">
+                  <p className="text-xs text-foreground-muted mb-2">Preview:</p>
+                  <p className="text-lg font-semibold text-foreground mb-1">
+                    {fontHeading ? FONT_OPTIONS.find(f => f.value === fontHeading)?.label : "Default"} Heading
+                  </p>
+                  <p className="text-sm text-foreground-secondary">
+                    {fontBody ? FONT_OPTIONS.find(f => f.value === fontBody)?.label : "Default"} body text for descriptions
+                  </p>
+                </div>
+              )}
+
+              {(fontHeading || fontBody) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFontHeading("");
+                    setFontBody("");
+                  }}
+                  className="text-sm text-foreground-muted hover:text-foreground"
+                >
+                  Reset to defaults
+                </button>
               )}
             </div>
           </div>

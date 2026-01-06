@@ -268,7 +268,7 @@ export function DashboardSidebar({
                             <span className="sidebar-label flex-1 truncate">
                               {item.label}
                             </span>
-                            {hasBadge ? (
+                            {hasBadge && item.badge !== undefined ? (
                               <span className="sidebar-badge ml-auto rounded-full bg-[var(--primary)]/15 px-2 py-0.5 text-xs font-semibold text-[var(--primary)]">
                                 {item.badge > 99 ? "99+" : item.badge}
                               </span>
@@ -292,7 +292,7 @@ export function DashboardSidebar({
                             <span className="sidebar-label flex-1 truncate">
                               {item.label}
                             </span>
-                            {hasBadge ? (
+                            {hasBadge && item.badge !== undefined ? (
                               <span className="sidebar-badge ml-auto rounded-full bg-[var(--primary)]/15 px-2 py-0.5 text-xs font-semibold text-[var(--primary)]">
                                 {item.badge > 99 ? "99+" : item.badge}
                               </span>

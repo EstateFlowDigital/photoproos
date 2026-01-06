@@ -18,6 +18,12 @@ import {
   type SocialVariant,
 } from "@/lib/actions/marketing-assets";
 import {
+  connectCustomDomain,
+  verifyCustomDomain,
+  disconnectCustomDomain,
+  getCnameTarget,
+} from "@/lib/actions/custom-domains";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -89,6 +95,13 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
   const [isGeneratingFlyer, setIsGeneratingFlyer] = useState(false);
   const [isGeneratingSocial, setIsGeneratingSocial] = useState(false);
   const [selectedSocialVariant, setSelectedSocialVariant] = useState<SocialVariant>("listing");
+
+  // Custom domain state
+  const [customDomain, setCustomDomain] = useState(website.customDomain || "");
+  const [isConnectingDomain, setIsConnectingDomain] = useState(false);
+  const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
+  const [domainVerified, setDomainVerified] = useState(website.customDomainVerified);
+  const [showDomainInstructions, setShowDomainInstructions] = useState(false);
 
   const handleTogglePublish = async () => {
     setIsPublishing(true);
@@ -999,6 +1012,182 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
               </div>
             </div>
 
+            {/* Custom Domain */}
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="mb-4 font-semibold text-foreground">Custom Domain</h2>
+              <p className="mb-4 text-sm text-foreground-secondary">
+                Connect your own domain to this property website for a professional branded URL.
+              </p>
+
+              {website.customDomain && domainVerified ? (
+                // Domain is connected and verified
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 rounded-lg bg-[var(--success)]/10 border border-[var(--success)]/20 p-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--success)]/20">
+                      <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{website.customDomain}</p>
+                      <p className="text-xs text-[var(--success)]">Domain verified and active</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (confirm("Are you sure you want to disconnect this domain?")) {
+                        const result = await disconnectCustomDomain(website.id);
+                        if (result.success) {
+                          setCustomDomain("");
+                          setDomainVerified(false);
+                          setShowDomainInstructions(false);
+                          showToast("Domain disconnected", "success");
+                          router.refresh();
+                        } else {
+                          showToast(result.error || "Failed to disconnect domain", "error");
+                        }
+                      }
+                    }}
+                    className="text-sm text-foreground-muted hover:text-[var(--error)]"
+                  >
+                    Disconnect domain
+                  </button>
+                </div>
+              ) : website.customDomain && !domainVerified ? (
+                // Domain is set but not verified
+                <div className="space-y-4">
+                  <div className="rounded-lg bg-[var(--warning)]/10 border border-[var(--warning)]/20 p-4">
+                    <div className="flex items-start gap-3">
+                      <ClockIcon className="h-5 w-5 text-[var(--warning)] mt-0.5" />
+                      <div>
+                        <p className="font-medium text-foreground">{website.customDomain}</p>
+                        <p className="text-sm text-foreground-secondary mt-1">
+                          Waiting for DNS verification
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* DNS Instructions */}
+                  <div className="rounded-lg bg-[var(--background-tertiary)] p-4 space-y-3">
+                    <p className="text-sm font-medium text-foreground">Add this CNAME record at your registrar:</p>
+                    <div className="grid gap-2 text-sm">
+                      <div className="flex justify-between items-center py-2 px-3 rounded bg-[var(--background)] border border-[var(--card-border)]">
+                        <span className="text-foreground-muted">Type</span>
+                        <span className="font-mono text-foreground">CNAME</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 px-3 rounded bg-[var(--background)] border border-[var(--card-border)]">
+                        <span className="text-foreground-muted">Name</span>
+                        <span className="font-mono text-foreground">
+                          {website.customDomain?.split(".")[0] || "@"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 px-3 rounded bg-[var(--background)] border border-[var(--card-border)]">
+                        <span className="text-foreground-muted">Target</span>
+                        <span className="font-mono text-foreground">{getCnameTarget()}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(getCnameTarget());
+                        showToast("CNAME target copied!", "success");
+                      }}
+                      className="text-sm text-[var(--primary)] hover:underline"
+                    >
+                      Copy CNAME target
+                    </button>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={async () => {
+                        setIsVerifyingDomain(true);
+                        const result = await verifyCustomDomain(website.id);
+                        setIsVerifyingDomain(false);
+                        if (result.success && result.isVerified) {
+                          setDomainVerified(true);
+                          showToast("Domain verified successfully!", "success");
+                          router.refresh();
+                        } else if (result.success && !result.isVerified) {
+                          showToast("DNS not configured yet. Please wait a few minutes and try again.", "warning");
+                        } else {
+                          showToast(result.error || "Verification failed", "error");
+                        }
+                      }}
+                      disabled={isVerifyingDomain}
+                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                    >
+                      {isVerifyingDomain ? (
+                        <>
+                          <LoadingSpinner className="h-4 w-4" />
+                          Verifying...
+                        </>
+                      ) : (
+                        "Verify DNS"
+                      )}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const result = await disconnectCustomDomain(website.id);
+                        if (result.success) {
+                          setCustomDomain("");
+                          setDomainVerified(false);
+                          setShowDomainInstructions(false);
+                          showToast("Domain removed", "success");
+                          router.refresh();
+                        }
+                      }}
+                      className="text-sm text-foreground-muted hover:text-foreground"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // No domain connected
+                <div className="space-y-4">
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={customDomain}
+                      onChange={(e) => setCustomDomain(e.target.value.toLowerCase())}
+                      placeholder="e.g., 123mainstreet.yourdomain.com"
+                      className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!customDomain) {
+                          showToast("Please enter a domain", "error");
+                          return;
+                        }
+                        setIsConnectingDomain(true);
+                        const result = await connectCustomDomain(website.id, customDomain);
+                        setIsConnectingDomain(false);
+                        if (result.success) {
+                          showToast("Domain connected! Follow the DNS instructions below.", "success");
+                          router.refresh();
+                        } else {
+                          showToast(result.error || "Failed to connect domain", "error");
+                        }
+                      }}
+                      disabled={isConnectingDomain || !customDomain}
+                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                    >
+                      {isConnectingDomain ? (
+                        <>
+                          <LoadingSpinner className="h-4 w-4" />
+                          Connecting...
+                        </>
+                      ) : (
+                        "Connect"
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-foreground-muted">
+                    Enter a subdomain you own (e.g., listing.yourbrokerage.com)
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
               <h2 className="mb-2 font-semibold text-[var(--error)]">Danger Zone</h2>
               <p className="mb-4 text-sm text-foreground-secondary">
@@ -1160,6 +1349,22 @@ function LoadingSpinner({ className }: { className?: string }) {
     <svg className={`animate-spin ${className}`} fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
 }

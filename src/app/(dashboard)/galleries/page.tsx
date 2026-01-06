@@ -13,9 +13,9 @@ interface GalleriesPageProps {
   searchParams: Promise<{ filter?: string }>;
 }
 
-const GALLERY_ADDON_STATUSES = ["pending", "quoted", "approved", "in_progress"] as const;
+const GALLERY_ADDON_STATUSES: ("pending" | "quoted" | "approved" | "in_progress")[] = ["pending", "quoted", "approved", "in_progress"];
 
-const galleryListInclude = Prisma.validator<Prisma.ProjectInclude>()({
+const galleryListInclude = {
   client: { select: { fullName: true, company: true } },
   _count: {
     select: {
@@ -38,7 +38,7 @@ const galleryListInclude = Prisma.validator<Prisma.ProjectInclude>()({
     },
     orderBy: { isPrimary: "desc" },
   },
-});
+} satisfies Prisma.ProjectInclude;
 
 export default async function GalleriesPage({ searchParams }: GalleriesPageProps) {
   const params = await searchParams;
@@ -69,7 +69,8 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
   const statusFilter = filter === "all" ? undefined : filter;
 
   // Fetch galleries, counts, clients, and services in parallel with error handling
-  let galleries: Awaited<ReturnType<typeof prisma.project.findMany<{ include: typeof galleryListInclude }>>> = [];
+  type GalleryWithIncludes = Prisma.ProjectGetPayload<{ include: typeof galleryListInclude }>;
+  let galleries: GalleryWithIncludes[] = [];
   let counts = { all: 0, draft: 0, pending: 0, delivered: 0, archived: 0 };
   let clients: { id: string; fullName: string | null; company: string | null; email: string }[] = [];
   let services: { id: string; name: string; category: string }[] = [];

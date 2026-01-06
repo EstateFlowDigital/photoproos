@@ -46,6 +46,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now includes line items summary, proper formatting, and PDF attachment support
 
 ### Added
+- **Route-to-Action Atlas Expansion** - Extended comprehensive route documentation from 46 to 74 routes (39% complete)
+  - Dashboard Core: `/create` wizard with 5-step project creation flow
+  - Invoices & Billing: `/payments` and `/payments/[id]` with Stripe refunds, receipts
+  - Services & Products: `/products` and `/products/[catalogId]` with SKU workflow
+  - Orders: `/order-pages`, `/order-pages/new`, `/order-pages/[id]` for custom landing pages
+  - Settings: 9 new routes including travel, SMS, territories, referrals, appearance, features, billing/upgrade
+  - All routes document: Page → Client → Actions → Prisma Models data flow
+
 - **Leads Module Bulk Operations** - Comprehensive bulk actions for lead management
   - Multi-select checkboxes in both list and Kanban board views
   - Bulk status change (New → Contacted → Qualified → Closed)

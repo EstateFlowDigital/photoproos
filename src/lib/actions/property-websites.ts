@@ -40,6 +40,8 @@ export interface PropertyWebsiteInput {
   metaDescription?: string | null;
   // Template customization
   accentColor?: string | null;
+  fontHeading?: string | null;
+  fontBody?: string | null;
   // Open house scheduling
   openHouseDate?: Date | null;
   openHouseEndDate?: Date | null;
@@ -70,10 +72,13 @@ export interface PropertyWebsiteWithRelations {
   showPrice: boolean;
   showAgent: boolean;
   customDomain: string | null;
+  customDomainVerified: boolean;
   slug: string;
   metaTitle: string | null;
   metaDescription: string | null;
   accentColor: string | null;
+  fontHeading: string | null;
+  fontBody: string | null;
   openHouseDate: Date | null;
   openHouseEndDate: Date | null;
   viewCount: number;
@@ -218,6 +223,8 @@ export async function updatePropertyWebsite(
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
         accentColor: data.accentColor,
+        fontHeading: data.fontHeading,
+        fontBody: data.fontBody,
         openHouseDate: data.openHouseDate,
         openHouseEndDate: data.openHouseEndDate,
       },

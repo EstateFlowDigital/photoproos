@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getPropertyWebsiteBySlug } from "@/lib/actions/property-websites";
 import { PropertyInquiryForm } from "./property-inquiry-form";
 import { PropertyShareButtons } from "./property-share-buttons";
+import { getGoogleFontsUrl, getCustomFontStyles } from "@/lib/fonts";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -241,6 +242,10 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
   const customAccentColor = website.accentColor;
   const accentColorHex = getAccentColorHex(template, customAccentColor);
 
+  // Get custom fonts
+  const googleFontsUrl = getGoogleFontsUrl(website.fontHeading, website.fontBody);
+  const { headingStyle, bodyStyle } = getCustomFontStyles(website.fontHeading, website.fontBody);
+
   // Check open house status
   const openHouseStatus = getOpenHouseStatus(website.openHouseDate, website.openHouseEndDate);
   const showOpenHouse = openHouseStatus === "upcoming" || openHouseStatus === "active";
@@ -248,10 +253,16 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
   return (
     <main
       className={styles.main}
-      style={customAccentColor ? {
-        "--custom-accent": customAccentColor,
-      } as React.CSSProperties : undefined}
+      style={{
+        ...(customAccentColor ? { "--custom-accent": customAccentColor } : {}),
+        ...bodyStyle,
+      } as React.CSSProperties}
     >
+      {/* Google Fonts */}
+      {googleFontsUrl && (
+        <link rel="stylesheet" href={googleFontsUrl} />
+      )}
+
       {/* Schema.org Structured Data for SEO */}
       <script
         type="application/ld+json"
@@ -337,7 +348,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
                   {formatPrice(website.price)}
                 </p>
               )}
-              <h1 className={styles.heading}>{website.address}</h1>
+              <h1 className={styles.heading} style={headingStyle}>{website.address}</h1>
               <p className="mt-1 text-lg text-foreground-secondary">
                 {website.city}, {website.state} {website.zipCode}
               </p>
@@ -385,7 +396,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
             {/* Virtual Tour Embed */}
             {website.virtualTourUrl && (
               <div className={styles.divider}>
-                <h2 className={styles.sectionHeading}>3D Virtual Tour</h2>
+                <h2 className={styles.sectionHeading} style={headingStyle}>3D Virtual Tour</h2>
                 <MediaEmbed url={website.virtualTourUrl} type="tour" />
               </div>
             )}
@@ -393,7 +404,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
             {/* Video Embed */}
             {website.videoUrl && (
               <div className={styles.divider}>
-                <h2 className={styles.sectionHeading}>Property Video</h2>
+                <h2 className={styles.sectionHeading} style={headingStyle}>Property Video</h2>
                 <MediaEmbed url={website.videoUrl} type="video" />
               </div>
             )}
@@ -401,7 +412,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
             {/* Description */}
             <div className={styles.divider}>
               {website.headline && (
-                <h2 className={styles.sectionHeading}>{website.headline}</h2>
+                <h2 className={styles.sectionHeading} style={headingStyle}>{website.headline}</h2>
               )}
               <div className="prose prose-invert max-w-none">
                 {website.description?.split("\n\n").map((paragraph, i) => (
@@ -415,7 +426,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
             {/* Features */}
             {website.features && website.features.length > 0 && (
               <div className={styles.divider}>
-                <h2 className={styles.sectionHeading}>Features & Amenities</h2>
+                <h2 className={styles.sectionHeading} style={headingStyle}>Features & Amenities</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {website.features.map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
@@ -432,7 +443,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
 
             {/* Photo Gallery Grid */}
             <div className="py-8">
-              <h2 className={styles.sectionHeading}>Photo Gallery</h2>
+              <h2 className={styles.sectionHeading} style={headingStyle}>Photo Gallery</h2>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                 {website.project.assets.map((asset) => (
                   <div

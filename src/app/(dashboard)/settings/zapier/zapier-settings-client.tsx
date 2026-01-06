@@ -134,7 +134,7 @@ export function ZapierSettingsClient({ apiKeys }: ZapierSettingsClientProps) {
         setNewKeyName("");
         setMessage({ type: "success", text: "API key created successfully" });
       } else {
-        setMessage({ type: "error", text: result.error || "Failed to create API key" });
+        setMessage({ type: "error", text: "error" in result ? result.error : "Failed to create API key" });
       }
     } catch {
       setMessage({ type: "error", text: "Failed to create API key" });

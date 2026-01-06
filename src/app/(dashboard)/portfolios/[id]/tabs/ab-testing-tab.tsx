@@ -119,7 +119,7 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
         });
         loadTests();
       } else {
-        showToast(result.error || "Failed to create test", "error");
+        showToast("error" in result ? result.error : "Failed to create test", "error");
       }
     });
   }
@@ -131,7 +131,7 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
         showToast("Test started", "success");
         loadTests();
       } else {
-        showToast(result.error || "Failed to start test", "error");
+        showToast("error" in result ? result.error : "Failed to start test", "error");
       }
     });
   }
@@ -143,7 +143,7 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
         showToast("Test paused", "success");
         loadTests();
       } else {
-        showToast(result.error || "Failed to pause test", "error");
+        showToast("error" in result ? result.error : "Failed to pause test", "error");
       }
     });
   }
@@ -155,7 +155,7 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
         showToast("Test completed", "success");
         loadTests();
       } else {
-        showToast(result.error || "Failed to complete test", "error");
+        showToast("error" in result ? result.error : "Failed to complete test", "error");
       }
     });
   }
@@ -175,7 +175,7 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
         showToast("Test deleted", "success");
         loadTests();
       } else {
-        showToast(result.error || "Failed to delete test", "error");
+        showToast("error" in result ? result.error : "Failed to delete test", "error");
       }
     });
   }

@@ -114,8 +114,8 @@ export default function EmailLogsPage() {
         setTotalCount(logsResult.total || 0);
       }
 
-      if (statsResult.success && statsResult.stats) {
-        setStats(statsResult.stats);
+      if (statsResult.success && statsResult.data) {
+        setStats(statsResult.data);
       }
     } catch (error) {
       console.error("Failed to load email data:", error);

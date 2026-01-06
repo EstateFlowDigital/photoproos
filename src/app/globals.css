@@ -1929,32 +1929,70 @@ html[data-scroll-theme="light"] {
     justify-content: center;
   }
 
-  .sidebar-shell[data-force-expanded="true"] {
+  .sidebar-shell[data-force-expanded="true"][data-variant="inline"] {
     width: 272px;
   }
 
-  .sidebar-shell[data-force-expanded="true"] .sidebar-label {
+  .sidebar-shell[data-force-expanded="true"][data-variant="inline"] .sidebar-label {
     display: inline;
   }
 
-  .sidebar-shell[data-force-expanded="true"] .sidebar-section-title {
+  .sidebar-shell[data-force-expanded="true"][data-variant="inline"] .sidebar-section-title {
     display: block;
   }
 
-  .sidebar-shell[data-force-expanded="true"] .sidebar-subnav {
+  .sidebar-shell[data-force-expanded="true"][data-variant="inline"] .sidebar-subnav {
     display: block;
   }
 
-  .sidebar-shell[data-force-expanded="true"] .sidebar-chevron {
+  .sidebar-shell[data-force-expanded="true"][data-variant="inline"] .sidebar-chevron {
     display: inline-flex;
   }
 
-  .sidebar-shell[data-force-expanded="true"] .sidebar-badge {
+  .sidebar-shell[data-force-expanded="true"][data-variant="inline"] .sidebar-badge {
     display: inline-flex;
   }
 
-  .sidebar-shell[data-force-expanded="true"] .sidebar-item-link,
-  .sidebar-shell[data-force-expanded="true"] .sidebar-brand {
+  .sidebar-shell[data-force-expanded="true"][data-variant="inline"] .sidebar-item-link,
+  .sidebar-shell[data-force-expanded="true"][data-variant="inline"] .sidebar-brand {
+    justify-content: flex-start;
+  }
+
+  .shell-container[data-sidebar-compact="true"]
+    .sidebar-shell[data-force-expanded="true"][data-variant="inline"] {
+    width: 272px;
+  }
+
+  .shell-container[data-sidebar-compact="true"]
+    .sidebar-shell[data-force-expanded="true"][data-variant="inline"]
+    .sidebar-label {
+    display: inline;
+  }
+
+  .shell-container[data-sidebar-compact="true"]
+    .sidebar-shell[data-force-expanded="true"][data-variant="inline"]
+    .sidebar-section-title,
+  .shell-container[data-sidebar-compact="true"]
+    .sidebar-shell[data-force-expanded="true"][data-variant="inline"]
+    .sidebar-subnav {
+    display: block;
+  }
+
+  .shell-container[data-sidebar-compact="true"]
+    .sidebar-shell[data-force-expanded="true"][data-variant="inline"]
+    .sidebar-chevron,
+  .shell-container[data-sidebar-compact="true"]
+    .sidebar-shell[data-force-expanded="true"][data-variant="inline"]
+    .sidebar-badge {
+    display: inline-flex;
+  }
+
+  .shell-container[data-sidebar-compact="true"]
+    .sidebar-shell[data-force-expanded="true"][data-variant="inline"]
+    .sidebar-item-link,
+  .shell-container[data-sidebar-compact="true"]
+    .sidebar-shell[data-force-expanded="true"][data-variant="inline"]
+    .sidebar-brand {
     justify-content: flex-start;
   }
 

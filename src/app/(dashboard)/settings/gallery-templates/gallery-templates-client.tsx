@@ -149,7 +149,7 @@ export function GalleryTemplatesClient({ templates: initialTemplates, services }
           setIsModalOpen(false);
           resetForm();
         } else {
-          showToast(result.error || "Failed to create template", "error");
+          showToast("error" in result ? result.error : "Failed to create template", "error");
         }
       }
     } catch (error) {

@@ -862,4 +862,4 @@ Track any differences between documentation and reality here.
 | Document | Purpose | Status |
 |----------|---------|--------|
 | [APP_ARCHITECTURE.md](./APP_ARCHITECTURE.md) | High-level architecture | Updated 2026-01-06 |
-| [ROUTE_ACTION_ATLAS.md](./ROUTE_ACTION_ATLAS.md) | Route-to-action data flow mapping | IN PROGRESS (7/192 routes mapped) |
+| [ROUTE_ACTION_ATLAS.md](./ROUTE_ACTION_ATLAS.md) | Route-to-action data flow mapping | IN PROGRESS (74/192 routes mapped) |

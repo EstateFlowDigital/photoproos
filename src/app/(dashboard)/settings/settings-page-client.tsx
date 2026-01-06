@@ -85,7 +85,7 @@ export function SettingsPageClient({
         showToast("Your data has been exported successfully.", "success");
         setIsExportModalOpen(false);
       } else {
-        showToast(result.error || "Failed to export data", "error");
+        showToast("error" in result ? result.error : "Failed to export data", "error");
       }
     } catch (error) {
       showToast("An unexpected error occurred", "error");

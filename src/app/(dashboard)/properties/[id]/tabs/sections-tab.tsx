@@ -45,12 +45,12 @@ export function SectionsTab({ propertyWebsiteId, sections: initialSections }: Se
   const [loading, setLoading] = useState(false);
 
   // Drag and drop handlers
-  const handleDragStart = (e: React.DragEvent, index: number) => {
+  const handleDragStart = (e: React.DragEvent<HTMLElement>, index: number) => {
     setDraggedIndex(index);
     e.currentTarget.style.opacity = "0.5";
   };
 
-  const handleDragEnd = (e: React.DragEvent) => {
+  const handleDragEnd = (e: React.DragEvent<HTMLElement>) => {
     setDraggedIndex(null);
     setDragOverIndex(null);
     e.currentTarget.style.opacity = "1";
