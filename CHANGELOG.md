@@ -57,6 +57,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Gallery detail page loads actual `allowFavorites` and `allowComments` values from database
   - All settings persist correctly when creating and updating galleries
 
+- **Photo List View with Quick Reorder** - New list view mode for galleries
+  - Toggle between grid and list views with icon buttons
+  - List view shows photo thumbnails, filenames, status badges, and order numbers
+  - Built-in drag-and-drop reordering (no need to enter separate reorder mode)
+  - Drag handle on each row for intuitive repositioning
+  - Supports selection mode and favorite toggling in list view
+  - Responsive design: hides non-essential columns on smaller screens
+
 - **Questionnaires Search & Filters** - Enhanced questionnaires page with search and filtering
   - Search by template name, description, industry, client name, or email
   - Status filter pills (All, Pending, In Progress, Completed, Approved) with counts
