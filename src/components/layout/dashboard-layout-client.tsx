@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
-import { MobileNav } from "./mobile-nav";
+import { MobileMenuButton, MobileNav } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { useTheme } from "@/components/theme-provider";
@@ -37,6 +37,10 @@ export function DashboardLayoutClient({
   const pathname = usePathname();
   const shellRef = useRef<HTMLDivElement | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleOpenMenu = useCallback(() => {
+    setMobileMenuOpen(true);
+  }, []);
 
   const handleCloseMenu = useCallback(() => {
     setMobileMenuOpen(false);
@@ -257,9 +261,16 @@ export function DashboardLayoutClient({
     const run = () => {
       for (const href of routesToPrefetch) {
         if (href !== pathname) {
-          router.prefetch(href).catch(() => {
+          try {
+            const maybePromise = router.prefetch(href);
+            if (maybePromise && typeof (maybePromise as Promise<unknown>).catch === "function") {
+              (maybePromise as Promise<unknown>).catch(() => {
+                // Prefetch failures are non-fatal; ignore.
+              });
+            }
+          } catch {
             // Prefetch failures are non-fatal; ignore.
-          });
+          }
         }
       }
     };
@@ -307,6 +318,7 @@ export function DashboardLayoutClient({
         {/* Topbar with mobile menu button */}
         <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]">
           <div className="flex items-center gap-3 px-4 py-3 sm:h-16 sm:py-0 lg:px-6">
+            <MobileMenuButton onClick={handleOpenMenu} />
             <div className="flex-1 min-w-0">
               <DashboardTopbar
                 className="border-0 px-0 py-0"
