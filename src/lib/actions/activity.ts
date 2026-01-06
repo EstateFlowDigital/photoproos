@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import type { ActivityData } from "@/lib/utils/activity";
 import { ActivityType, Prisma } from "@prisma/client";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Note: Types can be re-exported but functions cannot from "use server" files
 // Import getActivityLinkUrl and getActivityIcon directly from "@/lib/utils/activity"
@@ -72,16 +72,13 @@ export async function getActivityLogs(
       }),
     ]);
 
-    return {
-      success: true,
-      data: {
-        activities: activities.map((a) => ({
-          ...a,
-          metadata: a.metadata as Record<string, unknown> | null,
-        })),
-        total,
-      },
-    };
+    return success({
+      activities: activities.map((a) => ({
+        ...a,
+        metadata: a.metadata as Record<string, unknown> | null,
+      })),
+      total,
+    });
   } catch (error) {
     console.error("[Activity] Error fetching activity logs:", error);
     if (error instanceof Error) {
@@ -168,17 +165,14 @@ export async function getActivityFeed(
     const hasMore = activities.length > limit;
     const returnActivities = hasMore ? activities.slice(0, limit) : activities;
 
-    return {
-      success: true,
-      data: {
-        activities: returnActivities.map((a) => ({
-          ...a,
-          metadata: a.metadata as Record<string, unknown> | null,
-        })),
-        total,
-        hasMore,
-      },
-    };
+    return success({
+      activities: returnActivities.map((a) => ({
+        ...a,
+        metadata: a.metadata as Record<string, unknown> | null,
+      })),
+      total,
+      hasMore,
+    });
   } catch (error) {
     console.error("[Activity] Error fetching activity feed:", error);
     if (error instanceof Error) {
@@ -248,23 +242,20 @@ export async function getActivitySummary(): Promise<ActionResult<ActivitySummary
 
     const userMap = new Map(users.map((u) => [u.id, u.fullName]));
 
-    return {
-      success: true,
-      data: {
-        totalActivities,
-        todayCount,
-        weekCount,
-        byType: byType.map((t) => ({
-          type: t.type,
-          count: t._count.id,
-        })),
-        recentUsers: recentUserActivities.map((u) => ({
-          userId: u.userId || "",
-          fullName: userMap.get(u.userId || "") || null,
-          count: u._count.id,
-        })),
-      },
-    };
+    return success({
+      totalActivities,
+      todayCount,
+      weekCount,
+      byType: byType.map((t) => ({
+        type: t.type,
+        count: t._count.id,
+      })),
+      recentUsers: recentUserActivities.map((u) => ({
+        userId: u.userId || "",
+        fullName: userMap.get(u.userId || "") || null,
+        count: u._count.id,
+      })),
+    });
   } catch (error) {
     console.error("[Activity] Error fetching activity summary:", error);
     if (error instanceof Error) {
@@ -337,10 +328,7 @@ export async function getActivityTimeline(
       .map(([date, activities]) => ({ date, activities }))
       .sort((a, b) => b.date.localeCompare(a.date));
 
-    return {
-      success: true,
-      data: { timeline },
-    };
+    return success({ timeline });
   } catch (error) {
     console.error("[Activity] Error fetching activity timeline:", error);
     if (error instanceof Error) {
@@ -392,13 +380,12 @@ export async function searchActivities(
       },
     });
 
-    return {
-      success: true,
-      data: activities.map((a) => ({
+    return success(
+      activities.map((a) => ({
         ...a,
         metadata: a.metadata as Record<string, unknown> | null,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("[Activity] Error searching activities:", error);
     if (error instanceof Error) {
@@ -456,13 +443,12 @@ export async function getEntityActivities(
       },
     });
 
-    return {
-      success: true,
-      data: activities.map((a) => ({
+    return success(
+      activities.map((a) => ({
         ...a,
         metadata: a.metadata as Record<string, unknown> | null,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("[Activity] Error fetching entity activities:", error);
     if (error instanceof Error) {

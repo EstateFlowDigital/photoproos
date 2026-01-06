@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface DuplicateGroup {
   matchType: "email" | "phone" | "name";
@@ -193,7 +193,7 @@ export async function findDuplicateClients(): Promise<ActionResult<{
       0
     );
 
-    return { success: true, data: { duplicates, totalPotentialDuplicates } };
+    return success({ duplicates, totalPotentialDuplicates });
   } catch (error) {
     console.error("Error finding duplicate clients:", error);
     if (error instanceof Error) {
@@ -292,46 +292,43 @@ export async function getClientMergePreview(
       return fail("Cannot merge a client with itself");
     }
 
-    return {
-      success: true,
-      data: {
-        primary: {
-          id: primary.id,
-          email: primary.email,
-          fullName: primary.fullName,
-          company: primary.company,
-          phone: primary.phone,
-          projectCount: primary._count.projects,
-          bookingCount: primary._count.bookings,
-          invoiceCount: primary._count.invoices,
-          contractCount: primary._count.contracts,
-          taskCount: primary._count.tasks,
-          lifetimeRevenueCents: primary.lifetimeRevenueCents,
-        },
-        secondary: {
-          id: secondary.id,
-          email: secondary.email,
-          fullName: secondary.fullName,
-          company: secondary.company,
-          phone: secondary.phone,
-          projectCount: secondary._count.projects,
-          bookingCount: secondary._count.bookings,
-          invoiceCount: secondary._count.invoices,
-          contractCount: secondary._count.contracts,
-          taskCount: secondary._count.tasks,
-          lifetimeRevenueCents: secondary.lifetimeRevenueCents,
-        },
-        recordsToTransfer: {
-          projects: secondary._count.projects,
-          bookings: secondary._count.bookings,
-          invoices: secondary._count.invoices,
-          contracts: secondary._count.contracts,
-          tasks: secondary._count.tasks,
-          orders: secondary._count.orders,
-          questionnaires: secondary._count.questionnaires,
-        },
+    return success({
+      primary: {
+        id: primary.id,
+        email: primary.email,
+        fullName: primary.fullName,
+        company: primary.company,
+        phone: primary.phone,
+        projectCount: primary._count.projects,
+        bookingCount: primary._count.bookings,
+        invoiceCount: primary._count.invoices,
+        contractCount: primary._count.contracts,
+        taskCount: primary._count.tasks,
+        lifetimeRevenueCents: primary.lifetimeRevenueCents,
       },
-    };
+      secondary: {
+        id: secondary.id,
+        email: secondary.email,
+        fullName: secondary.fullName,
+        company: secondary.company,
+        phone: secondary.phone,
+        projectCount: secondary._count.projects,
+        bookingCount: secondary._count.bookings,
+        invoiceCount: secondary._count.invoices,
+        contractCount: secondary._count.contracts,
+        taskCount: secondary._count.tasks,
+        lifetimeRevenueCents: secondary.lifetimeRevenueCents,
+      },
+      recordsToTransfer: {
+        projects: secondary._count.projects,
+        bookings: secondary._count.bookings,
+        invoices: secondary._count.invoices,
+        contracts: secondary._count.contracts,
+        tasks: secondary._count.tasks,
+        orders: secondary._count.orders,
+        questionnaires: secondary._count.questionnaires,
+      },
+    });
   } catch (error) {
     console.error("Error getting merge preview:", error);
     if (error instanceof Error) {
@@ -521,7 +518,7 @@ export async function mergeClients(
     revalidatePath("/clients");
     revalidatePath(`/clients/${primaryClientId}`);
 
-    return { success: true, data: { recordsTransferred } };
+    return success({ recordsTransferred });
   } catch (error) {
     console.error("Error merging clients:", error);
     if (error instanceof Error) {
@@ -553,14 +550,11 @@ export async function getDuplicateCount(): Promise<ActionResult<{
       (d) => d.confidence === "medium"
     ).length;
 
-    return {
-      success: true,
-      data: {
-        count: result.data.totalPotentialDuplicates,
-        highConfidence,
-        mediumConfidence,
-      },
-    };
+    return success({
+      count: result.data.totalPotentialDuplicates,
+      highConfidence,
+      mediumConfidence,
+    });
   } catch (error) {
     console.error("Error getting duplicate count:", error);
     if (error instanceof Error) {

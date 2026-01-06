@@ -1,15 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { VirtualList } from "@/components/ui/virtual-list";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
+import { updateOrder } from "@/lib/actions/orders";
+import { useToast } from "@/components/ui/toast";
 
 type OrderStatus = "cart" | "pending" | "paid" | "processing" | "completed" | "cancelled";
 type SortOption = "newest" | "oldest" | "amountHigh" | "amountLow" | "preferredDate";
 type DateRangeFilter = "all" | "7days" | "30days" | "90days";
+type ViewMode = "list" | "board";
 
 type OrderRow = {
   id: string;
@@ -56,6 +60,15 @@ function formatTimePreference(time: string | null) {
   return timeMap[time] || time;
 }
 
+// Kanban column definitions
+const KANBAN_COLUMNS: { status: OrderStatus; label: string; color: string }[] = [
+  { status: "pending", label: "Pending", color: "var(--warning)" },
+  { status: "paid", label: "Paid", color: "var(--success)" },
+  { status: "processing", label: "Processing", color: "var(--primary)" },
+  { status: "completed", label: "Completed", color: "var(--success)" },
+  { status: "cancelled", label: "Cancelled", color: "var(--foreground-muted)" },
+];
+
 export function OrdersTableClient({
   orders,
   statusFilter,
@@ -63,6 +76,13 @@ export function OrdersTableClient({
   orders: OrderRow[];
   statusFilter?: OrderStatus;
 }) {
+  const router = useRouter();
+  const { showToast } = useToast();
+  const [isPending, startTransition] = useTransition();
+
+  // View mode state
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
@@ -70,6 +90,10 @@ export function OrdersTableClient({
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Kanban drag state
+  const [draggedOrder, setDraggedOrder] = useState<OrderRow | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<OrderStatus | null>(null);
 
   // Bulk selection helpers
   const toggleSelection = (id: string) => {
@@ -175,6 +199,66 @@ export function OrdersTableClient({
 
   const isAllSelected = filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.has(o.id));
 
+  // Group orders by status for Kanban view
+  const ordersByStatus = useMemo(() => {
+    const grouped: Record<OrderStatus, OrderRow[]> = {
+      cart: [],
+      pending: [],
+      paid: [],
+      processing: [],
+      completed: [],
+      cancelled: [],
+    };
+    filteredOrders.forEach((order) => {
+      grouped[order.status].push(order);
+    });
+    return grouped;
+  }, [filteredOrders]);
+
+  // Kanban drag handlers
+  const handleDragStart = (order: OrderRow) => {
+    setDraggedOrder(order);
+  };
+
+  const handleDragOver = (e: React.DragEvent, status: OrderStatus) => {
+    e.preventDefault();
+    setDragOverColumn(status);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetStatus: OrderStatus) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+
+    if (draggedOrder && draggedOrder.status !== targetStatus) {
+      // Prevent certain status transitions
+      if (targetStatus === "paid" && draggedOrder.status === "pending") {
+        showToast("Orders can only be marked as paid through payment", "error");
+        setDraggedOrder(null);
+        return;
+      }
+
+      startTransition(async () => {
+        const result = await updateOrder({
+          id: draggedOrder.id,
+          status: targetStatus,
+        });
+
+        if (result.success) {
+          showToast(`Order ${draggedOrder.orderNumber} moved to ${formatStatusLabel(targetStatus)}`, "success");
+          router.refresh();
+        } else {
+          showToast(result.error || "Failed to update order status", "error");
+        }
+      });
+    }
+
+    setDraggedOrder(null);
+  };
+
   if (orders.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
@@ -202,6 +286,34 @@ export function OrdersTableClient({
     <div className="space-y-4">
       {/* Search and Filter Controls */}
       <div className="flex flex-wrap items-center gap-3">
+        {/* View Mode Toggle */}
+        <div className="flex rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-0.5">
+          <button
+            onClick={() => setViewMode("list")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              viewMode === "list"
+                ? "bg-[var(--primary)] text-white"
+                : "text-foreground-muted hover:text-foreground"
+            )}
+          >
+            <ListIcon className="h-4 w-4" />
+            List
+          </button>
+          <button
+            onClick={() => setViewMode("board")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              viewMode === "board"
+                ? "bg-[var(--primary)] text-white"
+                : "text-foreground-muted hover:text-foreground"
+            )}
+          >
+            <BoardIcon className="h-4 w-4" />
+            Board
+          </button>
+        </div>
+
         {/* Search Input */}
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
@@ -214,19 +326,21 @@ export function OrdersTableClient({
           />
         </div>
 
-        {/* Sort Dropdown */}
-        <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value as SortOption)}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-          aria-label="Sort orders"
-        >
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="amountHigh">Amount: High to Low</option>
-          <option value="amountLow">Amount: Low to High</option>
-          <option value="preferredDate">Preferred Date</option>
-        </select>
+        {/* Sort Dropdown - only show in list view */}
+        {viewMode === "list" && (
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value as SortOption)}
+            className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            aria-label="Sort orders"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="amountHigh">Amount: High to Low</option>
+            <option value="amountLow">Amount: Low to High</option>
+            <option value="preferredDate">Preferred Date</option>
+          </select>
+        )}
 
         {/* Date Range Filter */}
         <select

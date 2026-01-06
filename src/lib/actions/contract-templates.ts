@@ -10,7 +10,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Types
 export type ContractCategory =
@@ -188,7 +188,7 @@ export async function getContractTemplates(
       );
     }
 
-    return { success: true, data: templates };
+    return success(templates);
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
     return fail("Failed to get templates");
@@ -212,13 +212,12 @@ export async function getTemplateCategories(): Promise<
     { id: "general", name: "General" },
   ];
 
-  return {
-    success: true,
-    data: categories.map((c) => ({
+  return success(
+    categories.map((c) => ({
       ...c,
       count: SYSTEM_TEMPLATES.filter((t) => t.category === c.id).length,
-    })),
-  };
+    }))
+  );
 }
 
 /**
@@ -254,7 +253,7 @@ export async function useContractTemplate(
     });
 
     revalidatePath("/contracts");
-    return { success: true, data: { contractId: contract.id } };
+    return success({ contractId: contract.id });
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
     return fail("Failed to create contract");
@@ -274,19 +273,16 @@ export async function getContractTemplateById(
     }
 
     const template = SYSTEM_TEMPLATES[index];
-    return {
-      success: true,
-      data: {
-        ...template,
-        id: `system-${index}`,
-        createdAt: new Date("2024-01-01"),
-        usageCount: Math.floor(Math.random() * 100) + 10,
-        content: template.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n"),
-        _count: { contracts: Math.floor(Math.random() * 12) },
-        isDefault: index === 0,
-        updatedAt: new Date("2024-01-01"),
-      },
-    };
+    return success({
+      ...template,
+      id: `system-${index}`,
+      createdAt: new Date("2024-01-01"),
+      usageCount: Math.floor(Math.random() * 100) + 10,
+      content: template.sections.map((s) => `## ${s.title}\n\n${s.content}`).join("\n\n"),
+      _count: { contracts: Math.floor(Math.random() * 12) },
+      isDefault: index === 0,
+      updatedAt: new Date("2024-01-01"),
+    });
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
     return fail("Failed to get template");
@@ -307,10 +303,7 @@ export async function createContractTemplate(data: {
     // For now, custom templates are not persisted
     // This would require a ContractTemplate model in the database
     console.log("[ContractTemplates] Creating template:", data.name);
-    return {
-      success: true,
-      data: { templateId: `custom-${Date.now()}` },
-    };
+    return success({ templateId: `custom-${Date.now()}` });
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
     return fail("Failed to create template");
@@ -367,10 +360,7 @@ export async function duplicateContractTemplate(
 ): Promise<ActionResult<{ templateId: string }>> {
   try {
     console.log("[ContractTemplates] Duplicating template:", id);
-    return {
-      success: true,
-      data: { templateId: `custom-${Date.now()}` },
-    };
+    return success({ templateId: `custom-${Date.now()}` });
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
     return fail("Failed to duplicate template");

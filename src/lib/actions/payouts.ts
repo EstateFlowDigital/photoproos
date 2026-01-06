@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { PayoutStatus, EarningStatus } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -84,7 +84,7 @@ export async function getPayoutBatches(options?: {
       take: options?.limit,
     });
 
-    return { success: true, data: batches };
+    return success(batches);
   } catch (error) {
     console.error("[Payouts] Error fetching batches:", error);
     return fail("Failed to fetch payout batches");
@@ -140,7 +140,7 @@ export async function getPayoutBatch(
       user: userMap.get(item.userId),
     }));
 
-    return { success: true, data: { ...batch, items: itemsWithUsers } };
+    return success({ ...batch, items: itemsWithUsers });
   } catch (error) {
     console.error("[Payouts] Error fetching batch:", error);
     return fail("Failed to fetch payout batch");
@@ -222,7 +222,7 @@ export async function getPendingPayouts(): Promise<
       }
     }
 
-    return { success: true, data: Array.from(grouped.values()) };
+    return success(Array.from(grouped.values()));
   } catch (error) {
     console.error("[Payouts] Error fetching pending payouts:", error);
     return fail("Failed to fetch pending payouts");
@@ -366,7 +366,7 @@ export async function createPayoutBatch(
     }));
 
     revalidatePath("/settings/payouts");
-    return { success: true, data: { ...batch, items: itemsWithUsers } };
+    return success({ ...batch, items: itemsWithUsers });
   } catch (error) {
     console.error("[Payouts] Error creating batch:", error);
     return fail("Failed to create payout batch");
@@ -526,7 +526,7 @@ export async function processPayoutBatch(
 
     revalidatePath("/settings/payouts");
     revalidatePath("/my-earnings");
-    return { success: true, data: { ...updatedBatch, items: itemsWithUsers } };
+    return success({ ...updatedBatch, items: itemsWithUsers });
   } catch (error) {
     console.error("[Payouts] Error processing batch:", error);
 

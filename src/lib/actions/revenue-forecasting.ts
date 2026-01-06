@@ -9,7 +9,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -270,7 +270,7 @@ export async function getRevenueForecast(
       });
     }
 
-    return { success: true, data: forecasts };
+    return success(forecasts);
   } catch (error) {
     console.error("[RevenueForecast] Error:", error);
     if (error instanceof Error) {
@@ -360,7 +360,7 @@ export async function getHistoricalTrends(
       };
     });
 
-    return { success: true, data: trends };
+    return success(trends);
   } catch (error) {
     console.error("[RevenueForecast] Error getting trends:", error);
     if (error instanceof Error) {
@@ -430,7 +430,7 @@ export async function getSeasonalPatterns(): Promise<
       });
     }
 
-    return { success: true, data: patterns };
+    return success(patterns);
   } catch (error) {
     console.error("[RevenueForecast] Error getting patterns:", error);
     if (error instanceof Error) {
@@ -671,7 +671,7 @@ export async function getRevenueInsights(): Promise<
       });
     }
 
-    return { success: true, data: { insights } };
+    return success({ insights });
   } catch (error) {
     console.error("[RevenueForecast] Error getting insights:", error);
     if (error instanceof Error) {

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getClientSession } from "@/lib/actions/client-auth";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // Types for selections
 export interface Selection {
@@ -438,7 +438,7 @@ export async function toggleSelection(
         where: { id: existing.id },
       });
 
-      return { success: true, data: { selected: false } };
+      return success({ selected: false });
     }
 
     // Check limit
@@ -467,7 +467,7 @@ export async function toggleSelection(
       },
     });
 
-    return { success: true, data: { selected: true } };
+    return success({ selected: true });
   } catch (error) {
     console.error("Error toggling selection:", error);
     return fail("Failed to update selection");
@@ -634,7 +634,7 @@ export async function submitSelections(projectId: string, deliverySlug?: string)
       });
     }
 
-    return { success: true, data: { count: selectionCount } };
+    return success({ count: selectionCount });
   } catch (error) {
     console.error("Error submitting selections:", error);
     return fail("Failed to submit selections");

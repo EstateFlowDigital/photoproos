@@ -43,6 +43,7 @@ import {
   sortableKeyboardCoordinates,
   useSortable,
   rectSortingStrategy,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -93,6 +94,7 @@ import {
   FolderPlusIcon,
   SettingsIcon,
   LayersIcon,
+  ListIcon,
 } from "./gallery-detail-icons";
 
 interface Photo {
@@ -248,6 +250,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [comments, setComments] = useState<PhotoComment[]>(gallery.comments || []);
   const [photoFilter, setPhotoFilter] = useState<"all" | "favorites" | "commented">("all");
   const [isReorderMode, setIsReorderMode] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
@@ -1229,7 +1232,34 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                 )}
               </div>
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible" style={{ WebkitOverflowScrolling: 'touch' }}>
-                {photos.length > 1 && !isSelectMode && (
+                {/* View Mode Toggle */}
+                {photos.length > 0 && !isSelectMode && !isReorderMode && (
+                  <div className="inline-flex shrink-0 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-0.5">
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
+                        viewMode === "grid"
+                          ? "bg-[var(--primary)] text-white"
+                          : "text-foreground-muted hover:text-foreground"
+                      )}
+                    >
+                      <GridIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
+                        viewMode === "list"
+                          ? "bg-[var(--primary)] text-white"
+                          : "text-foreground-muted hover:text-foreground"
+                      )}
+                    >
+                      <ListIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+                {photos.length > 1 && !isSelectMode && viewMode === "grid" && (
                   <button
                     onClick={toggleReorderMode}
                     className={cn(
@@ -1434,7 +1464,44 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
             {photos.length > 0 ? (
               <>
-                {isReorderMode ? (
+                {viewMode === "list" ? (
+                  /* List View with Drag-and-Drop Reordering */
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={displayedPhotos.map(p => p.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-1">
+                        {/* List Header */}
+                        <div className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-foreground-muted uppercase tracking-wider border-b border-[var(--card-border)]">
+                          <div className="w-6" /> {/* Drag handle spacer */}
+                          <div className="w-14 shrink-0">Preview</div>
+                          <div className="flex-1 min-w-0">Filename</div>
+                          <div className="w-20 text-center hidden sm:block">Status</div>
+                          <div className="w-24 text-right hidden md:block">Order</div>
+                        </div>
+                        {displayedPhotos.map((photo, index) => (
+                          <SortableListItem
+                            key={photo.id}
+                            photo={photo}
+                            index={index}
+                            isCover={coverPhotoId === photo.id}
+                            isFavorite={favoritePhotos.has(photo.id)}
+                            isSelected={selectedPhotos.has(photo.id)}
+                            isSelectMode={isSelectMode}
+                            onToggleSelect={() => togglePhotoSelection(photo.id)}
+                            onToggleFavorite={() => toggleFavorite(photo.id)}
+                            onClick={() => handlePhotoClick(index)}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                ) : isReorderMode ? (
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -2764,6 +2831,142 @@ function SortablePhotoItem({ photo, isCover, isFavorite }: SortablePhotoItemProp
       {/* Position indicator */}
       <div className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-1">
         <p className="text-xs font-medium text-white truncate max-w-[120px]">{photo.filename}</p>
+      </div>
+    </div>
+  );
+}
+
+// Sortable List Item Component for list view with drag-and-drop reordering
+interface SortableListItemProps {
+  photo: Photo;
+  index: number;
+  isCover: boolean;
+  isFavorite: boolean;
+  isSelected: boolean;
+  isSelectMode: boolean;
+  onToggleSelect: () => void;
+  onToggleFavorite: () => void;
+  onClick: () => void;
+}
+
+function SortableListItem({
+  photo,
+  index,
+  isCover,
+  isFavorite,
+  isSelected,
+  isSelectMode,
+  onToggleSelect,
+  onToggleFavorite,
+  onClick,
+}: SortableListItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: photo.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "group flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+        isDragging
+          ? "bg-[var(--primary)]/10 ring-2 ring-[var(--primary)] z-50 shadow-lg"
+          : "hover:bg-[var(--background-hover)]",
+        isSelected && "bg-[var(--primary)]/5"
+      )}
+    >
+      {/* Drag Handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="flex h-6 w-6 shrink-0 cursor-grab items-center justify-center rounded text-foreground-muted hover:text-foreground hover:bg-[var(--background-elevated)] active:cursor-grabbing"
+      >
+        <GripIcon className="h-4 w-4" />
+      </button>
+
+      {/* Thumbnail */}
+      <div
+        className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-[var(--background)] cursor-pointer"
+        onClick={isSelectMode ? onToggleSelect : onClick}
+      >
+        <img
+          src={photo.thumbnailUrl || photo.url}
+          alt={photo.filename}
+          className="h-full w-full object-cover"
+        />
+        {isSelectMode && (
+          <div className={cn(
+            "absolute inset-0 flex items-center justify-center",
+            isSelected ? "bg-[var(--primary)]/30" : "bg-black/20"
+          )}>
+            <div className={cn(
+              "flex h-4 w-4 items-center justify-center rounded border-2",
+              isSelected
+                ? "border-[var(--primary)] bg-[var(--primary)]"
+                : "border-white/80 bg-black/30"
+            )}>
+              {isSelected && <CheckIcon className="h-3 w-3 text-white" />}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Filename */}
+      <div
+        className="flex-1 min-w-0 cursor-pointer"
+        onClick={isSelectMode ? onToggleSelect : onClick}
+      >
+        <p className="text-sm font-medium text-foreground truncate">{photo.filename}</p>
+      </div>
+
+      {/* Status Badges */}
+      <div className="w-20 shrink-0 hidden sm:flex items-center justify-center gap-1">
+        {isCover && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">
+            <StarIcon className="h-3 w-3" />
+            Cover
+          </span>
+        )}
+        {isFavorite && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--error)]/10 text-[var(--error)] hover:bg-[var(--error)]/20 transition-colors"
+          >
+            <HeartIcon className="h-3.5 w-3.5" filled />
+          </button>
+        )}
+        {!isFavorite && !isSelectMode && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            className="flex h-6 w-6 items-center justify-center rounded-full text-foreground-muted hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors opacity-0 group-hover:opacity-100"
+          >
+            <HeartIcon className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Order Number */}
+      <div className="w-24 shrink-0 text-right hidden md:block">
+        <span className="inline-flex items-center justify-center rounded-full bg-[var(--background-elevated)] px-2.5 py-0.5 text-xs font-medium text-foreground-muted">
+          #{index + 1}
+        </span>
       </div>
     </div>
   );

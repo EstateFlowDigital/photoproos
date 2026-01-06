@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { EmailType, EmailStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // ============================================================================
 // EMAIL LOGGING ACTIONS
@@ -218,18 +218,15 @@ export async function getEmailStats() {
       }),
     ]);
 
-    return {
-      success: true,
-      stats: {
-        totalSent,
-        sentThisMonth,
-        failed,
-        byType: byType.map((t) => ({
-          type: t.emailType,
-          count: t._count.id,
-        })),
-      },
-    };
+    return success({
+      totalSent,
+      sentThisMonth,
+      failed,
+      byType: byType.map((t) => ({
+        type: t.emailType,
+        count: t._count.id,
+      })),
+    });
   } catch (error) {
     console.error("Failed to get email stats:", error);
     return fail("Failed to fetch email stats");
@@ -416,15 +413,12 @@ export async function getQuestionnaireDigestData(organizationId: string) {
       (q) => q.dueDate && q.dueDate < now && q.status !== "completed"
     );
 
-    return {
-      success: true,
-      data: {
-        pending,
-        inProgress,
-        overdue,
-        total: questionnaires.length,
-      },
-    };
+    return success({
+      pending,
+      inProgress,
+      overdue,
+      total: questionnaires.length,
+    });
   } catch (error) {
     console.error("Failed to get questionnaire digest data:", error);
     return fail("Failed to fetch digest data");

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import type { EquipmentCategory } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID
 async function getOrganizationId(): Promise<string> {
@@ -78,7 +78,7 @@ export async function createEquipment(
 
     revalidatePath("/settings/equipment");
 
-    return { success: true, data: { id: equipment.id } };
+    return success({ id: equipment.id });
   } catch (error) {
     console.error("Error creating equipment:", error);
     if (error instanceof Error) {
@@ -126,7 +126,7 @@ export async function updateEquipment(
 
     revalidatePath("/settings/equipment");
 
-    return { success: true, data: { id: equipment.id } };
+    return success({ id: equipment.id });
   } catch (error) {
     console.error("Error updating equipment:", error);
     if (error instanceof Error) {
@@ -367,7 +367,7 @@ export async function assignEquipmentToUser(
     revalidatePath("/settings/equipment");
     revalidatePath(`/settings/team/${userId}`);
 
-    return { success: true, data: { id: assignment.id } };
+    return success({ id: assignment.id });
   } catch (error) {
     console.error("Error assigning equipment:", error);
     if (error instanceof Error) {
@@ -488,7 +488,7 @@ export async function addServiceEquipmentRequirement(
     revalidatePath("/galleries/services");
     revalidatePath(`/galleries/services/${serviceId}`);
 
-    return { success: true, data: { id: requirement.id } };
+    return success({ id: requirement.id });
   } catch (error) {
     console.error("Error adding service equipment requirement:", error);
     if (error instanceof Error) {

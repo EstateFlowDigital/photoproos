@@ -65,36 +65,44 @@ export function CompleteStep({
           className="absolute inset-0 pointer-events-none overflow-hidden"
         >
           {/* Simple confetti dots */}
-          {Array.from({ length: 20 }).map((_, i) => (
+          {Array.from({ length: 20 }).map((_, i) => {
+            const positions = [
+              "5%", "15%", "25%", "35%", "45%", "55%", "65%", "75%", "85%", "95%",
+            ];
+            const colors = [
+              "#3b82f6",
+              "#8b5cf6",
+              "#22c55e",
+              "#f97316",
+              "#ec4899",
+            ];
+            const left = positions[i % positions.length];
+            const color = colors[i % colors.length];
+            return (
             <motion.div
               key={i}
               initial={{
                 opacity: 1,
                 y: -20,
-                x: `${Math.random() * 100}%`,
+                x: left,
               }}
               animate={{
                 opacity: 0,
                 y: 400,
-                rotate: Math.random() * 360,
+                rotate: 90 * (i % 4),
               }}
               transition={{
-                duration: 2 + Math.random(),
+                duration: 2 + (i % 5) * 0.2,
                 delay: i * 0.1,
               }}
               className="absolute top-0 w-3 h-3 rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                backgroundColor: [
-                  "#3b82f6",
-                  "#8b5cf6",
-                  "#22c55e",
-                  "#f97316",
-                  "#ec4899",
-                ][Math.floor(Math.random() * 5)],
+                left,
+                backgroundColor: color,
               }}
             />
-          ))}
+            );
+          })}
         </motion.div>
       )}
 

@@ -1,15 +1,22 @@
 "use server";
 
+/**
+ * Invoice Branding Templates - Visual styling for invoice display
+ * These templates control the visual appearance of invoices (colors, fonts, logos)
+ *
+ * Note: For preset line item templates, see invoice-presets.ts
+ */
+
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
 // =============================================================================
 
-interface InvoiceTemplateInput {
+interface InvoiceBrandingTemplateInput {
   name: string;
   isDefault?: boolean;
   logoPosition?: "left" | "center" | "right";
@@ -47,7 +54,7 @@ async function getOrganizationId(): Promise<string | null> {
 /**
  * Create a new invoice template
  */
-export async function createInvoiceTemplate(input: InvoiceTemplateInput) {
+export async function createInvoiceBrandingTemplate(input: InvoiceBrandingTemplateInput) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
     return fail("Organization not found");
@@ -56,13 +63,13 @@ export async function createInvoiceTemplate(input: InvoiceTemplateInput) {
   try {
     // If this is the default, unset other defaults
     if (input.isDefault) {
-      await prisma.invoiceTemplate.updateMany({
+      await prisma.invoiceBrandingTemplate.updateMany({
         where: { organizationId, isDefault: true },
         data: { isDefault: false },
       });
     }
 
-    const template = await prisma.invoiceTemplate.create({
+    const template = await prisma.invoiceBrandingTemplate.create({
       data: {
         organizationId,
         name: input.name,
@@ -81,7 +88,7 @@ export async function createInvoiceTemplate(input: InvoiceTemplateInput) {
     });
 
     revalidatePath("/settings/branding");
-    return { success: true, data: template };
+    return success(template);
   } catch (error) {
     console.error("[Invoice Template] Error creating:", error);
     return fail("Failed to create invoice template");
@@ -98,12 +105,12 @@ export async function getInvoiceTemplates() {
   }
 
   try {
-    const templates = await prisma.invoiceTemplate.findMany({
+    const templates = await prisma.invoiceBrandingTemplate.findMany({
       where: { organizationId },
       orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
     });
 
-    return { success: true, data: templates };
+    return success(templates);
   } catch (error) {
     console.error("[Invoice Template] Error fetching:", error);
     return fail("Failed to fetch invoice templates");
@@ -120,7 +127,7 @@ export async function getInvoiceTemplate(templateId: string) {
   }
 
   try {
-    const template = await prisma.invoiceTemplate.findFirst({
+    const template = await prisma.invoiceBrandingTemplate.findFirst({
       where: { id: templateId, organizationId },
     });
 
@@ -128,7 +135,7 @@ export async function getInvoiceTemplate(templateId: string) {
       return fail("Template not found");
     }
 
-    return { success: true, data: template };
+    return success(template);
   } catch (error) {
     console.error("[Invoice Template] Error fetching:", error);
     return fail("Failed to fetch invoice template");
@@ -138,9 +145,9 @@ export async function getInvoiceTemplate(templateId: string) {
 /**
  * Update an invoice template
  */
-export async function updateInvoiceTemplate(
+export async function updateInvoiceBrandingTemplate(
   templateId: string,
-  input: Partial<InvoiceTemplateInput>
+  input: Partial<InvoiceBrandingTemplateInput>
 ) {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
@@ -150,13 +157,13 @@ export async function updateInvoiceTemplate(
   try {
     // If setting as default, unset other defaults
     if (input.isDefault) {
-      await prisma.invoiceTemplate.updateMany({
+      await prisma.invoiceBrandingTemplate.updateMany({
         where: { organizationId, isDefault: true, id: { not: templateId } },
         data: { isDefault: false },
       });
     }
 
-    const template = await prisma.invoiceTemplate.update({
+    const template = await prisma.invoiceBrandingTemplate.update({
       where: { id: templateId, organizationId },
       data: {
         name: input.name,
@@ -175,7 +182,7 @@ export async function updateInvoiceTemplate(
     });
 
     revalidatePath("/settings/branding");
-    return { success: true, data: template };
+    return success(template);
   } catch (error) {
     console.error("[Invoice Template] Error updating:", error);
     return fail("Failed to update invoice template");
@@ -192,7 +199,7 @@ export async function deleteInvoiceTemplate(templateId: string) {
   }
 
   try {
-    await prisma.invoiceTemplate.delete({
+    await prisma.invoiceBrandingTemplate.delete({
       where: { id: templateId, organizationId },
     });
 
@@ -214,7 +221,7 @@ export async function getDefaultInvoiceTemplate() {
   }
 
   try {
-    const template = await prisma.invoiceTemplate.findFirst({
+    const template = await prisma.invoiceBrandingTemplate.findFirst({
       where: { organizationId, isDefault: true },
     });
 
@@ -230,27 +237,24 @@ export async function getDefaultInvoiceTemplate() {
         },
       });
 
-      return {
-        success: true,
-        data: {
-          id: null,
-          name: "Default",
-          isDefault: true,
-          logoPosition: "left",
-          primaryColor: org?.primaryColor || "#3b82f6",
-          accentColor: org?.secondaryColor || "#8b5cf6",
-          headerText: null,
-          footerText: null,
-          paymentTerms: "Due on Receipt",
-          notes: null,
-          fontFamily: "Inter",
-          showLogo: true,
-          showPaymentLink: true,
-        },
-      };
+      return success({
+        id: null,
+        name: "Default",
+        isDefault: true,
+        logoPosition: "left",
+        primaryColor: org?.primaryColor || "#3b82f6",
+        accentColor: org?.secondaryColor || "#8b5cf6",
+        headerText: null,
+        footerText: null,
+        paymentTerms: "Due on Receipt",
+        notes: null,
+        fontFamily: "Inter",
+        showLogo: true,
+        showPaymentLink: true,
+      });
     }
 
-    return { success: true, data: template };
+    return success(template);
   } catch (error) {
     console.error("[Invoice Template] Error fetching default:", error);
     return fail("Failed to fetch default template");
@@ -267,7 +271,7 @@ export async function duplicateInvoiceTemplate(templateId: string) {
   }
 
   try {
-    const original = await prisma.invoiceTemplate.findFirst({
+    const original = await prisma.invoiceBrandingTemplate.findFirst({
       where: { id: templateId, organizationId },
     });
 
@@ -275,7 +279,7 @@ export async function duplicateInvoiceTemplate(templateId: string) {
       return fail("Template not found");
     }
 
-    const duplicate = await prisma.invoiceTemplate.create({
+    const duplicate = await prisma.invoiceBrandingTemplate.create({
       data: {
         organizationId,
         name: `${original.name} (Copy)`,
@@ -294,7 +298,7 @@ export async function duplicateInvoiceTemplate(templateId: string) {
     });
 
     revalidatePath("/settings/branding");
-    return { success: true, data: duplicate };
+    return success(duplicate);
   } catch (error) {
     console.error("[Invoice Template] Error duplicating:", error);
     return fail("Failed to duplicate invoice template");

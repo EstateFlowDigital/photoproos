@@ -6,7 +6,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import type { RecurringFrequency, LineItemType } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface RecurringInvoiceLineItem {
   itemType: LineItemType;
@@ -205,7 +205,7 @@ export async function createRecurringInvoice(
     revalidatePath("/invoices");
     revalidatePath("/invoices/recurring");
 
-    return { success: true, data: { id: recurring.id } };
+    return success({ id: recurring.id });
   } catch (error) {
     console.error("Error creating recurring invoice:", error);
     if (error instanceof Error) {
@@ -460,9 +460,8 @@ export async function getRecurringInvoices(): Promise<
       orderBy: { createdAt: "desc" },
     });
 
-    return {
-      success: true,
-      data: recurring.map((r) => ({
+    return success(
+      recurring.map((r) => ({
         id: r.id,
         client: r.client,
         frequency: r.frequency,
@@ -473,8 +472,8 @@ export async function getRecurringInvoices(): Promise<
         invoicesCreated: r.invoicesCreated,
         lastInvoiceAt: r.lastInvoiceAt,
         createdAt: r.createdAt,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("Error fetching recurring invoices:", error);
     if (error instanceof Error) {
@@ -532,13 +531,10 @@ export async function getRecurringInvoice(id: string): Promise<
       return fail("Recurring invoice not found");
     }
 
-    return {
-      success: true,
-      data: {
-        ...recurring,
-        lineItems: recurring.lineItems as unknown as RecurringInvoiceLineItem[],
-      },
-    };
+    return success({
+      ...recurring,
+      lineItems: recurring.lineItems as unknown as RecurringInvoiceLineItem[],
+    });
   } catch (error) {
     console.error("Error fetching recurring invoice:", error);
     if (error instanceof Error) {
@@ -602,9 +598,8 @@ export async function getRecurringInvoicesDueToRun(): Promise<
       return r.invoicesCreated < r.maxInvoices;
     });
 
-    return {
-      success: true,
-      data: eligible.map((r) => ({
+    return success(
+      eligible.map((r) => ({
         id: r.id,
         organizationId: r.organizationId,
         clientId: r.clientId,
@@ -624,8 +619,8 @@ export async function getRecurringInvoicesDueToRun(): Promise<
         invoicesCreated: r.invoicesCreated,
         endDate: r.endDate,
         maxInvoices: r.maxInvoices,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("Error fetching due recurring invoices:", error);
     if (error instanceof Error) {
@@ -736,7 +731,7 @@ export async function createInvoiceFromRecurring(
       },
     });
 
-    return { success: true, data: { invoiceId: invoice.id } };
+    return success({ invoiceId: invoice.id });
   } catch (error) {
     console.error("Error creating invoice from recurring:", error);
     if (error instanceof Error) {
@@ -771,7 +766,7 @@ export async function processRecurringInvoices(): Promise<
       }
     }
 
-    return { success: true, data: { processed, failed } };
+    return success({ processed, failed });
   } catch (error) {
     console.error("Error processing recurring invoices:", error);
     if (error instanceof Error) {

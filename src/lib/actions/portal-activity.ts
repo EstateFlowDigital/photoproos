@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -196,7 +196,7 @@ export async function getUnreadActivityCount() {
       },
     });
 
-    return { success: true, data: count };
+    return success(count);
   } catch (error) {
     console.error("[Portal Activity] Error counting:", error);
     return fail("Failed to count activities");

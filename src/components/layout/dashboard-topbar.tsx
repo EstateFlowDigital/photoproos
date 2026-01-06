@@ -98,6 +98,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+  const latestSearchTokenRef = useRef<string>("");
   const { user, organization } = useStableOrgProfile();
 
   const userDisplayName = React.useMemo(() => {
@@ -223,9 +224,15 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
     }
 
     const performSearch = async () => {
+      const token = crypto.randomUUID();
+      latestSearchTokenRef.current = token;
       setIsSearching(true);
       try {
         const results = await globalSearch(debouncedQuery);
+
+        // Ignore if a newer search started
+        if (latestSearchTokenRef.current !== token) return;
+
         const allResults: SearchResult[] = [
           ...results.clients.map((c) => ({
             id: c.id,
@@ -335,8 +342,14 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
         setTimeout(() => searchInputRef.current?.focus(), 0);
       }
 
-      // Open keyboard shortcuts modal with Cmd/Ctrl + /
-      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+      if (!isTyping && e.key === "/") {
+        e.preventDefault();
+        setSearchOpen(true);
+        setTimeout(() => searchInputRef.current?.focus(), 0);
+      }
+
+      // Open keyboard shortcuts modal with Cmd/Ctrl + Shift + /
+      if ((e.metaKey || e.ctrlKey) && (e.key === "?" || (e.shiftKey && e.key === "/"))) {
         e.preventDefault();
         setShortcutsOpen(true);
       }

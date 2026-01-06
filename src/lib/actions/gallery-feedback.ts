@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -111,7 +111,7 @@ export async function getAllFeedback(options?: {
       createdAt: f.createdAt,
     }));
 
-    return { success: true, data: { feedback, total } };
+    return success({ feedback, total });
   } catch (error) {
     console.error("[Gallery Feedback] Error fetching feedback:", error);
     return fail("Failed to fetch feedback");
@@ -144,10 +144,7 @@ export async function getFeedbackStats(): Promise<{ success: boolean; data?: Fee
       byType[item.type] = item._count.type;
     }
 
-    return {
-      success: true,
-      data: { total, unread, resolved, byType },
-    };
+    return success({ total, unread, resolved, byType });
   } catch (error) {
     console.error("[Gallery Feedback] Error fetching stats:", error);
     return fail("Failed to fetch feedback stats");

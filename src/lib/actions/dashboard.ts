@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type VoidActionResult } from "@/lib/types/action-result";
 
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
@@ -51,7 +51,7 @@ export async function getDashboardConfig(): Promise<{
       return fail("User not found");
     }
 
-    return { success: true, data: config };
+    return success(config);
   } catch (error) {
     console.error("Error fetching dashboard config:", error);
     return fail("Failed to fetch dashboard config");

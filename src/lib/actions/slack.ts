@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { formatCurrency } from "@/lib/utils/units";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
@@ -56,7 +56,7 @@ export async function getSlackConfig(): Promise<ActionResult<SlackConfig | null>
     });
 
     if (!config) {
-      return { success: true, data: null };
+      return success(null);
     }
 
     // Map to extended config for UI compatibility
@@ -71,7 +71,7 @@ export async function getSlackConfig(): Promise<ActionResult<SlackConfig | null>
       notifyClientMessage: false,
     };
 
-    return { success: true, data: extendedConfig };
+    return success(extendedConfig);
   } catch (error) {
     console.error("Error getting Slack config:", error);
     return fail("Failed to get Slack configuration");
@@ -147,7 +147,7 @@ export async function saveSlackConfig(data: {
     };
 
     revalidatePath("/settings/slack");
-    return { success: true, data: extendedConfig };
+    return success(extendedConfig);
   } catch (error) {
     console.error("Error saving Slack config:", error);
     return fail("Failed to save Slack configuration");

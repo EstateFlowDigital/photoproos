@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { addMonths, addWeeks } from "date-fns";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -113,7 +113,7 @@ export async function createPaymentPlan(input: CreatePaymentPlanInput) {
     });
 
     revalidatePath("/payments");
-    return { success: true, data: paymentPlan };
+    return success(paymentPlan);
   } catch (error) {
     console.error("[Payment Plan] Error creating:", error);
     return fail("Failed to create payment plan");
@@ -147,7 +147,7 @@ export async function getPaymentPlans(filters?: {
       },
     });
 
-    return { success: true, data: plans };
+    return success(plans);
   } catch (error) {
     console.error("[Payment Plan] Error fetching:", error);
     return fail("Failed to fetch payment plans");
@@ -180,7 +180,7 @@ export async function getPaymentPlan(planId: string) {
       return fail("Payment plan not found");
     }
 
-    return { success: true, data: plan };
+    return success(plan);
   } catch (error) {
     console.error("[Payment Plan] Error fetching:", error);
     return fail("Failed to fetch payment plan");
@@ -349,7 +349,7 @@ export async function getUpcomingInstallments(daysAhead: number = 3) {
       orderBy: { dueDate: "asc" },
     });
 
-    return { success: true, data: installments };
+    return success(installments);
   } catch (error) {
     console.error("[Payment Plan] Error fetching upcoming:", error);
     return fail("Failed to fetch upcoming installments");

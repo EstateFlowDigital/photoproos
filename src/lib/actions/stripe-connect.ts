@@ -4,7 +4,7 @@ import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -74,13 +74,10 @@ export async function createConnectAccount(): Promise<
         type: "account_onboarding",
       });
 
-      return {
-        success: true,
-        data: {
-          accountId: organization.stripeConnectAccountId,
-          onboardingUrl: accountLink.url,
-        },
-      };
+      return success({
+        accountId: organization.stripeConnectAccountId,
+        onboardingUrl: accountLink.url,
+      });
     }
 
     // Create a new Connect account
@@ -129,13 +126,10 @@ export async function createConnectAccount(): Promise<
 
     revalidatePath("/settings/payments");
 
-    return {
-      success: true,
-      data: {
-        accountId: account.id,
-        onboardingUrl: accountLink.url,
-      },
-    };
+    return success({
+      accountId: account.id,
+      onboardingUrl: accountLink.url,
+    });
   } catch (error) {
     console.error("Error creating Connect account:", error);
     return fail(formatStripeError(error));
@@ -169,18 +163,15 @@ export async function getConnectAccountStatus(): Promise<
     }
 
     if (!organization.stripeConnectAccountId) {
-      return {
-        success: true,
-        data: {
-          hasAccount: false,
-          accountId: null,
-          isOnboarded: false,
-          chargesEnabled: false,
-          payoutsEnabled: false,
-          detailsSubmitted: false,
-          pendingVerification: false,
-        },
-      };
+      return success({
+        hasAccount: false,
+        accountId: null,
+        isOnboarded: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+        pendingVerification: false,
+      });
     }
 
     // Get the account from Stripe
@@ -201,19 +192,16 @@ export async function getConnectAccountStatus(): Promise<
       });
     }
 
-    return {
-      success: true,
-      data: {
-        hasAccount: true,
-        accountId: organization.stripeConnectAccountId,
-        isOnboarded,
-        chargesEnabled: account.charges_enabled ?? false,
-        payoutsEnabled: account.payouts_enabled ?? false,
-        detailsSubmitted: account.details_submitted ?? false,
-        pendingVerification:
-          (account.requirements?.pending_verification?.length ?? 0) > 0,
-      },
-    };
+    return success({
+      hasAccount: true,
+      accountId: organization.stripeConnectAccountId,
+      isOnboarded,
+      chargesEnabled: account.charges_enabled ?? false,
+      payoutsEnabled: account.payouts_enabled ?? false,
+      detailsSubmitted: account.details_submitted ?? false,
+      pendingVerification:
+        (account.requirements?.pending_verification?.length ?? 0) > 0,
+    });
   } catch (error) {
     console.error("Error getting Connect account status:", error);
     if (error instanceof Error) {
@@ -248,7 +236,7 @@ export async function createAccountLink(): Promise<
       type: "account_onboarding",
     });
 
-    return { success: true, data: { url: accountLink.url } };
+    return success({ url: accountLink.url });
   } catch (error) {
     console.error("Error creating account link:", error);
     if (error instanceof Error) {
@@ -280,7 +268,7 @@ export async function createDashboardLink(): Promise<
       organization.stripeConnectAccountId
     );
 
-    return { success: true, data: { url: loginLink.url } };
+    return success({ url: loginLink.url });
   } catch (error) {
     console.error("Error creating dashboard link:", error);
     if (error instanceof Error) {
@@ -380,7 +368,7 @@ export async function getConnectAccountDetails(): Promise<
     };
 
     if (!organization.stripeConnectAccountId) {
-      return { success: true, data: defaultResult };
+      return success(defaultResult);
     }
 
     // Get the full account from Stripe with expanded external_accounts
@@ -468,29 +456,26 @@ export async function getConnectAccountDetails(): Promise<
       businessName = `${account.individual.first_name} ${account.individual.last_name || ""}`.trim();
     }
 
-    return {
-      success: true,
-      data: {
-        hasAccount: true,
-        accountId: organization.stripeConnectAccountId,
-        isOnboarded,
-        chargesEnabled: account.charges_enabled ?? false,
-        payoutsEnabled: account.payouts_enabled ?? false,
-        detailsSubmitted: account.details_submitted ?? false,
-        pendingVerification:
-          (account.requirements?.pending_verification?.length ?? 0) > 0,
-        isTestMode: await isStripeTestMode(),
-        businessType: account.business_type || null,
-        businessName,
-        email: account.email || null,
-        country: account.country || null,
-        defaultCurrency: account.default_currency || null,
-        payoutSchedule,
-        externalAccounts,
-        requirements,
-        capabilities,
-      },
-    };
+    return success({
+      hasAccount: true,
+      accountId: organization.stripeConnectAccountId,
+      isOnboarded,
+      chargesEnabled: account.charges_enabled ?? false,
+      payoutsEnabled: account.payouts_enabled ?? false,
+      detailsSubmitted: account.details_submitted ?? false,
+      pendingVerification:
+        (account.requirements?.pending_verification?.length ?? 0) > 0,
+      isTestMode: await isStripeTestMode(),
+      businessType: account.business_type || null,
+      businessName,
+      email: account.email || null,
+      country: account.country || null,
+      defaultCurrency: account.default_currency || null,
+      payoutSchedule,
+      externalAccounts,
+      requirements,
+      capabilities,
+    });
   } catch (error) {
     console.error("Error getting Connect account details:", error);
     if (error instanceof Error) {

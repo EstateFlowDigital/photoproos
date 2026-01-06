@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import type { SyncDirection } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface GoogleCalendarConfig {
   id: string;
@@ -200,7 +200,7 @@ export async function getGoogleCalendarConfig(): Promise<
       orderBy: { createdAt: "desc" },
     });
 
-    return { success: true, data: config };
+    return success(config);
   } catch (error) {
     console.error("[GoogleCalendar] Error getting config:", error);
     return fail("Failed to get Google Calendar configuration");
@@ -249,7 +249,7 @@ export async function getGoogleCalendars(
       })
     );
 
-    return { success: true, data: calendars };
+    return success(calendars);
   } catch (error) {
     console.error("[GoogleCalendar] Error fetching calendars:", error);
     return fail("Failed to fetch calendars");
@@ -637,7 +637,7 @@ export async function syncGoogleCalendar(
     revalidatePath("/settings/calendar");
     revalidatePath("/scheduling");
 
-    return { success: true, data: result };
+    return success(result);
   } catch (error) {
     console.error("[GoogleCalendar] Error syncing:", error);
     return fail("Failed to sync calendar");

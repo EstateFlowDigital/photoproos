@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import type { AvailabilityBlockType, TimeOffRequestStatus } from "@prisma/client";
 import { requireOrganizationId, requireAuth } from "./auth-helper";
 import { RRule, RRuleSet, rrulestr } from "rrule";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -149,7 +149,7 @@ export async function createAvailabilityBlock(
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/availability");
 
-    return { success: true, data: { id: block.id } };
+    return success({ id: block.id });
   } catch (error) {
     console.error("[Availability] Error creating block:", error);
     if (error instanceof Error) {
@@ -209,7 +209,7 @@ export async function updateAvailabilityBlock(
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/availability");
 
-    return { success: true, data: { id: block.id } };
+    return success({ id: block.id });
   } catch (error) {
     console.error("[Availability] Error updating block:", error);
     if (error instanceof Error) {
@@ -400,7 +400,7 @@ export async function upsertBookingBuffer(
     revalidatePath("/scheduling");
     revalidatePath("/settings/scheduling");
 
-    return { success: true, data: { id: buffer.id } };
+    return success({ id: buffer.id });
   } catch (error) {
     console.error("[BookingBuffer] Error upserting buffer:", error);
     if (error instanceof Error) {
@@ -521,14 +521,11 @@ export async function checkBookingConflicts(
       },
     });
 
-    return {
-      success: true,
-      data: {
-        hasConflict: conflictingBlocks.length > 0 || conflictingBookings.length > 0,
-        conflictingBlocks,
-        conflictingBookings,
-      },
-    };
+    return success({
+      hasConflict: conflictingBlocks.length > 0 || conflictingBookings.length > 0,
+      conflictingBlocks,
+      conflictingBookings,
+    });
   } catch (error) {
     console.error("[Availability] Error checking conflicts:", error);
     return fail("Failed to check booking conflicts");
@@ -803,7 +800,7 @@ export async function submitTimeOffRequest(
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/time-off");
 
-    return { success: true, data: { id: block.id } };
+    return success({ id: block.id });
   } catch (error) {
     console.error("[TimeOff] Error submitting request:", error);
     if (error instanceof Error) {
@@ -828,7 +825,7 @@ export async function getPendingTimeOffCount(): Promise<ActionResult<number>> {
       },
     });
 
-    return { success: true, data: count };
+    return success(count);
   } catch (error) {
     console.error("[TimeOff] Error getting pending count:", error);
     if (error instanceof Error) {

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { sendDownloadReceiptEmail } from "@/lib/email/send";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -338,16 +338,13 @@ export async function getGalleryDownloadAnalytics(
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    return {
-      success: true,
-      data: {
-        totalDownloads,
-        uniqueClients,
-        downloadsByFormat,
-        downloadsByDay,
-        topPhotos,
-      },
-    };
+    return success({
+      totalDownloads,
+      uniqueClients,
+      downloadsByFormat,
+      downloadsByDay,
+      topPhotos,
+    });
   } catch (error) {
     console.error("[Download Tracking] Error fetching analytics:", error);
     return fail("Failed to fetch download analytics");
@@ -385,14 +382,11 @@ export async function getDownloadHistory(
       }),
     ]);
 
-    return {
-      success: true,
-      data: {
-        downloads,
-        total,
-        hasMore: offset + limit < total,
-      },
-    };
+    return success({
+      downloads,
+      total,
+      hasMore: offset + limit < total,
+    });
   } catch (error) {
     console.error("[Download Tracking] Error fetching history:", error);
     return fail("Failed to fetch download history");
@@ -449,7 +443,7 @@ export async function exportDownloadHistory(projectId: string) {
 
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
 
-    return { success: true, data: csv };
+    return success(csv);
   } catch (error) {
     console.error("[Download Tracking] Error exporting:", error);
     return fail("Failed to export download history");
@@ -501,17 +495,14 @@ export async function getOrganizationDownloadStats(
 
     const projectMap = new Map(projects.map((p) => [p.id, p.name]));
 
-    return {
-      success: true,
-      data: {
-        totalDownloads: totalDownloads._sum.fileCount || 0,
-        topGalleries: downloadsByProject.map((d) => ({
-          projectId: d.projectId,
-          name: projectMap.get(d.projectId) || "Unknown",
-          downloads: d._sum.fileCount || 0,
-        })),
-      },
-    };
+    return success({
+      totalDownloads: totalDownloads._sum.fileCount || 0,
+      topGalleries: downloadsByProject.map((d) => ({
+        projectId: d.projectId,
+        name: projectMap.get(d.projectId) || "Unknown",
+        downloads: d._sum.fileCount || 0,
+      })),
+    });
   } catch (error) {
     console.error("[Download Tracking] Error fetching org stats:", error);
     return fail("Failed to fetch organization download stats");
@@ -614,19 +605,16 @@ export async function getGalleryHeatMapData(projectId: string) {
       };
     });
 
-    return {
-      success: true,
-      data: {
-        galleryName: project.name,
-        photos: heatMapData,
-        summary: {
-          totalPhotos: project.assets.length,
-          totalDownloads: Array.from(downloadCounts.values()).reduce((a: number, b: number) => a + b, 0),
-          totalFavorites: project.favorites.length,
-          totalComments: 0, // Comments not tracked at project level
-        },
+    return success({
+      galleryName: project.name,
+      photos: heatMapData,
+      summary: {
+        totalPhotos: project.assets.length,
+        totalDownloads: Array.from(downloadCounts.values()).reduce((a: number, b: number) => a + b, 0),
+        totalFavorites: project.favorites.length,
+        totalComments: 0, // Comments not tracked at project level
       },
-    };
+    });
   } catch (error) {
     console.error("[Download Tracking] Error fetching heat map data:", error);
     return fail("Failed to fetch heat map data");

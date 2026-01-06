@@ -49,4 +49,6 @@ export {
   GripIcon,
   FolderPlusIcon,
   SettingsIcon,
+  LayersIcon,
+  ListIcon,
 } from "@/components/ui/icons";

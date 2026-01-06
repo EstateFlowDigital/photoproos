@@ -12,7 +12,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -79,7 +79,7 @@ export async function getBookingTypeEquipmentRequirements(
       orderBy: [{ isRequired: "desc" }, { equipment: { name: "asc" } }],
     });
 
-    return { success: true, data: requirements };
+    return success(requirements);
   } catch (error) {
     console.error("Error fetching equipment requirements:", error);
     if (error instanceof Error) {
@@ -191,7 +191,7 @@ export async function addEquipmentRequirement(
     });
 
     revalidatePath("/scheduling/types");
-    return { success: true, data: { id: created.id } };
+    return success({ id: created.id });
   } catch (error) {
     console.error("Error adding equipment requirement:", error);
     if (error instanceof Error) {
@@ -360,7 +360,7 @@ export async function getBookingEquipmentChecklist(
       return a.equipment.name.localeCompare(b.equipment.name);
     });
 
-    return { success: true, data: checklist };
+    return success(checklist);
   } catch (error) {
     console.error("Error fetching equipment checklist:", error);
     if (error instanceof Error) {
@@ -472,7 +472,7 @@ export async function checkAllEquipment(
 
     const requirements = booking.bookingType?.equipmentRequirements || [];
     if (requirements.length === 0) {
-      return { success: true, data: { checkedCount: 0 } };
+      return success({ checkedCount: 0 });
     }
 
     // Get current user
@@ -512,7 +512,7 @@ export async function checkAllEquipment(
     );
 
     revalidatePath(`/scheduling/${bookingId}`);
-    return { success: true, data: { checkedCount: requirements.length } };
+    return success({ checkedCount: requirements.length });
   } catch (error) {
     console.error("Error checking all equipment:", error);
     if (error instanceof Error) {
@@ -614,7 +614,7 @@ export async function getBookingChecklistSummaries(
       };
     });
 
-    return { success: true, data: summaries };
+    return success(summaries);
   } catch (error) {
     console.error("Error fetching checklist summaries:", error);
     if (error instanceof Error) {

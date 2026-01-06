@@ -1,6 +1,6 @@
 "use server";
 
-import { fail } from "@/lib/types/action-result";
+import { fail, success } from "@/lib/types/action-result";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -90,10 +90,7 @@ export async function createWatermarkTemplate(data: WatermarkTemplateInput) {
     revalidatePath("/settings/watermarks");
     revalidatePath("/galleries/new");
 
-    return {
-      success: true,
-      data: template,
-    };
+    return success(template);
   } catch (error) {
     console.error("Error creating watermark template:", error);
     return fail("Failed to create watermark template",);
@@ -182,10 +179,7 @@ export async function updateWatermarkTemplate(
     revalidatePath("/settings/watermarks");
     revalidatePath("/galleries/new");
 
-    return {
-      success: true,
-      data: template,
-    };
+    return success(template);
   } catch (error) {
     console.error("Error updating watermark template:", error);
     return fail("Failed to update watermark template",);
@@ -223,9 +217,7 @@ export async function deleteWatermarkTemplate(templateId: string) {
     revalidatePath("/settings/watermarks");
     revalidatePath("/galleries/new");
 
-    return {
-      success: true,
-    };
+    return success(undefined);
   } catch (error) {
     console.error("Error deleting watermark template:", error);
     return fail("Failed to delete watermark template",);
@@ -252,10 +244,7 @@ export async function listWatermarkTemplates() {
       ],
     });
 
-    return {
-      success: true,
-      data: templates,
-    };
+    return success(templates);
   } catch (error) {
     console.error("Error listing watermark templates:", error);
     return { success: false as const, error: "Failed to list watermark templates", data: [] };
@@ -285,10 +274,7 @@ export async function getWatermarkTemplate(templateId: string) {
       return fail("Template not found");
     }
 
-    return {
-      success: true,
-      data: template,
-    };
+    return success(template);
   } catch (error) {
     console.error("Error getting watermark template:", error);
     return fail("Failed to get watermark template",);
@@ -339,10 +325,7 @@ export async function setDefaultTemplate(templateId: string) {
     revalidatePath("/settings/watermarks");
     revalidatePath("/galleries/new");
 
-    return {
-      success: true,
-      data: template,
-    };
+    return success(template);
   } catch (error) {
     console.error("Error setting default template:", error);
     return fail("Failed to set default template",);
@@ -368,10 +351,7 @@ export async function getDefaultWatermarkTemplate() {
       },
     });
 
-    return {
-      success: true,
-      data: template ?? null,
-    };
+    return success(template ?? null);
   } catch (error) {
     console.error("Error getting default template:", error);
     return fail("Failed to get default template",);
@@ -438,9 +418,7 @@ export async function applyTemplateToOrganization(templateId: string) {
     revalidatePath("/settings/watermarks");
     revalidatePath("/settings/branding");
 
-    return {
-      success: true,
-    };
+    return success(undefined);
   } catch (error) {
     console.error("Error applying template to organization:", error);
     return fail("Failed to apply template",);

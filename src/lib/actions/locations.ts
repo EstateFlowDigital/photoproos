@@ -13,7 +13,7 @@ import {
   getTravelInfo,
 } from "@/lib/google-maps/distance";
 import { GoogleMapsError } from "@/lib/google-maps/types";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID (simplified for now - will integrate with auth later)
 async function getOrganizationId(): Promise<string> {
@@ -83,7 +83,7 @@ export async function createLocation(
 
     revalidatePath("/settings/travel");
 
-    return { success: true, data: { id: location.id } };
+    return success({ id: location.id });
   } catch (error) {
     console.error("Error creating location:", error);
     if (error instanceof Error) {
@@ -152,17 +152,14 @@ export async function createLocationFromAddress(
 
     revalidatePath("/settings/travel");
 
-    return {
-      success: true,
-      data: {
-        id: location.id,
-        location: {
-          latitude: geocoded.latitude,
-          longitude: geocoded.longitude,
-          formattedAddress: geocoded.formattedAddress,
-        },
+    return success({
+      id: location.id,
+      location: {
+        latitude: geocoded.latitude,
+        longitude: geocoded.longitude,
+        formattedAddress: geocoded.formattedAddress,
       },
-    };
+    });
   } catch (error) {
     console.error("Error creating location from address:", error);
     if (error instanceof GoogleMapsError) {
@@ -217,7 +214,7 @@ export async function updateLocation(
 
     revalidatePath("/settings/travel");
 
-    return { success: true, data: { id: location.id } };
+    return success({ id: location.id });
   } catch (error) {
     console.error("Error updating location:", error);
     if (error instanceof Error) {
@@ -364,14 +361,11 @@ export async function calculateTravelBetweenLocations(
       organization?.travelFeeThreshold || 0
     );
 
-    return {
-      success: true,
-      data: {
-        distanceMiles: travelInfo.distanceMiles,
-        travelTimeMinutes: travelInfo.travelTimeMinutes,
-        travelFeeCents: travelInfo.travelFeeCents,
-      },
-    };
+    return success({
+      distanceMiles: travelInfo.distanceMiles,
+      travelTimeMinutes: travelInfo.travelTimeMinutes,
+      travelFeeCents: travelInfo.travelFeeCents,
+    });
   } catch (error) {
     console.error("Error calculating travel:", error);
     if (error instanceof GoogleMapsError) {
@@ -448,15 +442,12 @@ export async function calculateTravelFromHomeBase(
       organization.travelFeeThreshold || 0
     );
 
-    return {
-      success: true,
-      data: {
-        distanceMiles: travelInfo.distanceMiles,
-        travelTimeMinutes: travelInfo.travelTimeMinutes,
-        travelFeeCents: travelInfo.travelFeeCents,
-        fromAddress: homeBase.formattedAddress,
-      },
-    };
+    return success({
+      distanceMiles: travelInfo.distanceMiles,
+      travelTimeMinutes: travelInfo.travelTimeMinutes,
+      travelFeeCents: travelInfo.travelFeeCents,
+      fromAddress: homeBase.formattedAddress,
+    });
   } catch (error) {
     console.error("Error calculating travel from home base:", error);
     if (error instanceof GoogleMapsError) {
@@ -525,15 +516,12 @@ export async function calculateTravelPreview(
       organization.travelFeeThreshold || 0
     );
 
-    return {
-      success: true,
-      data: {
-        distanceMiles: travelInfo.distanceMiles,
-        travelTimeMinutes: travelInfo.travelTimeMinutes,
-        travelFeeCents: travelInfo.travelFeeCents,
-        fromAddress: homeBase.formattedAddress,
-      },
-    };
+    return success({
+      distanceMiles: travelInfo.distanceMiles,
+      travelTimeMinutes: travelInfo.travelTimeMinutes,
+      travelFeeCents: travelInfo.travelFeeCents,
+      fromAddress: homeBase.formattedAddress,
+    });
   } catch (error) {
     console.error("Error calculating travel preview:", error);
     if (error instanceof GoogleMapsError) {
@@ -610,7 +598,7 @@ export async function createAndSetHomeBase(
       return fail(setResult.error);
     }
 
-    return { success: true, data: { locationId: result.data.id } };
+    return success({ locationId: result.data.id });
   } catch (error) {
     console.error("Error creating and setting home base:", error);
     if (error instanceof Error) {
@@ -654,10 +642,7 @@ export async function validateAddressAction(
 }>> {
   try {
     const result = await validateAddress(address);
-    return {
-      success: true,
-      data: result,
-    };
+    return success(result);
   } catch (error) {
     console.error("Error validating address:", error);
     if (error instanceof Error) {

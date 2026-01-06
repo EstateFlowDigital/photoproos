@@ -1,7 +1,7 @@
 "use server";
 
 import { getResend, DEFAULT_FROM_EMAIL } from "@/lib/email/resend";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 /**
  * Subscribe to the newsletter
@@ -54,7 +54,7 @@ export async function subscribeToNewsletter(
       return fail("Failed to subscribe. Please try again.");
     }
 
-    return { success: true, data: { id: data?.id || "sent" } };
+    return success({ id: data?.id || "sent" });
   } catch (error) {
     console.error("Newsletter signup error:", error);
     return fail("An unexpected error occurred");

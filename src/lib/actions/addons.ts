@@ -14,7 +14,7 @@ import {
 } from "@/lib/validations/addons";
 import type { AddonTrigger } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -49,7 +49,7 @@ export async function createAddon(
     revalidatePath("/services/addons");
     revalidatePath("/order-pages");
 
-    return { success: true, data: { id: addon.id } };
+    return success({ id: addon.id });
   } catch (error) {
     console.error("Error creating addon:", error);
     if (error instanceof Error) {
@@ -102,7 +102,7 @@ export async function updateAddon(
     revalidatePath(`/services/addons/${id}`);
     revalidatePath("/order-pages");
 
-    return { success: true, data: { id: addon.id } };
+    return success({ id: addon.id });
   } catch (error) {
     console.error("Error updating addon:", error);
     if (error instanceof Error) {
@@ -199,7 +199,7 @@ export async function toggleAddonStatus(
     revalidatePath("/services/addons");
     revalidatePath(`/services/addons/${id}`);
 
-    return { success: true, data: { isActive: updated.isActive } };
+    return success({ isActive: updated.isActive });
   } catch (error) {
     console.error("Error toggling addon status:", error);
     if (error instanceof Error) {
@@ -261,7 +261,7 @@ export async function setAddonCompatibility(
     revalidatePath("/services/addons");
     revalidatePath(`/services/addons/${validated.addonId}`);
 
-    return { success: true, data: { count: validated.serviceIds.length } };
+    return success({ count: validated.serviceIds.length });
   } catch (error) {
     console.error("Error setting addon compatibility:", error);
     if (error instanceof Error) {
@@ -323,9 +323,8 @@ export async function getCompatibleAddons(
       orderBy: { sortOrder: "asc" },
     });
 
-    return {
-      success: true,
-      data: addons.map((addon) => ({
+    return success(
+      addons.map((addon) => ({
         id: addon.id,
         name: addon.name,
         description: addon.description,
@@ -336,8 +335,8 @@ export async function getCompatibleAddons(
         triggerValue: addon.triggerValue,
         isOneTime: addon.isOneTime,
         compatibleServiceIds: addon.compatibleWith.map((c) => c.serviceId),
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("Error getting compatible addons:", error);
     if (error instanceof Error) {

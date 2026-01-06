@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
@@ -1390,31 +1390,28 @@ export async function getTaskAnalytics(): Promise<{
           )
         : null;
 
-    return {
-      success: true,
-      data: {
-        summary: {
-          totalTasks,
-          completedTasks,
-          completionRate,
-          overdueTasks,
-          tasksDueToday,
-          tasksDueThisWeek,
-          avgCompletionTimeMinutes,
-        },
-        byStatus,
-        byPriority,
-        byAssignee,
-        byColumn,
-        completionTrend,
-        timeTracking: {
-          totalEstimatedMinutes,
-          totalActualMinutes,
-          tasksWithTimeTracking: tasksWithTimeTracking.length,
-          averageAccuracy,
-        },
+    return success({
+      summary: {
+        totalTasks,
+        completedTasks,
+        completionRate,
+        overdueTasks,
+        tasksDueToday,
+        tasksDueThisWeek,
+        avgCompletionTimeMinutes,
       },
-    };
+      byStatus,
+      byPriority,
+      byAssignee,
+      byColumn,
+      completionTrend,
+      timeTracking: {
+        totalEstimatedMinutes,
+        totalActualMinutes,
+        tasksWithTimeTracking: tasksWithTimeTracking.length,
+        averageAccuracy,
+      },
+    });
   } catch (error) {
     console.error("Error fetching task analytics:", error);
     return fail(error instanceof Error ? error.message : "Failed to fetch analytics",);

@@ -16,7 +16,7 @@ import {
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
 import type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Re-export the type for consumers who import from this file
 export type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
@@ -114,7 +114,7 @@ export async function getClientQuestionnairesForPortal(): Promise<
       orderBy: [{ status: "asc" }, { dueDate: "asc" }],
     });
 
-    return { success: true, data: questionnaires as PortalQuestionnaireWithRelations[] };
+    return success(questionnaires as PortalQuestionnaireWithRelations[]);
   } catch (error) {
     console.error("Error fetching portal questionnaires:", error);
     return fail("Failed to fetch questionnaires");
@@ -174,7 +174,7 @@ export async function getQuestionnaireForCompletion(
     });
 
     if (!questionnaire) {
-      return { success: true, data: null };
+      return success(null);
     }
 
     // Mark as started if pending
@@ -188,7 +188,7 @@ export async function getQuestionnaireForCompletion(
       });
     }
 
-    return { success: true, data: questionnaire as PortalQuestionnaireWithRelations };
+    return success(questionnaire as PortalQuestionnaireWithRelations);
   } catch (error) {
     console.error("Error fetching questionnaire for completion:", error);
     return fail("Failed to fetch questionnaire");

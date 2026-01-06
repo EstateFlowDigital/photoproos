@@ -10,7 +10,7 @@ import {
   TEMPLATE_VARIABLES,
 } from "@/lib/sms/send";
 import type { SMSTemplateType, SMSDeliveryStatus } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // SMS SETTINGS
@@ -54,20 +54,17 @@ export async function getSMSSettings(): Promise<ActionResult<SMSSettings>> {
       return fail("Organization not found");
     }
 
-    return {
-      success: true,
-      data: {
-        smsEnabled: organization.smsEnabled,
-        twilioAccountSid: organization.twilioAccountSid,
-        twilioAuthToken: organization.twilioAuthToken ? "••••••••" : null, // Mask the token
-        twilioPhoneNumber: organization.twilioPhoneNumber,
-        hasTwilioCredentials: !!(
-          organization.twilioAccountSid &&
-          organization.twilioAuthToken &&
-          organization.twilioPhoneNumber
-        ),
-      },
-    };
+    return success({
+      smsEnabled: organization.smsEnabled,
+      twilioAccountSid: organization.twilioAccountSid,
+      twilioAuthToken: organization.twilioAuthToken ? "••••••••" : null, // Mask the token
+      twilioPhoneNumber: organization.twilioPhoneNumber,
+      hasTwilioCredentials: !!(
+        organization.twilioAccountSid &&
+        organization.twilioAuthToken &&
+        organization.twilioPhoneNumber
+      ),
+    });
   } catch (error) {
     console.error("Error getting SMS settings:", error);
     return fail("Failed to get SMS settings");
@@ -103,16 +100,13 @@ export async function getSMSStats(): Promise<ActionResult<SMSStats>> {
 
     const deliveryRate = totalSent > 0 ? Math.round((delivered / totalSent) * 100) : 0;
 
-    return {
-      success: true,
-      data: {
-        totalSent,
-        delivered,
-        failed,
-        pending,
-        deliveryRate,
-      },
-    };
+    return success({
+      totalSent,
+      delivered,
+      failed,
+      pending,
+      deliveryRate,
+    });
   } catch (error) {
     console.error("Error getting SMS stats:", error);
     return fail("Failed to get SMS stats");
@@ -218,7 +212,7 @@ export async function getSMSTemplates(): Promise<
       orderBy: [{ templateType: "asc" }, { createdAt: "desc" }],
     });
 
-    return { success: true, data: templates };
+    return success(templates);
   } catch (error) {
     console.error("Error getting SMS templates:", error);
     return fail("Failed to get SMS templates");
@@ -360,7 +354,7 @@ export async function getTemplateTypes(): Promise<
     },
   ];
 
-  return { success: true, data: types };
+  return success(types);
 }
 
 /**
@@ -391,7 +385,7 @@ export async function upsertSMSTemplate(data: {
         },
       });
       revalidatePath("/settings/sms");
-      return { success: true, data: template };
+      return success(template);
     } else {
       // Create new template
       const template = await prisma.sMSTemplate.create({
@@ -406,7 +400,7 @@ export async function upsertSMSTemplate(data: {
         },
       });
       revalidatePath("/settings/sms");
-      return { success: true, data: template };
+      return success(template);
     }
   } catch (error) {
     console.error("Error upserting SMS template:", error);
@@ -491,21 +485,18 @@ export async function getSMSLogs(params?: {
       prisma.sMSLog.count({ where }),
     ]);
 
-    return {
-      success: true,
-      data: {
-        logs: logs.map((log) => ({
-          ...log,
-          deliveryStatus: log.deliveryStatus,
-          booking: log.booking
-            ? { id: log.booking.id, title: log.booking.title }
-            : null,
-          client: log.client,
-          template: log.template,
-        })),
-        total,
-      },
-    };
+    return success({
+      logs: logs.map((log) => ({
+        ...log,
+        deliveryStatus: log.deliveryStatus,
+        booking: log.booking
+          ? { id: log.booking.id, title: log.booking.title }
+          : null,
+        client: log.client,
+        template: log.template,
+      })),
+      total,
+    });
   } catch (error) {
     console.error("Error getting SMS logs:", error);
     return fail("Failed to get SMS logs");
@@ -544,7 +535,7 @@ export async function sendSMSToClientAction(data: {
     }
 
     revalidatePath("/settings/sms");
-    return { success: true, data: { smsLogId: result.smsLogId! } };
+    return success({ smsLogId: result.smsLogId! });
   } catch (error) {
     console.error("Error sending SMS to client:", error);
     return fail("Failed to send SMS");
@@ -577,7 +568,7 @@ export async function sendCustomSMS(data: {
     }
 
     revalidatePath("/settings/sms");
-    return { success: true, data: { smsLogId: result.smsLogId! } };
+    return success({ smsLogId: result.smsLogId! });
   } catch (error) {
     console.error("Error sending custom SMS:", error);
     return fail("Failed to send SMS");

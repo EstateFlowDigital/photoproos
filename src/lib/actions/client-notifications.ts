@@ -10,7 +10,7 @@
 
 import { prisma } from "@/lib/db";
 import { ClientNotificationType } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface ClientNotificationData {
   id: string;
@@ -64,10 +64,7 @@ export async function getClientNotifications(
       }),
     ]);
 
-    return {
-      success: true,
-      data: { notifications, unreadCount },
-    };
+    return success({ notifications, unreadCount });
   } catch (error) {
     console.error("[ClientNotifications] Error fetching notifications:", error);
     if (error instanceof Error) {
@@ -97,7 +94,7 @@ export async function getClientUnreadCount(
       where: { clientId: client.id, read: false },
     });
 
-    return { success: true, data: count };
+    return success(count);
   } catch (error) {
     console.error("[ClientNotifications] Error getting unread count:", error);
     if (error instanceof Error) {
@@ -213,10 +210,7 @@ export async function createClientNotification(
       },
     });
 
-    return {
-      success: true,
-      data: { id: notification.id },
-    };
+    return success({ id: notification.id });
   } catch (error) {
     console.error("[ClientNotifications] Error creating notification:", error);
     if (error instanceof Error) {
@@ -244,10 +238,7 @@ export async function createClientNotificationsBatch(
       })),
     });
 
-    return {
-      success: true,
-      data: { count: result.count },
-    };
+    return success({ count: result.count });
   } catch (error) {
     console.error("[ClientNotifications] Error creating batch notifications:", error);
     if (error instanceof Error) {
@@ -274,10 +265,7 @@ export async function cleanupOldClientNotifications(
       },
     });
 
-    return {
-      success: true,
-      data: { count: result.count },
-    };
+    return success({ count: result.count });
   } catch (error) {
     console.error("[ClientNotifications] Error cleaning up notifications:", error);
     if (error instanceof Error) {

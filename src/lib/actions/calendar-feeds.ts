@@ -13,7 +13,7 @@ import { prisma } from "@/lib/db";
 import { nanoid } from "nanoid";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 async function getOrganizationId(): Promise<string> {
   return requireOrganizationId();
@@ -60,9 +60,8 @@ export async function getCalendarFeeds(): Promise<
       orderBy: { createdAt: "desc" },
     });
 
-    return {
-      success: true,
-      data: feeds.map((feed) => ({
+    return success(
+      feeds.map((feed) => ({
         id: feed.id,
         name: feed.name,
         token: feed.token,
@@ -74,8 +73,8 @@ export async function getCalendarFeeds(): Promise<
         lastAccessedAt: feed.lastAccessedAt,
         accessCount: feed.accessCount,
         createdAt: feed.createdAt,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("Error fetching calendar feeds:", error);
     if (error instanceof Error) {
@@ -123,22 +122,19 @@ export async function createCalendarFeed(params: {
 
     revalidatePath("/settings/calendar");
 
-    return {
-      success: true,
-      data: {
-        id: feed.id,
-        name: feed.name,
-        token: feed.token,
-        feedUrl: `${baseUrl}/api/calendar/ical/${feed.token}`,
-        isActive: feed.isActive,
-        userId: feed.userId,
-        userName: feed.user?.fullName || null,
-        timezone: feed.timezone,
-        lastAccessedAt: feed.lastAccessedAt,
-        accessCount: feed.accessCount,
-        createdAt: feed.createdAt,
-      },
-    };
+    return success({
+      id: feed.id,
+      name: feed.name,
+      token: feed.token,
+      feedUrl: `${baseUrl}/api/calendar/ical/${feed.token}`,
+      isActive: feed.isActive,
+      userId: feed.userId,
+      userName: feed.user?.fullName || null,
+      timezone: feed.timezone,
+      lastAccessedAt: feed.lastAccessedAt,
+      accessCount: feed.accessCount,
+      createdAt: feed.createdAt,
+    });
   } catch (error) {
     console.error("Error creating calendar feed:", error);
     if (error instanceof Error) {
@@ -177,13 +173,10 @@ export async function regenerateCalendarFeedToken(
 
     revalidatePath("/settings/calendar");
 
-    return {
-      success: true,
-      data: {
-        token: newToken,
-        feedUrl: `${baseUrl}/api/calendar/ical/${newToken}`,
-      },
-    };
+    return success({
+      token: newToken,
+      feedUrl: `${baseUrl}/api/calendar/ical/${newToken}`,
+    });
   } catch (error) {
     console.error("Error regenerating calendar feed token:", error);
     if (error instanceof Error) {
@@ -227,7 +220,7 @@ export async function updateCalendarFeed(
 
     revalidatePath("/settings/calendar");
 
-    return { success: true, data: { id: feedId } };
+    return success({ id: feedId });
   } catch (error) {
     console.error("Error updating calendar feed:", error);
     if (error instanceof Error) {
@@ -261,7 +254,7 @@ export async function deleteCalendarFeed(
 
     revalidatePath("/settings/calendar");
 
-    return { success: true, data: { id: feedId } };
+    return success({ id: feedId });
   } catch (error) {
     console.error("Error deleting calendar feed:", error);
     if (error instanceof Error) {
@@ -362,25 +355,22 @@ export async function getMyCalendarFeed(): Promise<
     });
 
     if (!feed) {
-      return { success: true, data: null };
+      return success(null);
     }
 
-    return {
-      success: true,
-      data: {
-        id: feed.id,
-        name: feed.name,
-        token: feed.token,
-        feedUrl: `${baseUrl}/api/calendar/ical/${feed.token}`,
-        isActive: feed.isActive,
-        userId: feed.userId,
-        userName: feed.user?.fullName || null,
-        timezone: feed.timezone,
-        lastAccessedAt: feed.lastAccessedAt,
-        accessCount: feed.accessCount,
-        createdAt: feed.createdAt,
-      },
-    };
+    return success({
+      id: feed.id,
+      name: feed.name,
+      token: feed.token,
+      feedUrl: `${baseUrl}/api/calendar/ical/${feed.token}`,
+      isActive: feed.isActive,
+      userId: feed.userId,
+      userName: feed.user?.fullName || null,
+      timezone: feed.timezone,
+      lastAccessedAt: feed.lastAccessedAt,
+      accessCount: feed.accessCount,
+      createdAt: feed.createdAt,
+    });
   } catch (error) {
     console.error("Error getting personal calendar feed:", error);
     if (error instanceof Error) {

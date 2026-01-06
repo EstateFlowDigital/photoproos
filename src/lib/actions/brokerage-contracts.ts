@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { InvoiceSplitType } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -90,13 +90,10 @@ export async function getBrokerageContracts(
       orderBy: { createdAt: "desc" },
     });
 
-    return {
-      success: true,
-      data: contracts.map((c) => ({
-        ...c,
-        servicePricing: c.servicePricing as Record<string, number> | null,
-      })),
-    };
+    return success(contracts.map((c) => ({
+      ...c,
+      servicePricing: c.servicePricing as Record<string, number> | null,
+    })));
   } catch (error) {
     console.error("[BrokerageContracts] Error fetching contracts:", error);
     return fail("Failed to fetch contracts");
@@ -130,18 +127,15 @@ export async function getBrokerageContract(
       return fail("Contract not found");
     }
 
-    return {
-      success: true,
-      data: {
-        ...contract,
-        servicePricing: contract.servicePricing as Record<string, number> | null,
-        brokerage: {
-          id: contract.brokerage.id,
-          name: contract.brokerage.name,
-          slug: contract.brokerage.slug,
-        },
+    return success({
+      ...contract,
+      servicePricing: contract.servicePricing as Record<string, number> | null,
+      brokerage: {
+        id: contract.brokerage.id,
+        name: contract.brokerage.name,
+        slug: contract.brokerage.slug,
       },
-    };
+    });
   } catch (error) {
     console.error("[BrokerageContracts] Error fetching contract:", error);
     return fail("Failed to fetch contract");
@@ -187,16 +181,13 @@ export async function getActiveBrokerageContract(
     });
 
     if (!contract) {
-      return { success: true, data: null };
+      return success(null);
     }
 
-    return {
-      success: true,
-      data: {
-        ...contract,
-        servicePricing: contract.servicePricing as Record<string, number> | null,
-      },
-    };
+    return success({
+      ...contract,
+      servicePricing: contract.servicePricing as Record<string, number> | null,
+    });
   } catch (error) {
     console.error("[BrokerageContracts] Error fetching active contract:", error);
     return fail("Failed to fetch active contract");
@@ -252,13 +243,10 @@ export async function createBrokerageContract(
     });
 
     revalidatePath(`/brokerages/${input.brokerageId}`);
-    return {
-      success: true,
-      data: {
-        ...contract,
-        servicePricing: contract.servicePricing as Record<string, number> | null,
-      },
-    };
+    return success({
+      ...contract,
+      servicePricing: contract.servicePricing as Record<string, number> | null,
+    });
   } catch (error) {
     console.error("[BrokerageContracts] Error creating contract:", error);
     return fail("Failed to create contract");
@@ -316,13 +304,10 @@ export async function updateBrokerageContract(
     });
 
     revalidatePath(`/brokerages/${existing.brokerageId}`);
-    return {
-      success: true,
-      data: {
-        ...contract,
-        servicePricing: contract.servicePricing as Record<string, number> | null,
-      },
-    };
+    return success({
+      ...contract,
+      servicePricing: contract.servicePricing as Record<string, number> | null,
+    });
   } catch (error) {
     console.error("[BrokerageContracts] Error updating contract:", error);
     return fail("Failed to update contract");
@@ -387,63 +372,48 @@ export async function calculateBrokeragePrice(
 
     // No active contract - return base price
     if (!contract) {
-      return {
-        success: true,
-        data: {
-          priceCents: basePriceCents,
-          discount: 0,
-          source: "base",
-        },
-      };
+      return success({
+        priceCents: basePriceCents,
+        discount: 0,
+        source: "base",
+      });
     }
 
     // Check for service-specific pricing
     if (contract.servicePricing && contract.servicePricing[serviceId]) {
-      return {
-        success: true,
-        data: {
-          priceCents: contract.servicePricing[serviceId],
-          discount: basePriceCents - contract.servicePricing[serviceId],
-          source: "service_override",
-        },
-      };
+      return success({
+        priceCents: contract.servicePricing[serviceId],
+        discount: basePriceCents - contract.servicePricing[serviceId],
+        source: "service_override",
+      });
     }
 
     // Apply percentage discount
     if (contract.discountPercent && contract.discountPercent > 0) {
       const discountAmount = Math.round(basePriceCents * (contract.discountPercent / 100));
-      return {
-        success: true,
-        data: {
-          priceCents: basePriceCents - discountAmount,
-          discount: discountAmount,
-          source: "percentage",
-        },
-      };
+      return success({
+        priceCents: basePriceCents - discountAmount,
+        discount: discountAmount,
+        source: "percentage",
+      });
     }
 
     // Apply fixed discount
     if (contract.discountFixedCents && contract.discountFixedCents > 0) {
       const discountAmount = Math.min(contract.discountFixedCents, basePriceCents);
-      return {
-        success: true,
-        data: {
-          priceCents: basePriceCents - discountAmount,
-          discount: discountAmount,
-          source: "fixed",
-        },
-      };
+      return success({
+        priceCents: basePriceCents - discountAmount,
+        discount: discountAmount,
+        source: "fixed",
+      });
     }
 
     // No discount
-    return {
-      success: true,
-      data: {
-        priceCents: basePriceCents,
-        discount: 0,
-        source: "base",
-      },
-    };
+    return success({
+      priceCents: basePriceCents,
+      discount: 0,
+      source: "base",
+    });
   } catch (error) {
     console.error("[BrokerageContracts] Error calculating price:", error);
     return fail("Failed to calculate price");

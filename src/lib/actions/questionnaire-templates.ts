@@ -94,7 +94,7 @@ export async function getQuestionnaireTemplates(
       orderBy: [{ isSystemTemplate: "desc" }, { name: "asc" }],
     });
 
-    return { success: true, data: templates as QuestionnaireTemplateWithRelations[] };
+    return success(templates as QuestionnaireTemplateWithRelations[]);
   } catch (error) {
     console.error("Error fetching questionnaire templates:", error);
     return fail("Failed to fetch questionnaire templates");
@@ -128,7 +128,7 @@ export async function getSystemTemplates(
       orderBy: [{ industry: "asc" }, { name: "asc" }],
     });
 
-    return { success: true, data: templates as QuestionnaireTemplateWithRelations[] };
+    return success(templates as QuestionnaireTemplateWithRelations[]);
   } catch (error) {
     console.error("Error fetching system templates:", error);
     return fail("Failed to fetch system templates");
@@ -162,7 +162,7 @@ export async function getQuestionnaireTemplate(
       },
     });
 
-    return { success: true, data: template as QuestionnaireTemplateWithRelations | null };
+    return success(template as QuestionnaireTemplateWithRelations | null);
   } catch (error) {
     console.error("Error fetching questionnaire template:", error);
     return fail("Failed to fetch questionnaire template");
@@ -209,7 +209,7 @@ export async function createQuestionnaireTemplate(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: { id: template.id } };
+    return success({ id: template.id });
   } catch (error) {
     console.error("Error creating questionnaire template:", error);
     if (error instanceof Error) {
@@ -303,7 +303,7 @@ export async function updateQuestionnaireTemplate(
     revalidatePath("/questionnaires");
     revalidatePath(`/questionnaires/templates/${id}`);
 
-    return { success: true, data: { id } };
+    return success({ id });
   } catch (error) {
     console.error("Error updating questionnaire template:", error);
     if (error instanceof Error) {
@@ -400,7 +400,7 @@ export async function duplicateQuestionnaireTemplate(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: { id: duplicate.id } };
+    return success({ id: duplicate.id });
   } catch (error) {
     console.error("Error duplicating questionnaire template:", error);
     if (error instanceof Error) {
@@ -707,7 +707,7 @@ export async function getTemplatesByIndustry(): Promise<
       return acc;
     }, {} as Record<Industry, QuestionnaireTemplateWithRelations[]>);
 
-    return { success: true, data: grouped };
+    return success(grouped);
   } catch (error) {
     console.error("Error fetching templates by industry:", error);
     return fail("Failed to fetch templates");

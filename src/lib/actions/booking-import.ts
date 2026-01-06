@@ -10,7 +10,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { BookingStatus } from "@prisma/client";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // CSV row structure for booking import
 interface CSVBookingRow {
@@ -577,7 +577,7 @@ export async function getBookingImportTemplate(): Promise<ActionResult<string>> 
 "Johnson Headshots","jane@example.com","Headshots","2025-03-16","02:00 PM","03:30 PM","Studio A","pending","Corporate headshots for LinkedIn"
 "Corporate Event","events@company.com","Event Photography","2025-03-20","09:00","17:00","Convention Center","confirmed","Annual company meeting"`;
 
-    return { success: true, data: template };
+    return success(template);
   } catch (error) {
     console.error("[BookingImport] Template error:", error);
     if (error instanceof Error) {

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -100,7 +100,7 @@ export async function getBrokerages(options?: {
       orderBy: { name: "asc" },
     });
 
-    return { success: true, data: brokerages };
+    return success(brokerages);
   } catch (error) {
     console.error("[Brokerages] Error fetching brokerages:", error);
     return fail("Failed to fetch brokerages");
@@ -133,7 +133,7 @@ export async function getBrokerage(
       return fail("Brokerage not found");
     }
 
-    return { success: true, data: brokerage };
+    return success(brokerage);
   } catch (error) {
     console.error("[Brokerages] Error fetching brokerage:", error);
     return fail("Failed to fetch brokerage");
@@ -166,7 +166,7 @@ export async function getBrokerageBySlug(
       return fail("Brokerage not found");
     }
 
-    return { success: true, data: brokerage };
+    return success(brokerage);
   } catch (error) {
     console.error("[Brokerages] Error fetching brokerage:", error);
     return fail("Failed to fetch brokerage");
@@ -215,7 +215,7 @@ export async function getBrokerageAgents(brokerageId: string): Promise<
       orderBy: { fullName: "asc" },
     });
 
-    return { success: true, data: agents };
+    return success(agents);
   } catch (error) {
     console.error("[Brokerages] Error fetching agents:", error);
     return fail("Failed to fetch agents");
@@ -274,7 +274,7 @@ export async function createBrokerage(
     });
 
     revalidatePath("/brokerages");
-    return { success: true, data: brokerage };
+    return success(brokerage);
   } catch (error) {
     console.error("[Brokerages] Error creating brokerage:", error);
     return fail("Failed to create brokerage");
@@ -342,7 +342,7 @@ export async function updateBrokerage(
 
     revalidatePath("/brokerages");
     revalidatePath(`/brokerages/${input.id}`);
-    return { success: true, data: brokerage };
+    return success(brokerage);
   } catch (error) {
     console.error("[Brokerages] Error updating brokerage:", error);
     return fail("Failed to update brokerage");

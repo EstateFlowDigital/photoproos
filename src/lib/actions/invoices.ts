@@ -1325,7 +1325,7 @@ export async function scheduleInvoice(
     revalidatePath("/invoices");
     revalidatePath(`/invoices/${invoiceId}`);
 
-    return ok({ scheduledSendAt });
+    return success({ scheduledSendAt });
   } catch (error) {
     console.error("Error scheduling invoice:", error);
     if (error instanceof Error) {
@@ -1487,7 +1487,7 @@ export async function processScheduledInvoices(): Promise<
 
     console.log(`[Scheduled Invoices] Processed ${processed} invoices, ${errors} errors`);
 
-    return ok({ processed, errors });
+    return success({ processed, errors });
   } catch (error) {
     console.error("Error processing scheduled invoices:", error);
     if (error instanceof Error) {
@@ -1534,7 +1534,7 @@ export async function getScheduledInvoices(): Promise<
       orderBy: { scheduledSendAt: "asc" },
     });
 
-    return ok({
+    return success({
       invoices: invoices.map((inv) => ({
         id: inv.id,
         invoiceNumber: inv.invoiceNumber,
@@ -1757,7 +1757,7 @@ export async function splitInvoiceForDeposit(
     revalidatePath("/invoices");
     revalidatePath(`/invoices/${invoice.id}`);
 
-    return ok({
+    return success({
       depositInvoice: {
         id: result.depositInvoice.id,
         invoiceNumber: result.depositInvoice.invoiceNumber,
@@ -1959,7 +1959,7 @@ export async function createInvoiceWithDeposit(
 
     revalidatePath("/invoices");
 
-    return ok({
+    return success({
       depositInvoice: {
         id: result.depositInvoice.id,
         invoiceNumber: result.depositInvoice.invoiceNumber,
@@ -2120,7 +2120,7 @@ export async function getDepositBalancePair(invoiceId: string): Promise<
       };
     }
 
-    return ok({
+    return success({
       depositInvoice,
       balanceInvoice,
       parentInvoice,
@@ -2132,4 +2132,624 @@ export async function getDepositBalancePair(invoiceId: string): Promise<
     }
     return fail("Failed to fetch deposit/balance pair");
   }
+}
+
+// ============================================================================
+// INVOICE CLONING
+// ============================================================================
+
+/**
+ * Clone/duplicate an invoice with all its line items
+ */
+export async function cloneInvoice(
+  invoiceId: string,
+  options?: {
+    clientId?: string;
+    dueDays?: number;
+  }
+): Promise<ActionResult<{ id: string; invoiceNumber: string }>> {
+  const organizationId = await requireOrganizationId();
+  if (!organizationId) {
+    return fail("Organization not found");
+  }
+
+  try {
+    const original = await prisma.invoice.findFirst({
+      where: { id: invoiceId, organizationId },
+      include: { lineItems: { orderBy: { sortOrder: "asc" } } },
+    });
+
+    if (!original) {
+      return fail("Invoice not found");
+    }
+
+    const invoiceNumber = await generateInvoiceNumber(organizationId);
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + (options?.dueDays ?? 30));
+
+    // Clone client info from original unless a different client is specified
+    let clientInfo = {
+      clientId: options?.clientId ?? original.clientId,
+      clientName: original.clientName,
+      clientEmail: original.clientEmail,
+      clientAddress: original.clientAddress,
+    };
+
+    if (options?.clientId && options.clientId !== original.clientId) {
+      const newClient = await prisma.client.findFirst({
+        where: { id: options.clientId, organizationId },
+        select: { fullName: true, email: true, address: true },
+      });
+      if (newClient) {
+        clientInfo = {
+          clientId: options.clientId,
+          clientName: newClient.fullName,
+          clientEmail: newClient.email,
+          clientAddress: newClient.address,
+        };
+      }
+    }
+
+    const cloned = await prisma.invoice.create({
+      data: {
+        organizationId,
+        clientId: clientInfo.clientId,
+        invoiceNumber,
+        status: "draft",
+        clientName: clientInfo.clientName,
+        clientEmail: clientInfo.clientEmail,
+        clientAddress: clientInfo.clientAddress,
+        notes: original.notes,
+        terms: original.terms,
+        dueDate,
+        subtotalCents: original.subtotalCents,
+        taxCents: original.taxCents,
+        discountCents: original.discountCents,
+        totalCents: original.totalCents,
+        lineItems: {
+          create: original.lineItems.map((item) => ({
+            itemType: item.itemType,
+            description: item.description,
+            quantity: item.quantity,
+            unitCents: item.unitCents,
+            totalCents: item.totalCents,
+            sortOrder: item.sortOrder,
+          })),
+        },
+      },
+    });
+
+    await logActivity({
+      organizationId,
+      entityType: "invoice",
+      entityId: cloned.id,
+      action: "created",
+      details: { clonedFrom: invoiceId, invoiceNumber },
+    });
+
+    revalidatePath("/invoices");
+
+    return success({ id: cloned.id, invoiceNumber: cloned.invoiceNumber });
+  } catch (error) {
+    console.error("Error cloning invoice:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to clone invoice");
+  }
+}
+
+// ============================================================================
+// BATCH/BULK OPERATIONS
+// ============================================================================
+
+/**
+ * Send multiple invoices at once
+ */
+export async function bulkSendInvoices(
+  invoiceIds: string[]
+): Promise<ActionResult<{ sent: number; failed: number; errors: string[] }>> {
+  const organizationId = await requireOrganizationId();
+  if (!organizationId) {
+    return fail("Organization not found");
+  }
+
+  let sent = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  for (const invoiceId of invoiceIds) {
+    try {
+      const invoice = await prisma.invoice.findFirst({
+        where: { id: invoiceId, organizationId, status: "draft" },
+      });
+
+      if (!invoice) {
+        failed++;
+        errors.push("Invoice " + invoiceId + " not found or not in draft status");
+        continue;
+      }
+
+      await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: { status: "sent" },
+      });
+
+      // TODO: Send email notification
+      sent++;
+    } catch (error) {
+      failed++;
+      errors.push("Failed to send invoice " + invoiceId);
+    }
+  }
+
+  await logActivity({
+    organizationId,
+    entityType: "invoice",
+    entityId: "bulk",
+    action: "bulk_sent",
+    details: { sent, failed, invoiceIds },
+  });
+
+  revalidatePath("/invoices");
+
+  return success({ sent, failed, errors });
+}
+
+/**
+ * Mark multiple invoices as paid
+ */
+export async function bulkMarkPaid(
+  invoiceIds: string[],
+  paidAt?: Date
+): Promise<ActionResult<{ updated: number; failed: number; errors: string[] }>> {
+  const organizationId = await requireOrganizationId();
+  if (!organizationId) {
+    return fail("Organization not found");
+  }
+
+  let updated = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  for (const invoiceId of invoiceIds) {
+    try {
+      const invoice = await prisma.invoice.findFirst({
+        where: { id: invoiceId, organizationId, status: { in: ["sent", "overdue", "partial"] } },
+      });
+
+      if (!invoice) {
+        failed++;
+        errors.push("Invoice " + invoiceId + " not found or already paid");
+        continue;
+      }
+
+      await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          status: "paid",
+          paidAt: paidAt ?? new Date(),
+          paidAmountCents: invoice.totalCents,
+        },
+      });
+
+      // Update client revenue
+      if (invoice.clientId) {
+        await prisma.client.update({
+          where: { id: invoice.clientId },
+          data: {
+            lifetimeRevenueCents: { increment: invoice.totalCents - invoice.paidAmountCents },
+          },
+        });
+      }
+
+      updated++;
+    } catch (error) {
+      failed++;
+      errors.push("Failed to update invoice " + invoiceId);
+    }
+  }
+
+  await logActivity({
+    organizationId,
+    entityType: "invoice",
+    entityId: "bulk",
+    action: "bulk_marked_paid",
+    details: { updated, failed, invoiceIds },
+  });
+
+  revalidatePath("/invoices");
+
+  return success({ updated, failed, errors });
+}
+
+/**
+ * Delete multiple draft invoices
+ */
+export async function bulkDeleteInvoices(
+  invoiceIds: string[]
+): Promise<ActionResult<{ deleted: number; failed: number; errors: string[] }>> {
+  const organizationId = await requireOrganizationId();
+  if (!organizationId) {
+    return fail("Organization not found");
+  }
+
+  let deleted = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  for (const invoiceId of invoiceIds) {
+    try {
+      const invoice = await prisma.invoice.findFirst({
+        where: { id: invoiceId, organizationId, status: "draft" },
+      });
+
+      if (!invoice) {
+        failed++;
+        errors.push("Invoice " + invoiceId + " not found or not in draft status");
+        continue;
+      }
+
+      await prisma.invoice.delete({
+        where: { id: invoiceId },
+      });
+
+      deleted++;
+    } catch (error) {
+      failed++;
+      errors.push("Failed to delete invoice " + invoiceId);
+    }
+  }
+
+  await logActivity({
+    organizationId,
+    entityType: "invoice",
+    entityId: "bulk",
+    action: "bulk_deleted",
+    details: { deleted, failed },
+  });
+
+  revalidatePath("/invoices");
+
+  return success({ deleted, failed, errors });
+}
+
+// ============================================================================
+// INVOICE AGING REPORT
+// ============================================================================
+
+export interface AgingBucket {
+  label: string;
+  count: number;
+  totalCents: number;
+  invoices: {
+    id: string;
+    invoiceNumber: string;
+    clientName: string | null;
+    totalCents: number;
+    balanceCents: number;
+    daysOverdue: number;
+    dueDate: Date;
+  }[];
+}
+
+/**
+ * Get invoice aging report (30/60/90+ day buckets)
+ */
+export async function getInvoiceAgingReport(): Promise<
+  ActionResult<{
+    current: AgingBucket;
+    thirtyDays: AgingBucket;
+    sixtyDays: AgingBucket;
+    ninetyDays: AgingBucket;
+    overNinetyDays: AgingBucket;
+    totalOverdueCents: number;
+    totalOverdueCount: number;
+  }>
+> {
+  const organizationId = await requireOrganizationId();
+  if (!organizationId) {
+    return fail("Organization not found");
+  }
+
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const sixtyDaysAgo = new Date(now);
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+  const ninetyDaysAgo = new Date(now);
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+  // Get all unpaid invoices
+  const invoices = await prisma.invoice.findMany({
+    where: {
+      organizationId,
+      status: { in: ["sent", "overdue", "partial"] },
+    },
+    select: {
+      id: true,
+      invoiceNumber: true,
+      clientName: true,
+      totalCents: true,
+      paidAmountCents: true,
+      dueDate: true,
+    },
+    orderBy: { dueDate: "asc" },
+  });
+
+  const buckets = {
+    current: { label: "Current", count: 0, totalCents: 0, invoices: [] as AgingBucket["invoices"] },
+    thirtyDays: { label: "1-30 Days", count: 0, totalCents: 0, invoices: [] as AgingBucket["invoices"] },
+    sixtyDays: { label: "31-60 Days", count: 0, totalCents: 0, invoices: [] as AgingBucket["invoices"] },
+    ninetyDays: { label: "61-90 Days", count: 0, totalCents: 0, invoices: [] as AgingBucket["invoices"] },
+    overNinetyDays: { label: "Over 90 Days", count: 0, totalCents: 0, invoices: [] as AgingBucket["invoices"] },
+  };
+
+  let totalOverdueCents = 0;
+  let totalOverdueCount = 0;
+
+  for (const invoice of invoices) {
+    const balanceCents = invoice.totalCents - invoice.paidAmountCents;
+    const daysOverdue = Math.floor((now.getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    const invoiceData = {
+      id: invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      clientName: invoice.clientName,
+      totalCents: invoice.totalCents,
+      balanceCents,
+      daysOverdue: Math.max(0, daysOverdue),
+      dueDate: invoice.dueDate,
+    };
+
+    if (daysOverdue <= 0) {
+      buckets.current.count++;
+      buckets.current.totalCents += balanceCents;
+      buckets.current.invoices.push(invoiceData);
+    } else if (daysOverdue <= 30) {
+      buckets.thirtyDays.count++;
+      buckets.thirtyDays.totalCents += balanceCents;
+      buckets.thirtyDays.invoices.push(invoiceData);
+      totalOverdueCents += balanceCents;
+      totalOverdueCount++;
+    } else if (daysOverdue <= 60) {
+      buckets.sixtyDays.count++;
+      buckets.sixtyDays.totalCents += balanceCents;
+      buckets.sixtyDays.invoices.push(invoiceData);
+      totalOverdueCents += balanceCents;
+      totalOverdueCount++;
+    } else if (daysOverdue <= 90) {
+      buckets.ninetyDays.count++;
+      buckets.ninetyDays.totalCents += balanceCents;
+      buckets.ninetyDays.invoices.push(invoiceData);
+      totalOverdueCents += balanceCents;
+      totalOverdueCount++;
+    } else {
+      buckets.overNinetyDays.count++;
+      buckets.overNinetyDays.totalCents += balanceCents;
+      buckets.overNinetyDays.invoices.push(invoiceData);
+      totalOverdueCents += balanceCents;
+      totalOverdueCount++;
+    }
+  }
+
+  return success({
+    ...buckets,
+    totalOverdueCents,
+    totalOverdueCount,
+  });
+}
+
+// ============================================================================
+// INVOICE BUNDLING
+// ============================================================================
+
+/**
+ * Bundle multiple invoices into a single consolidated invoice
+ */
+export async function bundleInvoices(
+  invoiceIds: string[],
+  options?: {
+    notes?: string;
+    terms?: string;
+    dueDays?: number;
+  }
+): Promise<ActionResult<{ id: string; invoiceNumber: string }>> {
+  const organizationId = await requireOrganizationId();
+  if (!organizationId) {
+    return fail("Organization not found");
+  }
+
+  if (invoiceIds.length < 2) {
+    return fail("At least 2 invoices are required to bundle");
+  }
+
+  try {
+    // Get all invoices to bundle
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        id: { in: invoiceIds },
+        organizationId,
+        status: "draft",
+      },
+      include: { lineItems: { orderBy: { sortOrder: "asc" } } },
+    });
+
+    if (invoices.length !== invoiceIds.length) {
+      return fail("Some invoices not found or not in draft status");
+    }
+
+    // Verify all invoices are for the same client
+    const clientIds = new Set(invoices.map((i) => i.clientId));
+    if (clientIds.size > 1) {
+      return fail("All invoices must be for the same client");
+    }
+
+    const firstInvoice = invoices[0];
+    const invoiceNumber = await generateInvoiceNumber(organizationId);
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + (options?.dueDays ?? 30));
+
+    // Combine all line items
+    const allLineItems: {
+      itemType: LineItemType;
+      description: string;
+      quantity: number;
+      unitCents: number;
+      totalCents: number;
+      sortOrder: number;
+    }[] = [];
+
+    let sortOrder = 0;
+    for (const invoice of invoices) {
+      // Add a header line item indicating the source invoice
+      allLineItems.push({
+        itemType: "other" as LineItemType,
+        description: "--- From Invoice " + invoice.invoiceNumber + " ---",
+        quantity: 1,
+        unitCents: 0,
+        totalCents: 0,
+        sortOrder: sortOrder++,
+      });
+
+      for (const item of invoice.lineItems) {
+        allLineItems.push({
+          itemType: item.itemType,
+          description: item.description,
+          quantity: item.quantity,
+          unitCents: item.unitCents,
+          totalCents: item.totalCents,
+          sortOrder: sortOrder++,
+        });
+      }
+    }
+
+    // Calculate totals
+    const subtotalCents = invoices.reduce((sum, i) => sum + i.subtotalCents, 0);
+    const taxCents = invoices.reduce((sum, i) => sum + i.taxCents, 0);
+    const discountCents = invoices.reduce((sum, i) => sum + i.discountCents, 0);
+    const totalCents = invoices.reduce((sum, i) => sum + i.totalCents, 0);
+
+    // Create bundled invoice
+    const bundled = await prisma.invoice.create({
+      data: {
+        organizationId,
+        clientId: firstInvoice.clientId,
+        invoiceNumber,
+        status: "draft",
+        clientName: firstInvoice.clientName,
+        clientEmail: firstInvoice.clientEmail,
+        clientAddress: firstInvoice.clientAddress,
+        notes: options?.notes ?? "Bundled from invoices: " + invoices.map((i) => i.invoiceNumber).join(", "),
+        terms: options?.terms ?? firstInvoice.terms,
+        dueDate,
+        subtotalCents,
+        taxCents,
+        discountCents,
+        totalCents,
+        lineItems: {
+          create: allLineItems,
+        },
+      },
+    });
+
+    // Delete original draft invoices
+    await prisma.invoice.deleteMany({
+      where: { id: { in: invoiceIds } },
+    });
+
+    await logActivity({
+      organizationId,
+      entityType: "invoice",
+      entityId: bundled.id,
+      action: "bundled",
+      details: {
+        sourceInvoices: invoices.map((i) => i.invoiceNumber),
+        invoiceNumber,
+      },
+    });
+
+    revalidatePath("/invoices");
+
+    return success({ id: bundled.id, invoiceNumber: bundled.invoiceNumber });
+  } catch (error) {
+    console.error("Error bundling invoices:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to bundle invoices");
+  }
+}
+
+// ============================================================================
+// TAX REPORTING
+// ============================================================================
+
+/**
+ * Get tax summary for a date range
+ */
+export async function getTaxSummary(
+  startDate: Date,
+  endDate: Date
+): Promise<
+  ActionResult<{
+    totalRevenueCents: number;
+    totalTaxCollectedCents: number;
+    invoiceCount: number;
+    byMonth: {
+      month: string;
+      revenueCents: number;
+      taxCents: number;
+      invoiceCount: number;
+    }[];
+  }>
+> {
+  const organizationId = await requireOrganizationId();
+  if (!organizationId) {
+    return fail("Organization not found");
+  }
+
+  const invoices = await prisma.invoice.findMany({
+    where: {
+      organizationId,
+      status: "paid",
+      paidAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    select: {
+      totalCents: true,
+      taxCents: true,
+      paidAt: true,
+    },
+  });
+
+  const totalRevenueCents = invoices.reduce((sum, i) => sum + i.totalCents, 0);
+  const totalTaxCollectedCents = invoices.reduce((sum, i) => sum + i.taxCents, 0);
+
+  // Group by month
+  const monthlyData: Record<string, { revenueCents: number; taxCents: number; invoiceCount: number }> = {};
+
+  for (const invoice of invoices) {
+    if (!invoice.paidAt) continue;
+    const monthKey = invoice.paidAt.toISOString().slice(0, 7); // YYYY-MM
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { revenueCents: 0, taxCents: 0, invoiceCount: 0 };
+    }
+    monthlyData[monthKey].revenueCents += invoice.totalCents;
+    monthlyData[monthKey].taxCents += invoice.taxCents;
+    monthlyData[monthKey].invoiceCount++;
+  }
+
+  const byMonth = Object.entries(monthlyData)
+    .map(([month, data]) => ({ month, ...data }))
+    .sort((a, b) => a.month.localeCompare(b.month));
+
+  return success({
+    totalRevenueCents,
+    totalTaxCollectedCents,
+    invoiceCount: invoices.length,
+    byMonth,
+  });
 }

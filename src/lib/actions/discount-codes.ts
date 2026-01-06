@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -87,7 +87,7 @@ export async function createDiscountCode(input: CreateDiscountCodeInput) {
     });
 
     revalidatePath("/settings/payments");
-    return { success: true, data: discountCode };
+    return success(discountCode);
   } catch (error) {
     console.error("[Discount Code] Error creating:", error);
     return fail("Failed to create discount code");
@@ -114,7 +114,7 @@ export async function getDiscountCodes() {
       },
     });
 
-    return { success: true, data: codes };
+    return success(codes);
   } catch (error) {
     console.error("[Discount Code] Error fetching:", error);
     return fail("Failed to fetch discount codes");
@@ -156,7 +156,7 @@ export async function updateDiscountCode(
     });
 
     revalidatePath("/settings/payments");
-    return { success: true, data: discountCode };
+    return success(discountCode);
   } catch (error) {
     console.error("[Discount Code] Error updating:", error);
     return fail("Failed to update discount code");
@@ -268,16 +268,13 @@ export async function validateDiscountCode(
       discountAmount = amountCents;
     }
 
-    return {
-      success: true,
-      data: {
-        discountCodeId: discountCode.id,
-        discountAmount,
-        discountType: discountCode.discountType,
-        discountValue: discountCode.discountValue,
-        description: discountCode.description,
-      },
-    };
+    return success({
+      discountCodeId: discountCode.id,
+      discountAmount,
+      discountType: discountCode.discountType,
+      discountValue: discountCode.discountValue,
+      description: discountCode.description,
+    });
   } catch (error) {
     console.error("[Discount Code] Error validating:", error);
     return fail("Failed to validate discount code");

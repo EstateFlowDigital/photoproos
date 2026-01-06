@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // PARTIAL PAYMENT OPERATIONS
@@ -113,10 +113,7 @@ export async function recordInvoicePayment(input: {
     revalidatePath(`/invoices/${input.invoiceId}`);
     revalidatePath("/invoices");
 
-    return {
-      success: true,
-      data: { paymentId: payment.id, newBalance },
-    };
+    return success({ paymentId: payment.id, newBalance });
   } catch (error) {
     console.error("Error recording invoice payment:", error);
     if (error instanceof Error) {
@@ -185,18 +182,15 @@ export async function getInvoicePayments(invoiceId: string): Promise<
     const totalDue = invoice.totalCents + invoice.lateFeeAppliedCents;
     const balance = totalDue - invoice.paidAmountCents;
 
-    return {
-      success: true,
-      data: {
-        payments,
-        summary: {
-          totalDue,
-          totalPaid: invoice.paidAmountCents,
-          balance,
-          lateFees: invoice.lateFeeAppliedCents,
-        },
+    return success({
+      payments,
+      summary: {
+        totalDue,
+        totalPaid: invoice.paidAmountCents,
+        balance,
+        lateFees: invoice.lateFeeAppliedCents,
       },
-    };
+    });
   } catch (error) {
     console.error("Error fetching invoice payments:", error);
     if (error instanceof Error) {
@@ -418,13 +412,10 @@ export async function applyLateFee(invoiceId: string): Promise<
     revalidatePath(`/invoices/${invoiceId}`);
     revalidatePath("/invoices");
 
-    return {
-      success: true,
-      data: {
-        lateFeeApplied: lateFee,
-        newTotal: invoice.totalCents + newLateFeeTotal,
-      },
-    };
+    return success({
+      lateFeeApplied: lateFee,
+      newTotal: invoice.totalCents + newLateFeeTotal,
+    });
   } catch (error) {
     console.error("Error applying late fee:", error);
     if (error instanceof Error) {
@@ -496,10 +487,7 @@ export async function applyBatchLateFees(): Promise<
       `[Late Fee Cron] Processed ${processed} invoices, total fees: $${(totalFeesApplied / 100).toFixed(2)}`
     );
 
-    return {
-      success: true,
-      data: { processed, totalFeesApplied },
-    };
+    return success({ processed, totalFeesApplied });
   } catch (error) {
     console.error("[Late Fee Cron] Error applying batch late fees:", error);
     if (error instanceof Error) {
@@ -562,7 +550,7 @@ export async function waiveLateFees(
     revalidatePath(`/invoices/${invoiceId}`);
     revalidatePath("/invoices");
 
-    return { success: true, data: { waivedAmount } };
+    return success({ waivedAmount });
   } catch (error) {
     console.error("Error waiving late fees:", error);
     if (error instanceof Error) {
@@ -611,21 +599,18 @@ export async function getInvoiceBalance(invoiceId: string): Promise<
     const totalDue = invoice.totalCents + invoice.lateFeeAppliedCents;
     const balance = totalDue - invoice.paidAmountCents;
 
-    return {
-      success: true,
-      data: {
-        subtotal: invoice.subtotalCents,
-        tax: invoice.taxCents,
-        discount: invoice.discountCents,
-        originalTotal: invoice.totalCents,
-        lateFees: invoice.lateFeeAppliedCents,
-        totalDue,
-        totalPaid: invoice.paidAmountCents,
-        balance,
-        isFullyPaid: balance <= 0,
-        paymentCount: invoice._count.payments,
-      },
-    };
+    return success({
+      subtotal: invoice.subtotalCents,
+      tax: invoice.taxCents,
+      discount: invoice.discountCents,
+      originalTotal: invoice.totalCents,
+      lateFees: invoice.lateFeeAppliedCents,
+      totalDue,
+      totalPaid: invoice.paidAmountCents,
+      balance,
+      isFullyPaid: balance <= 0,
+      paymentCount: invoice._count.payments,
+    });
   } catch (error) {
     console.error("Error fetching invoice balance:", error);
     if (error instanceof Error) {

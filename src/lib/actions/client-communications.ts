@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { CommunicationType, CommunicationDirection } from "@prisma/client";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface CreateCommunicationInput {
   clientId: string;
@@ -150,7 +150,7 @@ export async function createCommunication(
 
     revalidatePath(`/clients/${input.clientId}`);
 
-    return { success: true, data: { id: communication.id } };
+    return success({ id: communication.id });
   } catch (error) {
     console.error("[ClientCommunication] Error creating communication:", error);
     if (error instanceof Error) {
@@ -197,7 +197,7 @@ export async function updateCommunication(
 
     revalidatePath(`/clients/${existing.client.id}`);
 
-    return { success: true, data: { id: communication.id } };
+    return success({ id: communication.id });
   } catch (error) {
     console.error("[ClientCommunication] Error updating communication:", error);
     if (error instanceof Error) {

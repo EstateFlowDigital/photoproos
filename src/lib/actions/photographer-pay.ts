@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { EarningStatus } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -81,7 +81,7 @@ export async function getPhotographerRates(options?: {
       orderBy: [{ userId: "asc" }, { serviceId: "asc" }],
     });
 
-    return { success: true, data: rates };
+    return success(rates);
   } catch (error) {
     console.error("[PhotographerPay] Error fetching rates:", error);
     return fail("Failed to fetch photographer rates");
@@ -110,7 +110,7 @@ export async function getPhotographerRateForService(
       });
     }
 
-    return { success: true, data: rate };
+    return success(rate);
   } catch (error) {
     console.error("[PhotographerPay] Error fetching rate:", error);
     return fail("Failed to fetch photographer rate");
@@ -167,7 +167,7 @@ export async function upsertPhotographerRate(
     }
 
     revalidatePath("/settings/photographer-pay");
-    return { success: true, data: rate };
+    return success(rate);
   } catch (error) {
     console.error("[PhotographerPay] Error upserting rate:", error);
     return fail("Failed to save photographer rate");
@@ -226,7 +226,7 @@ export async function getPhotographerEarnings(options?: {
       orderBy: { earnedAt: "desc" },
     });
 
-    return { success: true, data: earnings };
+    return success(earnings);
   } catch (error) {
     console.error("[PhotographerPay] Error fetching earnings:", error);
     return fail("Failed to fetch photographer earnings");
@@ -256,7 +256,7 @@ export async function getMyEarnings(options?: {
       orderBy: { earnedAt: "desc" },
     });
 
-    return { success: true, data: earnings };
+    return success(earnings);
   } catch (error) {
     console.error("[PhotographerPay] Error fetching my earnings:", error);
     return fail("Failed to fetch earnings");
@@ -298,14 +298,11 @@ export async function calculateBookingEarnings(
 
     // No rate configured - default to 0
     if (!rate) {
-      return {
-        success: true,
-        data: {
-          amountCents: 0,
-          rateType: "none",
-          rateValue: 0,
-        },
-      };
+      return success({
+        amountCents: 0,
+        rateType: "none",
+        rateValue: 0,
+      });
     }
 
     let amountCents = 0;
@@ -331,14 +328,11 @@ export async function calculateBookingEarnings(
       amountCents = rate.maxPayCents;
     }
 
-    return {
-      success: true,
-      data: {
-        amountCents,
-        rateType: rate.rateType,
-        rateValue: rate.rateValue,
-      },
-    };
+    return success({
+      amountCents,
+      rateType: rate.rateType,
+      rateValue: rate.rateValue,
+    });
   } catch (error) {
     console.error("[PhotographerPay] Error calculating earnings:", error);
     return fail("Failed to calculate earnings");
@@ -378,7 +372,7 @@ export async function recordPhotographerEarning(input: {
     });
 
     revalidatePath("/my-earnings");
-    return { success: true, data: earning };
+    return success(earning);
   } catch (error) {
     console.error("[PhotographerPay] Error recording earning:", error);
     return fail("Failed to record earning");
@@ -461,15 +455,12 @@ export async function getEarningStats(options?: {
       (approved._sum.amountCents || 0) +
       (paid._sum.amountCents || 0);
 
-    return {
-      success: true,
-      data: {
-        totalEarned,
-        pendingAmount: pending._sum.amountCents || 0,
-        approvedAmount: approved._sum.amountCents || 0,
-        paidAmount: paid._sum.amountCents || 0,
-      },
-    };
+    return success({
+      totalEarned,
+      pendingAmount: pending._sum.amountCents || 0,
+      approvedAmount: approved._sum.amountCents || 0,
+      paidAmount: paid._sum.amountCents || 0,
+    });
   } catch (error) {
     console.error("[PhotographerPay] Error fetching stats:", error);
     return fail("Failed to fetch earning statistics");
@@ -510,13 +501,10 @@ export async function getMyEarningStats(): Promise<
       _sum: { amountCents: true },
     });
 
-    return {
-      success: true,
-      data: {
-        ...allTimeResult.data,
-        currentMonthEarned: currentMonthAggregate._sum.amountCents || 0,
-      },
-    };
+    return success({
+      ...allTimeResult.data,
+      currentMonthEarned: currentMonthAggregate._sum.amountCents || 0,
+    });
   } catch (error) {
     console.error("[PhotographerPay] Error fetching my stats:", error);
     return fail("Failed to fetch earning statistics");

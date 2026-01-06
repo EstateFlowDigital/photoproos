@@ -6,7 +6,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import type { ClientIndustry } from "@prisma/client";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface CSVClientRow {
   email: string;
@@ -397,7 +397,7 @@ export async function importClients(
 
     revalidatePath("/clients");
 
-    return { success: true, data: result };
+    return success(result);
   } catch (error) {
     console.error("Error importing clients:", error);
     if (error instanceof Error) {

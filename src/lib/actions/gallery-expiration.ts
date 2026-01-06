@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { addDays, differenceInDays } from "date-fns";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -85,7 +85,7 @@ export async function getExpiringSoonGalleries(daysAhead: number = 7) {
       deliverySlug: g.deliveryLinks[0]?.slug || g.id,
     }));
 
-    return { success: true, data: expiring };
+    return success(expiring);
   } catch (error) {
     console.error("[Gallery Expiration] Error fetching:", error);
     return fail("Failed to fetch expiring galleries");
@@ -199,7 +199,7 @@ export async function getPendingExpirationNotifications() {
       }
     }
 
-    return { success: true, data: pending };
+    return success(pending);
   } catch (error) {
     console.error("[Gallery Expiration] Error fetching pending:", error);
     return fail("Failed to fetch pending notifications");
@@ -275,7 +275,7 @@ export async function extendGalleryExpiration(
     revalidatePath("/galleries");
     revalidatePath(`/galleries/${projectId}`);
 
-    return { success: true, data: { newExpiresAt: newExpiry } };
+    return success({ newExpiresAt: newExpiry });
   } catch (error) {
     console.error("[Gallery Expiration] Error extending:", error);
     return fail("Failed to extend gallery expiration");

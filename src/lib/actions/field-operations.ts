@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export type FieldBooking = {
   id: string;
@@ -40,7 +40,7 @@ export async function getTodaysBookings(): Promise<ActionResult<FieldBooking[]>>
   try {
     // Avoid hitting Clerk/headers during static build
     if (process.env.NEXT_PHASE === "phase-production-build") {
-      return { success: true, data: [] };
+      return success([]);
     }
 
     const auth = await getAuthContext();
@@ -81,7 +81,7 @@ export async function getTodaysBookings(): Promise<ActionResult<FieldBooking[]>>
       description: b.description,
     }));
 
-    return { success: true, data: fieldBookings };
+    return success(fieldBookings);
   } catch (error) {
     console.error("Error getting today's bookings:", error);
     return fail("Failed to get bookings");
@@ -92,7 +92,7 @@ export async function getUpcomingBookings(days: number = 7): Promise<ActionResul
   try {
     // Avoid hitting Clerk/headers during static build
     if (process.env.NEXT_PHASE === "phase-production-build") {
-      return { success: true, data: [] };
+      return success([]);
     }
 
     const auth = await getAuthContext();
@@ -133,7 +133,7 @@ export async function getUpcomingBookings(days: number = 7): Promise<ActionResul
       description: b.description,
     }));
 
-    return { success: true, data: fieldBookings };
+    return success(fieldBookings);
   } catch (error) {
     console.error("Error getting upcoming bookings:", error);
     return fail("Failed to get bookings");
@@ -177,7 +177,7 @@ export async function checkIn(data: CheckInData): Promise<ActionResult<{ checkIn
     });
 
     revalidatePath("/field");
-    return { success: true, data: { checkInTime } };
+    return success({ checkInTime });
   } catch (error) {
     console.error("Error checking in:", error);
     return fail("Failed to check in");
@@ -223,7 +223,7 @@ export async function checkOut(data: CheckOutData): Promise<ActionResult<{ check
     });
 
     revalidatePath("/field");
-    return { success: true, data: { checkOutTime } };
+    return success({ checkOutTime });
   } catch (error) {
     console.error("Error checking out:", error);
     return fail("Failed to check out");

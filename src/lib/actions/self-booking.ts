@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { combineDateAndTime } from "@/lib/dates";
 import { validateBookingTime } from "./bookings";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
@@ -76,7 +76,7 @@ export async function getPublicOrganization(slug: string): Promise<
       return fail("Organization not found");
     }
 
-    return { success: true, data: org };
+    return success(org);
   } catch (error) {
     console.error("Error getting public organization:", error);
     return fail("Failed to get organization");
@@ -114,7 +114,7 @@ export async function getPublicServices(
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     });
 
-    return { success: true, data: services };
+    return success(services);
   } catch (error) {
     console.error("Error getting public services:", error);
     return fail("Failed to get services");
@@ -181,7 +181,7 @@ export async function getAvailableSlots(
       }
     }
 
-    return { success: true, data: slots };
+    return success(slots);
   } catch (error) {
     console.error("Error getting available slots:", error);
     return fail("Failed to get available slots");
@@ -277,15 +277,12 @@ export async function submitBooking(
       },
     });
 
-    return {
-      success: true,
-      data: {
-        id: booking.id,
-        serviceName: service.name,
-        scheduledDate: booking.startTime,
-        address: booking.location || "",
-      },
-    };
+    return success({
+      id: booking.id,
+      serviceName: service.name,
+      scheduledDate: booking.startTime,
+      address: booking.location || "",
+    });
   } catch (error) {
     console.error("Error submitting booking:", error);
     return fail("Failed to submit booking");

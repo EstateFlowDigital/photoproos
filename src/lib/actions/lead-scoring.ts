@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // =============================================================================
 // Lead Scoring Configuration
@@ -172,19 +172,16 @@ export async function getLeadsByTemperature(propertyWebsiteId: string) {
       cold: leads.filter((l) => l.temperature === "cold"),
     };
 
-    return {
-      success: true,
-      data: {
-        leads,
-        grouped,
-        summary: {
-          total: leads.length,
-          hot: grouped.hot.length,
-          warm: grouped.warm.length,
-          cold: grouped.cold.length,
-        },
+    return success({
+      leads,
+      grouped,
+      summary: {
+        total: leads.length,
+        hot: grouped.hot.length,
+        warm: grouped.warm.length,
+        cold: grouped.cold.length,
       },
-    };
+    });
   } catch (error) {
     console.error("[Lead Scoring] Error fetching leads:", error);
     return fail("Failed to fetch leads");
@@ -340,7 +337,7 @@ export async function getLeadsForFollowUp() {
       orderBy: { followUpDate: "asc" },
     });
 
-    return { success: true, data: leads };
+    return success(leads);
   } catch (error) {
     console.error("[Lead Scoring] Error fetching follow-ups:", error);
     return fail("Failed to fetch follow-ups");
@@ -401,24 +398,21 @@ export async function getLeadAnalytics(dateRange?: { from: Date; to: Date }) {
       byStatus.map((s) => [s.status, s._count])
     );
 
-    return {
-      success: true,
-      data: {
-        total,
-        byTemperature: {
-          hot: temperatureMap["hot"] || 0,
-          warm: temperatureMap["warm"] || 0,
-          cold: temperatureMap["cold"] || 0,
-        },
-        byStatus: {
-          new: statusMap["new"] || 0,
-          contacted: statusMap["contacted"] || 0,
-          qualified: statusMap["qualified"] || 0,
-          closed: statusMap["closed"] || 0,
-        },
-        recentLeads,
+    return success({
+      total,
+      byTemperature: {
+        hot: temperatureMap["hot"] || 0,
+        warm: temperatureMap["warm"] || 0,
+        cold: temperatureMap["cold"] || 0,
       },
-    };
+      byStatus: {
+        new: statusMap["new"] || 0,
+        contacted: statusMap["contacted"] || 0,
+        qualified: statusMap["qualified"] || 0,
+        closed: statusMap["closed"] || 0,
+      },
+      recentLeads,
+    });
   } catch (error) {
     console.error("[Lead Scoring] Error fetching analytics:", error);
     return fail("Failed to fetch lead analytics");

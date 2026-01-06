@@ -77,7 +77,7 @@ export async function getTerritories(): Promise<ActionResult<ServiceTerritory[]>
       updatedAt: t.updatedAt,
     }));
 
-    return { success: true, data: serialized };
+    return success(serialized);
   } catch (error) {
     console.error("Error fetching territories:", error);
     return fail("Failed to fetch territories");
@@ -99,7 +99,7 @@ export async function findTerritoryByZipCode(
       },
     });
 
-    if (!territory) return { success: true, data: null };
+    if (!territory) return success(null);
 
     const serialized: ServiceTerritory = {
       id: territory.id,
@@ -122,7 +122,7 @@ export async function findTerritoryByZipCode(
       updatedAt: territory.updatedAt,
     };
 
-    return { success: true, data: serialized };
+    return success(serialized);
   } catch (error) {
     console.error("Error finding territory:", error);
     return fail("Failed to find territory");
@@ -179,7 +179,7 @@ export async function createTerritory(data: {
     };
 
     revalidatePath("/settings/territories");
-    return { success: true, data: serialized };
+    return success(serialized);
   } catch (error) {
     console.error("Error creating territory:", error);
     return fail("Failed to create territory");
@@ -241,7 +241,7 @@ export async function updateTerritory(
     };
 
     revalidatePath("/settings/territories");
-    return { success: true, data: serialized };
+    return success(serialized);
   } catch (error) {
     console.error("Error updating territory:", error);
     return fail("Failed to update territory");
@@ -322,7 +322,7 @@ export async function importZipCodes(
     });
 
     revalidatePath("/settings/territories");
-    return { success: true, data: { added: newZips.length, total: allZips.length } };
+    return success({ added: newZips.length, total: allZips.length });
   } catch (error) {
     console.error("Error importing ZIP codes:", error);
     return fail("Failed to import ZIP codes");
@@ -383,7 +383,7 @@ export async function setServiceOverride(data: {
     };
 
     revalidatePath("/settings/territories");
-    return { success: true, data: serialized };
+    return success(serialized);
   } catch (error) {
     console.error("Error setting service override:", error);
     return fail("Failed to set service override");
@@ -436,14 +436,11 @@ export async function checkServiceAreaPublic(
       },
     });
 
-    return {
-      success: true,
-      data: {
-        inServiceArea: !!territory,
-        territory: territory?.name || null,
-        travelFee: territory?.travelFee || null,
-      },
-    };
+    return success({
+      inServiceArea: !!territory,
+      territory: territory?.name || null,
+      travelFee: territory?.travelFee || null,
+    });
   } catch (error) {
     console.error("Error checking service area:", error);
     return fail("Failed to check service area");

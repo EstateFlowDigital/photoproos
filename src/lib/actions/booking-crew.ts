@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { BookingCrewRole } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 interface AddCrewMemberInput {
   bookingId: string;
@@ -115,10 +115,7 @@ export async function getBookingCrew(bookingId: string): Promise<ActionResult<{
       ],
     });
 
-    return {
-      success: true,
-      data: { crew },
-    };
+    return success({ crew });
   } catch (error) {
     console.error("Error getting booking crew:", error);
     return fail("Failed to get crew members");
@@ -185,10 +182,7 @@ export async function getAvailableCrewMembers(
       isAlreadyAssigned: assignedUserIds.has(m.user.id),
     }));
 
-    return {
-      success: true,
-      data: { members },
-    };
+    return success({ members });
   } catch (error) {
     console.error("Error getting available crew members:", error);
     return fail("Failed to get team members");

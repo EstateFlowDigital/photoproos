@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 export interface GalleryTemplateInput {
   name: string;
@@ -48,7 +48,7 @@ export async function getGalleryTemplates() {
       orderBy: [{ isDefault: "desc" }, { name: "asc" }],
     });
 
-    return { success: true, data: templates };
+    return success(templates);
   } catch (error) {
     console.error("Error fetching gallery templates:", error);
     return fail("Failed to fetch templates");
@@ -85,7 +85,7 @@ export async function getGalleryTemplate(id: string) {
       return fail("Template not found");
     }
 
-    return { success: true, data: template };
+    return success(template);
   } catch (error) {
     console.error("Error fetching gallery template:", error);
     return fail("Failed to fetch template");
@@ -139,7 +139,7 @@ export async function createGalleryTemplate(input: GalleryTemplateInput) {
     revalidatePath("/settings/templates");
     revalidatePath("/galleries/new");
 
-    return { success: true, data: template };
+    return success(template);
   } catch (error) {
     console.error("Error creating gallery template:", error);
     return fail("Failed to create template");
@@ -202,7 +202,7 @@ export async function updateGalleryTemplate(id: string, input: Partial<GalleryTe
     revalidatePath("/settings/templates");
     revalidatePath("/galleries/new");
 
-    return { success: true, data: template };
+    return success(template);
   } catch (error) {
     console.error("Error updating gallery template:", error);
     return fail("Failed to update template");

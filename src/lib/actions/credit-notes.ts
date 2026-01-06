@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import type { CreditNoteStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { logActivity } from "@/lib/utils/activity";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // CREDIT NOTE OPERATIONS
@@ -138,7 +138,7 @@ export async function createCreditNote(
     revalidatePath("/credit-notes");
     revalidatePath("/invoices");
 
-    return ok({ id: creditNote.id, creditNoteNumber });
+    return success({ id: creditNote.id, creditNoteNumber });
   } catch (error) {
     console.error("Error creating credit note:", error);
     if (error instanceof Error) {
@@ -197,7 +197,7 @@ export async function getCreditNote(creditNoteId: string): Promise<
       return fail("Credit note not found");
     }
 
-    return ok({
+    return success({
       id: creditNote.id,
       creditNoteNumber: creditNote.creditNoteNumber,
       status: creditNote.status,
@@ -283,7 +283,7 @@ export async function listCreditNotes(options?: {
       prisma.creditNote.count({ where }),
     ]);
 
-    return ok({ creditNotes, total });
+    return success({ creditNotes, total });
   } catch (error) {
     console.error("Error listing credit notes:", error);
     if (error instanceof Error) {
@@ -463,7 +463,7 @@ export async function applyCreditNoteToInvoice(
     revalidatePath("/invoices");
     revalidatePath(`/invoices/${invoiceId}`);
 
-    return ok({ appliedAmountCents: applyAmount });
+    return success({ appliedAmountCents: applyAmount });
   } catch (error) {
     console.error("Error applying credit note:", error);
     if (error instanceof Error) {
@@ -530,7 +530,7 @@ export async function markCreditNoteRefunded(
     revalidatePath("/credit-notes");
     revalidatePath(`/credit-notes/${creditNoteId}`);
 
-    return ok({ refundedAmountCents: refundAmount });
+    return success({ refundedAmountCents: refundAmount });
   } catch (error) {
     console.error("Error marking credit note as refunded:", error);
     if (error instanceof Error) {
@@ -702,7 +702,7 @@ export async function getClientAvailableCredit(clientId: string): Promise<
       }
     }
 
-    return ok({
+    return success({
       totalCreditCents,
       appliedCreditCents,
       refundedCreditCents,

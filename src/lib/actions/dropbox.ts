@@ -200,7 +200,7 @@ export async function getDropboxConfig(): Promise<ActionResult<DropboxConfig | n
       },
     });
 
-    return { success: true, data: config };
+    return success(config);
   } catch (error) {
     console.error("Error getting Dropbox config:", error);
     return fail("Failed to get Dropbox configuration");
@@ -222,24 +222,21 @@ export async function getDropboxConnectionStatus(): Promise<
     });
 
     if (!config || !config.isActive) {
-      return { success: true, data: { connected: false } };
+      return success({ connected: false });
     }
 
     // This will automatically refresh the token if needed
     const accessToken = await getValidAccessToken(auth.organizationId);
     if (!accessToken) {
-      return { success: true, data: { connected: false } };
+      return success({ connected: false });
     }
 
     const result = await testDropboxConnection(accessToken);
     if (!result.success) {
-      return { success: true, data: { connected: false } };
+      return success({ connected: false });
     }
 
-    return {
-      success: true,
-      data: { connected: true, account: result.account },
-    };
+    return success({ connected: true, account: result.account });
   } catch (error) {
     console.error("Error checking Dropbox connection:", error);
     return fail("Failed to check connection status");
@@ -319,7 +316,7 @@ export async function saveDropboxConfig(data: {
     };
 
     revalidatePath("/settings/dropbox");
-    return { success: true, data: configResult };
+    return success(configResult);
   } catch (error) {
     console.error("Error saving Dropbox config:", error);
     return fail("Failed to save Dropbox configuration");
@@ -408,7 +405,7 @@ export async function testDropboxIntegration(): Promise<ActionResult<{ account: 
       return fail(result.error || "Connection failed");
     }
 
-    return { success: true, data: { account: result.account } };
+    return success({ account: result.account });
   } catch (error) {
     console.error("Error testing Dropbox connection:", error);
     return fail("Failed to test connection");
@@ -464,7 +461,7 @@ export async function listDropboxFolder(
     const fullPath = path || config.syncFolder;
     const entries = await client.listAllFiles(fullPath);
 
-    return { success: true, data: entries };
+    return success(entries);
   } catch (error) {
     console.error("Error listing Dropbox folder:", error);
     return fail("Failed to list folder");
@@ -500,7 +497,7 @@ export async function createDropboxFolder(
 
     const folder = await client.createFolder(fullPath);
 
-    return { success: true, data: { path: folder?.path_display || fullPath } };
+    return success({ path: folder?.path_display || fullPath });
   } catch (error) {
     console.error("Error creating Dropbox folder:", error);
     return fail("Failed to create folder");
@@ -523,7 +520,7 @@ export async function getDropboxDownloadLink(
 
     const link = await client.getTemporaryLink(path);
 
-    return { success: true, data: { link } };
+    return success({ link });
   } catch (error) {
     console.error("Error getting download link:", error);
     return fail("Failed to get download link");
@@ -557,7 +554,7 @@ export async function ensureDropboxRootFolder(): Promise<ActionResult<{ path: st
     await client.ensureFolder(`${config.syncFolder}/Clients`);
     await client.ensureFolder(`${config.syncFolder}/Exports`);
 
-    return { success: true, data: { path: config.syncFolder } };
+    return success({ path: config.syncFolder });
   } catch (error) {
     console.error("Error ensuring root folder:", error);
     return fail("Failed to create folder structure");

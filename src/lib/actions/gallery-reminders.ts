@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { sendGalleryReminderEmail } from "@/lib/email/send";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 import { logEmailSent } from "@/lib/actions/email-logs";
 import { EmailStatus, EmailType } from "@prisma/client";
 import { addDays, differenceInDays, isBefore, isAfter, startOfDay } from "date-fns";
@@ -220,10 +220,7 @@ export async function sendBatchGalleryReminders(organizationId: string) {
       }
     }
 
-    return {
-      success: true,
-      data: { sent, failed, results },
-    };
+    return success({ sent, failed, results });
   } catch (error) {
     console.error("Error in sendBatchGalleryReminders:", error);
     return {
@@ -416,13 +413,10 @@ export async function sendManualGalleryReminder(
         },
       });
 
-      return {
-        success: true,
-        data: {
-          sentTo: gallery.client.email,
-          sentAt: new Date().toISOString(),
-        },
-      };
+      return success({
+        sentTo: gallery.client.email,
+        sentAt: new Date().toISOString(),
+      });
     }
 
     return fail(emailResult.error || "Failed to send email");
@@ -462,9 +456,8 @@ export async function getGalleryReminderHistory(galleryId: string) {
       },
     });
 
-    return {
-      success: true,
-      data: reminders.map((r) => {
+    return success(
+      reminders.map((r) => {
         const metadata = r.metadata as {
           reminderType?: string;
           recipientEmail?: string;
@@ -477,8 +470,8 @@ export async function getGalleryReminderHistory(galleryId: string) {
           description: r.description,
           recipientEmail: metadata?.recipientEmail || "Unknown",
         };
-      }),
-    };
+      })
+    );
   } catch (error) {
     console.error("[Gallery Reminders] Error fetching history:", error);
     return fail("Failed to fetch reminder history");
@@ -577,10 +570,7 @@ export async function extendGalleryExpiration(galleryId: string, days: number) {
       },
     });
 
-    return {
-      success: true,
-      data: { expiresAt: newExpiresAt.toISOString() },
-    };
+    return success({ expiresAt: newExpiresAt.toISOString() });
   } catch (error) {
     console.error("[Gallery Reminders] Error extending expiration:", error);
     return fail("Failed to extend expiration");
@@ -626,9 +616,8 @@ export async function getExpiringGalleries(withinDays: number = 7) {
       orderBy: { expiresAt: "asc" },
     });
 
-    return {
-      success: true,
-      data: galleries.map((g) => ({
+    return success(
+      galleries.map((g) => ({
         id: g.id,
         name: g.name,
         expiresAt: g.expiresAt?.toISOString(),
@@ -637,8 +626,8 @@ export async function getExpiringGalleries(withinDays: number = 7) {
           ? { name: g.client.fullName, email: g.client.email }
           : null,
         photoCount: g._count.assets,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("[Gallery Reminders] Error fetching expiring galleries:", error);
     return fail("Failed to fetch expiring galleries");
@@ -681,9 +670,8 @@ export async function getUnviewedGalleries(withinDays: number = 7) {
       orderBy: { deliveredAt: "desc" },
     });
 
-    return {
-      success: true,
-      data: galleries.map((g) => ({
+    return success(
+      galleries.map((g) => ({
         id: g.id,
         name: g.name,
         deliveredAt: g.deliveredAt?.toISOString(),
@@ -694,8 +682,8 @@ export async function getUnviewedGalleries(withinDays: number = 7) {
           ? { name: g.client.fullName, email: g.client.email }
           : null,
         photoCount: g._count.assets,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("[Gallery Reminders] Error fetching unviewed galleries:", error);
     return fail("Failed to fetch unviewed galleries");
@@ -740,22 +728,19 @@ export async function getGalleryReminderStatus(galleryId: string) {
       ? differenceInDays(today, gallery.lastReminderSentAt)
       : null;
 
-    return {
-      success: true,
-      data: {
-        reminderEnabled: gallery.reminderEnabled,
-        reminderCount: gallery.reminderCount,
-        maxReminders: MAX_REMINDERS,
-        lastReminderSentAt: gallery.lastReminderSentAt?.toISOString() || null,
-        daysSinceLastReminder,
-        expiresAt: gallery.expiresAt?.toISOString() || null,
-        daysUntilExpiration,
-        isExpiringSoon: daysUntilExpiration !== null && daysUntilExpiration <= 7,
-        daysSinceDelivery,
-        hasBeenViewed: gallery.viewCount > 0,
-        downloadCount: gallery.downloadCount,
-      },
-    };
+    return success({
+      reminderEnabled: gallery.reminderEnabled,
+      reminderCount: gallery.reminderCount,
+      maxReminders: MAX_REMINDERS,
+      lastReminderSentAt: gallery.lastReminderSentAt?.toISOString() || null,
+      daysSinceLastReminder,
+      expiresAt: gallery.expiresAt?.toISOString() || null,
+      daysUntilExpiration,
+      isExpiringSoon: daysUntilExpiration !== null && daysUntilExpiration <= 7,
+      daysSinceDelivery,
+      hasBeenViewed: gallery.viewCount > 0,
+      downloadCount: gallery.downloadCount,
+    });
   } catch (error) {
     console.error("[Gallery Reminders] Error fetching reminder status:", error);
     return fail("Failed to fetch reminder status");

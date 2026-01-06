@@ -11,7 +11,7 @@ import {
   sendReferralRewardEarnedEmail,
 } from "@/lib/email/send";
 import { requireAdmin } from "@/lib/actions/auth-helper";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export type PlatformReferrerProfile = {
   id: string;
@@ -133,21 +133,18 @@ export async function getMyReferralProfile(): Promise<ActionResult<PlatformRefer
       });
     }
 
-    return {
-      success: true,
-      data: {
-        id: profile.id,
-        userId: profile.userId,
-        referralCode: profile.referralCode,
-        referralUrl: profile.referralUrl,
-        totalReferrals: profile.totalReferrals,
-        successfulReferrals: profile.successfulReferrals,
-        totalEarnedCents: profile.totalEarnedCents,
-        pendingCreditCents: profile.pendingCreditCents,
-        isActive: profile.isActive,
-        createdAt: profile.createdAt,
-      },
-    };
+    return success({
+      id: profile.id,
+      userId: profile.userId,
+      referralCode: profile.referralCode,
+      referralUrl: profile.referralUrl,
+      totalReferrals: profile.totalReferrals,
+      successfulReferrals: profile.successfulReferrals,
+      totalEarnedCents: profile.totalEarnedCents,
+      pendingCreditCents: profile.pendingCreditCents,
+      isActive: profile.isActive,
+      createdAt: profile.createdAt,
+    });
   } catch (error) {
     console.error("[PlatformReferrals] Error getting profile:", error);
     return fail("Failed to get referral profile");
@@ -174,18 +171,15 @@ export async function getMyReferralStats(): Promise<ActionResult<PlatformReferra
     });
 
     if (!profile) {
-      return {
-        success: true,
-        data: {
-          totalReferrals: 0,
-          pendingReferrals: 0,
-          signedUpReferrals: 0,
-          subscribedReferrals: 0,
-          totalEarnedCents: 0,
-          pendingCreditCents: 0,
-          conversionRate: 0,
-        },
-      };
+      return success({
+        totalReferrals: 0,
+        pendingReferrals: 0,
+        signedUpReferrals: 0,
+        subscribedReferrals: 0,
+        totalEarnedCents: 0,
+        pendingCreditCents: 0,
+        conversionRate: 0,
+      });
     }
 
     const pendingReferrals = profile.referrals.filter(
@@ -203,18 +197,15 @@ export async function getMyReferralStats(): Promise<ActionResult<PlatformReferra
         ? (profile.successfulReferrals / profile.totalReferrals) * 100
         : 0;
 
-    return {
-      success: true,
-      data: {
-        totalReferrals: profile.totalReferrals,
-        pendingReferrals,
-        signedUpReferrals,
-        subscribedReferrals,
-        totalEarnedCents: profile.totalEarnedCents,
-        pendingCreditCents: profile.pendingCreditCents,
-        conversionRate: Math.round(conversionRate * 10) / 10,
-      },
-    };
+    return success({
+      totalReferrals: profile.totalReferrals,
+      pendingReferrals,
+      signedUpReferrals,
+      subscribedReferrals,
+      totalEarnedCents: profile.totalEarnedCents,
+      pendingCreditCents: profile.pendingCreditCents,
+      conversionRate: Math.round(conversionRate * 10) / 10,
+    });
   } catch (error) {
     console.error("[PlatformReferrals] Error getting stats:", error);
     return fail("Failed to get referral stats");
@@ -236,7 +227,7 @@ export async function getMyReferrals(): Promise<ActionResult<PlatformReferralIte
     });
 
     if (!profile) {
-      return { success: true, data: [] };
+      return success([]);
     }
 
     const referrals = await prisma.platformReferral.findMany({
@@ -245,9 +236,8 @@ export async function getMyReferrals(): Promise<ActionResult<PlatformReferralIte
       take: 50,
     });
 
-    return {
-      success: true,
-      data: referrals.map((r) => ({
+    return success(
+      referrals.map((r) => ({
         id: r.id,
         referredEmail: r.referredEmail,
         referredName: r.referredName,
@@ -256,8 +246,8 @@ export async function getMyReferrals(): Promise<ActionResult<PlatformReferralIte
         subscribedAt: r.subscribedAt,
         expiresAt: r.expiresAt,
         createdAt: r.createdAt,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("[PlatformReferrals] Error getting referrals:", error);
     return fail("Failed to get referrals");
@@ -279,7 +269,7 @@ export async function getMyRewards(): Promise<ActionResult<PlatformReward[]>> {
     });
 
     if (!profile) {
-      return { success: true, data: [] };
+      return success([]);
     }
 
     const rewards = await prisma.platformReferralReward.findMany({
@@ -287,9 +277,8 @@ export async function getMyRewards(): Promise<ActionResult<PlatformReward[]>> {
       orderBy: { createdAt: "desc" },
     });
 
-    return {
-      success: true,
-      data: rewards.map((r) => ({
+    return success(
+      rewards.map((r) => ({
         id: r.id,
         rewardType: r.rewardType,
         valueCents: r.valueCents,
@@ -298,8 +287,8 @@ export async function getMyRewards(): Promise<ActionResult<PlatformReward[]>> {
         appliedAt: r.appliedAt,
         expiresAt: r.expiresAt,
         createdAt: r.createdAt,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("[PlatformReferrals] Error getting rewards:", error);
     return fail("Failed to get rewards");
@@ -319,7 +308,7 @@ export async function getMyReferralLink(): Promise<ActionResult<string>> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://photoproos.com";
     const referralLink = `${baseUrl}/sign-up?ref=${profileResult.data.referralCode}`;
 
-    return { success: true, data: referralLink };
+    return success(referralLink);
   } catch (error) {
     console.error("[PlatformReferrals] Error getting referral link:", error);
     return fail("Failed to get referral link");
@@ -430,7 +419,7 @@ export async function sendReferralInvite(
 
     revalidatePath("/settings/my-referrals");
 
-    return { success: true, data: { referralId: referral.id } };
+    return success({ referralId: referral.id });
   } catch (error) {
     console.error("[PlatformReferrals] Error sending invite:", error);
     return fail("Failed to send invite");
@@ -462,7 +451,7 @@ export async function trackReferralClick(
     // Store click data in session/cookie on the client side
     // This function just validates the code and returns the referrer ID
 
-    return { success: true, data: { referrerId: referrer.id } };
+    return success({ referrerId: referrer.id });
   } catch (error) {
     console.error("[PlatformReferrals] Error tracking click:", error);
     return fail("Failed to track click");
@@ -792,7 +781,7 @@ export async function getPlatformReferralSettings(): Promise<ActionResult<Awaite
     await requireAdmin();
 
     const settings = await getPlatformSettings();
-    return { success: true, data: settings };
+    return success(settings);
   } catch (error) {
     console.error("[PlatformReferrals] Error getting settings:", error);
     return fail("Failed to get settings");
@@ -860,15 +849,14 @@ export async function getReferralLeaderboard(
       },
     });
 
-    return {
-      success: true,
-      data: topReferrers.map((r, index) => ({
+    return success(
+      topReferrers.map((r, index) => ({
         rank: index + 1,
         name: r.user.fullName || r.user.email.split("@")[0],
         successfulReferrals: r.successfulReferrals,
         totalEarnedCents: r.totalEarnedCents,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("[PlatformReferrals] Error getting leaderboard:", error);
     return fail("Failed to get leaderboard");

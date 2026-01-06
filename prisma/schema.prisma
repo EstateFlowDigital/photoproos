@@ -623,6 +623,7 @@ model Organization {
   paymentPlans             PaymentPlan[]
   invoiceTemplates         InvoiceTemplate[]
   invoiceBrandingTemplates InvoiceBrandingTemplate[]
+  invoiceEmailTemplates    InvoiceEmailTemplate[]
   galleryTemplates         GalleryTemplate[]
 
   // Phase 1: Ordering System relations
@@ -3827,6 +3828,63 @@ model InvoiceBrandingTemplate {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
+}
+
+// ============================================================================
+// INVOICE EMAIL TEMPLATES (Customizable email content for invoices)
+// ============================================================================
+
+enum InvoiceEmailType {
+  invoice_created     // When invoice is first created
+  invoice_sent        // When invoice is sent to client
+  invoice_reminder    // Payment reminder
+  invoice_overdue     // Overdue notice
+  invoice_paid        // Payment confirmation
+  invoice_partial     // Partial payment received
+  estimate_sent       // Quote/estimate sent
+  estimate_approved   // Quote approved by client
+  estimate_rejected   // Quote rejected by client
+}
+
+model InvoiceEmailTemplate {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Template identification
+  name         String
+  emailType    InvoiceEmailType
+  isDefault    Boolean @default(false)
+  isActive     Boolean @default(true)
+
+  // Email content
+  subject      String  // Supports variables like {{invoiceNumber}}, {{clientName}}
+  bodyHtml     String  @db.Text // HTML email body
+  bodyText     String? @db.Text // Plain text fallback
+
+  // Sender customization
+  fromName     String? // Override sender name
+  replyTo      String? // Reply-to email
+
+  // Scheduling options (for reminders)
+  sendDelayDays Int?   // Days after event to send (e.g., reminder 7 days after due)
+
+  // CC/BCC
+  ccEmails     String[] @default([])
+  bccEmails    String[] @default([])
+
+  // Metadata
+  usageCount   Int      @default(0)
+  lastUsedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, emailType, isDefault])
+  @@index([organizationId])
+  @@index([emailType])
 }
 
 // ============================================================================

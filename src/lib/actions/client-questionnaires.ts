@@ -22,7 +22,7 @@ import {
   createEmailLog,
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export type ClientQuestionnaireWithRelations = {
   id: string;
@@ -187,7 +187,7 @@ export async function getClientQuestionnaires(
       orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
     });
 
-    return { success: true, data: questionnaires as ClientQuestionnaireWithRelations[] };
+    return success(questionnaires as ClientQuestionnaireWithRelations[]);
   } catch (error) {
     console.error("Error fetching client questionnaires:", error);
     return fail("Failed to fetch client questionnaires");
@@ -250,7 +250,7 @@ export async function getClientQuestionnairesByClient(
       orderBy: [{ status: "asc" }, { dueDate: "asc" }],
     });
 
-    return { success: true, data: questionnaires as ClientQuestionnaireWithRelations[] };
+    return success(questionnaires as ClientQuestionnaireWithRelations[]);
   } catch (error) {
     console.error("Error fetching client questionnaires:", error);
     return fail("Failed to fetch client questionnaires");
@@ -312,7 +312,7 @@ export async function getClientQuestionnaire(
       },
     });
 
-    return { success: true, data: questionnaire as ClientQuestionnaireWithRelations | null };
+    return success(questionnaire as ClientQuestionnaireWithRelations | null);
   } catch (error) {
     console.error("Error fetching client questionnaire:", error);
     return fail("Failed to fetch client questionnaire");
@@ -359,10 +359,7 @@ export async function getQuestionnaireStats(): Promise<
       }),
     ]);
 
-    return {
-      success: true,
-      data: { total, pending, inProgress, completed, approved, overdue },
-    };
+    return success({ total, pending, inProgress, completed, approved, overdue });
   } catch (error) {
     console.error("Error fetching questionnaire stats:", error);
     return fail("Failed to fetch questionnaire stats");
@@ -564,7 +561,7 @@ export async function assignQuestionnaireToClient(
     revalidatePath("/questionnaires");
     revalidatePath(`/clients/${validated.clientId}`);
 
-    return { success: true, data: { id: questionnaire.id } };
+    return success({ id: questionnaire.id });
   } catch (error) {
     console.error("Error assigning questionnaire:", error);
     if (error instanceof Error) {
@@ -864,7 +861,7 @@ export async function markExpiredQuestionnaires(): Promise<ActionResult<{ count:
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: { count: result.count } };
+    return success({ count: result.count });
   } catch (error) {
     console.error("Error marking expired questionnaires:", error);
     return fail("Failed to mark expired questionnaires");
@@ -1028,7 +1025,7 @@ export async function sendBatchReminders(options?: {
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: results };
+    return success(results);
   } catch (error) {
     console.error("Error sending batch reminders:", error);
     return fail("Failed to send batch reminders");
@@ -1061,10 +1058,7 @@ export async function getRemindableQuestionnairesCount(): Promise<
       }),
     ]);
 
-    return {
-      success: true,
-      data: { total, overdue, pending: total - overdue },
-    };
+    return success({ total, overdue, pending: total - overdue });
   } catch (error) {
     console.error("Error getting remindable questionnaires count:", error);
     return fail("Failed to get count");

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { ReferralStatus, ReferralRewardType } from "@prisma/client";
 import { nanoid } from "nanoid";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export type ReferralProgram = {
   id: string;
@@ -79,7 +79,7 @@ export async function getReferralProgram(): Promise<ActionResult<ReferralProgram
       where: { organizationId: auth.organizationId },
     });
 
-    return { success: true, data: program };
+    return success(program);
   } catch (error) {
     console.error("Error getting referral program:", error);
     return fail("Failed to get referral program");
@@ -98,7 +98,7 @@ export async function getReferrers(): Promise<ActionResult<Referrer[]>> {
       include: { referrers: { orderBy: { createdAt: "desc" } } },
     });
 
-    return { success: true, data: program?.referrers || [] };
+    return success(program?.referrers || []);
   } catch (error) {
     console.error("Error getting referrers:", error);
     return fail("Failed to get referrers");
@@ -122,7 +122,7 @@ export async function getReferrals(): Promise<ActionResult<Referral[]>> {
       },
     });
 
-    return { success: true, data: program?.referrals || [] };
+    return success(program?.referrals || []);
   } catch (error) {
     console.error("Error getting referrals:", error);
     return fail("Failed to get referrals");
@@ -152,18 +152,15 @@ export async function getReferralStats(): Promise<
     });
 
     if (!program) {
-      return {
-        success: true,
-        data: {
-          totalReferrers: 0,
-          activeReferrers: 0,
-          totalReferrals: 0,
-          pendingReferrals: 0,
-          completedReferrals: 0,
-          totalRewardsEarned: 0,
-          conversionRate: 0,
-        },
-      };
+      return success({
+        totalReferrers: 0,
+        activeReferrers: 0,
+        totalReferrals: 0,
+        pendingReferrals: 0,
+        completedReferrals: 0,
+        totalRewardsEarned: 0,
+        conversionRate: 0,
+      });
     }
 
     const totalReferrers = program.referrers.length;
@@ -182,18 +179,15 @@ export async function getReferralStats(): Promise<
     const conversionRate =
       totalReferrals > 0 ? (completedReferrals / totalReferrals) * 100 : 0;
 
-    return {
-      success: true,
-      data: {
-        totalReferrers,
-        activeReferrers,
-        totalReferrals,
-        pendingReferrals,
-        completedReferrals,
-        totalRewardsEarned,
-        conversionRate: Math.round(conversionRate * 10) / 10,
-      },
-    };
+    return success({
+      totalReferrers,
+      activeReferrers,
+      totalReferrals,
+      pendingReferrals,
+      completedReferrals,
+      totalRewardsEarned,
+      conversionRate: Math.round(conversionRate * 10) / 10,
+    });
   } catch (error) {
     console.error("Error getting referral stats:", error);
     return fail("Failed to get referral stats");
@@ -243,7 +237,7 @@ export async function upsertReferralProgram(data: {
     });
 
     revalidatePath("/settings/referrals");
-    return { success: true, data: program };
+    return success(program);
   } catch (error) {
     console.error("Error upserting referral program:", error);
     return fail("Failed to save referral program");
@@ -312,7 +306,7 @@ export async function createReferrer(data: {
     });
 
     revalidatePath("/settings/referrals");
-    return { success: true, data: referrer };
+    return success(referrer);
   } catch (error) {
     console.error("Error creating referrer:", error);
     return fail("Failed to create referrer");
@@ -410,7 +404,7 @@ export async function regenerateReferralCode(
     });
 
     revalidatePath("/settings/referrals");
-    return { success: true, data: { code: newCode } };
+    return success({ code: newCode });
   } catch (error) {
     console.error("Error regenerating referral code:", error);
     return fail("Failed to regenerate code");

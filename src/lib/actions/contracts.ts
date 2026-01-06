@@ -22,7 +22,7 @@ import { prisma } from "@/lib/db";
 import type { ContractStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { sendContractSigningEmail } from "@/lib/email/send";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -148,7 +148,7 @@ export async function createContract(
 
     revalidatePath("/contracts");
 
-    return { success: true, data: { id: contract.id } };
+    return success({ id: contract.id });
   } catch (error) {
     console.error("[Contracts] Error creating contract:", error);
     if (error instanceof Error) {
@@ -428,7 +428,7 @@ export async function duplicateContract(
 
     revalidatePath("/contracts");
 
-    return { success: true, data: { id: newContract.id } };
+    return success({ id: newContract.id });
   } catch (error) {
     console.error("[Contracts] Error duplicating contract:", error);
     if (error instanceof Error) {

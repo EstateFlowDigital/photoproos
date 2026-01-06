@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface NotificationData {
   id: string;
@@ -99,7 +99,7 @@ export async function getUnreadNotificationCount(): Promise<ActionResult<number>
       where: { organizationId, read: false },
     });
 
-    return { success: true, data: count };
+    return success(count);
   } catch (error) {
     console.error("[Notifications] Error getting unread count:", error);
     if (error instanceof Error) {
@@ -248,7 +248,7 @@ export async function deleteReadNotifications(): Promise<ActionResult<{ count: n
     });
 
     revalidatePath("/");
-    return { success: true, data: { count: result.count } };
+    return success({ count: result.count });
   } catch (error) {
     console.error("[Notifications] Error deleting read notifications:", error);
     if (error instanceof Error) {

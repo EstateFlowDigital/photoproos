@@ -149,6 +149,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Separate from `InvoiceTemplate` (line item presets)
   - Controls logo position, colors, fonts, header/footer text
 
+- **Invoice Email Customization** - Customizable email templates for all invoice communications
+  - New `InvoiceEmailTemplate` model with 9 email types
+  - Supports: invoice sent, reminders, overdue notices, payment confirmations, estimates
+  - Template variables: `{{clientName}}`, `{{invoiceNumber}}`, `{{totalAmount}}`, etc.
+  - Per-organization defaults with fallback to system templates
+  - CC/BCC support for email copies
+  - Send delay configuration for automated reminders
+  - Template usage tracking and statistics
+  - Variable builders for invoices and estimates
+  - Initialize default templates for new organizations
+
 ### Changed
 - **Refactored error returns to use `fail()` helper** - Replaced ~2,200 occurrences of verbose `return { success: false, error: "..." }` pattern with the cleaner `fail("...")` helper function across 105 action files
   - Added `fail` import from `@/lib/types/action-result` to all affected files

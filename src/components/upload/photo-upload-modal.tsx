@@ -99,7 +99,7 @@ export function PhotoUploadModal({
   const createUploadFile = (file: File): UploadFile => {
     const error = validateFile(file);
     return {
-      id: `${file.name}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${file.name}-${crypto.randomUUID?.() || Date.now().toString(36)}`,
       file,
       preview: error ? "" : URL.createObjectURL(file),
       progress: 0,

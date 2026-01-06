@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { revalidatePath } from "next/cache";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export interface BookingTypeInput {
   name: string;
@@ -74,7 +74,7 @@ export async function createBookingType(
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/types");
 
-    return { success: true, data: { id: bookingType.id } };
+    return success({ id: bookingType.id });
   } catch (error) {
     console.error("Error creating booking type:", error);
     return fail("Failed to create booking type");

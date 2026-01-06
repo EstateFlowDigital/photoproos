@@ -11,7 +11,7 @@ import {
   type CreateCatalogInput,
   type CreateProductInput,
 } from "@/lib/validations/products";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 export async function listProductCatalogs() {
   await requireAuth();
@@ -80,7 +80,7 @@ export async function createProductCatalog(input: CreateCatalogInput): Promise<A
     });
 
     revalidatePath("/products");
-    return { success: true, data: { id: catalog.id } };
+    return success({ id: catalog.id });
   } catch (error) {
     console.error("[Products] create catalog error:", error);
     return fail("Failed to create catalog");
@@ -116,7 +116,7 @@ export async function createProduct(input: CreateProductInput): Promise<ActionRe
     });
 
     revalidatePath(`/products/${data.catalogId}`);
-    return { success: true, data: { id: product.id } };
+    return success({ id: product.id });
   } catch (error) {
     console.error("[Products] create product error:", error);
     return fail("Failed to create product");
@@ -188,7 +188,7 @@ export async function attachPhotoToProduct(input: AttachPhotoInput): Promise<Act
     }
 
     revalidatePath(`/products/${product.catalogId}`);
-    return { success: true, data: { id: photo.id } };
+    return success({ id: photo.id });
   } catch (error) {
     console.error("[Products] attach photo error:", error);
     return fail("Failed to attach photo");

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { InvoiceSplitType } from "@prisma/client";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types
@@ -73,7 +73,7 @@ export async function getInvoiceSplit(
     });
 
     if (!split) {
-      return { success: true, data: null };
+      return success(null);
     }
 
     // Fetch related invoices separately
@@ -90,15 +90,12 @@ export async function getInvoiceSplit(
         : null,
     ]);
 
-    return {
-      success: true,
-      data: {
-        ...split,
-        lineItemAssignments: split.lineItemAssignments as Record<string, "brokerage" | "agent"> | null,
-        primaryInvoice: primaryInvoice ?? undefined,
-        secondaryInvoice: secondaryInvoice ?? undefined,
-      },
-    };
+    return success({
+      ...split,
+      lineItemAssignments: split.lineItemAssignments as Record<string, "brokerage" | "agent"> | null,
+      primaryInvoice: primaryInvoice ?? undefined,
+      secondaryInvoice: secondaryInvoice ?? undefined,
+    });
   } catch (error) {
     console.error("[InvoiceSplits] Error fetching split:", error);
     return fail("Failed to fetch invoice split");
@@ -135,15 +132,14 @@ export async function getInvoiceSplits(options?: {
 
     const invoiceMap = new Map(invoices.map((i) => [i.id, i]));
 
-    return {
-      success: true,
-      data: splits.map((s) => ({
+    return success(
+      splits.map((s) => ({
         ...s,
         lineItemAssignments: s.lineItemAssignments as Record<string, "brokerage" | "agent"> | null,
         primaryInvoice: invoiceMap.get(s.primaryInvoiceId),
         secondaryInvoice: s.secondaryInvoiceId ? invoiceMap.get(s.secondaryInvoiceId) : undefined,
-      })),
-    };
+      }))
+    );
   } catch (error) {
     console.error("[InvoiceSplits] Error fetching splits:", error);
     return fail("Failed to fetch invoice splits");
@@ -282,15 +278,12 @@ export async function createInvoiceSplit(
       : null;
 
     revalidatePath(`/invoices/${input.primaryInvoiceId}`);
-    return {
-      success: true,
-      data: {
-        ...split,
-        lineItemAssignments: split.lineItemAssignments as Record<string, "brokerage" | "agent"> | null,
-        primaryInvoice: primaryInvoice ?? undefined,
-        secondaryInvoice: secondaryInvoiceData ?? undefined,
-      },
-    };
+    return success({
+      ...split,
+      lineItemAssignments: split.lineItemAssignments as Record<string, "brokerage" | "agent"> | null,
+      primaryInvoice: primaryInvoice ?? undefined,
+      secondaryInvoice: secondaryInvoiceData ?? undefined,
+    });
   } catch (error) {
     console.error("[InvoiceSplits] Error creating split:", error);
     return fail("Failed to create invoice split");
@@ -450,7 +443,7 @@ export async function previewInvoiceSplit(
       lineItemAssignments ?? null
     );
 
-    return { success: true, data: calculation };
+    return success(calculation);
   } catch (error) {
     console.error("[InvoiceSplits] Error previewing split:", error);
     return fail("Failed to calculate split preview");
@@ -496,18 +489,15 @@ export async function getInvoiceSplitSummary(invoiceId: string): Promise<
     });
 
     if (!split) {
-      return {
-        success: true,
-        data: {
-          hasSplit: false,
-          splitType: null,
-          brokerageName: invoice.client?.brokerage?.name ?? null,
-          brokerageAmount: 0,
-          agentAmount: invoice.totalCents,
-          primaryInvoiceNumber: invoice.invoiceNumber,
-          secondaryInvoiceNumber: null,
-        },
-      };
+      return success({
+        hasSplit: false,
+        splitType: null,
+        brokerageName: invoice.client?.brokerage?.name ?? null,
+        brokerageAmount: 0,
+        agentAmount: invoice.totalCents,
+        primaryInvoiceNumber: invoice.invoiceNumber,
+        secondaryInvoiceNumber: null,
+      });
     }
 
     let secondaryInvoiceNumber: string | null = null;
@@ -519,18 +509,15 @@ export async function getInvoiceSplitSummary(invoiceId: string): Promise<
       secondaryInvoiceNumber = secondaryInvoice?.invoiceNumber ?? null;
     }
 
-    return {
-      success: true,
-      data: {
-        hasSplit: true,
-        splitType: split.splitType,
-        brokerageName: invoice.client?.brokerage?.name ?? null,
-        brokerageAmount: split.brokerageAmountCents,
-        agentAmount: split.agentAmountCents,
-        primaryInvoiceNumber: invoice.invoiceNumber,
-        secondaryInvoiceNumber,
-      },
-    };
+    return success({
+      hasSplit: true,
+      splitType: split.splitType,
+      brokerageName: invoice.client?.brokerage?.name ?? null,
+      brokerageAmount: split.brokerageAmountCents,
+      agentAmount: split.agentAmountCents,
+      primaryInvoiceNumber: invoice.invoiceNumber,
+      secondaryInvoiceNumber,
+    });
   } catch (error) {
     console.error("[InvoiceSplits] Error fetching split summary:", error);
     return fail("Failed to fetch split summary");

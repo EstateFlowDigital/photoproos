@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type VoidActionResult } from "@/lib/types/action-result";
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -414,7 +414,7 @@ export async function getPaymentReceiptData(id: string) {
       stripePaymentIntentId: payment.stripePaymentIntentId,
     };
 
-    return { success: true, data: receiptData };
+    return success(receiptData);
   } catch (error) {
     console.error("Error getting receipt data:", error);
     return fail("Failed to get receipt data");
@@ -572,4 +572,118 @@ export async function issueRefund(
     console.error("Error issuing refund:", error);
     return fail("Failed to process refund");
   }
+}
+
+// ============================================================================
+// PAYMENT WITH TIPS
+// ============================================================================
+
+/**
+ * Get tip statistics for the organization
+ */
+export async function getTipStats(options?: {
+  startDate?: Date;
+  endDate?: Date;
+}) {
+  const organizationId = await getOrganizationId();
+
+  const where = {
+    organizationId,
+    status: "succeeded" as PaymentStatus,
+    tipAmountCents: { gt: 0 },
+    ...(options?.startDate && { paidAt: { gte: options.startDate } }),
+    ...(options?.endDate && { paidAt: { lte: options.endDate } }),
+  };
+
+  const [stats, byMonth] = await Promise.all([
+    prisma.payment.aggregate({
+      where,
+      _count: { id: true },
+      _sum: { tipAmountCents: true, amountCents: true },
+      _avg: { tipAmountCents: true },
+    }),
+    prisma.payment.findMany({
+      where,
+      select: {
+        tipAmountCents: true,
+        amountCents: true,
+        paidAt: true,
+      },
+    }),
+  ]);
+
+  // Group by month
+  const monthlyData: Record<string, { tipsCents: number; paymentsCents: number; count: number }> = {};
+  for (const payment of byMonth) {
+    if (!payment.paidAt) continue;
+    const monthKey = payment.paidAt.toISOString().slice(0, 7);
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { tipsCents: 0, paymentsCents: 0, count: 0 };
+    }
+    monthlyData[monthKey].tipsCents += payment.tipAmountCents;
+    monthlyData[monthKey].paymentsCents += payment.amountCents;
+    monthlyData[monthKey].count++;
+  }
+
+  const totalPaymentsCents = stats._sum.amountCents || 0;
+  const totalTipsCents = stats._sum.tipAmountCents || 0;
+  const tipPercentage = totalPaymentsCents > 0
+    ? (totalTipsCents / totalPaymentsCents) * 100
+    : 0;
+
+  return success({
+    totalTipsCents,
+    totalPaymentsWithTips: stats._count.id,
+    averageTipCents: Math.round(stats._avg.tipAmountCents || 0),
+    tipPercentage: Math.round(tipPercentage * 10) / 10,
+    byMonth: Object.entries(monthlyData)
+      .map(([month, data]) => ({ month, ...data }))
+      .sort((a, b) => a.month.localeCompare(b.month)),
+  });
+}
+
+/**
+ * Get payments that include tips
+ */
+export async function getPaymentsWithTips(options?: {
+  limit?: number;
+  offset?: number;
+}) {
+  const organizationId = await getOrganizationId();
+
+  const [payments, total] = await Promise.all([
+    prisma.payment.findMany({
+      where: {
+        organizationId,
+        tipAmountCents: { gt: 0 },
+      },
+      include: {
+        client: { select: { id: true, fullName: true, email: true } },
+        invoice: { select: { id: true, invoiceNumber: true } },
+      },
+      orderBy: { paidAt: "desc" },
+      take: options?.limit ?? 50,
+      skip: options?.offset ?? 0,
+    }),
+    prisma.payment.count({
+      where: {
+        organizationId,
+        tipAmountCents: { gt: 0 },
+      },
+    }),
+  ]);
+
+  return success({ payments, total });
+}
+
+/**
+ * Calculate suggested tip amounts for a given payment amount
+ */
+export async function calculateSuggestedTips(amountCents: number) {
+  return {
+    fifteen: Math.round(amountCents * 0.15),
+    eighteen: Math.round(amountCents * 0.18),
+    twenty: Math.round(amountCents * 0.20),
+    twentyFive: Math.round(amountCents * 0.25),
+  };
 }

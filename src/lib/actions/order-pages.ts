@@ -17,7 +17,7 @@ import {
   type Testimonial,
 } from "@/lib/validations/order-pages";
 import { requireOrganizationId } from "./auth-helper";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -72,7 +72,7 @@ export async function createOrderPage(
 
     revalidatePath("/order-pages");
 
-    return { success: true, data: { id: orderPage.id } };
+    return success({ id: orderPage.id });
   } catch (error) {
     console.error("Error creating order page:", error);
     if (error instanceof Error) {
@@ -148,7 +148,7 @@ export async function updateOrderPage(
     revalidatePath("/order-pages");
     revalidatePath(`/order-pages/${id}`);
 
-    return { success: true, data: { id: orderPage.id } };
+    return success({ id: orderPage.id });
   } catch (error) {
     console.error("Error updating order page:", error);
     if (error instanceof Error) {
@@ -305,7 +305,7 @@ export async function duplicateOrderPage(
 
     revalidatePath("/order-pages");
 
-    return { success: true, data: { id: duplicate.id } };
+    return success({ id: duplicate.id });
   } catch (error) {
     console.error("Error duplicating order page:", error);
     if (error instanceof Error) {
@@ -343,7 +343,7 @@ export async function toggleOrderPageStatus(
     revalidatePath("/order-pages");
     revalidatePath(`/order-pages/${id}`);
 
-    return { success: true, data: { isPublished: updated.isPublished } };
+    return success({ isPublished: updated.isPublished });
   } catch (error) {
     console.error("Error toggling order page status:", error);
     if (error instanceof Error) {
@@ -406,7 +406,7 @@ export async function setOrderPageBundles(
     revalidatePath("/order-pages");
     revalidatePath(`/order-pages/${validated.orderPageId}`);
 
-    return { success: true, data: { count: validated.bundleIds.length } };
+    return success({ count: validated.bundleIds.length });
   } catch (error) {
     console.error("Error setting order page bundles:", error);
     if (error instanceof Error) {
@@ -470,7 +470,7 @@ export async function setOrderPageServices(
     revalidatePath("/order-pages");
     revalidatePath(`/order-pages/${validated.orderPageId}`);
 
-    return { success: true, data: { count: validated.services.length } };
+    return success({ count: validated.services.length });
   } catch (error) {
     console.error("Error setting order page services:", error);
     if (error instanceof Error) {

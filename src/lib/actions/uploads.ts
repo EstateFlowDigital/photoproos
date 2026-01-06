@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -152,10 +152,7 @@ export async function getUploadPresignedUrls(
       expiresAt: presignedUrls[index].expiresAt.toISOString(),
     }));
 
-    return {
-      success: true,
-      data: { files: result },
-    };
+    return success({ files: result });
   } catch (error) {
     console.error("[Upload] Error generating presigned URLs:", error);
     return fail("Failed to generate upload URLs. Please try again.",);
@@ -223,13 +220,10 @@ export async function createAsset(
     // Revalidate gallery pages
     revalidatePath(`/galleries/${input.projectId}`);
 
-    return {
-      success: true,
-      data: {
-        id: asset.id,
-        originalUrl: asset.originalUrl,
-      },
-    };
+    return success({
+      id: asset.id,
+      originalUrl: asset.originalUrl,
+    });
   } catch (error) {
     console.error("[Upload] Error creating asset:", error);
     return fail("Failed to save photo. Please try again.",);
@@ -301,16 +295,13 @@ export async function createAssets(
     // Revalidate gallery pages
     revalidatePath(`/galleries/${projectId}`);
 
-    return {
-      success: true,
-      data: {
-        assets: createdAssets.map((asset) => ({
-          id: asset.id,
-          originalUrl: asset.originalUrl,
-          filename: asset.filename,
-        })),
-      },
-    };
+    return success({
+      assets: createdAssets.map((asset) => ({
+        id: asset.id,
+        originalUrl: asset.originalUrl,
+        filename: asset.filename,
+      })),
+    });
   } catch (error) {
     console.error("[Upload] Error creating assets:", error);
     return fail("Failed to save photos. Please try again.",);

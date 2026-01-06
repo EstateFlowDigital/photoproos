@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // INVOICE ANALYTICS
@@ -116,7 +116,7 @@ export async function getRevenueByMonth(options?: {
       }))
       .sort((a, b) => a.period.localeCompare(b.period));
 
-    return { success: true, data: result };
+    return success(result);
   } catch (error) {
     console.error("Error fetching revenue by month:", error);
     if (error instanceof Error) {
@@ -199,7 +199,7 @@ export async function getARAging(): Promise<ActionResult<ARAgingBucket[]>> {
       bucket.invoices.sort((a, b) => b.daysOverdue - a.daysOverdue);
     }
 
-    return { success: true, data: buckets };
+    return success(buckets);
   } catch (error) {
     console.error("Error fetching AR aging:", error);
     if (error instanceof Error) {
@@ -302,19 +302,16 @@ export async function getCollectionMetrics(options?: {
       ? Math.round((paidOnTimeCount / paidCount) * 100)
       : 0;
 
-    return {
-      success: true,
-      data: {
-        collectionRate,
-        averageDaysToPayment,
-        totalInvoiced,
-        totalCollected,
-        totalOutstanding,
-        overdueCount,
-        overdueAmount,
-        paidOnTimeRate,
-      },
-    };
+    return success({
+      collectionRate,
+      averageDaysToPayment,
+      totalInvoiced,
+      totalCollected,
+      totalOutstanding,
+      overdueCount,
+      overdueAmount,
+      paidOnTimeRate,
+    });
   } catch (error) {
     console.error("Error fetching collection metrics:", error);
     if (error instanceof Error) {
@@ -432,7 +429,7 @@ export async function getRevenueByClient(options?: {
     // Limit results
     result = result.slice(0, limit);
 
-    return { success: true, data: result };
+    return success(result);
   } catch (error) {
     console.error("Error fetching revenue by client:", error);
     if (error instanceof Error) {
@@ -510,7 +507,7 @@ export async function getInvoiceSummary(): Promise<
       }
     }
 
-    return { success: true, data: summary };
+    return success(summary);
   } catch (error) {
     console.error("Error fetching invoice summary:", error);
     if (error instanceof Error) {
@@ -604,7 +601,7 @@ export async function exportInvoicesToCSV(options?: {
       ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
     ].join("\n");
 
-    return { success: true, data: csv };
+    return success(csv);
   } catch (error) {
     console.error("Error exporting invoices to CSV:", error);
     if (error instanceof Error) {

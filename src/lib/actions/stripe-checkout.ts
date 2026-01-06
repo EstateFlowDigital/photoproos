@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
-import { fail, type ActionResult } from "@/lib/types/action-result";
+import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -220,13 +220,10 @@ export async function createGalleryCheckoutSession(
       return fail("Failed to create checkout URL");
     }
 
-    return {
-      success: true,
-      data: {
-        sessionId: session.id,
-        checkoutUrl: session.url,
-      },
-    };
+    return success({
+      sessionId: session.id,
+      checkoutUrl: session.url,
+    });
   } catch (error) {
     console.error("Error creating checkout session:", error);
     if (error instanceof Error) {
@@ -247,13 +244,10 @@ export async function verifyPayment(
     const session = await getStripe().checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status !== "paid") {
-      return {
-        success: true,
-        data: {
-          paid: false,
-          galleryId: (session.metadata?.galleryId as string) || "",
-        },
-      };
+      return success({
+        paid: false,
+        galleryId: (session.metadata?.galleryId as string) || "",
+      });
     }
 
     const galleryId = session.metadata?.galleryId;
@@ -270,7 +264,7 @@ export async function verifyPayment(
 
     // If payment already recorded, just return success
     if (existingPayment) {
-      return { success: true, data: { paid: true, galleryId } };
+      return success({ paid: true, galleryId });
     }
 
     // Record the payment (webhook usually handles this, but this is a backup)
@@ -294,7 +288,7 @@ export async function verifyPayment(
       });
     }
 
-    return { success: true, data: { paid: true, galleryId } };
+    return success({ paid: true, galleryId });
   } catch (error) {
     console.error("Error verifying payment:", error);
     if (error instanceof Error) {
@@ -425,13 +419,10 @@ export async function createInvoiceCheckoutSession(
       return fail("Failed to create checkout URL");
     }
 
-    return {
-      success: true,
-      data: {
-        sessionId: session.id,
-        checkoutUrl: session.url,
-      },
-    };
+    return success({
+      sessionId: session.id,
+      checkoutUrl: session.url,
+    });
   } catch (error) {
     console.error("Error creating invoice checkout session:", error);
     if (error instanceof Error) {
@@ -451,13 +442,10 @@ export async function verifyInvoicePayment(
     const session = await getStripe().checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status !== "paid") {
-      return {
-        success: true,
-        data: {
-          paid: false,
-          invoiceId: (session.metadata?.invoiceId as string) || "",
-        },
-      };
+      return success({
+        paid: false,
+        invoiceId: (session.metadata?.invoiceId as string) || "",
+      });
     }
 
     const invoiceId = session.metadata?.invoiceId;
@@ -474,7 +462,7 @@ export async function verifyInvoicePayment(
 
     // If payment already recorded, just return success
     if (existingPayment) {
-      return { success: true, data: { paid: true, invoiceId } };
+      return success({ paid: true, invoiceId });
     }
 
     // Get the invoice to record payment
@@ -518,7 +506,7 @@ export async function verifyInvoicePayment(
       });
     }
 
-    return { success: true, data: { paid: true, invoiceId } };
+    return success({ paid: true, invoiceId });
   } catch (error) {
     console.error("Error verifying invoice payment:", error);
     if (error instanceof Error) {
@@ -552,7 +540,7 @@ export async function checkGalleryPaymentStatus(
     // Gallery is paid if price is 0 or there's a successful payment
     const isPaid = gallery.priceCents === 0 || gallery.payments.length > 0;
 
-    return { success: true, data: { isPaid } };
+    return success({ isPaid });
   } catch (error) {
     console.error("Error checking payment status:", error);
     if (error instanceof Error) {

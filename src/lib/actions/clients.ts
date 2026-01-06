@@ -831,3 +831,236 @@ export async function getSourcePerformance(
     return fail("Failed to get source performance");
   }
 }
+
+// =============================================================================
+// Bulk Operations
+// =============================================================================
+
+/**
+ * Bulk delete multiple clients
+ */
+export async function bulkDeleteClients(
+  ids: string[],
+  force: boolean = false
+): Promise<ActionResult<{ deleted: number; skipped: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    if (ids.length === 0) {
+      return fail("No clients selected");
+    }
+
+    // Verify all clients belong to this organization
+    const clients = await prisma.client.findMany({
+      where: {
+        id: { in: ids },
+        organizationId,
+      },
+      include: {
+        _count: {
+          select: {
+            projects: true,
+            bookings: true,
+          },
+        },
+      },
+    });
+
+    if (clients.length === 0) {
+      return fail("No valid clients found");
+    }
+
+    let deleted = 0;
+    let skipped = 0;
+
+    for (const client of clients) {
+      // Check if client has related data
+      if (!force && (client._count.projects > 0 || client._count.bookings > 0)) {
+        skipped++;
+        continue;
+      }
+
+      await prisma.client.delete({
+        where: { id: client.id },
+      });
+      deleted++;
+    }
+
+    revalidatePath("/clients");
+    revalidatePath("/dashboard");
+
+    return success({ deleted, skipped });
+  } catch (error) {
+    console.error("Error bulk deleting clients:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to delete clients");
+  }
+}
+
+/**
+ * Bulk update industry for multiple clients
+ */
+export async function bulkUpdateIndustry(
+  ids: string[],
+  industry: ClientIndustry
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    if (ids.length === 0) {
+      return fail("No clients selected");
+    }
+
+    const result = await prisma.client.updateMany({
+      where: {
+        id: { in: ids },
+        organizationId,
+      },
+      data: {
+        industry,
+      },
+    });
+
+    revalidatePath("/clients");
+
+    return success({ updated: result.count });
+  } catch (error) {
+    console.error("Error bulk updating industry:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to update client industries");
+  }
+}
+
+/**
+ * Bulk assign tags to multiple clients
+ */
+export async function bulkAssignTags(
+  clientIds: string[],
+  tagIds: string[],
+  mode: "add" | "replace" = "add"
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    if (clientIds.length === 0) {
+      return fail("No clients selected");
+    }
+
+    // Verify clients belong to this organization
+    const clients = await prisma.client.findMany({
+      where: {
+        id: { in: clientIds },
+        organizationId,
+      },
+      select: { id: true },
+    });
+
+    if (clients.length === 0) {
+      return fail("No valid clients found");
+    }
+
+    // Verify tags belong to this organization
+    const tags = await prisma.clientTag.findMany({
+      where: {
+        id: { in: tagIds },
+        organizationId,
+      },
+      select: { id: true },
+    });
+
+    const validTagIds = tags.map((t) => t.id);
+    let updated = 0;
+
+    for (const client of clients) {
+      if (mode === "replace") {
+        // Replace all tags - disconnect existing, connect new
+        await prisma.client.update({
+          where: { id: client.id },
+          data: {
+            tags: {
+              set: validTagIds.map((id) => ({ id })),
+            },
+          },
+        });
+      } else {
+        // Add tags - connect new ones (duplicates are ignored)
+        await prisma.client.update({
+          where: { id: client.id },
+          data: {
+            tags: {
+              connect: validTagIds.map((id) => ({ id })),
+            },
+          },
+        });
+      }
+      updated++;
+    }
+
+    revalidatePath("/clients");
+
+    return success({ updated });
+  } catch (error) {
+    console.error("Error bulk assigning tags:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to assign tags");
+  }
+}
+
+/**
+ * Bulk remove tags from multiple clients
+ */
+export async function bulkRemoveTags(
+  clientIds: string[],
+  tagIds: string[]
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    if (clientIds.length === 0) {
+      return fail("No clients selected");
+    }
+
+    // Verify clients belong to this organization
+    const clients = await prisma.client.findMany({
+      where: {
+        id: { in: clientIds },
+        organizationId,
+      },
+      select: { id: true },
+    });
+
+    if (clients.length === 0) {
+      return fail("No valid clients found");
+    }
+
+    let updated = 0;
+
+    for (const client of clients) {
+      await prisma.client.update({
+        where: { id: client.id },
+        data: {
+          tags: {
+            disconnect: tagIds.map((id) => ({ id })),
+          },
+        },
+      });
+      updated++;
+    }
+
+    revalidatePath("/clients");
+
+    return success({ updated });
+  } catch (error) {
+    console.error("Error removing tags:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to remove tags");
+  }
+}

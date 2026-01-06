@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 export interface GalleryCollectionInput {
   name: string;
@@ -53,7 +53,7 @@ export async function getGalleryCollections(projectId: string) {
       orderBy: { sortOrder: "asc" },
     });
 
-    return { success: true, data: collections };
+    return success(collections);
   } catch (error) {
     console.error("Error fetching gallery collections:", error);
     return fail("Failed to fetch collections");
@@ -108,7 +108,7 @@ export async function createGalleryCollection(
 
     revalidatePath(`/galleries/${projectId}`);
 
-    return { success: true, data: collection };
+    return success(collection);
   } catch (error) {
     console.error("Error creating gallery collection:", error);
     return fail("Failed to create collection");
@@ -157,7 +157,7 @@ export async function updateGalleryCollection(
 
     revalidatePath(`/galleries/${existing.projectId}`);
 
-    return { success: true, data: collection };
+    return success(collection);
   } catch (error) {
     console.error("Error updating gallery collection:", error);
     return fail("Failed to update collection");

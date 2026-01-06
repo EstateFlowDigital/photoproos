@@ -1,16 +1,22 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { CreateClientModal } from "@/components/modals/create-client-modal";
 import { useToast } from "@/components/ui/toast";
-import { impersonateClientPortal } from "@/lib/actions/clients";
+import {
+  impersonateClientPortal,
+  bulkDeleteClients,
+  bulkUpdateIndustry,
+  bulkAssignTags,
+} from "@/lib/actions/clients";
 import { ClientSearch } from "./client-search";
 import { PageHeader, PageContextNav, UsersIcon, TagIcon } from "@/components/dashboard";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import type { ClientIndustry } from "@prisma/client";
 
 type SortOption = "newest" | "oldest" | "name" | "revenueHigh" | "revenueLow" | "projectsHigh" | "projectsLow";
 
@@ -62,6 +68,7 @@ interface ClientsPageClientProps {
 export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTagId }: ClientsPageClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const [isPending, startTransition] = useTransition();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
@@ -69,6 +76,11 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Bulk action UI state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showIndustryDropdown, setShowIndustryDropdown] = useState(false);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
 
   // Bulk selection helpers
   const toggleSelection = (id: string) => {
@@ -153,6 +165,59 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
     a.click();
     URL.revokeObjectURL(url);
     clearSelection();
+  };
+
+  // Bulk delete handler
+  const handleBulkDelete = () => {
+    startTransition(async () => {
+      const result = await bulkDeleteClients(Array.from(selectedIds), false);
+      if (result.success && result.data) {
+        const { deleted, skipped } = result.data;
+        if (skipped > 0) {
+          showToast(
+            `Deleted ${deleted} client${deleted !== 1 ? "s" : ""}. ${skipped} skipped (have projects/bookings).`,
+            "success"
+          );
+        } else {
+          showToast(`Deleted ${deleted} client${deleted !== 1 ? "s" : ""}`, "success");
+        }
+        router.refresh();
+      } else if (!result.success) {
+        showToast(result.error || "Failed to delete clients", "error");
+      }
+      setShowDeleteConfirm(false);
+      clearSelection();
+    });
+  };
+
+  // Bulk industry update handler
+  const handleBulkIndustryChange = (industry: ClientIndustry) => {
+    startTransition(async () => {
+      const result = await bulkUpdateIndustry(Array.from(selectedIds), industry);
+      if (result.success && result.data) {
+        showToast(`Updated ${result.data.updated} client${result.data.updated !== 1 ? "s" : ""}`, "success");
+        router.refresh();
+      } else if (!result.success) {
+        showToast(result.error || "Failed to update clients", "error");
+      }
+      setShowIndustryDropdown(false);
+      clearSelection();
+    });
+  };
+
+  // Bulk tag assignment handler
+  const handleBulkTagAssign = (tagId: string) => {
+    startTransition(async () => {
+      const result = await bulkAssignTags(Array.from(selectedIds), [tagId], "add");
+      if (result.success && result.data) {
+        showToast(`Added tag to ${result.data.updated} client${result.data.updated !== 1 ? "s" : ""}`, "success");
+        router.refresh();
+      } else if (!result.success) {
+        showToast(result.error || "Failed to assign tags", "error");
+      }
+      setShowTagDropdown(false);
+      clearSelection();
+    });
   };
 
   const rowVirtualizer = useVirtualizer({
@@ -436,20 +501,128 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
           <span className="text-sm font-medium text-foreground">
             {selectedIds.size} selected
           </span>
           <div className="h-4 w-px bg-[var(--card-border)]" />
+
+          {/* Export CSV */}
           <button
             onClick={handleExportCSV}
-            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20"
+            disabled={isPending}
+            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20 disabled:opacity-50"
           >
             Export CSV
           </button>
+
+          {/* Industry Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowIndustryDropdown(!showIndustryDropdown);
+                setShowTagDropdown(false);
+                setShowDeleteConfirm(false);
+              }}
+              disabled={isPending}
+              className="rounded-lg bg-[var(--background-secondary)] px-3 py-1.5 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50"
+            >
+              Set Industry
+            </button>
+            {showIndustryDropdown && (
+              <div className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-xl">
+                {Object.entries(industryLabels).map(([value, label]) => (
+                  <button
+                    key={value}
+                    onClick={() => handleBulkIndustryChange(value as ClientIndustry)}
+                    className="block w-full px-4 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Tag Dropdown */}
+          {allTags.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowTagDropdown(!showTagDropdown);
+                  setShowIndustryDropdown(false);
+                  setShowDeleteConfirm(false);
+                }}
+                disabled={isPending}
+                className="rounded-lg bg-[var(--background-secondary)] px-3 py-1.5 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50"
+              >
+                Add Tag
+              </button>
+              {showTagDropdown && (
+                <div className="absolute bottom-full left-0 mb-2 w-48 max-h-48 overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-xl">
+                  {allTags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => handleBulkTagAssign(tag.id)}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)]"
+                    >
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: tag.color || "#6b7280" }}
+                      />
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Delete with Confirmation */}
+          <div className="relative">
+            {showDeleteConfirm ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--error)]">Delete {selectedIds.size}?</span>
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={isPending}
+                  className="rounded-lg bg-[var(--error)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--error)]/90 disabled:opacity-50"
+                >
+                  {isPending ? "Deleting..." : "Confirm"}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isPending}
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(true);
+                  setShowIndustryDropdown(false);
+                  setShowTagDropdown(false);
+                }}
+                disabled={isPending}
+                className="rounded-lg bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/20 disabled:opacity-50"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+
+          <div className="h-4 w-px bg-[var(--card-border)]" />
           <button
-            onClick={clearSelection}
-            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground"
+            onClick={() => {
+              clearSelection();
+              setShowDeleteConfirm(false);
+              setShowIndustryDropdown(false);
+              setShowTagDropdown(false);
+            }}
+            disabled={isPending}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
           >
             Clear
           </button>
