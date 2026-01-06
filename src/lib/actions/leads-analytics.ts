@@ -78,9 +78,9 @@ export async function getLeadsAnalytics(): Promise<{
         },
         orderBy: { createdAt: "desc" },
       }),
-      prisma.chatInquiry.findMany({
-        where: { organizationId },
+      prisma.websiteChatInquiry.findMany({
         orderBy: { createdAt: "desc" },
+        take: 100, // Global marketing site inquiries, limit for performance
       }),
       prisma.bookingFormSubmission.findMany({
         where: {

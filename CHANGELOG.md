@@ -8,6 +8,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Truth Ledger Documentation System** - Verification system for documentation accuracy
+  - Created `docs/TRUTH_LEDGER.md` - Tracks verified vs documented state
+  - Documented 157 Prisma models (grouped by domain)
+  - Documented 56 enums with purposes
+  - Established frozen conventions (route naming, action naming, folder structure)
+  - Completed vertical slice verification for leads analytics feature
+  - Tracks discrepancies between documentation and reality
+
+- **Project Chat System** - Per-project messaging with internal/client visibility toggle
+  - **Database Schema**:
+    - New `MessageVisibility` enum: `internal` (team only), `client` (visible to all)
+    - New `ProjectMessage` model with sender info, content, attachments, read receipts, and threading support
+    - Added `message_sent` ActivityType and `message_received` NotificationType
+  - **Server Actions** (`project-messages.ts`):
+    - `getProjectMessages` - Fetch messages with visibility filtering and auto-mark as read
+    - `createProjectMessage` - Send team message with visibility control
+    - `createClientMessage` - Client portal message submission
+    - `updateProjectMessage` - Edit own messages
+    - `deleteProjectMessage` - Soft delete messages
+    - `toggleMessageVisibility` - Switch internal/client visibility
+    - `markMessagesAsRead` - Read receipt tracking
+    - `getUnreadMessageCount` - Badge count support
+  - **Chat Panel Component** (`chat-panel.tsx`):
+    - Real-time message display with sender avatars
+    - Internal/client visibility toggle in compose area
+    - Message editing and deletion with confirmation
+    - Timestamp formatting (relative time)
+    - Color-coded messages: blue for client-visible, orange for internal
+    - Action buttons on hover: toggle visibility, edit, delete
+    - Threading support for replies
+  - **Gallery Integration**:
+    - New "Chat" tab in gallery detail view (between Selections and Financials)
+    - Full-height chat panel with scrollable message history
+
+- **Project P&L (Profit & Loss)** - Per-project expense tracking and profit analysis
+  - **Database Schema**:
+    - New `ExpenseCategory` enum: labor, travel, equipment, software, materials, marketing, fees, insurance, other
+    - New `ProjectExpense` model with description, category, amount, vendor, paid status, and receipt tracking
+  - **Server Actions** (`project-expenses.ts`):
+    - `getProjectPL` - Calculate P&L summary (revenue from payments, expenses, net profit)
+    - `getProjectExpenses` - List all expenses for a project
+    - `createProjectExpense` / `updateProjectExpense` / `deleteProjectExpense` - CRUD operations
+    - `toggleExpensePaidStatus` - Mark expenses as paid/unpaid
+    - `getExpenseCategories` - Get category labels and icons
+  - **P&L Panel Component** (`project-pl-panel.tsx`):
+    - Summary cards: Revenue, Expenses, Net Profit with margins
+    - Expense breakdown by category with counts
+    - Expense list with edit/delete/mark paid actions
+    - Add/Edit expense modal with category, amount, vendor, notes
+    - Color-coded profit (green) vs loss (red)
+  - **Gallery Integration**:
+    - New "Financials" tab in gallery detail view (between Chat and Add-ons)
+    - Calculates revenue from project payments and expected price
+
 - **Leads Analytics Dashboard** - Comprehensive analytics for lead management
   - **Route**: `/leads/analytics` - New analytics dashboard page
   - **Summary Stats**: Total leads, conversion rate, average response time, new leads count
@@ -460,6 +514,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - CSV export with monthly breakdown, summary, and tax by client
     - PDF export with print-ready formatting
     - Export buttons component with loading states
+  - **Code Quality & Accessibility Improvements**
+    - Removed unused date variables in analytics page (optimized bundle size)
+    - Fixed memory leak in retainers CSV export (added `URL.revokeObjectURL`)
+    - Added ARIA attributes to date range filter (`role="group"`, `aria-pressed`, `aria-label`)
+    - Added proper form labels and IDs for custom date inputs with screen reader support
+    - Enhanced retainers table sort headers with `aria-sort` and descriptive `aria-label`
+    - Added `aria-pressed` to view mode toggle buttons (grid/table)
+    - Improved deposit modal accessibility: `role="dialog"`, `aria-modal`, `aria-labelledby`, `aria-describedby`
+    - Added keyboard support: Escape key closes modal, click outside to dismiss
+    - Focus management: Auto-focus on deposit input when modal opens
+    - All interactive elements have visible focus states with ring styling
 - **Client Portal Sprint 2 Enhancements** - Continued improvements to the client portal experience
   - **Selective Photo Downloads** - Download specific photos instead of entire galleries
     - Photo selection grid with checkboxes in Downloads tab

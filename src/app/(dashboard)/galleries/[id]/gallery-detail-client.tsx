@@ -30,6 +30,8 @@ import { AssignToCollectionModal } from "@/components/gallery/assign-to-collecti
 import { AnalyticsDashboard } from "@/components/gallery/analytics-dashboard";
 import { ActivityTimeline } from "@/components/gallery/activity-timeline";
 import { SelectionsReviewPanel } from "@/components/gallery/selections-review-panel";
+import { ChatPanel } from "@/components/gallery/chat-panel";
+import { ProjectPLPanel } from "@/components/gallery/project-pl-panel";
 import { PhotoComparisonModal } from "@/components/gallery/photo-comparison-modal";
 import { AddonRequestsPanel } from "@/components/gallery/addon-requests-panel";
 import { getGalleryAddonRequestsAdmin } from "@/lib/actions/gallery-addons";
@@ -223,7 +225,7 @@ const defaultSettings: GallerySettings = {
   selectionLimit: null,
 };
 
-type TabType = "photos" | "collections" | "selections" | "chat" | "activity" | "analytics" | "downloads" | "settings" | "invoices" | "addons";
+type TabType = "photos" | "collections" | "selections" | "chat" | "financials" | "activity" | "analytics" | "downloads" | "settings" | "invoices" | "addons";
 
 interface DownloadHistoryItem {
   id: string;
@@ -1188,7 +1190,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           {/* Tabs Navigation */}
           <div className="border-b border-[var(--card-border)] -mx-4 px-4 sm:mx-0 sm:px-0">
             <nav className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-px" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {(["photos", "collections", "selections", "chat", "addons", "activity", "analytics", "downloads", "settings", "invoices"] as TabType[]).map((tab) => (
+              {(["photos", "collections", "selections", "chat", "financials", "addons", "activity", "analytics", "downloads", "settings", "invoices"] as TabType[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -1706,6 +1708,18 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               selectionsSubmitted={gallery.selectionsSubmitted}
               onSettingsClick={() => setActiveTab("settings")}
             />
+          )}
+
+          {/* Chat Tab */}
+          {activeTab === "chat" && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] h-[600px]">
+              <ChatPanel galleryId={gallery.id} />
+            </div>
+          )}
+
+          {/* Financials Tab */}
+          {activeTab === "financials" && (
+            <ProjectPLPanel galleryId={gallery.id} />
           )}
 
           {/* Activity Tab */}

@@ -33,6 +33,8 @@ import {
   CameraIcon,
   LayersIcon,
   CodeIcon,
+  PackageIcon,
+  ImageIcon,
   SettingsIcon,
 } from "@/components/ui/settings-icons";
 
@@ -61,6 +63,8 @@ const ICON_MAP: Record<SettingsIconName, React.FC<{ className?: string }>> = {
   camera: CameraIcon,
   layers: LayersIcon,
   code: CodeIcon,
+  package: PackageIcon,
+  image: ImageIcon,
 };
 
 // ============================================================================

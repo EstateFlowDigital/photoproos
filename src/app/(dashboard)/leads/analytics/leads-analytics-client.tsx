@@ -61,9 +61,9 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
   const funnelMax = Math.max(funnel.new, 1);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label="Leads Analytics Dashboard">
       {/* Summary Stats */}
-      <div className="auto-grid grid-min-180 grid-gap-4">
+      <div className="auto-grid grid-min-180 grid-gap-4" role="group" aria-label="Summary statistics">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">Total Leads</p>
           <div className="mt-2 flex items-baseline gap-2">
@@ -78,13 +78,14 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                     ? "text-[var(--success)]"
                     : "text-[var(--error)]"
                 )}
+                aria-label={`${summary.monthOverMonthChange > 0 ? "Up" : "Down"} ${Math.abs(summary.monthOverMonthChange).toFixed(0)}% from last month`}
               >
                 {summary.monthOverMonthChange > 0 ? (
-                  <TrendUpIcon className="mr-0.5 h-3 w-3" />
+                  <TrendUpIcon className="mr-0.5 h-3 w-3" aria-hidden="true" />
                 ) : (
-                  <TrendDownIcon className="mr-0.5 h-3 w-3" />
+                  <TrendDownIcon className="mr-0.5 h-3 w-3" aria-hidden="true" />
                 )}
-                {Math.abs(summary.monthOverMonthChange).toFixed(0)}%
+                <span aria-hidden="true">{Math.abs(summary.monthOverMonthChange).toFixed(0)}%</span>
               </span>
             )}
           </div>
@@ -127,38 +128,38 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Conversion Funnel */}
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <h3 className="text-sm font-semibold text-foreground">Conversion Funnel</h3>
-          <div className="mt-6 space-y-4">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" role="figure" aria-labelledby="funnel-heading">
+          <h3 id="funnel-heading" className="text-sm font-semibold text-foreground">Conversion Funnel</h3>
+          <div className="mt-6 space-y-4" role="list" aria-label="Lead conversion stages">
             {/* New */}
-            <div className="space-y-1">
+            <div className="space-y-1" role="listitem" aria-label={`New leads: ${funnel.new}, 100% of total`}>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-foreground">New</span>
                 <span className="font-medium text-foreground">{funnel.new}</span>
               </div>
-              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]">
+              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={100} aria-valuemin={0} aria-valuemax={100}>
                 <div
                   className="flex h-full items-center justify-end rounded-lg bg-[var(--primary)] px-3 transition-all"
                   style={{ width: `${(funnel.new / funnelMax) * 100}%` }}
                 >
-                  <span className="text-xs font-medium text-white">100%</span>
+                  <span className="text-xs font-medium text-white" aria-hidden="true">100%</span>
                 </div>
               </div>
             </div>
 
             {/* Contacted */}
-            <div className="space-y-1">
+            <div className="space-y-1" role="listitem" aria-label={`Contacted leads: ${funnel.contacted}, ${funnel.new > 0 ? ((funnel.contacted / funnel.new) * 100).toFixed(0) : 0}% of total`}>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-foreground">Contacted</span>
                 <span className="font-medium text-foreground">{funnel.contacted}</span>
               </div>
-              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]">
+              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.contacted / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
                 <div
                   className="flex h-full items-center justify-end rounded-lg bg-[var(--warning)] px-3 transition-all"
                   style={{ width: `${(funnel.contacted / funnelMax) * 100}%` }}
                 >
                   {funnel.new > 0 && (
-                    <span className="text-xs font-medium text-white">
+                    <span className="text-xs font-medium text-white" aria-hidden="true">
                       {((funnel.contacted / funnel.new) * 100).toFixed(0)}%
                     </span>
                   )}
@@ -167,18 +168,18 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
             </div>
 
             {/* Qualified */}
-            <div className="space-y-1">
+            <div className="space-y-1" role="listitem" aria-label={`Qualified leads: ${funnel.qualified}, ${funnel.new > 0 ? ((funnel.qualified / funnel.new) * 100).toFixed(0) : 0}% of total`}>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-foreground">Qualified</span>
                 <span className="font-medium text-foreground">{funnel.qualified}</span>
               </div>
-              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]">
+              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.qualified / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
                 <div
                   className="flex h-full items-center justify-end rounded-lg bg-[var(--success)] px-3 transition-all"
                   style={{ width: `${(funnel.qualified / funnelMax) * 100}%` }}
                 >
                   {funnel.new > 0 && (
-                    <span className="text-xs font-medium text-white">
+                    <span className="text-xs font-medium text-white" aria-hidden="true">
                       {((funnel.qualified / funnel.new) * 100).toFixed(0)}%
                     </span>
                   )}
@@ -187,18 +188,18 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
             </div>
 
             {/* Converted */}
-            <div className="space-y-1">
+            <div className="space-y-1" role="listitem" aria-label={`Converted leads: ${funnel.converted}, ${funnel.new > 0 ? ((funnel.converted / funnel.new) * 100).toFixed(0) : 0}% of total`}>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-foreground">Converted</span>
                 <span className="font-medium text-foreground">{funnel.converted}</span>
               </div>
-              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]">
+              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.converted / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
                 <div
                   className="flex h-full items-center justify-end rounded-lg bg-[var(--ai)] px-3 transition-all"
                   style={{ width: `${(funnel.converted / funnelMax) * 100}%` }}
                 >
                   {funnel.new > 0 && (
-                    <span className="text-xs font-medium text-white">
+                    <span className="text-xs font-medium text-white" aria-hidden="true">
                       {((funnel.converted / funnel.new) * 100).toFixed(0)}%
                     </span>
                   )}
@@ -209,11 +210,11 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
         </div>
 
         {/* Source Attribution */}
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <h3 className="text-sm font-semibold text-foreground">Leads by Source</h3>
-          <div className="mt-6 space-y-3">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" role="figure" aria-labelledby="source-heading">
+          <h3 id="source-heading" className="text-sm font-semibold text-foreground">Leads by Source</h3>
+          <div className="mt-6 space-y-3" role="list" aria-label="Lead sources ranked by count">
             {bySource.slice(0, 6).map((source) => (
-              <div key={source.source} className="space-y-1">
+              <div key={source.source} className="space-y-1" role="listitem" aria-label={`${source.source}: ${source.count} leads, ${formatPercent(source.conversionRate)} conversion rate`}>
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span
@@ -235,7 +236,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                     </span>
                   </div>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={Math.round((source.count / maxSourceCount) * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={`${source.count} leads`}>
                   <div
                     className={cn("h-full rounded-full transition-all", SOURCE_TYPE_COLORS[source.sourceType])}
                     style={{ width: `${(source.count / maxSourceCount) * 100}%` }}
@@ -251,25 +252,25 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
       </div>
 
       {/* Monthly Trend */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" role="figure" aria-labelledby="trend-heading">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">Leads Over Time</h3>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-purple-500" />
+          <h3 id="trend-heading" className="text-sm font-semibold text-foreground">Leads Over Time</h3>
+          <div className="flex items-center gap-4 text-xs" role="list" aria-label="Chart legend">
+            <span className="flex items-center gap-1.5" role="listitem">
+              <span className="h-2 w-2 rounded-full bg-purple-500" aria-hidden="true" />
               Portfolio
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-cyan-500" />
+            <span className="flex items-center gap-1.5" role="listitem">
+              <span className="h-2 w-2 rounded-full bg-cyan-500" aria-hidden="true" />
               Chat
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-orange-500" />
+            <span className="flex items-center gap-1.5" role="listitem">
+              <span className="h-2 w-2 rounded-full bg-orange-500" aria-hidden="true" />
               Booking
             </span>
           </div>
         </div>
-        <div className="mt-6 flex items-end gap-2" style={{ height: "200px" }}>
+        <div className="mt-6 flex items-end gap-2" style={{ height: "200px" }} role="img" aria-label={`Bar chart showing leads over the last 6 months. ${monthly.map(m => `${m.monthLabel}: ${m.total} total`).join(', ')}`}>
           {monthly.map((month) => {
             const portfolioHeight = maxMonthlyTotal > 0 ? (month.portfolio / maxMonthlyTotal) * 100 : 0;
             const chatHeight = maxMonthlyTotal > 0 ? (month.chat / maxMonthlyTotal) * 100 : 0;
@@ -325,11 +326,11 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
       {/* Bottom Row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Status Distribution */}
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <h3 className="text-sm font-semibold text-foreground">Status Distribution</h3>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" role="figure" aria-labelledby="status-heading">
+          <h3 id="status-heading" className="text-sm font-semibold text-foreground">Status Distribution</h3>
           <div className="mt-6">
             {/* Visual bar */}
-            <div className="flex h-8 overflow-hidden rounded-lg">
+            <div className="flex h-8 overflow-hidden rounded-lg" role="img" aria-label={`Status distribution: ${byStatus.map(s => `${s.status} ${formatPercent(s.percentage)}`).join(', ')}`}>
               {byStatus.map((status) => (
                 <div
                   key={status.status}
@@ -339,18 +340,20 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                   )}
                   style={{ width: `${status.percentage}%` }}
                   title={`${status.status}: ${status.count} (${formatPercent(status.percentage)})`}
+                  aria-hidden="true"
                 />
               ))}
             </div>
             {/* Legend */}
-            <div className="mt-4 flex flex-wrap gap-4">
+            <div className="mt-4 flex flex-wrap gap-4" role="list" aria-label="Status legend">
               {byStatus.map((status) => (
-                <div key={status.status} className="flex items-center gap-2">
+                <div key={status.status} className="flex items-center gap-2" role="listitem">
                   <span
                     className={cn(
                       "h-3 w-3 rounded-full",
                       STATUS_COLORS[status.status as keyof typeof STATUS_COLORS] || "bg-[var(--foreground-muted)]"
                     )}
+                    aria-hidden="true"
                   />
                   <span className="text-sm text-foreground capitalize">{status.status}</span>
                   <span className="text-sm text-foreground-muted">
@@ -363,21 +366,22 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
         </div>
 
         {/* Recent Conversions */}
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" role="region" aria-labelledby="conversions-heading">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">Recent Conversions</h3>
+            <h3 id="conversions-heading" className="text-sm font-semibold text-foreground">Recent Conversions</h3>
             <Link
               href="/clients"
-              className="text-xs text-[var(--primary)] hover:underline"
+              className="text-xs text-[var(--primary)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 rounded"
             >
               View all clients
             </Link>
           </div>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-3" role="list" aria-label="Recently converted leads">
             {recentConversions.length > 0 ? (
               recentConversions.map((conversion) => (
                 <div
                   key={conversion.id}
+                  role="listitem"
                   className="flex items-center justify-between rounded-lg bg-[var(--background-secondary)] p-3"
                 >
                   <div className="min-w-0 flex-1">

@@ -175,6 +175,7 @@ export function RetainersPageClient({ retainers, filter }: RetainersPageClientPr
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Clean up to prevent memory leak
   };
 
   const handleToggleActive = async (id: string, currentlyActive: boolean) => {
@@ -223,17 +224,23 @@ export function RetainersPageClient({ retainers, filter }: RetainersPageClientPr
     }
   };
 
-  const SortHeader = ({ field, label }: { field: SortField; label: string }) => (
-    <button
-      onClick={() => handleSort(field)}
-      className="inline-flex items-center gap-1 font-medium text-foreground-muted hover:text-foreground"
-    >
-      {label}
-      {sortField === field && (
-        <span className="text-[var(--primary)]">{sortOrder === "asc" ? "↑" : "↓"}</span>
-      )}
-    </button>
-  );
+  const SortHeader = ({ field, label }: { field: SortField; label: string }) => {
+    const isSorted = sortField === field;
+    const ariaSort = isSorted ? (sortOrder === "asc" ? "ascending" : "descending") : undefined;
+    return (
+      <button
+        onClick={() => handleSort(field)}
+        aria-sort={ariaSort}
+        aria-label={`Sort by ${label}${isSorted ? `, currently ${sortOrder === "asc" ? "ascending" : "descending"}` : ""}`}
+        className="inline-flex items-center gap-1 font-medium text-foreground-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded"
+      >
+        {label}
+        {isSorted && (
+          <span className="text-[var(--primary)]" aria-hidden="true">{sortOrder === "asc" ? "↑" : "↓"}</span>
+        )}
+      </button>
+    );
+  };
 
   if (retainers.length === 0) {
     return (
@@ -273,30 +280,36 @@ export function RetainersPageClient({ retainers, filter }: RetainersPageClientPr
           </div>
           <div className="flex items-center gap-2">
             {/* View Toggle */}
-            <div className="flex rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-0.5">
+            <div
+              className="flex rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-0.5"
+              role="group"
+              aria-label="View mode"
+            >
               <button
                 onClick={() => setViewMode("grid")}
+                aria-pressed={viewMode === "grid"}
                 className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-inset",
                   viewMode === "grid"
                     ? "bg-[var(--card)] text-foreground shadow-sm"
                     : "text-foreground-muted hover:text-foreground"
                 )}
                 aria-label="Grid view"
               >
-                <GridIcon className="h-4 w-4" />
+                <GridIcon className="h-4 w-4" aria-hidden="true" />
               </button>
               <button
                 onClick={() => setViewMode("table")}
+                aria-pressed={viewMode === "table"}
                 className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-inset",
                   viewMode === "table"
                     ? "bg-[var(--card)] text-foreground shadow-sm"
                     : "text-foreground-muted hover:text-foreground"
                 )}
                 aria-label="Table view"
               >
-                <TableIcon className="h-4 w-4" />
+                <TableIcon className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
             {/* Export Button */}
@@ -645,25 +658,47 @@ export function RetainersPageClient({ retainers, filter }: RetainersPageClientPr
 
       {/* Deposit Modal */}
       {depositModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="deposit-modal-title"
+          aria-describedby="deposit-modal-description"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setDepositModal(null);
+              setDepositAmount("");
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setDepositModal(null);
+              setDepositAmount("");
+            }
+          }}
+        >
           <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h3 className="text-lg font-semibold text-foreground">Add Deposit</h3>
-            <p className="mt-1 text-sm text-foreground-muted">
+            <h3 id="deposit-modal-title" className="text-lg font-semibold text-foreground">Add Deposit</h3>
+            <p id="deposit-modal-description" className="mt-1 text-sm text-foreground-muted">
               Add funds to {depositModal.clientName}&apos;s retainer account
             </p>
             <div className="mt-4">
-              <label className="block text-sm font-medium text-foreground">Amount</label>
+              <label htmlFor="deposit-amount" className="block text-sm font-medium text-foreground">Amount</label>
               <div className="relative mt-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" aria-hidden="true">$</span>
                 <input
+                  id="deposit-amount"
                   type="number"
                   step="0.01"
                   min="0"
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
                   placeholder="0.00"
+                  aria-describedby="deposit-currency"
+                  autoFocus
                   className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] py-2 pl-8 pr-4 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                 />
+                <span id="deposit-currency" className="sr-only">Amount in US dollars</span>
               </div>
             </div>
             <div className="mt-6 flex gap-3">
@@ -672,14 +707,15 @@ export function RetainersPageClient({ retainers, filter }: RetainersPageClientPr
                   setDepositModal(null);
                   setDepositAmount("");
                 }}
-                className="flex-1 rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-secondary)]"
+                className="flex-1 rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddDeposit}
                 disabled={!depositAmount || isLoading === depositModal.id}
-                className="flex-1 rounded-lg bg-[var(--success)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--success)]/90 disabled:opacity-50"
+                aria-disabled={!depositAmount || isLoading === depositModal.id}
+                className="flex-1 rounded-lg bg-[var(--success)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--success)]/90 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--success)]"
               >
                 Add Deposit
               </button>

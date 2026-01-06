@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { ok, fail, success } from "@/lib/types/action-result";
-import type { MessageVisibility } from "@prisma/client";
+import { Prisma, type MessageVisibility } from "@prisma/client";
 
 // ============================================================================
 // TYPES
@@ -203,7 +203,9 @@ export async function createProjectMessage(
         senderAvatar,
         content: input.content,
         visibility: input.visibility,
-        attachments: input.attachments || null,
+        attachments: input.attachments
+          ? (input.attachments as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         parentId: input.parentId || null,
         readBy: [userId], // Mark as read by sender
       },

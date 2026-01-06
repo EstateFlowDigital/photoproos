@@ -69,11 +69,16 @@ export function DateRangeFilter({
   return (
     <div className="flex flex-wrap items-center gap-3">
       {/* Preset Range Buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="Date range presets"
+      >
         {PRESET_OPTIONS.map((option) => (
           <button
             key={option.value}
             onClick={() => handleRangeChange(option.value)}
+            aria-pressed={selectedRange === option.value}
             className={cn(
               "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
               selectedRange === option.value
@@ -88,23 +93,30 @@ export function DateRangeFilter({
 
       {/* Custom Date Picker */}
       {showCustom && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="group" aria-label="Custom date range">
+          <label className="sr-only" htmlFor="start-date">Start date</label>
           <input
+            id="start-date"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
+            aria-label="Start date"
             className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-1.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
           />
-          <span className="text-foreground-muted">to</span>
+          <span className="text-foreground-muted" aria-hidden="true">to</span>
+          <label className="sr-only" htmlFor="end-date">End date</label>
           <input
+            id="end-date"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
+            aria-label="End date"
             className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-1.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
           />
           <button
             onClick={handleCustomApply}
             disabled={!startDate || !endDate}
+            aria-disabled={!startDate || !endDate}
             className="rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
           >
             Apply

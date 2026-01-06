@@ -35,6 +35,18 @@ enum PaymentStatus {
   overdue
 }
 
+enum ExpenseCategory {
+  labor // Contractor/photographer pay
+  travel // Mileage, gas, parking
+  equipment // Equipment rental, purchases
+  software // Software subscriptions, editing tools
+  materials // Props, staging materials
+  marketing // Advertising, marketing costs
+  fees // Platform fees, transaction fees
+  insurance // Insurance costs
+  other // Miscellaneous expenses
+}
+
 enum BookingStatus {
   pending
   confirmed
@@ -851,6 +863,7 @@ model Organization {
   galleryAddonRequests GalleryAddonRequest[]
   mlsPresets           MlsPreset[]
   projectMessages      ProjectMessage[]
+  projectExpenses      ProjectExpense[]
 
   // Marketing Kit & Assets
   marketingKits      MarketingKit[]
@@ -1265,6 +1278,9 @@ model Project {
 
   // Project Chat
   messages ProjectMessage[]
+
+  // Project P&L
+  expenses ProjectExpense[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -7334,4 +7350,49 @@ model ProjectMessage {
   @@index([visibility])
   @@index([createdAt])
   @@index([parentId])
+}
+
+// ============================================================================
+// PROJECT EXPENSES / P&L
+// ============================================================================
+
+// Individual expense entries for a project
+model ProjectExpense {
+  id             String @id @default(cuid())
+  organizationId String
+  projectId      String
+
+  // Expense details
+  description String
+  category    ExpenseCategory @default(other)
+  amountCents Int // Amount in cents
+  currency    String          @default("USD")
+
+  // Vendor/payee info
+  vendor       String? // Who was paid
+  teamMemberId String? // If paid to team member (for contractor pay)
+
+  // Date tracking
+  expenseDate DateTime  @default(now()) // When expense occurred
+  paidDate    DateTime? // When expense was paid (null if unpaid)
+  isPaid      Boolean   @default(true)
+
+  // Receipt/documentation
+  receiptUrl String? // URL to receipt image
+  notes      String? @db.Text
+
+  // Tracking
+  createdBy String? // User ID who created this
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([category])
+  @@index([expenseDate])
 }

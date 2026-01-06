@@ -91,9 +91,6 @@ export default async function BillingAnalyticsPage({ searchParams }: PageProps) 
 
   // Get date ranges for comparison
   const now = new Date();
-  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
   const thisYearStart = new Date(now.getFullYear(), 0, 1);
 
   // Calculate comparison period (same duration before the selected range)
