@@ -62,6 +62,16 @@ interface Photo {
   width: number;
   height: number;
   exif?: ExifData;
+  collectionId?: string | null;
+}
+
+interface Collection {
+  id: string;
+  name: string;
+  description?: string | null;
+  coverAssetId?: string | null;
+  sortOrder: number;
+  photoCount: number;
 }
 
 interface Comment {
@@ -96,6 +106,7 @@ interface GalleryData {
   isPreview: boolean;
   expiresAt?: string | null;
   photos: Photo[];
+  collections?: Collection[];
 }
 
 interface GalleryClientProps {
@@ -112,6 +123,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [isTogglingFavorite, setIsTogglingFavorite] = useState<string | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isDownloadingZip, setIsDownloadingZip] = useState(false);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
 
   // Slideshow state
   const [slideshowActive, setSlideshowActive] = useState(false);
@@ -534,10 +546,18 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     });
   }, []);
 
-  // Filter photos based on favorites view
-  const displayedPhotos = showFavoritesOnly
-    ? gallery.photos.filter((p) => favoriteAssetIds.has(p.id))
-    : gallery.photos;
+  // Filter photos based on favorites view and collection filter
+  const displayedPhotos = gallery.photos.filter((p) => {
+    // Filter by favorites if enabled
+    if (showFavoritesOnly && !favoriteAssetIds.has(p.id)) {
+      return false;
+    }
+    // Filter by collection if selected
+    if (selectedCollectionId && p.collectionId !== selectedCollectionId) {
+      return false;
+    }
+    return true;
+  });
 
   const handleSelectAll = useCallback(() => {
     setSelectedPhotoIds(new Set(displayedPhotos.map((p) => p.id)));
@@ -869,10 +889,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     }
   }, [gallery.id, gallery.name, gallery.photos, isDownloadingZip]);
 
-  // Get photos for slideshow (respects favorites filter)
-  const slideshowPhotos = showFavoritesOnly
-    ? gallery.photos.filter((p) => favoriteAssetIds.has(p.id))
-    : gallery.photos;
+  // Get photos for slideshow (respects favorites and collection filters)
+  const slideshowPhotos = displayedPhotos;
 
   // Slideshow handlers
   const startSlideshow = useCallback((startIndex: number = 0) => {
@@ -1540,6 +1558,68 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
       {/* Photo Grid */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        {/* Collection Navigation */}
+        {gallery.collections && gallery.collections.length > 0 && (
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedCollectionId(null)}
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                  !selectedCollectionId && "ring-2 ring-offset-2"
+                )}
+                style={{
+                  backgroundColor: !selectedCollectionId ? primaryColor : colors.cardBg,
+                  color: !selectedCollectionId ? "#fff" : colors.textColor,
+                  ["--tw-ring-color" as string]: primaryColor,
+                  ["--tw-ring-offset-color" as string]: colors.bgColor,
+                }}
+              >
+                All Photos
+                <span
+                  className="ml-1.5 rounded-full px-1.5 py-0.5 text-xs"
+                  style={{
+                    backgroundColor: !selectedCollectionId ? "rgba(255,255,255,0.2)" : colors.borderColor,
+                  }}
+                >
+                  {gallery.photos.length}
+                </span>
+              </button>
+              {gallery.collections.map((collection) => (
+                <button
+                  key={collection.id}
+                  onClick={() => setSelectedCollectionId(collection.id)}
+                  className={cn(
+                    "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                    selectedCollectionId === collection.id && "ring-2 ring-offset-2"
+                  )}
+                  style={{
+                    backgroundColor: selectedCollectionId === collection.id ? primaryColor : colors.cardBg,
+                    color: selectedCollectionId === collection.id ? "#fff" : colors.textColor,
+                    ["--tw-ring-color" as string]: primaryColor,
+                    ["--tw-ring-offset-color" as string]: colors.bgColor,
+                  }}
+                >
+                  {collection.name}
+                  <span
+                    className="ml-1.5 rounded-full px-1.5 py-0.5 text-xs"
+                    style={{
+                      backgroundColor: selectedCollectionId === collection.id ? "rgba(255,255,255,0.2)" : colors.borderColor,
+                    }}
+                  >
+                    {collection.photoCount}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {selectedCollectionId && gallery.collections.find(c => c.id === selectedCollectionId)?.description && (
+              <p className="mt-3 text-sm" style={{ color: colors.mutedColor }}>
+                {gallery.collections.find(c => c.id === selectedCollectionId)?.description}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Empty state for gallery with no photos */}
         {gallery.photos.length === 0 && (
           <div className="text-center py-16">
@@ -1552,7 +1632,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         )}
 
         {/* Empty state for favorites */}
-        {gallery.photos.length > 0 && showFavoritesOnly && displayedPhotos.length === 0 && (
+        {gallery.photos.length > 0 && showFavoritesOnly && displayedPhotos.length === 0 && !selectedCollectionId && (
           <div className="text-center py-12">
             <HeartIcon className="mx-auto h-12 w-12 opacity-20" />
             <h3 className="mt-4 text-lg font-medium">No favorites yet</h3>
@@ -1561,6 +1641,29 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
             </p>
             <button
               onClick={() => setShowFavoritesOnly(false)}
+              className="mt-4 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+              style={{ backgroundColor: primaryColor, color: "#fff" }}
+            >
+              View All Photos
+            </button>
+          </div>
+        )}
+
+        {/* Empty state for collection with no photos */}
+        {gallery.photos.length > 0 && selectedCollectionId && displayedPhotos.length === 0 && (
+          <div className="text-center py-12">
+            <PhotoIcon className="mx-auto h-12 w-12 opacity-20" />
+            <h3 className="mt-4 text-lg font-medium">No photos in this collection</h3>
+            <p className="mt-2" style={{ color: colors.mutedColor }}>
+              {showFavoritesOnly
+                ? "No favorited photos in this collection."
+                : "This collection is empty."}
+            </p>
+            <button
+              onClick={() => {
+                setSelectedCollectionId(null);
+                if (showFavoritesOnly) setShowFavoritesOnly(false);
+              }}
               className="mt-4 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
               style={{ backgroundColor: primaryColor, color: "#fff" }}
             >

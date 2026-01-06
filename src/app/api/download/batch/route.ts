@@ -5,6 +5,7 @@ import { batchDownloadRatelimit, checkRateLimit, getClientIP } from "@/lib/ratel
 import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
 import { getClientSession } from "@/lib/actions/client-auth";
 import { applyWatermark, type WatermarkSettings } from "@/lib/watermark";
+import { PassThrough } from "stream";
 
 // Configuration
 const CONCURRENT_FETCHES = 5;
@@ -16,6 +17,11 @@ interface FetchResult {
   filename: string;
   buffer: Buffer | null;
   error?: string;
+}
+
+interface FailedAsset {
+  filename: string;
+  error: string;
 }
 
 /**
@@ -63,46 +69,15 @@ async function fetchAssetWithRetry(
 }
 
 /**
- * Process assets with concurrency limit
- */
-async function fetchAssetsWithConcurrency(
-  assets: Array<{ id: string; filename: string; originalUrl: string }>,
-  concurrency: number
-): Promise<FetchResult[]> {
-  const results: FetchResult[] = [];
-  const queue = [...assets];
-  const inProgress: Promise<void>[] = [];
-
-  while (queue.length > 0 || inProgress.length > 0) {
-    // Start new fetches up to concurrency limit
-    while (inProgress.length < concurrency && queue.length > 0) {
-      const asset = queue.shift()!;
-      const promise = fetchAssetWithRetry(asset).then(result => {
-        results.push(result);
-        const index = inProgress.indexOf(promise);
-        if (index > -1) inProgress.splice(index, 1);
-      });
-      inProgress.push(promise);
-    }
-
-    // Wait for at least one to complete
-    if (inProgress.length > 0) {
-      await Promise.race(inProgress);
-    }
-  }
-
-  return results;
-}
-
-/**
  * POST /api/download/batch
  *
- * Downloads multiple photos as a ZIP file with streaming support.
+ * Downloads multiple photos as a ZIP file with true streaming support.
  * Features:
  * - Parallel asset fetching with configurable concurrency
+ * - True streaming response (no buffering entire ZIP in memory)
  * - 30-second timeout per asset with retry logic
  * - Continues on individual failures, includes error report
- * - Streaming response for large galleries
+ * - Watermark support
  *
  * Body: { galleryId: string, assetIds: string[], deliverySlug?: string }
  */
@@ -245,20 +220,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch all assets in parallel with concurrency limit
-    const fetchResults = await fetchAssetsWithConcurrency(gallery.assets, CONCURRENT_FETCHES);
-
-    // Separate successful and failed fetches
-    const successfulFetches = fetchResults.filter(r => r.buffer !== null);
-    const failedFetches = fetchResults.filter(r => r.buffer === null);
-
-    if (successfulFetches.length === 0) {
-      return NextResponse.json(
-        { error: "Failed to fetch any photos. Please try again." },
-        { status: 500 }
-      );
-    }
-
     // Determine if watermarks should be applied
     const shouldApplyWatermark = gallery.showWatermark && gallery.organization?.watermarkEnabled;
     const watermarkSettings: WatermarkSettings | null = shouldApplyWatermark && gallery.organization
@@ -273,104 +234,149 @@ export async function POST(request: NextRequest) {
         }
       : null;
 
+    // Create a PassThrough stream to pipe archive data
+    const passThrough = new PassThrough();
+
     // Create a ZIP archive with streaming
     const archive = archiver("zip", {
       zlib: { level: 5 }, // Moderate compression for speed/size balance
     });
 
-    // Collect chunks for the response
-    const chunks: Buffer[] = [];
+    // Pipe archive to the passthrough stream
+    archive.pipe(passThrough);
 
-    archive.on("data", (chunk: Buffer) => {
-      chunks.push(chunk);
-    });
+    // Track results for logging
+    const failedAssets: FailedAsset[] = [];
+    let successCount = 0;
 
-    // Add successful files to archive (with optional watermarking)
-    for (const result of successfulFetches) {
-      if (result.buffer) {
-        let finalBuffer = result.buffer;
-        let filename = result.filename;
+    // Process assets with concurrency control
+    const processAssets = async () => {
+      const queue = [...gallery.assets];
+      const inProgress: Promise<void>[] = [];
 
-        // Apply watermark if enabled
-        if (watermarkSettings) {
-          try {
-            const watermarked = await applyWatermark(result.buffer, watermarkSettings);
-            finalBuffer = watermarked.buffer;
-            // Update extension if format changed
-            if (watermarked.format === "jpeg" && !filename.toLowerCase().endsWith(".jpg") && !filename.toLowerCase().endsWith(".jpeg")) {
-              filename = filename.replace(/\.[^.]+$/, ".jpg");
+      while (queue.length > 0 || inProgress.length > 0) {
+        // Start new fetches up to concurrency limit
+        while (inProgress.length < CONCURRENT_FETCHES && queue.length > 0) {
+          const asset = queue.shift()!;
+          const promise = (async () => {
+            const result = await fetchAssetWithRetry(asset);
+
+            if (result.buffer) {
+              let finalBuffer = result.buffer;
+              let filename = result.filename;
+
+              // Apply watermark if enabled
+              if (watermarkSettings) {
+                try {
+                  const watermarked = await applyWatermark(result.buffer, watermarkSettings);
+                  finalBuffer = watermarked.buffer;
+                  // Update extension if format changed
+                  if (watermarked.format === "jpeg" && !filename.toLowerCase().endsWith(".jpg") && !filename.toLowerCase().endsWith(".jpeg")) {
+                    filename = filename.replace(/\.[^.]+$/, ".jpg");
+                  }
+                } catch (err) {
+                  console.error(`Failed to apply watermark to ${result.filename}:`, err);
+                  // Use original buffer on watermark failure
+                }
+              }
+
+              archive.append(finalBuffer, { name: filename });
+              successCount++;
+            } else {
+              failedAssets.push({ filename: result.filename, error: result.error || "Unknown error" });
             }
-          } catch (err) {
-            console.error(`Failed to apply watermark to ${result.filename}:`, err);
-            // Use original buffer on watermark failure
-          }
+          })().finally(() => {
+            const index = inProgress.indexOf(promise);
+            if (index > -1) inProgress.splice(index, 1);
+          });
+          inProgress.push(promise);
         }
 
-        archive.append(finalBuffer, { name: filename });
+        // Wait for at least one to complete
+        if (inProgress.length > 0) {
+          await Promise.race(inProgress);
+        }
       }
-    }
 
-    // If there were errors, include an error report
-    if (failedFetches.length > 0) {
-      const errorReport = [
-        "# Download Report",
-        `# Generated: ${new Date().toISOString()}`,
-        `# Gallery: ${gallery.name}`,
-        "",
-        `# Successfully downloaded: ${successfulFetches.length} files`,
-        `# Failed to download: ${failedFetches.length} files`,
-        "",
-        "# Failed files:",
-        ...failedFetches.map(f => `- ${f.filename}: ${f.error}`),
-        "",
-        "# Please try downloading these files individually or contact support.",
-      ].join("\n");
+      // Add error report if there were failures
+      if (failedAssets.length > 0) {
+        const errorReport = [
+          "# Download Report",
+          `# Generated: ${new Date().toISOString()}`,
+          `# Gallery: ${gallery.name}`,
+          "",
+          `# Successfully downloaded: ${successCount} files`,
+          `# Failed to download: ${failedAssets.length} files`,
+          "",
+          "# Failed files:",
+          ...failedAssets.map(f => `- ${f.filename}: ${f.error}`),
+          "",
+          "# Please try downloading these files individually or contact support.",
+        ].join("\n");
 
-      archive.append(errorReport, { name: "_download_report.txt" });
-    }
+        archive.append(errorReport, { name: "_download_report.txt" });
+      }
 
-    // Finalize and wait for completion
-    await archive.finalize();
+      // Finalize the archive
+      await archive.finalize();
 
-    await new Promise<void>((resolve, reject) => {
-      archive.on("end", resolve);
-      archive.on("error", reject);
-    });
-
-    const zipBuffer = Buffer.concat(chunks);
-
-    // Record the downloads and log activity (fire and forget to not block response)
-    Promise.all([
-      prisma.project.update({
-        where: { id: gallery.id },
-        data: { downloadCount: { increment: successfulFetches.length } },
-      }),
-      prisma.activityLog.create({
-        data: {
-          organizationId: gallery.organizationId,
-          type: "file_downloaded",
-          description: `Batch download: ${successfulFetches.length}/${gallery.assets.length} photos`,
-          projectId: gallery.id,
-          metadata: {
-            assetCount: successfulFetches.length,
-            failedCount: failedFetches.length,
-            assetIds: successfulFetches.map(f => f.assetId),
+      // Record analytics (fire and forget)
+      Promise.all([
+        prisma.project.update({
+          where: { id: gallery.id },
+          data: { downloadCount: { increment: successCount } },
+        }),
+        prisma.activityLog.create({
+          data: {
+            organizationId: gallery.organizationId,
+            type: "file_downloaded",
+            description: `Batch download: ${successCount}/${gallery.assets.length} photos`,
+            projectId: gallery.id,
+            metadata: {
+              assetCount: successCount,
+              failedCount: failedAssets.length,
+            },
           },
-        },
-      }),
-    ]).catch(err => {
-      console.error("Failed to record download analytics:", err);
+        }),
+      ]).catch(err => {
+        console.error("Failed to record download analytics:", err);
+      });
+    };
+
+    // Start processing in the background (don't await)
+    processAssets().catch(err => {
+      console.error("[Batch Download] Stream processing error:", err);
+      archive.abort();
     });
 
-    // Return the ZIP file
-    return new NextResponse(zipBuffer, {
+    // Convert Node.js stream to Web ReadableStream
+    const readableStream = new ReadableStream({
+      start(controller) {
+        passThrough.on("data", (chunk: Buffer) => {
+          controller.enqueue(new Uint8Array(chunk));
+        });
+        passThrough.on("end", () => {
+          controller.close();
+        });
+        passThrough.on("error", (err) => {
+          console.error("[Batch Download] Stream error:", err);
+          controller.error(err);
+        });
+      },
+      cancel() {
+        passThrough.destroy();
+        archive.abort();
+      },
+    });
+
+    // Return streaming response
+    return new Response(readableStream, {
       status: 200,
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": `attachment; filename="${encodeURIComponent(gallery.name)}-photos.zip"`,
-        "Content-Length": zipBuffer.length.toString(),
-        "X-Download-Success-Count": String(successfulFetches.length),
-        "X-Download-Failed-Count": String(failedFetches.length),
+        "Transfer-Encoding": "chunked",
+        "Cache-Control": "no-cache",
       },
     });
   } catch (error) {

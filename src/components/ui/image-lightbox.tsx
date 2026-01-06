@@ -18,6 +18,8 @@ interface ImageLightboxProps {
   onClose: () => void;
   onDownload?: (photo: Photo) => void;
   onDelete?: (photo: Photo) => void;
+  isDownloading?: boolean;
+  isDeleting?: boolean;
 }
 
 export function ImageLightbox({
@@ -27,6 +29,8 @@ export function ImageLightbox({
   onClose,
   onDownload,
   onDelete,
+  isDownloading = false,
+  isDeleting = false,
 }: ImageLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -107,10 +111,19 @@ export function ImageLightbox({
           {onDownload && (
             <button
               onClick={() => onDownload(currentPhoto)}
-              className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-              title="Download"
+              disabled={isDownloading || isDeleting}
+              className={cn(
+                "rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20",
+                (isDownloading || isDeleting) && "opacity-50 cursor-not-allowed"
+              )}
+              title={isDownloading ? "Downloading..." : "Download"}
+              aria-label="Download photo"
             >
-              <DownloadIcon className="h-5 w-5" />
+              {isDownloading ? (
+                <span className="block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : (
+                <DownloadIcon className="h-5 w-5" />
+              )}
             </button>
           )}
           <button
@@ -127,10 +140,19 @@ export function ImageLightbox({
           {onDelete && (
             <button
               onClick={() => onDelete(currentPhoto)}
-              className="rounded-lg bg-[var(--error)]/20 p-2 text-[var(--error)] transition-colors hover:bg-[var(--error)]/30"
-              title="Delete"
+              disabled={isDeleting || isDownloading}
+              className={cn(
+                "rounded-lg bg-[var(--error)]/20 p-2 text-[var(--error)] transition-colors hover:bg-[var(--error)]/30",
+                (isDeleting || isDownloading) && "opacity-50 cursor-not-allowed"
+              )}
+              title={isDeleting ? "Deleting..." : "Delete"}
+              aria-label="Delete photo"
             >
-              <TrashIcon className="h-5 w-5" />
+              {isDeleting ? (
+                <span className="block h-5 w-5 animate-spin rounded-full border-2 border-[var(--error)] border-t-transparent" />
+              ) : (
+                <TrashIcon className="h-5 w-5" />
+              )}
             </button>
           )}
           <button

@@ -1058,6 +1058,17 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
               mediumUrl: true,
               width: true,
               height: true,
+              collectionId: true,
+            },
+          },
+          collections: {
+            orderBy: { sortOrder: "asc" },
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              coverAssetId: true,
+              sortOrder: true,
             },
           },
           payments: {
@@ -1115,6 +1126,17 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
                   mediumUrl: true,
                   width: true,
                   height: true,
+                  collectionId: true,
+                },
+              },
+              collections: {
+                orderBy: { sortOrder: "asc" },
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  coverAssetId: true,
+                  sortOrder: true,
                 },
               },
               payments: {
@@ -1197,9 +1219,20 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
           filename: asset.filename,
           width: asset.width || 4,
           height: asset.height || 3,
+          collectionId: asset.collectionId,
         };
       })
     );
+
+    // Map collections with photo counts
+    const collections = project.collections.map((collection) => ({
+      id: collection.id,
+      name: collection.name,
+      description: collection.description,
+      coverAssetId: collection.coverAssetId,
+      sortOrder: collection.sortOrder,
+      photoCount: photos.filter((p) => p.collectionId === collection.id).length,
+    }));
 
     return {
       id: project.id,
@@ -1228,6 +1261,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       expiresAt: project.expiresAt?.toISOString() || null,
       isPasswordProtected: !!project.password,
       photos,
+      collections,
     };
   } catch (error) {
     console.error("Error fetching public gallery:", error);
