@@ -13,6 +13,12 @@ export { PortalStats } from "./portal-stats";
 export { PortalTabs } from "./portal-tabs";
 export { PortalFooter } from "./portal-footer";
 
+// Enhanced Components
+export { ActionCards } from "./action-cards";
+export { Lightbox } from "./lightbox";
+export { MobileNav } from "./mobile-nav";
+export { NotificationBell } from "./notification-bell";
+
 // Tab Components
 export { PropertiesTab } from "./tabs/properties-tab";
 export { GalleriesTab } from "./tabs/galleries-tab";

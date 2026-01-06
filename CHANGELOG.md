@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Request submission with notes/instructions
     - Quote approval workflow (approve/decline)
     - View request status and history
+  - Admin requests panel (`AddonRequestsPanel`) in gallery detail view
+    - New "Add-ons" tab in gallery detail for managing requests
+    - View all pending, in-progress, and completed add-on requests
+    - Send quotes with custom pricing and descriptions
+    - Mark requests as in-progress and complete with delivery notes
+    - Photo selection preview with lightbox viewing
+    - Cancel request functionality
   - Server actions for full add-on lifecycle management:
     - Admin: create, update, delete, reorder add-ons; send quotes; mark complete
     - Client: request add-ons, approve/decline quotes, view requests

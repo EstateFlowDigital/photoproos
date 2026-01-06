@@ -31,6 +31,7 @@ import { AnalyticsDashboard } from "@/components/gallery/analytics-dashboard";
 import { ActivityTimeline } from "@/components/gallery/activity-timeline";
 import { SelectionsReviewPanel } from "@/components/gallery/selections-review-panel";
 import { PhotoComparisonModal } from "@/components/gallery/photo-comparison-modal";
+import { AddonRequestsPanel } from "@/components/gallery/addon-requests-panel";
 import {
   DndContext,
   closestCenter,
@@ -221,7 +222,7 @@ const defaultSettings: GallerySettings = {
   selectionLimit: null,
 };
 
-type TabType = "photos" | "collections" | "selections" | "activity" | "analytics" | "downloads" | "settings" | "invoices";
+type TabType = "photos" | "collections" | "selections" | "activity" | "analytics" | "downloads" | "settings" | "invoices" | "addons";
 
 interface DownloadHistoryItem {
   id: string;
@@ -1161,7 +1162,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           {/* Tabs Navigation */}
           <div className="border-b border-[var(--card-border)] -mx-4 px-4 sm:mx-0 sm:px-0">
             <nav className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-px" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {(["photos", "collections", "selections", "activity", "analytics", "downloads", "settings", "invoices"] as TabType[]).map((tab) => (
+              {(["photos", "collections", "selections", "addons", "activity", "analytics", "downloads", "settings", "invoices"] as TabType[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -2436,6 +2437,30 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Add-ons Tab */}
+          {activeTab === "addons" && (
+            <div className="space-y-6">
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Add-on Requests</h2>
+                    <p className="text-sm text-foreground-muted mt-1">
+                      Manage upsell service requests from clients
+                    </p>
+                  </div>
+                </div>
+                <AddonRequestsPanel
+                  galleryId={gallery.id}
+                  photos={photos.map((p) => ({
+                    id: p.id,
+                    thumbnailUrl: p.thumbnailUrl,
+                    filename: p.filename,
+                  }))}
+                />
+              </div>
             </div>
           )}
         </div>

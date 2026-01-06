@@ -12,6 +12,7 @@ import {
   resetSelections,
 } from "@/lib/actions/client-selections";
 import { SlideshowViewer } from "@/components/gallery/slideshow-viewer";
+import { ClientAddonPanel } from "@/components/gallery/client-addon-panel";
 import {
   HeartIcon,
   DownloadIcon,
@@ -1436,6 +1437,19 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   variant="header"
                 />
               ) : null}
+
+              {/* Add-ons Button - Always visible for upsells */}
+              {!isPreview && (
+                <ClientAddonPanel
+                  projectId={gallery.id}
+                  deliverySlug={gallery.deliverySlug || undefined}
+                  photos={gallery.photos.map((p) => ({
+                    id: p.id,
+                    thumbnailUrl: p.thumbnailUrl,
+                    filename: p.filename,
+                  }))}
+                />
+              )}
             </div>
           </div>
         </div>
