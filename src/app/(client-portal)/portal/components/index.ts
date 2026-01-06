@@ -44,3 +44,4 @@ export { GalleriesTab } from "./tabs/galleries-tab";
 export { DownloadsTab, type DownloadType } from "./tabs/downloads-tab";
 export { InvoicesTab } from "./tabs/invoices-tab";
 export { QuestionnairesTab } from "./tabs/questionnaires-tab";
+export { SettingsTab } from "./tabs/settings-tab";

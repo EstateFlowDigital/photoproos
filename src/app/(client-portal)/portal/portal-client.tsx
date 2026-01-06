@@ -21,6 +21,7 @@ import {
   DownloadsTab,
   InvoicesTab,
   QuestionnairesTab,
+  SettingsTab,
   type ClientData,
   type PropertyData,
   type GalleryData,
@@ -432,6 +433,10 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
 
           {activeTab === "questionnaires" && (
             <QuestionnairesTab questionnaires={questionnaires} />
+          )}
+
+          {activeTab === "settings" && (
+            <SettingsTab client={client} />
           )}
         </div>
       </div>

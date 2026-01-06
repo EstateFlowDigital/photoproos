@@ -8,6 +8,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Property Website Builder Enhancement** - Section-based drag-and-drop builder for property websites (like portfolio websites)
+  - **Database Schema Updates**
+    - New `PropertySectionType` enum with 25 section types across 6 categories (property, location, contact, marketing, tools, freeform)
+    - New `PropertyWebsiteSection` model for storing section configurations with drag-and-drop ordering
+    - New `PropertyWebsiteView` model for detailed view analytics (scroll depth, engagement, device info)
+    - Enhanced `PropertyWebsite` model with:
+      - Section-based layout toggle (`useSectionLayout`)
+      - Custom domain support with verification (`customDomain`, `customDomainVerified`, `customDomainSsl`)
+      - Password protection (`isPasswordProtected`, `password`)
+      - Scheduled publishing and expiration (`scheduledPublishAt`, `expiresAt`)
+      - Custom fonts and CSS (`fontHeading`, `fontBody`, `customCss`)
+      - Agent info override fields (`agentName`, `agentEmail`, `agentPhone`, etc.)
+      - Social sharing controls (`socialImage`, `enableSharing`)
+      - Interactive feature toggles (`enableMortgageCalc`, `enableScheduleTour`, `enableFavorite`)
+  - **Property Section Types** (25 total)
+    - **Property Sections** (8 types, auto-fill from property data):
+      - Property Hero (featured images with price badge)
+      - Property Details (beds, baths, sqft, year built)
+      - Property Features (feature list with icons)
+      - Property Description (rich text)
+      - Photo Gallery (with lightbox)
+      - Floor Plans (images/PDFs)
+      - Virtual Tour (Matterport/iGuide embed)
+      - Video Tour (video player)
+    - **Location Sections** (3 types):
+      - Location Map (interactive map)
+      - Neighborhood (nearby amenities)
+      - Walk Score (walk/bike/transit scores)
+    - **Contact Sections** (3 types):
+      - Agent Info (contact card)
+      - Inquiry Form (lead capture)
+      - Open House (schedule with calendar)
+    - **Marketing Sections** (3 types):
+      - Testimonials
+      - Similar Properties
+      - Price History (timeline)
+    - **Tools** (1 type):
+      - Mortgage Calculator (interactive)
+    - **Freeform Blocks** (7 types):
+      - Text Block, Image Block, Video Block, Spacer, Divider, Call to Action, Custom HTML
+  - **Server Actions** for section management:
+    - `initializePropertySections` - Create default sections based on template
+    - `createPropertySection` - Add new section with auto-fill
+    - `updatePropertySection` - Update section config and styling
+    - `deletePropertySection` - Remove section with reordering
+    - `reorderPropertySections` - Drag-and-drop reordering
+    - `togglePropertySectionVisibility` - Show/hide sections
+    - `duplicatePropertySection` - Clone sections
+    - `togglePropertyLayoutMode` - Switch between classic and section-based
+    - `refreshPropertySectionAutoFill` - Re-sync auto-fill data
+    - `trackPropertyView` - Detailed view analytics
+    - `updatePropertyViewEngagement` - Track scroll depth and actions
+    - `getPropertyViewAnalytics` - View analytics dashboard
+    - `updatePropertyWebsiteSettings` - Advanced settings
+    - `updatePropertyAgentInfo` - Agent info management
+  - **UI Components**:
+    - `SectionsTab` - Drag-and-drop section builder with visual feedback
+    - `PropertySectionConfigModal` - Section configuration dialog
+    - Section config forms for all section types (hero, details, features, description, gallery, virtual tour, location map, agent info, inquiry form, mortgage calc, text block, spacer, CTA)
+  - **Property Templates** library (`property-templates.ts`):
+    - 5 templates: Modern, Classic, Luxury, Minimal, Commercial
+    - Template-specific color schemes, fonts, and default sections
+    - Auto-fill configuration helpers
+    - Feature icons mapping
+    - Price/sqft formatting utilities
+
 - **Billing Module Overhaul** - Comprehensive billing hub with unified dashboard and improved UX
   - **Billing Overview Dashboard** (`/billing`) - Central hub for all billing operations
     - Key metrics: Outstanding balance, monthly invoiced/collected, available credits
@@ -28,6 +94,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Corrected enum values (InvoiceStatus, CreditNoteStatus, PaymentStatus)
     - Fixed Prisma query field names and includes
     - Removed invalid activity logging calls
+  - **Accessibility & Optimization** - WCAG 2.1 AA compliance improvements
+    - Added `aria-label` attributes to all interactive elements (checkboxes, buttons, links)
+    - Added `scope="col"` to table headers for screen reader navigation
+    - Added `role="tablist"` and `role="tab"` semantics to filter buttons
+    - Added `aria-live="polite"` region for dynamic result counts
+    - Added `aria-hidden="true"` to decorative icons
+    - Changed search inputs to `type="search"` for better semantics
+    - Moved status style constants outside component to prevent recreation on each render
+    - Used `useRef` for stable date reference to optimize useMemo dependency
 
 - **Client Portal Theme Toggle** - Light/dark mode support for the client portal
   - Theme toggle button in portal header with Sun/Moon icons
@@ -48,6 +123,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Pulsing animation for urgent galleries (<7 days)
   - Displays "Expired" badge for expired galleries
   - Clock icon with tooltip explaining countdown
+- **Client Portal Notification Preferences** - Settings tab for managing notification preferences
+  - New Settings tab added to client portal navigation (desktop and mobile)
+  - Toggle controls for notification categories:
+    - Essential: Gallery Delivery, New Invoices, Payment Confirmations, Questionnaire Assignments
+    - Reminders: Invoice Reminders
+    - Marketing: Optional promotional updates
+  - Quick action buttons: "Enable All" and "Essential Only"
+  - Preferences persist to localStorage per client
+  - "Saved" feedback indicator when preferences change
+  - Shows client's notification delivery email address
+  - Responsive toggle switches with accessibility support (role="switch", aria-checked)
 - **MLS Download Presets** - Hierarchical image dimension presets for MLS-compliant photo downloads
   - **Database Schema** - New `MlsPreset` and `MlsPresetOverride` models for storing presets at multiple levels
   - **System Presets** - 17 built-in presets for major MLS providers (HAR, Zillow, Realtor.com, NWMLS, Bright MLS, CRMLS) plus social media and print formats

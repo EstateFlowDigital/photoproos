@@ -76,4 +76,13 @@ export interface PortalStatsData {
   pendingQuestionnaires: number;
 }
 
-export type PortalTab = "properties" | "galleries" | "downloads" | "invoices" | "questionnaires";
+export type PortalTab = "properties" | "galleries" | "downloads" | "invoices" | "questionnaires" | "settings";
+
+export interface NotificationPreferences {
+  galleryDelivered: boolean;
+  invoiceSent: boolean;
+  invoiceReminder: boolean;
+  paymentConfirmed: boolean;
+  questionnaireAssigned: boolean;
+  marketingUpdates: boolean;
+}
