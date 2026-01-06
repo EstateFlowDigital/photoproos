@@ -519,7 +519,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
             />
           </button>
           {quickActionsOpen && (
-            <div className="absolute top-full left-1/2 mt-2 w-[min(440px,calc(100vw-16px))] -translate-x-1/2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl z-50 sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[clamp(260px,70vw,440px)]">
+            <div className="fixed inset-x-3 top-[72px] z-50 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[clamp(260px,70vw,440px)]">
               <QuickActions className="grid grid-cols-1 gap-2" actions={QUICK_ACTIONS} />
             </div>
           )}
@@ -549,7 +549,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
             />
           </button>
           {workspaceOpen && (
-            <div className="absolute top-full left-1/2 mt-2 w-[min(440px,calc(100vw-16px))] -translate-x-1/2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-visible sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[clamp(260px,70vw,440px)]">
+            <div className="fixed inset-x-3 top-[72px] z-50 rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[clamp(260px,70vw,440px)]">
               <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <p className="text-sm font-semibold text-foreground truncate">
                   {organization?.name || userDisplayName}
@@ -620,7 +620,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
 
           {/* Notifications dropdown */}
           {notificationsOpen && (
-            <div className="absolute top-full left-1/2 mt-2 w-[min(440px,calc(100vw-16px))] -translate-x-1/2 max-h-[70vh] overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[clamp(260px,70vw,440px)]">
+            <div className="fixed inset-x-3 top-[72px] z-50 max-h-[70vh] overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[clamp(260px,70vw,440px)]">
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
                 <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                 {unreadCount > 0 && (
@@ -695,7 +695,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
 
           {/* Help dropdown */}
           {helpOpen && (
-            <div className="absolute top-full left-1/2 mt-2 w-[min(320px,calc(100vw-16px))] -translate-x-1/2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-hidden sm:left-auto sm:right-0 sm:translate-x-0">
+            <div className="fixed inset-x-3 top-[72px] z-50 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[min(320px,calc(100vw-16px))]">
               <div className="py-1">
                 <a
                   href="https://docs.example.com"
