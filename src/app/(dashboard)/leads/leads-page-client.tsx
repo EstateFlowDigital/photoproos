@@ -4,8 +4,8 @@ import { useState, useTransition, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { updatePortfolioInquiryStatus, convertPortfolioInquiryToClient } from "@/lib/actions/portfolio-websites";
-import { updateChatInquiryStatus, convertChatInquiryToClient } from "@/lib/actions/chat-inquiries";
+import { updatePortfolioInquiryStatus, convertPortfolioInquiryToClient, bulkDeletePortfolioInquiries } from "@/lib/actions/portfolio-websites";
+import { updateChatInquiryStatus, convertChatInquiryToClient, bulkDeleteChatInquiries } from "@/lib/actions/chat-inquiries";
 import { convertBookingSubmissionToClient } from "@/lib/actions/booking-forms";
 import type { LeadStatus, BookingFormSubmissionStatus } from "@prisma/client";
 import { VirtualList } from "@/components/ui/virtual-list";
@@ -249,6 +249,7 @@ export function LeadsPageClient({
   // Bulk selection state
   const [selectedLeadIds, setSelectedLeadIds] = useState<Map<string, "portfolio" | "chat" | "booking">>(new Map());
   const [isBulkActionPending, setIsBulkActionPending] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [selectedInquiry, setSelectedInquiry] = useState<
     | (PortfolioInquiry & { type: "portfolio" })
@@ -429,6 +430,62 @@ export function LeadsPageClient({
     } finally {
       setIsBulkActionPending(false);
     }
+  };
+
+  // Bulk delete handler
+  const handleBulkDelete = async () => {
+    setIsBulkActionPending(true);
+    setShowDeleteConfirm(false);
+
+    // Group selected leads by type
+    const portfolioIds: string[] = [];
+    const chatIds: string[] = [];
+
+    selectedLeadIds.forEach((type, id) => {
+      if (type === "portfolio") portfolioIds.push(id);
+      else if (type === "chat") chatIds.push(id);
+      // Booking submissions are not deleted from leads
+    });
+
+    try {
+      await Promise.all([
+        portfolioIds.length > 0 && bulkDeletePortfolioInquiries(portfolioIds),
+        chatIds.length > 0 && bulkDeleteChatInquiries(chatIds),
+      ]);
+
+      router.refresh();
+      clearSelection();
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  };
+
+  // Bulk convert to client handler
+  const handleBulkConvertToClient = async () => {
+    setIsBulkActionPending(true);
+
+    const results: { success: boolean; id: string }[] = [];
+
+    for (const [id, type] of selectedLeadIds) {
+      try {
+        if (type === "portfolio") {
+          const result = await convertPortfolioInquiryToClient(id);
+          results.push({ success: result.success, id });
+        } else if (type === "chat") {
+          const result = await convertChatInquiryToClient(id);
+          results.push({ success: result.success, id });
+        } else if (type === "booking") {
+          const result = await convertBookingSubmissionToClient(id);
+          results.push({ success: result.success, id });
+        }
+      } catch {
+        results.push({ success: false, id });
+      }
+    }
+
+    router.refresh();
+    clearSelection();
+    setIsBulkActionPending(false);
   };
 
   // Stats
@@ -755,12 +812,58 @@ export function LeadsPageClient({
             <option value="closed">Closed</option>
           </select>
           <button
+            onClick={handleBulkConvertToClient}
+            disabled={isBulkActionPending}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-green-500/50 bg-green-500/10 px-3 py-1.5 text-sm font-medium text-green-500 transition-colors hover:bg-green-500/20 disabled:opacity-50"
+          >
+            <UserPlusIcon className="h-4 w-4" />
+            Convert to Client
+          </button>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isBulkActionPending}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--error)]/50 bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 disabled:opacity-50"
+          >
+            <TrashIcon className="h-4 w-4" />
+            Delete
+          </button>
+          <button
             onClick={clearSelection}
             disabled={isBulkActionPending}
             className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
           >
             Clear
           </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-2xl">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--error)]/10">
+              <TrashIcon className="h-6 w-6 text-[var(--error)]" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">Delete {selectedLeadIds.size} leads?</h3>
+            <p className="mt-2 text-sm text-foreground-muted">
+              This action cannot be undone. The selected leads will be permanently removed.
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkActionPending}
+                className="rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+              >
+                {isBulkActionPending ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1478,6 +1581,23 @@ function BoardIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M3.75 6.75h16.5M3.75 12h7.5m-7.5 5.25h16.5"
+      />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
+        clipRule="evenodd"
       />
     </svg>
   );

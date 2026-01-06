@@ -2011,3 +2011,56 @@ export async function convertPortfolioInquiryToClient(
     return fail("Failed to convert inquiry to client");
   }
 }
+
+/**
+ * Bulk delete portfolio inquiries
+ */
+export async function bulkDeletePortfolioInquiries(
+  inquiryIds: string[]
+): Promise<ActionResult<{ deleted: number }>> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Delete only inquiries that belong to this organization
+    const result = await prisma.portfolioInquiry.deleteMany({
+      where: {
+        id: { in: inquiryIds },
+        organizationId,
+      },
+    });
+
+    revalidatePath("/leads");
+    return { success: true, data: { deleted: result.count } };
+  } catch (error) {
+    console.error("Error bulk deleting portfolio inquiries:", error);
+    return fail("Failed to delete inquiries");
+  }
+}
+
+/**
+ * Bulk update status for portfolio inquiries
+ */
+export async function bulkUpdatePortfolioInquiryStatus(
+  inquiryIds: string[],
+  status: "new" | "contacted" | "qualified" | "closed"
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const result = await prisma.portfolioInquiry.updateMany({
+      where: {
+        id: { in: inquiryIds },
+        organizationId,
+      },
+      data: { status },
+    });
+
+    revalidatePath("/leads");
+    return { success: true, data: { updated: result.count } };
+  } catch (error) {
+    console.error("Error bulk updating portfolio inquiry status:", error);
+    return fail("Failed to update inquiries");
+  }
+}

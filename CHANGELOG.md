@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Gallery Collections Not Showing Photos** - Fixed optimistic update when assigning photos to collections
+  - `AssignToCollectionModal` now passes the assigned collection ID through `onSuccess` callback
+  - `gallery-detail-client.tsx` optimistically updates local photos state with new `collectionId`
+  - Photos now immediately appear in collection view without requiring page refresh
+
+- **Gallery List View Error Handling** - Added graceful error handling for galleries page
+  - Primary galleries query now has proper try/catch with clear error message
+  - Secondary queries (counts, clients, services) fail gracefully with empty defaults
+  - Error boundary receives actionable error messages for debugging
+
+- **Download Options UI Enhancement** - Improved visual clarity of resolution selection
+  - Added ring effect and "Active" badge on selected option
+  - Larger radio indicators with shadow for better visibility
+  - Thicker border (border-2) and stronger background on selection
+  - Added descriptive subtitle explaining the setting
+
+- **Proof Sheet Download Reliability** - Fixed timeout and performance issues
+  - Extended route timeout to 60 seconds for serverless environments
+  - Reduced max photos from 150 to 100 for faster generation
+  - Increased parallel processing concurrency (15 concurrent)
+  - Reduced per-image timeout (5s) for faster failure handling
+  - Added URL format validation before fetch attempts
+
+- **Paylock Bypass Setting** - Fixed download check for `downloadRequiresPayment` field
+  - Batch download route now properly selects and checks `downloadRequiresPayment`
+  - Public gallery download logic updated to allow downloads when payment not required
+  - Formula: `canDownload = allowDownloads && (isPaid || isFree || !requiresPayment)`
+
 - **Invoice Attachment Storage Cleanup** - Deleting invoice attachments now properly removes files from R2 storage
   - `deleteInvoiceAttachment` extracts file key from URL and deletes from Cloudflare R2
   - `bulkDeleteInvoiceAttachments` now also cleans up storage files after database deletion
@@ -18,6 +46,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now includes line items summary, proper formatting, and PDF attachment support
 
 ### Added
+- **Leads Module Bulk Operations** - Comprehensive bulk actions for lead management
+  - Multi-select checkboxes in both list and Kanban board views
+  - Bulk status change (New → Contacted → Qualified → Closed)
+  - Bulk convert to client - converts selected leads to clients
+  - Bulk delete with confirmation modal
+  - Floating action bar appears when leads are selected
+  - Server actions: `bulkDeletePortfolioInquiries`, `bulkDeleteChatInquiries`
+
 - **Project Automation Notifications** - Send_notification action now creates real notifications
   - Added `task_automation` notification type
   - Automation rules with "send_notification" action now create in-app notifications
@@ -43,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Route-to-Action Atlas** - Comprehensive data flow documentation
   - Created `docs/ROUTE_ACTION_ATLAS.md` - Maps routes to their complete data flow
   - Documents: Route → Page → Client → Server Actions → Prisma Models
-  - **Verified routes mapped:**
+  - **Verified routes mapped (19 total):**
     - `/dashboard` - 15+ models, parallel data fetch pattern
     - `/galleries` - Project model with virtual scrolling
     - `/invoices` - Invoice model with bulk actions
@@ -51,7 +87,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `/scheduling` - Calendar views with time-off blocks
     - `/contracts` - Multi-signer with token-based signing
     - `/leads/analytics` - Lead aggregation from 3 sources
-  - Progress: 7/192 routes mapped (4%)
+    - `/services` - Service CRUD with Stripe sync, tiered pricing
+    - `/orders` - Order management with Kanban, Stripe checkout
+    - `/projects` - Full Kanban board with automation, templates, time tracking
+    - `/properties` - 3 views (list/leads/analytics), section-based layouts
+    - `/portfolios` - Portfolio websites with sections, custom domains
+    - `/questionnaires` - Template + assigned questionnaires
+    - `/g/[slug]` - Public gallery with password, Stripe payments, selections
+    - `/p/[slug]` - Property website with 5 templates, lead capture
+    - `/book/[slug]` - Public booking form with file upload
+    - `/pay/[id]` - Invoice payment with Stripe Connect
+    - `/sign/[token]` - Contract signing with audit log
+    - `/portal` - Client portal with downloads, invoices, questionnaires
+  - Progress: 26/192 routes mapped (14%)
+  - **New in this session:**
+    - `/analytics` - Business analytics with LTV metrics, revenue forecast
+    - `/inbox` - Unified inbox with Gmail/Outlook sync
+    - `/galleries/[id]` - Gallery detail with multi-tab UI
+    - `/invoices/[id]` - Invoice detail with split configuration
+    - `/clients/[id]` - Client detail with activity timeline
+    - `/brokerages` - Brokerage management with agent counts
+    - `/api/webhooks/stripe` - 5 event handlers
+    - `/api/webhooks/clerk` - User sync events
   - Cross-references TRUTH_LEDGER.md for verification status
 
 - **Outlook Email Disconnect** - Proper Outlook account disconnection for unified inbox

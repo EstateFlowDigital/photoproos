@@ -233,3 +233,52 @@ export async function getChatInquiryStats() {
     qualified: qualifiedCount,
   };
 }
+
+/**
+ * Bulk delete chat inquiries
+ */
+export async function bulkDeleteChatInquiries(
+  inquiryIds: string[]
+): Promise<{ success: boolean; data?: { deleted: number }; error?: string }> {
+  try {
+    await requireAuth();
+
+    // Delete inquiries (chat inquiries are global, not org-specific)
+    const result = await prisma.websiteChatInquiry.deleteMany({
+      where: {
+        id: { in: inquiryIds },
+      },
+    });
+
+    revalidatePath("/leads");
+    return { success: true, data: { deleted: result.count } };
+  } catch (error) {
+    console.error("Error bulk deleting chat inquiries:", error);
+    return fail("Failed to delete inquiries");
+  }
+}
+
+/**
+ * Bulk update status for chat inquiries
+ */
+export async function bulkUpdateChatInquiryStatus(
+  inquiryIds: string[],
+  status: "new" | "contacted" | "qualified" | "closed"
+): Promise<{ success: boolean; data?: { updated: number }; error?: string }> {
+  try {
+    await requireAuth();
+
+    const result = await prisma.websiteChatInquiry.updateMany({
+      where: {
+        id: { in: inquiryIds },
+      },
+      data: { status },
+    });
+
+    revalidatePath("/leads");
+    return { success: true, data: { updated: result.count } };
+  } catch (error) {
+    console.error("Error bulk updating chat inquiry status:", error);
+    return fail("Failed to update inquiries");
+  }
+}
