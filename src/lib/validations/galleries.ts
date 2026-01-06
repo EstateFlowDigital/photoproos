@@ -91,6 +91,16 @@ export const gallerySchema = z.object({
   allowFavorites: z.boolean().default(true),
   allowComments: z.boolean().default(false),
   sendNotifications: z.boolean().default(true),
+  // Selection settings
+  allowSelections: z.boolean().default(false),
+  selectionLimit: z
+    .number()
+    .int()
+    .min(1, "Selection limit must be at least 1")
+    .max(1000, "Selection limit cannot exceed 1000")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
 });
 
 // Schema for creating a new gallery

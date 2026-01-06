@@ -29,6 +29,7 @@ import { SmartCollectionsPanel } from "@/components/gallery/smart-collections-pa
 import { AssignToCollectionModal } from "@/components/gallery/assign-to-collection-modal";
 import { AnalyticsDashboard } from "@/components/gallery/analytics-dashboard";
 import { ActivityTimeline } from "@/components/gallery/activity-timeline";
+import { SelectionsReviewPanel } from "@/components/gallery/selections-review-panel";
 import {
   DndContext,
   closestCenter,
@@ -158,6 +159,8 @@ interface GallerySettings {
   password: string | null;
   allowFavorites: boolean;
   allowComments: boolean;
+  allowSelections: boolean;
+  selectionLimit: number | null;
 }
 
 interface InvoiceItem {
@@ -213,6 +216,8 @@ const defaultSettings: GallerySettings = {
   password: null,
   allowFavorites: true,
   allowComments: false,
+  allowSelections: false,
+  selectionLimit: null,
 };
 
 type TabType = "photos" | "collections" | "selections" | "activity" | "analytics" | "downloads" | "settings" | "invoices";
@@ -911,9 +916,12 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
     try {
       // Map settings keys to updateGallery parameters
-      const updateData: Record<string, boolean | string> = {};
+      const updateData: Record<string, boolean | string | number | null> = {};
       if (key === "allowDownloads") updateData.allowDownloads = newValue as boolean;
       if (key === "watermarkEnabled") updateData.showWatermark = newValue as boolean;
+      if (key === "allowFavorites") updateData.allowFavorites = newValue as boolean;
+      if (key === "allowComments") updateData.allowComments = newValue as boolean;
+      if (key === "allowSelections") updateData.allowSelections = newValue as boolean;
 
       const result = await updateGallery({
         id: gallery.id,
@@ -1648,63 +1656,13 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
           {/* Selections Tab */}
           {activeTab === "selections" && (
-            <div className="space-y-6">
-              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-lg font-semibold text-foreground">Client Selections</h2>
-                    <p className="text-sm text-foreground-muted">
-                      {gallery.selectionsSubmitted
-                        ? "Client has submitted their photo selections"
-                        : gallery.allowSelections
-                        ? "Waiting for client to submit their selections"
-                        : "Photo selections are disabled for this gallery"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {gallery.selectionsSubmitted && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1.5 text-xs font-medium text-green-400">
-                        <CheckIcon className="h-3.5 w-3.5" />
-                        Submitted
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Selection settings summary */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-                    <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Selection Limit</p>
-                    <p className="mt-1 text-lg font-bold text-foreground">
-                      {gallery.selectionLimit ?? "Unlimited"}
-                    </p>
-                  </div>
-                  <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-                    <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Status</p>
-                    <p className="mt-1 text-lg font-bold text-foreground">
-                      {gallery.allowSelections ? "Enabled" : "Disabled"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Info about selections */}
-                <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] p-4">
-                  <p className="text-sm text-foreground-muted">
-                    Client selections allow your clients to choose their favorite photos for further editing, printing, or albums.
-                    When enabled, clients can select photos from the gallery and submit their choices for your review.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setActiveTab("settings")}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-                    >
-                      <SettingsIcon className="h-3.5 w-3.5" />
-                      Manage Selection Settings
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <SelectionsReviewPanel
+              galleryId={gallery.id}
+              allowSelections={gallery.allowSelections}
+              selectionLimit={gallery.selectionLimit}
+              selectionsSubmitted={gallery.selectionsSubmitted}
+              onSettingsClick={() => setActiveTab("settings")}
+            />
           )}
 
           {/* Activity Tab */}
@@ -2091,6 +2049,71 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     onToggle={() => handleToggleSetting("allowComments")}
                     isLoading={isSavingSetting === "allowComments"}
                   />
+                </div>
+              </div>
+
+              {/* Client Selections Settings */}
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <h2 className="text-lg font-semibold text-foreground mb-4">Client Selections</h2>
+                <p className="text-sm text-foreground-muted mb-4">
+                  Allow clients to select and submit their favorite photos for your review.
+                </p>
+                <div className="space-y-4">
+                  <SettingToggle
+                    label="Enable Selections"
+                    description="Let clients select photos for editing, printing, or albums"
+                    enabled={settings.allowSelections}
+                    onToggle={() => handleToggleSetting("allowSelections")}
+                    isLoading={isSavingSetting === "allowSelections"}
+                  />
+
+                  {settings.allowSelections && (
+                    <div className="ml-8 pt-3 border-t border-[var(--card-border)]">
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        Selection Limit
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={settings.selectionLimit ?? ""}
+                          onChange={(e) => {
+                            const value = e.target.value === "" ? null : parseInt(e.target.value, 10);
+                            setSettings({ ...settings, selectionLimit: value });
+                          }}
+                          placeholder="Unlimited"
+                          className="w-32 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                        />
+                        <button
+                          onClick={async () => {
+                            setIsSavingSetting("selectionLimit");
+                            try {
+                              const result = await updateGallery({
+                                id: gallery.id,
+                                selectionLimit: settings.selectionLimit,
+                              });
+                              if (result.success) {
+                                showToast("Selection limit saved", "success");
+                              } else {
+                                showToast(result.error || "Failed to save", "error");
+                              }
+                            } catch {
+                              showToast("An error occurred", "error");
+                            } finally {
+                              setIsSavingSetting(null);
+                            }
+                          }}
+                          disabled={isSavingSetting === "selectionLimit"}
+                          className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                        >
+                          {isSavingSetting === "selectionLimit" ? "Saving..." : "Save"}
+                        </button>
+                      </div>
+                      <p className="mt-2 text-xs text-foreground-muted">
+                        Maximum number of photos a client can select. Leave empty for unlimited.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

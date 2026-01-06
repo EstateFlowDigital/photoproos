@@ -201,6 +201,8 @@ export async function updateGallery(
         ...(updateData.downloadRequiresPayment !== undefined && { downloadRequiresPayment: updateData.downloadRequiresPayment }),
         ...(updateData.allowFavorites !== undefined && { allowFavorites: updateData.allowFavorites }),
         ...(updateData.allowComments !== undefined && { allowComments: updateData.allowComments }),
+        ...(updateData.allowSelections !== undefined && { allowSelections: updateData.allowSelections }),
+        ...(updateData.selectionLimit !== undefined && { selectionLimit: updateData.selectionLimit }),
       },
     });
 

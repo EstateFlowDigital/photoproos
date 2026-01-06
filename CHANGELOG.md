@@ -81,6 +81,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Smart deduplication prevents assigning photos to multiple collections in batch
   - Located in Collections tab with dedicated panel UI
 
+- **Client Proofing Workflow** - Complete client selection and review system
+  - Clients can select photos for editing, printing, or albums
+  - Configurable selection limits (e.g., "Choose 20 of 100 photos")
+  - Client notes per selected photo
+  - Submit selections for photographer review
+  - Admin review panel showing all client selections
+  - View selections by client or as combined grid
+  - Approve or reject submitted selections
+  - Export selections to CSV
+  - Toggle in gallery settings to enable/disable selections
+  - Selection limit input with unlimited option
+  - Real-time status tracking (in_progress, submitted, approved, rejected)
+
 - **Questionnaires Search & Filters** - Enhanced questionnaires page with search and filtering
   - Search by template name, description, industry, client name, or email
   - Status filter pills (All, Pending, In Progress, Completed, Approved) with counts

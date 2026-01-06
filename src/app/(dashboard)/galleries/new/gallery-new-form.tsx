@@ -165,6 +165,8 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         allowFavorites,
         allowComments,
         sendNotifications,
+        allowSelections: false,
+        selectionLimit: null,
         services: selectedService ? [{ serviceId: selectedService.id, isPrimary: true }] : [],
       });
 

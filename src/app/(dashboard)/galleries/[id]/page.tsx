@@ -79,6 +79,8 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
       password: gallery.password || null,
       allowFavorites: gallery.allowFavorites ?? true,
       allowComments: gallery.allowComments ?? false,
+      allowSelections: gallery.allowSelections ?? false,
+      selectionLimit: gallery.selectionLimit ?? null,
     },
     propertyWebsite: gallery.propertyWebsite,
     // Comments from the database
