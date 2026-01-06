@@ -294,7 +294,7 @@ export async function getGalleryAddonRequestsAdmin(projectId: string) {
         client: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
             email: true,
           },
         },
@@ -351,7 +351,7 @@ export async function getAllAddonRequests(status?: GalleryAddonRequestStatus) {
         client: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
             email: true,
           },
         },

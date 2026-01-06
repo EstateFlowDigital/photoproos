@@ -726,7 +726,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     try {
       const result = await bulkToggleWatermark(gallery.id, photoIds, exclude);
 
-      if (result.success && result.data) {
+      if (result.success) {
         showToast(
           exclude
             ? `${result.data.updated} photo${result.data.updated !== 1 ? "s" : ""} excluded from watermark`
@@ -737,7 +737,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         setIsSelectMode(false);
         router.refresh();
       } else {
-        showToast(result.error || "Failed to update watermark settings", "error");
+        showToast(result.error, "error");
       }
     } catch {
       showToast("Failed to update watermark settings", "error");
@@ -877,7 +877,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     setIsExportingDownloads(true);
     try {
       const result = await exportDownloadHistory(gallery.id);
-      if (result.success && result.data) {
+      if (result.success) {
         const blob = new Blob([result.data], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -889,7 +889,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         URL.revokeObjectURL(url);
         showToast("Download history exported successfully", "success");
       } else {
-        showToast(result.error || "Failed to export download history", "error");
+        showToast(result.error, "error");
       }
     } catch (error) {
       console.error("Failed to export downloads:", error);

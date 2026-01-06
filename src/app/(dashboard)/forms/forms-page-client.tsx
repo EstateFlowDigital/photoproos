@@ -96,14 +96,14 @@ export function FormsPageClient({ forms }: FormsPageClientProps) {
         description: newFormDescription.trim() || undefined,
       });
 
-      if (result.success && result.form) {
+      if (result.success) {
         showToast("Form created", "success");
         setShowCreateModal(false);
         setNewFormName("");
         setNewFormDescription("");
-        router.push(`/forms/${result.form.id}`);
+        router.push(`/forms/${result.data.id}`);
       } else {
-        showToast(result.error || "Failed to create form", "error");
+        showToast(result.error, "error");
       }
     });
   }

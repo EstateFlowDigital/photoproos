@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gallery Add-on Upsells** - Enable clients to request additional services directly from their gallery
+  - New database models: `GalleryAddon` (catalog) and `GalleryAddonRequest` (requests)
+  - New enums: `GalleryAddonCategory` (enhancement, virtual_staging, marketing, video, print, editing, removal, other) and `GalleryAddonRequestStatus`
+  - Admin UI: Settings page (`/settings/gallery-addons`) to configure add-on catalog
+    - Create/edit/delete add-ons with drag-to-reorder
+    - Category and industry filtering (e.g., virtual staging for real estate)
+    - Pricing options: fixed price, per-photo, or request quote
+    - Photo selection requirements with optional limits
+    - Turnaround time estimates
+  - Client-facing panel component (`ClientAddonPanel`) for gallery delivery pages
+    - Browse available add-ons filtered by client's industry
+    - Photo selection for add-ons that require it
+    - Request submission with notes/instructions
+    - Quote approval workflow (approve/decline)
+    - View request status and history
+  - Server actions for full add-on lifecycle management:
+    - Admin: create, update, delete, reorder add-ons; send quotes; mark complete
+    - Client: request add-ons, approve/decline quotes, view requests
+  - Industry-specific defaults helper for common photography add-ons
+  - Integrated into settings sidebar navigation under Workflow section
+
 - **Billing Module** - New unified billing section consolidating all financial features
   - **Billing Overview** (`/billing`) - Dashboard with quick stats, recent payments, and quick actions
   - **Estimates** (`/billing/estimates`) - Create and manage client estimates with status workflow (draft → sent → approved/rejected → converted to invoice)

@@ -5,7 +5,7 @@ import { FormsPageClient } from "./forms-page-client";
 
 export default async function FormsPage() {
   const result = await getForms();
-  const forms = result.success ? result.forms ?? [] : [];
+  const forms = result.success ? result.data : [];
 
   return <FormsPageClient forms={forms} />;
 }
