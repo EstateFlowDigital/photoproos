@@ -6920,6 +6920,15246 @@ The following list is the full route inventory. Each module section below explai
 - Validation schemas:
   - `@/lib/validations/portfolio-sections`
 
+
+
+## Form UI Spec (Schema-Derived)
+- Field details are derived from Zod schemas and nearest label/placeholder text in related components (BFS depth 4).
+- If a label is not found, a humanized field name is used.
+
+### /portal/questionnaires/[id]
+- Schemas from `@/lib/validations/questionnaires`:
+  - `acceptAgreementSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreementId`
+      - Label: Agreement Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `signatureData`
+      - Label: Signature Data
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `signatureType`
+      - Label: Signature Type
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+  - `addQuestionnaireAgreementSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreement`
+      - Label: Agreement
+      - Type: unknown (input: text)
+      - Required: required
+  - `addQuestionnaireFieldSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `approveQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+  - `assignQuestionnaireSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `personalNote`
+      - Label: Personal Note
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+  - `clientQuestionnaireFiltersSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueBefore`
+      - Label: Due Before
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `dueAfter`
+      - Label: Due After
+      - Type: string (input: text)
+      - Required: optional
+  - `deleteClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `questionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `agreementType`
+      - Label: Agreement Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Title is required"), max(200)
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Agreement content is required")
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `requiresSignature`
+      - Label: Requires Signature
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `questionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `section`
+      - Label: Section
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `sectionOrder`
+      - Label: Section Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `questionnaireResponseSchema`
+    - Field: `fieldLabel`
+      - Label: Field Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `fieldType`
+      - Label: Field Type
+      - Type: string (input: text)
+      - Required: required
+    - Field: `value`
+      - Label: Value
+      - Type: unknown (input: text)
+      - Required: required
+  - `questionnaireTemplateFiltersSchema`
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isSystemTemplate`
+      - Label: Is System Template
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `questionnaireTemplateSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Template name is required"), max(100, "Template name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `reorderQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `saveQuestionnaireProgressSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `submitQuestionnaireResponsesSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `updateClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+  - `updateQuestionnaireAgreementsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreements`
+      - Label: Agreements
+      - Type: array (input: multi)
+      - Required: required
+  - `updateQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /booking
+- Schemas from `@/lib/validations/booking-forms`:
+  - `addBookingFormFieldSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `bookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `industries`
+      - Label: Industries
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `bookingFormFiltersSchema`
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bookingFormSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Form name is required"), max(100, "Form name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `headline`
+      - Label: Headline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200, "Headline must be less than 200 characters")
+    - Field: `subheadline`
+      - Label: Subheadline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Subheadline must be less than 500 characters")
+    - Field: `heroImageUrl`
+      - Label: Hero Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `logoOverrideUrl`
+      - Label: Logo Override Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `primaryColor`
+      - Label: Primary Color
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    - Field: `requireApproval`
+      - Label: Require Approval
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `confirmationEmail`
+      - Label: Confirmation Email
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `bookingFormServicesSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: 0
+      - Rules: cuid(), min(0)
+  - `convertSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingData`
+      - Label: Booking Data
+      - Type: object (input: group)
+      - Required: optional
+      - Rules: cuid(), cuid()
+  - `deleteBookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `rejectSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `rejectionNote`
+      - Label: Rejection Note
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(500)
+  - `reorderBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `submissionFiltersSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `startDate`
+      - Label: Start Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `endDate`
+      - Label: End Date
+      - Type: string (input: text)
+      - Required: optional
+  - `submitBookingFormSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `data`
+      - Label: Data
+      - Type: record (input: json)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+  - `updateBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /galleries
+- Schemas from `@/lib/validations/galleries`:
+  - `archiveGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `assetSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `filename`
+      - Label: Filename
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(255)
+    - Field: `originalUrl`
+      - Label: Original Url
+      - Type: string (input: text)
+      - Required: required
+      - Rules: url()
+    - Field: `thumbnailUrl`
+      - Label: Thumbnail Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mediumUrl`
+      - Label: Medium Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `watermarkedUrl`
+      - Label: Watermarked Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mimeType`
+      - Label: Mime Type
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(100)
+    - Field: `sizeBytes`
+      - Label: Size Bytes
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0)
+    - Field: `width`
+      - Label: Width
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `exifData`
+      - Label: Exif Data
+      - Type: record (input: json)
+      - Required: optional (nullable)
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+  - `bulkArchiveGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkDeleteGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `deleteAssetSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `deleteFromStorage`
+      - Label: Delete From Storage
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deliverGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sendEmail`
+      - Label: Send Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `message`
+      - Label: Message
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(2000)
+  - `duplicateGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(200)
+    - Field: `includePhotos`
+      - Label: Include Photos
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `galleryFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: date (input: date)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: date (input: date)
+      - Required: optional
+  - `gallerySchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Gallery name is required"), max(200, "Gallery name must be less than 200 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000, "Description must be less than 2000 characters")
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `services`
+      - Label: Services
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: false
+      - Rules: cuid()
+    - Field: `locationId`
+      - Label: Location Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "draft"
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: 0
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `currency`
+      - Label: Currency
+      - Type: string (input: text)
+      - Required: required
+      - Default: "USD"
+      - Rules: length(3)
+    - Field: `coverImageUrl`
+      - Label: Cover Image Url
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: url("Invalid cover image URL")
+    - Field: `password`
+      - Label: Password
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Password must be less than 100 characters")
+    - Field: `expiresAt`
+      - Label: Expires At
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `allowDownloads`
+      - Label: Allow Downloads
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showWatermark`
+      - Label: Show Watermark
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `downloadResolution`
+      - Label: Download Resolution
+      - Type: enum (input: select)
+      - Required: optional
+      - Default: "both"
+    - Field: `downloadRequiresPayment`
+      - Label: Download Requires Payment
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowFavorites`
+      - Label: Allow Favorites
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowComments`
+      - Label: Allow Comments
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sendNotifications`
+      - Label: Send Notifications
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowSelections`
+      - Label: Allow Selections
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `selectionLimit`
+      - Label: Selection Limit
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: int(), min(1, "Selection limit must be at least 1"), max(1000, "Selection limit cannot exceed 1000")
+  - `reorderAssetsSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetIds`
+      - Label: Asset Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+
+### /galleries/[id]
+- Schemas from `@/lib/validations/galleries`:
+  - `archiveGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `assetSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `filename`
+      - Label: Filename
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(255)
+    - Field: `originalUrl`
+      - Label: Original Url
+      - Type: string (input: text)
+      - Required: required
+      - Rules: url()
+    - Field: `thumbnailUrl`
+      - Label: Thumbnail Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mediumUrl`
+      - Label: Medium Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `watermarkedUrl`
+      - Label: Watermarked Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mimeType`
+      - Label: Mime Type
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(100)
+    - Field: `sizeBytes`
+      - Label: Size Bytes
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0)
+    - Field: `width`
+      - Label: Width
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `exifData`
+      - Label: Exif Data
+      - Type: record (input: json)
+      - Required: optional (nullable)
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+  - `bulkArchiveGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkDeleteGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `deleteAssetSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `deleteFromStorage`
+      - Label: Delete From Storage
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deliverGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sendEmail`
+      - Label: Send Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `message`
+      - Label: Message
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(2000)
+  - `duplicateGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(200)
+    - Field: `includePhotos`
+      - Label: Include Photos
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `galleryFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: date (input: date)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: date (input: date)
+      - Required: optional
+  - `gallerySchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Gallery name is required"), max(200, "Gallery name must be less than 200 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000, "Description must be less than 2000 characters")
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `services`
+      - Label: Services
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: false
+      - Rules: cuid()
+    - Field: `locationId`
+      - Label: Location Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "draft"
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: 0
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `currency`
+      - Label: Currency
+      - Type: string (input: text)
+      - Required: required
+      - Default: "USD"
+      - Rules: length(3)
+    - Field: `coverImageUrl`
+      - Label: Cover Image Url
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: url("Invalid cover image URL")
+    - Field: `password`
+      - Label: Password
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Password must be less than 100 characters")
+    - Field: `expiresAt`
+      - Label: Expires At
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `allowDownloads`
+      - Label: Allow Downloads
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showWatermark`
+      - Label: Show Watermark
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `downloadResolution`
+      - Label: Download Resolution
+      - Type: enum (input: select)
+      - Required: optional
+      - Default: "both"
+    - Field: `downloadRequiresPayment`
+      - Label: Download Requires Payment
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowFavorites`
+      - Label: Allow Favorites
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowComments`
+      - Label: Allow Comments
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sendNotifications`
+      - Label: Send Notifications
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowSelections`
+      - Label: Allow Selections
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `selectionLimit`
+      - Label: Selection Limit
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: int(), min(1, "Selection limit must be at least 1"), max(1000, "Selection limit cannot exceed 1000")
+  - `reorderAssetsSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetIds`
+      - Label: Asset Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+
+### /galleries/[id]/edit
+- Schemas from `@/lib/validations/galleries`:
+  - `archiveGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `assetSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `filename`
+      - Label: Filename
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(255)
+    - Field: `originalUrl`
+      - Label: Original Url
+      - Type: string (input: text)
+      - Required: required
+      - Rules: url()
+    - Field: `thumbnailUrl`
+      - Label: Thumbnail Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mediumUrl`
+      - Label: Medium Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `watermarkedUrl`
+      - Label: Watermarked Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mimeType`
+      - Label: Mime Type
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(100)
+    - Field: `sizeBytes`
+      - Label: Size Bytes
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0)
+    - Field: `width`
+      - Label: Width
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `exifData`
+      - Label: Exif Data
+      - Type: record (input: json)
+      - Required: optional (nullable)
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+  - `bulkArchiveGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkDeleteGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `deleteAssetSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `deleteFromStorage`
+      - Label: Delete From Storage
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deliverGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sendEmail`
+      - Label: Send Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `message`
+      - Label: Message
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(2000)
+  - `duplicateGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(200)
+    - Field: `includePhotos`
+      - Label: Include Photos
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `galleryFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: date (input: date)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: date (input: date)
+      - Required: optional
+  - `gallerySchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Gallery name is required"), max(200, "Gallery name must be less than 200 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000, "Description must be less than 2000 characters")
+    - Field: `clientId`
+      - Label: Client
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `services`
+      - Label: Services
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: false
+      - Rules: cuid()
+    - Field: `locationId`
+      - Label: Location Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "draft"
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: 0
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `currency`
+      - Label: Currency
+      - Type: string (input: text)
+      - Required: required
+      - Default: "USD"
+      - Rules: length(3)
+    - Field: `coverImageUrl`
+      - Label: Cover Image Url
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: url("Invalid cover image URL")
+    - Field: `password`
+      - Label: Password
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Password must be less than 100 characters")
+    - Field: `expiresAt`
+      - Label: Expires At
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `allowDownloads`
+      - Label: Allow Downloads
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showWatermark`
+      - Label: Show Watermark
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `downloadResolution`
+      - Label: Download Resolution
+      - Type: enum (input: select)
+      - Required: optional
+      - Default: "both"
+    - Field: `downloadRequiresPayment`
+      - Label: Download Requires Payment
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowFavorites`
+      - Label: Allow Favorites
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowComments`
+      - Label: Allow Comments
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sendNotifications`
+      - Label: Send Notifications
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowSelections`
+      - Label: Allow Selections
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `selectionLimit`
+      - Label: Selection Limit
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: int(), min(1, "Selection limit must be at least 1"), max(1000, "Selection limit cannot exceed 1000")
+  - `reorderAssetsSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetIds`
+      - Label: Asset Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+
+### /galleries/new
+- Schemas from `@/lib/validations/galleries`:
+  - `archiveGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `assetSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `filename`
+      - Label: Filename
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(255)
+    - Field: `originalUrl`
+      - Label: Original Url
+      - Type: string (input: text)
+      - Required: required
+      - Rules: url()
+    - Field: `thumbnailUrl`
+      - Label: Thumbnail Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mediumUrl`
+      - Label: Medium Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `watermarkedUrl`
+      - Label: Watermarked Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mimeType`
+      - Label: Mime Type
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(100)
+    - Field: `sizeBytes`
+      - Label: Size Bytes
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0)
+    - Field: `width`
+      - Label: Width
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `exifData`
+      - Label: Exif Data
+      - Type: record (input: json)
+      - Required: optional (nullable)
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+  - `bulkArchiveGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkDeleteGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `deleteAssetSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `deleteFromStorage`
+      - Label: Delete From Storage
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deliverGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sendEmail`
+      - Label: Send Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `message`
+      - Label: Message
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(2000)
+  - `duplicateGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(200)
+    - Field: `includePhotos`
+      - Label: Include Photos
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `galleryFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: date (input: date)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: date (input: date)
+      - Required: optional
+  - `gallerySchema`
+    - Field: `name`
+      - Label: e.g., Downtown Luxury Listing
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Gallery name is required"), max(200, "Gallery name must be less than 200 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000, "Description must be less than 2000 characters")
+    - Field: `clientId`
+      - Label: Client
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `services`
+      - Label: Services
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: false
+      - Rules: cuid()
+    - Field: `locationId`
+      - Label: Location Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "draft"
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: 0
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `currency`
+      - Label: Currency
+      - Type: string (input: text)
+      - Required: required
+      - Default: "USD"
+      - Rules: length(3)
+    - Field: `coverImageUrl`
+      - Label: Cover Image Url
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: url("Invalid cover image URL")
+    - Field: `password`
+      - Label: Password
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Password must be less than 100 characters")
+    - Field: `expiresAt`
+      - Label: Expires At
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `allowDownloads`
+      - Label: Allow Downloads
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showWatermark`
+      - Label: Show Watermark
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `downloadResolution`
+      - Label: Download Resolution
+      - Type: enum (input: select)
+      - Required: optional
+      - Default: "both"
+    - Field: `downloadRequiresPayment`
+      - Label: Download Requires Payment
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowFavorites`
+      - Label: Allow Favorites
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowComments`
+      - Label: Allow Comments
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sendNotifications`
+      - Label: Send Notifications
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowSelections`
+      - Label: Allow Selections
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `selectionLimit`
+      - Label: Selection Limit
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: int(), min(1, "Selection limit must be at least 1"), max(1000, "Selection limit cannot exceed 1000")
+  - `reorderAssetsSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetIds`
+      - Label: Asset Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+
+### /invoices/new
+- Schemas from `@/lib/validations/orders`:
+  - `cartBundleSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: optional
+      - Rules: int(), min(1)
+    - Field: `pricingTierId`
+      - Label: Pricing Tier Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `pricingTierName`
+      - Label: Pricing Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `cartServiceSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(1)
+  - `createOrderSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one item is required")
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: required
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `source`
+      - Label: Source
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `medium`
+      - Label: Medium
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `campaign`
+      - Label: Campaign
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+  - `orderFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: string (input: text)
+      - Required: optional
+  - `updateOrderSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email()
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+
+### /leads
+- Schemas from `@/lib/validations/booking-forms`:
+  - `addBookingFormFieldSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `bookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `industries`
+      - Label: Industries
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `bookingFormFiltersSchema`
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bookingFormSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Form name is required"), max(100, "Form name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `headline`
+      - Label: Headline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200, "Headline must be less than 200 characters")
+    - Field: `subheadline`
+      - Label: Subheadline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Subheadline must be less than 500 characters")
+    - Field: `heroImageUrl`
+      - Label: Hero Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `logoOverrideUrl`
+      - Label: Logo Override Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `primaryColor`
+      - Label: Primary Color
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    - Field: `requireApproval`
+      - Label: Require Approval
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `confirmationEmail`
+      - Label: Confirmation Email
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `bookingFormServicesSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: 0
+      - Rules: cuid(), min(0)
+  - `convertSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingData`
+      - Label: Booking Data
+      - Type: object (input: group)
+      - Required: optional
+      - Rules: cuid(), cuid()
+  - `deleteBookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `rejectSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `rejectionNote`
+      - Label: Rejection Note
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(500)
+  - `reorderBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `submissionFiltersSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `startDate`
+      - Label: Start Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `endDate`
+      - Label: End Date
+      - Type: string (input: text)
+      - Required: optional
+  - `submitBookingFormSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `data`
+      - Label: Data
+      - Type: record (input: json)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+  - `updateBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+- Schemas from `@/lib/validations/portfolio-sections`:
+  - `aboutSectionConfigSchema`
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "About Me"
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `highlights`
+      - Label: Highlights
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `awardItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+    - Field: `issuer`
+      - Label: Issuer
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `year`
+      - Label: Year
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `logoUrl`
+      - Label: Logo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `awardsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Awards & Recognition"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `contactFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `required`
+      - Label: Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `contactSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `showForm`
+      - Label: Show Form
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showMap`
+      - Label: Show Map
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `showSocial`
+      - Label: Show Social
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showEmail`
+      - Label: Show Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showPhone`
+      - Label: Show Phone
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `customFields`
+      - Label: Custom Fields
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `mapAddress`
+      - Label: Map Address
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `createSectionSchema`
+    - Field: `sectionType`
+      - Label: Section Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: required
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `customHtmlSectionConfigSchema`
+    - Field: `html`
+      - Label: Html
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+  - `faqItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `question`
+      - Label: Question
+      - Type: string (input: text)
+      - Required: required
+    - Field: `answer`
+      - Label: Answer
+      - Type: string (input: text)
+      - Required: required
+  - `faqSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Frequently Asked Questions"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `gallerySectionConfigSchema`
+    - Field: `projectIds`
+      - Label: Project Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "grid"
+    - Field: `columns`
+      - Label: Columns
+      - Type: number (input: number)
+      - Required: required
+      - Default: 3
+      - Rules: min(1), max(6)
+    - Field: `showProjectNames`
+      - Label: Show Project Names
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `heroSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `backgroundImageUrl`
+      - Label: Background Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `backgroundVideoUrl`
+      - Label: Background Video Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `ctaText`
+      - Label: Cta Text
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `ctaLink`
+      - Label: Cta Link
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "#contact"
+    - Field: `overlay`
+      - Label: Overlay
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "dark"
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "center"
+  - `imageSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `alt`
+      - Label: Alt
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `caption`
+      - Label: Caption
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "contained"
+  - `serviceItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `price`
+      - Label: Price
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `icon`
+      - Label: Icon
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `servicesSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Services"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `showPricing`
+      - Label: Show Pricing
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `spacerSectionConfigSchema`
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: required
+      - Default: 80
+      - Rules: min(20), max(300)
+  - `testimonialItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `quote`
+      - Label: Quote
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientTitle`
+      - Label: Client Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `testimonialsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "What Clients Say"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "cards"
+  - `textSectionConfigSchema`
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "left"
+  - `updatePortfolioSettingsSchema`
+    - Field: `portfolioType`
+      - Label: Portfolio Type
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `template`
+      - Label: Template
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `fontHeading`
+      - Label: Font Heading
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `fontBody`
+      - Label: Font Body
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `socialLinks`
+      - Label: Social Links
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `metaTitle`
+      - Label: Meta Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(70)
+    - Field: `metaDescription`
+      - Label: Meta Description
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(160)
+    - Field: `showBranding`
+      - Label: Show Branding
+      - Type: boolean (input: checkbox)
+      - Required: optional
+  - `updateSectionSchema`
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `isVisible`
+      - Label: Is Visible
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: optional
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `videoSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+      - Rules: url()
+    - Field: `autoplay`
+      - Label: Autoplay
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `loop`
+      - Label: Loop
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `muted`
+      - Label: Muted
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+
+### /mini-sessions
+- Schemas from `@/lib/validations/booking-forms`:
+  - `addBookingFormFieldSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `bookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `industries`
+      - Label: Industries
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `bookingFormFiltersSchema`
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bookingFormSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Form name is required"), max(100, "Form name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `headline`
+      - Label: Headline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200, "Headline must be less than 200 characters")
+    - Field: `subheadline`
+      - Label: Subheadline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Subheadline must be less than 500 characters")
+    - Field: `heroImageUrl`
+      - Label: Hero Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `logoOverrideUrl`
+      - Label: Logo Override Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `primaryColor`
+      - Label: Primary Color
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    - Field: `requireApproval`
+      - Label: Require Approval
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `confirmationEmail`
+      - Label: Confirmation Email
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `bookingFormServicesSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: 0
+      - Rules: cuid(), min(0)
+  - `convertSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingData`
+      - Label: Booking Data
+      - Type: object (input: group)
+      - Required: optional
+      - Rules: cuid(), cuid()
+  - `deleteBookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `rejectSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `rejectionNote`
+      - Label: Rejection Note
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(500)
+  - `reorderBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `submissionFiltersSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `startDate`
+      - Label: Start Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `endDate`
+      - Label: End Date
+      - Type: string (input: text)
+      - Required: optional
+  - `submitBookingFormSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `data`
+      - Label: Data
+      - Type: record (input: json)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+  - `updateBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /order-pages
+- Schemas from `@/lib/validations/order-pages`:
+  - `deleteOrderPageSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateOrderPageSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `orderPageBundlesSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bundleIds`
+      - Label: Bundle Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `orderPageFiltersSchema`
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `orderPageSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Page name is required"), max(100, "Page name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `headline`
+      - Label: Headline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200, "Headline must be less than 200 characters")
+    - Field: `subheadline`
+      - Label: Subheadline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Subheadline must be less than 500 characters")
+    - Field: `heroImageUrl`
+      - Label: Hero Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `logoOverrideUrl`
+      - Label: Logo Override Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `primaryColor`
+      - Label: Primary Color
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    - Field: `showPhone`
+      - Label: Show Phone
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showEmail`
+      - Label: Show Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `customPhone`
+      - Label: Custom Phone
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `customEmail`
+      - Label: Custom Email
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: email()
+    - Field: `template`
+      - Label: Template
+      - Type: string (input: text)
+      - Required: required
+      - Default: "default"
+    - Field: `metaTitle`
+      - Label: Meta Title
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `metaDescription`
+      - Label: Meta Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(300)
+    - Field: `testimonials`
+      - Label: Testimonials
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: []
+      - Rules: max(100), max(100), max(500), url(), max(10, "Maximum 10 testimonials allowed")
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `requireLogin`
+      - Label: Require Login
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+  - `orderPageServicesSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: 0
+      - Rules: cuid(), min(0)
+
+### /order-pages/[id]
+- Schemas from `@/lib/validations/bundles`:
+  - `bundleFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bundleSchema`
+    - Field: `name`
+      - Label: e.g., Premium Photo Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Bundle name is required"), max(100, "Bundle name must be less than 100 characters")
+    - Field: `slug`
+      - Label: premium-photo-package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft is too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(1, "Sqft increments must be at least 1"), max(10000, "Sqft increments is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `badgeText`
+      - Label: Badge Text
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(30, "Badge text must be less than 30 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `bundleServiceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Default: 1
+      - Rules: min(1), max(100)
+  - `bundleServicesSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: true
+      - Rules: cuid(), min(1), max(100), min(0)
+  - `calculateBundlePriceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(1, "Square footage must be at least 1")
+  - `createPricingTiersSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one pricing tier is required")
+  - `deleteBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deletePricingTierSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `duplicateBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price is too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name must be less than 50 characters")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `reorderBundleItemsSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `itemIds`
+      - Label: Item Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+- Schemas from `@/lib/validations/order-pages`:
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: e.g., Premium Photo Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /order-pages/new
+- Schemas from `@/lib/validations/bundles`:
+  - `bundleFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bundleSchema`
+    - Field: `name`
+      - Label: e.g., Premium Photo Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Bundle name is required"), max(100, "Bundle name must be less than 100 characters")
+    - Field: `slug`
+      - Label: premium-photo-package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft is too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(1, "Sqft increments must be at least 1"), max(10000, "Sqft increments is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `badgeText`
+      - Label: Badge Text
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(30, "Badge text must be less than 30 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `bundleServiceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Default: 1
+      - Rules: min(1), max(100)
+  - `bundleServicesSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: true
+      - Rules: cuid(), min(1), max(100), min(0)
+  - `calculateBundlePriceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(1, "Square footage must be at least 1")
+  - `createPricingTiersSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one pricing tier is required")
+  - `deleteBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deletePricingTierSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `duplicateBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price is too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name must be less than 50 characters")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `reorderBundleItemsSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `itemIds`
+      - Label: Item Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+- Schemas from `@/lib/validations/order-pages`:
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: e.g., Premium Photo Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /orders
+- Schemas from `@/lib/validations/orders`:
+  - `cartBundleSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: optional
+      - Rules: int(), min(1)
+    - Field: `pricingTierId`
+      - Label: Pricing Tier Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `pricingTierName`
+      - Label: Pricing Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `cartServiceSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(1)
+  - `createOrderSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one item is required")
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: required
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `source`
+      - Label: Source
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `medium`
+      - Label: Medium
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `campaign`
+      - Label: Campaign
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+  - `orderFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: string (input: text)
+      - Required: optional
+  - `updateOrderSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email()
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+
+### /orders/[id]
+- Schemas from `@/lib/validations/orders`:
+  - `cartBundleSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: optional
+      - Rules: int(), min(1)
+    - Field: `pricingTierId`
+      - Label: Pricing Tier Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `pricingTierName`
+      - Label: Pricing Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `cartServiceSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(1)
+  - `createOrderSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one item is required")
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: required
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `source`
+      - Label: Source
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `medium`
+      - Label: Medium
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `campaign`
+      - Label: Campaign
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+  - `orderFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: string (input: text)
+      - Required: optional
+  - `updateOrderSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email()
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+
+### /orders/analytics
+- Schemas from `@/lib/validations/orders`:
+  - `cartBundleSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: optional
+      - Rules: int(), min(1)
+    - Field: `pricingTierId`
+      - Label: Pricing Tier Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `pricingTierName`
+      - Label: Pricing Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `cartServiceSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(1)
+  - `createOrderSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one item is required")
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: required
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `source`
+      - Label: Source
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `medium`
+      - Label: Medium
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `campaign`
+      - Label: Campaign
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+  - `orderFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: string (input: text)
+      - Required: optional
+  - `updateOrderSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email()
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+
+### /portfolios
+- Schemas from `@/lib/validations/portfolio-sections`:
+  - `aboutSectionConfigSchema`
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "About Me"
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `highlights`
+      - Label: Highlights
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `awardItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+    - Field: `issuer`
+      - Label: Issuer
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `year`
+      - Label: Year
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `logoUrl`
+      - Label: Logo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `awardsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Awards & Recognition"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `contactFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `required`
+      - Label: Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `contactSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `showForm`
+      - Label: Show Form
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showMap`
+      - Label: Show Map
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `showSocial`
+      - Label: Show Social
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showEmail`
+      - Label: Show Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showPhone`
+      - Label: Show Phone
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `customFields`
+      - Label: Custom Fields
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `mapAddress`
+      - Label: Map Address
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `createSectionSchema`
+    - Field: `sectionType`
+      - Label: Section Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: required
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `customHtmlSectionConfigSchema`
+    - Field: `html`
+      - Label: Html
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+  - `faqItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `question`
+      - Label: Question
+      - Type: string (input: text)
+      - Required: required
+    - Field: `answer`
+      - Label: Answer
+      - Type: string (input: text)
+      - Required: required
+  - `faqSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Frequently Asked Questions"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `gallerySectionConfigSchema`
+    - Field: `projectIds`
+      - Label: Project Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "grid"
+    - Field: `columns`
+      - Label: Columns
+      - Type: number (input: number)
+      - Required: required
+      - Default: 3
+      - Rules: min(1), max(6)
+    - Field: `showProjectNames`
+      - Label: Show Project Names
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `heroSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `backgroundImageUrl`
+      - Label: Background Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `backgroundVideoUrl`
+      - Label: Background Video Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `ctaText`
+      - Label: Cta Text
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `ctaLink`
+      - Label: Cta Link
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "#contact"
+    - Field: `overlay`
+      - Label: Overlay
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "dark"
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "center"
+  - `imageSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `alt`
+      - Label: Alt
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `caption`
+      - Label: Caption
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "contained"
+  - `serviceItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `price`
+      - Label: Price
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `icon`
+      - Label: Icon
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `servicesSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Services"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `showPricing`
+      - Label: Show Pricing
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `spacerSectionConfigSchema`
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: required
+      - Default: 80
+      - Rules: min(20), max(300)
+  - `testimonialItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `quote`
+      - Label: Quote
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientTitle`
+      - Label: Client Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `testimonialsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "What Clients Say"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "cards"
+  - `textSectionConfigSchema`
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "left"
+  - `updatePortfolioSettingsSchema`
+    - Field: `portfolioType`
+      - Label: Portfolio Type
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `template`
+      - Label: Template
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `fontHeading`
+      - Label: Font Heading
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `fontBody`
+      - Label: Font Body
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `socialLinks`
+      - Label: Social Links
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `metaTitle`
+      - Label: Meta Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(70)
+    - Field: `metaDescription`
+      - Label: Meta Description
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(160)
+    - Field: `showBranding`
+      - Label: Show Branding
+      - Type: boolean (input: checkbox)
+      - Required: optional
+  - `updateSectionSchema`
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `isVisible`
+      - Label: Is Visible
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: optional
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `videoSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+      - Rules: url()
+    - Field: `autoplay`
+      - Label: Autoplay
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `loop`
+      - Label: Loop
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `muted`
+      - Label: Muted
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+
+### /portfolios/[id]
+- Schemas from `@/lib/validations/portfolio-sections`:
+  - `aboutSectionConfigSchema`
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "About Me"
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `highlights`
+      - Label: Highlights
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `awardItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+    - Field: `issuer`
+      - Label: Issuer
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `year`
+      - Label: Year
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `logoUrl`
+      - Label: Logo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `awardsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Awards & Recognition"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `contactFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `required`
+      - Label: Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `contactSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `showForm`
+      - Label: Show Form
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showMap`
+      - Label: Show Map
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `showSocial`
+      - Label: Show Social
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showEmail`
+      - Label: Show Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showPhone`
+      - Label: Show Phone
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `customFields`
+      - Label: Custom Fields
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `mapAddress`
+      - Label: Map Address
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `createSectionSchema`
+    - Field: `sectionType`
+      - Label: Section Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: required
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `customHtmlSectionConfigSchema`
+    - Field: `html`
+      - Label: Html
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+  - `faqItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `question`
+      - Label: Question
+      - Type: string (input: text)
+      - Required: required
+    - Field: `answer`
+      - Label: Answer
+      - Type: string (input: text)
+      - Required: required
+  - `faqSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Frequently Asked Questions"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `gallerySectionConfigSchema`
+    - Field: `projectIds`
+      - Label: Project Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "grid"
+    - Field: `columns`
+      - Label: Columns
+      - Type: number (input: number)
+      - Required: required
+      - Default: 3
+      - Rules: min(1), max(6)
+    - Field: `showProjectNames`
+      - Label: Show Project Names
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `heroSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `backgroundImageUrl`
+      - Label: Background Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `backgroundVideoUrl`
+      - Label: Background Video Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `ctaText`
+      - Label: Cta Text
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `ctaLink`
+      - Label: Cta Link
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "#contact"
+    - Field: `overlay`
+      - Label: Overlay
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "dark"
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "center"
+  - `imageSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `alt`
+      - Label: Alt
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `caption`
+      - Label: Caption
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "contained"
+  - `serviceItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `price`
+      - Label: Price
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `icon`
+      - Label: Icon
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `servicesSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Services"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `showPricing`
+      - Label: Show Pricing
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `spacerSectionConfigSchema`
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: required
+      - Default: 80
+      - Rules: min(20), max(300)
+  - `testimonialItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `quote`
+      - Label: Quote
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientTitle`
+      - Label: Client Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `testimonialsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "What Clients Say"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "cards"
+  - `textSectionConfigSchema`
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "left"
+  - `updatePortfolioSettingsSchema`
+    - Field: `portfolioType`
+      - Label: Portfolio Type
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `template`
+      - Label: Template
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `fontHeading`
+      - Label: Font Heading
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `fontBody`
+      - Label: Font Body
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `socialLinks`
+      - Label: Social Links
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `metaTitle`
+      - Label: Meta Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(70)
+    - Field: `metaDescription`
+      - Label: Meta Description
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(160)
+    - Field: `showBranding`
+      - Label: Show Branding
+      - Type: boolean (input: checkbox)
+      - Required: optional
+  - `updateSectionSchema`
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `isVisible`
+      - Label: Is Visible
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: optional
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `videoSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+      - Rules: url()
+    - Field: `autoplay`
+      - Label: Autoplay
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `loop`
+      - Label: Loop
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `muted`
+      - Label: Muted
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+
+### /portfolios/new
+- Schemas from `@/lib/validations/portfolio-sections`:
+  - `aboutSectionConfigSchema`
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "About Me"
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `highlights`
+      - Label: Highlights
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `awardItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+    - Field: `issuer`
+      - Label: Issuer
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `year`
+      - Label: Year
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `logoUrl`
+      - Label: Logo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `awardsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Awards & Recognition"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `contactFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `required`
+      - Label: Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `contactSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `showForm`
+      - Label: Show Form
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showMap`
+      - Label: Show Map
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `showSocial`
+      - Label: Show Social
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showEmail`
+      - Label: Show Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showPhone`
+      - Label: Show Phone
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `customFields`
+      - Label: Custom Fields
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `mapAddress`
+      - Label: Map Address
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `createSectionSchema`
+    - Field: `sectionType`
+      - Label: Section Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: required
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `customHtmlSectionConfigSchema`
+    - Field: `html`
+      - Label: Html
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+  - `faqItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `question`
+      - Label: Question
+      - Type: string (input: text)
+      - Required: required
+    - Field: `answer`
+      - Label: Answer
+      - Type: string (input: text)
+      - Required: required
+  - `faqSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Frequently Asked Questions"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `gallerySectionConfigSchema`
+    - Field: `projectIds`
+      - Label: Project Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "grid"
+    - Field: `columns`
+      - Label: Columns
+      - Type: number (input: number)
+      - Required: required
+      - Default: 3
+      - Rules: min(1), max(6)
+    - Field: `showProjectNames`
+      - Label: Show Project Names
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `heroSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `backgroundImageUrl`
+      - Label: Background Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `backgroundVideoUrl`
+      - Label: Background Video Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `ctaText`
+      - Label: Cta Text
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `ctaLink`
+      - Label: Cta Link
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "#contact"
+    - Field: `overlay`
+      - Label: Overlay
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "dark"
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "center"
+  - `imageSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `alt`
+      - Label: Alt
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `caption`
+      - Label: Caption
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "contained"
+  - `serviceItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `price`
+      - Label: Price
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `icon`
+      - Label: Icon
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `servicesSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Services"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `showPricing`
+      - Label: Show Pricing
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `spacerSectionConfigSchema`
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: required
+      - Default: 80
+      - Rules: min(20), max(300)
+  - `testimonialItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `quote`
+      - Label: Quote
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientTitle`
+      - Label: Client Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `testimonialsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "What Clients Say"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "cards"
+  - `textSectionConfigSchema`
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "left"
+  - `updatePortfolioSettingsSchema`
+    - Field: `portfolioType`
+      - Label: Portfolio Type
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `template`
+      - Label: Template
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `fontHeading`
+      - Label: Font Heading
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `fontBody`
+      - Label: Font Body
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `socialLinks`
+      - Label: Social Links
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `metaTitle`
+      - Label: Meta Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(70)
+    - Field: `metaDescription`
+      - Label: Meta Description
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(160)
+    - Field: `showBranding`
+      - Label: Show Branding
+      - Type: boolean (input: checkbox)
+      - Required: optional
+  - `updateSectionSchema`
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `isVisible`
+      - Label: Is Visible
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: optional
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `videoSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+      - Rules: url()
+    - Field: `autoplay`
+      - Label: Autoplay
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `loop`
+      - Label: Loop
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `muted`
+      - Label: Muted
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+
+### /products
+- Schemas from `@/lib/validations/products`:
+  - `attachPhotoSchema`
+    - Field: `productId`
+      - Label: Product Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetId`
+      - Label: Asset Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `variantId`
+      - Label: Variant Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `angle`
+      - Label: Angle
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1)
+    - Field: `isPrimary`
+      - Label: Is Primary
+      - Type: boolean (input: checkbox)
+      - Required: optional
+  - `createCatalogSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1)
+    - Field: `description`
+      - Label: Description
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `tags`
+      - Label: Tags
+      - Type: array (input: multi)
+      - Required: optional
+      - Default: []
+  - `createProductSchema`
+    - Field: `catalogId`
+      - Label: Catalog Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sku`
+      - Label: Sku
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1)
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1)
+    - Field: `category`
+      - Label: Category
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `angles`
+      - Label: Angles
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `notes`
+      - Label: Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+
+### /products/[catalogId]
+- Schemas from `@/lib/validations/products`:
+  - `attachPhotoSchema`
+    - Field: `productId`
+      - Label: Product Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetId`
+      - Label: Asset Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `variantId`
+      - Label: Variant Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `angle`
+      - Label: Angle
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1)
+    - Field: `isPrimary`
+      - Label: Is Primary
+      - Type: boolean (input: checkbox)
+      - Required: optional
+  - `createCatalogSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1)
+    - Field: `description`
+      - Label: Description
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `tags`
+      - Label: Tags
+      - Type: array (input: multi)
+      - Required: optional
+      - Default: []
+  - `createProductSchema`
+    - Field: `catalogId`
+      - Label: Catalog Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sku`
+      - Label: Sku
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1)
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1)
+    - Field: `category`
+      - Label: Category
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `angles`
+      - Label: Angles
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `notes`
+      - Label: Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+
+### /projects
+- Schemas from `@/lib/validations/galleries`:
+  - `archiveGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `assetSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `filename`
+      - Label: Filename
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(255)
+    - Field: `originalUrl`
+      - Label: Original Url
+      - Type: string (input: text)
+      - Required: required
+      - Rules: url()
+    - Field: `thumbnailUrl`
+      - Label: Thumbnail Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mediumUrl`
+      - Label: Medium Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `watermarkedUrl`
+      - Label: Watermarked Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mimeType`
+      - Label: Mime Type
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(100)
+    - Field: `sizeBytes`
+      - Label: Size Bytes
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0)
+    - Field: `width`
+      - Label: Width
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `exifData`
+      - Label: Exif Data
+      - Type: record (input: json)
+      - Required: optional (nullable)
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+  - `bulkArchiveGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkDeleteGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `deleteAssetSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `deleteFromStorage`
+      - Label: Delete From Storage
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deliverGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sendEmail`
+      - Label: Send Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `message`
+      - Label: Message
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(2000)
+  - `duplicateGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(200)
+    - Field: `includePhotos`
+      - Label: Include Photos
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `galleryFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: date (input: date)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: date (input: date)
+      - Required: optional
+  - `gallerySchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Gallery name is required"), max(200, "Gallery name must be less than 200 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000, "Description must be less than 2000 characters")
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `services`
+      - Label: Services
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: false
+      - Rules: cuid()
+    - Field: `locationId`
+      - Label: Location Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "draft"
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: 0
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `currency`
+      - Label: Currency
+      - Type: string (input: text)
+      - Required: required
+      - Default: "USD"
+      - Rules: length(3)
+    - Field: `coverImageUrl`
+      - Label: Cover Image Url
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: url("Invalid cover image URL")
+    - Field: `password`
+      - Label: Password
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Password must be less than 100 characters")
+    - Field: `expiresAt`
+      - Label: Expires At
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `allowDownloads`
+      - Label: Allow Downloads
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showWatermark`
+      - Label: Show Watermark
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `downloadResolution`
+      - Label: Download Resolution
+      - Type: enum (input: select)
+      - Required: optional
+      - Default: "both"
+    - Field: `downloadRequiresPayment`
+      - Label: Download Requires Payment
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowFavorites`
+      - Label: Allow Favorites
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowComments`
+      - Label: Allow Comments
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sendNotifications`
+      - Label: Send Notifications
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowSelections`
+      - Label: Allow Selections
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `selectionLimit`
+      - Label: Selection Limit
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: int(), min(1, "Selection limit must be at least 1"), max(1000, "Selection limit cannot exceed 1000")
+  - `reorderAssetsSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetIds`
+      - Label: Asset Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+
+### /projects/tasks/[id]
+- Schemas from `@/lib/validations/galleries`:
+  - `archiveGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `assetSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `filename`
+      - Label: Filename
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(255)
+    - Field: `originalUrl`
+      - Label: Original Url
+      - Type: string (input: text)
+      - Required: required
+      - Rules: url()
+    - Field: `thumbnailUrl`
+      - Label: Thumbnail Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mediumUrl`
+      - Label: Medium Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `watermarkedUrl`
+      - Label: Watermarked Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mimeType`
+      - Label: Mime Type
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(100)
+    - Field: `sizeBytes`
+      - Label: Size Bytes
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0)
+    - Field: `width`
+      - Label: Width
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `exifData`
+      - Label: Exif Data
+      - Type: record (input: json)
+      - Required: optional (nullable)
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+  - `bulkArchiveGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkDeleteGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `deleteAssetSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `deleteFromStorage`
+      - Label: Delete From Storage
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deliverGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sendEmail`
+      - Label: Send Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `message`
+      - Label: Message
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(2000)
+  - `duplicateGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(200)
+    - Field: `includePhotos`
+      - Label: Include Photos
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `galleryFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: date (input: date)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: date (input: date)
+      - Required: optional
+  - `gallerySchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Gallery name is required"), max(200, "Gallery name must be less than 200 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000, "Description must be less than 2000 characters")
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `services`
+      - Label: Services
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: false
+      - Rules: cuid()
+    - Field: `locationId`
+      - Label: Location Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "draft"
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: 0
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `currency`
+      - Label: Currency
+      - Type: string (input: text)
+      - Required: required
+      - Default: "USD"
+      - Rules: length(3)
+    - Field: `coverImageUrl`
+      - Label: Cover Image Url
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: url("Invalid cover image URL")
+    - Field: `password`
+      - Label: Password
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Password must be less than 100 characters")
+    - Field: `expiresAt`
+      - Label: Expires At
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `allowDownloads`
+      - Label: Allow Downloads
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showWatermark`
+      - Label: Show Watermark
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `downloadResolution`
+      - Label: Download Resolution
+      - Type: enum (input: select)
+      - Required: optional
+      - Default: "both"
+    - Field: `downloadRequiresPayment`
+      - Label: Download Requires Payment
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowFavorites`
+      - Label: Allow Favorites
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowComments`
+      - Label: Allow Comments
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sendNotifications`
+      - Label: Send Notifications
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowSelections`
+      - Label: Allow Selections
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `selectionLimit`
+      - Label: Selection Limit
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: int(), min(1, "Selection limit must be at least 1"), max(1000, "Selection limit cannot exceed 1000")
+  - `reorderAssetsSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetIds`
+      - Label: Asset Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+
+### /questionnaires
+- Schemas from `@/lib/validations/questionnaires`:
+  - `acceptAgreementSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreementId`
+      - Label: Agreement Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `signatureData`
+      - Label: Signature Data
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `signatureType`
+      - Label: Signature Type
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+  - `addQuestionnaireAgreementSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreement`
+      - Label: Agreement
+      - Type: unknown (input: text)
+      - Required: required
+  - `addQuestionnaireFieldSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `approveQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+  - `assignQuestionnaireSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `personalNote`
+      - Label: Personal Note
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+  - `clientQuestionnaireFiltersSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueBefore`
+      - Label: Due Before
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `dueAfter`
+      - Label: Due After
+      - Type: string (input: text)
+      - Required: optional
+  - `deleteClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `questionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `agreementType`
+      - Label: Agreement Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Title is required"), max(200)
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Agreement content is required")
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `requiresSignature`
+      - Label: Requires Signature
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `questionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `section`
+      - Label: Section
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `sectionOrder`
+      - Label: Section Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `questionnaireResponseSchema`
+    - Field: `fieldLabel`
+      - Label: Field Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `fieldType`
+      - Label: Field Type
+      - Type: string (input: text)
+      - Required: required
+    - Field: `value`
+      - Label: Value
+      - Type: unknown (input: text)
+      - Required: required
+  - `questionnaireTemplateFiltersSchema`
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isSystemTemplate`
+      - Label: Is System Template
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `questionnaireTemplateSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Template name is required"), max(100, "Template name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `reorderQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `saveQuestionnaireProgressSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `submitQuestionnaireResponsesSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `updateClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+  - `updateQuestionnaireAgreementsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreements`
+      - Label: Agreements
+      - Type: array (input: multi)
+      - Required: required
+  - `updateQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /questionnaires/assigned/[id]
+- Schemas from `@/lib/validations/questionnaires`:
+  - `acceptAgreementSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreementId`
+      - Label: Agreement Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `signatureData`
+      - Label: Signature Data
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `signatureType`
+      - Label: Signature Type
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+  - `addQuestionnaireAgreementSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreement`
+      - Label: Agreement
+      - Type: unknown (input: text)
+      - Required: required
+  - `addQuestionnaireFieldSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `approveQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+  - `assignQuestionnaireSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `personalNote`
+      - Label: Personal Note
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+  - `clientQuestionnaireFiltersSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueBefore`
+      - Label: Due Before
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `dueAfter`
+      - Label: Due After
+      - Type: string (input: text)
+      - Required: optional
+  - `deleteClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `questionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `agreementType`
+      - Label: Agreement Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Title is required"), max(200)
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Agreement content is required")
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `requiresSignature`
+      - Label: Requires Signature
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `questionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `section`
+      - Label: Section
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `sectionOrder`
+      - Label: Section Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `questionnaireResponseSchema`
+    - Field: `fieldLabel`
+      - Label: Field Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `fieldType`
+      - Label: Field Type
+      - Type: string (input: text)
+      - Required: required
+    - Field: `value`
+      - Label: Value
+      - Type: unknown (input: text)
+      - Required: required
+  - `questionnaireTemplateFiltersSchema`
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isSystemTemplate`
+      - Label: Is System Template
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `questionnaireTemplateSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Template name is required"), max(100, "Template name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `reorderQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `saveQuestionnaireProgressSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `submitQuestionnaireResponsesSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `updateClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+  - `updateQuestionnaireAgreementsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreements`
+      - Label: Agreements
+      - Type: array (input: multi)
+      - Required: required
+  - `updateQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /questionnaires/templates/[id]
+- Schemas from `@/lib/validations/questionnaires`:
+  - `acceptAgreementSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreementId`
+      - Label: Agreement Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `signatureData`
+      - Label: Signature Data
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `signatureType`
+      - Label: Signature Type
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+  - `addQuestionnaireAgreementSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreement`
+      - Label: Agreement
+      - Type: unknown (input: text)
+      - Required: required
+  - `addQuestionnaireFieldSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `approveQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+  - `assignQuestionnaireSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `personalNote`
+      - Label: Personal Note
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+  - `clientQuestionnaireFiltersSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueBefore`
+      - Label: Due Before
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `dueAfter`
+      - Label: Due After
+      - Type: string (input: text)
+      - Required: optional
+  - `deleteClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `questionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `agreementType`
+      - Label: Agreement Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Title is required"), max(200)
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Agreement content is required")
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `requiresSignature`
+      - Label: Requires Signature
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `questionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `section`
+      - Label: Section
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `sectionOrder`
+      - Label: Section Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `questionnaireResponseSchema`
+    - Field: `fieldLabel`
+      - Label: Field Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `fieldType`
+      - Label: Field Type
+      - Type: string (input: text)
+      - Required: required
+    - Field: `value`
+      - Label: Value
+      - Type: unknown (input: text)
+      - Required: required
+  - `questionnaireTemplateFiltersSchema`
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isSystemTemplate`
+      - Label: Is System Template
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `questionnaireTemplateSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Template name is required"), max(100, "Template name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `reorderQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `saveQuestionnaireProgressSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `submitQuestionnaireResponsesSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `updateClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+  - `updateQuestionnaireAgreementsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreements`
+      - Label: Agreements
+      - Type: array (input: multi)
+      - Required: required
+  - `updateQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /questionnaires/templates/[id]/preview
+- Schemas from `@/lib/validations/questionnaires`:
+  - `acceptAgreementSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreementId`
+      - Label: Agreement Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `signatureData`
+      - Label: Signature Data
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `signatureType`
+      - Label: Signature Type
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+  - `addQuestionnaireAgreementSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreement`
+      - Label: Agreement
+      - Type: unknown (input: text)
+      - Required: required
+  - `addQuestionnaireFieldSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `approveQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+  - `assignQuestionnaireSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `personalNote`
+      - Label: Personal Note
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+  - `clientQuestionnaireFiltersSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueBefore`
+      - Label: Due Before
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `dueAfter`
+      - Label: Due After
+      - Type: string (input: text)
+      - Required: optional
+  - `deleteClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `questionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `agreementType`
+      - Label: Agreement Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Title is required"), max(200)
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Agreement content is required")
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `requiresSignature`
+      - Label: Requires Signature
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `questionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `section`
+      - Label: Section
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `sectionOrder`
+      - Label: Section Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `questionnaireResponseSchema`
+    - Field: `fieldLabel`
+      - Label: Field Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `fieldType`
+      - Label: Field Type
+      - Type: string (input: text)
+      - Required: required
+    - Field: `value`
+      - Label: Value
+      - Type: unknown (input: text)
+      - Required: required
+  - `questionnaireTemplateFiltersSchema`
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isSystemTemplate`
+      - Label: Is System Template
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `questionnaireTemplateSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Template name is required"), max(100, "Template name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `reorderQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `saveQuestionnaireProgressSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `submitQuestionnaireResponsesSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `updateClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+  - `updateQuestionnaireAgreementsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreements`
+      - Label: Agreements
+      - Type: array (input: multi)
+      - Required: required
+  - `updateQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /questionnaires/templates/new
+- Schemas from `@/lib/validations/questionnaires`:
+  - `acceptAgreementSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreementId`
+      - Label: Agreement Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `signatureData`
+      - Label: Signature Data
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `signatureType`
+      - Label: Signature Type
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+  - `addQuestionnaireAgreementSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreement`
+      - Label: Agreement
+      - Type: unknown (input: text)
+      - Required: required
+  - `addQuestionnaireFieldSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `approveQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+  - `assignQuestionnaireSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `personalNote`
+      - Label: Personal Note
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+  - `clientQuestionnaireFiltersSchema`
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `bookingId`
+      - Label: Booking Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueBefore`
+      - Label: Due Before
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `dueAfter`
+      - Label: Due After
+      - Type: string (input: text)
+      - Required: optional
+  - `deleteClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateQuestionnaireTemplateSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `questionnaireAgreementSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `agreementType`
+      - Label: Agreement Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Title is required"), max(200)
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Agreement content is required")
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `requiresSignature`
+      - Label: Requires Signature
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `questionnaireFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `section`
+      - Label: Section
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `sectionOrder`
+      - Label: Section Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `questionnaireResponseSchema`
+    - Field: `fieldLabel`
+      - Label: Field Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `fieldType`
+      - Label: Field Type
+      - Type: string (input: text)
+      - Required: required
+    - Field: `value`
+      - Label: Value
+      - Type: unknown (input: text)
+      - Required: required
+  - `questionnaireTemplateFiltersSchema`
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `isSystemTemplate`
+      - Label: Is System Template
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `questionnaireTemplateSchema`
+    - Field: `name`
+      - Label: e.g., Property Details Questionnaire
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Template name is required"), max(100, "Template name must be less than 100 characters")
+    - Field: `slug`
+      - Label: e.g., property-details
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `reorderQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `saveQuestionnaireProgressSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `submitQuestionnaireResponsesSchema`
+    - Field: `questionnaireId`
+      - Label: Questionnaire Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `responses`
+      - Label: Responses
+      - Type: array (input: multi)
+      - Required: required
+  - `updateClientQuestionnaireSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `dueDate`
+      - Label: Due Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `sendReminders`
+      - Label: Send Reminders
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+  - `updateQuestionnaireAgreementsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `agreements`
+      - Label: Agreements
+      - Type: array (input: multi)
+      - Required: required
+  - `updateQuestionnaireFieldsSchema`
+    - Field: `templateId`
+      - Label: Template Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /scheduling/booking-forms
+- Schemas from `@/lib/validations/booking-forms`:
+  - `addBookingFormFieldSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `bookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `industries`
+      - Label: Industries
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `bookingFormFiltersSchema`
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bookingFormSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Form name is required"), max(100, "Form name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `headline`
+      - Label: Headline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200, "Headline must be less than 200 characters")
+    - Field: `subheadline`
+      - Label: Subheadline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Subheadline must be less than 500 characters")
+    - Field: `heroImageUrl`
+      - Label: Hero Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `logoOverrideUrl`
+      - Label: Logo Override Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `primaryColor`
+      - Label: Primary Color
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    - Field: `requireApproval`
+      - Label: Require Approval
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `confirmationEmail`
+      - Label: Confirmation Email
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `bookingFormServicesSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: 0
+      - Rules: cuid(), min(0)
+  - `convertSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingData`
+      - Label: Booking Data
+      - Type: object (input: group)
+      - Required: optional
+      - Rules: cuid(), cuid()
+  - `deleteBookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `rejectSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `rejectionNote`
+      - Label: Rejection Note
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(500)
+  - `reorderBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `submissionFiltersSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `startDate`
+      - Label: Start Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `endDate`
+      - Label: End Date
+      - Type: string (input: text)
+      - Required: optional
+  - `submitBookingFormSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `data`
+      - Label: Data
+      - Type: record (input: json)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+  - `updateBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /scheduling/booking-forms/[id]
+- Schemas from `@/lib/validations/booking-forms`:
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /scheduling/booking-forms/[id]/submissions
+- Schemas from `@/lib/validations/booking-forms`:
+  - `addBookingFormFieldSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `bookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `industries`
+      - Label: Industries
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `bookingFormFiltersSchema`
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bookingFormSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Form name is required"), max(100, "Form name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `headline`
+      - Label: Headline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200, "Headline must be less than 200 characters")
+    - Field: `subheadline`
+      - Label: Subheadline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Subheadline must be less than 500 characters")
+    - Field: `heroImageUrl`
+      - Label: Hero Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `logoOverrideUrl`
+      - Label: Logo Override Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `primaryColor`
+      - Label: Primary Color
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    - Field: `requireApproval`
+      - Label: Require Approval
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `confirmationEmail`
+      - Label: Confirmation Email
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `bookingFormServicesSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: 0
+      - Rules: cuid(), min(0)
+  - `convertSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingData`
+      - Label: Booking Data
+      - Type: object (input: group)
+      - Required: optional
+      - Rules: cuid(), cuid()
+  - `deleteBookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `rejectSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `rejectionNote`
+      - Label: Rejection Note
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(500)
+  - `reorderBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `submissionFiltersSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `startDate`
+      - Label: Start Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `endDate`
+      - Label: End Date
+      - Type: string (input: text)
+      - Required: optional
+  - `submitBookingFormSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `data`
+      - Label: Data
+      - Type: record (input: json)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+  - `updateBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /scheduling/new
+- Schemas from `@/lib/validations/orders`:
+  - `cartBundleSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: optional
+      - Rules: int(), min(1)
+    - Field: `pricingTierId`
+      - Label: Pricing Tier Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `pricingTierName`
+      - Label: Pricing Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `cartServiceSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(1)
+  - `createOrderSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one item is required")
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: required
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `source`
+      - Label: Source
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `medium`
+      - Label: Medium
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `campaign`
+      - Label: Campaign
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+  - `orderFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `clientId`
+      - Label: Client
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: string (input: text)
+      - Required: optional
+  - `updateOrderSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email()
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+
+### /services
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /services/[id]
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: e.g., Luxury Property Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Estimated Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /services/addons
+- Schemas from `@/lib/validations/addons`:
+  - `addonCompatibilitySchema`
+    - Field: `addonId`
+      - Label: Addon Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceIds`
+      - Label: Service Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `addonFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `triggerType`
+      - Label: Trigger Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `addonSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Addon name is required"), max(100, "Addon name must be less than 100 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `iconName`
+      - Label: Icon Name
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Icon name must be less than 50 characters")
+    - Field: `triggerType`
+      - Label: Trigger Type
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "always"
+    - Field: `triggerValue`
+      - Label: Trigger Value
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Trigger value must be less than 100 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isOneTime`
+      - Label: Is One Time
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteAddonSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+
+### /services/addons/[id]
+- Schemas from `@/lib/validations/addons`:
+  - `addonCompatibilitySchema`
+    - Field: `addonId`
+      - Label: Addon Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceIds`
+      - Label: Service Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `addonFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `triggerType`
+      - Label: Trigger Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `addonSchema`
+    - Field: `name`
+      - Label: e.g., Rush Delivery
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Addon name is required"), max(100, "Addon name must be less than 100 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `iconName`
+      - Label: Icon
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Icon name must be less than 50 characters")
+    - Field: `triggerType`
+      - Label: Trigger Type
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "always"
+    - Field: `triggerValue`
+      - Label: Minimum Cart Total
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Trigger value must be less than 100 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isOneTime`
+      - Label: Is One Time
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteAddonSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: e.g., Rush Delivery
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /services/addons/new
+- Schemas from `@/lib/validations/addons`:
+  - `addonCompatibilitySchema`
+    - Field: `addonId`
+      - Label: Addon Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceIds`
+      - Label: Service Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `addonFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `triggerType`
+      - Label: Trigger Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `addonSchema`
+    - Field: `name`
+      - Label: e.g., Rush Delivery
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Addon name is required"), max(100, "Addon name must be less than 100 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `iconName`
+      - Label: Icon
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Icon name must be less than 50 characters")
+    - Field: `triggerType`
+      - Label: Trigger Type
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "always"
+    - Field: `triggerValue`
+      - Label: Minimum Cart Total
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Trigger value must be less than 100 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isOneTime`
+      - Label: Is One Time
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteAddonSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: e.g., Rush Delivery
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /services/bundles
+- Schemas from `@/lib/validations/bundles`:
+  - `bundleFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bundleSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Bundle name is required"), max(100, "Bundle name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft is too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(1, "Sqft increments must be at least 1"), max(10000, "Sqft increments is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `badgeText`
+      - Label: Badge Text
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(30, "Badge text must be less than 30 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `bundleServiceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Default: 1
+      - Rules: min(1), max(100)
+  - `bundleServicesSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: true
+      - Rules: cuid(), min(1), max(100), min(0)
+  - `calculateBundlePriceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(1, "Square footage must be at least 1")
+  - `createPricingTiersSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one pricing tier is required")
+  - `deleteBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deletePricingTierSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `duplicateBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price is too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name must be less than 50 characters")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `reorderBundleItemsSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `itemIds`
+      - Label: Item Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+
+### /services/bundles/[id]
+- Schemas from `@/lib/validations/bundles`:
+  - `bundleFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bundleSchema`
+    - Field: `name`
+      - Label: e.g., Complete Real Estate Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Bundle name is required"), max(100, "Bundle name must be less than 100 characters")
+    - Field: `slug`
+      - Label: complete-real-estate-package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft is too high")
+    - Field: `minSqft`
+      - Label: Minimum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Maximum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(1, "Sqft increments must be at least 1"), max(10000, "Sqft increments is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `badgeText`
+      - Label: Badge Text
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(30, "Badge text must be less than 30 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `bundleServiceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Default: 1
+      - Rules: min(1), max(100)
+  - `bundleServicesSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: true
+      - Rules: cuid(), min(1), max(100), min(0)
+  - `calculateBundlePriceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(1, "Square footage must be at least 1")
+  - `createPricingTiersSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one pricing tier is required")
+  - `deleteBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deletePricingTierSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `duplicateBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Minimum Sqft
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Maximum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price is too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name must be less than 50 characters")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `reorderBundleItemsSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `itemIds`
+      - Label: Item Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Minimum Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Maximum Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: e.g., Complete Real Estate Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Minimum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Maximum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /services/bundles/new
+- Schemas from `@/lib/validations/bundles`:
+  - `bundleFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bundleSchema`
+    - Field: `name`
+      - Label: e.g., Complete Real Estate Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Bundle name is required"), max(100, "Bundle name must be less than 100 characters")
+    - Field: `slug`
+      - Label: complete-real-estate-package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft is too high")
+    - Field: `minSqft`
+      - Label: Minimum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Maximum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(1, "Sqft increments must be at least 1"), max(10000, "Sqft increments is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `badgeText`
+      - Label: Badge Text
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(30, "Badge text must be less than 30 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `bundleServiceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Default: 1
+      - Rules: min(1), max(100)
+  - `bundleServicesSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: true
+      - Rules: cuid(), min(1), max(100), min(0)
+  - `calculateBundlePriceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(1, "Square footage must be at least 1")
+  - `createPricingTiersSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one pricing tier is required")
+  - `deleteBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deletePricingTierSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `duplicateBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Minimum Sqft
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Maximum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price is too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name must be less than 50 characters")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `reorderBundleItemsSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `itemIds`
+      - Label: Item Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Minimum Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Maximum Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: e.g., Complete Real Estate Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Minimum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Maximum Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /services/new
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: e.g., Luxury Property Package
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Estimated Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /settings/developer
+- Schemas from `@/lib/validations/bundles`:
+  - `bundleFiltersSchema`
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bundleSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Bundle name is required"), max(100, "Bundle name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(1000, "Description must be less than 1000 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `bundleType`
+      - Label: Bundle Type
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft is too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(1, "Sqft increments must be at least 1"), max(10000, "Sqft increments is too high")
+    - Field: `imageUrl`
+      - Label: Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `badgeText`
+      - Label: Badge Text
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(30, "Badge text must be less than 30 characters")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `isPublic`
+      - Label: Is Public
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `bundleServiceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Default: 1
+      - Rules: min(1), max(100)
+  - `bundleServicesSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: true
+      - Rules: cuid(), min(1), max(100), min(0)
+  - `calculateBundlePriceSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(1, "Square footage must be at least 1")
+  - `createPricingTiersSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one pricing tier is required")
+  - `deleteBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deletePricingTierSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `duplicateBundleSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Minimum sqft is too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(100000, "Maximum sqft is too high")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price is too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name must be less than 50 characters")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+  - `reorderBundleItemsSchema`
+    - Field: `bundleId`
+      - Label: Bundle Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `itemIds`
+      - Label: Item Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /settings/gallery-templates
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /settings/photographer-pay
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Is Active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /settings/territories
+- Schemas from `@/lib/validations/services`:
+  - `bulkArchiveSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkUpdatePricesSchema`
+    - Field: `updates`
+      - Label: Updates
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid(), min(0), max(100000000)
+  - `calculateServicePriceSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Square footage must be positive")
+  - `createServicePricingTiersSchema`
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `tiers`
+      - Label: Tiers
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "At least one tier is required"), max(10, "Maximum 10 tiers allowed")
+  - `deleteServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateServiceSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `pricingTierSchema`
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Minimum sqft must be positive")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0, "Price must be positive"), max(100000000, "Price too high")
+    - Field: `tierName`
+      - Label: Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Tier name too long")
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: optional
+  - `serviceFiltersSchema`
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `isActive`
+      - Label: Territory is active
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+  - `serviceSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Service name is required"), max(100, "Service name must be less than 100 characters")
+    - Field: `category`
+      - Label: Category
+      - Type: unknown (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `duration`
+      - Label: Duration
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50, "Duration must be less than 50 characters")
+    - Field: `deliverables`
+      - Label: Deliverables
+      - Type: string (input: text)
+      - Required: required
+      - Default: []
+      - Rules: max(100, "Each deliverable must be less than 100 characters"), max(20, "Maximum 20 deliverables allowed")
+    - Field: `isActive`
+      - Label: Territory is active
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `pricingMethod`
+      - Label: Pricing Method
+      - Type: unknown (input: text)
+      - Required: optional
+      - Default: "fixed"
+    - Field: `pricePerSqftCents`
+      - Label: Price Per Sqft Cents
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Price per sqft must be positive"), max(10000, "Price per sqft too high")
+    - Field: `minSqft`
+      - Label: Min Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Minimum sqft must be positive"), max(100000, "Maximum sqft too high")
+    - Field: `maxSqft`
+      - Label: Max Sqft
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: min(0, "Maximum sqft must be positive"), max(1000000, "Maximum sqft too high")
+    - Field: `sqftIncrements`
+      - Label: Sqft Increments
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Default: 500
+      - Rules: min(1, "Increments must be at least 1"), max(10000, "Increments too high")
+
+### /_custom-domain
+- Schemas from `@/lib/validations/portfolio-sections`:
+  - `aboutSectionConfigSchema`
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "About Me"
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `highlights`
+      - Label: Highlights
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `awardItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+    - Field: `issuer`
+      - Label: Issuer
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `year`
+      - Label: Year
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `logoUrl`
+      - Label: Logo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `awardsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Awards & Recognition"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `contactFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `required`
+      - Label: Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `contactSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `showForm`
+      - Label: Show Form
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showMap`
+      - Label: Show Map
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `showSocial`
+      - Label: Show Social
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showEmail`
+      - Label: Show Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showPhone`
+      - Label: Show Phone
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `customFields`
+      - Label: Custom Fields
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `mapAddress`
+      - Label: Map Address
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `createSectionSchema`
+    - Field: `sectionType`
+      - Label: Section Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: required
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `customHtmlSectionConfigSchema`
+    - Field: `html`
+      - Label: Html
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+  - `faqItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `question`
+      - Label: Question
+      - Type: string (input: text)
+      - Required: required
+    - Field: `answer`
+      - Label: Answer
+      - Type: string (input: text)
+      - Required: required
+  - `faqSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Frequently Asked Questions"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `gallerySectionConfigSchema`
+    - Field: `projectIds`
+      - Label: Project Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "grid"
+    - Field: `columns`
+      - Label: Columns
+      - Type: number (input: number)
+      - Required: required
+      - Default: 3
+      - Rules: min(1), max(6)
+    - Field: `showProjectNames`
+      - Label: Show Project Names
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `heroSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `backgroundImageUrl`
+      - Label: Background Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `backgroundVideoUrl`
+      - Label: Background Video Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `ctaText`
+      - Label: Cta Text
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `ctaLink`
+      - Label: Cta Link
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "#contact"
+    - Field: `overlay`
+      - Label: Overlay
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "dark"
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "center"
+  - `imageSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `alt`
+      - Label: Alt
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `caption`
+      - Label: Caption
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "contained"
+  - `serviceItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `price`
+      - Label: Price
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `icon`
+      - Label: Icon
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `servicesSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Services"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `showPricing`
+      - Label: Show Pricing
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `spacerSectionConfigSchema`
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: required
+      - Default: 80
+      - Rules: min(20), max(300)
+  - `testimonialItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `quote`
+      - Label: Quote
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientTitle`
+      - Label: Client Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `testimonialsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "What Clients Say"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "cards"
+  - `textSectionConfigSchema`
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "left"
+  - `updatePortfolioSettingsSchema`
+    - Field: `portfolioType`
+      - Label: Portfolio Type
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `template`
+      - Label: Template
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `fontHeading`
+      - Label: Font Heading
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `fontBody`
+      - Label: Font Body
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `socialLinks`
+      - Label: Social Links
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `metaTitle`
+      - Label: Meta Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(70)
+    - Field: `metaDescription`
+      - Label: Meta Description
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(160)
+    - Field: `showBranding`
+      - Label: Show Branding
+      - Type: boolean (input: checkbox)
+      - Required: optional
+  - `updateSectionSchema`
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `isVisible`
+      - Label: Is Visible
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: optional
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `videoSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+      - Rules: url()
+    - Field: `autoplay`
+      - Label: Autoplay
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `loop`
+      - Label: Loop
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `muted`
+      - Label: Muted
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+
+### /book/[slug]
+- Schemas from `@/lib/validations/booking-forms`:
+  - `addBookingFormFieldSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `field`
+      - Label: Field
+      - Type: unknown (input: text)
+      - Required: required
+  - `bookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Label is required"), max(100)
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `placeholder`
+      - Label: Placeholder
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200)
+    - Field: `helpText`
+      - Label: Help Text
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `isRequired`
+      - Label: Is Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+      - Rules: min(0)
+    - Field: `industries`
+      - Label: Industries
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `validation`
+      - Label: Validation
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalOn`
+      - Label: Conditional On
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `conditionalValue`
+      - Label: Conditional Value
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `bookingFormFiltersSchema`
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `industry`
+      - Label: Industry
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `bookingFormSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Form name is required"), max(100, "Form name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Description must be less than 500 characters")
+    - Field: `industry`
+      - Label: Industry
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `isDefault`
+      - Label: Is Default
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+    - Field: `headline`
+      - Label: Headline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200, "Headline must be less than 200 characters")
+    - Field: `subheadline`
+      - Label: Subheadline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Subheadline must be less than 500 characters")
+    - Field: `heroImageUrl`
+      - Label: Hero Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `logoOverrideUrl`
+      - Label: Logo Override Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `primaryColor`
+      - Label: Primary Color
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    - Field: `requireApproval`
+      - Label: Require Approval
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+    - Field: `confirmationEmail`
+      - Label: Confirmation Email
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: true
+  - `bookingFormServicesSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: 0
+      - Rules: cuid(), min(0)
+  - `convertSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingData`
+      - Label: Booking Data
+      - Type: object (input: group)
+      - Required: optional
+      - Rules: cuid(), cuid()
+  - `deleteBookingFormFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+  - `deleteBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateBookingFormSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `fieldValidationSchema`
+    - Field: `minLength`
+      - Label: Min Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `maxLength`
+      - Label: Max Length
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `pattern`
+      - Label: Pattern
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `min`
+      - Label: Min
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `max`
+      - Label: Max
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `options`
+      - Label: Options
+      - Type: array (input: multi)
+      - Required: optional
+  - `rejectSubmissionSchema`
+    - Field: `submissionId`
+      - Label: Submission Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `rejectionNote`
+      - Label: Rejection Note
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(500)
+  - `reorderBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fieldIds`
+      - Label: Field Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `submissionFiltersSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `startDate`
+      - Label: Start Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `endDate`
+      - Label: End Date
+      - Type: string (input: text)
+      - Required: optional
+  - `submitBookingFormSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `data`
+      - Label: Data
+      - Type: record (input: json)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+  - `updateBookingFormFieldsSchema`
+    - Field: `bookingFormId`
+      - Label: Booking Form Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `fields`
+      - Label: Fields
+      - Type: array (input: multi)
+      - Required: required
+
+### /g/[slug]
+- Schemas from `@/lib/validations/galleries`:
+  - `archiveGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `assetSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `filename`
+      - Label: Filename
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(255)
+    - Field: `originalUrl`
+      - Label: Original Url
+      - Type: string (input: text)
+      - Required: required
+      - Rules: url()
+    - Field: `thumbnailUrl`
+      - Label: Thumbnail Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mediumUrl`
+      - Label: Medium Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `watermarkedUrl`
+      - Label: Watermarked Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `mimeType`
+      - Label: Mime Type
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1), max(100)
+    - Field: `sizeBytes`
+      - Label: Size Bytes
+      - Type: number (input: number)
+      - Required: required
+      - Rules: min(0)
+    - Field: `width`
+      - Label: Width
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: optional (nullable)
+      - Rules: min(0)
+    - Field: `exifData`
+      - Label: Exif Data
+      - Type: record (input: json)
+      - Required: optional (nullable)
+    - Field: `sortOrder`
+      - Label: Sort Order
+      - Type: number (input: number)
+      - Required: required
+      - Default: 0
+  - `bulkArchiveGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `archive`
+      - Label: Archive
+      - Type: boolean (input: checkbox)
+      - Required: required
+  - `bulkDeleteGalleriesSchema`
+    - Field: `ids`
+      - Label: Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `deleteAssetSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `deleteFromStorage`
+      - Label: Delete From Storage
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `deleteGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `deliverGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `sendEmail`
+      - Label: Send Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `message`
+      - Label: Message
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: max(2000)
+  - `duplicateGallerySchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(200)
+    - Field: `includePhotos`
+      - Label: Include Photos
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `galleryFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: date (input: date)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: date (input: date)
+      - Required: optional
+  - `gallerySchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Gallery name is required"), max(200, "Gallery name must be less than 200 characters")
+    - Field: `description`
+      - Label: Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000, "Description must be less than 2000 characters")
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `serviceId`
+      - Label: Service Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `services`
+      - Label: Services
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: false
+      - Rules: cuid()
+    - Field: `locationId`
+      - Label: Location Id
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: refine((val)
+    - Field: `status`
+      - Label: Status
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: "draft"
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: unknown (input: text)
+      - Required: required
+      - Default: 0
+      - Rules: min(0, "Price must be a positive number"), max(100000000, "Price is too high")
+    - Field: `currency`
+      - Label: Currency
+      - Type: string (input: text)
+      - Required: required
+      - Default: "USD"
+      - Rules: length(3)
+    - Field: `coverImageUrl`
+      - Label: Cover Image Url
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: url("Invalid cover image URL")
+    - Field: `password`
+      - Label: Password
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100, "Password must be less than 100 characters")
+    - Field: `expiresAt`
+      - Label: Expires At
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+    - Field: `allowDownloads`
+      - Label: Allow Downloads
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showWatermark`
+      - Label: Show Watermark
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `downloadResolution`
+      - Label: Download Resolution
+      - Type: enum (input: select)
+      - Required: optional
+      - Default: "both"
+    - Field: `downloadRequiresPayment`
+      - Label: Download Requires Payment
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowFavorites`
+      - Label: Allow Favorites
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowComments`
+      - Label: Allow Comments
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `sendNotifications`
+      - Label: Send Notifications
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `allowSelections`
+      - Label: Allow Selections
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `selectionLimit`
+      - Label: Selection Limit
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: int(), min(1, "Selection limit must be at least 1"), max(1000, "Selection limit cannot exceed 1000")
+  - `reorderAssetsSchema`
+    - Field: `projectId`
+      - Label: Project Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `assetIds`
+      - Label: Asset Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+
+### /order/[slug]
+- Schemas from `@/lib/validations/order-pages`:
+- Schemas from `@/lib/validations/orders`:
+  - `cartBundleSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `sqft`
+      - Label: Square Footage
+      - Type: number (input: number)
+      - Required: optional
+      - Rules: int(), min(1)
+    - Field: `pricingTierId`
+      - Label: Pricing Tier Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `pricingTierName`
+      - Label: Pricing Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `cartServiceSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(1)
+  - `createOrderSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one item is required")
+    - Field: `clientName`
+      - Label: John Doe
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: john@example.com
+      - Type: string (input: text)
+      - Required: required
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: (555) 123-4567
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: ABC Realty
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time of Day
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `clientNotes`
+      - Label: Any special requests or details about the property...
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `source`
+      - Label: Source
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `medium`
+      - Label: Medium
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `campaign`
+      - Label: Campaign
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+  - `orderFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: string (input: text)
+      - Required: optional
+  - `updateOrderSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `clientName`
+      - Label: John Doe
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `clientEmail`
+      - Label: john@example.com
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email()
+    - Field: `clientPhone`
+      - Label: (555) 123-4567
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: ABC Realty
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time of Day
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientNotes`
+      - Label: Any special requests or details about the property...
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+
+### /order/[slug]/confirmation
+- Schemas from `@/lib/validations/order-pages`:
+  - `deleteOrderPageSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `force`
+      - Label: Force
+      - Type: boolean (input: checkbox)
+      - Required: optional
+      - Default: false
+  - `duplicateOrderPageSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `newName`
+      - Label: New Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `newSlug`
+      - Label: New Slug
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+  - `orderPageBundlesSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `bundleIds`
+      - Label: Bundle Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: cuid()
+  - `orderPageFiltersSchema`
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+  - `orderPageSchema`
+    - Field: `name`
+      - Label: Name
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Page name is required"), max(100, "Page name must be less than 100 characters")
+    - Field: `slug`
+      - Label: Slug
+      - Type: unknown (input: text)
+      - Required: required
+      - Rules: min(1, "Slug is required"), max(100, "Slug must be less than 100 characters"), regex(/^[a-z0-9-]+$/, "Slug must only contain lowercase letters, numbers, and hyphens")
+    - Field: `headline`
+      - Label: Headline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(200, "Headline must be less than 200 characters")
+    - Field: `subheadline`
+      - Label: Subheadline
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500, "Subheadline must be less than 500 characters")
+    - Field: `heroImageUrl`
+      - Label: Hero Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `logoOverrideUrl`
+      - Label: Logo Override Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `primaryColor`
+      - Label: Primary Color
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    - Field: `showPhone`
+      - Label: Show Phone
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showEmail`
+      - Label: Show Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `customPhone`
+      - Label: Custom Phone
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `customEmail`
+      - Label: Custom Email
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: email()
+    - Field: `template`
+      - Label: Template
+      - Type: string (input: text)
+      - Required: required
+      - Default: "default"
+    - Field: `metaTitle`
+      - Label: Meta Title
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `metaDescription`
+      - Label: Meta Description
+      - Type: unknown (input: text)
+      - Required: optional (nullable)
+      - Rules: max(300)
+    - Field: `testimonials`
+      - Label: Testimonials
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Default: []
+      - Rules: max(100), max(100), max(500), url(), max(10, "Maximum 10 testimonials allowed")
+    - Field: `isPublished`
+      - Label: Is Published
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `requireLogin`
+      - Label: Require Login
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: cuid()
+  - `orderPageServicesSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `services`
+      - Label: Services
+      - Type: array (input: multi)
+      - Required: required
+      - Default: 0
+      - Rules: cuid(), min(0)
+- Schemas from `@/lib/validations/orders`:
+  - `cartBundleSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `sqft`
+      - Label: Sqft
+      - Type: number (input: number)
+      - Required: optional
+      - Rules: int(), min(1)
+    - Field: `pricingTierId`
+      - Label: Pricing Tier Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `pricingTierName`
+      - Label: Pricing Tier Name
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `cartServiceSchema`
+    - Field: `type`
+      - Label: Type
+      - Type: literal (input: text)
+      - Required: required
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `priceCents`
+      - Label: Price Cents
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(0)
+    - Field: `quantity`
+      - Label: Quantity
+      - Type: number (input: number)
+      - Required: required
+      - Rules: int(), min(1)
+  - `createOrderSchema`
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Rules: min(1, "At least one item is required")
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+      - Rules: min(1, "Name is required"), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: required
+      - Rules: email("Valid email is required")
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `source`
+      - Label: Source
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `medium`
+      - Label: Medium
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+    - Field: `campaign`
+      - Label: Campaign
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(50)
+  - `orderFiltersSchema`
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `orderPageId`
+      - Label: Order Page Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `clientId`
+      - Label: Client Id
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: cuid()
+    - Field: `search`
+      - Label: Search
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `fromDate`
+      - Label: From Date
+      - Type: string (input: text)
+      - Required: optional
+    - Field: `toDate`
+      - Label: To Date
+      - Type: string (input: text)
+      - Required: optional
+  - `updateOrderSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+      - Rules: cuid()
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: min(1), max(100)
+    - Field: `clientEmail`
+      - Label: Client Email
+      - Type: string (input: text)
+      - Required: optional
+      - Rules: email()
+    - Field: `clientPhone`
+      - Label: Client Phone
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(20)
+    - Field: `clientCompany`
+      - Label: Client Company
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(100)
+    - Field: `locationNotes`
+      - Label: Location Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(500)
+    - Field: `preferredDate`
+      - Label: Preferred Date
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `preferredTime`
+      - Label: Preferred Time
+      - Type: enum (input: select)
+      - Required: optional (nullable)
+    - Field: `flexibleDates`
+      - Label: Flexible Dates
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `clientNotes`
+      - Label: Client Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `internalNotes`
+      - Label: Internal Notes
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(2000)
+    - Field: `status`
+      - Label: Status
+      - Type: enum (input: select)
+      - Required: optional
+
+### /portfolio/[slug]
+- Schemas from `@/lib/validations/portfolio-sections`:
+  - `aboutSectionConfigSchema`
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "About Me"
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `highlights`
+      - Label: Highlights
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `awardItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: required
+    - Field: `issuer`
+      - Label: Issuer
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `year`
+      - Label: Year
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `logoUrl`
+      - Label: Logo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `awardsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Awards & Recognition"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `contactFieldSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `label`
+      - Label: Label
+      - Type: string (input: text)
+      - Required: required
+    - Field: `type`
+      - Label: Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `required`
+      - Label: Required
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `contactSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `showForm`
+      - Label: Show Form
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showMap`
+      - Label: Show Map
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `showSocial`
+      - Label: Show Social
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showEmail`
+      - Label: Show Email
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `showPhone`
+      - Label: Show Phone
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+    - Field: `customFields`
+      - Label: Custom Fields
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `mapAddress`
+      - Label: Map Address
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `createSectionSchema`
+    - Field: `sectionType`
+      - Label: Section Type
+      - Type: enum (input: select)
+      - Required: required
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: required
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `customHtmlSectionConfigSchema`
+    - Field: `html`
+      - Label: Html
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+  - `faqItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `question`
+      - Label: Question
+      - Type: string (input: text)
+      - Required: required
+    - Field: `answer`
+      - Label: Answer
+      - Type: string (input: text)
+      - Required: required
+  - `faqSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Frequently Asked Questions"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+  - `gallerySectionConfigSchema`
+    - Field: `projectIds`
+      - Label: Project Ids
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "grid"
+    - Field: `columns`
+      - Label: Columns
+      - Type: number (input: number)
+      - Required: required
+      - Default: 3
+      - Rules: min(1), max(6)
+    - Field: `showProjectNames`
+      - Label: Show Project Names
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+  - `heroSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `subtitle`
+      - Label: Subtitle
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `backgroundImageUrl`
+      - Label: Background Image Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `backgroundVideoUrl`
+      - Label: Background Video Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `ctaText`
+      - Label: Cta Text
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Get in Touch"
+    - Field: `ctaLink`
+      - Label: Cta Link
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "#contact"
+    - Field: `overlay`
+      - Label: Overlay
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "dark"
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "center"
+  - `imageSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `alt`
+      - Label: Alt
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `caption`
+      - Label: Caption
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "contained"
+  - `serviceItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `name`
+      - Label: Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `description`
+      - Label: Description
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `price`
+      - Label: Price
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `icon`
+      - Label: Icon
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `servicesSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "Services"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `showPricing`
+      - Label: Show Pricing
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+  - `spacerSectionConfigSchema`
+    - Field: `height`
+      - Label: Height
+      - Type: number (input: number)
+      - Required: required
+      - Default: 80
+      - Rules: min(20), max(300)
+  - `testimonialItemSchema`
+    - Field: `id`
+      - Label: Id
+      - Type: string (input: text)
+      - Required: required
+    - Field: `quote`
+      - Label: Quote
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientName`
+      - Label: Client Name
+      - Type: string (input: text)
+      - Required: required
+    - Field: `clientTitle`
+      - Label: Client Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+    - Field: `photoUrl`
+      - Label: Photo Url
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: url()
+  - `testimonialsSectionConfigSchema`
+    - Field: `title`
+      - Label: Title
+      - Type: string (input: text)
+      - Required: optional
+      - Default: "What Clients Say"
+    - Field: `items`
+      - Label: Items
+      - Type: array (input: multi)
+      - Required: required
+      - Default: []
+    - Field: `layout`
+      - Label: Layout
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "cards"
+  - `textSectionConfigSchema`
+    - Field: `content`
+      - Label: Content
+      - Type: string (input: text)
+      - Required: required
+      - Default: ""
+    - Field: `alignment`
+      - Label: Alignment
+      - Type: enum (input: select)
+      - Required: required
+      - Default: "left"
+  - `updatePortfolioSettingsSchema`
+    - Field: `portfolioType`
+      - Label: Portfolio Type
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `template`
+      - Label: Template
+      - Type: enum (input: select)
+      - Required: optional
+    - Field: `fontHeading`
+      - Label: Font Heading
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `fontBody`
+      - Label: Font Body
+      - Type: string (input: text)
+      - Required: optional (nullable)
+    - Field: `socialLinks`
+      - Label: Social Links
+      - Type: object (input: group)
+      - Required: optional (nullable)
+      - Rules: url()
+    - Field: `metaTitle`
+      - Label: Meta Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(70)
+    - Field: `metaDescription`
+      - Label: Meta Description
+      - Type: string (input: text)
+      - Required: optional (nullable)
+      - Rules: max(160)
+    - Field: `showBranding`
+      - Label: Show Branding
+      - Type: boolean (input: checkbox)
+      - Required: optional
+  - `updateSectionSchema`
+    - Field: `position`
+      - Label: Position
+      - Type: number (input: number)
+      - Required: optional
+    - Field: `isVisible`
+      - Label: Is Visible
+      - Type: boolean (input: checkbox)
+      - Required: optional
+    - Field: `config`
+      - Label: Config
+      - Type: record (input: json)
+      - Required: optional
+    - Field: `customTitle`
+      - Label: Custom Title
+      - Type: string (input: text)
+      - Required: optional (nullable)
+  - `videoSectionConfigSchema`
+    - Field: `url`
+      - Label: Url
+      - Type: string (input: text)
+      - Required: optional
+      - Default: ""
+      - Rules: url()
+    - Field: `autoplay`
+      - Label: Autoplay
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `loop`
+      - Label: Loop
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: false
+    - Field: `muted`
+      - Label: Muted
+      - Type: boolean (input: checkbox)
+      - Required: required
+      - Default: true
+
 ## Validation Field Summary (By Schema)
 - Fields listed below are top-level keys per Zod object schema.
 
