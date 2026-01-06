@@ -6113,6 +6113,2039 @@ The following list is the full route inventory. Each module section below explai
 - `weather.ts`: checkWeatherApiAvailability, getBookingWeather, getGoldenHour, getLocationForecast
 - `webhooks.ts`: WEBHOOK_EVENT_TYPES, createWebhookEndpoint, deleteWebhookEndpoint, dispatchWebhookEvent, getWebhookDeliveries, getWebhookDelivery, getWebhookEndpoints, regenerateWebhookSecret, testWebhookEndpoint, updateWebhookEndpoint
 
+## Validation Schemas (Verbatim)
+- These are the canonical Zod schemas used by forms/actions. Use them as the single source of validation rules.
+- Files are included verbatim to avoid ambiguity.
+
+### src/lib/validations/addons.ts
+```typescript
+import { z } from "zod";
+
+// Addon trigger enum matching Prisma schema
+export const addonTriggerSchema = z.enum([
+  "always",
+  "with_service",
+  "cart_threshold",
+]);
+
+export type AddonTriggerEnum = z.infer<typeof addonTriggerSchema>;
+
+// Base addon schema for validation
+export const addonSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Addon name is required")
+    .max(100, "Addon name must be less than 100 characters"),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  priceCents: z
+    .number()
+    .min(0, "Price must be a positive number")
+    .max(100000000, "Price is too high"), // Max $1M
+  imageUrl: z.string().url().optional().nullable(),
+  iconName: z
+    .string()
+    .max(50, "Icon name must be less than 50 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  triggerType: addonTriggerSchema.default("always"),
+  triggerValue: z
+    .string()
+    .max(100, "Trigger value must be less than 100 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  isActive: z.boolean().default(true),
+  isOneTime: z.boolean().default(true),
+});
+
+// Schema for creating a new addon
+export const createAddonSchema = addonSchema;
+
+// Schema for updating an existing addon
+export const updateAddonSchema = addonSchema.partial().extend({
+  id: z.string().cuid(),
+});
+
+// Schema for deleting an addon
+export const deleteAddonSchema = z.object({
+  id: z.string().cuid(),
+  force: z.boolean().optional().default(false),
+});
+
+// Schema for setting addon compatibility with services
+export const addonCompatibilitySchema = z.object({
+  addonId: z.string().cuid(),
+  serviceIds: z.array(z.string().cuid()),
+});
+
+// Type exports
+export type CreateAddonInput = z.infer<typeof createAddonSchema>;
+export type UpdateAddonInput = z.infer<typeof updateAddonSchema>;
+export type DeleteAddonInput = z.infer<typeof deleteAddonSchema>;
+export type AddonCompatibilityInput = z.infer<typeof addonCompatibilitySchema>;
+
+// Addon filters for querying
+export const addonFiltersSchema = z.object({
+  isActive: z.boolean().optional(),
+  triggerType: addonTriggerSchema.optional(),
+  search: z.string().optional(),
+});
+
+export type AddonFilters = z.infer<typeof addonFiltersSchema>;
+```
+
+### src/lib/validations/booking-forms.ts
+```typescript
+import { z } from "zod";
+
+// Enum values matching Prisma schema
+export const FormFieldTypeValues = [
+  "text",
+  "textarea",
+  "email",
+  "phone",
+  "number",
+  "date",
+  "time",
+  "datetime",
+  "select",
+  "multiselect",
+  "checkbox",
+  "radio",
+  "file",
+  "address",
+  "url",
+] as const;
+
+export const IndustryValues = [
+  "real_estate",
+  "commercial",
+  "events",
+  "portraits",
+  "food",
+  "product",
+] as const;
+
+export const SubmissionStatusValues = [
+  "pending",
+  "approved",
+  "rejected",
+  "converted",
+  "expired",
+] as const;
+
+// Field validation schema (stored as JSON in database)
+export const fieldValidationSchema = z.object({
+  minLength: z.number().optional(),
+  maxLength: z.number().optional(),
+  pattern: z.string().optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
+  options: z.array(z.string()).optional(), // For select/multiselect/radio
+});
+
+// Booking form field schema
+export const bookingFormFieldSchema = z.object({
+  id: z.string().cuid().optional(), // Optional for new fields
+  label: z.string().min(1, "Label is required").max(100),
+  type: z.enum(FormFieldTypeValues),
+  placeholder: z.string().max(200).optional().nullable(),
+  helpText: z.string().max(500).optional().nullable(),
+  isRequired: z.boolean().default(false),
+  sortOrder: z.number().min(0).default(0),
+  industries: z.array(z.enum(IndustryValues)).default([]),
+  validation: fieldValidationSchema.optional().nullable(),
+  conditionalOn: z.string().optional().nullable(),
+  conditionalValue: z.string().optional().nullable(),
+});
+
+// Base booking form schema
+export const bookingFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Form name is required")
+    .max(100, "Form name must be less than 100 characters"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug must be less than 100 characters")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug must only contain lowercase letters, numbers, and hyphens"
+    ),
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  industry: z
+    .enum(IndustryValues)
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  isPublished: z.boolean().optional().default(false),
+  isDefault: z.boolean().optional().default(false),
+  headline: z
+    .string()
+    .max(200, "Headline must be less than 200 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  subheadline: z
+    .string()
+    .max(500, "Subheadline must be less than 500 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  heroImageUrl: z.string().url().optional().nullable(),
+  logoOverrideUrl: z.string().url().optional().nullable(),
+  primaryColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  requireApproval: z.boolean().optional().default(true),
+  confirmationEmail: z.boolean().optional().default(true),
+});
+
+// Schema for creating a new booking form
+export const createBookingFormSchema = bookingFormSchema;
+
+// Schema for updating an existing booking form
+export const updateBookingFormSchema = bookingFormSchema.partial().extend({
+  id: z.string().cuid(),
+});
+
+// Schema for deleting a booking form
+export const deleteBookingFormSchema = z.object({
+  id: z.string().cuid(),
+  force: z.boolean().optional().default(false),
+});
+
+// Schema for duplicating a booking form
+export const duplicateBookingFormSchema = z.object({
+  id: z.string().cuid(),
+  newName: z.string().min(1).max(100).optional(),
+  newSlug: z.string().min(1).max(100).optional(),
+});
+
+// Schema for managing form fields
+export const updateBookingFormFieldsSchema = z.object({
+  bookingFormId: z.string().cuid(),
+  fields: z.array(bookingFormFieldSchema),
+});
+
+// Schema for adding a single field
+export const addBookingFormFieldSchema = z.object({
+  bookingFormId: z.string().cuid(),
+  field: bookingFormFieldSchema,
+});
+
+// Schema for updating a single field
+export const updateBookingFormFieldSchema = bookingFormFieldSchema.extend({
+  id: z.string().cuid(),
+  bookingFormId: z.string().cuid(),
+});
+
+// Schema for deleting a field
+export const deleteBookingFormFieldSchema = z.object({
+  id: z.string().cuid(),
+  bookingFormId: z.string().cuid(),
+});
+
+// Schema for reordering fields
+export const reorderBookingFormFieldsSchema = z.object({
+  bookingFormId: z.string().cuid(),
+  fieldIds: z.array(z.string().cuid()), // Ordered list of field IDs
+});
+
+// Schema for managing services on a form
+export const bookingFormServicesSchema = z.object({
+  bookingFormId: z.string().cuid(),
+  services: z.array(
+    z.object({
+      serviceId: z.string().cuid(),
+      sortOrder: z.number().min(0).default(0),
+      isDefault: z.boolean().default(false),
+    })
+  ),
+});
+
+// Schema for public form submission
+export const submitBookingFormSchema = z.object({
+  bookingFormId: z.string().cuid(),
+  data: z.record(z.string(), z.unknown()), // Dynamic field data
+  clientName: z.string().min(1, "Name is required").max(100).optional(),
+  clientEmail: z.string().email("Valid email is required").optional(),
+  clientPhone: z.string().max(20).optional().nullable(),
+  preferredDate: z.string().datetime().optional().nullable(),
+  preferredTime: z.string().max(50).optional().nullable(),
+  serviceId: z.string().cuid().optional().nullable(),
+});
+
+// Schema for converting submission to booking
+export const convertSubmissionSchema = z.object({
+  submissionId: z.string().cuid(),
+  bookingData: z.object({
+    startTime: z.string().datetime(),
+    endTime: z.string().datetime(),
+    serviceId: z.string().cuid().optional(),
+    assignedUserId: z.string().cuid().optional(),
+    timezone: z.string().optional(),
+    allowConflicts: z.boolean().optional(),
+    notes: z.string().optional(),
+  }),
+});
+
+// Schema for rejecting a submission
+export const rejectSubmissionSchema = z.object({
+  submissionId: z.string().cuid(),
+  rejectionNote: z.string().max(500).optional(),
+});
+
+// Booking form filters for querying
+export const bookingFormFiltersSchema = z.object({
+  isPublished: z.boolean().optional(),
+  industry: z.enum(IndustryValues).optional(),
+  search: z.string().optional(),
+});
+
+// Submission filters for querying
+export const submissionFiltersSchema = z.object({
+  bookingFormId: z.string().cuid().optional(),
+  status: z.enum(SubmissionStatusValues).optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+});
+
+// Type exports
+export type FormFieldType = (typeof FormFieldTypeValues)[number];
+export type Industry = (typeof IndustryValues)[number];
+export type SubmissionStatus = (typeof SubmissionStatusValues)[number];
+export type FieldValidation = z.infer<typeof fieldValidationSchema>;
+export type BookingFormField = z.infer<typeof bookingFormFieldSchema>;
+export type CreateBookingFormInput = z.infer<typeof createBookingFormSchema>;
+export type UpdateBookingFormInput = z.infer<typeof updateBookingFormSchema>;
+export type DeleteBookingFormInput = z.infer<typeof deleteBookingFormSchema>;
+export type DuplicateBookingFormInput = z.infer<typeof duplicateBookingFormSchema>;
+export type UpdateBookingFormFieldsInput = z.infer<typeof updateBookingFormFieldsSchema>;
+export type AddBookingFormFieldInput = z.infer<typeof addBookingFormFieldSchema>;
+export type UpdateBookingFormFieldInput = z.infer<typeof updateBookingFormFieldSchema>;
+export type DeleteBookingFormFieldInput = z.infer<typeof deleteBookingFormFieldSchema>;
+export type ReorderBookingFormFieldsInput = z.infer<typeof reorderBookingFormFieldsSchema>;
+export type BookingFormServicesInput = z.infer<typeof bookingFormServicesSchema>;
+export type SubmitBookingFormInput = z.infer<typeof submitBookingFormSchema>;
+export type ConvertSubmissionInput = z.infer<typeof convertSubmissionSchema>;
+export type RejectSubmissionInput = z.infer<typeof rejectSubmissionSchema>;
+export type BookingFormFilters = z.infer<typeof bookingFormFiltersSchema>;
+export type SubmissionFilters = z.infer<typeof submissionFiltersSchema>;
+```
+
+### src/lib/validations/bundles.ts
+```typescript
+import { z } from "zod";
+
+// Bundle type enum matching Prisma schema
+export const bundleTypeSchema = z.enum(["fixed", "tiered", "custom", "sqft_based", "tiered_sqft"]);
+export const pricingMethodSchema = z.enum(["fixed", "per_sqft", "tiered"]);
+
+export type BundleTypeEnum = z.infer<typeof bundleTypeSchema>;
+export type PricingMethodEnum = z.infer<typeof pricingMethodSchema>;
+
+// Base bundle schema for validation
+export const bundleSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Bundle name is required")
+    .max(100, "Bundle name must be less than 100 characters"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug must be less than 100 characters")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug must only contain lowercase letters, numbers, and hyphens"
+    ),
+  description: z
+    .string()
+    .max(1000, "Description must be less than 1000 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  priceCents: z
+    .number()
+    .min(0, "Price must be a positive number")
+    .max(100000000, "Price is too high"), // Max $1M
+  bundleType: bundleTypeSchema.optional().default("fixed"),
+  pricingMethod: pricingMethodSchema.optional().default("fixed"),
+
+  // Square footage pricing fields (all optional)
+  pricePerSqftCents: z
+    .number()
+    .min(0, "Price per sqft must be positive")
+    .max(10000, "Price per sqft is too high") // Max $100/sqft
+    .optional()
+    .nullable(),
+  minSqft: z
+    .number()
+    .min(0, "Minimum sqft must be positive")
+    .max(100000, "Minimum sqft is too high")
+    .optional()
+    .nullable(),
+  maxSqft: z
+    .number()
+    .min(0, "Maximum sqft must be positive")
+    .max(100000, "Maximum sqft is too high")
+    .optional()
+    .nullable(),
+  sqftIncrements: z
+    .number()
+    .min(1, "Sqft increments must be at least 1")
+    .max(10000, "Sqft increments is too high")
+    .optional()
+    .nullable(),
+
+  imageUrl: z.string().url().optional().nullable(),
+  badgeText: z
+    .string()
+    .max(30, "Badge text must be less than 30 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  isActive: z.boolean().default(true),
+  isPublic: z.boolean().default(true),
+});
+
+// Schema for creating a new bundle
+export const createBundleSchema = bundleSchema;
+
+// Schema for updating an existing bundle
+export const updateBundleSchema = bundleSchema.partial().extend({
+  id: z.string().cuid(),
+});
+
+// Schema for deleting a bundle
+export const deleteBundleSchema = z.object({
+  id: z.string().cuid(),
+  force: z.boolean().optional().default(false),
+});
+
+// Schema for duplicating a bundle
+export const duplicateBundleSchema = z.object({
+  id: z.string().cuid(),
+  newName: z.string().min(1).max(100).optional(),
+  newSlug: z.string().min(1).max(100).optional(),
+});
+
+// Schema for adding/removing services from a bundle
+export const bundleServiceSchema = z.object({
+  bundleId: z.string().cuid(),
+  serviceId: z.string().cuid(),
+  isRequired: z.boolean().default(true),
+  quantity: z.number().min(1).max(100).default(1),
+});
+
+export const bundleServicesSchema = z.object({
+  bundleId: z.string().cuid(),
+  services: z.array(
+    z.object({
+      serviceId: z.string().cuid(),
+      isRequired: z.boolean().default(true),
+      quantity: z.number().min(1).max(100).default(1),
+      sortOrder: z.number().min(0).default(0),
+    })
+  ),
+});
+
+// Schema for reordering bundle items
+export const reorderBundleItemsSchema = z.object({
+  bundleId: z.string().cuid(),
+  itemIds: z.array(z.string().cuid()),
+});
+
+// Type exports
+export type CreateBundleInput = z.infer<typeof createBundleSchema>;
+export type UpdateBundleInput = z.infer<typeof updateBundleSchema>;
+export type DeleteBundleInput = z.infer<typeof deleteBundleSchema>;
+export type DuplicateBundleInput = z.infer<typeof duplicateBundleSchema>;
+export type BundleServiceInput = z.infer<typeof bundleServiceSchema>;
+export type BundleServicesInput = z.infer<typeof bundleServicesSchema>;
+export type ReorderBundleItemsInput = z.infer<typeof reorderBundleItemsSchema>;
+
+// Bundle filters for querying
+export const bundleFiltersSchema = z.object({
+  isActive: z.boolean().optional(),
+  isPublic: z.boolean().optional(),
+  bundleType: bundleTypeSchema.optional(),
+  search: z.string().optional(),
+});
+
+export type BundleFilters = z.infer<typeof bundleFiltersSchema>;
+
+// =============================================================================
+// PRICING TIERS (for tiered_sqft bundles - BICEP pricing)
+// =============================================================================
+
+// Single pricing tier
+export const pricingTierSchema = z.object({
+  minSqft: z
+    .number()
+    .min(0, "Minimum sqft must be positive")
+    .max(100000, "Minimum sqft is too high"),
+  maxSqft: z
+    .number()
+    .min(0, "Maximum sqft must be positive")
+    .max(100000, "Maximum sqft is too high")
+    .optional()
+    .nullable(), // null = unlimited
+  priceCents: z
+    .number()
+    .min(0, "Price must be positive")
+    .max(100000000, "Price is too high"),
+  tierName: z
+    .string()
+    .max(50, "Tier name must be less than 50 characters")
+    .optional()
+    .nullable(),
+  sortOrder: z.number().min(0).default(0),
+});
+
+// Schema for creating pricing tiers for a bundle
+export const createPricingTiersSchema = z.object({
+  bundleId: z.string().cuid(),
+  tiers: z.array(pricingTierSchema).min(1, "At least one pricing tier is required"),
+});
+
+// Schema for updating a single pricing tier
+export const updatePricingTierSchema = pricingTierSchema.partial().extend({
+  id: z.string().cuid(),
+});
+
+// Schema for deleting a pricing tier
+export const deletePricingTierSchema = z.object({
+  id: z.string().cuid(),
+});
+
+// Type exports for pricing tiers
+export type PricingTierInput = z.infer<typeof pricingTierSchema>;
+export type CreatePricingTiersInput = z.infer<typeof createPricingTiersSchema>;
+export type UpdatePricingTierInput = z.infer<typeof updatePricingTierSchema>;
+export type DeletePricingTierInput = z.infer<typeof deletePricingTierSchema>;
+
+// =============================================================================
+// PRICE CALCULATION
+// =============================================================================
+
+// Schema for calculating bundle price based on sqft
+export const calculateBundlePriceSchema = z.object({
+  bundleId: z.string().cuid(),
+  sqft: z.number().min(1, "Square footage must be at least 1"),
+});
+
+export type CalculateBundlePriceInput = z.infer<typeof calculateBundlePriceSchema>;
+```
+
+### src/lib/validations/galleries.ts
+```typescript
+import { z } from "zod";
+
+// Project status enum matching Prisma schema
+export const projectStatusSchema = z.enum([
+  "draft",
+  "pending",
+  "delivered",
+  "archived",
+]);
+
+export type ProjectStatusEnum = z.infer<typeof projectStatusSchema>;
+
+// Base gallery schema for validation
+export const gallerySchema = z.object({
+  name: z
+    .string()
+    .min(1, "Gallery name is required")
+    .max(200, "Gallery name must be less than 200 characters"),
+  description: z
+    .string()
+    .max(2000, "Description must be less than 2000 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  clientId: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null)
+    .refine((val) => val === null || /^[cC][^\s-]{8,}$/.test(val), {
+      message: "Invalid client ID",
+    }),
+  serviceId: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null)
+    .refine((val) => val === null || /^[cC][^\s-]{8,}$/.test(val), {
+      message: "Invalid service ID",
+    }),
+  // Multi-service support
+  services: z
+    .array(
+      z.object({
+        serviceId: z.string().cuid(),
+        isPrimary: z.boolean().default(false),
+        priceCentsOverride: z.number().optional().nullable(),
+      })
+    )
+    .optional()
+    .default([]),
+  locationId: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null)
+    .refine((val) => val === null || /^[cC][^\s-]{8,}$/.test(val), {
+      message: "Invalid location ID",
+    }),
+  status: projectStatusSchema.default("draft"),
+  // Pricing
+  priceCents: z
+    .number()
+    .min(0, "Price must be a positive number")
+    .max(100000000, "Price is too high") // Max $1M
+    .default(0),
+  currency: z.string().length(3).default("USD"),
+  // Gallery Settings
+  coverImageUrl: z
+    .string()
+    .url("Invalid cover image URL")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  password: z
+    .string()
+    .max(100, "Password must be less than 100 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  expiresAt: z
+    .date()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  allowDownloads: z.boolean().default(true),
+  showWatermark: z.boolean().default(false),
+  downloadResolution: z.enum(["full", "web", "both"]).optional().default("both"),
+  downloadRequiresPayment: z.boolean().default(true),
+  // Additional settings (stored in form but may need schema updates)
+  allowFavorites: z.boolean().default(true),
+  allowComments: z.boolean().default(false),
+  sendNotifications: z.boolean().default(true),
+  // Selection settings
+  allowSelections: z.boolean().default(false),
+  selectionLimit: z
+    .number()
+    .int()
+    .min(1, "Selection limit must be at least 1")
+    .max(1000, "Selection limit cannot exceed 1000")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+});
+
+// Schema for creating a new gallery
+export const createGallerySchema = gallerySchema;
+
+// Schema for updating an existing gallery
+export const updateGallerySchema = gallerySchema.partial().extend({
+  id: z.string().cuid(),
+});
+
+// Schema for deleting a gallery
+export const deleteGallerySchema = z.object({
+  id: z.string().cuid(),
+  force: z.boolean().optional().default(false), // Force delete with all assets
+});
+
+// Schema for duplicating a gallery
+export const duplicateGallerySchema = z.object({
+  id: z.string().cuid(),
+  newName: z.string().min(1).max(200).optional(),
+  includePhotos: z.boolean().default(false),
+});
+
+// Schema for archiving a gallery
+export const archiveGallerySchema = z.object({
+  id: z.string().cuid(),
+  archive: z.boolean(), // true = archive, false = restore
+});
+
+// Schema for delivering a gallery
+export const deliverGallerySchema = z.object({
+  id: z.string().cuid(),
+  sendEmail: z.boolean().default(true),
+  message: z.string().max(2000).optional(),
+});
+
+// Schema for bulk operations
+export const bulkArchiveGalleriesSchema = z.object({
+  ids: z.array(z.string().cuid()),
+  archive: z.boolean(), // true = archive, false = restore
+});
+
+export const bulkDeleteGalleriesSchema = z.object({
+  ids: z.array(z.string().cuid()),
+  force: z.boolean().default(false),
+});
+
+// Gallery filters for querying
+export const galleryFiltersSchema = z.object({
+  status: projectStatusSchema.optional(),
+  clientId: z.string().cuid().optional(),
+  serviceId: z.string().cuid().optional(),
+  search: z.string().optional(),
+  fromDate: z.date().optional(),
+  toDate: z.date().optional(),
+});
+
+export type GalleryFilters = z.infer<typeof galleryFiltersSchema>;
+
+// Asset/Photo schemas
+export const assetSchema = z.object({
+  projectId: z.string().cuid(),
+  filename: z.string().min(1).max(255),
+  originalUrl: z.string().url(),
+  thumbnailUrl: z.string().url().optional().nullable(),
+  mediumUrl: z.string().url().optional().nullable(),
+  watermarkedUrl: z.string().url().optional().nullable(),
+  mimeType: z.string().min(1).max(100),
+  sizeBytes: z.number().min(0),
+  width: z.number().min(0).optional().nullable(),
+  height: z.number().min(0).optional().nullable(),
+  exifData: z.record(z.string(), z.unknown()).optional().nullable(),
+  sortOrder: z.number().default(0),
+});
+
+export const createAssetSchema = assetSchema;
+
+export const updateAssetSchema = assetSchema.partial().extend({
+  id: z.string().cuid(),
+});
+
+export const deleteAssetSchema = z.object({
+  id: z.string().cuid(),
+  deleteFromStorage: z.boolean().default(true),
+});
+
+export const reorderAssetsSchema = z.object({
+  projectId: z.string().cuid(),
+  assetIds: z.array(z.string().cuid()), // Ordered list of asset IDs
+});
+
+// Type exports
+export type CreateGalleryInput = z.infer<typeof createGallerySchema>;
+export type UpdateGalleryInput = z.infer<typeof updateGallerySchema>;
+export type DeleteGalleryInput = z.infer<typeof deleteGallerySchema>;
+export type DuplicateGalleryInput = z.infer<typeof duplicateGallerySchema>;
+export type ArchiveGalleryInput = z.infer<typeof archiveGallerySchema>;
+export type DeliverGalleryInput = z.infer<typeof deliverGallerySchema>;
+export type BulkArchiveGalleriesInput = z.infer<typeof bulkArchiveGalleriesSchema>;
+export type BulkDeleteGalleriesInput = z.infer<typeof bulkDeleteGalleriesSchema>;
+
+export type CreateAssetInput = z.infer<typeof createAssetSchema>;
+export type UpdateAssetInput = z.infer<typeof updateAssetSchema>;
+export type DeleteAssetInput = z.infer<typeof deleteAssetSchema>;
+export type ReorderAssetsInput = z.infer<typeof reorderAssetsSchema>;
+```
+
+### src/lib/validations/order-pages.ts
+```typescript
+import { z } from "zod";
+
+// Base order page schema for validation
+export const orderPageSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Page name is required")
+    .max(100, "Page name must be less than 100 characters"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug must be less than 100 characters")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug must only contain lowercase letters, numbers, and hyphens"
+    ),
+  headline: z
+    .string()
+    .max(200, "Headline must be less than 200 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  subheadline: z
+    .string()
+    .max(500, "Subheadline must be less than 500 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  heroImageUrl: z.string().url().optional().nullable(),
+  logoOverrideUrl: z.string().url().optional().nullable(),
+  primaryColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, "Primary color must be a valid hex color")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  showPhone: z.boolean().default(true),
+  showEmail: z.boolean().default(true),
+  customPhone: z
+    .string()
+    .max(20)
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  customEmail: z
+    .string()
+    .email()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  template: z.string().default("default"),
+  metaTitle: z
+    .string()
+    .max(100)
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  metaDescription: z
+    .string()
+    .max(300)
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  testimonials: z
+    .array(
+      z.object({
+        name: z.string().max(100),
+        company: z.string().max(100).optional(),
+        quote: z.string().max(500),
+        photoUrl: z.string().url().optional().nullable(),
+      })
+    )
+    .max(10, "Maximum 10 testimonials allowed")
+    .default([]),
+  isPublished: z.boolean().default(false),
+  requireLogin: z.boolean().default(false),
+  clientId: z.string().cuid().optional().nullable(),
+});
+
+// Schema for creating a new order page
+export const createOrderPageSchema = orderPageSchema;
+
+// Schema for updating an existing order page
+export const updateOrderPageSchema = orderPageSchema.partial().extend({
+  id: z.string().cuid(),
+});
+
+// Schema for deleting an order page
+export const deleteOrderPageSchema = z.object({
+  id: z.string().cuid(),
+  force: z.boolean().optional().default(false),
+});
+
+// Schema for duplicating an order page
+export const duplicateOrderPageSchema = z.object({
+  id: z.string().cuid(),
+  newName: z.string().min(1).max(100).optional(),
+  newSlug: z.string().min(1).max(100).optional(),
+});
+
+// Schema for adding/removing bundles from an order page
+export const orderPageBundlesSchema = z.object({
+  orderPageId: z.string().cuid(),
+  bundleIds: z.array(z.string().cuid()),
+});
+
+// Schema for adding/removing services from an order page
+export const orderPageServicesSchema = z.object({
+  orderPageId: z.string().cuid(),
+  services: z.array(
+    z.object({
+      serviceId: z.string().cuid(),
+      sortOrder: z.number().min(0).default(0),
+    })
+  ),
+});
+
+// Type exports
+export type CreateOrderPageInput = z.infer<typeof createOrderPageSchema>;
+export type UpdateOrderPageInput = z.infer<typeof updateOrderPageSchema>;
+export type DeleteOrderPageInput = z.infer<typeof deleteOrderPageSchema>;
+export type DuplicateOrderPageInput = z.infer<typeof duplicateOrderPageSchema>;
+export type OrderPageBundlesInput = z.infer<typeof orderPageBundlesSchema>;
+export type OrderPageServicesInput = z.infer<typeof orderPageServicesSchema>;
+
+// Order page filters for querying
+export const orderPageFiltersSchema = z.object({
+  isPublished: z.boolean().optional(),
+  clientId: z.string().cuid().optional(),
+  search: z.string().optional(),
+});
+
+export type OrderPageFilters = z.infer<typeof orderPageFiltersSchema>;
+
+// Testimonial type for convenience
+export type Testimonial = {
+  name: string;
+  company?: string;
+  quote: string;
+  photoUrl?: string | null;
+};
+```
+
+### src/lib/validations/orders.ts
+```typescript
+import { z } from "zod";
+
+// Cart item schemas
+export const cartBundleSchema = z.object({
+  type: z.literal("bundle"),
+  id: z.string().cuid(),
+  name: z.string(),
+  priceCents: z.number().int().min(0),
+  // Sqft pricing fields (optional, only for sqft-based bundles)
+  sqft: z.number().int().min(1).optional(),
+  pricingTierId: z.string().cuid().optional(),
+  pricingTierName: z.string().optional().nullable(),
+});
+
+export const cartServiceSchema = z.object({
+  type: z.literal("service"),
+  id: z.string().cuid(),
+  name: z.string(),
+  priceCents: z.number().int().min(0),
+  quantity: z.number().int().min(1),
+});
+
+export const cartItemSchema = z.discriminatedUnion("type", [
+  cartBundleSchema,
+  cartServiceSchema,
+]);
+
+// Order creation schema
+export const createOrderSchema = z.object({
+  orderPageId: z.string().cuid(),
+  items: z.array(cartItemSchema).min(1, "At least one item is required"),
+
+  // Client info (for guest checkout)
+  clientName: z.string().min(1, "Name is required").max(100),
+  clientEmail: z.string().email("Valid email is required"),
+  clientPhone: z.string().max(20).optional().nullable(),
+  clientCompany: z.string().max(100).optional().nullable(),
+
+  // Location/scheduling (optional at order creation)
+  locationNotes: z.string().max(500).optional().nullable(),
+  preferredDate: z.string().datetime().optional().nullable(),
+  preferredTime: z.enum(["morning", "afternoon", "evening"]).optional().nullable(),
+  flexibleDates: z.boolean().default(true),
+
+  // Notes
+  clientNotes: z.string().max(2000).optional().nullable(),
+
+  // Tracking
+  source: z.string().max(50).optional().nullable(),
+  medium: z.string().max(50).optional().nullable(),
+  campaign: z.string().max(50).optional().nullable(),
+});
+
+// Order update schema
+export const updateOrderSchema = z.object({
+  id: z.string().cuid(),
+  clientName: z.string().min(1).max(100).optional(),
+  clientEmail: z.string().email().optional(),
+  clientPhone: z.string().max(20).optional().nullable(),
+  clientCompany: z.string().max(100).optional().nullable(),
+  locationNotes: z.string().max(500).optional().nullable(),
+  preferredDate: z.string().datetime().optional().nullable(),
+  preferredTime: z.enum(["morning", "afternoon", "evening"]).optional().nullable(),
+  flexibleDates: z.boolean().optional(),
+  clientNotes: z.string().max(2000).optional().nullable(),
+  internalNotes: z.string().max(2000).optional().nullable(),
+  status: z.enum(["cart", "pending", "paid", "processing", "completed", "cancelled"]).optional(),
+});
+
+// Order filters for querying
+export const orderFiltersSchema = z.object({
+  status: z.enum(["cart", "pending", "paid", "processing", "completed", "cancelled"]).optional(),
+  orderPageId: z.string().cuid().optional(),
+  clientId: z.string().cuid().optional(),
+  search: z.string().optional(),
+  fromDate: z.string().datetime().optional(),
+  toDate: z.string().datetime().optional(),
+});
+
+// Type exports
+export type CartBundle = z.infer<typeof cartBundleSchema>;
+export type CartService = z.infer<typeof cartServiceSchema>;
+export type CartItem = z.infer<typeof cartItemSchema>;
+export type CreateOrderInput = z.infer<typeof createOrderSchema>;
+export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;
+export type OrderFilters = z.infer<typeof orderFiltersSchema>;
+```
+
+### src/lib/validations/portfolio-sections.ts
+```typescript
+import { z } from "zod";
+import type { PortfolioSectionType } from "@prisma/client";
+
+// ============================================================================
+// HERO SECTION
+// ============================================================================
+
+export const heroSectionConfigSchema = z.object({
+  title: z.string().optional().default(""),
+  subtitle: z.string().optional().default(""),
+  backgroundImageUrl: z.string().url().optional().nullable(),
+  backgroundVideoUrl: z.string().url().optional().nullable(),
+  ctaText: z.string().optional().default("Get in Touch"),
+  ctaLink: z.string().optional().default("#contact"),
+  overlay: z.enum(["none", "light", "dark", "gradient"]).default("dark"),
+  alignment: z.enum(["left", "center", "right"]).default("center"),
+});
+
+export type HeroSectionConfig = z.infer<typeof heroSectionConfigSchema>;
+
+// ============================================================================
+// ABOUT SECTION
+// ============================================================================
+
+export const aboutSectionConfigSchema = z.object({
+  photoUrl: z.string().url().optional().nullable(),
+  title: z.string().optional().default("About Me"),
+  content: z.string().optional().default(""),
+  highlights: z.array(z.string()).default([]),
+});
+
+export type AboutSectionConfig = z.infer<typeof aboutSectionConfigSchema>;
+
+// ============================================================================
+// GALLERY SECTION
+// ============================================================================
+
+export const gallerySectionConfigSchema = z.object({
+  projectIds: z.array(z.string()).default([]),
+  layout: z.enum(["grid", "masonry", "carousel"]).default("grid"),
+  columns: z.number().min(1).max(6).default(3),
+  showProjectNames: z.boolean().default(true),
+});
+
+export type GallerySectionConfig = z.infer<typeof gallerySectionConfigSchema>;
+
+// ============================================================================
+// SERVICES SECTION
+// ============================================================================
+
+export const serviceItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional().default(""),
+  price: z.string().optional().nullable(),
+  icon: z.string().optional().nullable(),
+});
+
+export const servicesSectionConfigSchema = z.object({
+  title: z.string().optional().default("Services"),
+  items: z.array(serviceItemSchema).default([]),
+  showPricing: z.boolean().default(false),
+});
+
+export type ServiceItem = z.infer<typeof serviceItemSchema>;
+export type ServicesSectionConfig = z.infer<typeof servicesSectionConfigSchema>;
+
+// ============================================================================
+// TESTIMONIALS SECTION
+// ============================================================================
+
+export const testimonialItemSchema = z.object({
+  id: z.string(),
+  quote: z.string(),
+  clientName: z.string(),
+  clientTitle: z.string().optional().default(""),
+  photoUrl: z.string().url().optional().nullable(),
+});
+
+export const testimonialsSectionConfigSchema = z.object({
+  title: z.string().optional().default("What Clients Say"),
+  items: z.array(testimonialItemSchema).default([]),
+  layout: z.enum(["cards", "carousel", "list"]).default("cards"),
+});
+
+export type TestimonialItem = z.infer<typeof testimonialItemSchema>;
+export type TestimonialsSectionConfig = z.infer<typeof testimonialsSectionConfigSchema>;
+
+// ============================================================================
+// AWARDS SECTION
+// ============================================================================
+
+export const awardItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  issuer: z.string().optional().default(""),
+  year: z.string().optional().nullable(),
+  logoUrl: z.string().url().optional().nullable(),
+});
+
+export const awardsSectionConfigSchema = z.object({
+  title: z.string().optional().default("Awards & Recognition"),
+  items: z.array(awardItemSchema).default([]),
+});
+
+export type AwardItem = z.infer<typeof awardItemSchema>;
+export type AwardsSectionConfig = z.infer<typeof awardsSectionConfigSchema>;
+
+// ============================================================================
+// CONTACT SECTION
+// ============================================================================
+
+export const contactFieldSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  type: z.enum(["text", "email", "phone", "textarea"]),
+  required: z.boolean().default(false),
+});
+
+export const contactSectionConfigSchema = z.object({
+  title: z.string().optional().default("Get in Touch"),
+  subtitle: z.string().optional().default(""),
+  showForm: z.boolean().default(true),
+  showMap: z.boolean().default(false),
+  showSocial: z.boolean().default(true),
+  showEmail: z.boolean().default(true),
+  showPhone: z.boolean().default(true),
+  customFields: z.array(contactFieldSchema).default([]),
+  mapAddress: z.string().optional().nullable(),
+});
+
+export type ContactField = z.infer<typeof contactFieldSchema>;
+export type ContactSectionConfig = z.infer<typeof contactSectionConfigSchema>;
+
+// ============================================================================
+// FAQ SECTION
+// ============================================================================
+
+export const faqItemSchema = z.object({
+  id: z.string(),
+  question: z.string(),
+  answer: z.string(),
+});
+
+export const faqSectionConfigSchema = z.object({
+  title: z.string().optional().default("Frequently Asked Questions"),
+  items: z.array(faqItemSchema).default([]),
+});
+
+export type FAQItem = z.infer<typeof faqItemSchema>;
+export type FAQSectionConfig = z.infer<typeof faqSectionConfigSchema>;
+
+// ============================================================================
+// TEXT BLOCK
+// ============================================================================
+
+export const textSectionConfigSchema = z.object({
+  content: z.string().default(""),
+  alignment: z.enum(["left", "center", "right"]).default("left"),
+});
+
+export type TextSectionConfig = z.infer<typeof textSectionConfigSchema>;
+
+// ============================================================================
+// IMAGE BLOCK
+// ============================================================================
+
+export const imageSectionConfigSchema = z.object({
+  url: z.string().url().optional().nullable(),
+  alt: z.string().optional().default(""),
+  caption: z.string().optional().default(""),
+  layout: z.enum(["full", "contained", "float-left", "float-right"]).default("contained"),
+});
+
+export type ImageSectionConfig = z.infer<typeof imageSectionConfigSchema>;
+
+// ============================================================================
+// VIDEO BLOCK
+// ============================================================================
+
+export const videoSectionConfigSchema = z.object({
+  url: z.string().url().optional().default(""),
+  autoplay: z.boolean().default(false),
+  loop: z.boolean().default(false),
+  muted: z.boolean().default(true),
+});
+
+export type VideoSectionConfig = z.infer<typeof videoSectionConfigSchema>;
+
+// ============================================================================
+// SPACER BLOCK
+// ============================================================================
+
+export const spacerSectionConfigSchema = z.object({
+  height: z.number().min(20).max(300).default(80),
+});
+
+export type SpacerSectionConfig = z.infer<typeof spacerSectionConfigSchema>;
+
+// ============================================================================
+// CUSTOM HTML BLOCK
+// ============================================================================
+
+export const customHtmlSectionConfigSchema = z.object({
+  html: z.string().default(""),
+});
+
+export type CustomHtmlSectionConfig = z.infer<typeof customHtmlSectionConfigSchema>;
+
+// ============================================================================
+// SECTION CONFIG UNION
+// ============================================================================
+
+export type SectionConfig =
+  | HeroSectionConfig
+  | AboutSectionConfig
+  | GallerySectionConfig
+  | ServicesSectionConfig
+  | TestimonialsSectionConfig
+  | AwardsSectionConfig
+  | ContactSectionConfig
+  | FAQSectionConfig
+  | TextSectionConfig
+  | ImageSectionConfig
+  | VideoSectionConfig
+  | SpacerSectionConfig
+  | CustomHtmlSectionConfig;
+
+// ============================================================================
+// VALIDATION HELPERS
+// ============================================================================
+
+export function getSectionConfigSchema(sectionType: PortfolioSectionType) {
+  const schemas: Record<PortfolioSectionType, z.ZodSchema> = {
+    hero: heroSectionConfigSchema,
+    about: aboutSectionConfigSchema,
+    gallery: gallerySectionConfigSchema,
+    services: servicesSectionConfigSchema,
+    testimonials: testimonialsSectionConfigSchema,
+    awards: awardsSectionConfigSchema,
+    contact: contactSectionConfigSchema,
+    faq: faqSectionConfigSchema,
+    text: textSectionConfigSchema,
+    image: imageSectionConfigSchema,
+    video: videoSectionConfigSchema,
+    spacer: spacerSectionConfigSchema,
+    custom_html: customHtmlSectionConfigSchema,
+  };
+
+  return schemas[sectionType];
+}
+
+export function validateSectionConfig(
+  sectionType: PortfolioSectionType,
+  config: unknown
+): { success: true; data: SectionConfig } | { success: false; error: string } {
+  const schema = getSectionConfigSchema(sectionType);
+
+  try {
+    const data = schema.parse(config);
+    return { success: true, data: data as SectionConfig };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.issues.map((e) => e.message).join(", ") };
+    }
+    return { success: false, error: "Invalid configuration" };
+  }
+}
+
+export function getDefaultConfig(sectionType: PortfolioSectionType): SectionConfig {
+  const schema = getSectionConfigSchema(sectionType);
+  return schema.parse({}) as SectionConfig;
+}
+
+// ============================================================================
+// PORTFOLIO WEBSITE VALIDATION
+// ============================================================================
+
+export const updatePortfolioSettingsSchema = z.object({
+  portfolioType: z.enum(["photographer", "client"]).optional(),
+  template: z.enum(["modern", "bold", "elegant", "minimal", "creative"]).optional(),
+  fontHeading: z.string().optional().nullable(),
+  fontBody: z.string().optional().nullable(),
+  socialLinks: z
+    .array(
+      z.object({
+        platform: z.string(),
+        url: z.string().url(),
+      })
+    )
+    .optional()
+    .nullable(),
+  metaTitle: z.string().max(70).optional().nullable(),
+  metaDescription: z.string().max(160).optional().nullable(),
+  showBranding: z.boolean().optional(),
+});
+
+export type UpdatePortfolioSettingsInput = z.infer<typeof updatePortfolioSettingsSchema>;
+
+export const createSectionSchema = z.object({
+  sectionType: z.enum([
+    "hero",
+    "about",
+    "gallery",
+    "services",
+    "testimonials",
+    "awards",
+    "contact",
+    "faq",
+    "text",
+    "image",
+    "video",
+    "spacer",
+    "custom_html",
+  ]),
+  position: z.number().optional(),
+  config: z.record(z.string(), z.unknown()),
+  customTitle: z.string().optional().nullable(),
+});
+
+export type CreateSectionInput = z.infer<typeof createSectionSchema>;
+
+export const updateSectionSchema = z.object({
+  position: z.number().optional(),
+  isVisible: z.boolean().optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
+  customTitle: z.string().optional().nullable(),
+});
+
+export type UpdateSectionInput = z.infer<typeof updateSectionSchema>;
+```
+
+### src/lib/validations/products.ts
+```typescript
+import { z } from "zod";
+
+export const createCatalogSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().max(500).optional().nullable(),
+  tags: z.array(z.string().trim()).optional().default([]),
+});
+
+export const createProductSchema = z.object({
+  catalogId: z.string().cuid(),
+  sku: z.string().min(1),
+  name: z.string().min(1),
+  category: z.string().optional().nullable(),
+  angles: z.array(z.string().trim()).default([]),
+  status: z.enum(["pending", "shot", "edited", "approved", "delivered", "archived"]).optional(),
+  notes: z.string().optional().nullable(),
+});
+
+export const attachPhotoSchema = z.object({
+  productId: z.string().cuid(),
+  assetId: z.string().cuid(),
+  variantId: z.string().cuid().optional(),
+  angle: z.string().min(1),
+  isPrimary: z.boolean().optional(),
+});
+
+export type CreateCatalogInput = z.infer<typeof createCatalogSchema>;
+export type CreateProductInput = z.infer<typeof createProductSchema>;
+export type AttachPhotoInput = z.infer<typeof attachPhotoSchema>;
+```
+
+### src/lib/validations/questionnaires.ts
+```typescript
+import { z } from "zod";
+
+// ============================================================================
+// ENUM VALUES (matching Prisma schema)
+// ============================================================================
+
+export const FormFieldTypeValues = [
+  "text",
+  "textarea",
+  "email",
+  "phone",
+  "number",
+  "date",
+  "time",
+  "datetime",
+  "select",
+  "multiselect",
+  "checkbox",
+  "radio",
+  "file",
+  "address",
+  "url",
+] as const;
+
+export const IndustryValues = [
+  "real_estate",
+  "commercial",
+  "events",
+  "portraits",
+  "food",
+  "product",
+] as const;
+
+export const ClientQuestionnaireStatusValues = [
+  "pending",
+  "in_progress",
+  "completed",
+  "approved",
+  "expired",
+] as const;
+
+export const LegalAgreementTypeValues = [
+  "terms_of_service",
+  "licensing_agreement",
+  "model_release",
+  "property_release",
+  "liability_waiver",
+  "shoot_checklist",
+  "custom",
+] as const;
+
+export const SignatureTypeValues = ["drawn", "typed", "uploaded"] as const;
+
+// ============================================================================
+// FIELD VALIDATION SCHEMA (stored as JSON in database)
+// ============================================================================
+
+export const fieldValidationSchema = z.object({
+  minLength: z.number().optional(),
+  maxLength: z.number().optional(),
+  pattern: z.string().optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
+  options: z.array(z.string()).optional(), // For select/multiselect/radio
+});
+
+// ============================================================================
+// QUESTIONNAIRE FIELD SCHEMA
+// ============================================================================
+
+export const questionnaireFieldSchema = z.object({
+  id: z.string().cuid().optional(), // Optional for new fields
+  label: z.string().min(1, "Label is required").max(100),
+  type: z.enum(FormFieldTypeValues),
+  placeholder: z.string().max(200).optional().nullable(),
+  helpText: z.string().max(500).optional().nullable(),
+  isRequired: z.boolean().default(false),
+  sortOrder: z.number().min(0).default(0),
+  section: z.string().max(100).optional().nullable(),
+  sectionOrder: z.number().min(0).default(0),
+  validation: fieldValidationSchema.optional().nullable(),
+  conditionalOn: z.string().optional().nullable(),
+  conditionalValue: z.string().optional().nullable(),
+});
+
+// ============================================================================
+// LEGAL AGREEMENT SCHEMA
+// ============================================================================
+
+export const questionnaireAgreementSchema = z.object({
+  id: z.string().cuid().optional(),
+  agreementType: z.enum(LegalAgreementTypeValues),
+  title: z.string().min(1, "Title is required").max(200),
+  content: z.string().min(1, "Agreement content is required"),
+  isRequired: z.boolean().default(true),
+  requiresSignature: z.boolean().default(false),
+  sortOrder: z.number().min(0).default(0),
+});
+
+// ============================================================================
+// QUESTIONNAIRE TEMPLATE SCHEMAS
+// ============================================================================
+
+export const questionnaireTemplateSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Template name is required")
+    .max(100, "Template name must be less than 100 characters"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug must be less than 100 characters")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug must only contain lowercase letters, numbers, and hyphens"
+    ),
+  description: z
+    .string()
+    .max(1000, "Description must be less than 1000 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  industry: z.enum(IndustryValues),
+  isActive: z.boolean().optional().default(true),
+});
+
+export const createQuestionnaireTemplateSchema = questionnaireTemplateSchema;
+
+export const updateQuestionnaireTemplateSchema = questionnaireTemplateSchema
+  .partial()
+  .extend({
+    id: z.string().cuid(),
+    // Optional: include fields for combined update
+    fields: z
+      .array(
+        questionnaireFieldSchema.extend({
+          id: z.string().optional(), // Existing fields have IDs, new ones don't
+        })
+      )
+      .optional(),
+  });
+
+export const deleteQuestionnaireTemplateSchema = z.object({
+  id: z.string().cuid(),
+  force: z.boolean().optional().default(false),
+});
+
+export const duplicateQuestionnaireTemplateSchema = z.object({
+  id: z.string().cuid(),
+  newName: z.string().min(1).max(100).optional(),
+  newSlug: z.string().min(1).max(100).optional(),
+});
+
+// ============================================================================
+// TEMPLATE FIELD MANAGEMENT SCHEMAS
+// ============================================================================
+
+export const updateQuestionnaireFieldsSchema = z.object({
+  templateId: z.string().cuid(),
+  fields: z.array(questionnaireFieldSchema),
+});
+
+export const addQuestionnaireFieldSchema = z.object({
+  templateId: z.string().cuid(),
+  field: questionnaireFieldSchema,
+});
+
+export const updateQuestionnaireFieldSchema = questionnaireFieldSchema.extend({
+  id: z.string().cuid(),
+  templateId: z.string().cuid(),
+});
+
+export const deleteQuestionnaireFieldSchema = z.object({
+  id: z.string().cuid(),
+  templateId: z.string().cuid(),
+});
+
+export const reorderQuestionnaireFieldsSchema = z.object({
+  templateId: z.string().cuid(),
+  fieldIds: z.array(z.string().cuid()),
+});
+
+// ============================================================================
+// TEMPLATE AGREEMENT MANAGEMENT SCHEMAS
+// ============================================================================
+
+export const updateQuestionnaireAgreementsSchema = z.object({
+  templateId: z.string().cuid(),
+  agreements: z.array(questionnaireAgreementSchema),
+});
+
+export const addQuestionnaireAgreementSchema = z.object({
+  templateId: z.string().cuid(),
+  agreement: questionnaireAgreementSchema,
+});
+
+export const updateQuestionnaireAgreementSchema =
+  questionnaireAgreementSchema.extend({
+    id: z.string().cuid(),
+    templateId: z.string().cuid(),
+  });
+
+export const deleteQuestionnaireAgreementSchema = z.object({
+  id: z.string().cuid(),
+  templateId: z.string().cuid(),
+});
+
+// ============================================================================
+// CLIENT QUESTIONNAIRE ASSIGNMENT SCHEMAS
+// ============================================================================
+
+export const assignQuestionnaireSchema = z.object({
+  clientId: z.string().cuid(),
+  templateId: z.string().cuid(),
+  bookingId: z.string().cuid().optional().nullable(),
+  projectId: z.string().cuid().optional().nullable(),
+  isRequired: z.boolean().optional().default(true),
+  dueDate: z.string().datetime().optional().nullable(),
+  sendReminders: z.boolean().optional().default(true),
+  internalNotes: z.string().max(1000).optional().nullable(),
+  personalNote: z.string().max(500).optional().nullable(), // Note to include in assignment email
+});
+
+export const updateClientQuestionnaireSchema = z.object({
+  id: z.string().cuid(),
+  isRequired: z.boolean().optional(),
+  dueDate: z.string().datetime().optional().nullable(),
+  sendReminders: z.boolean().optional(),
+  internalNotes: z.string().max(1000).optional().nullable(),
+  status: z.enum(ClientQuestionnaireStatusValues).optional(),
+});
+
+export const approveQuestionnaireSchema = z.object({
+  id: z.string().cuid(),
+  internalNotes: z.string().max(1000).optional().nullable(),
+});
+
+export const deleteClientQuestionnaireSchema = z.object({
+  id: z.string().cuid(),
+});
+
+// ============================================================================
+// CLIENT PORTAL SCHEMAS (for completing questionnaires)
+// ============================================================================
+
+export const questionnaireResponseSchema = z.object({
+  fieldLabel: z.string(),
+  fieldType: z.string(),
+  value: z.unknown(), // Dynamic based on field type
+});
+
+export const submitQuestionnaireResponsesSchema = z.object({
+  questionnaireId: z.string().cuid(),
+  responses: z.array(questionnaireResponseSchema),
+});
+
+export const saveQuestionnaireProgressSchema = z.object({
+  questionnaireId: z.string().cuid(),
+  responses: z.array(questionnaireResponseSchema),
+});
+
+export const acceptAgreementSchema = z.object({
+  questionnaireId: z.string().cuid(),
+  agreementId: z.string().cuid(),
+  signatureData: z.string().optional().nullable(), // Base64 signature if required
+  signatureType: z.enum(SignatureTypeValues).optional().nullable(),
+});
+
+// ============================================================================
+// FILTER SCHEMAS
+// ============================================================================
+
+export const questionnaireTemplateFiltersSchema = z.object({
+  industry: z.enum(IndustryValues).optional(),
+  isSystemTemplate: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  search: z.string().optional(),
+});
+
+export const clientQuestionnaireFiltersSchema = z.object({
+  clientId: z.string().cuid().optional(),
+  templateId: z.string().cuid().optional(),
+  bookingId: z.string().cuid().optional(),
+  projectId: z.string().cuid().optional(),
+  status: z.enum(ClientQuestionnaireStatusValues).optional(),
+  isRequired: z.boolean().optional(),
+  dueBefore: z.string().datetime().optional(),
+  dueAfter: z.string().datetime().optional(),
+});
+
+// ============================================================================
+// TYPE EXPORTS
+// ============================================================================
+
+export type FormFieldType = (typeof FormFieldTypeValues)[number];
+export type Industry = (typeof IndustryValues)[number];
+export type ClientQuestionnaireStatus =
+  (typeof ClientQuestionnaireStatusValues)[number];
+export type LegalAgreementType = (typeof LegalAgreementTypeValues)[number];
+export type SignatureType = (typeof SignatureTypeValues)[number];
+
+export type FieldValidation = z.infer<typeof fieldValidationSchema>;
+export type QuestionnaireField = z.infer<typeof questionnaireFieldSchema>;
+export type QuestionnaireAgreement = z.infer<
+  typeof questionnaireAgreementSchema
+>;
+
+export type CreateQuestionnaireTemplateInput = z.infer<
+  typeof createQuestionnaireTemplateSchema
+>;
+export type UpdateQuestionnaireTemplateInput = z.infer<
+  typeof updateQuestionnaireTemplateSchema
+>;
+export type DeleteQuestionnaireTemplateInput = z.infer<
+  typeof deleteQuestionnaireTemplateSchema
+>;
+export type DuplicateQuestionnaireTemplateInput = z.infer<
+  typeof duplicateQuestionnaireTemplateSchema
+>;
+
+export type UpdateQuestionnaireFieldsInput = z.infer<
+  typeof updateQuestionnaireFieldsSchema
+>;
+export type AddQuestionnaireFieldInput = z.infer<
+  typeof addQuestionnaireFieldSchema
+>;
+export type UpdateQuestionnaireFieldInput = z.infer<
+  typeof updateQuestionnaireFieldSchema
+>;
+export type DeleteQuestionnaireFieldInput = z.infer<
+  typeof deleteQuestionnaireFieldSchema
+>;
+export type ReorderQuestionnaireFieldsInput = z.infer<
+  typeof reorderQuestionnaireFieldsSchema
+>;
+
+export type UpdateQuestionnaireAgreementsInput = z.infer<
+  typeof updateQuestionnaireAgreementsSchema
+>;
+export type AddQuestionnaireAgreementInput = z.infer<
+  typeof addQuestionnaireAgreementSchema
+>;
+export type UpdateQuestionnaireAgreementInput = z.infer<
+  typeof updateQuestionnaireAgreementSchema
+>;
+export type DeleteQuestionnaireAgreementInput = z.infer<
+  typeof deleteQuestionnaireAgreementSchema
+>;
+
+export type AssignQuestionnaireInput = z.infer<typeof assignQuestionnaireSchema>;
+export type UpdateClientQuestionnaireInput = z.infer<
+  typeof updateClientQuestionnaireSchema
+>;
+export type ApproveQuestionnaireInput = z.infer<
+  typeof approveQuestionnaireSchema
+>;
+export type DeleteClientQuestionnaireInput = z.infer<
+  typeof deleteClientQuestionnaireSchema
+>;
+
+export type QuestionnaireResponse = z.infer<typeof questionnaireResponseSchema>;
+export type SubmitQuestionnaireResponsesInput = z.infer<
+  typeof submitQuestionnaireResponsesSchema
+>;
+export type SaveQuestionnaireProgressInput = z.infer<
+  typeof saveQuestionnaireProgressSchema
+>;
+export type AcceptAgreementInput = z.infer<typeof acceptAgreementSchema>;
+
+export type QuestionnaireTemplateFilters = z.infer<
+  typeof questionnaireTemplateFiltersSchema
+>;
+export type ClientQuestionnaireFilters = z.infer<
+  typeof clientQuestionnaireFiltersSchema
+>;
+```
+
+### src/lib/validations/services.ts
+```typescript
+import { z } from "zod";
+
+// Service category enum matching Prisma schema
+export const serviceCategorySchema = z.enum([
+  "real_estate",
+  "portrait",
+  "event",
+  "commercial",
+  "wedding",
+  "product",
+  "other",
+]);
+
+export type ServiceCategoryEnum = z.infer<typeof serviceCategorySchema>;
+
+// Base service schema for validation
+export const serviceSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Service name is required")
+    .max(100, "Service name must be less than 100 characters"),
+  category: serviceCategorySchema,
+  description: z
+    .string()
+    .max(500, "Description must be less than 500 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  priceCents: z
+    .number()
+    .min(0, "Price must be a positive number")
+    .max(100000000, "Price is too high"), // Max $1M
+  duration: z
+    .string()
+    .max(50, "Duration must be less than 50 characters")
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  deliverables: z
+    .array(z.string().max(100, "Each deliverable must be less than 100 characters"))
+    .max(20, "Maximum 20 deliverables allowed")
+    .default([]),
+  isActive: z.boolean().default(true),
+});
+
+// Schema for creating a new service
+export const createServiceSchema = serviceSchema;
+
+// Schema for updating an existing service
+export const updateServiceSchema = serviceSchema.partial().extend({
+  id: z.string().cuid(),
+});
+
+// Schema for deleting a service
+export const deleteServiceSchema = z.object({
+  id: z.string().cuid(),
+  force: z.boolean().optional().default(false), // Force delete even if in use
+});
+
+// Schema for duplicating a service
+export const duplicateServiceSchema = z.object({
+  id: z.string().cuid(),
+  newName: z.string().min(1).max(100).optional(),
+});
+
+// Schema for bulk operations
+export const bulkUpdatePricesSchema = z.object({
+  updates: z.array(
+    z.object({
+      id: z.string().cuid(),
+      priceCents: z.number().min(0).max(100000000),
+    })
+  ),
+});
+
+export const bulkArchiveSchema = z.object({
+  ids: z.array(z.string().cuid()),
+  archive: z.boolean(), // true = archive, false = restore
+});
+
+// Type exports
+export type CreateServiceInput = z.infer<typeof createServiceSchema>;
+export type UpdateServiceInput = z.infer<typeof updateServiceSchema>;
+export type DeleteServiceInput = z.infer<typeof deleteServiceSchema>;
+export type DuplicateServiceInput = z.infer<typeof duplicateServiceSchema>;
+export type BulkUpdatePricesInput = z.infer<typeof bulkUpdatePricesSchema>;
+export type BulkArchiveInput = z.infer<typeof bulkArchiveSchema>;
+
+// Service filters for querying
+export const serviceFiltersSchema = z.object({
+  category: serviceCategorySchema.optional(),
+  isActive: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
+  search: z.string().optional(),
+});
+
+export type ServiceFilters = z.infer<typeof serviceFiltersSchema>;
+```
+
+## Validation Utilities (src/lib/validation.ts)
+```typescript
+/**
+ * Form validation utilities for PhotoProOS
+ * Provides reusable validation functions and error handling
+ */
+
+export interface ValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+export interface FieldError {
+  field: string;
+  message: string;
+}
+
+// Common validation functions
+export const validators = {
+  required: (value: unknown, fieldName = "This field"): ValidationResult => {
+    if (value === undefined || value === null || value === "") {
+      return { valid: false, error: `${fieldName} is required` };
+    }
+    if (typeof value === "string" && value.trim() === "") {
+      return { valid: false, error: `${fieldName} is required` };
+    }
+    return { valid: true };
+  },
+
+  minLength: (value: string, min: number, fieldName = "This field"): ValidationResult => {
+    if (value.length < min) {
+      return { valid: false, error: `${fieldName} must be at least ${min} characters` };
+    }
+    return { valid: true };
+  },
+
+  maxLength: (value: string, max: number, fieldName = "This field"): ValidationResult => {
+    if (value.length > max) {
+      return { valid: false, error: `${fieldName} must be no more than ${max} characters` };
+    }
+    return { valid: true };
+  },
+
+  email: (value: string): ValidationResult => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return { valid: false, error: "Please enter a valid email address" };
+    }
+    return { valid: true };
+  },
+
+  phone: (value: string): ValidationResult => {
+    const phoneRegex = /^[\d\s+()-]{7,20}$/;
+    if (!phoneRegex.test(value)) {
+      return { valid: false, error: "Please enter a valid phone number" };
+    }
+    return { valid: true };
+  },
+
+  url: (value: string): ValidationResult => {
+    try {
+      new URL(value);
+      return { valid: true };
+    } catch {
+      return { valid: false, error: "Please enter a valid URL" };
+    }
+  },
+
+  positiveNumber: (value: number, fieldName = "This field"): ValidationResult => {
+    if (value <= 0) {
+      return { valid: false, error: `${fieldName} must be greater than 0` };
+    }
+    return { valid: true };
+  },
+
+  minValue: (value: number, min: number, fieldName = "This field"): ValidationResult => {
+    if (value < min) {
+      return { valid: false, error: `${fieldName} must be at least ${min}` };
+    }
+    return { valid: true };
+  },
+
+  maxValue: (value: number, max: number, fieldName = "This field"): ValidationResult => {
+    if (value > max) {
+      return { valid: false, error: `${fieldName} must be no more than ${max}` };
+    }
+    return { valid: true };
+  },
+
+  futureDate: (value: Date | string, fieldName = "Date"): ValidationResult => {
+    const date = typeof value === "string" ? new Date(value) : value;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) {
+      return { valid: false, error: `${fieldName} must be in the future` };
+    }
+    return { valid: true };
+  },
+
+  pastDate: (value: Date | string, fieldName = "Date"): ValidationResult => {
+    const date = typeof value === "string" ? new Date(value) : value;
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (date > today) {
+      return { valid: false, error: `${fieldName} must be in the past` };
+    }
+    return { valid: true };
+  },
+
+  dateAfter: (value: Date | string, afterDate: Date | string, fieldName = "End date"): ValidationResult => {
+    const date = typeof value === "string" ? new Date(value) : value;
+    const compareDate = typeof afterDate === "string" ? new Date(afterDate) : afterDate;
+    if (date <= compareDate) {
+      return { valid: false, error: `${fieldName} must be after the start date` };
+    }
+    return { valid: true };
+  },
+
+  hexColor: (value: string): ValidationResult => {
+    const hexRegex = /^#[0-9A-Fa-f]{6}$/;
+    if (!hexRegex.test(value)) {
+      return { valid: false, error: "Please enter a valid hex color (e.g., #FF5733)" };
+    }
+    return { valid: true };
+  },
+
+  password: (value: string): ValidationResult => {
+    if (value.length < 8) {
+      return { valid: false, error: "Password must be at least 8 characters" };
+    }
+    if (!/[A-Z]/.test(value)) {
+      return { valid: false, error: "Password must contain at least one uppercase letter" };
+    }
+    if (!/[a-z]/.test(value)) {
+      return { valid: false, error: "Password must contain at least one lowercase letter" };
+    }
+    if (!/[0-9]/.test(value)) {
+      return { valid: false, error: "Password must contain at least one number" };
+    }
+    return { valid: true };
+  },
+};
+
+// Combine multiple validations for a single field
+export function validate(value: unknown, ...validations: ValidationResult[]): ValidationResult {
+  for (const validation of validations) {
+    if (!validation.valid) {
+      return validation;
+    }
+  }
+  return { valid: true };
+}
+
+// Validate entire form and return all errors
+export function validateForm(fields: Record<string, () => ValidationResult>): {
+  valid: boolean;
+  errors: FieldError[];
+} {
+  const errors: FieldError[] = [];
+
+  for (const [field, validator] of Object.entries(fields)) {
+    const result = validator();
+    if (!result.valid && result.error) {
+      errors.push({ field, message: result.error });
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+// Format currency for display - re-export from centralized utils
+export { formatCurrency } from "@/lib/utils/units";
+
+// Parse currency input to cents
+export function parseCurrencyToCents(value: string): number {
+  const cleaned = value.replace(/[^0-9.-]/g, "");
+  const number = parseFloat(cleaned);
+  if (isNaN(number)) return 0;
+  return Math.round(number * 100);
+}
+
+// Character counter helper
+export function getCharacterCount(value: string, maxLength: number): {
+  count: number;
+  remaining: number;
+  isOverLimit: boolean;
+} {
+  const count = value.length;
+  return {
+    count,
+    remaining: maxLength - count,
+    isOverLimit: count > maxLength,
+  };
+}
+```
+
 ## Data Model Dictionary
 - Fields are listed verbatim from Prisma schema for rebuild accuracy.
 - Action usage lists server action files that touch each Prisma model.
