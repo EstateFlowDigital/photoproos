@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Graceful error handling: storage deletion failures are logged but don't block the operation
 
 ### Added
+- **Outlook Email Disconnect** - Proper Outlook account disconnection for unified inbox
+  - Created `src/lib/integrations/outlook.ts` with token refresh and disconnect functions
+  - `disconnectOutlookAccount` properly signs out user from Microsoft and logs disconnection
+  - Integrated with `disconnectEmailAccount` server action for seamless provider handling
+  - Follows same pattern as Gmail disconnect for consistency
+
 - **Booking Crew Management** - Full crew assignment system with smart suggestions
   - **Server Actions** (`booking-crew.ts`):
     - `getBookingCrew` - Fetch assigned crew members with roles and confirmation status

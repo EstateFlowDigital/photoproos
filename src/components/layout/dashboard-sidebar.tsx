@@ -3,176 +3,30 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown, Settings, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getFilteredNavigation } from "@/lib/modules/gating";
-
-interface NavItem {
-  id: string;
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  category?: "core" | "operations" | "client" | "advanced" | "admin";
-  badge?: number;
-}
-
-type SubLink = {
-  label: string;
-  href: string;
-};
+import {
+  type DashboardNavData,
+  isActiveRoute,
+} from "@/lib/navigation/dashboard-nav";
 
 interface DashboardSidebarProps {
   className?: string;
-  enabledModules: string[];
-  industries: string[];
-  notificationCount?: number;
+  navData: DashboardNavData;
   variant?: "inline" | "overlay";
   onClose?: () => void;
 }
 
-const SUB_NAV: Record<string, SubLink[]> = {
-  dashboard: [
-    { label: "Overview", href: "/dashboard" },
-    { label: "Analytics", href: "/analytics" },
-  ],
-  projects: [
-    { label: "All Projects", href: "/projects" },
-    { label: "Analytics", href: "/projects/analytics" },
-  ],
-  galleries: [
-    { label: "All Galleries", href: "/galleries" },
-    { label: "New Gallery", href: "/galleries/new" },
-    { label: "Services", href: "/galleries/services" },
-  ],
-  scheduling: [
-    { label: "Calendar", href: "/scheduling" },
-    { label: "New Booking", href: "/scheduling/new" },
-    { label: "Availability", href: "/scheduling/availability" },
-    { label: "Time Off", href: "/scheduling/time-off" },
-    { label: "Booking Forms", href: "/scheduling/booking-forms" },
-    { label: "Booking Types", href: "/scheduling/types" },
-  ],
-  invoices: [
-    { label: "Billing Overview", href: "/billing" },
-    { label: "Invoices", href: "/invoices" },
-    { label: "Recurring", href: "/invoices/recurring" },
-    { label: "Estimates", href: "/billing/estimates" },
-    { label: "Credit Notes", href: "/billing/credit-notes" },
-    { label: "Retainers", href: "/billing/retainers" },
-    { label: "Payments", href: "/payments" },
-    { label: "Analytics", href: "/billing/analytics" },
-    { label: "Reports", href: "/billing/reports" },
-  ],
-  services: [
-    { label: "Services", href: "/services" },
-    { label: "Add-ons", href: "/services/addons" },
-    { label: "Bundles", href: "/services/bundles" },
-  ],
-  clients: [
-    { label: "All Clients", href: "/clients" },
-    { label: "New Client", href: "/clients/new" },
-    { label: "Import", href: "/clients/import" },
-    { label: "Merge", href: "/clients/merge" },
-  ],
-  contracts: [
-    { label: "All Contracts", href: "/contracts" },
-    { label: "New Contract", href: "/contracts/new" },
-    { label: "Templates", href: "/contracts/templates" },
-  ],
-  questionnaires: [
-    { label: "Assigned", href: "/questionnaires" },
-    { label: "New Template", href: "/questionnaires/templates/new" },
-  ],
-  properties: [
-    { label: "All Properties", href: "/properties" },
-    { label: "New Property", href: "/properties/new" },
-  ],
-  portfolio_websites: [
-    { label: "Portfolios", href: "/portfolios" },
-    { label: "New Portfolio", href: "/portfolios/new" },
-  ],
-  product_catalogs: [{ label: "Catalogs", href: "/products" }],
-  admin: [
-    { label: "Settings", href: "/settings" },
-    { label: "Billing & plan", href: "/settings/billing" },
-    { label: "Invite team", href: "/settings/team?invite=1" },
-    { label: "View client portal", href: "/portal" },
-  ],
-};
-
-const SECTION_LABELS: Array<{
-  id: "core" | "operations" | "client" | "advanced" | "admin";
-  label: string;
-}> = [
-  { id: "core", label: "Workspace" },
-  { id: "operations", label: "Operations" },
-  { id: "client", label: "Clients" },
-  { id: "advanced", label: "Advanced" },
-  { id: "admin", label: "Admin" },
-];
-
 export function DashboardSidebar({
   className,
-  enabledModules,
-  industries,
-  notificationCount = 0,
+  navData,
   variant = "inline",
   onClose,
 }: DashboardSidebarProps) {
   const pathname = usePathname() || "";
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
-
-  const navItems = React.useMemo(
-    () => getFilteredNavigation({ enabledModules, industries }) as NavItem[],
-    [enabledModules, industries]
-  );
-
-  const adminItems = React.useMemo<NavItem[]>(
-    () => [
-      {
-        id: "admin",
-        label: "Admin",
-        href: "/settings",
-        icon: Settings,
-        category: "admin",
-      },
-    ],
-    []
-  );
-
-  const topItems = React.useMemo<NavItem[]>(() => {
-    if (notificationCount <= 0) return [];
-    return [
-      {
-        id: "notifications",
-        label: "Notifications",
-        href: "/notifications",
-        icon: Bell,
-        badge: notificationCount,
-      },
-    ];
-  }, [notificationCount]);
-
-  const groupedItems = React.useMemo(() => {
-    const groups: Record<string, NavItem[]> = {
-      core: [],
-      operations: [],
-      client: [],
-      advanced: [],
-      admin: [...adminItems],
-    };
-
-    for (const item of navItems) {
-      const key = item.category ?? "core";
-      if (!groups[key]) {
-        groups[key] = [];
-      }
-      groups[key].push(item);
-    }
-
-    return groups;
-  }, [adminItems, navItems]);
+  const { topItems, sections } = navData;
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -189,11 +43,6 @@ export function DashboardSidebar({
       window.removeEventListener("orientationchange", setVH);
     };
   }, []);
-
-  const isActivePath = React.useCallback(
-    (href: string) => pathname === href || pathname.startsWith(`${href}/`),
-    [pathname]
-  );
 
   const handleToggle = (id: string, nextState: boolean) => {
     setExpanded((prev) => ({ ...prev, [id]: nextState }));
@@ -254,7 +103,7 @@ export function DashboardSidebar({
           {topItems.length > 0 ? (
             <div className="space-y-2">
               {topItems.map((item) => {
-                const isActive = isActivePath(item.href);
+                const isActive = isActiveRoute(pathname, item.href);
                 const Icon = item.icon;
                 const badgeClassName =
                   item.id === "notifications"
@@ -295,8 +144,8 @@ export function DashboardSidebar({
               })}
             </div>
           ) : null}
-          {SECTION_LABELS.map((section) => {
-            const items = groupedItems[section.id] || [];
+          {sections.map((section) => {
+            const items = section.items;
             if (!items.length) return null;
             return (
               <div key={section.id} className="space-y-2">
@@ -305,12 +154,12 @@ export function DashboardSidebar({
                 </p>
                 <div className="space-y-1">
                   {items.map((item) => {
-                    const children = SUB_NAV[item.id] ?? [];
+                    const children = item.subNav ?? [];
                     const hasChildren = children.length > 0;
                     const childActive = hasChildren
-                      ? children.some((child) => isActivePath(child.href))
+                      ? children.some((child) => isActiveRoute(pathname, child.href))
                       : false;
-                    const isActive = isActivePath(item.href) || childActive;
+                    const isActive = isActiveRoute(pathname, item.href) || childActive;
                     const isExpanded = hasChildren
                       ? expanded[item.id] ?? isActive
                       : false;
@@ -377,7 +226,7 @@ export function DashboardSidebar({
                         {hasChildren && isExpanded ? (
                           <div className="sidebar-subnav ml-4 space-y-1 border-l border-[var(--card-border)] pl-3">
                             {children.map((child) => {
-                              const isChildActive = isActivePath(child.href);
+                              const isChildActive = isActiveRoute(pathname, child.href);
                               return (
                                 <Link
                                   key={child.href}

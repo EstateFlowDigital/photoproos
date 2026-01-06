@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { disconnectGmailAccount } from "@/lib/integrations/gmail";
+import { disconnectOutlookAccount } from "@/lib/integrations/outlook";
 
 export interface ConnectedEmailAccount {
   id: string;
@@ -81,10 +82,10 @@ export async function disconnectEmailAccount(
         return fail("Failed to disconnect Gmail account");
       }
     } else if (account.provider === "OUTLOOK") {
-      // TODO: Implement Outlook disconnect
-      await prisma.emailAccount.delete({
-        where: { id: accountId },
-      });
+      const success = await disconnectOutlookAccount(accountId);
+      if (!success) {
+        return fail("Failed to disconnect Outlook account");
+      }
     }
 
     revalidatePath("/settings/email");
