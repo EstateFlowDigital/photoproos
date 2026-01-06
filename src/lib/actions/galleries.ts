@@ -1219,7 +1219,10 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
     }
 
     const isPaid = project.payments.length > 0 || project.priceCents === 0;
-    const canDownload = project.allowDownloads && (isPaid || project.priceCents === 0);
+    const isFree = project.priceCents === 0;
+    const requiresPayment = project.downloadRequiresPayment !== false; // default true
+    // Allow download if: downloads enabled AND (paid OR free OR payment not required)
+    const canDownload = project.allowDownloads && (isPaid || isFree || !requiresPayment);
     const org = project.organization;
 
     // Determine theme based on portalMode - only paid plans can hide platform branding

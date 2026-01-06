@@ -354,7 +354,12 @@ export function DashboardLayoutClient({
       </a>
       {/* Unified Sidebar */}
       <div className="shell-sidebar">
-        <DashboardSidebar navData={navData} isCompact={isCompact} onToggleCompact={handleToggleCompact} />
+        <DashboardSidebar
+          navData={navData}
+          isCompact={isCompact}
+          onToggleCompact={handleToggleCompact}
+          sidebarPosition={sidebarPosition}
+        />
       </div>
 
       {mobileMenuOpen ? (
@@ -369,6 +374,7 @@ export function DashboardLayoutClient({
               navData={navData}
               isCompact={isCompact}
               onToggleCompact={handleToggleCompact}
+              sidebarPosition={sidebarPosition}
               variant="overlay"
               onClose={handleCloseMenu}
             />

@@ -23,16 +23,40 @@ async function fetchImageAsBase64(url: string | null | undefined): Promise<strin
     return PLACEHOLDER_IMAGE;
   }
 
+  // Validate URL format
   try {
+    new URL(url);
+  } catch {
+    console.warn(`[Proof Sheet] Invalid URL format: ${url.substring(0, 50)}`);
+    return PLACEHOLDER_IMAGE;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
+
     const response = await fetch(url, {
-      signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS),
+      signal: controller.signal,
+      headers: {
+        "Accept": "image/*",
+      },
     });
+
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
       console.warn(`[Proof Sheet] Image fetch failed (${response.status}): ${url.substring(0, 80)}`);
       return PLACEHOLDER_IMAGE;
     }
 
     const arrayBuffer = await response.arrayBuffer();
+
+    // Check if we actually got image data
+    if (arrayBuffer.byteLength === 0) {
+      console.warn(`[Proof Sheet] Empty response for: ${url.substring(0, 80)}`);
+      return PLACEHOLDER_IMAGE;
+    }
+
     const buffer = Buffer.from(arrayBuffer);
     const base64 = buffer.toString("base64");
 
@@ -41,8 +65,11 @@ async function fetchImageAsBase64(url: string | null | undefined): Promise<strin
     const mimeType = contentType.split(";")[0].trim();
 
     return `data:${mimeType};base64,${base64}`;
-  } catch {
-    // Silently use placeholder for failed images
+  } catch (error) {
+    // Log timeout separately from other errors
+    if (error instanceof Error && error.name === "AbortError") {
+      console.warn(`[Proof Sheet] Image fetch timeout: ${url.substring(0, 80)}`);
+    }
     return PLACEHOLDER_IMAGE;
   }
 }

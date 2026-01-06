@@ -2176,11 +2176,18 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
               {/* Download Options */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Download Options</h2>
-                <p className="text-sm text-foreground-muted mb-4">Choose which resolution options are available to clients</p>
-                <div className="space-y-3">
+                <h2 id="download-options-heading" className="text-lg font-semibold text-foreground mb-4">Download Options</h2>
+                <p id="download-options-desc" className="text-sm text-foreground-muted mb-4">Choose which resolution options are available to clients</p>
+                <div
+                  role="radiogroup"
+                  aria-labelledby="download-options-heading"
+                  aria-describedby="download-options-desc"
+                  className="space-y-3"
+                >
                   <button
                     type="button"
+                    role="radio"
+                    aria-checked={settings.downloadResolution === "full"}
                     onClick={() => handleSettingsChange({ downloadResolution: "full" })}
                     className={cn(
                       "flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all",
@@ -2214,6 +2221,8 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   </button>
                   <button
                     type="button"
+                    role="radio"
+                    aria-checked={settings.downloadResolution === "web"}
                     onClick={() => handleSettingsChange({ downloadResolution: "web" })}
                     className={cn(
                       "flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all",
@@ -2247,6 +2256,8 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   </button>
                   <button
                     type="button"
+                    role="radio"
+                    aria-checked={settings.downloadResolution === "both"}
                     onClick={() => handleSettingsChange({ downloadResolution: "both" })}
                     className={cn(
                       "flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all",

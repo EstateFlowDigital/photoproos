@@ -161,10 +161,20 @@ export async function POST(request: NextRequest) {
     // Get the gallery with payment info and organization watermark settings
     const gallery = await prisma.project.findUnique({
       where: { id: galleryId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        priceCents: true,
+        expiresAt: true,
+        allowDownloads: true,
+        showWatermark: true,
+        downloadRequiresPayment: true, // For paylock bypass feature
+        clientId: true,
         payments: {
           where: { status: "paid" },
           take: 1,
+          select: { id: true },
         },
         assets: {
           where: {
@@ -231,7 +241,7 @@ export async function POST(request: NextRequest) {
     // Check payment status (if gallery has a price and requires payment for downloads)
     const isPaid = gallery.payments.length > 0;
     const isFree = !gallery.priceCents || gallery.priceCents === 0;
-    const requiresPayment = (gallery as { downloadRequiresPayment?: boolean }).downloadRequiresPayment !== false;
+    const requiresPayment = gallery.downloadRequiresPayment !== false;
 
     if (!isFree && !isPaid && requiresPayment) {
       return NextResponse.json(

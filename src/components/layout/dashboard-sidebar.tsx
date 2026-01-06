@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import { ChevronDown, ChevronsLeft, ChevronsRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   type DashboardNavData,
@@ -15,6 +15,7 @@ interface DashboardSidebarProps {
   navData: DashboardNavData;
   isCompact?: boolean;
   onToggleCompact?: () => void;
+  sidebarPosition?: "left" | "right";
   variant?: "inline" | "overlay";
   onClose?: () => void;
 }
@@ -24,6 +25,7 @@ export function DashboardSidebar({
   navData,
   isCompact = false,
   onToggleCompact,
+  sidebarPosition = "left",
   variant = "inline",
   onClose,
 }: DashboardSidebarProps) {
@@ -56,7 +58,7 @@ export function DashboardSidebar({
     <aside
       data-variant={variant}
       className={cn(
-        "sidebar-shell flex min-h-screen min-h-0 flex-col border-r border-[var(--card-border)] bg-[var(--card)]",
+        "sidebar-shell relative flex min-h-screen min-h-0 flex-col border-r border-[var(--card-border)] bg-[var(--card)]",
         variant === "inline" ? "sticky top-0 self-start" : "shadow-2xl",
         className
       )}
@@ -82,29 +84,37 @@ export function DashboardSidebar({
             PhotoProOS
           </span>
         </Link>
-        <div className="flex items-center gap-2">
-          {onToggleCompact ? (
-            <button
-              type="button"
-              onClick={onToggleCompact}
-              className="sidebar-toggle flex h-9 w-9 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
-              aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {isCompact ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            </button>
-          ) : null}
-          {variant === "overlay" && onClose ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
-              aria-label="Close menu"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          ) : null}
-        </div>
+        {variant === "overlay" && onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            aria-label="Close menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        ) : null}
       </div>
+      {variant === "inline" && onToggleCompact ? (
+        <button
+          type="button"
+          onClick={onToggleCompact}
+          className={cn(
+            "sidebar-cascade-toggle absolute top-1/2 z-20 flex h-11 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--card-border)] bg-[var(--card)] text-foreground-muted shadow-md transition-colors hover:bg-[var(--background-hover)] hover:text-foreground",
+            sidebarPosition === "right" ? "left-[-18px]" : "right-[-18px]"
+          )}
+          aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+          title={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {sidebarPosition === "right"
+            ? isCompact
+              ? <ChevronsLeft className="h-4 w-4" />
+              : <ChevronsRight className="h-4 w-4" />
+            : isCompact
+              ? <ChevronsRight className="h-4 w-4" />
+              : <ChevronsLeft className="h-4 w-4" />}
+        </button>
+      ) : null}
 
       <nav
         className="flex-1 overflow-y-auto px-3 py-4"
