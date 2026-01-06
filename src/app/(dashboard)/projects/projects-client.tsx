@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import React, { useMemo, useRef, useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -25,10 +25,35 @@ import {
   getTaskTemplates,
   saveTaskAsTemplate,
   createTaskFromTemplate,
+  // Automation
+  getAutomations,
+  createAutomation,
+  updateAutomation,
+  deleteAutomation,
+  type AutomationTrigger,
+  type AutomationAction,
+  type AutomationTriggerType,
+  type AutomationActionType,
+  // Recurring Tasks
+  getRecurringTasks,
+  createRecurringTask,
+  updateRecurringTask,
+  deleteRecurringTask,
+  type RecurringFrequency,
+  // Time Tracking
+  startTimeTracking,
+  stopTimeTracking,
+  getActiveTimer,
+  addManualTimeEntry,
+  // Dependencies
+  addTaskDependency,
+  removeTaskDependency,
+  getTaskDependencies,
 } from "@/lib/actions/projects";
 import type { TaskPriority } from "@prisma/client";
 import { isSameDay, isToday } from "date-fns";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { AutomationRulesModal, RecurringTasksModal } from "./automation-modals";
 
 // Types
 interface Subtask {
@@ -135,6 +160,35 @@ interface TaskTemplateData {
   estimatedMinutes: number | null;
   subtasks: { title: string; position: number }[] | null;
   isGlobal: boolean;
+}
+
+interface AutomationData {
+  id: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  trigger: AutomationTrigger;
+  actions: AutomationAction[];
+  createdAt: Date;
+}
+
+interface RecurringTaskData {
+  id: string;
+  title: string;
+  description: string | null;
+  priority: TaskPriority;
+  tags: string[];
+  estimatedMinutes: number | null;
+  frequency: string;
+  interval: number;
+  daysOfWeek: number[];
+  dayOfMonth: number | null;
+  time: string;
+  isActive: boolean;
+  nextRunAt: Date | null;
+  lastRunAt: Date | null;
+  column: { id: string; name: string };
+  assignee: { id: string; fullName: string | null; avatarUrl: string | null } | null;
 }
 
 interface ProjectsClientProps {
@@ -261,6 +315,27 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
   const [templates, setTemplates] = useState<TaskTemplateData[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
 
+  // Automation state
+  const [showAutomationModal, setShowAutomationModal] = useState(false);
+  const [automations, setAutomations] = useState<AutomationData[]>([]);
+  const [loadingAutomations, setLoadingAutomations] = useState(false);
+  const [editingAutomation, setEditingAutomation] = useState<AutomationData | null>(null);
+
+  // Recurring tasks state
+  const [showRecurringModal, setShowRecurringModal] = useState(false);
+  const [recurringTasks, setRecurringTasks] = useState<RecurringTaskData[]>([]);
+  const [loadingRecurring, setLoadingRecurring] = useState(false);
+  const [editingRecurringTask, setEditingRecurringTask] = useState<RecurringTaskData | null>(null);
+
+  // Time tracking state
+  const [activeTimer, setActiveTimer] = useState<{
+    entryId: string;
+    taskId: string;
+    taskTitle: string;
+    startedAt: Date;
+  } | null>(null);
+  const [timerElapsed, setTimerElapsed] = useState(0);
+
   const loadTemplates = async () => {
     setLoadingTemplates(true);
     try {
@@ -272,6 +347,121 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
       setLoadingTemplates(false);
     }
   };
+
+  const loadAutomations = async () => {
+    setLoadingAutomations(true);
+    try {
+      const result = await getAutomations(board.id);
+      setAutomations(result.map((a) => ({
+        ...a,
+        trigger: a.trigger as unknown as AutomationTrigger,
+        actions: a.actions as unknown as AutomationAction[],
+      })));
+    } catch (error) {
+      console.error("Error loading automations:", error);
+    } finally {
+      setLoadingAutomations(false);
+    }
+  };
+
+  const loadRecurringTasks = async () => {
+    setLoadingRecurring(true);
+    try {
+      const result = await getRecurringTasks(board.id);
+      setRecurringTasks(result as RecurringTaskData[]);
+    } catch (error) {
+      console.error("Error loading recurring tasks:", error);
+    } finally {
+      setLoadingRecurring(false);
+    }
+  };
+
+  // Load active timer on mount
+  useEffect(() => {
+    const loadTimer = async () => {
+      const timer = await getActiveTimer();
+      if (timer) {
+        setActiveTimer({
+          ...timer,
+          startedAt: new Date(timer.startedAt),
+        });
+      }
+    };
+    loadTimer();
+  }, []);
+
+  // Timer interval effect
+  useEffect(() => {
+    if (!activeTimer) {
+      setTimerElapsed(0);
+      return;
+    }
+
+    const updateElapsed = () => {
+      const elapsed = Math.floor((Date.now() - new Date(activeTimer.startedAt).getTime()) / 1000);
+      setTimerElapsed(elapsed);
+    };
+
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+    return () => clearInterval(interval);
+  }, [activeTimer]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // n - New task (when a column is focused or first column)
+      if (e.key === "n" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        const firstColumn = board.columns[0];
+        if (firstColumn) {
+          setShowAddTask(firstColumn.id);
+        }
+      }
+
+      // Escape - Close modal
+      if (e.key === "Escape") {
+        if (selectedTask) {
+          setSelectedTask(null);
+        } else if (showAutomationModal) {
+          setShowAutomationModal(false);
+        } else if (showRecurringModal) {
+          setShowRecurringModal(false);
+        } else if (showTemplateLibrary) {
+          setShowTemplateLibrary(false);
+        }
+      }
+
+      // 1-4 for view modes (with meta/ctrl key)
+      if ((e.metaKey || e.ctrlKey) && e.key === "1") {
+        e.preventDefault();
+        setViewMode("board");
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "2") {
+        e.preventDefault();
+        setViewMode("list");
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "3") {
+        e.preventDefault();
+        setViewMode("calendar");
+      }
+
+      // / - Focus search
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+        searchInput?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [board.columns, selectedTask, showAutomationModal, showRecurringModal, showTemplateLibrary]);
 
   const allTasks = useMemo(
     () => board.columns.flatMap((column) => column.tasks),
@@ -792,6 +982,57 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
           subtitle={`${filteredTasks.length}${hasActiveFilters ? ` of ${totalTasks}` : ""} tasks · ${completedTasks} completed`}
           actions={
             <div className="flex flex-wrap items-center gap-3">
+              {/* Active Timer Display */}
+              {activeTimer && (
+                <div className="flex items-center gap-2 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-3 py-1.5">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--primary)]" />
+                  <span className="text-sm font-medium text-[var(--primary)]">
+                    {formatTimerDuration(timerElapsed)}
+                  </span>
+                  <span className="text-xs text-foreground-muted truncate max-w-[120px]">
+                    {activeTimer.taskTitle}
+                  </span>
+                  <button
+                    onClick={async () => {
+                      const result = await stopTimeTracking(activeTimer.entryId);
+                      if (result.success) {
+                        setActiveTimer(null);
+                        showToast(`Tracked ${result.minutes} minutes`, "success");
+                        router.refresh();
+                      }
+                    }}
+                    className="ml-1 rounded p-1 text-[var(--primary)] hover:bg-[var(--primary)]/20"
+                    title="Stop timer"
+                  >
+                    <StopIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Board Settings Menu */}
+              <div className="flex items-center">
+                <button
+                  onClick={() => {
+                    setShowAutomationModal(true);
+                    loadAutomations();
+                  }}
+                  className="rounded-lg border border-[var(--card-border)] bg-background p-2 text-foreground-secondary hover:text-foreground"
+                  title="Automation Rules"
+                >
+                  <AutomationIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setShowRecurringModal(true);
+                    loadRecurringTasks();
+                  }}
+                  className="ml-1 rounded-lg border border-[var(--card-border)] bg-background p-2 text-foreground-secondary hover:text-foreground"
+                  title="Recurring Tasks"
+                >
+                  <RepeatIcon className="h-4 w-4" />
+                </button>
+              </div>
+
               {/* View Mode Toggle */}
               <div className="flex flex-wrap rounded-lg border border-[var(--card-border)] bg-background p-1">
                 {(["board", "list", "calendar"] as const).map((mode) => (
@@ -1734,6 +1975,58 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
           }}
         />
       )}
+
+      {/* Automation Rules Modal - TODO: Create AutomationRulesModal component */}
+      {/* {showAutomationModal && (
+        <AutomationRulesModal
+          automations={automations}
+          columns={board.columns}
+          teamMembers={teamMembers}
+          loading={loadingAutomations}
+          editingAutomation={editingAutomation}
+          onClose={() => {
+            setShowAutomationModal(false);
+            setEditingAutomation(null);
+          }}
+          onCreate={async (data) => {
+            const result = await createAutomation({
+              ...data,
+              boardId: board.id,
+            });
+            if (result.success) {
+              showToast("Automation created", "success");
+              loadAutomations();
+            } else {
+              showToast(result.error || "Failed to create automation", "error");
+            }
+            return result.success;
+          }}
+          onUpdate={async (id, data) => {
+            const result = await updateAutomation(id, data);
+            if (result.success) {
+              showToast("Automation updated", "success");
+              loadAutomations();
+              setEditingAutomation(null);
+            } else {
+              showToast(result.error || "Failed to update automation", "error");
+            }
+            return result.success;
+          }}
+          onDelete={async (id) => {
+            const result = await deleteAutomation(id);
+            if (result.success) {
+              showToast("Automation deleted", "success");
+              loadAutomations();
+            } else {
+              showToast(result.error || "Failed to delete automation", "error");
+            }
+            return result.success;
+          }}
+          onEdit={(automation) => setEditingAutomation(automation)}
+        />
+      )} */}
+
+      {/* TODO: Implement RecurringTasksModal component */}
     </div>
   );
 }
@@ -2661,4 +2954,48 @@ function ChevronRightIcon({ className }: { className?: string }) {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
     </svg>
   );
+}
+
+function AutomationIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function RepeatIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+  );
+}
+
+function StopIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+    </svg>
+  );
+}
+
+function PlayIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function formatTimerDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }

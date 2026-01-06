@@ -8,6 +8,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Projects Module Phase 5: Advanced Automation & Productivity Features**
+  - **Automation Rules System** - Create rules to automate task management
+    - Trigger types: task_created, task_moved, subtasks_complete, due_date_reached, priority_changed, assignee_changed
+    - Action types: move_to_column, assign_to_user, set_priority, add_tag, remove_tag, send_notification
+    - Full CRUD for automation rules with enable/disable toggle
+    - Automation rules modal with visual trigger/action configuration
+    - TaskAutomation Prisma model with JSON trigger/actions fields
+  - **Recurring Tasks** - Schedule repeating tasks automatically
+    - Frequency options: daily, weekly, monthly, custom
+    - Configure interval (e.g., every 2 weeks), specific days of week, day of month
+    - Time-based scheduling with next run tracking
+    - RecurringTask Prisma model with full scheduling configuration
+    - Recurring tasks modal with schedule preview
+  - **Time Tracking with Timer UI** - Track time spent on tasks
+    - Start/stop timer with live elapsed time display in header
+    - Manual time entry support with description
+    - TaskTimeEntry Prisma model for time logs
+    - Timer persists across page navigation
+    - View time entries per task with total time calculation
+  - **Task Dependencies** - Define task relationships
+    - "Blocked by" and "Blocks" relationships between tasks
+    - Visual dependency indicators on task cards
+    - Cyclic dependency detection using BFS algorithm
+    - Self-referential many-to-many relation in Prisma schema
+  - **Keyboard Shortcuts** - Faster task management
+    - `N` - Create new task in first column
+    - `Escape` - Close modals and clear selections
+    - `/` - Focus search input
+    - `Cmd/Ctrl+1/2/3` - Switch between Board/List/Calendar views
+    - Shortcuts work when not focused on input fields
+
 - **Projects Module Phase 4: Board Customization & Task Templates**
   - Column WIP limits with visual warnings (yellow at limit, red over limit)
   - Column settings popover with name editing, WIP limit configuration, and color picker

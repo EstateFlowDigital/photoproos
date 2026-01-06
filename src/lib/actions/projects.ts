@@ -1959,3 +1959,1115 @@ export async function deleteTaskTemplate(
     };
   }
 }
+
+// ============================================================================
+// AUTOMATION RULES
+// ============================================================================
+
+export type AutomationTriggerType =
+  | "task_created"
+  | "task_moved"
+  | "subtasks_complete"
+  | "due_date_reached"
+  | "priority_changed"
+  | "assignee_changed";
+
+export type AutomationActionType =
+  | "move_to_column"
+  | "assign_to_user"
+  | "set_priority"
+  | "add_tag"
+  | "remove_tag"
+  | "send_notification";
+
+export interface AutomationTrigger {
+  type: AutomationTriggerType;
+  columnId?: string; // For task_moved trigger (from/to column)
+  priority?: TaskPriority; // For priority_changed trigger
+}
+
+export interface AutomationAction {
+  type: AutomationActionType;
+  columnId?: string; // For move_to_column
+  userId?: string; // For assign_to_user
+  priority?: TaskPriority; // For set_priority
+  tag?: string; // For add_tag/remove_tag
+  message?: string; // For send_notification
+}
+
+/**
+ * Get all automation rules for a board
+ */
+export async function getAutomations(boardId: string) {
+  await requireAuth();
+  const organizationId = await requireOrganizationId();
+
+  const automations = await prisma.taskAutomation.findMany({
+    where: {
+      boardId,
+      organizationId,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return automations;
+}
+
+/**
+ * Create an automation rule
+ */
+export async function createAutomation(data: {
+  boardId: string;
+  name: string;
+  description?: string;
+  trigger: AutomationTrigger;
+  actions: AutomationAction[];
+}): Promise<{ success: boolean; automation?: { id: string }; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Verify board belongs to organization
+    const board = await prisma.taskBoard.findFirst({
+      where: { id: data.boardId, organizationId },
+    });
+
+    if (!board) {
+      return { success: false, error: "Board not found" };
+    }
+
+    const automation = await prisma.taskAutomation.create({
+      data: {
+        organizationId,
+        boardId: data.boardId,
+        name: data.name,
+        description: data.description,
+        trigger: data.trigger as object,
+        actions: data.actions as object[],
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true, automation: { id: automation.id } };
+  } catch (error) {
+    console.error("Error creating automation:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create automation",
+    };
+  }
+}
+
+/**
+ * Update an automation rule
+ */
+export async function updateAutomation(
+  automationId: string,
+  data: {
+    name?: string;
+    description?: string;
+    trigger?: AutomationTrigger;
+    actions?: AutomationAction[];
+    isActive?: boolean;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    await prisma.taskAutomation.update({
+      where: {
+        id: automationId,
+        organizationId,
+      },
+      data: {
+        ...(data.name && { name: data.name }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.trigger && { trigger: data.trigger as object }),
+        ...(data.actions && { actions: data.actions as object[] }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating automation:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update automation",
+    };
+  }
+}
+
+/**
+ * Delete an automation rule
+ */
+export async function deleteAutomation(
+  automationId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    await prisma.taskAutomation.delete({
+      where: {
+        id: automationId,
+        organizationId,
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting automation:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete automation",
+    };
+  }
+}
+
+/**
+ * Execute automations for a task event
+ * Called internally when tasks are created, moved, etc.
+ */
+export async function executeAutomations(
+  boardId: string,
+  taskId: string,
+  triggerType: AutomationTriggerType,
+  context?: {
+    fromColumnId?: string;
+    toColumnId?: string;
+    newPriority?: TaskPriority;
+  }
+): Promise<void> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Get active automations for this board
+    const automations = await prisma.taskAutomation.findMany({
+      where: {
+        boardId,
+        organizationId,
+        isActive: true,
+      },
+    });
+
+    for (const automation of automations) {
+      const trigger = automation.trigger as unknown as AutomationTrigger;
+
+      // Check if trigger matches
+      if (trigger.type !== triggerType) continue;
+
+      // Additional trigger conditions
+      if (triggerType === "task_moved" && trigger.columnId) {
+        if (trigger.columnId !== context?.toColumnId) continue;
+      }
+
+      if (triggerType === "priority_changed" && trigger.priority) {
+        if (trigger.priority !== context?.newPriority) continue;
+      }
+
+      // Execute actions
+      const actions = automation.actions as unknown as AutomationAction[];
+      for (const action of actions) {
+        await executeAction(taskId, action, organizationId);
+      }
+    }
+  } catch (error) {
+    console.error("Error executing automations:", error);
+  }
+}
+
+async function executeAction(
+  taskId: string,
+  action: AutomationAction,
+  organizationId: string
+): Promise<void> {
+  switch (action.type) {
+    case "move_to_column":
+      if (action.columnId) {
+        await prisma.task.update({
+          where: { id: taskId, organizationId },
+          data: { columnId: action.columnId },
+        });
+      }
+      break;
+
+    case "assign_to_user":
+      await prisma.task.update({
+        where: { id: taskId, organizationId },
+        data: { assigneeId: action.userId || null },
+      });
+      break;
+
+    case "set_priority":
+      if (action.priority) {
+        await prisma.task.update({
+          where: { id: taskId, organizationId },
+          data: { priority: action.priority },
+        });
+      }
+      break;
+
+    case "add_tag":
+      if (action.tag) {
+        const task = await prisma.task.findUnique({
+          where: { id: taskId },
+          select: { tags: true },
+        });
+        if (task && !task.tags.includes(action.tag)) {
+          await prisma.task.update({
+            where: { id: taskId, organizationId },
+            data: { tags: [...task.tags, action.tag] },
+          });
+        }
+      }
+      break;
+
+    case "remove_tag":
+      if (action.tag) {
+        const task = await prisma.task.findUnique({
+          where: { id: taskId },
+          select: { tags: true },
+        });
+        if (task) {
+          await prisma.task.update({
+            where: { id: taskId, organizationId },
+            data: { tags: task.tags.filter((t) => t !== action.tag) },
+          });
+        }
+      }
+      break;
+
+    case "send_notification":
+      // TODO: Integrate with notification system
+      console.log(`Notification: ${action.message} for task ${taskId}`);
+      break;
+  }
+}
+
+// ============================================================================
+// RECURRING TASKS
+// ============================================================================
+
+export type RecurringFrequency = "daily" | "weekly" | "monthly" | "custom";
+
+/**
+ * Get all recurring tasks for a board
+ */
+export async function getRecurringTasks(boardId: string) {
+  await requireAuth();
+  const organizationId = await requireOrganizationId();
+
+  const recurringTasks = await prisma.recurringTask.findMany({
+    where: {
+      boardId,
+      organizationId,
+    },
+    include: {
+      column: {
+        select: { id: true, name: true },
+      },
+      assignee: {
+        select: { id: true, fullName: true, avatarUrl: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return recurringTasks;
+}
+
+/**
+ * Create a recurring task
+ */
+export async function createRecurringTask(data: {
+  boardId: string;
+  columnId: string;
+  title: string;
+  description?: string;
+  priority?: TaskPriority;
+  tags?: string[];
+  estimatedMinutes?: number;
+  assigneeId?: string;
+  frequency: RecurringFrequency;
+  interval?: number;
+  daysOfWeek?: number[]; // 0-6 for Sunday-Saturday
+  dayOfMonth?: number; // 1-31
+  time?: string; // HH:MM format
+}): Promise<{ success: boolean; recurringTask?: { id: string }; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Verify board belongs to organization
+    const board = await prisma.taskBoard.findFirst({
+      where: { id: data.boardId, organizationId },
+    });
+
+    if (!board) {
+      return { success: false, error: "Board not found" };
+    }
+
+    // Calculate next run date
+    const nextRunAt = calculateNextRunDate(
+      data.frequency,
+      data.interval || 1,
+      data.daysOfWeek || [],
+      data.dayOfMonth,
+      data.time || "09:00"
+    );
+
+    const recurringTask = await prisma.recurringTask.create({
+      data: {
+        organizationId,
+        boardId: data.boardId,
+        columnId: data.columnId,
+        title: data.title,
+        description: data.description,
+        priority: data.priority || "medium",
+        tags: data.tags || [],
+        estimatedMinutes: data.estimatedMinutes,
+        assigneeId: data.assigneeId,
+        frequency: data.frequency,
+        interval: data.interval || 1,
+        daysOfWeek: data.daysOfWeek || [],
+        dayOfMonth: data.dayOfMonth,
+        time: data.time || "09:00",
+        nextRunAt,
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true, recurringTask: { id: recurringTask.id } };
+  } catch (error) {
+    console.error("Error creating recurring task:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create recurring task",
+    };
+  }
+}
+
+/**
+ * Update a recurring task
+ */
+export async function updateRecurringTask(
+  recurringTaskId: string,
+  data: {
+    title?: string;
+    description?: string;
+    priority?: TaskPriority;
+    tags?: string[];
+    estimatedMinutes?: number;
+    assigneeId?: string | null;
+    columnId?: string;
+    frequency?: RecurringFrequency;
+    interval?: number;
+    daysOfWeek?: number[];
+    dayOfMonth?: number;
+    time?: string;
+    isActive?: boolean;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // If schedule changed, recalculate next run
+    let nextRunAt: Date | undefined;
+    if (data.frequency || data.interval || data.daysOfWeek || data.dayOfMonth || data.time) {
+      const existing = await prisma.recurringTask.findUnique({
+        where: { id: recurringTaskId },
+      });
+      if (existing) {
+        nextRunAt = calculateNextRunDate(
+          data.frequency || existing.frequency as RecurringFrequency,
+          data.interval ?? existing.interval,
+          data.daysOfWeek ?? existing.daysOfWeek,
+          data.dayOfMonth ?? existing.dayOfMonth ?? undefined,
+          data.time ?? existing.time
+        );
+      }
+    }
+
+    await prisma.recurringTask.update({
+      where: {
+        id: recurringTaskId,
+        organizationId,
+      },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.priority && { priority: data.priority }),
+        ...(data.tags && { tags: data.tags }),
+        ...(data.estimatedMinutes !== undefined && { estimatedMinutes: data.estimatedMinutes }),
+        ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId }),
+        ...(data.columnId && { columnId: data.columnId }),
+        ...(data.frequency && { frequency: data.frequency }),
+        ...(data.interval !== undefined && { interval: data.interval }),
+        ...(data.daysOfWeek && { daysOfWeek: data.daysOfWeek }),
+        ...(data.dayOfMonth !== undefined && { dayOfMonth: data.dayOfMonth }),
+        ...(data.time && { time: data.time }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(nextRunAt && { nextRunAt }),
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating recurring task:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update recurring task",
+    };
+  }
+}
+
+/**
+ * Delete a recurring task
+ */
+export async function deleteRecurringTask(
+  recurringTaskId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    await prisma.recurringTask.delete({
+      where: {
+        id: recurringTaskId,
+        organizationId,
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting recurring task:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete recurring task",
+    };
+  }
+}
+
+/**
+ * Process due recurring tasks and create actual tasks
+ * Should be called by a cron job
+ */
+export async function processRecurringTasks(): Promise<{
+  success: boolean;
+  tasksCreated: number;
+  error?: string;
+}> {
+  try {
+    const now = new Date();
+
+    // Find all recurring tasks that are due
+    const dueRecurringTasks = await prisma.recurringTask.findMany({
+      where: {
+        isActive: true,
+        nextRunAt: { lte: now },
+      },
+    });
+
+    let tasksCreated = 0;
+
+    for (const recurringTask of dueRecurringTasks) {
+      // Get the highest position in the column
+      const lastTask = await prisma.task.findFirst({
+        where: { columnId: recurringTask.columnId },
+        orderBy: { position: "desc" },
+        select: { position: true },
+      });
+
+      // Get the column to determine status
+      const column = await prisma.taskColumn.findUnique({
+        where: { id: recurringTask.columnId },
+        select: { name: true },
+      });
+
+      // Create the task
+      await prisma.task.create({
+        data: {
+          organizationId: recurringTask.organizationId,
+          boardId: recurringTask.boardId,
+          columnId: recurringTask.columnId,
+          title: recurringTask.title,
+          description: recurringTask.description,
+          priority: recurringTask.priority,
+          tags: recurringTask.tags,
+          estimatedMinutes: recurringTask.estimatedMinutes,
+          assigneeId: recurringTask.assigneeId,
+          status: getStatusForColumn(column?.name || "", "todo"),
+          position: (lastTask?.position || 0) + 1,
+        },
+      });
+
+      // Update the recurring task's next run date
+      const nextRunAt = calculateNextRunDate(
+        recurringTask.frequency as RecurringFrequency,
+        recurringTask.interval,
+        recurringTask.daysOfWeek,
+        recurringTask.dayOfMonth ?? undefined,
+        recurringTask.time
+      );
+
+      await prisma.recurringTask.update({
+        where: { id: recurringTask.id },
+        data: {
+          lastRunAt: now,
+          nextRunAt,
+        },
+      });
+
+      tasksCreated++;
+    }
+
+    return { success: true, tasksCreated };
+  } catch (error) {
+    console.error("Error processing recurring tasks:", error);
+    return {
+      success: false,
+      tasksCreated: 0,
+      error: error instanceof Error ? error.message : "Failed to process recurring tasks",
+    };
+  }
+}
+
+function calculateNextRunDate(
+  frequency: RecurringFrequency,
+  interval: number,
+  daysOfWeek: number[],
+  dayOfMonth: number | undefined,
+  time: string
+): Date {
+  const [hours, minutes] = time.split(":").map(Number);
+  const now = new Date();
+  let next = new Date(now);
+
+  // Set time
+  next.setHours(hours, minutes, 0, 0);
+
+  // If time has passed today, start from tomorrow
+  if (next <= now) {
+    next.setDate(next.getDate() + 1);
+  }
+
+  switch (frequency) {
+    case "daily":
+      // Already set for tomorrow if needed
+      break;
+
+    case "weekly":
+      if (daysOfWeek.length > 0) {
+        // Find the next day that matches
+        let found = false;
+        for (let i = 0; i < 7 && !found; i++) {
+          const checkDay = (next.getDay() + i) % 7;
+          if (daysOfWeek.includes(checkDay)) {
+            if (i > 0) {
+              next.setDate(next.getDate() + i);
+            }
+            found = true;
+          }
+        }
+      } else {
+        // Default: same day next week
+        next.setDate(next.getDate() + 7 * interval);
+      }
+      break;
+
+    case "monthly":
+      if (dayOfMonth) {
+        next.setDate(dayOfMonth);
+        if (next <= now) {
+          next.setMonth(next.getMonth() + interval);
+        }
+      } else {
+        next.setMonth(next.getMonth() + interval);
+      }
+      break;
+
+    case "custom":
+      // Custom interval in days
+      next.setDate(next.getDate() + interval);
+      break;
+  }
+
+  return next;
+}
+
+// ============================================================================
+// TIME TRACKING
+// ============================================================================
+
+/**
+ * Get time entries for a task
+ */
+export async function getTaskTimeEntries(taskId: string) {
+  await requireAuth();
+  const organizationId = await requireOrganizationId();
+
+  // Verify task belongs to organization
+  const task = await prisma.task.findFirst({
+    where: { id: taskId, organizationId },
+  });
+
+  if (!task) {
+    return [];
+  }
+
+  const entries = await prisma.taskTimeEntry.findMany({
+    where: { taskId },
+    include: {
+      user: {
+        select: { id: true, fullName: true, avatarUrl: true },
+      },
+    },
+    orderBy: { startedAt: "desc" },
+  });
+
+  return entries;
+}
+
+/**
+ * Start time tracking for a task
+ */
+export async function startTimeTracking(
+  taskId: string
+): Promise<{ success: boolean; entryId?: string; error?: string }> {
+  try {
+    const user = await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Verify task belongs to organization
+    const task = await prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+    });
+
+    if (!task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    // Check if there's already an active timer for this user
+    const activeEntry = await prisma.taskTimeEntry.findFirst({
+      where: {
+        userId: user.userId,
+        endedAt: null,
+      },
+    });
+
+    if (activeEntry) {
+      // Stop the existing timer first
+      const elapsed = Math.round(
+        (Date.now() - activeEntry.startedAt.getTime()) / 60000
+      );
+      await prisma.taskTimeEntry.update({
+        where: { id: activeEntry.id },
+        data: {
+          endedAt: new Date(),
+          minutes: elapsed,
+        },
+      });
+
+      // Update the task's actual minutes
+      await prisma.task.update({
+        where: { id: activeEntry.taskId },
+        data: {
+          actualMinutes: { increment: elapsed },
+        },
+      });
+    }
+
+    // Create new time entry
+    const entry = await prisma.taskTimeEntry.create({
+      data: {
+        taskId,
+        userId: user.userId,
+        startedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true, entryId: entry.id };
+  } catch (error) {
+    console.error("Error starting time tracking:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to start timer",
+    };
+  }
+}
+
+/**
+ * Stop time tracking
+ */
+export async function stopTimeTracking(
+  entryId: string
+): Promise<{ success: boolean; minutes?: number; error?: string }> {
+  try {
+    const user = await requireAuth();
+
+    const entry = await prisma.taskTimeEntry.findFirst({
+      where: {
+        id: entryId,
+        userId: user.userId,
+        endedAt: null,
+      },
+    });
+
+    if (!entry) {
+      return { success: false, error: "Active timer not found" };
+    }
+
+    const elapsed = Math.round(
+      (Date.now() - entry.startedAt.getTime()) / 60000
+    );
+
+    // Update the time entry
+    await prisma.taskTimeEntry.update({
+      where: { id: entryId },
+      data: {
+        endedAt: new Date(),
+        minutes: elapsed,
+      },
+    });
+
+    // Update the task's actual minutes
+    await prisma.task.update({
+      where: { id: entry.taskId },
+      data: {
+        actualMinutes: { increment: elapsed },
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true, minutes: elapsed };
+  } catch (error) {
+    console.error("Error stopping time tracking:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to stop timer",
+    };
+  }
+}
+
+/**
+ * Add manual time entry
+ */
+export async function addManualTimeEntry(data: {
+  taskId: string;
+  minutes: number;
+  description?: string;
+  date?: Date;
+}): Promise<{ success: boolean; entryId?: string; error?: string }> {
+  try {
+    const user = await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Verify task belongs to organization
+    const task = await prisma.task.findFirst({
+      where: { id: data.taskId, organizationId },
+    });
+
+    if (!task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    const startedAt = data.date || new Date();
+    const endedAt = new Date(startedAt.getTime() + data.minutes * 60000);
+
+    // Create time entry
+    const entry = await prisma.taskTimeEntry.create({
+      data: {
+        taskId: data.taskId,
+        userId: user.userId,
+        startedAt,
+        endedAt,
+        minutes: data.minutes,
+        description: data.description,
+      },
+    });
+
+    // Update the task's actual minutes
+    await prisma.task.update({
+      where: { id: data.taskId },
+      data: {
+        actualMinutes: { increment: data.minutes },
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true, entryId: entry.id };
+  } catch (error) {
+    console.error("Error adding manual time entry:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to add time entry",
+    };
+  }
+}
+
+/**
+ * Delete a time entry
+ */
+export async function deleteTimeEntry(
+  entryId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await requireAuth();
+
+    const entry = await prisma.taskTimeEntry.findFirst({
+      where: {
+        id: entryId,
+        userId: user.userId,
+      },
+    });
+
+    if (!entry) {
+      return { success: false, error: "Time entry not found" };
+    }
+
+    // If entry had minutes recorded, decrement from task
+    if (entry.minutes) {
+      await prisma.task.update({
+        where: { id: entry.taskId },
+        data: {
+          actualMinutes: { decrement: entry.minutes },
+        },
+      });
+    }
+
+    await prisma.taskTimeEntry.delete({
+      where: { id: entryId },
+    });
+
+    revalidatePath("/projects");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting time entry:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete time entry",
+    };
+  }
+}
+
+/**
+ * Get active timer for current user
+ */
+export async function getActiveTimer(): Promise<{
+  entryId: string;
+  taskId: string;
+  taskTitle: string;
+  startedAt: Date;
+} | null> {
+  try {
+    const user = await requireAuth();
+
+    const activeEntry = await prisma.taskTimeEntry.findFirst({
+      where: {
+        userId: user.userId,
+        endedAt: null,
+      },
+      include: {
+        task: {
+          select: { id: true, title: true },
+        },
+      },
+    });
+
+    if (!activeEntry) return null;
+
+    return {
+      entryId: activeEntry.id,
+      taskId: activeEntry.task.id,
+      taskTitle: activeEntry.task.title,
+      startedAt: activeEntry.startedAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ============================================================================
+// TASK DEPENDENCIES
+// ============================================================================
+
+/**
+ * Add a dependency (this task is blocked by another task)
+ */
+export async function addTaskDependency(
+  taskId: string,
+  blockedByTaskId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Verify both tasks belong to organization
+    const [task, blockedByTask] = await Promise.all([
+      prisma.task.findFirst({ where: { id: taskId, organizationId } }),
+      prisma.task.findFirst({ where: { id: blockedByTaskId, organizationId } }),
+    ]);
+
+    if (!task || !blockedByTask) {
+      return { success: false, error: "Task not found" };
+    }
+
+    // Prevent circular dependencies
+    const wouldCreateCycle = await checkForCyclicDependency(
+      blockedByTaskId,
+      taskId,
+      organizationId
+    );
+    if (wouldCreateCycle) {
+      return { success: false, error: "This would create a circular dependency" };
+    }
+
+    // Add the dependency
+    await prisma.task.update({
+      where: { id: taskId },
+      data: {
+        blockedByTasks: {
+          connect: { id: blockedByTaskId },
+        },
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true };
+  } catch (error) {
+    console.error("Error adding task dependency:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to add dependency",
+    };
+  }
+}
+
+/**
+ * Remove a dependency
+ */
+export async function removeTaskDependency(
+  taskId: string,
+  blockedByTaskId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Verify task belongs to organization
+    const task = await prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+    });
+
+    if (!task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    await prisma.task.update({
+      where: { id: taskId },
+      data: {
+        blockedByTasks: {
+          disconnect: { id: blockedByTaskId },
+        },
+      },
+    });
+
+    revalidatePath("/projects");
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing task dependency:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to remove dependency",
+    };
+  }
+}
+
+/**
+ * Get task dependencies
+ */
+export async function getTaskDependencies(taskId: string): Promise<{
+  blockedBy: Array<{ id: string; title: string; status: TaskStatus }>;
+  blocks: Array<{ id: string; title: string; status: TaskStatus }>;
+}> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const task = await prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+      include: {
+        blockedByTasks: {
+          select: { id: true, title: true, status: true },
+        },
+        blocksTasks: {
+          select: { id: true, title: true, status: true },
+        },
+      },
+    });
+
+    if (!task) {
+      return { blockedBy: [], blocks: [] };
+    }
+
+    return {
+      blockedBy: task.blockedByTasks,
+      blocks: task.blocksTasks,
+    };
+  } catch {
+    return { blockedBy: [], blocks: [] };
+  }
+}
+
+/**
+ * Check for cyclic dependencies using DFS
+ */
+async function checkForCyclicDependency(
+  startTaskId: string,
+  targetTaskId: string,
+  organizationId: string
+): Promise<boolean> {
+  const visited = new Set<string>();
+  const queue = [startTaskId];
+
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+
+    if (currentId === targetTaskId) {
+      return true; // Found a cycle
+    }
+
+    if (visited.has(currentId)) {
+      continue;
+    }
+    visited.add(currentId);
+
+    // Get tasks that this task blocks
+    const task = await prisma.task.findFirst({
+      where: { id: currentId, organizationId },
+      include: {
+        blockedByTasks: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (task) {
+      for (const blockedBy of task.blockedByTasks) {
+        if (!visited.has(blockedBy.id)) {
+          queue.push(blockedBy.id);
+        }
+      }
+    }
+  }
+
+  return false;
+}
