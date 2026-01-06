@@ -585,42 +585,45 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   // Relations
-  members            OrganizationMember[]
-  invitations        Invitation[]
-  projects           Project[]
-  portfolioWebsites  PortfolioWebsite[]
-  portfolioInquiries PortfolioInquiry[]
-  portfolioLeads     PortfolioLead[]
-  portfolioComments  PortfolioComment[]
-  portfolioABTests   PortfolioABTest[]
-  customForms        CustomForm[]
-  clients            Client[]
-  payments           Payment[]
-  galleryFeedback    GalleryFeedback[]
-  bookings           Booking[]
-  bookingTypes       BookingType[]
-  invoices           Invoice[]
-  creditNotes        CreditNote[]
-  contracts          Contract[]
-  contractTemplates  ContractTemplate[]
-  activityLogs       ActivityLog[]
-  notifications      Notification[]
-  usageMeters        UsageMeter[]
-  onboardingProgress OnboardingProgress?
-  services           Service[]
-  locations          Location[]
-  equipment          Equipment[]
-  watermarkTemplates WatermarkTemplate[]
-  homeBaseLocation   Location?            @relation("OrgHomeBase", fields: [homeBaseLocationId], references: [id])
-  taskBoards         TaskBoard[]
-  tasks              Task[]
-  taskTemplates      TaskTemplate[]
-  taskAutomations    TaskAutomation[]
-  recurringTasks     RecurringTask[]
-  discountCodes      DiscountCode[]
-  paymentPlans       PaymentPlan[]
-  invoiceTemplates   InvoiceTemplate[]
-  galleryTemplates   GalleryTemplate[]
+  members                  OrganizationMember[]
+  invitations              Invitation[]
+  projects                 Project[]
+  portfolioWebsites        PortfolioWebsite[]
+  portfolioInquiries       PortfolioInquiry[]
+  portfolioLeads           PortfolioLead[]
+  portfolioComments        PortfolioComment[]
+  portfolioABTests         PortfolioABTest[]
+  customForms              CustomForm[]
+  clients                  Client[]
+  payments                 Payment[]
+  galleryFeedback          GalleryFeedback[]
+  bookings                 Booking[]
+  bookingTypes             BookingType[]
+  invoices                 Invoice[]
+  creditNotes              CreditNote[]
+  estimates                Estimate[]
+  clientRetainers          ClientRetainer[]
+  contracts                Contract[]
+  contractTemplates        ContractTemplate[]
+  activityLogs             ActivityLog[]
+  notifications            Notification[]
+  usageMeters              UsageMeter[]
+  onboardingProgress       OnboardingProgress?
+  services                 Service[]
+  locations                Location[]
+  equipment                Equipment[]
+  watermarkTemplates       WatermarkTemplate[]
+  homeBaseLocation         Location?                 @relation("OrgHomeBase", fields: [homeBaseLocationId], references: [id])
+  taskBoards               TaskBoard[]
+  tasks                    Task[]
+  taskTemplates            TaskTemplate[]
+  taskAutomations          TaskAutomation[]
+  recurringTasks           RecurringTask[]
+  discountCodes            DiscountCode[]
+  paymentPlans             PaymentPlan[]
+  invoiceTemplates         InvoiceTemplate[]
+  invoiceBrandingTemplates InvoiceBrandingTemplate[]
+  galleryTemplates         GalleryTemplate[]
 
   // Phase 1: Ordering System relations
   serviceBundles ServiceBundle[]
@@ -879,6 +882,12 @@ model Client {
 
   // Unified Email Inbox (threads linked to this client)
   emailThreads EmailThread[] @relation("ClientEmailThreads")
+
+  // Estimates/Quotes
+  estimates Estimate[]
+
+  // Retainer Balance
+  retainer ClientRetainer?
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -1163,6 +1172,9 @@ model Asset {
   // Ordering
   sortOrder Int @default(0)
 
+  // Per-photo watermark control
+  excludeFromWatermark Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1304,9 +1316,10 @@ model Payment {
   clientId       String?
 
   // Amount
-  amountCents Int
-  currency    String        @default("USD")
-  status      PaymentStatus @default(pending)
+  amountCents    Int
+  tipAmountCents Int           @default(0) // Gratuity amount
+  currency       String        @default("USD")
+  status         PaymentStatus @default(pending)
 
   // Stripe
   stripePaymentIntentId   String? @unique
@@ -1714,15 +1727,21 @@ model Invoice {
 
   // Credit Notes
   creditNotesOriginal CreditNote[] @relation("CreditNoteOriginalInvoice") // Credit notes issued for this invoice
-  creditNotesApplied  CreditNote[] @relation("CreditNoteAppliedInvoice")  // Credit notes applied to this invoice
+  creditNotesApplied  CreditNote[] @relation("CreditNoteAppliedInvoice") // Credit notes applied to this invoice
 
   // Deposit/Balance Invoice Split
-  isDeposit        Boolean  @default(false) // Is this a deposit invoice?
-  isBalance        Boolean  @default(false) // Is this a balance invoice?
-  depositPercent   Float?   // Deposit percentage (e.g., 50 for 50%)
-  parentInvoiceId  String?  // Link to the original invoice (for deposit/balance invoices)
-  parentInvoice    Invoice? @relation("InvoiceDepositBalance", fields: [parentInvoiceId], references: [id], onDelete: SetNull)
-  childInvoices    Invoice[] @relation("InvoiceDepositBalance") // Deposit and balance invoices
+  isDeposit       Boolean   @default(false) // Is this a deposit invoice?
+  isBalance       Boolean   @default(false) // Is this a balance invoice?
+  depositPercent  Float? // Deposit percentage (e.g., 50 for 50%)
+  parentInvoiceId String? // Link to the original invoice (for deposit/balance invoices)
+  parentInvoice   Invoice?  @relation("InvoiceDepositBalance", fields: [parentInvoiceId], references: [id], onDelete: SetNull)
+  childInvoices   Invoice[] @relation("InvoiceDepositBalance") // Deposit and balance invoices
+
+  // Attachments
+  attachments InvoiceAttachment[]
+
+  // Created from Estimate
+  estimateSource Estimate? @relation("EstimateToInvoice")
 
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
@@ -1755,7 +1774,7 @@ model InvoiceLineItem {
 
 // Credit Note - for refunds, credits, and invoice adjustments
 model CreditNote {
-  id             String @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
   clientId       String?
   invoiceId      String? // Optional link to original invoice
@@ -1771,19 +1790,19 @@ model CreditNote {
   currency    String @default("USD")
 
   // Client info (cached from invoice or client)
-  clientName    String?
-  clientEmail   String?
+  clientName  String?
+  clientEmail String?
 
   // Details
-  reason      String?  // Reason for the credit note
-  description String?  // Detailed description
-  notes       String?  // Internal notes
+  reason      String? // Reason for the credit note
+  description String? // Detailed description
+  notes       String? // Internal notes
 
   // Application
-  appliedToInvoiceId String?   // If applied to a different invoice
-  appliedAmountCents Int       @default(0) // Amount applied from this credit note
-  appliedAt          DateTime?
-  refundedAmountCents Int      @default(0) // Amount refunded to client
+  appliedToInvoiceId  String? // If applied to a different invoice
+  appliedAmountCents  Int       @default(0) // Amount applied from this credit note
+  appliedAt           DateTime?
+  refundedAmountCents Int       @default(0) // Amount refunded to client
   refundedAt          DateTime?
 
   // Dates
@@ -1807,10 +1826,214 @@ model CreditNote {
 
 enum CreditNoteStatus {
   draft
-  issued      // Sent to client
-  applied     // Applied to an invoice
-  refunded    // Refunded to client
-  voided      // Cancelled/voided
+  issued // Sent to client
+  applied // Applied to an invoice
+  refunded // Refunded to client
+  voided // Cancelled/voided
+}
+
+// Invoice Template - reusable preset line items for quick invoice creation
+model InvoiceTemplate {
+  id             String @id @default(cuid())
+  organizationId String
+
+  name        String // Template name (e.g., "Wedding Package", "Headshot Session")
+  description String? // Optional description
+  category    String? // Category for organization (e.g., "Weddings", "Portraits")
+
+  // Default values
+  defaultDueDays Int     @default(30) // Days until due
+  defaultNotes   String? // Default invoice notes
+  defaultTerms   String? // Default terms and conditions
+  taxRate        Float? // Default tax rate override
+
+  // Line items stored as JSON
+  lineItems Json // Array of { itemType, description, quantity, unitCents }
+
+  // Calculated totals (for display purposes)
+  subtotalCents Int @default(0)
+  taxCents      Int @default(0)
+  totalCents    Int @default(0)
+
+  // Settings
+  isActive   Boolean @default(true)
+  isDefault  Boolean @default(false) // Default template for new invoices
+  usageCount Int     @default(0) // Track how often this template is used
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([category])
+  @@index([isActive])
+}
+
+// Estimate/Quote - proposals that can be converted to invoices
+model Estimate {
+  id             String  @id @default(cuid())
+  organizationId String
+  clientId       String?
+
+  // Estimate number
+  estimateNumber String
+
+  // Status
+  status EstimateStatus @default(draft)
+
+  // Amounts
+  subtotalCents Int    @default(0)
+  taxCents      Int    @default(0)
+  discountCents Int    @default(0)
+  totalCents    Int    @default(0)
+  currency      String @default("USD")
+
+  // Client info (cached)
+  clientName    String?
+  clientEmail   String?
+  clientAddress String?
+
+  // Details
+  title       String? // Project/service title
+  description String? // Detailed description
+  notes       String?
+  terms       String?
+
+  // Validity
+  issueDate  DateTime @default(now())
+  validUntil DateTime // When the estimate expires
+
+  // Conversion tracking
+  convertedToInvoiceId String?   @unique
+  convertedAt          DateTime?
+
+  // Client actions
+  viewedAt        DateTime?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client             Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  convertedToInvoice Invoice?           @relation("EstimateToInvoice", fields: [convertedToInvoiceId], references: [id], onDelete: SetNull)
+  lineItems          EstimateLineItem[]
+
+  @@unique([organizationId, estimateNumber])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+}
+
+model EstimateLineItem {
+  id          String       @id @default(cuid())
+  estimateId  String
+  itemType    LineItemType @default(service)
+  description String
+  quantity    Int          @default(1)
+  unitCents   Int
+  totalCents  Int
+  sortOrder   Int          @default(0)
+
+  createdAt DateTime @default(now())
+
+  estimate Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+
+  @@index([estimateId])
+}
+
+enum EstimateStatus {
+  draft
+  sent // Sent to client
+  viewed // Client has viewed
+  approved // Client approved
+  rejected // Client rejected
+  expired // Past validUntil date
+  converted // Converted to invoice
+}
+
+// Invoice Attachment - files attached to invoices
+model InvoiceAttachment {
+  id        String @id @default(cuid())
+  invoiceId String
+
+  fileName    String
+  fileUrl     String
+  fileType    String // MIME type
+  fileSizeMb  Float   @default(0)
+  description String?
+
+  createdAt DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+// Client Retainer - prepaid balance for services
+model ClientRetainer {
+  id             String @id @default(cuid())
+  organizationId String
+  clientId       String @unique // One-to-one with Client
+
+  // Balance
+  balanceCents        Int    @default(0) // Current available balance
+  totalDepositedCents Int    @default(0) // Lifetime deposits
+  totalUsedCents      Int    @default(0) // Lifetime usage
+  currency            String @default("USD")
+
+  // Settings
+  isActive                 Boolean @default(true)
+  lowBalanceThresholdCents Int? // Alert when balance falls below this
+
+  // Notes
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  transactions RetainerTransaction[]
+
+  @@unique([organizationId, clientId]) // One retainer per client
+  @@index([organizationId])
+  @@index([clientId])
+}
+
+model RetainerTransaction {
+  id         String @id @default(cuid())
+  retainerId String
+
+  type        RetainerTransactionType
+  amountCents Int
+  description String?
+
+  // References
+  invoiceId String? // If applied to an invoice
+  paymentId String? // If from a payment
+
+  balanceAfterCents Int // Balance after this transaction
+
+  createdAt DateTime @default(now())
+
+  retainer ClientRetainer @relation(fields: [retainerId], references: [id], onDelete: Cascade)
+
+  @@index([retainerId])
+  @@index([invoiceId])
+}
+
+enum RetainerTransactionType {
+  deposit // Client added funds
+  usage // Applied to invoice
+  refund // Refunded to client
+  adjustment // Manual adjustment
 }
 
 // Recurring Invoice Template - for subscription/retainer billing
@@ -3569,10 +3792,10 @@ model ExpirationNotification {
 }
 
 // ============================================================================
-// INVOICE TEMPLATES
+// INVOICE BRANDING TEMPLATES (Visual styling for invoices)
 // ============================================================================
 
-model InvoiceTemplate {
+model InvoiceBrandingTemplate {
   id             String @id @default(cuid())
   organizationId String
 

@@ -27,6 +27,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CSV and PDF export buttons in analytics dashboard
   - Includes organization branding in reports
 
+- **Gallery Activity Timeline** - Real-time activity tracking for galleries
+  - New server action `getGalleryActivityTimeline` combining ActivityLog, DownloadLog, and GalleryFavorite data
+  - Activity summary stats (views, downloads, favorites, revenue)
+  - Beautiful timeline component with date grouping and event icons
+  - Load more pagination for large activity histories
+  - Tracks gallery views, downloads, favorites, payments, and selections
+
+- **Bulk Watermark Toggle** - Per-photo watermark control
+  - New `excludeFromWatermark` field on Asset model
+  - Server actions `bulkToggleWatermark` and `getWatermarkExclusions`
+  - Dropdown menu in batch actions bar to exclude/include photos from watermarking
+  - Allows selective watermarking (e.g., exclude cover photo from watermark)
+
+- **Gallery Password Strength Indicator** - Visual feedback for password security
+  - Password input field in gallery settings when password protection is enabled
+  - Real-time strength indicator (Weak/Fair/Good/Strong) with color-coded progress bar
+  - Show/hide password toggle for convenience
+
+- **Delivery Link Expiration Presets** - Enhanced expiration management
+  - Quick preset buttons (30, 60, 90 days, 1 year, no expiration)
+  - Current status indicator showing days until expiration with color coding
+  - Custom date picker with min date validation
+  - Immediate save on preset selection
+
 - **Questionnaires Search & Filters** - Enhanced questionnaires page with search and filtering
   - Search by template name, description, industry, client name, or email
   - Status filter pills (All, Pending, In Progress, Completed, Approved) with counts

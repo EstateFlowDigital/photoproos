@@ -143,7 +143,7 @@ export async function createGallery(
     revalidatePath("/galleries");
     revalidatePath("/dashboard");
 
-    return { success: true, data: { id: gallery.id, slug } };
+    return success({ id: gallery.id, slug });
   } catch (error) {
     console.error("Error creating gallery:", error);
     if (error instanceof Error) {
@@ -211,7 +211,7 @@ export async function updateGallery(
     revalidatePath(`/galleries/${id}/edit`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: { id: gallery.id } };
+    return success({ id: gallery.id });
   } catch (error) {
     console.error("Error updating gallery:", error);
     if (error instanceof Error) {
@@ -420,7 +420,7 @@ export async function duplicateGallery(
 
     revalidatePath("/galleries");
 
-    return { success: true, data: { id: duplicate.id, slug } };
+    return success({ id: duplicate.id, slug });
   } catch (error) {
     console.error("Error duplicating gallery:", error);
     if (error instanceof Error) {
@@ -462,7 +462,7 @@ export async function archiveGallery(
     revalidatePath("/galleries");
     revalidatePath(`/galleries/${id}`);
 
-    return { success: true, data: { status: updated.status } };
+    return success({ status: updated.status });
   } catch (error) {
     console.error("Error archiving gallery:", error);
     if (error instanceof Error) {
@@ -599,7 +599,7 @@ export async function deliverGallery(
     revalidatePath(`/galleries/${id}`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: { deliveredAt, emailSent, emailError } };
+    return success({ deliveredAt, emailSent, emailError });
   } catch (error) {
     console.error("Error delivering gallery:", error);
     if (error instanceof Error) {
@@ -631,7 +631,7 @@ export async function bulkArchiveGalleries(
 
     revalidatePath("/galleries");
 
-    return { success: true, data: { count: result.count } };
+    return success({ count: result.count });
   } catch (error) {
     console.error("Error bulk archiving galleries:", error);
     if (error instanceof Error) {
@@ -689,7 +689,7 @@ export async function bulkDeleteGalleries(
     revalidatePath("/galleries");
     revalidatePath("/dashboard");
 
-    return { success: true, data: { count: deletedCount + archivedCount } };
+    return success({ count: deletedCount + archivedCount });
   } catch (error) {
     console.error("Error bulk deleting galleries:", error);
     if (error instanceof Error) {
@@ -1419,5 +1419,90 @@ export async function getGalleryCounts(): Promise<{
   } catch (error) {
     console.error("Error getting gallery counts:", error);
     return { all: 0, draft: 0, pending: 0, delivered: 0, archived: 0 };
+  }
+}
+
+/**
+ * Bulk toggle watermark exclusion for photos
+ * @param projectId - The gallery ID
+ * @param assetIds - Array of asset IDs to update
+ * @param excludeFromWatermark - Whether to exclude photos from watermarking
+ */
+export async function bulkToggleWatermark(
+  projectId: string,
+  assetIds: string[],
+  excludeFromWatermark: boolean
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify gallery belongs to organization
+    const gallery = await prisma.project.findFirst({
+      where: { id: projectId, organizationId },
+      select: { id: true, name: true },
+    });
+
+    if (!gallery) {
+      return fail("Gallery not found");
+    }
+
+    // Update all specified assets
+    const result = await prisma.asset.updateMany({
+      where: {
+        id: { in: assetIds },
+        projectId,
+      },
+      data: {
+        excludeFromWatermark,
+      },
+    });
+
+    revalidatePath(`/galleries/${projectId}`);
+
+    return ok({
+      updated: result.count,
+    });
+  } catch (error) {
+    console.error("Error toggling watermarks:", error);
+    return fail("Failed to update watermark settings");
+  }
+}
+
+/**
+ * Get watermark exclusion status for photos in a gallery
+ */
+export async function getWatermarkExclusions(
+  projectId: string
+): Promise<ActionResult<Record<string, boolean>>> {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Verify gallery belongs to organization
+    const gallery = await prisma.project.findFirst({
+      where: { id: projectId, organizationId },
+      select: { id: true },
+    });
+
+    if (!gallery) {
+      return fail("Gallery not found");
+    }
+
+    const assets = await prisma.asset.findMany({
+      where: { projectId },
+      select: {
+        id: true,
+        excludeFromWatermark: true,
+      },
+    });
+
+    const exclusions: Record<string, boolean> = {};
+    for (const asset of assets) {
+      exclusions[asset.id] = asset.excludeFromWatermark;
+    }
+
+    return ok(exclusions);
+  } catch (error) {
+    console.error("Error fetching watermark exclusions:", error);
+    return fail("Failed to fetch watermark settings");
   }
 }

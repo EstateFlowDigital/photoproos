@@ -18,6 +18,7 @@ import {
   recordDownload,
   deletePhoto,
   updateGallery,
+  bulkToggleWatermark,
 } from "@/lib/actions/galleries";
 import { createInvoice } from "@/lib/actions/invoices";
 import { createTaskFromGallery } from "@/lib/actions/projects";
@@ -26,6 +27,7 @@ import { getDownloadHistory, exportDownloadHistory } from "@/lib/actions/downloa
 import { CollectionManager } from "@/components/gallery/collection-manager";
 import { AssignToCollectionModal } from "@/components/gallery/assign-to-collection-modal";
 import { AnalyticsDashboard } from "@/components/gallery/analytics-dashboard";
+import { ActivityTimeline } from "@/components/gallery/activity-timeline";
 import {
   DndContext,
   closestCenter,
@@ -90,6 +92,7 @@ import {
   GripIcon,
   FolderPlusIcon,
   SettingsIcon,
+  LayersIcon,
 } from "./gallery-detail-icons";
 
 interface Photo {
@@ -149,6 +152,7 @@ interface GallerySettings {
   downloadRequiresPayment: boolean;
   expirationDate: string | null;
   passwordProtected: boolean;
+  password: string | null;
   allowFavorites: boolean;
   allowComments: boolean;
 }
@@ -203,6 +207,7 @@ const defaultSettings: GallerySettings = {
   downloadRequiresPayment: true,
   expirationDate: null,
   passwordProtected: false,
+  password: null,
   allowFavorites: true,
   allowComments: false,
 };
@@ -253,9 +258,12 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showAssignCollectionModal, setShowAssignCollectionModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isSavingSetting, setIsSavingSetting] = useState<string | null>(null);
   const [isBatchDeleting, setIsBatchDeleting] = useState(false);
   const [isBatchDownloading, setIsBatchDownloading] = useState(false);
+  const [isTogglingWatermark, setIsTogglingWatermark] = useState(false);
   const [isPhotoDeleting, setIsPhotoDeleting] = useState(false);
   const [isPhotoDownloading, setIsPhotoDownloading] = useState(false);
   const [isSendingReminder, setIsSendingReminder] = useState(false);
@@ -333,6 +341,42 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     } catch {
       showToast("Failed to save settings", "error");
     }
+  };
+
+  // Handle password save
+  const handleSavePassword = async () => {
+    if (!settings.password?.trim()) {
+      showToast("Please enter a password", "error");
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      const result = await updateGallery({
+        id: gallery.id,
+        password: settings.password,
+      });
+
+      if (result.success) {
+        showToast("Password saved", "success");
+      } else {
+        showToast(result.error || "Failed to save password", "error");
+      }
+    } catch {
+      showToast("Failed to save password", "error");
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  // Get password strength
+  const getPasswordStrength = (pwd: string | null) => {
+    if (!pwd) return { label: "", color: "", width: "0%" };
+    const len = pwd.length;
+    if (len < 4) return { label: "Weak", color: "var(--error)", width: "25%" };
+    if (len < 8) return { label: "Fair", color: "var(--warning)", width: "50%" };
+    if (len < 12) return { label: "Good", color: "var(--primary)", width: "75%" };
+    return { label: "Strong", color: "var(--success)", width: "100%" };
   };
 
   // Drag and drop sensors
@@ -663,6 +707,34 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     }
   };
 
+  const handleToggleWatermark = async (exclude: boolean) => {
+    const count = selectedPhotos.size;
+    const photoIds = Array.from(selectedPhotos);
+
+    setIsTogglingWatermark(true);
+    try {
+      const result = await bulkToggleWatermark(gallery.id, photoIds, exclude);
+
+      if (result.success && result.data) {
+        showToast(
+          exclude
+            ? `${result.data.updated} photo${result.data.updated !== 1 ? "s" : ""} excluded from watermark`
+            : `${result.data.updated} photo${result.data.updated !== 1 ? "s" : ""} will be watermarked`,
+          "success"
+        );
+        setSelectedPhotos(new Set());
+        setIsSelectMode(false);
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to update watermark settings", "error");
+      }
+    } catch {
+      showToast("Failed to update watermark settings", "error");
+    } finally {
+      setIsTogglingWatermark(false);
+    }
+  };
+
   const handleBatchDownload = async () => {
     const count = selectedPhotos.size;
     setIsBatchDownloading(true);
@@ -951,30 +1023,6 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     if (days === 1) return "Yesterday";
     if (days < 7) return `${days} days ago`;
     return date.toLocaleDateString();
-  };
-
-  const getActivityIcon = (type: ActivityItem["type"]) => {
-    switch (type) {
-      case "created": return <CreateIcon className="h-4 w-4" />;
-      case "edited": return <EditIcon className="h-4 w-4" />;
-      case "photos_added": return <PhotoIcon className="h-4 w-4" />;
-      case "delivered": return <SendIcon className="h-4 w-4" />;
-      case "viewed": return <EyeIcon className="h-4 w-4" />;
-      case "downloaded": return <DownloadIcon className="h-4 w-4" />;
-      case "payment": return <CreditCardIcon className="h-4 w-4" />;
-      case "note": return <NoteIcon className="h-4 w-4" />;
-      default: return <ClockIcon className="h-4 w-4" />;
-    }
-  };
-
-  const getActivityColor = (type: ActivityItem["type"]) => {
-    switch (type) {
-      case "delivered": return "text-[var(--success)] bg-[var(--success)]/10";
-      case "payment": return "text-[var(--success)] bg-[var(--success)]/10";
-      case "viewed": return "text-[var(--primary)] bg-[var(--primary)]/10";
-      case "downloaded": return "text-[var(--primary)] bg-[var(--primary)]/10";
-      default: return "text-foreground-muted bg-[var(--background)]";
-    }
   };
 
   // Filter photos by collection first, then by photoFilter
@@ -1316,6 +1364,36 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     <StarIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">Set as Cover</span>
                   </button>
+                  {/* Watermark Toggle Dropdown */}
+                  <div className="relative group">
+                    <button
+                      disabled={isBatchDeleting || isBatchDownloading || isTogglingWatermark}
+                      className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px]"
+                    >
+                      {isTogglingWatermark ? (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground-muted border-t-transparent" />
+                      ) : (
+                        <LayersIcon className="h-4 w-4" />
+                      )}
+                      <span className="hidden sm:inline">Watermark</span>
+                    </button>
+                    <div className="invisible group-hover:visible absolute top-full left-0 mt-1 w-44 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-lg z-50">
+                      <button
+                        onClick={() => handleToggleWatermark(true)}
+                        disabled={isTogglingWatermark}
+                        className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)] rounded-t-lg disabled:opacity-50"
+                      >
+                        Exclude from watermark
+                      </button>
+                      <button
+                        onClick={() => handleToggleWatermark(false)}
+                        disabled={isTogglingWatermark}
+                        className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--background-hover)] rounded-b-lg disabled:opacity-50"
+                      >
+                        Include in watermark
+                      </button>
+                    </div>
+                  </div>
                   <button
                     onClick={handleBatchDownload}
                     disabled={isBatchDownloading || isBatchDeleting}
@@ -1609,37 +1687,8 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                 )}
               </div>
 
-              {/* Activity Timeline */}
-              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Activity Timeline</h2>
-                <div className="relative">
-                  <div className="absolute left-4 top-0 bottom-0 w-px bg-[var(--card-border)]" />
-                  <div className="space-y-4">
-                    {activity.map((item, index) => (
-                      <div key={item.id} className="relative flex gap-4 pl-10">
-                        <div className={cn(
-                          "absolute left-2 flex h-5 w-5 items-center justify-center rounded-full",
-                          getActivityColor(item.type)
-                        )}>
-                          {getActivityIcon(item.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-foreground">{item.description}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-xs text-foreground-muted">{formatRelativeTime(item.timestamp)}</span>
-                            {item.user && (
-                              <>
-                                <span className="text-foreground-muted">•</span>
-                                <span className="text-xs text-foreground-muted">{item.user}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {/* Activity Timeline - Real-time data from database */}
+              <ActivityTimeline galleryId={gallery.id} />
             </div>
           )}
 
@@ -1887,6 +1936,72 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     onToggle={() => handleToggleSetting("passwordProtected")}
                     isLoading={isSavingSetting === "passwordProtected"}
                   />
+
+                  {/* Password Input - shows when password protected is enabled */}
+                  {settings.passwordProtected && (
+                    <div className="ml-8 mt-3 pt-3 border-t border-[var(--card-border)]">
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        Gallery Password
+                      </label>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            value={settings.password || ""}
+                            onChange={(e) => setSettings({ ...settings, password: e.target.value })}
+                            placeholder="Enter a password for this gallery"
+                            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 pr-12 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
+                          >
+                            {showPassword ? (
+                              <EyeIcon className="h-4 w-4" />
+                            ) : (
+                              <EyeIcon className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                        <button
+                          onClick={handleSavePassword}
+                          disabled={isSavingPassword || !settings.password?.trim()}
+                          className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isSavingPassword ? "Saving..." : "Save"}
+                        </button>
+                      </div>
+
+                      {/* Password strength indicator */}
+                      {settings.password && (
+                        <div className="mt-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="flex-1 h-1.5 rounded-full bg-[var(--background-hover)] overflow-hidden">
+                              <div
+                                className="h-full transition-all duration-300"
+                                style={{
+                                  width: getPasswordStrength(settings.password).width,
+                                  backgroundColor: getPasswordStrength(settings.password).color,
+                                }}
+                              />
+                            </div>
+                            <span
+                              className="text-xs font-medium"
+                              style={{ color: getPasswordStrength(settings.password).color }}
+                            >
+                              {getPasswordStrength(settings.password).label}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <p className="mt-2 text-xs text-foreground-muted">
+                        Clients will need this password to access the gallery.
+                      </p>
+                    </div>
+                  )}
+
                   <SettingToggle
                     label="Allow Favorites"
                     description="Let clients mark photos as favorites"
@@ -2003,17 +2118,107 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
               {/* Expiration */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Expiration</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">Delivery Link Expiration</h2>
                 <div className="space-y-4">
+                  {/* Current status */}
+                  {gallery.expiresAt && (
+                    <div className={cn(
+                      "rounded-lg px-4 py-3",
+                      isExpired ? "bg-[var(--error)]/10 border border-[var(--error)]/20" :
+                      isExpiringSoon ? "bg-[var(--warning)]/10 border border-[var(--warning)]/20" :
+                      "bg-[var(--success)]/10 border border-[var(--success)]/20"
+                    )}>
+                      <p className={cn(
+                        "text-sm font-medium",
+                        isExpired ? "text-[var(--error)]" :
+                        isExpiringSoon ? "text-[var(--warning)]" :
+                        "text-[var(--success)]"
+                      )}>
+                        {isExpired
+                          ? "Gallery has expired"
+                          : `Expires ${new Date(gallery.expiresAt).toLocaleDateString()} (${daysUntilExpiration} days)`}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Quick presets */}
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Expiration Date</label>
-                    <input
-                      type="date"
-                      value={settings.expirationDate || ""}
-                      onChange={(e) => setSettings(prev => ({ ...prev, expirationDate: e.target.value || null }))}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    />
-                    <p className="mt-1.5 text-xs text-foreground-muted">Leave empty for no expiration</p>
+                    <label className="block text-sm font-medium text-foreground mb-2">Quick Set</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: "30 days", days: 30 },
+                        { label: "60 days", days: 60 },
+                        { label: "90 days", days: 90 },
+                        { label: "1 year", days: 365 },
+                        { label: "No expiration", days: null },
+                      ].map((preset) => {
+                        const newDate = preset.days
+                          ? new Date(Date.now() + preset.days * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                          : null;
+                        const isActive = settings.expirationDate === newDate || (!settings.expirationDate && !preset.days);
+                        return (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={async () => {
+                              setSettings(prev => ({ ...prev, expirationDate: newDate }));
+                              const result = await updateGallery({
+                                id: gallery.id,
+                                expiresAt: newDate ? new Date(newDate) : null,
+                              });
+                              if (result.success) {
+                                showToast(preset.days ? `Expiration set to ${preset.label}` : "Expiration removed", "success");
+                                router.refresh();
+                              } else {
+                                showToast(result.error || "Failed to update expiration", "error");
+                              }
+                            }}
+                            className={cn(
+                              "rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
+                              isActive
+                                ? "bg-[var(--primary)] text-white"
+                                : "border border-[var(--card-border)] bg-[var(--background)] text-foreground hover:border-[var(--border-hover)]"
+                            )}
+                          >
+                            {preset.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Custom date picker */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Or set custom date</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="date"
+                        value={settings.expirationDate || ""}
+                        onChange={(e) => setSettings(prev => ({ ...prev, expirationDate: e.target.value || null }))}
+                        min={new Date().toISOString().split("T")[0]}
+                        className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                      />
+                      <button
+                        onClick={async () => {
+                          const result = await updateGallery({
+                            id: gallery.id,
+                            expiresAt: settings.expirationDate ? new Date(settings.expirationDate) : null,
+                          });
+                          if (result.success) {
+                            showToast("Expiration date saved", "success");
+                            router.refresh();
+                          } else {
+                            showToast(result.error || "Failed to update expiration", "error");
+                          }
+                        }}
+                        className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                      >
+                        Save
+                      </button>
+                    </div>
+                    <p className="mt-1.5 text-xs text-foreground-muted">
+                      After this date, clients will no longer be able to access the gallery.
+                    </p>
                   </div>
                 </div>
               </div>
