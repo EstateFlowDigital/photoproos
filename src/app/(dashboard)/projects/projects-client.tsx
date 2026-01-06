@@ -2074,6 +2074,436 @@ function PriorityBadge({ priority }: { priority: TaskPriority }) {
   );
 }
 
+// Timeline/Gantt View Component
+function TimelineView({
+  tasks,
+  columns,
+  zoom,
+  startDate,
+  onZoomChange,
+  onStartDateChange,
+  onTaskClick,
+}: {
+  tasks: Task[];
+  columns: Column[];
+  zoom: "day" | "week" | "month";
+  startDate: Date;
+  onZoomChange: (zoom: "day" | "week" | "month") => void;
+  onStartDateChange: (date: Date) => void;
+  onTaskClick: (task: Task) => void;
+}) {
+  const timelineRef = useRef<HTMLDivElement>(null);
+
+  // Priority colors for task bars
+  const priorityBarColors = {
+    urgent: "bg-[var(--error)]",
+    high: "bg-[var(--warning)]",
+    medium: "bg-[var(--primary)]",
+    low: "bg-[var(--foreground-muted)]",
+  };
+
+  // Calculate date range based on zoom level
+  const getDateRange = useMemo(() => {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    let daysToShow: number;
+    switch (zoom) {
+      case "day":
+        daysToShow = 14; // 2 weeks when zoomed to day
+        break;
+      case "week":
+        daysToShow = 28; // 4 weeks when zoomed to week
+        break;
+      case "month":
+        daysToShow = 90; // ~3 months when zoomed to month
+        break;
+    }
+
+    const dates: Date[] = [];
+    for (let i = 0; i < daysToShow; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      dates.push(date);
+    }
+
+    return { dates, daysToShow };
+  }, [startDate, zoom]);
+
+  // Get column width based on zoom
+  const getColumnWidth = () => {
+    switch (zoom) {
+      case "day":
+        return 60;
+      case "week":
+        return 40;
+      case "month":
+        return 20;
+    }
+  };
+
+  const columnWidth = getColumnWidth();
+  const totalWidth = getDateRange.dates.length * columnWidth;
+
+  // Group dates by week or month for headers
+  const getGroupedHeaders = useMemo(() => {
+    const groups: { label: string; days: number; startIndex: number }[] = [];
+
+    if (zoom === "month") {
+      // Group by month
+      let currentMonth = -1;
+      let currentGroup: { label: string; days: number; startIndex: number } | null = null;
+
+      getDateRange.dates.forEach((date, index) => {
+        const month = date.getMonth();
+        if (month !== currentMonth) {
+          if (currentGroup) groups.push(currentGroup);
+          currentMonth = month;
+          currentGroup = {
+            label: date.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+            days: 1,
+            startIndex: index,
+          };
+        } else if (currentGroup) {
+          currentGroup.days++;
+        }
+      });
+      if (currentGroup) groups.push(currentGroup);
+    } else {
+      // Group by week
+      let currentWeek = -1;
+      let currentGroup: { label: string; days: number; startIndex: number } | null = null;
+
+      getDateRange.dates.forEach((date, index) => {
+        const weekNumber = getWeekNumber(date);
+        if (weekNumber !== currentWeek) {
+          if (currentGroup) groups.push(currentGroup);
+          currentWeek = weekNumber;
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          currentGroup = {
+            label: `Week of ${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+            days: 1,
+            startIndex: index,
+          };
+        } else if (currentGroup) {
+          currentGroup.days++;
+        }
+      });
+      if (currentGroup) groups.push(currentGroup);
+    }
+
+    return groups;
+  }, [getDateRange.dates, zoom]);
+
+  // Calculate task bar position and width
+  const getTaskBarStyle = (task: Task) => {
+    if (!task.dueDate) return null;
+
+    const dueDate = new Date(task.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+
+    const startDateNorm = new Date(startDate);
+    startDateNorm.setHours(0, 0, 0, 0);
+
+    const daysDiff = Math.floor((dueDate.getTime() - startDateNorm.getTime()) / (1000 * 60 * 60 * 24));
+
+    // If task is before the visible range
+    if (daysDiff < 0) return null;
+
+    // If task is after the visible range
+    if (daysDiff >= getDateRange.daysToShow) return null;
+
+    // Position from the left (task bar centered on due date)
+    const left = daysDiff * columnWidth;
+
+    return {
+      left: `${left}px`,
+      width: `${Math.max(columnWidth * 2, 80)}px`, // Minimum width for readability
+    };
+  };
+
+  // Navigate timeline
+  const navigateTimeline = (direction: "prev" | "next" | "today") => {
+    if (direction === "today") {
+      const now = new Date();
+      now.setDate(now.getDate() - 7);
+      onStartDateChange(now);
+      return;
+    }
+
+    const offset = direction === "prev" ? -7 : 7;
+    const newDate = new Date(startDate);
+    newDate.setDate(startDate.getDate() + offset);
+    onStartDateChange(newDate);
+  };
+
+  // Filter tasks that have due dates within the visible range
+  const visibleTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      if (!task.dueDate) return false;
+      const style = getTaskBarStyle(task);
+      return style !== null;
+    });
+  }, [tasks, startDate, getDateRange.daysToShow, columnWidth]);
+
+  // Tasks without due dates
+  const tasksWithoutDueDate = useMemo(() => {
+    return tasks.filter((task) => !task.dueDate);
+  }, [tasks]);
+
+  return (
+    <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+        {/* Header */}
+        <div className="flex flex-col gap-3 border-b border-[var(--card-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-foreground-muted">Timeline View</p>
+            <p className="text-lg font-semibold text-foreground">
+              {visibleTasks.length} tasks with due dates
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Zoom Controls */}
+            <div className="flex rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-1">
+              {(["day", "week", "month"] as const).map((level) => (
+                <button
+                  key={level}
+                  onClick={() => onZoomChange(level)}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                    zoom === level
+                      ? "bg-[var(--primary)] text-white"
+                      : "text-foreground-secondary hover:text-foreground"
+                  )}
+                >
+                  {level.charAt(0).toUpperCase() + level.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {/* Navigation */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => navigateTimeline("prev")}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)]"
+              >
+                Prev
+              </button>
+              <button
+                onClick={() => navigateTimeline("today")}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)]"
+              >
+                Today
+              </button>
+              <button
+                onClick={() => navigateTimeline("next")}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm text-foreground hover:bg-[var(--background-hover)]"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Timeline Content */}
+        <div className="overflow-x-auto" ref={timelineRef}>
+          <div style={{ minWidth: `${totalWidth + 250}px` }}>
+            {/* Date Headers */}
+            <div className="sticky top-0 z-10 border-b border-[var(--card-border)] bg-[var(--background)]">
+              {/* Week/Month headers */}
+              <div className="flex border-b border-[var(--card-border)]">
+                <div className="w-[250px] flex-shrink-0 px-4 py-2 text-sm font-medium text-foreground-muted">
+                  Task
+                </div>
+                <div className="flex">
+                  {getGroupedHeaders.map((group, i) => (
+                    <div
+                      key={i}
+                      style={{ width: `${group.days * columnWidth}px` }}
+                      className="border-l border-[var(--card-border)] px-2 py-2 text-center text-xs font-medium text-foreground-muted"
+                    >
+                      {group.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Day headers (only for day/week zoom) */}
+              {zoom !== "month" && (
+                <div className="flex">
+                  <div className="w-[250px] flex-shrink-0" />
+                  <div className="flex">
+                    {getDateRange.dates.map((date, i) => {
+                      const isToday = isSameDay(date, new Date());
+                      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                      return (
+                        <div
+                          key={i}
+                          style={{ width: `${columnWidth}px` }}
+                          className={cn(
+                            "border-l border-[var(--card-border)] py-1 text-center text-xs",
+                            isToday && "bg-[var(--primary)]/10 font-semibold text-[var(--primary)]",
+                            isWeekend && !isToday && "bg-[var(--background-hover)]/50"
+                          )}
+                        >
+                          <div>{date.getDate()}</div>
+                          {zoom === "day" && (
+                            <div className="text-foreground-muted">
+                              {date.toLocaleDateString("en-US", { weekday: "short" })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Task Rows */}
+            <div className="divide-y divide-[var(--card-border)]">
+              {visibleTasks.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-sm text-foreground-muted">
+                  No tasks with due dates in this range
+                </div>
+              ) : (
+                visibleTasks.map((task) => {
+                  const barStyle = getTaskBarStyle(task);
+                  const column = columns.find((c) => c.tasks.some((t) => t.id === task.id));
+
+                  return (
+                    <div
+                      key={task.id}
+                      className="group flex min-h-[48px] hover:bg-[var(--background-hover)]/50"
+                    >
+                      {/* Task Info */}
+                      <button
+                        onClick={() => onTaskClick(task)}
+                        className="flex w-[250px] flex-shrink-0 items-center gap-2 border-r border-[var(--card-border)] px-4 py-2 text-left hover:bg-[var(--background-hover)]"
+                      >
+                        <div
+                          className={cn(
+                            "h-2 w-2 flex-shrink-0 rounded-full",
+                            priorityBarColors[task.priority]
+                          )}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {task.title}
+                          </p>
+                          <p className="truncate text-xs text-foreground-muted">
+                            {column?.name || "Unknown"}
+                            {task.assignee && ` • ${task.assignee.fullName || "Unassigned"}`}
+                          </p>
+                        </div>
+                      </button>
+
+                      {/* Timeline Bar Area */}
+                      <div className="relative flex-1">
+                        {/* Grid lines */}
+                        <div className="absolute inset-0 flex">
+                          {getDateRange.dates.map((date, i) => {
+                            const isToday = isSameDay(date, new Date());
+                            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                            return (
+                              <div
+                                key={i}
+                                style={{ width: `${columnWidth}px` }}
+                                className={cn(
+                                  "h-full border-l border-[var(--card-border)]/50",
+                                  isToday && "bg-[var(--primary)]/5",
+                                  isWeekend && !isToday && "bg-[var(--background-hover)]/30"
+                                )}
+                              />
+                            );
+                          })}
+                        </div>
+
+                        {/* Task Bar */}
+                        {barStyle && (
+                          <div
+                            className="absolute top-1/2 -translate-y-1/2"
+                            style={{ left: barStyle.left, width: barStyle.width }}
+                          >
+                            <button
+                              onClick={() => onTaskClick(task)}
+                              className={cn(
+                                "flex h-7 w-full items-center justify-center rounded-md px-2 text-xs font-medium text-white shadow-sm transition-transform hover:scale-[1.02]",
+                                priorityBarColors[task.priority]
+                              )}
+                              title={`${task.title} - Due: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date"}`}
+                            >
+                              <span className="truncate">{task.title}</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tasks Without Due Dates */}
+      {tasksWithoutDueDate.length > 0 && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+          <div className="border-b border-[var(--card-border)] px-5 py-4">
+            <p className="text-sm text-foreground-muted">Tasks Without Due Dates</p>
+            <p className="text-lg font-semibold text-foreground">
+              {tasksWithoutDueDate.length} tasks need scheduling
+            </p>
+          </div>
+          <div className="divide-y divide-[var(--card-border)]">
+            {tasksWithoutDueDate.slice(0, 5).map((task) => {
+              const column = columns.find((c) => c.tasks.some((t) => t.id === task.id));
+              return (
+                <button
+                  key={task.id}
+                  onClick={() => onTaskClick(task)}
+                  className="flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-[var(--background-hover)]"
+                >
+                  <div
+                    className={cn(
+                      "h-2 w-2 flex-shrink-0 rounded-full",
+                      priorityBarColors[task.priority]
+                    )}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">{task.title}</p>
+                    <p className="truncate text-xs text-foreground-muted">
+                      {column?.name || "Unknown"}
+                      {task.assignee && ` • ${task.assignee.fullName || "Unassigned"}`}
+                    </p>
+                  </div>
+                  <span className="text-xs text-foreground-muted">No due date</span>
+                </button>
+              );
+            })}
+            {tasksWithoutDueDate.length > 5 && (
+              <div className="px-5 py-3 text-sm text-foreground-muted">
+                +{tasksWithoutDueDate.length - 5} more tasks without due dates
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Helper function to get week number
+function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
 function TaskDetailModal({
   task,
   teamMembers,

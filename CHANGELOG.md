@@ -36,8 +36,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `N` - Create new task in first column
     - `Escape` - Close modals and clear selections
     - `/` - Focus search input
-    - `Cmd/Ctrl+1/2/3` - Switch between Board/List/Calendar views
+    - `Cmd/Ctrl+1/2/3/4` - Switch between Board/List/Calendar/Timeline views
     - Shortcuts work when not focused on input fields
+  - **Gantt/Timeline View** - Visual timeline of tasks by due date
+    - Fourth view mode alongside Board, List, and Calendar
+    - Tasks displayed as horizontal bars on a scrollable timeline
+    - Three zoom levels: Day (2 weeks), Week (4 weeks), Month (3 months)
+    - Week/month header groupings with individual day columns
+    - Today highlighting and weekend shading
+    - Color-coded task bars by priority (urgent=red, high=orange, medium=blue, low=gray)
+    - Task info sidebar showing title, column, and assignee
+    - Click task bars to open task detail modal
+    - Navigation controls: Prev/Today/Next for timeline scrolling
+    - Separate section showing tasks without due dates that need scheduling
 
 - **Projects Module Phase 4: Board Customization & Task Templates**
   - Column WIP limits with visual warnings (yellow at limit, red over limit)
