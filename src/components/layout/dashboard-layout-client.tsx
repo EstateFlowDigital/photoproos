@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
-import { MobileNav, MobileMenuButton } from "./mobile-nav";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { useTheme } from "@/components/theme-provider";
@@ -35,16 +34,7 @@ export function DashboardLayoutClient({
 }: DashboardLayoutClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const shellRef = useRef<HTMLDivElement | null>(null);
-
-  const handleOpenMenu = useCallback(() => {
-    setMobileMenuOpen(true);
-  }, []);
-
-  const handleCloseMenu = useCallback(() => {
-    setMobileMenuOpen(false);
-  }, []);
 
   useEffect(() => {
     if (!pathname) return;
@@ -56,13 +46,6 @@ export function DashboardLayoutClient({
       router.replace(redirectPath);
     }
   }, [enabledModules, industries, pathname, router]);
-
-  // Ensure nav edit mode is cleared on load
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("ppos_nav_edit_mode", JSON.stringify(false));
-    window.dispatchEvent(new CustomEvent("ppos-nav-edit", { detail: false }));
-  }, []);
 
   // Auto theme switching based on time of day
   const { theme, setResolvedThemeOverride } = useTheme();
@@ -295,8 +278,8 @@ export function DashboardLayoutClient({
       >
         Skip to main content
       </a>
-      {/* Desktop Sidebar */}
-      <div className="shell-sidebar hidden lg:block">
+      {/* Unified Sidebar */}
+      <div className="shell-sidebar">
         <DashboardSidebar
           enabledModules={enabledModules}
           industries={industries}
@@ -318,8 +301,6 @@ export function DashboardLayoutClient({
         {/* Topbar with mobile menu button */}
         <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]">
           <div className="flex items-center gap-3 px-4 py-3 sm:h-16 sm:py-0 lg:px-6">
-            <MobileMenuButton onClick={handleOpenMenu} className="shell-mobile-trigger shrink-0" />
-
             <div className="flex-1 min-w-0">
               <DashboardTopbar
                 className="border-0 px-0 py-0"

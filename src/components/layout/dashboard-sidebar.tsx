@@ -13,45 +13,130 @@ import { useStableOrgProfile } from "@/hooks/use-stable-org-profile";
 
 interface NavItem {
   id: string;
-  name?: string; // From ModuleDefinition
-  label?: string; // For compatibility
+  name?: string;
+  label?: string;
   href: string;
   icon: React.FC<{ className?: string }>;
   badge?: number;
   category?: string;
 }
 
-const bottomNavItems: NavItem[] = [];
+type SubLink = {
+  label: string;
+  href: string;
+};
 
 interface DashboardSidebarProps {
   className?: string;
   enabledModules: string[];
   industries: string[];
   notificationCount?: number;
+  defaultCollapsed?: boolean;
 }
 
+// Secondary menu entries per primary nav id
+const subNav: Record<string, SubLink[]> = {
+  dashboard: [{ label: "Overview", href: "/dashboard" }],
+  projects: [
+    { label: "All Projects", href: "/projects" },
+    { label: "Analytics", href: "/projects/analytics" },
+    { label: "Tasks", href: "/projects/tasks" },
+  ],
+  forms: [
+    { label: "Forms", href: "/forms" },
+    { label: "Templates", href: "/questionnaires/templates/new" },
+    { label: "Submissions", href: "/questionnaires/assigned" },
+  ],
+  galleries: [
+    { label: "All Galleries", href: "/galleries" },
+    { label: "New Gallery", href: "/galleries/new" },
+    { label: "Services", href: "/galleries/services" },
+  ],
+  scheduling: [
+    { label: "Calendar", href: "/scheduling" },
+    { label: "New Booking", href: "/scheduling/new" },
+    { label: "Availability", href: "/scheduling/availability" },
+    { label: "Time Off", href: "/scheduling/time-off" },
+    { label: "Booking Forms", href: "/scheduling/booking-forms" },
+    { label: "Booking Types", href: "/scheduling/types" },
+  ],
+  orders: [
+    { label: "Orders", href: "/orders" },
+    { label: "Order Pages", href: "/order-pages" },
+    { label: "Analytics", href: "/orders/analytics" },
+  ],
+  clients: [
+    { label: "All Clients", href: "/clients" },
+    { label: "New Client", href: "/clients/new" },
+    { label: "Merge", href: "/clients/merge" },
+    { label: "Import", href: "/clients/import" },
+  ],
+  invoices: [
+    { label: "Invoices", href: "/invoices" },
+    { label: "Recurring", href: "/invoices/recurring" },
+    { label: "Payments", href: "/payments" },
+    { label: "Payouts", href: "/settings/payouts" },
+  ],
+  contracts: [
+    { label: "Contracts", href: "/contracts" },
+    { label: "Templates", href: "/contracts/templates" },
+    { label: "Signing", href: "/sign/[token]" },
+  ],
+  services: [
+    { label: "Services", href: "/services" },
+    { label: "Addons", href: "/services/addons" },
+    { label: "Bundles", href: "/services/bundles" },
+  ],
+  products: [{ label: "Catalogs", href: "/products" }],
+  properties: [
+    { label: "All Properties", href: "/properties" },
+    { label: "New Property", href: "/properties/new" },
+  ],
+  questionnaires: [
+    { label: "Assigned", href: "/questionnaires" },
+    { label: "Templates", href: "/questionnaires/templates/new" },
+  ],
+  leads: [{ label: "Leads", href: "/leads" }],
+  inbox: [{ label: "Inbox", href: "/inbox" }],
+  licensing: [{ label: "Licensing", href: "/licensing" }],
+  "mini-sessions": [{ label: "Mini Sessions", href: "/mini-sessions" }],
+  portfolio: [{ label: "Portfolios", href: "/portfolios" }],
+};
+
+/**
+ * Unified sidebar (desktop + mobile). Collapses to icons automatically on small screens,
+ * with a single toggle button to expand/collapse. Secondary pane shows sub-links for the
+ * selected primary item.
+ */
 export function DashboardSidebar({
   className,
   enabledModules,
   industries,
   notificationCount = 0,
+  defaultCollapsed = false,
 }: DashboardSidebarProps) {
   const pathname = usePathname() || "";
   const { user, organization } = useStableOrgProfile();
 
-  const navItems = getFilteredNavigation({
-    enabledModules,
-    industries,
-  });
-
-  const [editMode, setEditMode] = React.useState(false);
-  const [navOrder, setNavOrder] = React.useState<string[]>([]);
-  const [draggingNavId, setDraggingNavId] = React.useState<string | null>(null);
-  const [hiddenIds, setHiddenIds] = React.useState<string[]>([]);
-  const [pinnedIds, setPinnedIds] = React.useState<string[]>([]);
-  const [viewportVH, setViewportVH] = React.useState<number | null>(null);
+  const [collapsed, setCollapsed] = React.useState(defaultCollapsed);
   const [identityOpen, setIdentityOpen] = React.useState(false);
-  const [collapsed, setCollapsed] = React.useState(false);
+  const [viewportVH, setViewportVH] = React.useState<number | null>(null);
+  const [activeParent, setActiveParent] = React.useState<string | null>(null);
+
+  const navItems = getFilteredNavigation({ enabledModules, industries });
+  const paymentsVisible = navItems.some((item) => item.id === "invoices");
+  const sidebarNav: NavItem[] = paymentsVisible
+    ? [
+        ...navItems,
+        {
+          id: "payments",
+          name: "Payments",
+          href: "/payments",
+          icon: PaymentsIcon,
+          category: "operations",
+        },
+      ]
+    : navItems;
 
   const userDisplayName = React.useMemo(() => {
     if (!user) return "Signed in";
@@ -72,135 +157,23 @@ export function DashboardSidebar({
     return organization?.name || email || "Workspace";
   }, [organization, user]);
 
+  // Load collapsed state from storage; default to collapsed on small screens
   React.useEffect(() => {
     if (typeof window === "undefined") return;
-    const storedOrder = window.localStorage.getItem("ppos_nav_order");
-    if (storedOrder) {
-      try {
-        const parsedOrder = JSON.parse(storedOrder) as string[];
-        setNavOrder(parsedOrder);
-      } catch {
-        setNavOrder([]);
-      }
-    }
-    const storedHidden = window.localStorage.getItem("ppos_nav_hidden");
-    if (storedHidden) {
-      try {
-        const parsedHidden = JSON.parse(storedHidden) as string[];
-        const availableIds = navItems.map((n) => n.id);
-        setHiddenIds(parsedHidden.filter((id) => availableIds.includes(id)));
-      } catch {
-        setHiddenIds([]);
-      }
-    }
-    const storedPinned = typeof window !== "undefined" ? window.localStorage.getItem("ppos_nav_pinned") : null;
-    if (storedPinned) {
-      try {
-        const parsedPinned = JSON.parse(storedPinned) as string[];
-        const availableIds = navItems.map((n) => n.id);
-        setPinnedIds(parsedPinned.filter((id) => availableIds.includes(id)));
-      } catch {
-        setPinnedIds([]);
-      }
-    }
     const storedCollapsed = window.localStorage.getItem("ppos_sidebar_collapsed");
     if (storedCollapsed) {
       setCollapsed(storedCollapsed === "true");
+    } else if (window.innerWidth < 1024) {
+      setCollapsed(true);
     }
-  }, [navItems]);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("ppos_nav_hidden", JSON.stringify(hiddenIds));
-  }, [hiddenIds]);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("ppos_nav_pinned", JSON.stringify(pinnedIds));
-  }, [pinnedIds]);
+  }, []);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("ppos_sidebar_collapsed", collapsed ? "true" : "false");
   }, [collapsed]);
 
-  // Listen for external edit-mode toggle (from topbar)
-  React.useEffect(() => {
-    const toggle = (event: Event) => {
-      const detail = (event as CustomEvent<boolean>).detail;
-      setEditMode((prev) => (typeof detail === "boolean" ? detail : !prev));
-    };
-    const stored = typeof window !== "undefined" ? window.localStorage.getItem("ppos_nav_edit_mode") : null;
-    if (stored) {
-      try {
-        setEditMode(JSON.parse(stored));
-      } catch {
-        setEditMode(false);
-      }
-    }
-    window.addEventListener("ppos-nav-edit", toggle as EventListener);
-    return () => window.removeEventListener("ppos-nav-edit", toggle as EventListener);
-  }, []);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("ppos_nav_edit_mode", JSON.stringify(editMode));
-  }, [editMode]);
-
-  // If user enters edit mode, auto-expand so controls are visible
-  React.useEffect(() => {
-    if (editMode && collapsed) {
-      setCollapsed(false);
-    }
-  }, [collapsed, editMode]);
-
-  // Auto-exit edit mode when the route changes so clicks never get stuck
-  React.useEffect(() => {
-    setEditMode(false);
-    setDraggingNavId(null);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("ppos_nav_edit_mode", JSON.stringify(false));
-    }
-  }, [pathname]);
-
-  const paymentsVisible = navItems.some((item) => item.id === "invoices");
-  const sidebarNav = paymentsVisible
-    ? [
-        ...navItems,
-        {
-          id: "payments",
-          name: "Payments",
-          href: "/payments",
-          icon: PaymentsIcon,
-          badge: undefined as number | undefined,
-          category: "operations",
-        },
-      ]
-    : navItems;
-
-  const visibleNav = sidebarNav.filter((item) => !hiddenIds.includes(item.id));
-  const hiddenNav = sidebarNav.filter((item) => hiddenIds.includes(item.id));
-
-  React.useEffect(() => {
-    const available = visibleNav.map((item) => item.id);
-    setNavOrder((prev) => {
-      const filtered = prev.filter((id) => available.includes(id));
-      const missing = available.filter((id) => !filtered.includes(id));
-      const next = [...filtered, ...missing];
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("ppos_nav_order", JSON.stringify(next));
-      }
-      return next;
-    });
-    setPinnedIds((prev) => prev.filter((id) => available.includes(id)));
-  }, [sidebarNav]);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("ppos_nav_order", JSON.stringify(navOrder));
-  }, [navOrder]);
-
-  // Track real viewport height for consistent sidebar height across devices
+  // Track real viewport height to avoid mobile 100vh issues
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const setVH = () => {
@@ -216,17 +189,6 @@ export function DashboardSidebar({
       window.removeEventListener("orientationchange", setVH);
     };
   }, []);
-
-  const sortByNavOrder = (items: NavItem[]) => {
-    if (!navOrder.length) return items;
-    const orderMap = new Map(navOrder.map((id, index) => [id, index]));
-    const fallbackIndex = navOrder.length + 1;
-    return [...items].sort(
-      (a, b) => (orderMap.get(a.id) ?? fallbackIndex) - (orderMap.get(b.id) ?? fallbackIndex)
-    );
-  };
-
-  const pinnedNav = sortByNavOrder(visibleNav).filter((item) => pinnedIds.includes(item.id));
 
   const categoryLabels: Record<string, { title: string; defaultOpen: boolean }> = {
     core: { title: "Workspace", defaultOpen: true },
@@ -245,64 +207,44 @@ export function DashboardSidebar({
   );
 
   const categorizedNav = categories.map((category) => {
-    const items = sortByNavOrder(visibleNav).filter((item) => item.category === category);
+    const items = sidebarNav.filter((item) => item.category === category);
     return { category, items };
   });
 
-  const handleNavReorder = (fromId: string, toId: string) => {
-    if (fromId === toId) return;
-    setNavOrder((prev) => {
-      const available = sidebarNav.map((item) => item.id);
-      const base = prev.length ? prev.filter((id) => available.includes(id)) : available;
-      const fromIdx = base.indexOf(fromId);
-      const toIdx = base.indexOf(toId);
-      if (fromIdx === -1 || toIdx === -1) return base;
-      const next = [...base];
-      next.splice(fromIdx, 1);
-      next.splice(toIdx, 0, fromId);
-      return next;
-    });
-  };
-
-  const renderNavItem = (item: NavItem, options?: { draggable?: boolean; showLabel?: boolean }) => {
+  const renderNavItem = (item: NavItem, options?: { showLabel?: boolean }) => {
     const isActive =
       pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
     const IconComponent = item.icon;
-    const canDrag = options?.draggable && editMode;
-    const isPinned = pinnedIds.includes(item.id);
     const showLabel = options?.showLabel ?? true;
+    const hasChildren = subNav[item.id]?.length;
+    const isSelected = activeParent ? activeParent === item.id : isActive;
 
-    const linkContent = (
-      <Link
+    return (
+      <button
         key={item.href}
-        href={item.href}
-        className={cn(
-          "group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-          showLabel ? "gap-3" : "gap-0 justify-center",
-          isActive
-            ? "bg-[var(--primary)] text-white"
-            : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground",
-          canDrag && editMode && "cursor-move",
-          hiddenIds.includes(item.id) && editMode && "opacity-70 line-through"
-        )}
-        title={item.name || item.label}
-        onClick={(e) => {
-          // Allow navigation even in edit mode; only stop when interacting with controls
-          const target = e.target as HTMLElement;
-          if (editMode && target.closest("label")) {
-            e.preventDefault();
-            e.stopPropagation();
+        onClick={() => {
+          setActiveParent(item.id);
+          if (collapsed && hasChildren) {
+            setCollapsed(false);
           }
         }}
+        className={cn(
+          "group flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-200",
+          showLabel ? "gap-3" : "gap-0 justify-center",
+          isActive || isSelected
+            ? "bg-[var(--primary)] text-white"
+            : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+        )}
+        title={item.name || item.label}
       >
         <IconComponent
           className={cn(
             "h-5 w-5 shrink-0 transition-colors",
-            isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+            isActive || isSelected ? "text-white" : "text-foreground-muted group-hover:text-foreground"
           )}
         />
         {showLabel ? (
-          <span className="flex-1">{item.name || item.label}</span>
+          <span className="flex-1 truncate">{item.name || item.label}</span>
         ) : (
           <span className="sr-only">{item.name || item.label}</span>
         )}
@@ -310,7 +252,7 @@ export function DashboardSidebar({
           <span
             className={cn(
               "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
-              isActive
+              isActive || isSelected
                 ? "bg-white/20 text-white"
                 : "bg-[var(--primary)]/10 text-[var(--primary)]"
             )}
@@ -318,69 +260,7 @@ export function DashboardSidebar({
             {item.badge}
           </span>
         )}
-        {editMode && (
-          <div className="flex items-center gap-2 text-xs text-foreground-muted">
-            <label className="flex items-center gap-1">
-              <input
-                type="checkbox"
-                className="h-3 w-3 accent-[var(--primary)]"
-                checked={!hiddenIds.includes(item.id)}
-                onChange={(e) => {
-                  const visible = e.target.checked;
-                  setHiddenIds((prev) => {
-                    const next = visible ? prev.filter((id) => id !== item.id) : [...prev, item.id];
-                    return next;
-                  });
-                }}
-              />
-              Show
-            </label>
-            <button
-              type="button"
-              className={cn(
-                "rounded-full p-1 transition-colors",
-                isPinned ? "text-[var(--primary)]" : "text-foreground-muted hover:text-foreground"
-              )}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setPinnedIds((prev) =>
-                  isPinned ? prev.filter((id) => id !== item.id) : [...prev, item.id]
-                );
-              }}
-              title={isPinned ? "Unpin" : "Pin to quick access"}
-            >
-              {isPinned ? <StarFilledIcon className="h-4 w-4" /> : <StarIcon className="h-4 w-4" />}
-            </button>
-          </div>
-        )}
-      </Link>
-    );
-
-    if (!canDrag) return linkContent;
-
-    return (
-      <div
-        draggable={editMode}
-        onDragStart={() => setDraggingNavId(item.id)}
-        onDragOver={(e) => {
-          e.preventDefault();
-          if (draggingNavId && draggingNavId !== item.id) {
-            handleNavReorder(draggingNavId, item.id);
-          }
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDraggingNavId(null);
-        }}
-        onDragEnd={() => setDraggingNavId(null)}
-        className={cn(
-          "rounded-lg border border-transparent transition-colors",
-          draggingNavId === item.id && "border-[var(--primary)]/50 bg-[var(--background-hover)]"
-        )}
-      >
-        {linkContent}
-      </div>
+      </button>
     );
   };
 
@@ -388,24 +268,12 @@ export function DashboardSidebar({
     setSectionState((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const resetNav = () => {
-    setHiddenIds([]);
-    const ids = sidebarNav.map((item) => item.id);
-    setNavOrder(ids);
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem("ppos_nav_order");
-      window.localStorage.removeItem("ppos_nav_hidden");
-    }
-  };
-
-  const handlePinnedReorder = () => {};
-
+  const activeChildren = activeParent ? subNav[activeParent] ?? [] : [];
 
   return (
-    <aside
+    <div
       className={cn(
-        "flex min-h-screen min-h-0 w-full flex-col border-r border-[var(--card-border)] bg-[var(--card)] overflow-hidden lg:sticky lg:top-0 lg:self-start",
-        collapsed ? "lg:w-[88px]" : "lg:w-[280px]",
+        "flex min-h-screen min-h-0 w-full bg-[var(--card)]",
         className
       )}
       style={
@@ -417,96 +285,48 @@ export function DashboardSidebar({
           : undefined
       }
     >
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-[var(--card-border)] px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)]">
-            <CameraIcon className="h-4 w-4 text-white" />
-          </div>
-          {!collapsed && <span className="text-lg font-semibold text-foreground">PhotoProOS</span>}
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setCollapsed((v) => !v)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--card-border)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
-            title={collapsed ? "Expand sidebar" : "Collapse to icons"}
-          >
-            {collapsed ? <ExpandIcon className="h-4 w-4" /> : <CollapseIcon className="h-4 w-4" />}
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditMode((v) => !v)}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors",
-              collapsed && "h-9 w-9 justify-center px-0",
-              editMode
-                ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
-                : "border-[var(--card-border)] text-foreground-secondary hover:text-foreground hover:bg-[var(--background-hover)]"
-            )}
-            title="Reorder, hide, or pin navigation links"
-          >
-            <span className={cn(collapsed && "sr-only")}>{editMode ? "Done" : "Customize"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Navigation */}
-      <nav
+      <aside
         className={cn(
-          "flex-1 min-h-0 overflow-y-auto pb-6 pt-4",
-          collapsed ? "px-2" : "px-4"
+          "flex min-h-full min-h-0 flex-col border-r border-[var(--card-border)] overflow-hidden sticky top-0 self-start",
+          collapsed ? "w-[88px]" : "w-[260px]"
         )}
-        style={{
-          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
-          maskImage: "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
-        }}
       >
-        {editMode && !collapsed && (
-          <div className="mb-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs text-foreground-muted">
-            Drag to reorder or hide links. Hidden links stay available below while editing.
-          </div>
-        )}
-
-        {!collapsed && pinnedNav.length > 0 && (
-          <div className="mb-4 space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-foreground-muted">
-              <span>Pinned</span>
-              <span className="rounded-full bg-[var(--background-secondary)] px-2 py-0.5 text-[10px] text-foreground-secondary">
-                {pinnedNav.length}
-              </span>
+        {/* Logo + collapse toggle */}
+        <div className="flex h-16 items-center gap-3 border-b border-[var(--card-border)] px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)]">
+              <CameraIcon className="h-4 w-4 text-white" />
             </div>
-            <div className="flex flex-wrap gap-2">
-              {pinnedNav.map((item) => {
-                const isActive =
-                  pathname === item.href || (pathname ? pathname.startsWith(`${item.href}/`) : false);
-                const IconComponent = item.icon;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
-                      isActive
-                        ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                        : "border-[var(--card-border)] bg-[var(--background)] text-foreground hover:border-[var(--primary)]/60 hover:text-foreground"
-                    )}
-                  >
-                    <IconComponent className={cn("h-4 w-4", isActive ? "text-white" : "text-foreground-muted")} />
-                    <span className="truncate max-w-[140px]">{item.name || item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
+            {!collapsed && <span className="text-lg font-semibold text-foreground">PhotoProOS</span>}
           </div>
-        )}
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCollapsed((v) => !v)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--card-border)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
+              title={collapsed ? "Expand sidebar" : "Collapse to icons"}
+            >
+              {collapsed ? <ExpandIcon className="h-4 w-4" /> : <CollapseIcon className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
 
-        {collapsed ? (
-          <div className="space-y-1">
-            {sortByNavOrder(visibleNav).map((item) => renderNavItem(item, { showLabel: false }))}
-          </div>
-        ) : (
-          <>
+        {/* Main Navigation */}
+        <nav
+          className={cn(
+            "flex-1 min-h-0 overflow-y-auto pb-6 pt-4",
+            collapsed ? "px-2" : "px-4"
+          )}
+          style={{
+            WebkitMaskImage: "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
+            maskImage: "linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%)",
+          }}
+        >
+          {collapsed ? (
+            <div className="space-y-1">
+              {sidebarNav.map((item) => renderNavItem(item, { showLabel: false }))}
+            </div>
+          ) : (
             <div className="space-y-3">
               {categorizedNav.map(({ category, items }) => {
                 if (!items.length) return null;
@@ -532,153 +352,50 @@ export function DashboardSidebar({
                     </button>
                     {open && (
                       <div className="space-y-1 border-t border-[var(--card-border)] p-2">
-                        {items.map((item) => renderNavItem(item, { draggable: true }))}
+                        {items.map((item) => renderNavItem(item))}
                       </div>
                     )}
                   </div>
                 );
               })}
             </div>
+          )}
+        </nav>
 
-            {editMode && hiddenNav.length > 0 && (
-              <div className="mt-4 space-y-2 rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--background)] p-3">
-                <div className="flex items-center justify-between text-sm font-semibold text-foreground">
-                  <span>Hidden Links</span>
-                  <span className="text-xs text-foreground-muted">{hiddenNav.length}</span>
-                </div>
-                <div className="space-y-1">
-                  {hiddenNav.map((item) => (
-                    <div key={item.id} className="opacity-70 hover:opacity-100 transition-opacity">
-                      {renderNavItem(item, { draggable: false })}
-                    </div>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={resetNav}
-                  className="mt-3 inline-flex items-center justify-center rounded-md border border-[var(--card-border)] px-3 py-1.5 text-xs font-semibold text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-                >
-                  Reset navigation
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </nav>
-
-      {/* Bottom Navigation */}
-      <div className={cn(
-        "sticky bottom-0 border-t border-[var(--card-border)] bg-[var(--card)]",
-        collapsed ? "p-3" : "p-4"
-      )}>
-        {collapsed ? (
-          <div className="flex flex-col items-center gap-3">
-            {(() => {
-              const isActive = pathname === "/notifications" || (pathname ? pathname.startsWith("/notifications/") : false);
-              return (
-                <Link
-                  href="/notifications"
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-lg transition-all",
-                    isActive
-                      ? "bg-[var(--primary)] text-white"
-                      : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-                  )}
-                  title="Notifications"
-                >
-                  <NotificationIcon
-                    className={cn(
-                      "h-5 w-5 shrink-0",
-                      isActive ? "text-white" : "text-foreground-muted"
-                    )}
-                  />
-                </Link>
-              );
-            })()}
-            <div className="flex items-center justify-center">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "h-9 w-9",
-                  },
-                }}
-                afterSignOutUrl="/"
-              />
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="space-y-2">
-              {/* Notifications Link */}
+        {/* Bottom Navigation */}
+        <div
+          className={cn(
+            "sticky bottom-0 border-t border-[var(--card-border)] bg-[var(--card)]",
+            collapsed ? "p-3" : "p-4"
+          )}
+        >
+          {collapsed ? (
+            <div className="flex flex-col items-center gap-3">
               {(() => {
-                const isActive = pathname === "/notifications" || (pathname ? pathname.startsWith("/notifications/") : false);
+                const isActive =
+                  pathname === "/notifications" ||
+                  (pathname ? pathname.startsWith("/notifications/") : false);
                 return (
                   <Link
                     href="/notifications"
                     className={cn(
-                      "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                      "flex h-10 w-10 items-center justify-center rounded-lg transition-all",
                       isActive
                         ? "bg-[var(--primary)] text-white"
                         : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                     )}
+                    title="Notifications"
                   >
                     <NotificationIcon
                       className={cn(
-                        "h-5 w-5 shrink-0 transition-colors",
-                        isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                        "h-5 w-5 shrink-0",
+                        isActive ? "text-white" : "text-foreground-muted"
                       )}
                     />
-                    <span className="flex-1">Notifications</span>
-                    {notificationCount > 0 && (
-                      <span
-                        className={cn(
-                          "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
-                          isActive
-                            ? "bg-white/20 text-white"
-                            : "bg-[var(--primary)]/10 text-[var(--primary)]"
-                        )}
-                      >
-                        {notificationCount > 99 ? "99+" : notificationCount}
-                      </span>
-                    )}
                   </Link>
                 );
               })()}
-
-              {bottomNavItems.map((item) => {
-                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-                const IconComponent = item.icon;
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                      isActive
-                        ? "bg-[var(--primary)] text-white"
-                        : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-                    )}
-                  >
-                    <IconComponent
-                      className={cn(
-                        "h-5 w-5 shrink-0 transition-colors",
-                        isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
-                      )}
-                    />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* Identity / org card */}
-            <div className="mt-4 space-y-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2">
-              <button
-                type="button"
-                onClick={() => setIdentityOpen((o) => !o)}
-                className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left hover:bg-[var(--background-hover)]"
-              >
+              <div className="flex items-center justify-center">
                 <UserButton
                   appearance={{
                     elements: {
@@ -687,88 +404,189 @@ export function DashboardSidebar({
                   }}
                   afterSignOutUrl="/"
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-semibold text-foreground">
-                    {userDisplayName}
-                  </p>
-                  <p className="truncate text-xs text-foreground-muted">
-                    {userSecondary}
-                  </p>
-                </div>
-                <ChevronDown
-                  className={cn(
-                    "h-4 w-4 text-foreground-muted transition-transform",
-                    identityOpen ? "rotate-180" : "rotate-0"
-                  )}
-                />
-              </button>
-
-              {identityOpen && (
-                <div className="space-y-3 rounded-md border border-[var(--card-border)] bg-[var(--card)] p-3">
-                  <OrganizationSwitcher
-                    appearance={{
-                      elements: {
-                        rootBox: "w-full",
-                        organizationSwitcherTrigger:
-                          "w-full justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-semibold text-foreground",
-                        organizationSwitcherTriggerIcon: "text-foreground-muted",
-                        organizationSwitcherOrganizationName: "text-sm font-semibold truncate",
-                      },
-                    }}
-                    afterSelectOrganizationUrl="/dashboard"
-                    afterCreateOrganizationUrl="/dashboard"
-                  />
-
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {/* Notifications Link */}
+                {(() => {
+                  const isActive =
+                    pathname === "/notifications" ||
+                    (pathname ? pathname.startsWith("/notifications/") : false);
+                  return (
                     <Link
-                      href="/settings"
+                      href="/notifications"
                       className={cn(
-                        "flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold transition-colors",
-                        pathname.startsWith("/settings")
-                          ? "border-transparent bg-[var(--primary)] text-white"
+                        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-[var(--primary)] text-white"
                           : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                       )}
                     >
-                      <SettingsIcon className="h-4 w-4" />
-                      Settings
+                      <NotificationIcon
+                        className={cn(
+                          "h-5 w-5 shrink-0 transition-colors",
+                          isActive ? "text-white" : "text-foreground-muted group-hover:text-foreground"
+                        )}
+                      />
+                      <span className="flex-1">Notifications</span>
+                      {notificationCount > 0 && (
+                        <span
+                          className={cn(
+                            "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
+                            isActive
+                              ? "bg-white/20 text-white"
+                              : "bg-[var(--primary)]/10 text-[var(--primary)]"
+                          )}
+                        >
+                          {notificationCount > 99 ? "99+" : notificationCount}
+                        </span>
+                      )}
                     </Link>
-                    <Link
-                      href="/settings/team?invite=1"
-                      className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
-                    >
-                      <InviteIcon className="h-4 w-4" />
-                      Invite
-                    </Link>
-                    <Link
-                      href="/settings/billing"
-                      className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
-                    >
-                      <PaymentsIcon className="h-4 w-4" />
-                      Billing
-                    </Link>
-                    <Link
-                      href="/portal"
-                      className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
-                    >
-                      <EyeIcon className="h-4 w-4" />
-                      View as client
-                    </Link>
-                  </div>
+                  );
+                })()}
+              </div>
 
-                  <div className="flex items-center justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2">
-                    <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
-                    <div className="flex items-center gap-2">
-                      <QuickThemeSwitcher />
-                      <ThemeToggle />
+              {/* Identity / org card */}
+              <div className="mt-4 space-y-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-2">
+                <button
+                  type="button"
+                  onClick={() => setIdentityOpen((o) => !o)}
+                  className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left hover:bg-[var(--background-hover)]"
+                >
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "h-9 w-9",
+                      },
+                    }}
+                    afterSignOutUrl="/"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {userDisplayName}
+                    </p>
+                    <p className="truncate text-xs text-foreground-muted">
+                      {userSecondary}
+                    </p>
+                  </div>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 text-foreground-muted transition-transform",
+                      identityOpen ? "rotate-180" : "rotate-0"
+                    )}
+                  />
+                </button>
+
+                {identityOpen && (
+                  <div className="space-y-3 rounded-md border border-[var(--card-border)] bg-[var(--card)] p-3">
+                    <OrganizationSwitcher
+                      appearance={{
+                        elements: {
+                          rootBox: "w-full",
+                          organizationSwitcherTrigger:
+                            "w-full justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-semibold text-foreground",
+                          organizationSwitcherTriggerIcon: "text-foreground-muted",
+                          organizationSwitcherOrganizationName: "text-sm font-semibold truncate",
+                        },
+                      }}
+                      afterSelectOrganizationUrl="/dashboard"
+                      afterCreateOrganizationUrl="/dashboard"
+                    />
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <Link
+                        href="/settings"
+                        className={cn(
+                          "flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold transition-colors",
+                          pathname.startsWith("/settings")
+                            ? "border-transparent bg-[var(--primary)] text-white"
+                            : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                        )}
+                      >
+                        <SettingsIcon className="h-4 w-4" />
+                        Settings
+                      </Link>
+                      <Link
+                        href="/settings/team?invite=1"
+                        className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                      >
+                        <InviteIcon className="h-4 w-4" />
+                        Invite
+                      </Link>
+                      <Link
+                        href="/settings/billing"
+                        className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
+                      >
+                        <PaymentsIcon className="h-4 w-4" />
+                        Billing
+                      </Link>
+                      <Link
+                        href="/portal"
+                        className="flex items-center justify-center gap-2 rounded-md border border-[var(--card-border)] px-3 py-2 font-semibold text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground col-span-2"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                        View as client
+                      </Link>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-md border border-[var(--card-border)] bg-[var(--background)] px-3 py-2">
+                      <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
+                      <div className="flex items-center gap-2">
+                        <QuickThemeSwitcher />
+                        <ThemeToggle />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </aside>
+
+      {/* Secondary pane */}
+      <aside
+        className={cn(
+          "hidden md:flex min-h-full min-h-0 w-[260px] flex-col border-r border-[var(--card-border)] bg-[var(--background)]",
+          collapsed && "md:hidden"
         )}
-      </div>
-    </aside>
+      >
+        <div className="flex h-16 items-center border-b border-[var(--card-border)] px-4">
+          <p className="text-sm font-semibold text-foreground">
+            {activeParent
+              ? sidebarNav.find((n) => n.id === activeParent)?.name ||
+                sidebarNav.find((n) => n.id === activeParent)?.label ||
+                "Menu"
+              : "Menu"}
+          </p>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {activeChildren.length === 0 ? (
+            <p className="text-sm text-foreground-muted">Select a section to see shortcuts.</p>
+          ) : (
+            activeChildren.map((child) => {
+              const isActive = pathname === child.href || pathname.startsWith(`${child.href}/`);
+              return (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  className={cn(
+                    "block rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-[var(--primary)]/15 text-[var(--primary)]"
+                      : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                  )}
+                >
+                  {child.label}
+                </Link>
+              );
+            })
+          )}
+        </div>
+      </aside>
+    </div>
   );
 }
 
@@ -904,35 +722,10 @@ function PlusIcon({ className }: { className?: string }) {
   );
 }
 
-function InviteIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.572.398-.255.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM16.75 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z" />
-    </svg>
-  );
-}
-
-function StarIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.062 3.261a1 1 0 0 0 .95.69h3.43c.969 0 1.371 1.24.588 1.81l-2.774 2.016a1 1 0 0 0-.364 1.118l1.06 3.262c.3.921-.755 1.688-1.54 1.118l-2.774-2.015a1 1 0 0 0-1.176 0l-2.774 2.015c-.784.57-1.838-.197-1.539-1.118l1.06-3.262a1 1 0 0 0-.364-1.118L2.92 8.688c-.783-.57-.38-1.81.588-1.81h3.43a1 1 0 0 0 .95-.69l1.06-3.261Z" />
-    </svg>
-  );
-}
-
-function StarFilledIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.062 3.261a1 1 0 0 0 .95.69h3.43c.969 0 1.371 1.24.588 1.81l-2.774 2.016a1 1 0 0 0-.364 1.118l1.06 3.262c.3.921-.755 1.688-1.54 1.118l-2.774-2.015a1 1 0 0 0-1.176 0l-2.774 2.015c-.784.57-1.838-.197-1.539-1.118l1.06-3.262a1 1 0 0 0-.364-1.118L2.92 8.688c-.783-.57-.38-1.81.588-1.81h3.43a1 1 0 0 0 .95-.69l1.06-3.261Z" />
-    </svg>
-  );
-}
-
 function CollapseIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M12.5 4.5a.75.75 0 0 1 1.13.98l-3.1 3.92a.25.25 0 0 0 0 .3l3.1 3.82a.75.75 0 0 1-1.16.96l-3.22-3.97a1.75 1.75 0 0 1 0-2.14l3.28-4.87Z" />
-      <path d="M8.5 4.5a.75.75 0 0 1 1.13.98l-3.1 3.92a.25.25 0 0 0 0 .3l3.1 3.82a.75.75 0 1 1-1.16.96L5.25 10.5a1.75 1.75 0 0 1 0-2.14l3.25-3.86Z" />
+      <path d="m3.22 8.97 6.53-6.52a.75.75 0 0 1 1.06 0l6.53 6.52a.75.75 0 1 1-1.06 1.06L11 4.81V17a.75.75 0 0 1-1.5 0V4.81l-5.28 5.22a.75.75 0 0 1-1.06-1.06Z" />
     </svg>
   );
 }
@@ -940,8 +733,15 @@ function CollapseIcon({ className }: { className?: string }) {
 function ExpandIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M7.5 4.5a.75.75 0 0 1 1.2-.9l3.22 3.97a1.75 1.75 0 0 1 0 2.14l-3.28 4.87a.75.75 0 1 1-1.25-.84l3.1-4.6a.25.25 0 0 0 0-.28L7.5 4.5Z" />
-      <path d="M3.5 4.5a.75.75 0 0 1 1.2-.9l3.22 3.97a1.75 1.75 0 0 1 0 2.14l-3.28 4.87a.75.75 0 0 1-1.25-.84l3.1-4.6a.25.25 0 0 0 0-.28L3.5 4.5Z" />
+      <path d="m16.78 11.03-6.53 6.52a.75.75 0 0 1-1.06 0l-6.53-6.52a.75.75 0 0 1 1.06-1.06L9 15.19V3a.75.75 0 0 1 1.5 0v12.19l5.28-5.22a.75.75 0 0 1 1.06 1.06Z" />
+    </svg>
+  );
+}
+
+function InviteIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.573.398-.254.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM16.75 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z" />
     </svg>
   );
 }
