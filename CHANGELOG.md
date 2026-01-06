@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Questionnaires Search & Filters** - Enhanced questionnaires page with search and filtering
+  - Search by template name, description, industry, client name, or email
+  - Status filter pills (All, Pending, In Progress, Completed, Approved) with counts
+  - Clear search/filter buttons for quick reset
+  - Empty states for no results
+
+- **Contracts Search** - Added search functionality to contracts page
+  - Search by contract name, client name, company, email, or template name
+  - Results count indicator when filtering
+  - Clear search button
+  - Empty state for no results
+
+### Changed
+- **Refactored error returns to use `fail()` helper** - Replaced ~2,200 occurrences of verbose `return { success: false, error: "..." }` pattern with the cleaner `fail("...")` helper function across 105 action files
+  - Added `fail` import from `@/lib/types/action-result` to all affected files
+  - Consolidated duplicate imports where both `ok` and `fail` were imported separately
+  - Preserved non-standard return patterns that include additional data fields (e.g., `{ success: false, error: "...", logs: [] }`)
+  - Improves code consistency and readability across the codebase
+
+### Added
+- **Overdue Invoices Dashboard Widget** - Quick-view card showing overdue invoices
+  - Displays up to 10 overdue invoices with urgency indicators
+  - Shows days overdue with color-coded badges (yellow < 14 days, orange 14-30 days, red > 30 days)
+  - Shows total overdue amount
+  - Links to individual invoices and overdue invoice list
+  - Auto-appears when organization has overdue invoices
+
+- **Invoice Scheduling** - Schedule invoices to be sent at a future date
+  - Schedule draft invoices for automatic delivery
+  - Cancel scheduled sends before they process
+  - Cron endpoint at `/api/cron/scheduled-invoices` processes scheduled invoices
+  - Activity logging for scheduled sends
+  - New schema fields: `scheduledSendAt`, `scheduledSentAt`
+
 ### Fixed
 - **TypeScript Errors Eliminated** - Fixed remaining type errors for clean build
   - Added missing `ok` import in stripe-product-sync.ts
