@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Graceful error handling: storage deletion failures are logged but don't block the operation
 
 ### Added
+- **Gallery Add-on Auto-Invoice** - Automatic invoice creation when client approves add-on quote
+  - `approveAddonQuote` now creates a draft invoice with the quoted price
+  - Invoice linked to addon request via `invoiceId` field
+  - Activity log created to notify photographer of approval
+  - Includes add-on name, description, and price as line item
+
 - **Invoice Email Notifications** - Send invoices to clients via email
   - New `sendInvoice` server action sends professional invoice emails using `InvoiceSentEmail` template
   - Includes payment link, invoice details, line items summary, and due date

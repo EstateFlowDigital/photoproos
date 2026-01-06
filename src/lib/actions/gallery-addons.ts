@@ -958,14 +958,24 @@ export async function approveAddonQuote(requestId: string, deliverySlug?: string
   const clientSession = await getClientSession();
 
   try {
-    // Get the request
+    // Get the request with all necessary data for invoice creation
     const request = await prisma.galleryAddonRequest.findUnique({
       where: { id: requestId },
       include: {
+        addon: true,
         project: {
           select: {
             id: true,
+            name: true,
             clientId: true,
+            organizationId: true,
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+              },
+            },
             deliveryLinks: {
               where: { isActive: true },
               select: { slug: true },
@@ -991,17 +1001,85 @@ export async function approveAddonQuote(requestId: string, deliverySlug?: string
       return fail("This request is not awaiting approval");
     }
 
+    // Get quoted price (either from quote or addon base price)
+    const priceCents = request.quoteCents || request.addon.priceCents || 0;
+
+    let invoiceId: string | null = null;
+
+    // Create invoice if there's a client and price
+    if (request.project.clientId && priceCents > 0) {
+      // Generate invoice number
+      const lastInvoice = await prisma.invoice.findFirst({
+        where: { organizationId: request.organizationId },
+        orderBy: { createdAt: "desc" },
+        select: { invoiceNumber: true },
+      });
+      const lastNumber = lastInvoice?.invoiceNumber?.match(/\d+$/)?.[0] || "0";
+      const nextNumber = (parseInt(lastNumber, 10) + 1).toString().padStart(4, "0");
+      const invoiceNumber = `INV-${nextNumber}`;
+
+      // Create invoice for the add-on
+      const invoice = await prisma.invoice.create({
+        data: {
+          organizationId: request.organizationId,
+          clientId: request.project.clientId,
+          invoiceNumber,
+          status: "draft",
+          subtotalCents: priceCents,
+          totalCents: priceCents,
+          currency: "USD",
+          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+          clientName: request.project.client?.fullName || request.clientEmail || "Client",
+          clientEmail: request.clientEmail || request.project.client?.email,
+          notes: `Add-on service for gallery "${request.project.name}"`,
+          lineItems: {
+            create: [
+              {
+                itemType: "service",
+                description: `${request.addon.name}${request.quoteDescription ? ` - ${request.quoteDescription}` : ""}`,
+                quantity: 1,
+                unitCents: priceCents,
+                sortOrder: 0,
+              },
+            ],
+          },
+        },
+      });
+
+      invoiceId = invoice.id;
+    }
+
+    // Update the addon request
     const updated = await prisma.galleryAddonRequest.update({
       where: { id: requestId },
       data: {
         status: "approved",
         approvedAt: new Date(),
+        ...(invoiceId && { invoiceId }),
       },
     });
 
-    // TODO: Create invoice, send notification to photographer
+    // Log activity to notify photographer
+    await prisma.activityLog.create({
+      data: {
+        organizationId: request.organizationId,
+        type: "addon_approved",
+        description: `Client approved add-on "${request.addon.name}" for gallery "${request.project.name}"`,
+        projectId: request.projectId,
+        metadata: {
+          addonId: request.addonId,
+          addonName: request.addon.name,
+          requestId: request.id,
+          quoteCents: priceCents,
+          invoiceId,
+          clientEmail: request.clientEmail,
+        },
+      },
+    });
 
-    return success({ request: updated });
+    revalidatePath(`/galleries/${request.projectId}`);
+
+    return success({ request: updated, invoiceId });
   } catch (error) {
     console.error("Error approving add-on quote:", error);
     return fail("Failed to approve quote");
