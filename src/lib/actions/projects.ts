@@ -7,6 +7,7 @@ import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
 import type { TaskStatus, TaskPriority } from "@prisma/client";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
+import { createNotification } from "@/lib/actions/notifications";
 
 const COLUMN_STATUS_MAP: Record<string, TaskStatus> = {
   "To Do": "todo",
@@ -2147,8 +2148,23 @@ async function executeAction(
       break;
 
     case "send_notification":
-      // TODO: Integrate with notification system
-      console.log(`Notification: ${action.message} for task ${taskId}`);
+      if (action.message) {
+        // Get task details for notification
+        const taskForNotif = await prisma.task.findUnique({
+          where: { id: taskId },
+          select: { title: true, column: { select: { board: { select: { id: true, name: true } } } } },
+        });
+
+        await createNotification({
+          organizationId,
+          type: "task_automation",
+          title: "Task Automation",
+          message: action.message.replace("{task}", taskForNotif?.title || "Task"),
+          linkUrl: taskForNotif?.column?.board?.id
+            ? `/projects?board=${taskForNotif.column.board.id}`
+            : "/projects",
+        });
+      }
       break;
   }
 }

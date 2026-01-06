@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Graceful error handling: storage deletion failures are logged but don't block the operation
 
 ### Added
+- **Project Automation Notifications** - Send_notification action now creates real notifications
+  - Added `task_automation` notification type
+  - Automation rules with "send_notification" action now create in-app notifications
+  - Notifications include task title and link to project board
+  - Supports `{task}` placeholder in notification message
+
 - **Gallery Add-on Auto-Invoice** - Automatic invoice creation when client approves add-on quote
   - `approveAddonQuote` now creates a draft invoice with the quoted price
   - Invoice linked to addon request via `invoiceId` field

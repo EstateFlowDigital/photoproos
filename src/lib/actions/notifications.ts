@@ -160,6 +160,7 @@ export type NotificationType =
   | "questionnaire_reminder"
   | "lead_received"
   | "client_added"
+  | "task_automation"
   | "system";
 
 interface CreateNotificationInput {
