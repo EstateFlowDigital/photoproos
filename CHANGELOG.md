@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Projects Module Phase 4: Board Customization & Task Templates**
+  - Column WIP limits with visual warnings (yellow at limit, red over limit)
+  - Column settings popover with name editing, WIP limit configuration, and color picker
+  - Color picker with 10 preset colors for column headers
+  - Task templates system with Prisma schema (`TaskTemplate` model)
+  - Save any task as a template with name and category from task detail modal
+  - Template library modal grouped by category with search
+  - Create task from template with pre-filled title, description, priority, tags, and subtasks
+
 - **Responsive Design Guidelines** - Created comprehensive documentation at `docs/RESPONSIVE_GUIDELINES.md`
   - Breakpoint reference for all device sizes (sm, md, lg, xl, 2xl)
   - Testing checklist for common device widths (iPhone SE to Desktop)
@@ -49,6 +58,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added selection fields (allowSelections, selectionLimit, selectionsSubmitted) to getGallery action
 
 ### Fixed
+- **Gallery Heat Map Broken Images** - Fixed analytics dashboard showing broken images
+  - Added proper fallback chain in download-tracking.ts (thumbnailUrl → mediumUrl → originalUrl → placeholder)
+  - Added onError handler in analytics-dashboard.tsx for runtime image failures
+  - Created placeholder-image.svg for missing images
+
+- **Collections Photo Display** - Fixed photos not showing when clicking a collection
+  - Added `collectionId` field to photos mapping in gallery detail page
+  - Added useEffect to sync photos state when gallery props change
+
+- **Gallery List View Error** - Fixed "Failed to load galleries" error
+  - Added defensive checks for `gallery.services` array (null safety)
+  - Fixed service filtering and display in list view
+
+- **Proof Sheet Download** - Fixed proof sheet PDF generation failures
+  - Improved URL validation in fetchImageAsBase64 function
+  - Added check for empty/invalid URLs before fetching
+  - Increased fetch timeout from 10s to 15s for larger images
+  - Better error logging for debugging
+
 - Fixed TypeScript error in projects-client.tsx with confirm dialog variant prop
 - Fixed SettingsIcon import in gallery-detail-client.tsx
 - Fixed TypeScript type cast error in projects.ts for subtasks template
