@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useState } from "react";
 import Image from "next/image";
+import { BLUR_DATA_URL } from "./utils";
 
 interface Photo {
   id: string;
@@ -248,6 +249,8 @@ export function Lightbox({
                   alt={photo.filename}
                   fill
                   className="object-cover"
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
                 />
                 {favorites.has(photo.id) && (
                   <div className="absolute right-0.5 top-0.5">

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ImageIcon, DownloadIcon, LoadingSpinner } from "../icons";
 import { Lightbox } from "../lightbox";
-import { formatDate } from "../utils";
+import { formatDate, BLUR_DATA_URL } from "../utils";
 import type { GalleryData } from "../types";
 
 interface GalleriesTabProps {
@@ -115,6 +115,8 @@ function GalleryCard({
                 alt={gallery.name}
                 fill
                 className="object-cover"
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
               />
             </button>
           ) : (
@@ -169,6 +171,8 @@ function GalleryCard({
                   alt={photo.filename}
                   fill
                   className="object-cover"
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
                 />
                 {/* Favorite indicator */}
                 {favorites.has(photo.id) && (

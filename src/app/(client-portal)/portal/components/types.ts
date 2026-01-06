@@ -36,6 +36,7 @@ export interface GalleryData {
     url: string;
     thumbnailUrl: string | null;
     filename: string;
+    assetId?: string;
   }[];
 }
 

@@ -246,6 +246,54 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
     }
   };
 
+  const handleSelectedDownload = async (galleryId: string, photoIds: string[]) => {
+    if (photoIds.length === 0) {
+      showToast("No photos selected", "error");
+      return;
+    }
+
+    setDownloadingGallery(galleryId);
+    setDownloadType("zip");
+    try {
+      const gallery = galleries.find((g) => g.id === galleryId);
+      if (!gallery) {
+        showToast("Gallery not found", "error");
+        return;
+      }
+
+      // Photo IDs are the same as asset IDs in the transformed data
+      const response = await fetch("/api/download/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          galleryId: gallery.id,
+          assetIds: photoIds,
+        }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${gallery.name}-selected-${photoIds.length}-photos.zip`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        showToast(`Downloaded ${photoIds.length} selected photos`, "success");
+      } else {
+        showToast("Failed to download. Please try again.", "error");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
+      showToast("Download failed. Please try again.", "error");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
   const handleInvoicePayment = async (invoiceId: string) => {
     setPayingInvoice(invoiceId);
     try {
@@ -361,6 +409,8 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
               onWebSizeDownload={handleWebSizeDownload}
               onHighResDownload={handleHighResDownload}
               onMarketingKitDownload={handleMarketingKitDownload}
+              favorites={favorites}
+              onSelectedDownload={handleSelectedDownload}
             />
           )}
 

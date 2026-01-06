@@ -109,6 +109,14 @@ function formatDate(date: Date | string): string {
   });
 }
 
+type StatusFilter = "all" | "active" | "completed";
+
+const STATUS_FILTERS: { value: StatusFilter; label: string; statuses: GalleryAddonRequestStatus[] }[] = [
+  { value: "all", label: "All", statuses: [] },
+  { value: "active", label: "Active", statuses: ["pending", "quoted", "approved", "in_progress"] },
+  { value: "completed", label: "Completed", statuses: ["completed", "declined", "cancelled"] },
+];
+
 export function AddonRequestsPanel({ galleryId, photos = [] }: AddonRequestsPanelProps) {
   const [requests, setRequests] = useState<AddonRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -120,6 +128,21 @@ export function AddonRequestsPanel({ galleryId, photos = [] }: AddonRequestsPane
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  // Filter requests based on selected status
+  const filteredRequests = requests.filter((r) => {
+    if (statusFilter === "all") return true;
+    const filter = STATUS_FILTERS.find((f) => f.value === statusFilter);
+    return filter?.statuses.includes(r.status) ?? true;
+  });
+
+  // Count requests by filter category
+  const counts = {
+    all: requests.length,
+    active: requests.filter((r) => ["pending", "quoted", "approved", "in_progress"].includes(r.status)).length,
+    completed: requests.filter((r) => ["completed", "declined", "cancelled"].includes(r.status)).length,
+  };
 
   useEffect(() => {
     loadRequests();
@@ -255,7 +278,44 @@ export function AddonRequestsPanel({ galleryId, photos = [] }: AddonRequestsPane
 
   return (
     <div className="space-y-4">
-      {requests.map((request) => {
+      {/* Status Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-[var(--card-border)] pb-3">
+        {STATUS_FILTERS.map((filter) => (
+          <button
+            key={filter.value}
+            onClick={() => setStatusFilter(filter.value)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+              statusFilter === filter.value
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background-tertiary)] text-foreground-muted hover:text-foreground hover:bg-[var(--background-hover)]"
+            )}
+          >
+            {filter.label}
+            <span
+              className={cn(
+                "rounded-full px-1.5 py-0.5 text-[10px]",
+                statusFilter === filter.value
+                  ? "bg-white/20"
+                  : "bg-[var(--background)]"
+              )}
+            >
+              {counts[filter.value]}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Empty state for filtered results */}
+      {filteredRequests.length === 0 && requests.length > 0 && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center">
+          <p className="text-sm text-foreground-muted">
+            No {statusFilter === "active" ? "active" : statusFilter === "completed" ? "completed" : ""} requests
+          </p>
+        </div>
+      )}
+
+      {filteredRequests.map((request) => {
         const statusConfig = STATUS_CONFIG[request.status];
         const isExpanded = expandedRequest === request.id;
         const isCurrentlyUpdating = isUpdating === request.id;

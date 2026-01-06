@@ -65,11 +65,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - View request status and history
   - Admin requests panel (`AddonRequestsPanel`) in gallery detail view
     - New "Add-ons" tab in gallery detail for managing requests
+    - Pending request count badge on tab for visibility
+    - Status filter tabs (All, Active, Completed) with counts
     - View all pending, in-progress, and completed add-on requests
     - Send quotes with custom pricing and descriptions
     - Mark requests as in-progress and complete with delivery notes
     - Photo selection preview with lightbox viewing
     - Cancel request functionality
+  - Email notifications for add-on requests
+    - New `addon-request.tsx` email template with purple accent
+    - Photographer notified when client submits add-on request
+    - Email includes: client info, add-on details, pricing, photo count, notes
   - Server actions for full add-on lifecycle management:
     - Admin: create, update, delete, reorder add-ons; send quotes; mark complete
     - Client: request add-ons, approve/decline quotes, view requests

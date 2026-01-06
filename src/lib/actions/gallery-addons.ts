@@ -766,7 +766,56 @@ export async function requestAddon(data: AddonRequestInput, deliverySlug?: strin
       },
     });
 
-    // TODO: Send notification to photographer
+    // Send notification to photographer
+    try {
+      const org = await prisma.organization.findUnique({
+        where: { id: gallery.organizationId },
+        select: {
+          name: true,
+        },
+      });
+
+      // Get the organization owner via OrganizationMember
+      const ownerMember = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: gallery.organizationId,
+          role: "owner",
+        },
+        select: {
+          user: {
+            select: { email: true, firstName: true },
+          },
+        },
+      });
+
+      const galleryDetails = await prisma.project.findUnique({
+        where: { id: data.projectId },
+        select: { name: true },
+      });
+
+      const clientDetails = clientSession?.client || null;
+      const photographerEmail = ownerMember?.user?.email;
+
+      if (photographerEmail) {
+        const { sendAddonRequestEmail } = await import("@/lib/email/send");
+        await sendAddonRequestEmail({
+          to: photographerEmail,
+          photographerName: ownerMember?.user?.firstName || org?.name || "Photographer",
+          clientName: clientDetails?.fullName || clientEmail?.split("@")[0] || "Client",
+          clientEmail: clientEmail || "unknown@email.com",
+          galleryName: galleryDetails?.name || "Gallery",
+          addonName: addon.name,
+          addonCategory: addon.category,
+          priceCents: addon.priceCents,
+          selectedPhotoCount: data.selectedPhotos?.length || 0,
+          notes: data.notes,
+          galleryUrl: `${process.env.NEXT_PUBLIC_APP_URL}/galleries/${data.projectId}`,
+        });
+      }
+    } catch (emailError) {
+      // Don't fail the request if email fails - just log it
+      console.error("Failed to send add-on request notification:", emailError);
+    }
 
     return success({ request });
   } catch (error) {

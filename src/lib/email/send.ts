@@ -52,6 +52,7 @@ import { GalleryReminderEmail } from "@/emails/gallery-reminder";
 import { DownloadReceiptEmail } from "@/emails/download-receipt";
 import { BookingFollowupEmail } from "@/emails/booking-followup";
 import { WaitlistNotificationEmail } from "@/emails/waitlist-notification";
+import { AddonRequestEmail } from "@/emails/addon-request";
 
 /**
  * Send gallery delivered notification to client
@@ -1489,5 +1490,61 @@ export async function sendWaitlistNotificationEmail(params: {
       photographerEmail,
     }),
     replyTo: photographerEmail,
+  });
+}
+
+// =============================================================================
+// Add-on Request Emails
+// =============================================================================
+
+/**
+ * Send add-on request notification to photographer
+ *
+ * Triggered by: requestAddon() action when client submits an add-on request
+ * Location: src/lib/actions/gallery-addons.ts
+ */
+export async function sendAddonRequestEmail(params: {
+  to: string;
+  photographerName: string;
+  clientName: string;
+  clientEmail: string;
+  galleryName: string;
+  addonName: string;
+  addonCategory: string;
+  priceCents?: number | null;
+  selectedPhotoCount?: number;
+  notes?: string | null;
+  galleryUrl: string;
+}) {
+  const {
+    to,
+    photographerName,
+    clientName,
+    clientEmail,
+    galleryName,
+    addonName,
+    addonCategory,
+    priceCents,
+    selectedPhotoCount,
+    notes,
+    galleryUrl,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `New add-on request: ${addonName} for ${galleryName}`,
+    react: AddonRequestEmail({
+      photographerName,
+      clientName,
+      clientEmail,
+      galleryName,
+      addonName,
+      addonCategory,
+      priceCents,
+      selectedPhotoCount,
+      notes,
+      galleryUrl,
+    }),
+    replyTo: clientEmail,
   });
 }

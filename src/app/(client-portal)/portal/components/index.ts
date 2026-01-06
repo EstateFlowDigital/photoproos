@@ -18,6 +18,7 @@ export { ActionCards } from "./action-cards";
 export { Lightbox } from "./lightbox";
 export { MobileNav } from "./mobile-nav";
 export { NotificationBell } from "./notification-bell";
+export { EmptyState } from "./empty-state";
 
 // Tab Components
 export { PropertiesTab } from "./tabs/properties-tab";

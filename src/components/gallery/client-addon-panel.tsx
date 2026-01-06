@@ -339,7 +339,7 @@ export function ClientAddonPanel({
                           key={photo.id}
                           onClick={() => togglePhotoSelection(photo.id)}
                           className={cn(
-                            "aspect-square rounded-lg overflow-hidden border-2 transition-all",
+                            "relative aspect-square rounded-lg overflow-hidden border-2 transition-all",
                             selectedPhotos.has(photo.id)
                               ? "border-[var(--primary)] ring-2 ring-[var(--primary)]/30"
                               : "border-transparent hover:border-[var(--primary)]/50"

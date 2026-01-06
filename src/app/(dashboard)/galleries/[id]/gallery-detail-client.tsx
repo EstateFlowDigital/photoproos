@@ -32,6 +32,7 @@ import { ActivityTimeline } from "@/components/gallery/activity-timeline";
 import { SelectionsReviewPanel } from "@/components/gallery/selections-review-panel";
 import { PhotoComparisonModal } from "@/components/gallery/photo-comparison-modal";
 import { AddonRequestsPanel } from "@/components/gallery/addon-requests-panel";
+import { getGalleryAddonRequestsAdmin } from "@/lib/actions/gallery-addons";
 import {
   DndContext,
   closestCenter,
@@ -289,6 +290,10 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [isLoadingDownloads, setIsLoadingDownloads] = useState(false);
   const [isExportingDownloads, setIsExportingDownloads] = useState(false);
 
+  // Add-on requests state
+  const [addonRequestsCount, setAddonRequestsCount] = useState(0);
+  const [pendingAddonRequests, setPendingAddonRequests] = useState(0);
+
   // Sync photos state when gallery prop changes (e.g., after router.refresh())
   useEffect(() => {
     setPhotos(gallery.photos);
@@ -314,6 +319,27 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
       fetchDownloadHistory();
     }
   }, [activeTab, gallery.id, downloadHistory.length, isLoadingDownloads]);
+
+  // Fetch add-on requests count on mount
+  useEffect(() => {
+    const fetchAddonRequestsCount = async () => {
+      try {
+        const result = await getGalleryAddonRequestsAdmin(gallery.id);
+        if (result.success && result.data) {
+          const requests = result.data.requests;
+          setAddonRequestsCount(requests.length);
+          setPendingAddonRequests(
+            requests.filter((r: { status: string }) =>
+              ["pending", "quoted", "approved", "in_progress"].includes(r.status)
+            ).length
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch add-on requests:", error);
+      }
+    };
+    fetchAddonRequestsCount();
+  }, [gallery.id]);
 
   // Handle submitting a new comment
   const handleSubmitComment = () => {
@@ -1190,6 +1216,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   {tab === "downloads" && gallery.downloads > 0 && (
                     <span className="ml-1.5 rounded-full bg-[var(--primary)]/10 px-1.5 py-0.5 text-xs text-[var(--primary)]">
                       {gallery.downloads}
+                    </span>
+                  )}
+                  {tab === "addons" && pendingAddonRequests > 0 && (
+                    <span className="ml-1.5 rounded-full bg-[var(--warning)]/10 px-1.5 py-0.5 text-xs text-[var(--warning)]">
+                      {pendingAddonRequests}
                     </span>
                   )}
                 </button>
