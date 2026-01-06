@@ -8,6 +8,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gallery Collections Tab** - Integrated collection management into gallery detail page
+  - New "Collections" tab with full CRUD for creating, editing, deleting collections
+  - Drag-to-reorder collections, cover photo selection
+  - Filter photos by collection with photo counts per collection
+
+- **Public Gallery Collection Navigation** - Clients can now browse photos by collection
+  - Collection pill buttons at top of gallery grid with photo counts
+  - Filter combines with favorites filter for granular browsing
+  - Collection description displays when collection is selected
+  - Empty state for collections with no photos
+  - Slideshow respects active collection filter
+
+- **Send Reminder Server Action** - Proper email-based gallery reminders
+  - "Send Reminder" button now sends automated email via Resend
+  - Reminder logged to activity feed and tracked in database
+  - Loading state with spinner during send operation
+  - Error handling with toast notifications
+
+### Changed
+- **Icon System Consolidation** - Migrated inline icon definitions to centralized icon library
+  - Added 30+ new icons to `@/components/ui/icons` (FormIcon, TimeOffIcon, InboxIcon, ZoomIcon, PhotoIcon, ProjectIcon, QRIcon, CreateIcon, SendIcon, NoteIcon, InvoiceIcon, ChartIcon, DesktopIcon, MobileIcon, TabletIcon, HeartIcon, CommentIcon, CommentBubbleIcon, ExpiredIcon, GripIcon, FolderPlusIcon, and more)
+  - Migrated `booking-forms-page-client.tsx` from 13 inline icons to centralized imports
+  - Migrated `gallery-list-client.tsx` from 18 inline icons to centralized imports
+  - Replaced `gallery-detail-icons.tsx` with re-exports from centralized library for backward compatibility
+  - Reduced code duplication and improved maintainability across codebase
+
+### Fixed
+- **Projects Page Type Mismatch** - Fixed type errors in projects page data fetching
+  - Corrected data transformation to match expected `TeamMember`, `Client`, and `Gallery` interfaces
+  - Removed incorrect `.success` property access on direct array returns from server actions
+
+### Added
 - **Projects Module Improvements** - Comprehensive enhancements to the Kanban task management system
   - **Search functionality** - Search across task titles, descriptions, client names, project names, and assignees
   - **Enhanced filtering** - Filter by assignee (team member or unassigned), client, due date range (overdue, today, this week, this month, no due date)
@@ -15,6 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Full task editing** - Edit title, description, due date, priority, assignee, client, and gallery directly in task detail modal
   - **Expanded task creation** - "More options" toggle reveals due date picker, priority selector, and assignee dropdown during task creation
   - Filter UI with clear all button and active filter count indicator
+
+- **Task Detail Page** - Dedicated task detail page with shareable URLs
+  - New `/projects/tasks/[id]` route with full task information
+  - Breadcrumb navigation back to board and projects
+  - Edit mode for all task properties (title, description, priority, due date, assignee, client, gallery)
+  - Subtasks management with add, toggle completion, and delete
+  - Expand icon in task modal to open full detail page
+  - Danger zone section for task deletion with confirmation
 
 - **Loading States for Gallery Operations** - Comprehensive loading feedback for async actions
   - Settings toggles now show "Saving..." indicator with disabled state during save
@@ -45,8 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Database Migration Safety** - Replaced unsafe `prisma db push` prestart with safe migration script
   - New `scripts/db-migrate.ts` handles duplicate cleanup before schema changes
-  - Prevents deployment failures from unique constraint conflicts
-  - Automatically removes duplicate GalleryFavorite records before applying schema
+
+### Removed
+- **Gallery Grid Service Badges** - Removed external service type badges from gallery card grid view for cleaner UI
 
 ### Changed
 - **Centralized Constants** - Created `/src/lib/constants.ts` for app-wide configuration values

@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -1460,13 +1461,22 @@ function TaskDetailModal({
               </h2>
             )}
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Close task details"
-            className="self-end rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground sm:self-auto"
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <Link
+              href={`/projects/tasks/${task.id}`}
+              className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
+              title="Open full page"
+            >
+              <ExpandIcon className="h-5 w-5" />
+            </Link>
+            <button
+              onClick={onClose}
+              aria-label="Close task details"
+              className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -1817,6 +1827,14 @@ function BoardIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 0 0 2 4.25v11.5A2.25 2.25 0 0 0 4.25 18h11.5A2.25 2.25 0 0 0 18 15.75V4.25A2.25 2.25 0 0 0 15.75 2H4.25Zm.5 3.25a.5.5 0 0 1 .5-.5h2.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-.5.5h-2.5a.5.5 0 0 1-.5-.5v-8.5Zm5.5-.5a.5.5 0 0 0-.5.5v5.5a.5.5 0 0 0 .5.5h2.5a.5.5 0 0 0 .5-.5v-5.5a.5.5 0 0 0-.5-.5h-2.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ExpandIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M13.28 3.22a.75.75 0 0 1 0 1.06L6.56 11H13a.75.75 0 0 1 0 1.5H4.75a.75.75 0 0 1-.75-.75V4a.75.75 0 0 1 1.5 0v6.44l6.72-6.72a.75.75 0 0 1 1.06 0ZM6.72 16.78a.75.75 0 0 1 0-1.06l6.72-6.72H7a.75.75 0 0 1 0-1.5h8.25a.75.75 0 0 1 .75.75V16a.75.75 0 0 1-1.5 0V9.56l-6.72 6.72a.75.75 0 0 1-1.06 0Z" />
     </svg>
   );
 }
