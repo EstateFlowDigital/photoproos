@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Projects Module Improvements** - Comprehensive enhancements to the Kanban task management system
+  - **Search functionality** - Search across task titles, descriptions, client names, project names, and assignees
+  - **Enhanced filtering** - Filter by assignee (team member or unassigned), client, due date range (overdue, today, this week, this month, no due date)
+  - **Sorting options** - Sort by newest, oldest, due date, priority, or recently updated
+  - **Full task editing** - Edit title, description, due date, priority, assignee, client, and gallery directly in task detail modal
+  - **Expanded task creation** - "More options" toggle reveals due date picker, priority selector, and assignee dropdown during task creation
+  - Filter UI with clear all button and active filter count indicator
+
+- **Loading States for Gallery Operations** - Comprehensive loading feedback for async actions
+  - Settings toggles now show "Saving..." indicator with disabled state during save
+  - Settings actually persist to database (was only updating local state before)
+  - Bulk action buttons (Delete, Download) show spinner and disabled state during operations
+  - All other bulk action buttons disabled while batch operations are in progress
+  - Photo lightbox buttons show spinner and disabled state during delete/download
+  - ImageLightbox component now accepts `isDownloading` and `isDeleting` props
+
 ### Fixed
 - **Email Delivery Error Visibility** - Gallery delivery now returns email status to UI
   - Modified `deliverGallery()` to return `emailSent` and `emailError` status
