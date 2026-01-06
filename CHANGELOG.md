@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Property Website Font Customization** - Custom typography support for property websites
+  - 11 Google Font options for headings: Inter, Playfair Display, Montserrat, Lora, Roboto, Poppins, Source Serif, DM Serif Display, Josefin Sans, Cormorant Garamond, Libre Baskerville
+  - Same font options for body text with independent selection
+  - Font selection UI in property edit form under Typography section
+  - Dynamic Google Fonts loading on public property pages (`/p/[slug]`)
+  - Created `/src/lib/fonts.ts` utility with font configuration and loading helpers
+
+- **Custom Domains for Property Websites** - CNAME-based custom domain support
+  - Connect any domain to property websites via CNAME records
+  - DNS verification using Node.js `dns` module to check CNAME records
+  - Domain management UI in property settings tab with three states:
+    - No domain: Shows connection form
+    - Pending verification: Shows DNS instructions and verify button
+    - Verified: Shows success state with disconnect option
+  - Server actions: `connectCustomDomain`, `verifyCustomDomain`, `getCustomDomainStatus`, `disconnectCustomDomain`
+  - Created `/src/lib/actions/custom-domains.ts` with full CNAME verification system
+
+- **Property Website Weekly Analytics Digest** - Automated weekly analytics emails
+  - Email template (`/src/emails/property-weekly-digest.tsx`) showing:
+    - Total views, unique visitors, and leads with week-over-week change percentage
+    - Individual property breakdown with address, views, visitors, leads, and top referrer
+    - CTA to view full analytics in dashboard
+  - Cron job (`/src/app/api/cron/property-digest/route.ts`) that:
+    - Runs weekly to aggregate property website analytics
+    - Sends digest to organization owners with published property websites
+    - Calculates week-over-week views change
+    - Skips organizations with no activity
+
 ### Fixed
 - **Gallery Collections Not Showing Photos** - Fixed optimistic update when assigning photos to collections
   - `AssignToCollectionModal` now passes the assigned collection ID through `onSuccess` callback
@@ -46,7 +75,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now includes line items summary, proper formatting, and PDF attachment support
 
 ### Added
-- **Route-to-Action Atlas Expansion** - Extended comprehensive route documentation from 46 to 74 routes (39% complete)
+- **Route-to-Action Atlas Major Expansion** - Extended comprehensive route documentation from 74 to 96 routes (50% complete)
+  - Services: `/services/new`, `/services/[id]`, `/services/addons/new`, `/services/addons/[id]`, `/services/bundles/new`, `/services/bundles/[id]`
+  - Contracts: `/contracts/new`, `/contracts/[id]`, `/contracts/[id]/edit`, `/contracts/templates/new`, `/contracts/templates/[id]`
+  - Scheduling: `/scheduling/new`, `/scheduling/[id]`, `/scheduling/[id]/edit`, `/scheduling/time-off`, `/scheduling/booking-forms/[id]`, `/scheduling/booking-forms/[id]/submissions`
+  - Questionnaires: `/questionnaires/templates/new`, `/questionnaires/templates/[id]`, `/questionnaires/templates/[id]/preview`, `/questionnaires/assigned/[id]`
+  - Filled in existing routes: `/galleries/[id]/edit`, `/services/addons`, `/services/bundles`
+  - All routes document complete data flow: Page → Client → Actions → Prisma Models
+
+- **Previous Route-to-Action Atlas Expansion** - Extended documentation from 46 to 74 routes (39% complete)
   - Dashboard Core: `/create` wizard with 5-step project creation flow
   - Invoices & Billing: `/payments` and `/payments/[id]` with Stripe refunds, receipts
   - Services & Products: `/products` and `/products/[catalogId]` with SKU workflow

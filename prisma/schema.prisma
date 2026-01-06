@@ -61,6 +61,7 @@ enum InvoiceStatus {
   paid
   overdue
   cancelled
+  void
 }
 
 enum ContractStatus {
@@ -99,8 +100,13 @@ enum ActivityType {
   booking_created
   booking_confirmed
   booking_cancelled
+  invoice_created
   invoice_sent
   invoice_paid
+  invoice_voided
+  invoice_split
+  invoice_updated
+  invoice_reminder_sent
   contract_sent
   contract_signed
   email_sent

@@ -105,7 +105,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
       <p className="flex-1 text-sm font-medium text-foreground">{toast.message}</p>
       <button
         onClick={handleDismiss}
-        className="shrink-0 rounded-lg p-1 hover:bg-black/10 transition-colors"
+        className="shrink-0 rounded-lg p-1 hover:bg-[var(--background-hover)] transition-colors"
       >
         <XIcon className="h-4 w-4" />
       </button>

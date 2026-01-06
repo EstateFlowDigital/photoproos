@@ -32,11 +32,8 @@ export function DashboardSidebar({
   const pathname = usePathname() || "";
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
-  const [isAutoCompact, setIsAutoCompact] = React.useState(false);
   const [forceExpanded, setForceExpanded] = React.useState(false);
   const { topItems, sections } = navData;
-  const isEffectivelyCompact = isCompact || isAutoCompact;
-  const shouldAutoExpand = variant === "inline" && isEffectivelyCompact && !forceExpanded;
   const sidebarRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
@@ -55,24 +52,14 @@ export function DashboardSidebar({
     };
   }, []);
 
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (variant !== "inline") return;
-    if (!sidebarRef.current || !("ResizeObserver" in window)) return;
-
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-      const width = entry.contentRect.width;
-      setIsAutoCompact(width <= 100);
-    });
-
-    observer.observe(sidebarRef.current);
-    return () => observer.disconnect();
-  }, [variant]);
-
   const handleToggle = (id: string, nextState: boolean) => {
     setExpanded((prev) => ({ ...prev, [id]: nextState }));
+  };
+
+  const isSidebarCollapsed = () => {
+    if (isCompact) return true;
+    const width = sidebarRef.current?.getBoundingClientRect().width ?? 0;
+    return width > 0 && width <= 100;
   };
 
   const handleCascadeToggle = () => {
@@ -81,7 +68,7 @@ export function DashboardSidebar({
       return;
     }
 
-    if (isAutoCompact) {
+    if (variant === "inline" && isSidebarCollapsed() && !isCompact) {
       setForceExpanded(true);
       return;
     }
@@ -90,7 +77,7 @@ export function DashboardSidebar({
   };
 
   const handleParentClick = (id: string, nextState: boolean) => {
-    if (shouldAutoExpand) {
+    if (variant === "inline" && !forceExpanded && isSidebarCollapsed()) {
       setForceExpanded(true);
       setExpanded((prev) => ({ ...prev, [id]: true }));
       return;

@@ -243,6 +243,6 @@ export async function checkDomainAvailability(
 /**
  * Get the CNAME target for DNS configuration instructions
  */
-export function getCnameTarget(): string {
+export async function getCnameTarget(): Promise<string> {
   return CNAME_TARGET;
 }

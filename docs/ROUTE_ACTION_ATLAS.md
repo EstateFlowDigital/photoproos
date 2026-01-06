@@ -3,8 +3,8 @@
 A comprehensive mapping of every route to its data flow: Route → Page → Client → Actions → Models.
 
 **Last Updated:** 2026-01-06
-**Total Routes Mapped:** 74 / 192
-**Verification Status:** IN PROGRESS (39% complete)
+**Total Routes Mapped:** 96 / 192
+**Verification Status:** IN PROGRESS (50% complete)
 
 ---
 
@@ -418,11 +418,58 @@ Photos | Collections | Selections | Chat | Financials | Activity | Analytics | D
 
 ---
 
-### `/galleries/[id]/edit` ❌ 🔒
+### `/galleries/[id]/edit` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/galleries/[id]/edit/page.tsx`
+**Dynamic:** `force-dynamic`
 
-*To be mapped*
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `galleries/[id]/edit/page.tsx` | Server component, parallel data fetch |
+| Client | `galleries/[id]/edit/gallery-edit-form.tsx` | Form with service selector, settings, expiration |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getGallery()` | `galleries.ts` | Fetch gallery with relations |
+| `updateGallery()` | `galleries.ts` | Save gallery changes |
+| `deleteGallery()` | `galleries.ts` | Delete gallery and assets |
+
+**Page-Level Queries:**
+```prisma
+Service.findMany({ where: { organizationId, isActive: true }, orderBy: { sortOrder: "asc" } })
+Client.findMany({ where: { organizationId }, select: { id, fullName, company, email }, take: 50 })
+```
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Project | findUnique | Gallery data with relations |
+| Service | findMany | Service options for pricing |
+| Client | findMany | Client dropdown options |
+| Asset | include | Photo count, thumbnails |
+| ActivityLog | include | Recent activity sidebar |
+
+**Client State:**
+- `name`, `description` - Gallery details
+- `clientId` - Selected client
+- `selectedService`, `price` - Service and pricing
+- `accessType` - public or password
+- `settings` - allowDownloads, allowFavorites, showWatermarks, emailNotifications
+- `expirationType` - never, 30days, 60days, 90days, custom
+- `customExpirationDate` - For custom expiration
+
+**Features:**
+- Service selector with database services
+- Client dropdown with recent clients
+- Access control (public vs password)
+- Cover image upload/replace
+- Gallery settings toggles
+- Expiration date selection
+- Delete with confirmation modal
+- Status sidebar (delivered/pending/draft)
+- Stats sidebar (photos, views, downloads)
+- Recent activity display
 
 ---
 
@@ -1123,6 +1170,116 @@ client.count({ where: { projects OR bookings this month } })
 
 ---
 
+### `/scheduling/new` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/scheduling/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `scheduling/new/page.tsx` | Server component, fetch clients & services |
+| Client | `scheduling/new/booking-new-form.tsx` | Full booking creation form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createBooking()` | `bookings.ts` | Create new booking |
+| `checkAvailability()` | `availability.ts` | Validate time slot |
+| `getClientsForBooking()` | `clients.ts` | Client dropdown options |
+| `getServicesForBooking()` | `services.ts` | Service dropdown options |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Booking | create | New booking record |
+| Client | findMany | Client options |
+| Service | findMany | Service options |
+| AvailabilityBlock | findMany | Conflict check |
+
+**Form Fields:**
+- Client selection (or new client inline)
+- Service selection
+- Date and time
+- Duration
+- Location/Address
+- Notes
+
+**Features:**
+- Client search with inline creation
+- Service-based duration defaults
+- Availability conflict warning
+- Recurring booking option
+
+---
+
+### `/scheduling/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/scheduling/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `scheduling/[id]/page.tsx` | Server component, fetch booking |
+| Client | `scheduling/[id]/booking-detail-client.tsx` | View, actions |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getBooking()` | `bookings.ts` | Fetch with relations |
+| `updateBookingStatus()` | `bookings.ts` | Change status |
+| `deleteBooking()` | `bookings.ts` | Cancel/delete booking |
+| `sendBookingReminder()` | `bookings.ts` | Email reminder |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Booking | findUnique | Booking with relations |
+| Client | include | Client details |
+| Service | include | Service details |
+| ActivityLog | include | Booking history |
+
+**Features:**
+- Booking status display
+- Quick status change actions
+- Client contact info
+- Service details
+- Edit/delete actions
+- Send reminder
+
+---
+
+### `/scheduling/[id]/edit` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/scheduling/[id]/edit/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `scheduling/[id]/edit/page.tsx` | Server component, fetch booking |
+| Client | `scheduling/[id]/edit/booking-edit-form.tsx` | Edit form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getBooking()` | `bookings.ts` | Fetch booking details |
+| `updateBooking()` | `bookings.ts` | Save changes |
+| `checkAvailability()` | `availability.ts` | Validate new time |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Booking | findUnique, update | Booking CRUD |
+| Client | findMany | Client dropdown |
+| Service | findMany | Service dropdown |
+
+**Features:**
+- Edit all booking fields
+- Reschedule with conflict check
+- Change client or service
+- Update notes
+
+---
+
 ### `/scheduling/availability` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/scheduling/availability/page.tsx`
@@ -1206,6 +1363,48 @@ client.count({ where: { projects OR bookings this month } })
 
 ---
 
+### `/scheduling/time-off` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/scheduling/time-off/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `scheduling/time-off/page.tsx` | Server component, fetch requests |
+| Client | `scheduling/time-off/time-off-page-client.tsx` | Request management |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getTimeOffRequests()` | `availability.ts` | Fetch all requests |
+| `getPendingTimeOffRequests()` | `availability.ts` | Pending requests count |
+| `submitTimeOffRequest()` | `availability.ts` | Create new request |
+| `approveTimeOffRequest()` | `availability.ts` | Admin approval |
+| `rejectTimeOffRequest()` | `availability.ts` | Admin rejection |
+| `deleteTimeOffRequest()` | `availability.ts` | Remove request |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| TimeOffRequest | findMany, create, update, delete | Request CRUD |
+| User | include | Requestor details |
+| Organization | findUnique | Admin check |
+
+**Request Statuses:**
+- `pending` - Awaiting approval
+- `approved` - Approved by admin
+- `rejected` - Rejected by admin
+
+**Features:**
+- Submit time-off request
+- Admin approval workflow
+- Calendar view of approved time-off
+- Pending requests count badge
+- Filter by status
+- Delete/cancel requests
+
+---
+
 ### `/scheduling/booking-forms` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/scheduling/booking-forms/page.tsx`
@@ -1253,6 +1452,92 @@ client.count({ where: { projects OR bookings this month } })
 - Submission stats (total, views)
 - Convert submissions to bookings
 - Conflict validation on submit
+
+---
+
+### `/scheduling/booking-forms/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/scheduling/booking-forms/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `scheduling/booking-forms/[id]/page.tsx` | Server component, fetch form |
+| Client | `scheduling/booking-forms/[id]/booking-form-edit-client.tsx` | Form builder UI |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getBookingForm()` | `booking-forms.ts` | Fetch form with fields |
+| `updateBookingForm()` | `booking-forms.ts` | Update form details |
+| `updateBookingFormFields()` | `booking-forms.ts` | Modify fields |
+| `reorderBookingFormFields()` | `booking-forms.ts` | Reorder fields |
+| `setBookingFormServices()` | `booking-forms.ts` | Assign services |
+| `toggleBookingFormStatus()` | `booking-forms.ts` | Publish/unpublish |
+| `deleteBookingForm()` | `booking-forms.ts` | Delete form |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| BookingForm | findUnique, update, delete | Form CRUD |
+| BookingFormField | create, update, delete | Field management |
+| BookingFormService | create, delete | Service links |
+| Service | findMany | Available services |
+
+**Field Types Supported:**
+- text, textarea, email, phone
+- date, time, datetime
+- select, multiselect, radio, checkbox
+- number, range
+- file_upload, signature
+
+**Features:**
+- Drag-and-drop field ordering
+- Field validation settings
+- Conditional logic
+- Service assignment
+- Preview mode
+- Public URL generation
+
+---
+
+### `/scheduling/booking-forms/[id]/submissions` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/scheduling/booking-forms/[id]/submissions/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `scheduling/booking-forms/[id]/submissions/page.tsx` | Server component, fetch submissions |
+| Client | `scheduling/booking-forms/[id]/submissions/submissions-page-client.tsx` | Submission list |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getFormSubmissions()` | `booking-forms.ts` | Fetch submissions for form |
+| `convertSubmissionToBooking()` | `booking-forms.ts` | Convert to booking |
+| `rejectSubmission()` | `booking-forms.ts` | Reject submission |
+| `deleteSubmission()` | `booking-forms.ts` | Delete submission |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| BookingFormSubmission | findMany, update, delete | Submission management |
+| BookingForm | include | Form context |
+| Service | include | Service details |
+
+**Submission Statuses:**
+- `pending` - Awaiting review
+- `approved` - Converted to booking
+- `rejected` - Declined
+
+**Features:**
+- Submission list with status filters
+- View submission details
+- Convert to booking (creates Booking record)
+- Reject with reason
+- Export submissions
+- Submission metrics
 
 ---
 
@@ -1318,6 +1603,119 @@ sendContract() → for each signer:
 
 ---
 
+### `/contracts/new` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/contracts/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `contracts/new/page.tsx` | Server component, fetch clients & templates |
+| Client | `contracts/new/contract-form-client.tsx` | Full contract creation form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createContract()` | `contracts.ts` | Create draft contract |
+
+**Page-Level Queries:**
+```prisma
+Client.findMany({ where: { organizationId }, orderBy: { fullName: "asc" } })
+ContractTemplate.findMany({ where: { organizationId }, orderBy: { name: "asc" } })
+```
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Client | findMany | Client dropdown options |
+| ContractTemplate | findMany | Template selection |
+| Contract | create | New contract record |
+| ContractSigner | create (nested) | Signers for contract |
+
+**Form Fields:**
+- Title, Client selection
+- Template selection (pre-fills content)
+- Contract content (rich text)
+- Signers (name, email, sort order)
+- Effective date
+
+**Features:**
+- Template dropdown with content preview
+- Client dropdown with recent clients
+- Multiple signers support
+- Rich text editor for content
+- Variable substitution from template
+
+---
+
+### `/contracts/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/contracts/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `contracts/[id]/page.tsx` | Server component, fetch contract |
+| Client | `contracts/[id]/contract-detail-client.tsx` | View, send, actions |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getContract()` | `contracts.ts` | Fetch with all relations |
+| `sendContract()` | `contracts.ts` | Send to signers |
+| `duplicateContract()` | `contracts.ts` | Clone contract |
+| `deleteContract()` | `contracts.ts` | Delete contract |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Contract | findUnique | Contract with relations |
+| ContractSigner | include | Signer status |
+| ContractSignature | include | Signature data |
+| Client | include | Client details |
+| ContractAuditLog | include | Action history |
+
+**Features:**
+- Contract status display (draft/sent/signed/expired)
+- Signer progress tracker
+- Send to signers action
+- PDF download
+- Edit/duplicate/delete actions
+- Audit log display
+
+---
+
+### `/contracts/[id]/edit` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/contracts/[id]/edit/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `contracts/[id]/edit/page.tsx` | Server component, fetch contract |
+| Client | `contracts/[id]/edit/contract-edit-client.tsx` | Edit form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getContract()` | `contracts.ts` | Fetch contract details |
+| `updateContract()` | `contracts.ts` | Save changes |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Contract | findUnique, update | Contract CRUD |
+| ContractSigner | deleteMany, create | Signer management |
+| Client | findMany | Client dropdown |
+
+**Features:**
+- Edit contract content
+- Update signers
+- Change effective date
+- Only editable in draft status
+
+---
+
 ### `/contracts/templates` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/contracts/templates/page.tsx`
@@ -1357,6 +1755,79 @@ sendContract() → for each signer:
 - Variable substitution ({{client_name}}, {{date}}, etc.)
 - Contract count per template
 - Search and filter
+
+---
+
+### `/contracts/templates/new` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/contracts/templates/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `contracts/templates/new/page.tsx` | Server component, render form |
+| Client | `contracts/templates/template-form-client.tsx` | Full template form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createContractTemplate()` | `contract-templates.ts` | Create new template |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ContractTemplate | create | New template record |
+
+**Form Fields:**
+- Name, Description
+- Content (rich text with variables)
+- Default signers
+
+**Variable Support:**
+- `{{client_name}}` - Client full name
+- `{{client_email}}` - Client email
+- `{{date}}` - Current date
+- `{{photographer_name}}` - Photographer name
+- `{{company_name}}` - Organization name
+
+**Features:**
+- Rich text editor for content
+- Variable insertion buttons
+- Preview mode
+- Breadcrumb navigation
+
+---
+
+### `/contracts/templates/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/contracts/templates/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `contracts/templates/[id]/page.tsx` | Server component, fetch template |
+| Client | `contracts/templates/template-form-client.tsx` | Edit mode form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getContractTemplateById()` | `contract-templates.ts` | Fetch template details |
+| `updateContractTemplate()` | `contract-templates.ts` | Save changes |
+| `deleteContractTemplate()` | `contract-templates.ts` | Delete template |
+| `duplicateContractTemplate()` | `contract-templates.ts` | Clone template |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ContractTemplate | findUnique, update, delete | Template CRUD |
+| Contract | _count | Usage count |
+
+**Features:**
+- Edit template content
+- Usage count display
+- Duplicate to clone
+- Delete with usage warning
+- System templates are read-only
 
 ---
 
@@ -1404,15 +1875,319 @@ sendContract() → for each signer:
 
 ---
 
-### `/services/addons` ❌ 🔒
+### `/services/new` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/services/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `services/new/page.tsx` | Server component, render form |
+| Client | `service-form.tsx` | Full service form with pricing |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createService()` | `services.ts` | Create new service |
+| `setServicePricingTiers()` | `services.ts` | Configure tiered pricing |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Service | create | New service record |
+| ServicePricingTier | create | Pricing tiers (nested) |
+
+**Form Fields:**
+- Name, Category, Description
+- Pricing method (fixed / per_sqft / tiered)
+- Duration, Deliverables
+- Active status
+
+**Features:**
+- Tips sidebar for guidance
+- Template link for inspiration
+- Breadcrumb navigation
+- Sqft-based pricing configuration
+- Tiered pricing with ranges
 
 ---
 
-### `/services/bundles` ❌ 🔒
+### `/services/[id]` ✅ 🔒
 
-*To be mapped*
+**Page:** `src/app/(dashboard)/services/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `services/[id]/page.tsx` | Server component, fetch service with pricing |
+| Client | `service-form.tsx` | Edit mode form |
+| Client | `service-quick-actions.tsx` | Toggle status, duplicate, delete |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getServiceWithPricing()` | `services.ts` | Fetch service with pricing tiers |
+| `updateService()` | `services.ts` | Update service |
+| `deleteService()` | `services.ts` | Delete service |
+| `toggleServiceStatus()` | `services.ts` | Toggle active status |
+| `duplicateService()` | `services.ts` | Clone service |
+| `setServicePricingTiers()` | `services.ts` | Update pricing tiers |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| Service | findUnique, update, delete | Service CRUD |
+| ServicePricingTier | findMany, create, delete | Pricing tier management |
+
+**Features:**
+- Usage stats sidebar
+- Quick actions (toggle, duplicate, delete)
+- Template warning for system services
+- Breadcrumb navigation
+- Edit form with all pricing options
+
+---
+
+### `/services/addons` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/services/addons/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `services/addons/page.tsx` | Server component, fetch addons |
+| Client | `addon-list.tsx` | Grid display, CRUD operations |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getAddons()` | `addons.ts` | Fetch all with filters, usage counts |
+| `createAddon()` | `addons.ts` | Create new addon |
+| `updateAddon()` | `addons.ts` | Update addon |
+| `deleteAddon()` | `addons.ts` | Delete or archive if in use |
+| `toggleAddonStatus()` | `addons.ts` | Toggle isActive |
+| `setAddonCompatibility()` | `addons.ts` | Set compatible services |
+| `reorderAddons()` | `addons.ts` | Reorder display order |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ServiceAddon | findMany, create, update, delete | Addon CRUD |
+| ServiceAddonCompat | create, deleteMany | Service compatibility |
+| Service | findMany | Compatible services |
+| OrderItem | _count | Usage count |
+
+**Addon Trigger Types:**
+- `always` - Always show
+- `with_service` - Show with specific service
+- `cart_threshold` - Show when cart exceeds amount
+
+**Features:**
+- Context navigation (Services / Bundles / Addons)
+- Active/Inactive count in subtitle
+- Grid display with pricing
+- Service compatibility assignment
+- One-time vs recurring addons
+- Usage count tracking
+
+---
+
+### `/services/addons/new` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/services/addons/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `services/addons/new/page.tsx` | Server component, render form |
+| Client | `addon-form.tsx` | Full addon form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createAddon()` | `addons.ts` | Create new addon |
+| `getServices()` | `services.ts` | Fetch available services for compatibility |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ServiceAddon | create | New addon record |
+| ServiceAddonCompat | create | Service compatibility |
+| Service | findMany | Available services |
+
+**Features:**
+- Name, description, pricing
+- Trigger type (always/with_service/cart_threshold)
+- Service compatibility selection
+- One-time vs recurring
+
+---
+
+### `/services/addons/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/services/addons/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `services/addons/[id]/page.tsx` | Server component, fetch addon |
+| Client | `addon-form.tsx` | Edit mode form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getAddon()` | `addons.ts` | Fetch addon with relations |
+| `updateAddon()` | `addons.ts` | Update addon |
+| `deleteAddon()` | `addons.ts` | Delete addon |
+| `setAddonCompatibility()` | `addons.ts` | Update service compatibility |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ServiceAddon | findUnique, update, delete | Addon CRUD |
+| ServiceAddonCompat | deleteMany, create | Compatibility management |
+| Service | findMany | Available services |
+| OrderItem | _count | Usage validation |
+
+**Features:**
+- Edit addon details
+- Update service compatibility
+- Usage count display
+- Delete with usage warning
+
+---
+
+### `/services/bundles` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/services/bundles/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `services/bundles/page.tsx` | Server component, fetch bundles |
+| Client | `bundle-list.tsx` | Grid display, CRUD operations |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getBundles()` | `bundles.ts` | Fetch all with services, usage counts |
+| `createBundle()` | `bundles.ts` | Create new bundle |
+| `updateBundle()` | `bundles.ts` | Update bundle |
+| `deleteBundle()` | `bundles.ts` | Delete or archive if in use |
+| `duplicateBundle()` | `bundles.ts` | Clone bundle |
+| `toggleBundleStatus()` | `bundles.ts` | Toggle isActive |
+| `setBundleServices()` | `bundles.ts` | Set included services |
+| `calculateBundleSavings()` | `bundles.ts` | Update originalPrice, savingsPercent |
+| `setBundlePricingTiers()` | `bundles.ts` | Configure tiered pricing |
+| `calculateBundlePrice()` | `bundles.ts` | Calculate price based on sqft |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ServiceBundle | findMany, create, update, delete | Bundle CRUD |
+| ServiceBundleItem | create, deleteMany | Services in bundle |
+| BundlePricingTier | findMany, create | Tiered pricing |
+| Service | findMany | Available services |
+| OrderItem | _count | Usage count |
+| OrderPage | _count | Usage in order pages |
+
+**Bundle Types:**
+- `fixed` - Fixed price bundle
+- `tiered_sqft` - Square footage-based pricing
+
+**Pricing Methods:**
+- `fixed` - Single price
+- `per_sqft` - Price per square foot
+- `tiered` - Tiered pricing (BICEP-style)
+
+**Stripe Integration:**
+- Auto-sync to Stripe Product Catalog
+- `stripeProductId`, `stripePriceId`
+- Archive/reactivate on status change
+
+**Features:**
+- Context navigation (Services / Bundles / Addons)
+- Active/Inactive count in subtitle
+- Original price vs bundle price display
+- Savings percentage calculation
+- Service composition display
+- Badge text support ("Best Value", etc.)
+- Public/private visibility
+
+---
+
+### `/services/bundles/new` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/services/bundles/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `services/bundles/new/page.tsx` | Server component, fetch services |
+| Client | `bundle-form.tsx` | Full bundle form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createBundle()` | `bundles.ts` | Create new bundle |
+| `getServices()` | `services.ts` | Fetch services for inclusion |
+| `setBundleServices()` | `bundles.ts` | Set included services |
+| `calculateBundleSavings()` | `bundles.ts` | Calculate savings percentage |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ServiceBundle | create | New bundle record |
+| ServiceBundleItem | create | Services in bundle |
+| Service | findMany | Available services |
+| BundlePricingTier | create | Pricing tiers |
+
+**Features:**
+- Name, description, badge text
+- Service selection with quantities
+- Original vs bundle price calculation
+- Savings percentage display
+- Tiered pricing option
+- Public/private visibility
+
+---
+
+### `/services/bundles/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/services/bundles/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `services/bundles/[id]/page.tsx` | Server component, fetch bundle |
+| Client | `bundle-form.tsx` | Edit mode form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getBundle()` | `bundles.ts` | Fetch bundle with services |
+| `updateBundle()` | `bundles.ts` | Update bundle |
+| `deleteBundle()` | `bundles.ts` | Delete bundle |
+| `duplicateBundle()` | `bundles.ts` | Clone bundle |
+| `setBundleServices()` | `bundles.ts` | Update included services |
+| `toggleBundleStatus()` | `bundles.ts` | Toggle active status |
+| `setBundlePricingTiers()` | `bundles.ts` | Update pricing tiers |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ServiceBundle | findUnique, update, delete | Bundle CRUD |
+| ServiceBundleItem | deleteMany, create | Service management |
+| BundlePricingTier | findMany, create, delete | Tier management |
+| OrderItem | _count | Usage validation |
+
+**Features:**
+- Edit bundle details
+- Update service composition
+- Pricing tier configuration
+- Usage count display
+- Delete with usage warning
+- Duplicate to clone
 
 ---
 
@@ -1884,6 +2659,155 @@ sendContract() → for each signer:
 - Virtual list for assigned questionnaires
 - Status badges and overdue highlighting
 - Assignment modal with due date
+
+---
+
+### `/questionnaires/templates/new` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/questionnaires/templates/new/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `questionnaires/templates/new/page.tsx` | Server component, render form |
+| Client | `questionnaires/templates/template-editor-client.tsx` | Template builder |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `createQuestionnaireTemplate()` | `questionnaire-templates.ts` | Create new template |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| QuestionnaireTemplate | create | New template record |
+| QuestionnaireField | create (nested) | Template fields |
+| QuestionnaireTemplateAgreement | create (nested) | Agreements |
+
+**Form Fields:**
+- Name, Description
+- Industry selection
+- Fields (14 types)
+- Legal agreements
+
+**Features:**
+- Drag-and-drop field builder
+- 14 field types
+- Field validation settings
+- Agreement builder
+- Preview mode
+
+---
+
+### `/questionnaires/templates/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/questionnaires/templates/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `questionnaires/templates/[id]/page.tsx` | Server component, fetch template |
+| Client | `questionnaires/templates/[id]/template-editor-client.tsx` | Edit form |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getQuestionnaireTemplate()` | `questionnaire-templates.ts` | Fetch with fields |
+| `updateQuestionnaireTemplate()` | `questionnaire-templates.ts` | Save changes |
+| `deleteQuestionnaireTemplate()` | `questionnaire-templates.ts` | Delete template |
+| `duplicateQuestionnaireTemplate()` | `questionnaire-templates.ts` | Clone template |
+| `addQuestionnaireField()` | `questionnaire-templates.ts` | Add field |
+| `updateQuestionnaireField()` | `questionnaire-templates.ts` | Update field |
+| `deleteQuestionnaireField()` | `questionnaire-templates.ts` | Remove field |
+| `reorderQuestionnaireFields()` | `questionnaire-templates.ts` | Reorder fields |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| QuestionnaireTemplate | findUnique, update, delete | Template CRUD |
+| QuestionnaireField | create, update, delete | Field management |
+| ClientQuestionnaire | _count | Usage count |
+
+**Features:**
+- Edit template details
+- Field builder with all types
+- System templates are read-only
+- Usage count display
+- Delete with usage warning
+
+---
+
+### `/questionnaires/templates/[id]/preview` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/questionnaires/templates/[id]/preview/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `questionnaires/templates/[id]/preview/page.tsx` | Server component, fetch template |
+| Client | `questionnaires/templates/[id]/preview/preview-client.tsx` | Preview renderer |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getQuestionnaireTemplate()` | `questionnaire-templates.ts` | Fetch template |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| QuestionnaireTemplate | findUnique | Template with fields |
+| QuestionnaireField | include | All fields |
+| QuestionnaireTemplateAgreement | include | Agreements |
+
+**Features:**
+- Full questionnaire preview
+- Field rendering by type
+- Agreement display
+- Mobile-responsive preview
+- Back to edit link
+
+---
+
+### `/questionnaires/assigned/[id]` ✅ 🔒
+
+**Page:** `src/app/(dashboard)/questionnaires/assigned/[id]/page.tsx`
+**Dynamic:** `force-dynamic`
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Page | `questionnaires/assigned/[id]/page.tsx` | Server component, fetch assigned |
+| Client | `questionnaires/assigned/[id]/response-viewer.tsx` | Response display |
+
+**Server Actions Called:**
+| Action | File | Purpose |
+|--------|------|---------|
+| `getClientQuestionnaire()` | `client-questionnaires.ts` | Fetch with responses |
+| `sendReminder()` | `client-questionnaires.ts` | Send reminder email |
+| `markAsComplete()` | `client-questionnaires.ts` | Mark complete |
+| `deleteClientQuestionnaire()` | `client-questionnaires.ts` | Remove assignment |
+
+**Prisma Models Queried:**
+| Model | Query Type | Purpose |
+|-------|-----------|---------|
+| ClientQuestionnaire | findUnique | Assignment with data |
+| QuestionnaireTemplate | include | Template details |
+| QuestionnaireField | include | Field definitions |
+| Client | include | Client info |
+| QuestionnaireResponse | include | Client responses |
+
+**Response Statuses:**
+- `pending` - Not started
+- `in_progress` - Partially filled
+- `completed` - All fields filled
+- `overdue` - Past due date
+
+**Features:**
+- View client responses
+- Response status display
+- Send reminder action
+- Mark complete action
+- Due date display
+- Response timestamp
 
 ---
 
@@ -3387,23 +4311,23 @@ Quick reference of all 129 server action files by domain.
 | Section | Routes | Mapped | Percentage |
 |---------|--------|--------|------------|
 | Dashboard Core | 6 | 5 | 83% |
-| Galleries | 7 | 3 | 43% |
+| Galleries | 7 | 4 | 57% |
 | Invoices & Billing | 14 | 10 | 71% |
 | Clients | 6 | 6 | 100% |
-| Scheduling | 10 | 4 | 40% |
-| Contracts | 7 | 2 | 29% |
-| Services & Products | 11 | 3 | 27% |
+| Scheduling | 10 | 10 | 100% |
+| Contracts | 7 | 7 | 100% |
+| Services & Products | 11 | 9 | 82% |
 | Orders | 6 | 4 | 67% |
 | Projects | 3 | 1 | 33% |
 | Properties | 4 | 1 | 25% |
 | Portfolios | 3 | 1 | 33% |
-| Questionnaires | 7 | 1 | 14% |
+| Questionnaires | 7 | 5 | 71% |
 | Leads | 6 | 3 | 50% |
 | Settings | 35 | 14 | 40% |
 | Public | 15 | 7 | 47% |
 | Client Portal | 3 | 1 | 33% |
 | API Routes | 58 | 3 | 5% |
-| **TOTAL** | **192** | **74** | **39%** |
+| **TOTAL** | **192** | **96** | **50%** |
 
 ---
 

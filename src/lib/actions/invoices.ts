@@ -922,10 +922,10 @@ export async function sendInvoice(
     // Log activity
     await logActivity({
       organizationId,
-      entityType: "invoice",
-      entityId: invoiceId,
-      action: "invoice_sent",
-      details: {
+      type: "invoice_sent",
+      description: `Invoice ${invoice.invoiceNumber} sent to ${clientEmail}`,
+      invoiceId,
+      metadata: {
         invoiceNumber: invoice.invoiceNumber,
         clientEmail,
         hasPdfAttachment: !!pdfAttachment,
@@ -1573,7 +1573,6 @@ export async function processScheduledInvoices(): Promise<
         organization: {
           select: {
             name: true,
-            email: true,
           },
         },
         client: {
@@ -2241,9 +2240,16 @@ export async function getDepositBalancePair(invoiceId: string): Promise<
       return fail("Invoice not found");
     }
 
-    let depositInvoice = null;
-    let balanceInvoice = null;
-    let parentInvoice = null;
+    type InvoiceSummary = {
+      id: string;
+      invoiceNumber: string;
+      totalCents: number;
+      status?: InvoiceStatus | string;
+      paidAmountCents?: number;
+    } | null;
+    let depositInvoice: InvoiceSummary = null;
+    let balanceInvoice: InvoiceSummary = null;
+    let parentInvoice: InvoiceSummary = null;
 
     // Check if this invoice is part of a deposit/balance pair
     if (invoice.isDeposit || invoice.isBalance) {
@@ -2420,10 +2426,10 @@ export async function cloneInvoice(
 
     await logActivity({
       organizationId,
-      entityType: "invoice",
-      entityId: cloned.id,
-      action: "created",
-      details: { clonedFrom: invoiceId, invoiceNumber },
+      type: "invoice_created",
+      description: `Invoice ${invoiceNumber} cloned from ${invoiceId}`,
+      invoiceId: cloned.id,
+      metadata: { clonedFrom: invoiceId, invoiceNumber },
     });
 
     revalidatePath("/invoices");
@@ -2477,10 +2483,9 @@ export async function bulkSendInvoices(
 
   await logActivity({
     organizationId,
-    entityType: "invoice",
-    entityId: "bulk",
-    action: "bulk_sent",
-    details: { sent, failed, invoiceIds },
+    type: "invoice_sent",
+    description: `Bulk sent ${sent} invoices (${failed} failed)`,
+    metadata: { sent, failed, invoiceIds },
   });
 
   revalidatePath("/invoices");
@@ -2544,10 +2549,9 @@ export async function bulkMarkPaid(
 
   await logActivity({
     organizationId,
-    entityType: "invoice",
-    entityId: "bulk",
-    action: "bulk_marked_paid",
-    details: { updated, failed, invoiceIds },
+    type: "invoice_paid",
+    description: `Bulk marked ${updated} invoices as paid (${failed} failed)`,
+    metadata: { updated, failed, invoiceIds },
   });
 
   revalidatePath("/invoices");
@@ -2595,10 +2599,9 @@ export async function bulkDeleteInvoices(
 
   await logActivity({
     organizationId,
-    entityType: "invoice",
-    entityId: "bulk",
-    action: "bulk_deleted",
-    details: { deleted, failed },
+    type: "settings_updated",
+    description: `Bulk deleted ${deleted} invoices (${failed} failed)`,
+    metadata: { deleted, failed },
   });
 
   revalidatePath("/invoices");
@@ -2852,10 +2855,10 @@ export async function bundleInvoices(
 
     await logActivity({
       organizationId,
-      entityType: "invoice",
-      entityId: bundled.id,
-      action: "bundled",
-      details: {
+      type: "invoice_created",
+      description: `Invoice ${invoiceNumber} created by bundling ${invoices.length} invoices`,
+      invoiceId: bundled.id,
+      metadata: {
         sourceInvoices: invoices.map((i) => i.invoiceNumber),
         invoiceNumber,
       },

@@ -101,6 +101,10 @@ export interface ButtonProps
   asChild?: boolean;
   /** Shows loading state with spinner and disables interactions */
   loading?: boolean;
+  /** Icon to display on the left side of the button text */
+  leftIcon?: React.ReactNode;
+  /** Icon to display on the right side of the button text */
+  rightIcon?: React.ReactNode;
   /**
    * Required for icon-only buttons (size="icon", "icon-sm", "icon-lg").
    * Provides accessible label for screen readers.

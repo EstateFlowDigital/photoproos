@@ -92,17 +92,17 @@ export function ImageLightbox({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--overlay-heavy)] backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/50 to-transparent">
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-[var(--overlay)] to-transparent">
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-white">
+          <span className="text-sm font-medium text-[var(--foreground)]">
             {currentIndex + 1} / {photos.length}
           </span>
-          <span className="text-sm text-white/70 truncate max-w-[200px]">
+          <span className="text-sm text-[var(--foreground)]/70 truncate max-w-[200px]">
             {currentPhoto.filename}
           </span>
         </div>
@@ -113,14 +113,14 @@ export function ImageLightbox({
               onClick={() => onDownload(currentPhoto)}
               disabled={isDownloading || isDeleting}
               className={cn(
-                "rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20",
+                "rounded-lg bg-[var(--foreground)]/10 p-2 text-[var(--foreground)] transition-colors hover:bg-[var(--foreground)]/20",
                 (isDownloading || isDeleting) && "opacity-50 cursor-not-allowed"
               )}
               title={isDownloading ? "Downloading..." : "Download"}
               aria-label="Download photo"
             >
               {isDownloading ? (
-                <span className="block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span className="block h-5 w-5 animate-spin rounded-full border-2 border-[var(--foreground)] border-t-transparent" />
               ) : (
                 <DownloadIcon className="h-5 w-5" />
               )}
@@ -128,7 +128,7 @@ export function ImageLightbox({
           )}
           <button
             onClick={() => setIsZoomed(!isZoomed)}
-            className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            className="rounded-lg bg-[var(--foreground)]/10 p-2 text-[var(--foreground)] transition-colors hover:bg-[var(--foreground)]/20"
             title={isZoomed ? "Zoom out" : "Zoom in"}
           >
             {isZoomed ? (
@@ -157,7 +157,7 @@ export function ImageLightbox({
           )}
           <button
             onClick={onClose}
-            className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            className="rounded-lg bg-[var(--foreground)]/10 p-2 text-[var(--foreground)] transition-colors hover:bg-[var(--foreground)]/20"
             title="Close"
           >
             <XIcon className="h-5 w-5" />
@@ -191,7 +191,7 @@ export function ImageLightbox({
               e.stopPropagation();
               goToPrevious();
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full bg-black/50 p-3 text-white transition-colors hover:bg-black/70"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full bg-[var(--overlay)] p-3 text-[var(--foreground)] transition-colors hover:bg-[var(--overlay-heavy)]"
           >
             <ChevronLeftIcon className="h-6 w-6" />
           </button>
@@ -200,7 +200,7 @@ export function ImageLightbox({
               e.stopPropagation();
               goToNext();
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 rounded-full bg-black/50 p-3 text-white transition-colors hover:bg-black/70"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 rounded-full bg-[var(--overlay)] p-3 text-[var(--foreground)] transition-colors hover:bg-[var(--overlay-heavy)]"
           >
             <ChevronRightIcon className="h-6 w-6" />
           </button>
@@ -209,7 +209,7 @@ export function ImageLightbox({
 
       {/* Thumbnail Strip */}
       {photos.length > 1 && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex justify-center gap-2 px-4 py-4 bg-gradient-to-t from-black/50 to-transparent overflow-x-auto">
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex justify-center gap-2 px-4 py-4 bg-gradient-to-t from-[var(--overlay)] to-transparent overflow-x-auto">
           {photos.map((photo, index) => (
             <button
               key={photo.id}
@@ -221,7 +221,7 @@ export function ImageLightbox({
               className={cn(
                 "h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition-all",
                 index === currentIndex
-                  ? "border-white scale-110"
+                  ? "border-[var(--foreground)] scale-110"
                   : "border-transparent opacity-60 hover:opacity-100"
               )}
             >
