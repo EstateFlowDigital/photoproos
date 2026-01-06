@@ -5,12 +5,40 @@ import { redirect } from "next/navigation";
 import { getGalleryCounts } from "@/lib/actions/galleries";
 import { GalleriesPageClient } from "./galleries-page-client";
 import { formatCurrency } from "@/lib/utils/units";
+import { Prisma } from "@prisma/client";
 
 type FilterTab = "all" | "delivered" | "pending" | "draft";
 
 interface GalleriesPageProps {
   searchParams: Promise<{ filter?: string }>;
 }
+
+const GALLERY_ADDON_STATUSES = ["pending", "quoted", "approved", "in_progress"] as const;
+
+const galleryListInclude = Prisma.validator<Prisma.ProjectInclude>()({
+  client: { select: { fullName: true, company: true } },
+  _count: {
+    select: {
+      assets: true,
+      galleryAddonRequests: {
+        where: { status: { in: GALLERY_ADDON_STATUSES } },
+      },
+    },
+  },
+  assets: {
+    take: 1,
+    orderBy: { createdAt: "desc" },
+    select: { thumbnailUrl: true, originalUrl: true },
+  },
+  services: {
+    include: {
+      service: {
+        select: { id: true, name: true, category: true },
+      },
+    },
+    orderBy: { isPrimary: "desc" },
+  },
+});
 
 export default async function GalleriesPage({ searchParams }: GalleriesPageProps) {
   const params = await searchParams;
@@ -47,30 +75,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
         organizationId: organization.id,
         ...(statusFilter ? { status: statusFilter } : {}),
       },
-      include: {
-        client: { select: { fullName: true, company: true } },
-        _count: {
-          select: {
-            assets: true,
-            addonRequests: {
-              where: { status: { in: ["pending", "quoted", "approved", "in_progress"] } },
-            },
-          },
-        },
-        assets: {
-          take: 1,
-          orderBy: { createdAt: "desc" },
-          select: { thumbnailUrl: true, originalUrl: true },
-        },
-        services: {
-          include: {
-            service: {
-              select: { id: true, name: true, category: true },
-            },
-          },
-          orderBy: { isPrimary: "desc" },
-        },
-      },
+      include: galleryListInclude,
       orderBy: { createdAt: "desc" },
     }),
     getGalleryCounts(),
@@ -104,7 +109,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
     createdAt: gallery.createdAt.toISOString(),
     views: gallery.viewCount,
     downloads: gallery.downloadCount,
-    pendingAddonRequests: gallery._count.addonRequests,
+    pendingAddonRequests: gallery._count.galleryAddonRequests,
     services: (gallery.services || []).map((ps) => ({
       id: ps.service.id,
       name: ps.service.name,
