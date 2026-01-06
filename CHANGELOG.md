@@ -61,6 +61,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Expand icon in task modal to open full detail page
   - Danger zone section for task deletion with confirmation
 
+- **Projects Analytics Dashboard** - Task completion and productivity insights
+  - New `/projects/analytics` route with comprehensive metrics
+  - Summary cards: total tasks, completion rate, overdue tasks, due this week
+  - Tasks by column bar chart with visual progress indicators
+  - Tasks by priority breakdown with percentage distribution
+  - 30-day activity trend chart showing tasks created vs completed
+  - Team performance table with per-assignee completion rates
+  - Time tracking summary (when time data is available)
+  - Navigation link from projects board page
+
 - **Loading States for Gallery Operations** - Comprehensive loading feedback for async actions
   - Settings toggles now show "Saving..." indicator with disabled state during save
   - Settings actually persist to database (was only updating local state before)

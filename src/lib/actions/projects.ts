@@ -1197,3 +1197,282 @@ export async function createTaskFromClient(
     };
   }
 }
+
+// ============================================================================
+// ANALYTICS ACTIONS
+// ============================================================================
+
+export interface TaskAnalytics {
+  summary: {
+    totalTasks: number;
+    completedTasks: number;
+    completionRate: number;
+    overdueTasks: number;
+    tasksDueToday: number;
+    tasksDueThisWeek: number;
+    avgCompletionTimeMinutes: number | null;
+  };
+  byStatus: Array<{
+    status: string;
+    count: number;
+    percentage: number;
+  }>;
+  byPriority: Array<{
+    priority: string;
+    count: number;
+    percentage: number;
+  }>;
+  byAssignee: Array<{
+    assigneeId: string | null;
+    assigneeName: string;
+    assigneeAvatar: string | null;
+    totalTasks: number;
+    completedTasks: number;
+    completionRate: number;
+  }>;
+  byColumn: Array<{
+    columnId: string;
+    columnName: string;
+    columnColor: string | null;
+    count: number;
+    percentage: number;
+  }>;
+  completionTrend: Array<{
+    date: string;
+    dateLabel: string;
+    completed: number;
+    created: number;
+  }>;
+  timeTracking: {
+    totalEstimatedMinutes: number;
+    totalActualMinutes: number;
+    tasksWithTimeTracking: number;
+    averageAccuracy: number | null;
+  };
+}
+
+/**
+ * Get task analytics for the organization
+ */
+export async function getTaskAnalytics(): Promise<{
+  success: boolean;
+  data?: TaskAnalytics;
+  error?: string;
+}> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfToday = new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1);
+    const endOfWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Get all tasks with relations
+    const tasks = await prisma.task.findMany({
+      where: { organizationId },
+      include: {
+        assignee: {
+          select: { id: true, fullName: true, avatarUrl: true },
+        },
+        column: {
+          select: { id: true, name: true, color: true },
+        },
+      },
+    });
+
+    // Get columns for the organization
+    const columns = await prisma.taskColumn.findMany({
+      where: {
+        board: { organizationId },
+      },
+      select: { id: true, name: true, color: true },
+    });
+
+    // Calculate summary stats
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter((t) => t.status === "completed").length;
+    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const overdueTasks = tasks.filter(
+      (t) => t.dueDate && new Date(t.dueDate) < today && t.status !== "completed"
+    ).length;
+    const tasksDueToday = tasks.filter(
+      (t) => t.dueDate && new Date(t.dueDate) >= today && new Date(t.dueDate) <= endOfToday
+    ).length;
+    const tasksDueThisWeek = tasks.filter(
+      (t) => t.dueDate && new Date(t.dueDate) >= today && new Date(t.dueDate) <= endOfWeek
+    ).length;
+
+    // Calculate average completion time
+    const completedTasksWithTime = tasks.filter(
+      (t) => t.status === "completed" && t.completedAt && t.createdAt
+    );
+    const avgCompletionTimeMinutes =
+      completedTasksWithTime.length > 0
+        ? Math.round(
+            completedTasksWithTime.reduce((sum, t) => {
+              const diff = new Date(t.completedAt!).getTime() - new Date(t.createdAt).getTime();
+              return sum + diff / (1000 * 60);
+            }, 0) / completedTasksWithTime.length
+          )
+        : null;
+
+    // Group by status
+    const statusCounts: Record<string, number> = {};
+    tasks.forEach((t) => {
+      statusCounts[t.status] = (statusCounts[t.status] || 0) + 1;
+    });
+    const byStatus = Object.entries(statusCounts)
+      .map(([status, count]) => ({
+        status,
+        count,
+        percentage: totalTasks > 0 ? Math.round((count / totalTasks) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Group by priority
+    const priorityCounts: Record<string, number> = {};
+    tasks.forEach((t) => {
+      priorityCounts[t.priority] = (priorityCounts[t.priority] || 0) + 1;
+    });
+    const byPriority = Object.entries(priorityCounts)
+      .map(([priority, count]) => ({
+        priority,
+        count,
+        percentage: totalTasks > 0 ? Math.round((count / totalTasks) * 100) : 0,
+      }))
+      .sort((a, b) => {
+        const order = { urgent: 0, high: 1, medium: 2, low: 3 };
+        return (order[a.priority as keyof typeof order] || 4) - (order[b.priority as keyof typeof order] || 4);
+      });
+
+    // Group by assignee
+    const assigneeMap = new Map<
+      string,
+      { totalTasks: number; completedTasks: number; name: string; avatar: string | null }
+    >();
+    tasks.forEach((t) => {
+      const key = t.assigneeId || "unassigned";
+      const current = assigneeMap.get(key) || {
+        totalTasks: 0,
+        completedTasks: 0,
+        name: t.assignee?.fullName || "Unassigned",
+        avatar: t.assignee?.avatarUrl || null,
+      };
+      current.totalTasks++;
+      if (t.status === "completed") current.completedTasks++;
+      assigneeMap.set(key, current);
+    });
+    const byAssignee = Array.from(assigneeMap.entries())
+      .map(([assigneeId, data]) => ({
+        assigneeId: assigneeId === "unassigned" ? null : assigneeId,
+        assigneeName: data.name,
+        assigneeAvatar: data.avatar,
+        totalTasks: data.totalTasks,
+        completedTasks: data.completedTasks,
+        completionRate:
+          data.totalTasks > 0 ? Math.round((data.completedTasks / data.totalTasks) * 100) : 0,
+      }))
+      .sort((a, b) => b.totalTasks - a.totalTasks);
+
+    // Group by column
+    const columnCounts: Record<string, number> = {};
+    tasks.forEach((t) => {
+      columnCounts[t.columnId] = (columnCounts[t.columnId] || 0) + 1;
+    });
+    const byColumn = columns
+      .map((col) => ({
+        columnId: col.id,
+        columnName: col.name,
+        columnColor: col.color,
+        count: columnCounts[col.id] || 0,
+        percentage: totalTasks > 0 ? Math.round(((columnCounts[col.id] || 0) / totalTasks) * 100) : 0,
+      }))
+      .filter((c) => c.count > 0 || columns.length <= 5);
+
+    // Completion trend (last 30 days)
+    const completionTrend: Array<{
+      date: string;
+      dateLabel: string;
+      completed: number;
+      created: number;
+    }> = [];
+
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toISOString().split("T")[0];
+      const nextDate = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+
+      const completed = tasks.filter(
+        (t) =>
+          t.completedAt &&
+          new Date(t.completedAt) >= date &&
+          new Date(t.completedAt) < nextDate
+      ).length;
+
+      const created = tasks.filter(
+        (t) =>
+          new Date(t.createdAt) >= date && new Date(t.createdAt) < nextDate
+      ).length;
+
+      completionTrend.push({
+        date: dateStr,
+        dateLabel: new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date),
+        completed,
+        created,
+      });
+    }
+
+    // Time tracking stats
+    const tasksWithTimeTracking = tasks.filter(
+      (t) => t.estimatedMinutes || t.actualMinutes
+    );
+    const totalEstimatedMinutes = tasks.reduce((sum, t) => sum + (t.estimatedMinutes || 0), 0);
+    const totalActualMinutes = tasks.reduce((sum, t) => sum + (t.actualMinutes || 0), 0);
+
+    const tasksWithBothTimes = tasks.filter((t) => t.estimatedMinutes && t.actualMinutes);
+    const averageAccuracy =
+      tasksWithBothTimes.length > 0
+        ? Math.round(
+            (tasksWithBothTimes.reduce((sum, t) => {
+              const accuracy = Math.min(t.estimatedMinutes!, t.actualMinutes!) /
+                Math.max(t.estimatedMinutes!, t.actualMinutes!);
+              return sum + accuracy;
+            }, 0) / tasksWithBothTimes.length) * 100
+          )
+        : null;
+
+    return {
+      success: true,
+      data: {
+        summary: {
+          totalTasks,
+          completedTasks,
+          completionRate,
+          overdueTasks,
+          tasksDueToday,
+          tasksDueThisWeek,
+          avgCompletionTimeMinutes,
+        },
+        byStatus,
+        byPriority,
+        byAssignee,
+        byColumn,
+        completionTrend,
+        timeTracking: {
+          totalEstimatedMinutes,
+          totalActualMinutes,
+          tasksWithTimeTracking: tasksWithTimeTracking.length,
+          averageAccuracy,
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching task analytics:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to fetch analytics",
+    };
+  }
+}
