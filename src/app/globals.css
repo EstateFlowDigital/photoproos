@@ -1929,6 +1929,35 @@ html[data-scroll-theme="light"] {
     justify-content: center;
   }
 
+  .sidebar-shell[data-force-expanded="true"] {
+    width: 272px;
+  }
+
+  .sidebar-shell[data-force-expanded="true"] .sidebar-label {
+    display: inline;
+  }
+
+  .sidebar-shell[data-force-expanded="true"] .sidebar-section-title {
+    display: block;
+  }
+
+  .sidebar-shell[data-force-expanded="true"] .sidebar-subnav {
+    display: block;
+  }
+
+  .sidebar-shell[data-force-expanded="true"] .sidebar-chevron {
+    display: inline-flex;
+  }
+
+  .sidebar-shell[data-force-expanded="true"] .sidebar-badge {
+    display: inline-flex;
+  }
+
+  .sidebar-shell[data-force-expanded="true"] .sidebar-item-link,
+  .sidebar-shell[data-force-expanded="true"] .sidebar-brand {
+    justify-content: flex-start;
+  }
+
   @container (max-width: 1180px) {
     .shell-sidebar {
       display: none;

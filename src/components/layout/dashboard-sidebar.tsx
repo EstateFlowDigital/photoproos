@@ -32,8 +32,12 @@ export function DashboardSidebar({
   const pathname = usePathname() || "";
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
+  const [isAutoCompact, setIsAutoCompact] = React.useState(false);
+  const [forceExpanded, setForceExpanded] = React.useState(false);
   const { topItems, sections } = navData;
-  const shouldAutoExpand = variant === "inline" && isCompact;
+  const isEffectivelyCompact = isCompact || isAutoCompact;
+  const shouldAutoExpand = variant === "inline" && isEffectivelyCompact && !forceExpanded;
+  const sidebarRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -51,13 +55,43 @@ export function DashboardSidebar({
     };
   }, []);
 
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (variant !== "inline") return;
+    if (!sidebarRef.current || !("ResizeObserver" in window)) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const width = entry.contentRect.width;
+      setIsAutoCompact(width <= 100);
+    });
+
+    observer.observe(sidebarRef.current);
+    return () => observer.disconnect();
+  }, [variant]);
+
   const handleToggle = (id: string, nextState: boolean) => {
     setExpanded((prev) => ({ ...prev, [id]: nextState }));
   };
 
+  const handleCascadeToggle = () => {
+    if (forceExpanded) {
+      setForceExpanded(false);
+      return;
+    }
+
+    if (isAutoCompact) {
+      setForceExpanded(true);
+      return;
+    }
+
+    onToggleCompact?.();
+  };
+
   const handleParentClick = (id: string, nextState: boolean) => {
-    if (shouldAutoExpand && onToggleCompact) {
-      onToggleCompact();
+    if (shouldAutoExpand) {
+      setForceExpanded(true);
       setExpanded((prev) => ({ ...prev, [id]: true }));
       return;
     }
@@ -67,7 +101,9 @@ export function DashboardSidebar({
 
   return (
     <aside
+      ref={sidebarRef}
       data-variant={variant}
+      data-force-expanded={forceExpanded ? "true" : undefined}
       className={cn(
         "sidebar-shell relative flex min-h-screen min-h-0 flex-col border-r border-[var(--card-border)] bg-[var(--card)]",
         variant === "inline" ? "sticky top-0 self-start" : "shadow-2xl",
@@ -109,7 +145,7 @@ export function DashboardSidebar({
       {variant === "inline" && onToggleCompact ? (
         <button
           type="button"
-          onClick={onToggleCompact}
+          onClick={handleCascadeToggle}
           className={cn(
             "sidebar-cascade-toggle absolute top-1/2 z-20 flex h-11 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--card-border)] bg-[var(--card)] text-foreground-muted shadow-md transition-colors hover:bg-[var(--background-hover)] hover:text-foreground",
             sidebarPosition === "right" ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
