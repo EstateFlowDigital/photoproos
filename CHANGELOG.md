@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Billing Module** - New unified billing section consolidating all financial features
+  - **Billing Overview** (`/billing`) - Dashboard with quick stats, recent payments, and quick actions
+  - **Estimates** (`/billing/estimates`) - Create and manage client estimates with status workflow (draft → sent → approved/rejected → converted to invoice)
+  - **Credit Notes** (`/billing/credit-notes`) - Issue credit notes, track applied/refunded amounts, and available balance
+  - **Retainers** (`/billing/retainers`) - Manage client retainer accounts with deposit/withdrawal tracking and balance alerts
+  - **Analytics** (`/billing/analytics`) - Revenue trends, accounts receivable aging report, top clients by revenue, monthly revenue charts
+  - **Tax Reports** (`/billing/reports`) - Tax collected summaries (monthly, quarterly, YTD), effective tax rate calculations, quarterly tax estimates for filings
+  - Updated sidebar navigation with consolidated Billing section containing all billing-related pages
+  - Renamed "Invoices" module to "Billing" in navigation
+
 ### Changed
 - **Action Result Pattern Migration** - Completed migration of all multiline `{ success: true, data: ... }` patterns to use the `success()` helper function across all server actions
   - Migrated 40+ files in `src/lib/actions/`

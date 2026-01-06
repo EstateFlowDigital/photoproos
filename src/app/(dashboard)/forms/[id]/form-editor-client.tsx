@@ -231,12 +231,12 @@ export function FormEditorClient({ form }: FormEditorClientProps) {
 
     startTransition(async () => {
       const result = await addFormField(form.id, newField);
-      if (result.success && result.field) {
-        setFields([...fields, result.field]);
-        setSelectedFieldId(result.field.id);
+      if (result.success) {
+        setFields([...fields, result.data]);
+        setSelectedFieldId(result.data.id);
         showToast("Field added", "success");
       } else {
-        showToast(result.error || "Failed to add field", "error");
+        showToast(result.error, "error");
       }
     });
   };
@@ -297,12 +297,12 @@ export function FormEditorClient({ form }: FormEditorClientProps) {
 
     startTransition(async () => {
       const result = await addFormField(form.id, newField);
-      if (result.success && result.field) {
-        setFields([...fields, result.field]);
-        setSelectedFieldId(result.field.id);
+      if (result.success) {
+        setFields([...fields, result.data]);
+        setSelectedFieldId(result.data.id);
         showToast("Field duplicated", "success");
       } else {
-        showToast(result.error || "Failed to duplicate field", "error");
+        showToast(result.error, "error");
       }
     });
   };

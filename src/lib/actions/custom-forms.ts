@@ -169,7 +169,7 @@ export async function getForms(portfolioId?: string) {
       },
     });
 
-    return { success: true, forms };
+    return { success: true as const, data: forms };
   } catch (error) {
     console.error("Error fetching forms:", error);
     return fail("Failed to fetch forms");
@@ -200,7 +200,7 @@ export async function getForm(formId: string) {
       return fail("Form not found");
     }
 
-    return { success: true, form };
+    return { success: true as const, data: form };
   } catch (error) {
     console.error("Error fetching form:", error);
     return fail("Failed to fetch form");
@@ -254,7 +254,7 @@ export async function createForm(input: CreateFormInput) {
     });
 
     revalidatePath("/forms");
-    return { success: true, form };
+    return { success: true as const, data: form };
   } catch (error) {
     console.error("Error creating form:", error);
     return fail("Failed to create form");
@@ -291,7 +291,7 @@ export async function updateForm(formId: string, input: UpdateFormInput) {
 
     revalidatePath("/forms");
     revalidatePath(`/forms/${formId}`);
-    return { success: true, form };
+    return { success: true as const, data: form };
   } catch (error) {
     console.error("Error updating form:", error);
     return fail("Failed to update form");
@@ -376,7 +376,7 @@ export async function duplicateForm(formId: string) {
     });
 
     revalidatePath("/forms");
-    return { success: true, form: newForm };
+    return { success: true as const, data: newForm };
   } catch (error) {
     console.error("Error duplicating form:", error);
     return fail("Failed to duplicate form");
@@ -426,7 +426,7 @@ export async function addFormField(formId: string, field: FormFieldInput) {
     });
 
     revalidatePath(`/forms/${formId}`);
-    return { success: true, field: newField };
+    return { success: true as const, data: newField };
   } catch (error) {
     console.error("Error adding field:", error);
     return fail("Failed to add field");
@@ -462,7 +462,7 @@ export async function updateFormField(fieldId: string, updates: Partial<FormFiel
     });
 
     revalidatePath(`/forms/${field.form.id}`);
-    return { success: true, field: updatedField };
+    return { success: true as const, data: updatedField };
   } catch (error) {
     console.error("Error updating field:", error);
     return fail("Failed to update field");
@@ -558,7 +558,7 @@ export async function getFormBySlug(slug: string) {
       }
     }
 
-    return { success: true, form };
+    return { success: true as const, data: form };
   } catch (error) {
     console.error("Error fetching form:", error);
     return fail("Failed to fetch form");
@@ -737,7 +737,7 @@ export async function getFormSubmissions(
       prisma.formSubmission.count({ where }),
     ]);
 
-    return { success: true, submissions, total };
+    return { success: true as const, data: { submissions, total } };
   } catch (error) {
     console.error("Error fetching submissions:", error);
     return fail("Failed to fetch submissions");

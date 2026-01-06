@@ -370,7 +370,7 @@ export default async function DashboardPage() {
   const lastMonthRevenueValue = lastMonthRevenue._sum.totalCents || 0;
   const pendingInvoicesValue = pendingInvoices._sum.totalCents || 0;
   const dashboardConfig = dashboardConfigResult.data!;
-  const expiringGalleries = expiringGalleriesResult.data || [];
+  const expiringGalleries = expiringGalleriesResult.success ? expiringGalleriesResult.data : [];
   const overdueInvoices = overdueInvoicesResult.success
     ? overdueInvoicesResult.data
     : { invoices: [], totalOverdueCents: 0 };

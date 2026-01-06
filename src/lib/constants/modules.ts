@@ -121,10 +121,10 @@ export const MODULES: Record<string, ModuleDefinition> = {
   },
   invoices: {
     id: "invoices",
-    name: "Invoices",
-    description: "Billing and payment collection",
+    name: "Billing",
+    description: "Invoices, payments, estimates, and financial tracking",
     icon: FileText,
-    href: "/invoices",
+    href: "/billing",
     isCore: false,
     industries: ["real_estate", "commercial", "events", "portraits", "food", "product"],
     category: "operations",

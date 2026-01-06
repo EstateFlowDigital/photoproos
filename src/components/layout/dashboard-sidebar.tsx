@@ -72,9 +72,15 @@ const subNav: Record<string, SubLink[]> = {
     { label: "Import", href: "/clients/import" },
   ],
   invoices: [
+    { label: "Overview", href: "/billing" },
     { label: "Invoices", href: "/invoices" },
     { label: "Recurring", href: "/invoices/recurring" },
+    { label: "Estimates", href: "/billing/estimates" },
+    { label: "Credit Notes", href: "/billing/credit-notes" },
+    { label: "Retainers", href: "/billing/retainers" },
     { label: "Payments", href: "/payments" },
+    { label: "Analytics", href: "/billing/analytics" },
+    { label: "Tax Reports", href: "/billing/reports" },
     { label: "Payouts", href: "/settings/payouts" },
   ],
   contracts: [
@@ -124,19 +130,8 @@ export function DashboardSidebar({
   const [activeParent, setActiveParent] = React.useState<string | null>(null);
 
   const navItems = getFilteredNavigation({ enabledModules, industries });
-  const paymentsVisible = navItems.some((item) => item.id === "invoices");
-  const sidebarNav: NavItem[] = paymentsVisible
-    ? [
-        ...navItems,
-        {
-          id: "payments",
-          name: "Payments",
-          href: "/payments",
-          icon: PaymentsIcon,
-          category: "operations",
-        },
-      ]
-    : navItems;
+  // Payments is now part of the Billing section subNav, no longer a separate primary nav item
+  const sidebarNav: NavItem[] = navItems;
 
   const userDisplayName = React.useMemo(() => {
     if (!user) return "Signed in";

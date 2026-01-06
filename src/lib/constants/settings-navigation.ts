@@ -53,7 +53,8 @@ export type SettingsIconName =
   | "car"
   | "camera"
   | "layers"
-  | "code";
+  | "code"
+  | "package";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -241,6 +242,13 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
         href: "/settings/branding",
         iconName: "sparkles",
         description: "Logo and gallery customization",
+      },
+      {
+        id: "gallery-addons",
+        label: "Gallery Add-ons",
+        href: "/settings/gallery-addons",
+        iconName: "package",
+        description: "Upsell services in galleries",
       },
       {
         id: "travel",
@@ -513,6 +521,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
         description: "Customize your galleries with your logo and colors",
         href: "/settings/branding",
         iconName: "sparkles",
+      },
+      {
+        id: "gallery-addons",
+        label: "Gallery Add-ons",
+        description: "Configure upsell services clients can request from galleries",
+        href: "/settings/gallery-addons",
+        iconName: "package",
       },
       {
         id: "travel",

@@ -112,7 +112,7 @@ export function ok(): VoidActionResult {
  * return fail("User not found");
  * return fail("Failed to create project");
  */
-export function fail<T = void>(error: string): ActionResult<T> {
+export function fail(error: string): { success: false; error: string } {
   return { success: false, error };
 }
 
@@ -234,6 +234,6 @@ export function successResult<T>(data?: T): ActionResult<T> | VoidActionResult {
 /**
  * @deprecated Use fail() instead. Will be removed in future version.
  */
-export function errorResult(error: string): VoidActionResult {
+export function errorResult(error: string): { success: false; error: string } {
   return fail(error);
 }

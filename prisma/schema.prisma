@@ -451,6 +451,27 @@ enum LegalAgreementType {
   custom
 }
 
+enum GalleryAddonCategory {
+  enhancement // Photo editing, retouching
+  virtual_staging // Virtual staging, furniture
+  marketing // Flyers, social media, marketing materials
+  video // Video tours, slideshows
+  print // Prints, albums
+  editing // Color correction, HDR
+  removal // Object removal, decluttering
+  other
+}
+
+enum GalleryAddonRequestStatus {
+  pending // Client requested
+  quoted // Photographer sent quote
+  approved // Client approved quote
+  in_progress // Work in progress
+  completed // Delivered
+  declined // Client declined
+  cancelled // Cancelled
+}
+
 // ============================================================================
 // CORE MODELS
 // ============================================================================
@@ -676,8 +697,10 @@ model Organization {
   waitlistEntries BookingWaitlist[]
 
   // Unified Email Inbox
-  emailAccounts EmailAccount[]
-  emailThreads  EmailThread[]
+  emailAccounts        EmailAccount[]
+  emailThreads         EmailThread[]
+  galleryAddons        GalleryAddon[]
+  galleryAddonRequests GalleryAddonRequest[]
 
   @@index([slug])
   @@index([plan])
@@ -888,7 +911,8 @@ model Client {
   estimates Estimate[]
 
   // Retainer Balance
-  retainer ClientRetainer?
+  retainer             ClientRetainer?
+  galleryAddonRequests GalleryAddonRequest[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -1037,7 +1061,8 @@ model Project {
   tasks             Task[]
 
   // Phase 2: Client Questionnaire System
-  questionnaires ClientQuestionnaire[]
+  questionnaires       ClientQuestionnaire[]
+  galleryAddonRequests GalleryAddonRequest[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -1744,7 +1769,8 @@ model Invoice {
   attachments InvoiceAttachment[]
 
   // Created from Estimate
-  estimateSource Estimate? @relation("EstimateToInvoice")
+  estimateSource       Estimate?             @relation("EstimateToInvoice")
+  galleryAddonRequests GalleryAddonRequest[]
 
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
@@ -3835,15 +3861,15 @@ model InvoiceBrandingTemplate {
 // ============================================================================
 
 enum InvoiceEmailType {
-  invoice_created     // When invoice is first created
-  invoice_sent        // When invoice is sent to client
-  invoice_reminder    // Payment reminder
-  invoice_overdue     // Overdue notice
-  invoice_paid        // Payment confirmation
-  invoice_partial     // Partial payment received
-  estimate_sent       // Quote/estimate sent
-  estimate_approved   // Quote approved by client
-  estimate_rejected   // Quote rejected by client
+  invoice_created // When invoice is first created
+  invoice_sent // When invoice is sent to client
+  invoice_reminder // Payment reminder
+  invoice_overdue // Overdue notice
+  invoice_paid // Payment confirmation
+  invoice_partial // Partial payment received
+  estimate_sent // Quote/estimate sent
+  estimate_approved // Quote approved by client
+  estimate_rejected // Quote rejected by client
 }
 
 model InvoiceEmailTemplate {
@@ -3851,30 +3877,30 @@ model InvoiceEmailTemplate {
   organizationId String
 
   // Template identification
-  name         String
-  emailType    InvoiceEmailType
-  isDefault    Boolean @default(false)
-  isActive     Boolean @default(true)
+  name      String
+  emailType InvoiceEmailType
+  isDefault Boolean          @default(false)
+  isActive  Boolean          @default(true)
 
   // Email content
-  subject      String  // Supports variables like {{invoiceNumber}}, {{clientName}}
-  bodyHtml     String  @db.Text // HTML email body
-  bodyText     String? @db.Text // Plain text fallback
+  subject  String // Supports variables like {{invoiceNumber}}, {{clientName}}
+  bodyHtml String  @db.Text // HTML email body
+  bodyText String? @db.Text // Plain text fallback
 
   // Sender customization
-  fromName     String? // Override sender name
-  replyTo      String? // Reply-to email
+  fromName String? // Override sender name
+  replyTo  String? // Reply-to email
 
   // Scheduling options (for reminders)
-  sendDelayDays Int?   // Days after event to send (e.g., reminder 7 days after due)
+  sendDelayDays Int? // Days after event to send (e.g., reminder 7 days after due)
 
   // CC/BCC
-  ccEmails     String[] @default([])
-  bccEmails    String[] @default([])
+  ccEmails  String[] @default([])
+  bccEmails String[] @default([])
 
   // Metadata
-  usageCount   Int      @default(0)
-  lastUsedAt   DateTime?
+  usageCount Int       @default(0)
+  lastUsedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -6461,4 +6487,103 @@ model EmailAttachment {
   message EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@index([messageId])
+}
+
+// ============================================================================
+// GALLERY ADD-ONS & UPSELLS
+// ============================================================================
+
+// Catalog of available add-ons that can be offered on galleries
+model GalleryAddon {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Add-on info
+  name        String
+  description String?
+  iconName    String? // Icon identifier (lucide icon name)
+
+  // Pricing
+  priceCents   Int? // Base price in cents (null = "Request Quote")
+  pricePerItem Boolean @default(false) // If true, price is per photo
+
+  // Categorization
+  category GalleryAddonCategory @default(other)
+
+  // Industry targeting (null = available to all industries)
+  industries ClientIndustry[] // Which industries this add-on applies to
+
+  // Turnaround
+  estimatedTurnaround String? // e.g., "24-48 hours", "3-5 business days"
+
+  // Display
+  sortOrder Int     @default(0)
+  imageUrl  String? // Preview/sample image
+
+  // Settings
+  isActive          Boolean @default(true)
+  requiresSelection Boolean @default(false) // Requires selecting specific photos
+  maxPhotos         Int? // Maximum photos that can be selected (null = unlimited)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requests     GalleryAddonRequest[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([category])
+}
+
+// Client requests for gallery add-ons
+model GalleryAddonRequest {
+  id             String  @id @default(cuid())
+  organizationId String
+  projectId      String // The gallery
+  addonId        String
+  clientEmail    String? // Email of requesting client
+  clientId       String? // If associated with a client record
+
+  // Status
+  status GalleryAddonRequestStatus @default(pending)
+
+  // Request details
+  notes          String?  @db.Text // Client notes/instructions
+  selectedPhotos String[] // Asset IDs of selected photos (if requiresSelection)
+
+  // Quote (filled by photographer)
+  quoteCents       Int? // Quoted price
+  quoteDescription String?   @db.Text // Quote details
+  quotedAt         DateTime?
+
+  // Approval
+  approvedAt DateTime?
+  declinedAt DateTime?
+
+  // Completion
+  completedAt  DateTime?
+  deliveryNote String?   @db.Text // Note when delivering completed work
+
+  // Invoice link
+  invoiceId String? // If an invoice was created for this
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  addon        GalleryAddon @relation(fields: [addonId], references: [id], onDelete: Cascade)
+  client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  invoice      Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([addonId])
+  @@index([clientId])
+  @@index([status])
 }

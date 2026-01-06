@@ -12,9 +12,9 @@ export default async function FormEditorPage({ params }: PageProps) {
   const { id } = await params;
   const result = await getForm(id);
 
-  if (!result.success || !result.form) {
+  if (!result.success) {
     notFound();
   }
 
-  return <FormEditorClient form={result.form} />;
+  return <FormEditorClient form={result.data} />;
 }
