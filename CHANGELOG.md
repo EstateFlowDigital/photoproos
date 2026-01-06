@@ -39,6 +39,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Clear search button
   - Empty state for no results
 
+- **Forms Search & Filters** - Enhanced forms page with search, filters, and stats
+  - Search by form name, description, or linked portfolio
+  - Status filter pills (All, Active, Inactive) with counts
+  - Summary stats cards (Total Forms, Active, Total Submissions)
+  - Clear filters button for quick reset
+  - Empty state for no matching results
+
 ### Changed
 - **Refactored error returns to use `fail()` helper** - Replaced ~2,200 occurrences of verbose `return { success: false, error: "..." }` pattern with the cleaner `fail("...")` helper function across 105 action files
   - Added `fail` import from `@/lib/types/action-result` to all affected files

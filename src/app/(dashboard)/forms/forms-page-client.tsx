@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { createForm, deleteForm, duplicateForm } from "@/lib/actions/custom-forms";
-import { FileInput, Plus, MoreVertical, Copy, Trash2, ExternalLink, Edit } from "lucide-react";
+import { FileInput, Plus, MoreVertical, Copy, Trash2, ExternalLink, Edit, Search, X, FileText, CheckCircle, Inbox } from "lucide-react";
 import { PageHeader } from "@/components/dashboard";
 
 interface Form {
@@ -32,6 +32,8 @@ interface FormsPageClientProps {
   forms: Form[];
 }
 
+type StatusFilter = "all" | "active" | "inactive";
+
 export function FormsPageClient({ forms }: FormsPageClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -41,6 +43,46 @@ export function FormsPageClient({ forms }: FormsPageClientProps) {
   const [newFormName, setNewFormName] = useState("");
   const [newFormDescription, setNewFormDescription] = useState("");
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  // Filter forms by search query and status
+  const filteredForms = useMemo(() => {
+    return forms.filter((form) => {
+      // Status filter
+      if (statusFilter === "active" && !form.isActive) return false;
+      if (statusFilter === "inactive" && form.isActive) return false;
+
+      // Search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const name = form.name.toLowerCase();
+        const description = form.description?.toLowerCase() || "";
+        const portfolioName = form.portfolioWebsite?.name.toLowerCase() || "";
+        return name.includes(query) || description.includes(query) || portfolioName.includes(query);
+      }
+      return true;
+    });
+  }, [forms, searchQuery, statusFilter]);
+
+  // Stats for summary cards
+  const stats = useMemo(() => {
+    return {
+      total: forms.length,
+      active: forms.filter((f) => f.isActive).length,
+      inactive: forms.filter((f) => !f.isActive).length,
+      totalSubmissions: forms.reduce((acc, f) => acc + f._count.submissions, 0),
+    };
+  }, [forms]);
+
+  // Status counts for filter pills
+  const statusCounts = useMemo(() => {
+    return {
+      all: forms.length,
+      active: forms.filter((f) => f.isActive).length,
+      inactive: forms.filter((f) => !f.isActive).length,
+    };
+  }, [forms]);
 
   function handleCreateForm() {
     if (!newFormName.trim()) {
@@ -117,6 +159,89 @@ export function FormsPageClient({ forms }: FormsPageClientProps) {
         }
       />
 
+      {/* Stats Cards */}
+      <div className="auto-grid grid-min-200 grid-gap-4">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
+              <FileText className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-foreground">{stats.total}</p>
+              <p className="text-xs text-foreground-muted">Total Forms</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--success)]/15 text-[var(--success)]">
+              <CheckCircle className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-foreground">{stats.active}</p>
+              <p className="text-xs text-foreground-muted">Active</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--ai)]/15 text-[var(--ai)]">
+              <Inbox className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-foreground">{stats.totalSubmissions}</p>
+              <p className="text-xs text-foreground-muted">Total Submissions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+          <input
+            type="text"
+            placeholder="Search forms..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] py-2 pl-9 pr-9 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Status filters */}
+        <div className="flex flex-wrap gap-1.5">
+          {(["all", "active", "inactive"] as StatusFilter[]).map((status) => (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                statusFilter === status
+                  ? "bg-[var(--primary)] text-white"
+                  : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
+              )}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+              <span className={cn(
+                "rounded-full px-1.5 text-[10px]",
+                statusFilter === status ? "bg-white/20" : "bg-[var(--background)]"
+              )}>
+                {statusCounts[status]}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Forms Grid */}
       {forms.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[var(--card-border)] py-16 text-center">
@@ -133,9 +258,28 @@ export function FormsPageClient({ forms }: FormsPageClientProps) {
             Create Form
           </button>
         </div>
+      ) : filteredForms.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-[var(--card-border)] py-16 text-center">
+          <Search className="mx-auto h-12 w-12 text-foreground-muted" />
+          <h3 className="mt-4 text-lg font-semibold text-foreground">No forms found</h3>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {searchQuery
+              ? `No forms match "${searchQuery}".`
+              : `No ${statusFilter} forms.`}
+          </p>
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setStatusFilter("all");
+            }}
+            className="mt-4 text-sm font-medium text-[var(--primary)] hover:underline"
+          >
+            Clear filters
+          </button>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {forms.map((form) => (
+          {filteredForms.map((form) => (
             <div
               key={form.id}
               className="relative rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-colors hover:border-[var(--primary)]/30"
