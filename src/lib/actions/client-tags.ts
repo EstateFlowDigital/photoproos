@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 export interface CreateTagInput {
   name: string;

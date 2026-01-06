@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { revalidatePath } from "next/cache";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 export interface BookingTypeInput {
   name: string;

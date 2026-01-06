@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { EmailType, EmailStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { ok } from "@/lib/types/action-result";
 
 // ============================================================================
 // EMAIL LOGGING ACTIONS

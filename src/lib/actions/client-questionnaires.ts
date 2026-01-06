@@ -22,7 +22,7 @@ import {
   createEmailLog,
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 export type ClientQuestionnaireWithRelations = {
   id: string;

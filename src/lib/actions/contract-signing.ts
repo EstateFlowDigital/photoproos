@@ -26,6 +26,7 @@ import type { SignatureType, ContractStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { headers } from "next/headers";
 import crypto from "crypto";
+import { ok } from "@/lib/types/action-result";
 import {
   sendContractSigningEmail,
   sendContractSignedConfirmationEmail,

@@ -28,6 +28,7 @@ import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import { logActivity } from "@/lib/utils/activity";
 import { sendSMSToClient } from "@/lib/sms/send";
 import { notifySlackNewBooking, notifySlackCancellation } from "@/lib/actions/slack";
+import { ok } from "@/lib/types/action-result";
 import type { ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
