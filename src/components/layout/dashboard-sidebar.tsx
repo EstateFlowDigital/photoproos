@@ -266,8 +266,10 @@ export function DashboardSidebar({
                       ? expanded[item.id] ?? isActive
                       : false;
                     const Icon = item.icon;
+                    const hasBadge = item.badge !== undefined && item.badge > 0;
                     const itemClassName = cn(
-                      "sidebar-item-link group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "sidebar-item-link group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                      "justify-start",
                       isActive
                         ? "bg-[var(--primary)]/10 text-[var(--primary)]"
                         : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
@@ -292,15 +294,16 @@ export function DashboardSidebar({
                             <span className="sidebar-label flex-1 truncate">
                               {item.label}
                             </span>
-                            {item.badge !== undefined && item.badge > 0 ? (
-                              <span className="sidebar-badge rounded-full bg-[var(--primary)]/15 px-2 py-0.5 text-xs font-semibold text-[var(--primary)]">
+                            {hasBadge ? (
+                              <span className="sidebar-badge ml-auto rounded-full bg-[var(--primary)]/15 px-2 py-0.5 text-xs font-semibold text-[var(--primary)]">
                                 {item.badge > 99 ? "99+" : item.badge}
                               </span>
                             ) : null}
                             <ChevronDown
                               className={cn(
                                 "sidebar-chevron h-4 w-4 transition-transform",
-                                isExpanded ? "rotate-180" : "rotate-0"
+                                isExpanded ? "rotate-180" : "rotate-0",
+                                hasBadge ? "ml-2" : "ml-auto"
                               )}
                             />
                           </button>
@@ -315,8 +318,8 @@ export function DashboardSidebar({
                             <span className="sidebar-label flex-1 truncate">
                               {item.label}
                             </span>
-                            {item.badge !== undefined && item.badge > 0 ? (
-                              <span className="sidebar-badge rounded-full bg-[var(--primary)]/15 px-2 py-0.5 text-xs font-semibold text-[var(--primary)]">
+                            {hasBadge ? (
+                              <span className="sidebar-badge ml-auto rounded-full bg-[var(--primary)]/15 px-2 py-0.5 text-xs font-semibold text-[var(--primary)]">
                                 {item.badge > 99 ? "99+" : item.badge}
                               </span>
                             ) : null}
