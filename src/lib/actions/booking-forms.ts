@@ -28,6 +28,7 @@ import {
 import { requireOrganizationId } from "./auth-helper";
 import { validateBookingTime } from "@/lib/actions/bookings";
 import { sendBookingConfirmationEmail } from "@/lib/email/send";
+import { ok } from "@/lib/types/action-result";
 import type { Industry, FormFieldType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import type { ActionResult } from "@/lib/types/action-result";

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import type { MemberRole } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "@/lib/constants";
+import { ok } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {

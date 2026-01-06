@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import crypto from "crypto";
+import { ok } from "@/lib/types/action-result";
 
 // ============================================================================
 // API KEY ACTIONS

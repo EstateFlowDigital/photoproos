@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import type { AvailabilityBlockType, TimeOffRequestStatus } from "@prisma/client";
 import { requireOrganizationId, requireAuth } from "./auth-helper";
 import { RRule, RRuleSet, rrulestr } from "rrule";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types

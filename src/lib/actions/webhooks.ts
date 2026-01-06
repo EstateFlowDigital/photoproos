@@ -287,7 +287,7 @@ export async function deleteWebhookEndpoint(webhookId: string) {
     });
 
     revalidatePath("/settings/integrations");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Failed to delete webhook endpoint:", error);
     return { success: false, error: "Failed to delete webhook endpoint" };
