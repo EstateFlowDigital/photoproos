@@ -76,6 +76,7 @@ enum ActivityType {
   gallery_delivered
   gallery_viewed
   gallery_paid
+  photo_viewed
   payment_received
   payment_failed
   client_added
@@ -95,6 +96,7 @@ enum ActivityType {
   settings_updated
   order_created
   order_paid
+  selections_submitted
 }
 
 enum NotificationType {
@@ -249,6 +251,24 @@ enum DownloadFormat {
   web_size
   high_res
   zip_all
+}
+
+enum SelectionType {
+  favorite
+  selection
+}
+
+enum SelectionStatus {
+  in_progress
+  submitted
+  approved
+  rejected
+}
+
+enum GalleryDownloadOption {
+  full // Only original resolution
+  web  // Only web-optimized resolution
+  both // Allow both options
 }
 
 enum PropertyWebsiteTemplate {
@@ -947,11 +967,18 @@ model Project {
   currency   String @default("USD")
 
   // Gallery Settings
-  coverImageUrl  String?
-  password       String?
-  expiresAt      DateTime?
-  allowDownloads Boolean   @default(true)
-  showWatermark  Boolean   @default(false)
+  coverImageUrl      String?
+  password           String?
+  expiresAt          DateTime?
+  allowDownloads     Boolean               @default(true)
+  showWatermark      Boolean               @default(false)
+  downloadResolution GalleryDownloadOption @default(both)
+
+  // Selection Settings
+  allowSelections     Boolean @default(true) // Allow clients to make selections
+  selectionLimit      Int? // Maximum photos client can select (null = unlimited)
+  selectionRequired   Boolean @default(false) // Require selection before download
+  selectionsSubmitted Boolean @default(false) // Whether client has submitted selections
 
   // Delivery
   deliveredAt   DateTime?
@@ -1164,21 +1191,27 @@ model DeliveryLink {
 }
 
 model GalleryFavorite {
-  id          String  @id @default(cuid())
-  projectId   String
-  assetId     String
-  clientEmail String?
-  sessionId   String?
+  id            String          @id @default(cuid())
+  projectId     String
+  assetId       String
+  clientEmail   String?
+  sessionId     String?
+  selectionType SelectionType   @default(favorite)
+  notes         String? // Client notes for this selection
+  status        SelectionStatus @default(in_progress)
 
-  createdAt DateTime @default(now())
+  createdAt   DateTime  @default(now())
+  submittedAt DateTime? // When the client submitted their selections for review
 
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, assetId, clientEmail])
+  @@unique([projectId, assetId, clientEmail, selectionType])
   @@index([projectId])
   @@index([assetId])
+  @@index([selectionType])
+  @@index([status])
 }
 
 model GalleryComment {

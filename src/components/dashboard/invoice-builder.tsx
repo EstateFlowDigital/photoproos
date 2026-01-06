@@ -9,9 +9,10 @@ import {
   type ServiceType,
   type ServiceCategory,
 } from "@/lib/services";
+import { PRICING_TYPES, type PricingTypeValue } from "@/lib/constants";
 
-// Variable pricing types
-export type PricingType = "fixed" | "per_sqft" | "per_item" | "per_hour" | "per_person" | "per_mile";
+// Variable pricing types - derived from constants
+export type PricingType = PricingTypeValue;
 
 // Line item types matching database enum
 export type LineItemType = "service" | "travel" | "custom" | "discount" | "tax";
@@ -51,13 +52,7 @@ interface InvoiceBuilderProps {
   showTravelFeeButton?: boolean;
 }
 
-const pricingTypes: { value: PricingType; label: string; unit: string }[] = [
-  { value: "fixed", label: "Fixed Price", unit: "" },
-  { value: "per_sqft", label: "Per Square Foot", unit: "sq ft" },
-  { value: "per_item", label: "Per Item", unit: "items" },
-  { value: "per_hour", label: "Per Hour", unit: "hours" },
-  { value: "per_person", label: "Per Person", unit: "people" },
-];
+const pricingTypes = PRICING_TYPES;
 
 export function InvoiceBuilder({
   lineItems,

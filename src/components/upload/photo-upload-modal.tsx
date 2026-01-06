@@ -460,6 +460,7 @@ export function PhotoUploadModal({
               accept={ACCEPTED_TYPES.join(",")}
               multiple
               onChange={handleFileSelect}
+              aria-label="Select photos to upload"
               className="hidden"
             />
             <div className={cn(

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { deleteAddon, reorderAddons } from "@/lib/actions/addons";
 import { useToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface Addon {
   id: string;
@@ -28,14 +29,6 @@ interface AddonListProps {
   initialAddons: Addon[];
 }
 
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
 
 const triggerTypeInfo = {
   always: { label: "Always", color: "bg-green-500/10 text-green-400" },

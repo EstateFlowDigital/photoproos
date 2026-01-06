@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
+import { formatCurrency } from "@/lib/utils/units";
 
 // ============================================================================
 // TYPES
@@ -322,16 +323,6 @@ async function getWebhookUrl(organizationId: string): Promise<string | null> {
     select: { incomingWebhookUrl: true },
   });
   return config?.incomingWebhookUrl || null;
-}
-
-/**
- * Format currency from cents
- */
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(cents / 100);
 }
 
 /**

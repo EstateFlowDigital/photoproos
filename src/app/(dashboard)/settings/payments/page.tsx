@@ -4,14 +4,15 @@ import { PageHeader } from "@/components/dashboard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getConnectAccountDetails } from "@/lib/actions/stripe-connect";
-import { getTaxSettings } from "@/lib/actions/settings";
+import { getTaxSettings, getCurrencySettings } from "@/lib/actions/settings";
 import { PaymentsSettingsClient } from "./payments-settings-client";
 import { ArrowLeftIcon } from "@/components/ui/settings-icons";
 
 export default async function PaymentsSettingsPage() {
-  const [accountDetails, taxSettings] = await Promise.all([
+  const [accountDetails, taxSettings, currencySettings] = await Promise.all([
     getConnectAccountDetails(),
     getTaxSettings(),
+    getCurrencySettings(),
   ]);
 
   return (
@@ -38,6 +39,11 @@ export default async function PaymentsSettingsPage() {
                 taxLabel: taxSettings.data.taxLabel,
               }
             : null
+        }
+        initialCurrency={
+          currencySettings.success && currencySettings.data
+            ? currencySettings.data.currency
+            : "USD"
         }
       />
     </div>

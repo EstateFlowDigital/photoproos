@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface SqftAnalytics {
   summary: {
@@ -39,15 +40,6 @@ interface SqftAnalytics {
 interface SqftAnalyticsClientProps {
   analytics: SqftAnalytics;
   totalOrders: number;
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
 }
 
 function formatNumber(num: number): string {

@@ -8,18 +8,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BrokerageContractsSection } from "./brokerage-contracts-section";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface BrokerageDetailPageProps {
   params: Promise<{ id: string }>;
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
 }
 
 export default async function BrokerageDetailPage({ params }: BrokerageDetailPageProps) {

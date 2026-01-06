@@ -19,11 +19,12 @@ export function SpacerConfigForm({ config, updateConfig }: SpacerConfigFormProps
     <div className="space-y-5">
       {/* Height Slider */}
       <div>
-        <label className="text-sm font-medium text-foreground">
+        <label htmlFor="spacer-height-slider" className="text-sm font-medium text-foreground">
           Spacer Height
         </label>
         <div className="mt-3 space-y-4">
           <input
+            id="spacer-height-slider"
             type="range"
             min={20}
             max={300}

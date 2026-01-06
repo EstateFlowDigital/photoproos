@@ -266,17 +266,19 @@ interface SliderInputProps {
 
 function SliderInput({ label, value, min, max, step, unit, prefix = "", onChange }: SliderInputProps) {
   const percentage = ((value - min) / (max - min)) * 100;
+  const inputId = `slider-${label.toLowerCase().replace(/\s+/g, "-")}`;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-foreground">{label}</label>
+        <label htmlFor={inputId} className="text-sm font-medium text-foreground">{label}</label>
         <span className="rounded-lg bg-[var(--background-elevated)] px-3 py-1 text-sm font-medium text-foreground">
           {prefix}{value} {unit}
         </span>
       </div>
       <div className="relative">
         <input
+          id={inputId}
           type="range"
           min={min}
           max={max}

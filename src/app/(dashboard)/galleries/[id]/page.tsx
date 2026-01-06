@@ -71,7 +71,7 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
     settings: {
       watermarkEnabled: gallery.showWatermark,
       allowDownloads: gallery.allowDownloads,
-      downloadResolution: "full" as const,
+      downloadResolution: (gallery.downloadResolution || "both") as "full" | "web" | "both",
       expirationDate: gallery.expiresAt?.toISOString() || null,
       passwordProtected: !!gallery.password,
       allowFavorites: true, // Default to true, can be configured via schema update later

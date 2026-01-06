@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/toast";
 import { impersonateClientPortal } from "@/lib/actions/clients";
 import { ClientSearch } from "./client-search";
 import { PageHeader, PageContextNav, UsersIcon, TagIcon } from "@/components/dashboard";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 // Industry display names
 const industryLabels: Record<string, string> = {
@@ -23,16 +24,6 @@ const industryLabels: Record<string, string> = {
   product: "Product",
   other: "Other",
 };
-
-// Helper to format currency
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
 
 interface ClientTag {
   id: string;

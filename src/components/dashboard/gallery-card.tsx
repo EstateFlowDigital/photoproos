@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import Link from "next/link";
+import { Eye as EyeIcon } from "lucide-react";
 
 type GalleryStatus = "delivered" | "pending" | "draft" | "archived";
 
@@ -17,10 +18,12 @@ interface GalleryCardProps {
   status: GalleryStatus;
   revenue?: string;
   thumbnailUrl?: string;
+  views?: number;
+  downloads?: number;
   onQuickAction?: (action: QuickAction, galleryId: string) => void;
 }
 
-export function GalleryCard({ id, title, client, photos, status, revenue, thumbnailUrl, onQuickAction }: GalleryCardProps) {
+export function GalleryCard({ id, title, client, photos, status, revenue, thumbnailUrl, views, downloads, onQuickAction }: GalleryCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +107,7 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
 
       <Link href={`/galleries/${id}`} className="block">
         {/* Thumbnail */}
-        <div className="mb-3 aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-[var(--primary)]/20 to-[var(--ai)]/20">
+        <div className="relative mb-3 aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-[var(--primary)]/20 to-[var(--ai)]/20">
           {thumbnailUrl ? (
             <img
               src={thumbnailUrl}
@@ -114,6 +117,23 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
           ) : (
             <div className="flex h-full items-center justify-center">
               <GalleryPlaceholderIcon className="h-8 w-8 text-foreground-muted/50" />
+            </div>
+          )}
+          {/* Performance Badges */}
+          {(views !== undefined || downloads !== undefined) && (views || 0) + (downloads || 0) > 0 && (
+            <div className="absolute bottom-2 left-2 flex gap-1.5">
+              {views !== undefined && views > 0 && (
+                <div className="flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                  <EyeIcon className="h-3 w-3" />
+                  {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
+                </div>
+              )}
+              {downloads !== undefined && downloads > 0 && (
+                <div className="flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                  <DownloadIcon className="h-3 w-3" />
+                  {downloads >= 1000 ? `${(downloads / 1000).toFixed(1)}k` : downloads}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -198,6 +218,24 @@ function TrashIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+      <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+    </svg>
+  );
+}
+
+function EyeIconLucide({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
     </svg>
   );
 }

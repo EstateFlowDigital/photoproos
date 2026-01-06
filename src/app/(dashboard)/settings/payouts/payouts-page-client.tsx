@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createPayoutBatch, processPayoutBatch, cancelPayoutBatch } from "@/lib/actions/payouts";
 import type { PayoutBatchWithRelations } from "@/lib/actions/payouts";
+import { formatCurrency } from "@/lib/utils/units";
 
 // Local interface matching the actual return type from getPendingPayouts
 interface PendingPayout {
@@ -34,15 +35,6 @@ interface PayoutsPageClientProps {
   batches: PayoutBatchWithRelations[];
   pendingPayouts: PendingPayout[];
   stats: Stats;
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
 }
 
 function formatDate(date: Date): string {

@@ -14,6 +14,7 @@ import { getDashboardConfig } from "@/lib/actions/dashboard";
 import { getExpiringSoonGalleries } from "@/lib/actions/gallery-expiration";
 import { isSectionVisible, isSectionCollapsed, type DashboardConfig } from "@/lib/dashboard-types";
 import Link from "next/link";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 const OnboardingFallback = () => (
   <div className="h-[260px] rounded-xl border border-[var(--card-border)] bg-[var(--card)]" aria-hidden />
@@ -79,16 +80,6 @@ function CalendarIcon({ className }: { className?: string }) {
       <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
     </svg>
   );
-}
-
-// Helper to format currency
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
 }
 
 // Helper to format relative time

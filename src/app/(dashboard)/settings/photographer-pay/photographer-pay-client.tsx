@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { upsertPhotographerRate, deletePhotographerRate } from "@/lib/actions/photographer-pay";
 import type { PhotographerRateWithRelations } from "@/lib/actions/photographer-pay";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface Member {
   id: string;
@@ -39,15 +40,6 @@ interface PhotographerPayClientProps {
   rates: PhotographerRateWithRelations[];
   stats: Stats;
   services: Service[];
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
 }
 
 export function PhotographerPayClient({

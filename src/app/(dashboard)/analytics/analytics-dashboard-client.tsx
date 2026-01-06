@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/dashboard";
 import { cn } from "@/lib/utils";
 import { generateAnalyticsReportPdf } from "@/lib/actions/analytics-report";
 import { useToast } from "@/components/ui/toast";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface DashboardData {
   revenue: {
@@ -73,15 +74,6 @@ interface AnalyticsDashboardClientProps {
   dashboardData?: DashboardData | null;
   forecastData?: ForecastData | null;
   ltvData?: LTVData | null;
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
 }
 
 export function AnalyticsDashboardClient({

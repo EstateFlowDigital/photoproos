@@ -196,6 +196,7 @@ export async function updateGallery(
         ...(updateData.expiresAt !== undefined && { expiresAt: updateData.expiresAt }),
         ...(updateData.allowDownloads !== undefined && { allowDownloads: updateData.allowDownloads }),
         ...(updateData.showWatermark !== undefined && { showWatermark: updateData.showWatermark }),
+        ...(updateData.downloadResolution !== undefined && { downloadResolution: updateData.downloadResolution }),
       },
     });
 
@@ -838,6 +839,7 @@ export async function getGallery(id: string) {
       expiresAt: gallery.expiresAt,
       allowDownloads: gallery.allowDownloads,
       showWatermark: gallery.showWatermark,
+      downloadResolution: gallery.downloadResolution,
       viewCount: gallery.viewCount,
       downloadCount: gallery.downloadCount,
       deliveredAt: gallery.deliveredAt,

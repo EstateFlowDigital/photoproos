@@ -68,10 +68,11 @@ export function GalleryConfigForm({
 
       {/* Columns */}
       <div>
-        <label className="text-sm font-medium text-foreground">
+        <label htmlFor="gallery-columns-slider" className="text-sm font-medium text-foreground">
           Columns ({columns})
         </label>
         <input
+          id="gallery-columns-slider"
           type="range"
           min={1}
           max={6}

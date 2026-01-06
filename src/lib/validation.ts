@@ -169,15 +169,8 @@ export function validateForm(fields: Record<string, () => ValidationResult>): {
   };
 }
 
-// Format currency for display
-export function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
-}
+// Format currency for display - re-export from centralized utils
+export { formatCurrency } from "@/lib/utils/units";
 
 // Parse currency input to cents
 export function parseCurrencyToCents(value: string): number {

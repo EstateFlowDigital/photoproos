@@ -8,16 +8,7 @@ import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { InvoiceStatus } from "@prisma/client";
 import { BulkExportButton } from "@/components/invoices/bulk-export-button";
-
-// Helper to format currency
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 // Helper to format date
 function formatDate(date: Date): string {

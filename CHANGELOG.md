@@ -8,6 +8,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Currency Settings** - Organization-wide default currency configuration
+  - New currency selector in Payment Settings page
+  - Support for 9 currencies: USD, EUR, GBP, CAD, AUD, BRL, MXN, JPY, CHF
+  - Currency preference persisted to Organization model
+  - Auto-applies to invoices, galleries, and pricing displays
+  - New `getCurrencySettings` and `updateCurrencySettings` server actions
+
+- **Gallery Delivery Readiness Checklist** - Validation before gallery delivery
+  - Pre-delivery checklist component showing completion status
+  - Validates: photos uploaded, client assigned, delivery link generated
+  - Optional check for gallery price (pay-to-unlock)
+  - Progress bar with visual feedback
+  - Integrated "Deliver Gallery" button with validation
+  - Only shows for non-delivered galleries
+
+- **Performance Badges on Gallery Cards** - At-a-glance analytics in gallery grid
+  - View and download count badges on gallery card thumbnails
+  - Badges appear as overlays with backdrop blur for visibility
+  - Smart number formatting (e.g., 1.2k for 1200)
+  - Only shows when there's engagement data
+  - Consistent styling with existing UI patterns
+
+- **Gallery Analytics Dashboard with Photo Heat Map** - Comprehensive gallery performance tracking
+  - New `AnalyticsDashboard` component with photo engagement heat map visualization
+  - Heat map shows downloads, favorites, and ratings per photo with color-coded intensity
+  - Grid view and list view toggle for engagement data
+  - Key metrics cards: Total Views, Downloads, Favorites, Engagement Rate
+  - Downloads over time chart with last 14 days visualization
+  - Downloads by format breakdown (original, web, zip, etc.)
+  - Recent download history log with client email and timestamp
+  - Export analytics as CSV with comprehensive report data
+  - Refresh button to fetch latest analytics data
+  - New `gallery-analytics.ts` server actions with `getComprehensiveGalleryAnalytics`
+  - Added `photo_viewed` to ActivityType enum for per-photo tracking
+
+- **Gallery Reminders & Expiration Management** - Automated and manual reminder system
+  - `sendManualGalleryReminder` - Send manual reminder emails from gallery detail page
+  - `getGalleryReminderHistory` - View history of sent reminders
+  - `updateGalleryExpiration` - Set or clear gallery expiration date
+  - `extendGalleryExpiration` - Add days to current expiration
+  - `getExpiringGalleries` - Get galleries expiring within N days
+  - `getUnviewedGalleries` - Get delivered galleries with no views
+  - `getGalleryReminderStatus` - Get full reminder/expiration status for a gallery
+  - Tracks reminder count, last sent date, days until expiration
+  - Integrates with existing email system for delivery
+
+- **Gallery Download Resolution Setting** - Persist download size preferences to database
+  - New `GalleryDownloadOption` enum in Prisma schema (full, web, both)
+  - Added `downloadResolution` field to Project model
+  - Updated `updateGallery` server action to persist resolution setting
+  - Gallery settings UI now saves resolution choice to database instead of local state
+
+- **Gallery Collections UI** - Complete collections management for organizing gallery photos
+  - `CollectionManager` component with drag-to-reorder support via dnd-kit
+  - `AssignToCollectionModal` for bulk assigning photos to collections
+  - Collections sidebar panel in gallery detail view
+  - Filter photos by collection (All, Uncategorized, or specific collection)
+  - Create, edit, delete collections with cover photo selection
+  - "Add to Collection" button in batch action bar for selected photos
+  - Visual feedback for selected collection and photo counts
+
+- **Watermarking System** - Apply watermarks to downloaded photos
+  - New `src/lib/watermark.ts` module with Sharp-based image processing
+  - Support for text and image watermarks
+  - 9 position options: corners, edges, center, tiled, and diagonal patterns
+  - Configurable opacity (0-1) and scale (0.1-2.0)
+  - Auto-fallback on watermark failure to preserve original
+  - Integrated into batch download API route
+
 - **Unified Email Inbox (Database Schema)** - Added foundation for Gmail/Outlook email integration
   - `EmailAccount` model for storing connected email accounts with OAuth tokens
   - `EmailThread` model for grouping email conversations with client auto-linking
@@ -55,7 +124,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Includes navigation icons (ChevronLeft, ChevronRight, Grid, etc.)
   - Reduces gallery-client.tsx by 260 lines (3076 → 2816)
 
+- **Gallery Detail Icons Module** - Extracted 45 icon components from dashboard gallery detail
+  - New `gallery-detail-icons.tsx` with all dashboard gallery icons
+  - Includes all action icons (Edit, Trash, Archive, Filter, etc.)
+  - Includes all UI icons (Clock, Calendar, Chart, Desktop, Mobile, etc.)
+  - Reduces gallery-detail-client.tsx by 311 lines (2601 → 2290)
+  - Icons now reusable across other dashboard components
+
 ### Changed
+- **Accessibility Improvements - Form Labels** - Added proper label associations for WCAG 2.1 compliance
+  - Added `aria-label` to hidden file inputs in `image-upload.tsx`, `photo-upload-modal.tsx`, `global-upload-modal.tsx`, `bulk-upload-modal.tsx`
+  - Added `htmlFor`/`id` associations to `roi-calculator.tsx` slider inputs (4 sliders fixed)
+  - Added `htmlFor`/`id` associations to `spacer-config.tsx` height slider
+  - Added `htmlFor`/`id` associations to `gallery-config.tsx` columns slider
+  - Converted URL input label from `<span>` to proper `<label>` with `htmlFor` in `image-upload.tsx`
+
+- **Batch Download API - Performance & Reliability** - Rewrote `/api/download/batch` route
+  - Parallel asset fetching with configurable concurrency limit (5 concurrent)
+  - 30-second timeout per asset with AbortController
+  - Exponential backoff retry logic (2 retries max)
+  - Continues on individual failures, includes `_download_report.txt` in ZIP
+  - Response headers for download success/failure counts
+  - Integrated watermarking support when gallery.showWatermark is enabled
+
 - **Accessibility Improvements - Button Component** - Enhanced ARIA support
   - Added `loading` prop with aria-busy attribute for loading states
   - Added built-in spinner for loading buttons with aria-hidden
@@ -112,6 +203,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `(auth)/error.tsx` for authentication pages
   - Added `(onboarding)/error.tsx` for setup flow
   - Added `(field)/error.tsx` for field worker app
+  - Added `g/error.tsx` for public gallery pages
+  - Added `p/error.tsx` for property pages
+  - Added `book/error.tsx` for booking flow
+  - Added `portfolio/error.tsx` for portfolio pages
+  - Added `sign/error.tsx` for contract signing
+  - Added `track/error.tsx` for tracking pages
+  - Added `schedule/error.tsx` for scheduling pages
+  - Added `order/error.tsx` for order pages
+  - Added `r/error.tsx` for referral links
+  - Added `invite/error.tsx` for invitation pages
+  - Added `unsubscribe/error.tsx` for email unsubscribe
 
 - **Performance - Leads Page** - Added memoization for list rendering
   - Created memoized `LeadRow` component with React.memo
@@ -136,12 +238,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `TaskStatus` and `TaskPriority` for tasks
   - Derived types from const arrays for better type safety
 
+- **Code Cleanup - Unused Imports** - Removed unused imports from files
+  - Removed unused `Link` import from `projects-client.tsx`
+  - Removed unused `CurrencyIcon` and `StripeIcon` imports from `invoices/page.tsx`
+
 - **Type Safety - PDF Actions** - Applied shared PDF utilities across all PDF actions
   - Updated `analytics-report.ts` with `createPdfElement` utility
   - Updated `marketing-assets.ts` with `createPdfElement` utility
   - Updated `portal-downloads.ts` with `createPdfElement` utility
 
 ### Fixed
+- **QR Code Modal** - Fixed broken QR code generation in gallery detail delivery link section
+  - Replaced deprecated Google Charts API with local QR code generation using `qrcode` library
+  - Now uses the same `QRCodeModal` component used elsewhere in the app
+  - Includes copy link and download QR code functionality
+
+- **Proof Sheet PDF Generation** - Fixed image loading issues in proof sheet PDF
+  - Convert remote image URLs to base64 data URLs for reliable react-pdf rendering
+  - Add gray placeholder for failed image fetches instead of breaking the PDF
+  - Fetch images in batches of 5 with concurrency limiting
+  - Add 10-second timeout per image fetch with proper error handling
+  - Fetch organization logo as base64 to avoid CORS issues
+
+- **Missing Icon Imports** - Fixed 25+ missing icon imports in gallery-detail-client.tsx
+  - Added all missing icons from gallery-detail-icons.tsx to the import statement
+
+- **TypeScript Errors** - Fixed build errors in gallery creation and activity logging
+  - Added missing `downloadResolution` property to gallery-new-form.tsx and create-gallery-modal.tsx
+  - Added missing `CurrencyIcon` and `StripeIcon` imports to invoices page.tsx
+  - Added missing `selections_submitted` activity type to icon map in activity.ts
+
 - **Build Errors** - Fixed pre-existing type errors blocking builds
   - Added missing `getUserOrganization` export to `@/lib/auth/clerk`
   - Fixed nullable `searchParams` access in email settings page

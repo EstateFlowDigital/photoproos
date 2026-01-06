@@ -186,6 +186,7 @@ export function GlobalUploadModal() {
             type="file"
             multiple
             accept="image/*"
+            aria-label="Select files to upload"
             className="hidden"
             onChange={(e) => {
               if (e.target.files) {

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 // Register Inter font
 Font.register({
@@ -221,16 +222,6 @@ const styles = StyleSheet.create({
     color: "#7c7c7c",
   },
 });
-
-// Helper to format currency
-function formatCurrency(cents: number, currency = "USD"): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
 
 // Helper to format percentage change
 function formatChange(current: number, previous: number): { text: string; positive: boolean } {

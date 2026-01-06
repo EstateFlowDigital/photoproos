@@ -4,18 +4,10 @@ import { PageHeader } from "@/components/dashboard";
 import { getBrokerages } from "@/lib/actions/brokerages";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface BrokeragesPageProps {
   searchParams: Promise<{ search?: string; status?: string }>;
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
 }
 
 export default async function BrokeragesPage({ searchParams }: BrokeragesPageProps) {

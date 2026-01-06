@@ -14,6 +14,7 @@ import { getServices } from "@/lib/actions/services";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface AddonFormData {
   name: string;
@@ -87,14 +88,6 @@ const iconOptions = [
   { value: "home", label: "Home (Property)" },
 ];
 
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
 
 export function AddonForm({ initialData, mode }: AddonFormProps) {
   const router = useRouter();

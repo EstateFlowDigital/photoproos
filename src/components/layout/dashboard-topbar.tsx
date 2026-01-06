@@ -20,6 +20,15 @@ import { QuickActions, QUICK_ACTIONS } from "@/components/dashboard/quick-action
 import { useStableOrgProfile } from "@/hooks/use-stable-org-profile";
 import { getNotificationType } from "@/lib/constants";
 
+type NotificationCache = {
+  data: DisplayNotification[];
+  unread: number;
+  timestamp: number;
+};
+
+const NOTIFICATION_CACHE_TTL_MS = 60_000;
+let notificationCache: NotificationCache | null = null;
+
 interface DashboardTopbarProps {
   className?: string;
   navLinks?: {
@@ -135,8 +144,29 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
     setSearchResults([]);
   }, [closeAllPopovers, pathname]);
 
-  // Fetch notifications on mount
+  // Fetch notifications on mount with simple cache
   useEffect(() => {
+    let cancelled = false;
+
+    const hydrateFromCache = () => {
+      if (
+        notificationCache &&
+        Date.now() - notificationCache.timestamp < NOTIFICATION_CACHE_TTL_MS
+      ) {
+        setNotifications(notificationCache.data);
+        setUnreadCount(notificationCache.unread);
+        setIsLoadingNotifications(false);
+        return true;
+      }
+      return false;
+    };
+
+    if (hydrateFromCache()) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
     async function fetchNotifications() {
       try {
         const result = await getNotifications(10);
@@ -149,16 +179,31 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
             time: formatRelativeTime(n.createdAt),
             unread: !n.read,
           }));
-          setNotifications(displayNotifications);
-          setUnreadCount(result.data.unreadCount);
+          if (!cancelled) {
+            setNotifications(displayNotifications);
+            setUnreadCount(result.data.unreadCount);
+            notificationCache = {
+              data: displayNotifications,
+              unread: result.data.unreadCount,
+              timestamp: Date.now(),
+            };
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch notifications:", error);
+        if (!cancelled) {
+          console.error("Failed to fetch notifications:", error);
+        }
       } finally {
-        setIsLoadingNotifications(false);
+        if (!cancelled) {
+          setIsLoadingNotifications(false);
+        }
       }
     }
     fetchNotifications();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Debounce search query

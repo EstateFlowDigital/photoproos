@@ -232,14 +232,16 @@ export function ImageUpload({
           accept="image/*"
           onChange={handleFileSelect}
           disabled={disabled || isUploading}
+          aria-label="Upload image file"
           className="hidden"
         />
       </div>
 
       {/* URL Input Alternative */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-foreground-muted">or enter URL:</span>
+        <label htmlFor="image-url-input" className="text-xs text-foreground-muted">or enter URL:</label>
         <input
+          id="image-url-input"
           type="url"
           value={value || ""}
           onChange={(e) => handleUrlInput(e.target.value)}

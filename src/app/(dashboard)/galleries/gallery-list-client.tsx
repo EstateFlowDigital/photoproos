@@ -616,6 +616,8 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                     status={gallery.status}
                     revenue={gallery.revenue}
                     thumbnailUrl={gallery.thumbnailUrl}
+                    views={gallery.views}
+                    downloads={gallery.downloads}
                     onQuickAction={isSelectMode ? undefined : handleQuickAction}
                   />
                   {/* Service badges */}

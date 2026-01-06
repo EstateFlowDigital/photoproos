@@ -4,10 +4,16 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { MemberRole } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
+import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "@/lib/constants";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
   return requireOrganizationId();
+}
+
+// Provide currencies via async export to satisfy server action constraints
+export async function getSupportedCurrencies() {
+  return SUPPORTED_CURRENCIES;
 }
 
 // ============================================================================
@@ -221,6 +227,69 @@ export async function getTaxSettings() {
   } catch (error) {
     console.error("Error getting tax settings:", error);
     return { success: false, error: "Failed to get tax settings" };
+  }
+}
+
+// ============================================================================
+// CURRENCY SETTINGS
+// ============================================================================
+
+
+/**
+ * Get currency settings for the organization
+ */
+export async function getCurrencySettings() {
+  try {
+    const organizationId = await getOrganizationId();
+
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        currency: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        currency: (org?.currency as SupportedCurrency) ?? "USD",
+      },
+    };
+  } catch (error) {
+    console.error("Error getting currency settings:", error);
+    return { success: false, error: "Failed to get currency settings" };
+  }
+}
+
+/**
+ * Update organization currency settings
+ */
+export async function updateCurrencySettings(input: { currency: SupportedCurrency }) {
+  try {
+    const organizationId = await getOrganizationId();
+
+    // Validate currency is supported
+    const isValidCurrency = SUPPORTED_CURRENCIES.some((c) => c.code === input.currency);
+    if (!isValidCurrency) {
+      return { success: false, error: "Invalid currency code" };
+    }
+
+    await prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        currency: input.currency,
+      },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/settings/payments");
+    revalidatePath("/invoices");
+    revalidatePath("/galleries");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating currency settings:", error);
+    return { success: false, error: "Failed to update currency settings" };
   }
 }
 

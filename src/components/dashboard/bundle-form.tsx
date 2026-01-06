@@ -16,6 +16,8 @@ import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { BUNDLE_TYPES } from "@/lib/constants";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface BundleFormData {
   name: string;
@@ -85,22 +87,8 @@ const defaultFormData: BundleFormData = {
   isPublic: true,
 };
 
-const bundleTypes = [
-  { value: "fixed", label: "Fixed Price", description: "Single price for all included services" },
-  { value: "tiered", label: "Tiered", description: "Multiple pricing tiers with different options" },
-  { value: "custom", label: "Custom", description: "Client can customize their selection" },
-  { value: "sqft_based", label: "Per Sqft", description: "Price based on property square footage" },
-  { value: "tiered_sqft", label: "Tiered Sqft", description: "Tiered pricing by square footage ranges" },
-];
+const bundleTypes = BUNDLE_TYPES;
 
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
 
 function generateSlug(name: string): string {
   return name

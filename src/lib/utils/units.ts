@@ -127,26 +127,62 @@ export function formatTemperature(
 // CURRENCY FORMATTING
 // ============================================================================
 
-const currencyFormats: Record<string, Intl.NumberFormatOptions> = {
-  USD: { style: "currency", currency: "USD" },
-  EUR: { style: "currency", currency: "EUR" },
-  GBP: { style: "currency", currency: "GBP" },
-  CAD: { style: "currency", currency: "CAD" },
-  AUD: { style: "currency", currency: "AUD" },
-  BRL: { style: "currency", currency: "BRL" },
-  MXN: { style: "currency", currency: "MXN" },
+/**
+ * Maps currencies to their appropriate locales
+ */
+const currencyLocaleMap: Record<string, string> = {
+  USD: "en-US",
+  EUR: "de-DE",
+  GBP: "en-GB",
+  CAD: "en-CA",
+  AUD: "en-AU",
+  BRL: "pt-BR",
+  MXN: "es-MX",
+  JPY: "ja-JP",
+  CHF: "de-CH",
 };
 
+export interface CurrencyFormatOptions {
+  /** Show decimal places (default: true for most currencies, false for JPY) */
+  showDecimals?: boolean;
+  /** Override the locale */
+  locale?: string;
+}
+
 /**
- * Format currency amount
+ * Format currency amount from cents
+ * @param cents - Amount in cents (smallest currency unit)
+ * @param currency - Currency code (USD, EUR, etc.)
+ * @param options - Formatting options
  */
 export function formatCurrency(
   cents: number,
   currency: string = "USD",
-  locale: string = "en-US"
+  options: CurrencyFormatOptions = {}
 ): string {
-  const options = currencyFormats[currency] || currencyFormats.USD;
-  return new Intl.NumberFormat(locale, options).format(cents / 100);
+  const locale = options.locale || currencyLocaleMap[currency] || "en-US";
+
+  // JPY and similar currencies don't use decimal places
+  const isZeroDecimalCurrency = currency === "JPY";
+  const showDecimals = options.showDecimals ?? !isZeroDecimalCurrency;
+
+  const formatOptions: Intl.NumberFormatOptions = {
+    style: "currency",
+    currency,
+    minimumFractionDigits: showDecimals ? 2 : 0,
+    maximumFractionDigits: showDecimals ? 2 : 0,
+  };
+
+  return new Intl.NumberFormat(locale, formatOptions).format(cents / 100);
+}
+
+/**
+ * Format currency amount without decimal places (for UI display)
+ * @param cents - Amount in cents
+ * @param currency - Currency code
+ */
+export function formatCurrencyWhole(cents: number, currency: string = "USD"): string {
+  return formatCurrency(cents, currency, { showDecimals: false });
 }
 
 // ============================================================================
@@ -218,7 +254,7 @@ export function createUnitConverter(options: UnitConverterOptions) {
       formatArea(value, fromUnit, system),
     temperature: (value: number, fromUnit: "F" | "C") =>
       formatTemperature(value, fromUnit, system),
-    currency: (cents: number) => formatCurrency(cents, currency, locale),
+    currency: (cents: number) => formatCurrency(cents, currency, { locale }),
     date: (date: Date | string) => formatDate(date, locale),
     time: (date: Date | string) => formatTime(date, locale, use24Hour),
     dateTime: (date: Date | string) => formatDateTime(date, locale, use24Hour),

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
+import { formatCurrency } from "@/lib/utils/units";
 
 // Register Inter font
 Font.register({
@@ -232,15 +233,6 @@ export interface ReceiptPdfProps {
   amountCents: number;
   transactionId: string | null;
   accentColor: string;
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
 }
 
 export function ReceiptPdf({

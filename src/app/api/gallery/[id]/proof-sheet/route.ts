@@ -4,6 +4,33 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { ProofSheetDocument } from "./proof-sheet-document";
 
+// Simple gray placeholder image (1x1 pixel gray PNG)
+const PLACEHOLDER_IMAGE =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIA1BQdCgAAAABJRU5ErkJggg==";
+
+// Fetch image and convert to base64 data URL for react-pdf compatibility
+async function fetchImageAsBase64(url: string): Promise<string> {
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(10000), // 10 second timeout per image
+    });
+    if (!response.ok) return PLACEHOLDER_IMAGE;
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64 = buffer.toString("base64");
+
+    // Determine mime type from content-type header or URL
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    const mimeType = contentType.split(";")[0].trim();
+
+    return `data:${mimeType};base64,${base64}`;
+  } catch (error) {
+    console.error("Failed to fetch image:", url, error);
+    return PLACEHOLDER_IMAGE;
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -60,6 +87,41 @@ export async function GET(
       return NextResponse.json({ error: "Gallery not found" }, { status: 404 });
     }
 
+    // Fetch logo as base64 if exists
+    let logoBase64: string | undefined;
+    if (gallery.organization.logoUrl) {
+      logoBase64 = await fetchImageAsBase64(gallery.organization.logoUrl);
+    }
+
+    // Fetch all photo images with concurrency limit to prevent overwhelming the server
+    // Use thumbnails for smaller file size and faster processing
+    const CONCURRENCY_LIMIT = 5;
+    const photosWithBase64: Array<{
+      id: string;
+      url: string;
+      filename: string;
+      number: number;
+    }> = [];
+
+    // Process images in batches
+    for (let i = 0; i < gallery.assets.length; i += CONCURRENCY_LIMIT) {
+      const batch = gallery.assets.slice(i, i + CONCURRENCY_LIMIT);
+      const batchResults = await Promise.all(
+        batch.map(async (asset, batchIndex) => {
+          const globalIndex = i + batchIndex;
+          const url = asset.thumbnailUrl || asset.mediumUrl || asset.originalUrl;
+          const base64Url = await fetchImageAsBase64(url);
+          return {
+            id: asset.id,
+            url: base64Url,
+            filename: asset.filename,
+            number: globalIndex + 1,
+          };
+        })
+      );
+      photosWithBase64.push(...batchResults);
+    }
+
     // Generate PDF
     const pdfBuffer = await renderToBuffer(
       ProofSheetDocument({
@@ -67,14 +129,9 @@ export async function GET(
         galleryDescription: gallery.description || undefined,
         clientName: gallery.client?.company || gallery.client?.fullName || undefined,
         photographerName: gallery.organization.publicName || gallery.organization.name,
-        logoUrl: gallery.organization.logoUrl || undefined,
+        logoUrl: logoBase64,
         createdAt: gallery.createdAt.toISOString(),
-        photos: gallery.assets.map((asset, index) => ({
-          id: asset.id,
-          url: asset.mediumUrl || asset.thumbnailUrl || asset.originalUrl,
-          filename: asset.filename,
-          number: index + 1,
-        })),
+        photos: photosWithBase64,
       })
     );
 

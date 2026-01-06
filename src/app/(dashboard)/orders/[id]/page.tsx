@@ -6,15 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import { OrderActions } from "./order-actions";
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
-}
+import { formatCurrency } from "@/lib/utils/units";
 
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {

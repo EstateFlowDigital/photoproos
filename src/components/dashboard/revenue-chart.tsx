@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface RevenueDataPoint {
   label: string;
@@ -13,14 +14,6 @@ interface RevenueChartProps {
   className?: string;
 }
 
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
 
 function formatCompactCurrency(cents: number): string {
   const dollars = cents / 100;

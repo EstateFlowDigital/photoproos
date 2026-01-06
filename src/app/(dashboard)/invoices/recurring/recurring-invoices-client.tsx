@@ -14,6 +14,7 @@ import {
   type RecurringInvoiceLineItem,
 } from "@/lib/actions/recurring-invoices";
 import type { RecurringFrequency } from "@prisma/client";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface RecurringInvoice {
   id: string;
@@ -33,15 +34,6 @@ interface Client {
   fullName: string | null;
   email: string;
   company: string | null;
-}
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
 }
 
 function formatDate(date: Date | string): string {

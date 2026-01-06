@@ -309,6 +309,7 @@ export function BulkUploadModal({
             type="file"
             multiple
             accept="image/*"
+            aria-label="Select photos for bulk upload"
             className="hidden"
             onChange={(e) => {
               if (e.target.files) {

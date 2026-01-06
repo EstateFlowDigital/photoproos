@@ -4,16 +4,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import { getGalleryCounts } from "@/lib/actions/galleries";
 import { GalleriesPageClient } from "./galleries-page-client";
-
-// Helper to format currency
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
+import { formatCurrency } from "@/lib/utils/units";
 
 type FilterTab = "all" | "delivered" | "pending" | "draft";
 

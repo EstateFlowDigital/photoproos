@@ -16,6 +16,7 @@ import { getServices } from "@/lib/actions/services";
 import { useToast } from "@/components/ui/toast";
 import { Switch } from "@/components/ui/switch";
 import type { Testimonial } from "@/lib/validations/order-pages";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface OrderPageFormData {
   name: string;
@@ -80,14 +81,6 @@ const defaultFormData: OrderPageFormData = {
   requireLogin: false,
 };
 
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
 
 function generateSlug(name: string): string {
   return name

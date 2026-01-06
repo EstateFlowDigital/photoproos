@@ -1,13 +1,31 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 import { sendGalleryReminderEmail } from "@/lib/email/send";
 import { logEmailSent } from "@/lib/actions/email-logs";
 import { EmailStatus, EmailType } from "@prisma/client";
+import { addDays, differenceInDays, isBefore, isAfter, startOfDay } from "date-fns";
 
 const MAX_REMINDERS = 3; // Maximum number of reminders per gallery
 const REMINDER_INTERVAL_DAYS = 3; // Days between reminders
 const INITIAL_REMINDER_DELAY_DAYS = 2; // Days after delivery before first reminder
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+async function getOrganizationId(): Promise<string | null> {
+  const { orgId } = await auth();
+  if (!orgId) return null;
+
+  const org = await prisma.organization.findFirst({
+    where: { clerkOrganizationId: orgId },
+    select: { id: true },
+  });
+
+  return org?.id || null;
+}
 
 interface ReminderResult {
   galleryId: string;
@@ -264,5 +282,481 @@ export async function resetGalleryReminders(galleryId: string) {
   } catch (error) {
     console.error("Error resetting gallery reminders:", error);
     return { success: false, error: "Failed to reset reminders" };
+  }
+}
+
+// =============================================================================
+// Manual Reminder Functions
+// =============================================================================
+
+/**
+ * Send a manual reminder email for a specific gallery
+ */
+export async function sendManualGalleryReminder(
+  galleryId: string,
+  options?: { customMessage?: string }
+) {
+  const organizationId = await getOrganizationId();
+  if (!organizationId) {
+    return { success: false, error: "Organization not found" };
+  }
+
+  try {
+    const gallery = await prisma.project.findFirst({
+      where: { id: galleryId, organizationId },
+      include: {
+        deliveryLinks: {
+          where: { isActive: true },
+          select: { slug: true },
+          take: 1,
+        },
+        client: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            company: true,
+          },
+        },
+        organization: {
+          select: {
+            name: true,
+            publicName: true,
+            publicEmail: true,
+          },
+        },
+        _count: {
+          select: { assets: true },
+        },
+        payments: {
+          where: { status: "paid" },
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!gallery) {
+      return { success: false, error: "Gallery not found" };
+    }
+
+    if (!gallery.client?.email) {
+      return { success: false, error: "No client email associated with this gallery" };
+    }
+
+    if (gallery.status !== "delivered") {
+      return { success: false, error: "Gallery must be delivered before sending reminders" };
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
+    const deliverySlug = gallery.deliveryLinks[0]?.slug;
+    const galleryUrl = deliverySlug
+      ? `${baseUrl}/g/${deliverySlug}`
+      : `${baseUrl}/galleries/${galleryId}/view`;
+
+    const clientName = gallery.client.fullName || gallery.client.company || "there";
+    const photographerName = gallery.organization.publicName || gallery.organization.name;
+    const photographerEmail = gallery.organization.publicEmail || undefined;
+
+    // Determine reminder type
+    const hasPaid = gallery.payments.length > 0;
+    const reminderType = gallery.priceCents > 0 && !hasPaid ? "not_paid" : "not_viewed";
+
+    const daysSinceDelivery = gallery.deliveredAt
+      ? differenceInDays(new Date(), gallery.deliveredAt)
+      : 0;
+
+    // Send the email
+    const emailResult = await sendGalleryReminderEmail({
+      to: gallery.client.email,
+      clientName,
+      galleryName: gallery.name,
+      galleryUrl,
+      photographerName,
+      photographerEmail,
+      photoCount: gallery._count.assets,
+      priceCents: gallery.priceCents,
+      reminderType,
+      daysSinceDelivery,
+    });
+
+    if (emailResult.success) {
+      // Update gallery reminder tracking
+      await prisma.project.update({
+        where: { id: galleryId },
+        data: {
+          lastReminderSentAt: new Date(),
+          reminderCount: { increment: 1 },
+        },
+      });
+
+      // Log the email
+      await logEmailSent({
+        organizationId,
+        clientId: gallery.client.id,
+        projectId: galleryId,
+        emailType: EmailType.gallery_reminder,
+        toEmail: gallery.client.email,
+        subject: `Reminder: ${gallery.name}`,
+        status: EmailStatus.sent,
+      });
+
+      // Log to activity
+      await prisma.activityLog.create({
+        data: {
+          organizationId,
+          projectId: galleryId,
+          type: "email_sent",
+          description: `Manual reminder sent to ${gallery.client.email}`,
+          metadata: {
+            reminderType: "manual",
+            recipientEmail: gallery.client.email,
+            customMessage: options?.customMessage,
+          },
+        },
+      });
+
+      return {
+        success: true,
+        data: {
+          sentTo: gallery.client.email,
+          sentAt: new Date().toISOString(),
+        },
+      };
+    }
+
+    return { success: false, error: emailResult.error || "Failed to send email" };
+  } catch (error) {
+    console.error("[Gallery Reminders] Error sending manual reminder:", error);
+    return { success: false, error: "Failed to send reminder" };
+  }
+}
+
+/**
+ * Get reminder history for a gallery
+ */
+export async function getGalleryReminderHistory(galleryId: string) {
+  const organizationId = await getOrganizationId();
+  if (!organizationId) {
+    return { success: false, error: "Organization not found" };
+  }
+
+  try {
+    const reminders = await prisma.activityLog.findMany({
+      where: {
+        projectId: galleryId,
+        organizationId,
+        type: "email_sent",
+        OR: [
+          { description: { contains: "reminder" } },
+          { description: { contains: "Reminder" } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        description: true,
+        createdAt: true,
+        metadata: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: reminders.map((r) => {
+        const metadata = r.metadata as {
+          reminderType?: string;
+          recipientEmail?: string;
+          customMessage?: string;
+        } | null;
+        return {
+          id: r.id,
+          type: metadata?.reminderType || "auto",
+          sentAt: r.createdAt.toISOString(),
+          description: r.description,
+          recipientEmail: metadata?.recipientEmail || "Unknown",
+        };
+      }),
+    };
+  } catch (error) {
+    console.error("[Gallery Reminders] Error fetching history:", error);
+    return { success: false, error: "Failed to fetch reminder history" };
+  }
+}
+
+// =============================================================================
+// Expiration Management
+// =============================================================================
+
+/**
+ * Update gallery expiration date
+ */
+export async function updateGalleryExpiration(
+  galleryId: string,
+  expiresAt: Date | null
+) {
+  const organizationId = await getOrganizationId();
+  if (!organizationId) {
+    return { success: false, error: "Organization not found" };
+  }
+
+  try {
+    // Validate expiration date is in the future
+    if (expiresAt && isBefore(expiresAt, new Date())) {
+      return { success: false, error: "Expiration date must be in the future" };
+    }
+
+    await prisma.project.update({
+      where: { id: galleryId },
+      data: { expiresAt },
+    });
+
+    // Log the change
+    await prisma.activityLog.create({
+      data: {
+        organizationId,
+        projectId: galleryId,
+        type: "settings_updated",
+        description: expiresAt
+          ? `Gallery expiration set to ${expiresAt.toLocaleDateString()}`
+          : "Gallery expiration removed",
+        metadata: { expiresAt: expiresAt?.toISOString() },
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[Gallery Reminders] Error updating expiration:", error);
+    return { success: false, error: "Failed to update expiration" };
+  }
+}
+
+/**
+ * Extend gallery expiration by a number of days
+ */
+export async function extendGalleryExpiration(galleryId: string, days: number) {
+  const organizationId = await getOrganizationId();
+  if (!organizationId) {
+    return { success: false, error: "Organization not found" };
+  }
+
+  try {
+    const gallery = await prisma.project.findFirst({
+      where: { id: galleryId, organizationId },
+      select: { expiresAt: true },
+    });
+
+    if (!gallery) {
+      return { success: false, error: "Gallery not found" };
+    }
+
+    const baseDate =
+      gallery.expiresAt && isAfter(gallery.expiresAt, new Date())
+        ? gallery.expiresAt
+        : new Date();
+
+    const newExpiresAt = addDays(baseDate, days);
+
+    await prisma.project.update({
+      where: { id: galleryId },
+      data: { expiresAt: newExpiresAt },
+    });
+
+    // Log the extension
+    await prisma.activityLog.create({
+      data: {
+        organizationId,
+        projectId: galleryId,
+        type: "settings_updated",
+        description: `Gallery expiration extended by ${days} days`,
+        metadata: {
+          extendedBy: days,
+          newExpiresAt: newExpiresAt.toISOString(),
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: { expiresAt: newExpiresAt.toISOString() },
+    };
+  } catch (error) {
+    console.error("[Gallery Reminders] Error extending expiration:", error);
+    return { success: false, error: "Failed to extend expiration" };
+  }
+}
+
+/**
+ * Get galleries expiring soon
+ */
+export async function getExpiringGalleries(withinDays: number = 7) {
+  const organizationId = await getOrganizationId();
+  if (!organizationId) {
+    return { success: false, error: "Organization not found" };
+  }
+
+  try {
+    const today = startOfDay(new Date());
+    const endDate = addDays(today, withinDays);
+
+    const galleries = await prisma.project.findMany({
+      where: {
+        organizationId,
+        status: "delivered",
+        expiresAt: {
+          gte: today,
+          lte: endDate,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        expiresAt: true,
+        client: {
+          select: {
+            fullName: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: { assets: true },
+        },
+      },
+      orderBy: { expiresAt: "asc" },
+    });
+
+    return {
+      success: true,
+      data: galleries.map((g) => ({
+        id: g.id,
+        name: g.name,
+        expiresAt: g.expiresAt?.toISOString(),
+        daysUntilExpiration: g.expiresAt ? differenceInDays(g.expiresAt, today) : null,
+        client: g.client
+          ? { name: g.client.fullName, email: g.client.email }
+          : null,
+        photoCount: g._count.assets,
+      })),
+    };
+  } catch (error) {
+    console.error("[Gallery Reminders] Error fetching expiring galleries:", error);
+    return { success: false, error: "Failed to fetch expiring galleries" };
+  }
+}
+
+/**
+ * Get recently delivered galleries that haven't been viewed
+ */
+export async function getUnviewedGalleries(withinDays: number = 7) {
+  const organizationId = await getOrganizationId();
+  if (!organizationId) {
+    return { success: false, error: "Organization not found" };
+  }
+
+  try {
+    const cutoffDate = addDays(new Date(), -withinDays);
+
+    const galleries = await prisma.project.findMany({
+      where: {
+        organizationId,
+        status: "delivered",
+        deliveredAt: { gte: cutoffDate },
+        viewCount: 0,
+      },
+      select: {
+        id: true,
+        name: true,
+        deliveredAt: true,
+        client: {
+          select: {
+            fullName: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: { assets: true },
+        },
+      },
+      orderBy: { deliveredAt: "desc" },
+    });
+
+    return {
+      success: true,
+      data: galleries.map((g) => ({
+        id: g.id,
+        name: g.name,
+        deliveredAt: g.deliveredAt?.toISOString(),
+        daysSinceDelivery: g.deliveredAt
+          ? differenceInDays(new Date(), g.deliveredAt)
+          : null,
+        client: g.client
+          ? { name: g.client.fullName, email: g.client.email }
+          : null,
+        photoCount: g._count.assets,
+      })),
+    };
+  } catch (error) {
+    console.error("[Gallery Reminders] Error fetching unviewed galleries:", error);
+    return { success: false, error: "Failed to fetch unviewed galleries" };
+  }
+}
+
+/**
+ * Get gallery reminder status for a specific gallery
+ */
+export async function getGalleryReminderStatus(galleryId: string) {
+  const organizationId = await getOrganizationId();
+  if (!organizationId) {
+    return { success: false, error: "Organization not found" };
+  }
+
+  try {
+    const gallery = await prisma.project.findFirst({
+      where: { id: galleryId, organizationId },
+      select: {
+        reminderEnabled: true,
+        reminderCount: true,
+        lastReminderSentAt: true,
+        expiresAt: true,
+        deliveredAt: true,
+        viewCount: true,
+        downloadCount: true,
+      },
+    });
+
+    if (!gallery) {
+      return { success: false, error: "Gallery not found" };
+    }
+
+    const today = new Date();
+    const daysUntilExpiration = gallery.expiresAt
+      ? differenceInDays(gallery.expiresAt, today)
+      : null;
+    const daysSinceDelivery = gallery.deliveredAt
+      ? differenceInDays(today, gallery.deliveredAt)
+      : null;
+    const daysSinceLastReminder = gallery.lastReminderSentAt
+      ? differenceInDays(today, gallery.lastReminderSentAt)
+      : null;
+
+    return {
+      success: true,
+      data: {
+        reminderEnabled: gallery.reminderEnabled,
+        reminderCount: gallery.reminderCount,
+        maxReminders: MAX_REMINDERS,
+        lastReminderSentAt: gallery.lastReminderSentAt?.toISOString() || null,
+        daysSinceLastReminder,
+        expiresAt: gallery.expiresAt?.toISOString() || null,
+        daysUntilExpiration,
+        isExpiringSoon: daysUntilExpiration !== null && daysUntilExpiration <= 7,
+        daysSinceDelivery,
+        hasBeenViewed: gallery.viewCount > 0,
+        downloadCount: gallery.downloadCount,
+      },
+    };
+  } catch (error) {
+    console.error("[Gallery Reminders] Error fetching reminder status:", error);
+    return { success: false, error: "Failed to fetch reminder status" };
   }
 }

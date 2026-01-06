@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { duplicateBundle } from "@/lib/actions/bundles";
 import { useToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
+import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 
 interface BundleService {
   id: string;
@@ -41,14 +42,6 @@ interface BundleListProps {
   initialBundles: Bundle[];
 }
 
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
 
 const bundleTypeInfo = {
   fixed: { label: "Fixed", color: "bg-blue-500/10 text-blue-400" },

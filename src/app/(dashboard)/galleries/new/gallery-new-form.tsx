@@ -156,6 +156,7 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         password: accessType === "password" ? galleryPassword : null,
         expiresAt,
         allowDownloads,
+        downloadResolution: "both",
         showWatermark,
         allowFavorites,
         sendNotifications,

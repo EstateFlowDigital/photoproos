@@ -45,6 +45,7 @@ export function getActivityIcon(type: ActivityType): string {
     gallery_delivered: "send",
     gallery_viewed: "eye",
     gallery_paid: "currency",
+    photo_viewed: "eye",
     payment_received: "currency",
     payment_failed: "error",
     client_added: "user",
@@ -64,6 +65,7 @@ export function getActivityIcon(type: ActivityType): string {
     settings_updated: "settings",
     order_created: "cart",
     order_paid: "currency",
+    selections_submitted: "check",
   };
 
   return iconMap[type] || "info";

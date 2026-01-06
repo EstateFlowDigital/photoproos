@@ -23,6 +23,7 @@ import { createInvoice } from "@/lib/actions/invoices";
 import { createTaskFromGallery } from "@/lib/actions/projects";
 import { CollectionManager } from "@/components/gallery/collection-manager";
 import { AssignToCollectionModal } from "@/components/gallery/assign-to-collection-modal";
+import { AnalyticsDashboard } from "@/components/gallery/analytics-dashboard";
 import {
   DndContext,
   closestCenter,
@@ -1134,39 +1135,39 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={handleBatchFavorite}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] min-h-[40px]"
                   >
                     <HeartIcon className="h-4 w-4" />
-                    Favorite
+                    <span className="hidden sm:inline">Favorite</span>
                   </button>
                   <button
                     onClick={() => setShowAssignCollectionModal(true)}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] min-h-[40px]"
                   >
                     <FolderPlusIcon className="h-4 w-4" />
-                    Collection
+                    <span className="hidden sm:inline">Collection</span>
                   </button>
                   <button
                     onClick={handleSetCover}
                     disabled={selectedPhotos.size !== 1}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px]"
                   >
                     <StarIcon className="h-4 w-4" />
-                    Set as Cover
+                    <span className="hidden sm:inline">Set as Cover</span>
                   </button>
                   <button
                     onClick={handleBatchDownload}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] min-h-[40px]"
                   >
                     <DownloadIcon className="h-4 w-4" />
-                    Download
+                    <span className="hidden sm:inline">Download</span>
                   </button>
                   <button
                     onClick={handleBatchDelete}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-3 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 min-h-[40px]"
                   >
                     <TrashIcon className="h-4 w-4" />
-                    Delete
+                    <span className="hidden sm:inline">Delete</span>
                   </button>
                 </div>
               </div>
@@ -1194,7 +1195,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                       items={displayedPhotos.map(p => p.id)}
                       strategy={rectSortingStrategy}
                     >
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                         {displayedPhotos.map((photo) => (
                           <SortablePhotoItem
                             key={photo.id}
@@ -1207,7 +1208,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     </SortableContext>
                   </DndContext>
                 ) : (
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                     {displayedPhotos.map((photo, index) => (
                       <div
                         key={photo.id}
@@ -1412,189 +1413,12 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
-            <div className="space-y-6">
-              {gallery.status === "delivered" && analytics ? (
-                <>
-                  {/* Analytics Header */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-lg font-semibold text-foreground">Gallery Performance</h2>
-                      <p className="text-sm text-foreground-muted">
-                        Tracking since {new Date(gallery.deliveredAt || gallery.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleExportAnalytics}
-                      className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-                    >
-                      <ExportIcon className="h-4 w-4" />
-                      Export Report
-                    </button>
-                  </div>
-
-                  {/* Key Metrics */}
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)]/10">
-                          <EyeIcon className="h-4 w-4 text-[var(--primary)]" />
-                        </div>
-                        <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Total Views</span>
-                      </div>
-                      <p className="mt-3 text-3xl font-bold text-foreground">{analytics.totalViews}</p>
-                      <p className="mt-1 text-xs text-foreground-muted">
-                        {analytics.uniqueVisitors} unique visitors
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--success)]/10">
-                          <DownloadIcon className="h-4 w-4 text-[var(--success)]" />
-                        </div>
-                        <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Downloads</span>
-                      </div>
-                      <p className="mt-3 text-3xl font-bold text-foreground">{analytics.totalDownloads}</p>
-                      <p className="mt-1 text-xs text-foreground-muted">
-                        {Math.round((analytics.totalDownloads / photos.length) * 100)}% of photos
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--warning)]/10">
-                          <ClockIcon className="h-4 w-4 text-[var(--warning)]" />
-                        </div>
-                        <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Avg. Time</span>
-                      </div>
-                      <p className="mt-3 text-3xl font-bold text-foreground">
-                        {Math.floor(analytics.avgTimeOnPage / 60)}:{(analytics.avgTimeOnPage % 60).toString().padStart(2, "0")}
-                      </p>
-                      <p className="mt-1 text-xs text-foreground-muted">
-                        minutes on gallery
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10">
-                          <ChartIcon className="h-4 w-4 text-[var(--ai)]" />
-                        </div>
-                        <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Engagement</span>
-                      </div>
-                      <p className="mt-3 text-3xl font-bold text-foreground">
-                        {Math.round((analytics.totalDownloads / analytics.totalViews) * 100)}%
-                      </p>
-                      <p className="mt-1 text-xs text-foreground-muted">
-                        download rate
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Views Chart */}
-                  <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                    <h3 className="text-sm font-semibold text-foreground mb-4">Views Over Time</h3>
-                    <div className="flex items-end gap-2 h-32">
-                      {analytics.viewsByDay.map((day, i) => {
-                        const maxViews = Math.max(...analytics.viewsByDay.map(d => d.views));
-                        const height = (day.views / maxViews) * 100;
-                        return (
-                          <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                            <div
-                              className="w-full bg-[var(--primary)] rounded-t transition-all hover:bg-[var(--primary)]/80"
-                              style={{ height: `${height}%` }}
-                              title={`${day.views} views`}
-                            />
-                            <span className="text-xs text-foreground-muted">
-                              {new Date(day.date).toLocaleDateString("en-US", { weekday: "short" })}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Device Breakdown & Top Photos */}
-                  <div className="grid gap-6 lg:grid-cols-2">
-                    {/* Device Breakdown */}
-                    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                      <h3 className="text-sm font-semibold text-foreground mb-4">Device Breakdown</h3>
-                      <div className="space-y-3">
-                        {analytics.deviceBreakdown.map((device) => (
-                          <div key={device.device} className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--background)]">
-                              {device.device === "Desktop" ? (
-                                <DesktopIcon className="h-4 w-4 text-foreground-muted" />
-                              ) : device.device === "Mobile" ? (
-                                <MobileIcon className="h-4 w-4 text-foreground-muted" />
-                              ) : (
-                                <TabletIcon className="h-4 w-4 text-foreground-muted" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-foreground">{device.device}</span>
-                                <span className="text-sm font-medium text-foreground">{device.percentage}%</span>
-                              </div>
-                              <div className="h-1.5 rounded-full bg-[var(--background)]">
-                                <div
-                                  className="h-full rounded-full bg-[var(--primary)]"
-                                  style={{ width: `${device.percentage}%` }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Top Performing Photos */}
-                    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                      <h3 className="text-sm font-semibold text-foreground mb-4">Top Performing Photos</h3>
-                      <div className="space-y-3">
-                        {analytics.topPhotos.slice(0, 3).map((item, i) => {
-                          const photo = photos.find(p => p.id === item.photoId) || photos[i];
-                          return (
-                            <div key={item.photoId} className="flex items-center gap-3">
-                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--background)] text-xs font-medium text-foreground-muted">
-                                {i + 1}
-                              </span>
-                              {photo && (
-                                <img
-                                  src={photo.thumbnailUrl || photo.url}
-                                  alt={photo.filename}
-                                  className="h-10 w-14 rounded object-cover"
-                                />
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-foreground truncate">
-                                  {photo?.filename || `Photo ${i + 1}`}
-                                </p>
-                                <p className="text-xs text-foreground-muted">
-                                  {item.views} views • {item.downloads} downloads
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
-                  <ChartIcon className="mx-auto h-12 w-12 text-foreground-muted" />
-                  <h3 className="mt-4 text-lg font-medium text-foreground">Analytics Available After Delivery</h3>
-                  <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">
-                    Once you deliver this gallery to your client, you'll be able to track views, downloads, and engagement metrics.
-                  </p>
-                  <button
-                    onClick={handleDeliverGallery}
-                    className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
-                  >
-                    <SendIcon className="h-4 w-4" />
-                    Deliver Gallery
-                  </button>
-                </div>
-              )}
-            </div>
+            <AnalyticsDashboard
+              galleryId={gallery.id}
+              galleryName={gallery.name}
+              isDelivered={gallery.status === "delivered"}
+              onDeliverClick={handleDeliverGallery}
+            />
           )}
 
           {/* Settings Tab */}
@@ -1857,6 +1681,21 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
             </Link>
           </div>
 
+          {/* Delivery Readiness Checklist */}
+          {gallery.status !== "delivered" && (
+            <DeliveryReadinessChecklist
+              hasPhotos={photos.length > 0}
+              photoCount={photos.length}
+              hasClient={!!gallery.client.id}
+              clientName={gallery.client.name}
+              hasDeliveryLink={!!gallery.deliveryLink}
+              hasPrice={gallery.priceCents > 0}
+              priceCents={gallery.priceCents}
+              onDeliver={handleDeliverGallery}
+              isDelivering={isDelivering}
+            />
+          )}
+
           {/* Delivery Link */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div className="flex items-center justify-between mb-4">
@@ -1875,29 +1714,29 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   <LinkIcon className="h-4 w-4 text-foreground-muted shrink-0" />
                   <span className="truncate text-foreground-secondary">{gallery.deliveryLink}</span>
                 </div>
-                <div className="grid gap-2 grid-cols-3">
+                <div className="grid gap-2 grid-cols-1 sm:grid-cols-3">
                   <button
                     onClick={handleCopyLink}
-                    className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] min-h-[44px]"
                   >
                     <CopyIcon className="h-4 w-4" />
-                    Copy
+                    Copy Link
                   </button>
                   <button
                     onClick={handleGenerateQR}
-                    className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] min-h-[44px]"
                   >
                     <QRIcon className="h-4 w-4" />
-                    QR
+                    QR Code
                   </button>
                   <a
                     href={gallery.deliveryLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] min-h-[44px]"
                   >
                     <ExternalLinkIcon className="h-4 w-4" />
-                    Open
+                    Open Gallery
                   </a>
                 </div>
                 {gallery.deliveredAt && (
@@ -2254,5 +2093,192 @@ function SettingToggle({ label, description, enabled, onToggle }: SettingToggleP
         />
       </button>
     </div>
+  );
+}
+
+// Delivery Readiness Checklist Component
+interface DeliveryReadinessChecklistProps {
+  hasPhotos: boolean;
+  photoCount: number;
+  hasClient: boolean;
+  clientName: string;
+  hasDeliveryLink: boolean;
+  hasPrice: boolean;
+  priceCents: number;
+  onDeliver: () => void;
+  isDelivering: boolean;
+}
+
+function DeliveryReadinessChecklist({
+  hasPhotos,
+  photoCount,
+  hasClient,
+  clientName,
+  hasDeliveryLink,
+  hasPrice,
+  priceCents,
+  onDeliver,
+  isDelivering,
+}: DeliveryReadinessChecklistProps) {
+  const checklistItems = [
+    {
+      id: "photos",
+      label: "Photos uploaded",
+      description: hasPhotos ? `${photoCount} photo${photoCount !== 1 ? "s" : ""} ready` : "Upload at least one photo",
+      isComplete: hasPhotos,
+      isRequired: true,
+    },
+    {
+      id: "client",
+      label: "Client assigned",
+      description: hasClient ? clientName : "Assign a client to this gallery",
+      isComplete: hasClient,
+      isRequired: true,
+    },
+    {
+      id: "link",
+      label: "Delivery link generated",
+      description: hasDeliveryLink ? "Link ready to share" : "Generate a delivery link below",
+      isComplete: hasDeliveryLink,
+      isRequired: true,
+    },
+    {
+      id: "price",
+      label: "Gallery price set",
+      description: hasPrice ? `$${(priceCents / 100).toFixed(2)}` : "Optional - Set a price for pay-to-unlock",
+      isComplete: hasPrice,
+      isRequired: false,
+    },
+  ];
+
+  const requiredComplete = checklistItems.filter((item) => item.isRequired && item.isComplete).length;
+  const requiredTotal = checklistItems.filter((item) => item.isRequired).length;
+  const isReadyToDeliver = requiredComplete === requiredTotal;
+  const progress = Math.round((requiredComplete / requiredTotal) * 100);
+
+  return (
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Delivery Checklist</h2>
+          <p className="text-xs text-foreground-muted mt-0.5">
+            {isReadyToDeliver ? "Ready to deliver!" : `${requiredComplete}/${requiredTotal} required items complete`}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-16 h-2 rounded-full bg-[var(--background-hover)] overflow-hidden">
+            <div
+              className={cn(
+                "h-full transition-all duration-300",
+                isReadyToDeliver ? "bg-[var(--success)]" : "bg-[var(--primary)]"
+              )}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <span className="text-xs font-medium text-foreground-muted">{progress}%</span>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {checklistItems.map((item) => (
+          <div
+            key={item.id}
+            className={cn(
+              "flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors",
+              item.isComplete
+                ? "bg-[var(--success)]/5"
+                : item.isRequired
+                ? "bg-[var(--warning)]/5"
+                : "bg-[var(--background)]"
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full mt-0.5",
+                item.isComplete
+                  ? "bg-[var(--success)] text-white"
+                  : item.isRequired
+                  ? "border-2 border-[var(--warning)] text-[var(--warning)]"
+                  : "border-2 border-[var(--foreground-muted)] text-foreground-muted"
+              )}
+            >
+              {item.isComplete ? (
+                <CheckIcon className="h-3 w-3" />
+              ) : (
+                <span className="text-[10px] font-bold">{item.isRequired ? "!" : "?"}</span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className={cn(
+                  "text-sm font-medium",
+                  item.isComplete ? "text-foreground" : "text-foreground-secondary"
+                )}>
+                  {item.label}
+                </p>
+                {!item.isRequired && (
+                  <span className="rounded-full bg-[var(--background-hover)] px-1.5 py-0.5 text-[10px] font-medium text-foreground-muted">
+                    Optional
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-foreground-muted truncate">{item.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Deliver Button */}
+      <div className="mt-4 pt-4 border-t border-[var(--card-border)]">
+        <button
+          onClick={onDeliver}
+          disabled={!isReadyToDeliver || isDelivering}
+          className={cn(
+            "w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+            isReadyToDeliver
+              ? "bg-[var(--success)] text-white hover:bg-[var(--success)]/90"
+              : "bg-[var(--background-hover)] text-foreground-muted cursor-not-allowed"
+          )}
+        >
+          {isDelivering ? (
+            <>
+              <DeliveryLoadingSpinner />
+              Delivering...
+            </>
+          ) : (
+            <>
+              <SendIcon className="h-4 w-4" />
+              {isReadyToDeliver ? "Deliver Gallery" : "Complete checklist to deliver"}
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Loading Spinner Component for Delivery Checklist
+function DeliveryLoadingSpinner() {
+  return (
+    <svg
+      className="h-4 w-4 animate-spin"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
   );
 }

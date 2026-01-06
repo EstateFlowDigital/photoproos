@@ -10,8 +10,10 @@ import {
   createAccountLink,
   createDashboardLink,
 } from "@/lib/actions/stripe-connect";
-import { updateTaxSettings } from "@/lib/actions/settings";
+import { updateTaxSettings, updateCurrencySettings } from "@/lib/actions/settings";
+import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "@/lib/constants";
 import Link from "next/link";
+import { CurrencyIcon } from "@/components/dashboard";
 
 interface TaxSettings {
   defaultTaxRate: number;
@@ -21,11 +23,13 @@ interface TaxSettings {
 interface PaymentsSettingsClientProps {
   initialStatus: ConnectAccountDetails | null;
   initialTaxSettings: TaxSettings | null;
+  initialCurrency: SupportedCurrency;
 }
 
 export function PaymentsSettingsClient({
   initialStatus,
   initialTaxSettings,
+  initialCurrency,
 }: PaymentsSettingsClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -45,6 +49,10 @@ export function PaymentsSettingsClient({
     initialTaxSettings?.taxLabel ?? "Sales Tax"
   );
   const [savingTax, setSavingTax] = useState(false);
+
+  // Currency settings state
+  const [currency, setCurrency] = useState<SupportedCurrency>(initialCurrency);
+  const [savingCurrency, setSavingCurrency] = useState(false);
 
   // Handle OAuth return messages
   useEffect(() => {
@@ -142,6 +150,26 @@ export function PaymentsSettingsClient({
       setMessage({ type: "error", text: "Failed to save tax settings" });
     } finally {
       setSavingTax(false);
+    }
+  };
+
+  const handleSaveCurrency = async (newCurrency: SupportedCurrency) => {
+    setSavingCurrency(true);
+    setMessage(null);
+
+    try {
+      const result = await updateCurrencySettings({ currency: newCurrency });
+
+      if (result.success) {
+        setCurrency(newCurrency);
+        setMessage({ type: "success", text: "Currency updated successfully" });
+      } else {
+        setMessage({ type: "error", text: result.error || "Failed to update currency" });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Failed to update currency" });
+    } finally {
+      setSavingCurrency(false);
     }
   };
 
@@ -598,6 +626,54 @@ export function PaymentsSettingsClient({
         </form>
       </div>
 
+      {/* Currency Settings */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
+            <CurrencyIcon className="h-6 w-6 text-[var(--primary)]" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Currency Settings
+            </h2>
+            <p className="text-sm text-foreground-muted">
+              Set your default currency for invoices and pricing
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Default Currency
+            </label>
+            <div className="relative">
+              <select
+                value={currency}
+                onChange={(e) => handleSaveCurrency(e.target.value as SupportedCurrency)}
+                disabled={savingCurrency}
+                className="w-full appearance-none rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 pr-10 text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
+              >
+                {SUPPORTED_CURRENCIES.map((curr) => (
+                  <option key={curr.code} value={curr.code}>
+                    {curr.symbol} {curr.code} - {curr.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-foreground-muted" />
+              {savingCurrency && (
+                <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                  <LoadingSpinner />
+                </div>
+              )}
+            </div>
+            <p className="mt-1.5 text-xs text-foreground-muted">
+              This will be used as the default for new invoices, galleries, and pricing displays
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* How it Works */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">
@@ -822,6 +898,14 @@ function CreditCardIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M2.5 4A1.5 1.5 0 0 0 1 5.5v2h18v-2A1.5 1.5 0 0 0 17.5 4h-15ZM19 8.5H1v6A1.5 1.5 0 0 0 2.5 16h15a1.5 1.5 0 0 0 1.5-1.5v-6ZM3 13.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Zm4.75-.75a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5h-3.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
     </svg>
   );
 }

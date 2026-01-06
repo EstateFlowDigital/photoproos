@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
+import { formatCurrency } from "@/lib/utils/units";
 
 // Register Inter font
 Font.register({
@@ -391,28 +392,6 @@ export interface InvoicePdfProps {
   currency: string;
   payments: InvoicePayment[];
   accentColor: string;
-}
-
-function formatCurrency(cents: number, currency: string = "USD"): string {
-  // Get locale based on currency for proper formatting
-  const localeMap: Record<string, string> = {
-    USD: "en-US",
-    EUR: "de-DE",
-    GBP: "en-GB",
-    CAD: "en-CA",
-    AUD: "en-AU",
-    JPY: "ja-JP",
-    CHF: "de-CH",
-    MXN: "es-MX",
-  };
-  const locale = localeMap[currency] || "en-US";
-
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-    minimumFractionDigits: currency === "JPY" ? 0 : 2,
-    maximumFractionDigits: currency === "JPY" ? 0 : 2,
-  }).format(cents / 100);
 }
 
 function getStatusColor(status: string): { bg: string; text: string } {
