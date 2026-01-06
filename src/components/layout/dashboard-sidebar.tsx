@@ -4,11 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
-import { UserButton, OrganizationSwitcher, useUser, useOrganization } from "@clerk/nextjs";
+import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { getFilteredNavigation } from "@/lib/modules/gating";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { QuickThemeSwitcher } from "@/components/ui/quick-theme-switcher";
+import { useStableOrgProfile } from "@/hooks/use-stable-org-profile";
 
 interface NavItem {
   id: string;
@@ -36,8 +37,7 @@ export function DashboardSidebar({
   notificationCount = 0,
 }: DashboardSidebarProps) {
   const pathname = usePathname() || "";
-  const { user } = useUser();
-  const { organization } = useOrganization();
+  const { user, organization } = useStableOrgProfile();
 
   const navItems = getFilteredNavigation({
     enabledModules,
@@ -52,6 +52,25 @@ export function DashboardSidebar({
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
   const [identityOpen, setIdentityOpen] = React.useState(false);
   const [collapsed, setCollapsed] = React.useState(false);
+
+  const userDisplayName = React.useMemo(() => {
+    if (!user) return "Signed in";
+    const anyUser: any = user;
+    return (
+      anyUser.fullName ||
+      anyUser.username ||
+      anyUser.firstName ||
+      anyUser.emailAddress ||
+      "Signed in"
+    );
+  }, [user]);
+
+  const userSecondary = React.useMemo(() => {
+    const anyUser: any = user;
+    const email =
+      anyUser?.primaryEmailAddress?.emailAddress || anyUser?.emailAddress || null;
+    return organization?.name || email || "Workspace";
+  }, [organization, user]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -670,10 +689,10 @@ export function DashboardSidebar({
                 />
                 <div className="flex-1 min-w-0">
                   <p className="truncate text-sm font-semibold text-foreground">
-                    {user?.fullName || user?.username || "Signed in"}
+                    {userDisplayName}
                   </p>
                   <p className="truncate text-xs text-foreground-muted">
-                    {organization?.name || user?.primaryEmailAddress?.emailAddress || "Workspace"}
+                    {userSecondary}
                   </p>
                 </div>
                 <ChevronDown

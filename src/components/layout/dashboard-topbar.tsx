@@ -17,7 +17,8 @@ import {
 } from "@/lib/actions/notifications";
 import { globalSearch, type SearchResult as GlobalSearchResult } from "@/lib/actions/search";
 import { QuickActions, QUICK_ACTIONS } from "@/components/dashboard/quick-actions";
-import { useOrganization, useUser } from "@clerk/nextjs";
+import { useStableOrgProfile } from "@/hooks/use-stable-org-profile";
+import { getNotificationType } from "@/lib/constants";
 
 interface DashboardTopbarProps {
   className?: string;
@@ -58,31 +59,8 @@ function formatRelativeTime(date: Date): string {
   return new Date(date).toLocaleDateString();
 }
 
-// Map database notification types to UI types
-function mapNotificationType(dbType: string): string {
-  switch (dbType) {
-    case "payment_received":
-    case "invoice_paid": return "payment";
-    case "payment_failed": return "payment_failed";
-    case "gallery_viewed": return "view";
-    case "gallery_delivered": return "gallery";
-    case "contract_signed":
-    case "contract_sent": return "contract";
-    case "booking_confirmed":
-    case "booking_created": return "booking";
-    case "booking_cancelled": return "booking_cancelled";
-    case "booking_reminder": return "reminder";
-    case "invoice_overdue": return "expiring";
-    case "invoice_sent": return "invoice";
-    case "questionnaire_assigned":
-    case "questionnaire_reminder": return "questionnaire";
-    case "questionnaire_completed": return "questionnaire_done";
-    case "lead_received": return "lead";
-    case "client_added": return "client";
-    case "system": return "system";
-    default: return "system";
-  }
-}
+// Notification type mapping imported from @/lib/constants
+const mapNotificationType = getNotificationType;
 
 // Search result interface for display
 interface SearchResult {
@@ -111,8 +89,27 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
-  const { user } = useUser();
-  const { organization } = useOrganization();
+  const { user, organization } = useStableOrgProfile();
+
+  const userDisplayName = React.useMemo(() => {
+    if (!user) return "Workspace";
+    const anyUser: any = user;
+    return (
+      anyUser.fullName ||
+      anyUser.username ||
+      anyUser.firstName ||
+      anyUser.emailAddress ||
+      anyUser.primaryEmailAddress?.emailAddress ||
+      "Workspace"
+    );
+  }, [user]);
+
+  const userSecondary = React.useMemo(() => {
+    const anyUser: any = user;
+    const email =
+      anyUser?.primaryEmailAddress?.emailAddress || anyUser?.emailAddress || null;
+    return organization?.slug || email || "Signed in";
+  }, [organization, user]);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -484,7 +481,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
           >
             <UserIcon className="h-4 w-4" />
             <span className="hidden md:inline truncate max-w-[160px]">
-              {organization?.name || user?.fullName || "Workspace"}
+              {organization?.name || userDisplayName}
             </span>
             <ChevronDown
               className={cn(
@@ -497,10 +494,10 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
             <div className="absolute top-full left-1/2 mt-2 w-[min(440px,calc(100vw-16px))] -translate-x-1/2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl z-50 overflow-visible sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[clamp(260px,70vw,440px)]">
               <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <p className="text-sm font-semibold text-foreground truncate">
-                  {organization?.name || user?.fullName || "Workspace"}
+                  {organization?.name || userDisplayName}
                 </p>
                 <p className="text-xs text-foreground-muted truncate">
-                  {organization?.slug || user?.primaryEmailAddress?.emailAddress || "Signed in"}
+                  {userSecondary}
                 </p>
               </div>
               <div className="p-2 space-y-1">
