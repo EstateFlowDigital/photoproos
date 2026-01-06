@@ -8,6 +8,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Client Portal Sprint 1 Enhancements** - Major improvements to the client-facing portal experience
+  - **Smart Dashboard** - Priority action cards for unpaid invoices, pending questionnaires, and new galleries
+    - Time-based greetings ("Good morning/afternoon/evening")
+    - Contextual CTAs with Pay Now, Start/Continue, and Download buttons
+    - Visual indicators for urgency and status
+  - **Gallery Lightbox Viewer** - Full-screen photo browsing experience
+    - Keyboard navigation (arrow keys, ESC to close)
+    - Swipe gestures on mobile for navigation
+    - Zoom capability and loading states
+    - Download individual photos directly from lightbox
+    - Thumbnail strip for quick navigation
+    - Keyboard shortcuts displayed (← → Navigate, F Favorite, D Download)
+  - **Mobile Bottom Navigation** - Fixed bottom nav bar for mobile devices
+    - 5-tab navigation: Properties, Galleries, Downloads, Invoices, Forms
+    - Badge indicators for pending items (unpaid invoices, questionnaires)
+    - Active tab indicator with accent color
+    - Safe area inset support for notched devices
+  - **Notification Bell & Activity Feed** - Header notification system
+    - Dropdown panel with activity history
+    - Real-time notifications for gallery deliveries, invoice updates, questionnaire reminders
+    - Mark as read functionality (individual and all)
+    - Relative timestamps ("Just now", "2h ago", "3d ago")
+    - Persisted read state in localStorage
+  - **Photo Favorites System** - Heart button to mark favorite photos
+    - Favorites persisted per client in localStorage
+    - Favorite count displayed on gallery cards
+    - Favorites visible in lightbox with quick toggle
+    - Hover overlay for quick favoriting in thumbnail grid
+  - Created new components: ActionCards, Lightbox, MobileNav, NotificationBell
+  - Updated PortalHeader with notification bell integration
+  - Enhanced GalleriesTab with lightbox and favorites support
+  - Improved mobile responsiveness throughout portal
+
+- **Client Portal Roadmap Documentation** - Comprehensive enhancement roadmap at `docs/CLIENT_PORTAL_ROADMAP.md`
+  - Current state analysis with architecture overview
+  - 9 phases of planned improvements
+  - Implementation priority matrix
+  - Technical specifications including database models and API routes
+  - Success metrics for engagement and business outcomes
+
 - **Gallery Add-on Upsells** - Enable clients to request additional services directly from their gallery
   - New database models: `GalleryAddon` (catalog) and `GalleryAddonRequest` (requests)
   - New enums: `GalleryAddonCategory` (enhancement, virtual_staging, marketing, video, print, editing, removal, other) and `GalleryAddonRequestStatus`

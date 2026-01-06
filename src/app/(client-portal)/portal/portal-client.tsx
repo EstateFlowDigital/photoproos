@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   getGalleryZipDownload,
   getWebSizeDownload,
@@ -14,6 +14,8 @@ import {
   PortalStats,
   PortalTabs,
   PortalFooter,
+  ActionCards,
+  MobileNav,
   PropertiesTab,
   GalleriesTab,
   DownloadsTab,
@@ -38,6 +40,14 @@ interface PortalClientProps {
   questionnaires: QuestionnaireData[];
 }
 
+// Helper: Get time-based greeting
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export function PortalClient({ client, stats, properties, galleries, invoices, questionnaires }: PortalClientProps) {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<PortalTab>(
@@ -48,8 +58,65 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
   const [payingInvoice, setPayingInvoice] = useState<string | null>(null);
   const [downloadingInvoicePdf, setDownloadingInvoicePdf] = useState<string | null>(null);
 
+  // Favorites state (persisted to localStorage)
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(`portal_favorites_${client.id}`);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    }
+    return new Set();
+  });
+
+  // Calculate unpaid invoices count for mobile nav
+  const unpaidInvoicesCount = invoices.filter(
+    (inv) => inv.status !== "paid" && inv.status !== "draft"
+  ).length;
+
+  // Persist favorites to localStorage
+  useEffect(() => {
+    localStorage.setItem(
+      `portal_favorites_${client.id}`,
+      JSON.stringify(Array.from(favorites))
+    );
+  }, [favorites, client.id]);
+
   const displayName = client.fullName || client.email.split("@")[0];
   const firstName = displayName.split(" ")[0];
+  const greeting = getGreeting();
+
+  // Toggle favorite handler
+  const handleToggleFavorite = (photoId: string) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(photoId)) {
+        next.delete(photoId);
+        showToast("Removed from favorites", "info");
+      } else {
+        next.add(photoId);
+        showToast("Added to favorites", "success");
+      }
+      return next;
+    });
+  };
+
+  // Single photo download handler
+  const handlePhotoDownload = async (photo: { id: string; url: string; filename: string }) => {
+    try {
+      const response = await fetch(photo.url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = photo.filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      showToast("Photo downloaded", "success");
+    } catch {
+      showToast("Failed to download photo", "error");
+    }
+  };
 
   // Download handlers
   const handleZipDownload = async (galleryId: string) => {
@@ -229,64 +296,99 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <PortalHeader client={client} />
+    <div className="min-h-screen bg-[var(--background)] pb-20 md:pb-0">
+      <PortalHeader
+        client={client}
+        invoices={invoices}
+        questionnaires={questionnaires}
+        galleries={galleries}
+      />
 
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        {/* Welcome */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Welcome back, {firstName}</h1>
-          <p className="mt-1 text-[var(--foreground-secondary)]">View your property websites, galleries, and downloads</p>
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+        {/* Welcome with time-based greeting */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl font-bold text-white sm:text-2xl">
+            {greeting}, {firstName}
+          </h1>
+          <p className="mt-1 text-sm text-[var(--foreground-secondary)] sm:text-base">
+            View your property websites, galleries, and downloads
+          </p>
         </div>
+
+        {/* Action Cards - Priority items requiring attention */}
+        <ActionCards
+          invoices={invoices}
+          questionnaires={questionnaires}
+          galleries={galleries}
+          onPayInvoice={handleInvoicePayment}
+          onDownloadGallery={handleZipDownload}
+          payingInvoice={payingInvoice}
+          downloadingGallery={downloadingGallery}
+        />
 
         <PortalStats stats={stats} />
 
-        <PortalTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          pendingQuestionnaires={stats.pendingQuestionnaires}
-        />
-
-        {activeTab === "properties" && (
-          <PropertiesTab properties={properties} />
-        )}
-
-        {activeTab === "galleries" && (
-          <GalleriesTab
-            galleries={galleries}
-            downloadingGallery={downloadingGallery}
-            onDownload={handleZipDownload}
+        {/* Desktop Tabs - Hidden on mobile */}
+        <div className="hidden md:block">
+          <PortalTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            pendingQuestionnaires={stats.pendingQuestionnaires}
           />
-        )}
+        </div>
 
-        {activeTab === "downloads" && (
-          <DownloadsTab
-            galleries={galleries}
-            downloadingGallery={downloadingGallery}
-            downloadType={downloadType}
-            onZipDownload={handleZipDownload}
-            onWebSizeDownload={handleWebSizeDownload}
-            onHighResDownload={handleHighResDownload}
-            onMarketingKitDownload={handleMarketingKitDownload}
-          />
-        )}
+        {/* Tab Content */}
+        <div className="mt-6">
+          {activeTab === "properties" && <PropertiesTab properties={properties} />}
 
-        {activeTab === "invoices" && (
-          <InvoicesTab
-            invoices={invoices}
-            payingInvoice={payingInvoice}
-            downloadingInvoicePdf={downloadingInvoicePdf}
-            onPayment={handleInvoicePayment}
-            onPdfDownload={handleInvoicePdfDownload}
-          />
-        )}
+          {activeTab === "galleries" && (
+            <GalleriesTab
+              galleries={galleries}
+              downloadingGallery={downloadingGallery}
+              onDownload={handleZipDownload}
+              favorites={favorites}
+              onToggleFavorite={handleToggleFavorite}
+              onPhotoDownload={handlePhotoDownload}
+            />
+          )}
 
-        {activeTab === "questionnaires" && (
-          <QuestionnairesTab questionnaires={questionnaires} />
-        )}
+          {activeTab === "downloads" && (
+            <DownloadsTab
+              galleries={galleries}
+              downloadingGallery={downloadingGallery}
+              downloadType={downloadType}
+              onZipDownload={handleZipDownload}
+              onWebSizeDownload={handleWebSizeDownload}
+              onHighResDownload={handleHighResDownload}
+              onMarketingKitDownload={handleMarketingKitDownload}
+            />
+          )}
+
+          {activeTab === "invoices" && (
+            <InvoicesTab
+              invoices={invoices}
+              payingInvoice={payingInvoice}
+              downloadingInvoicePdf={downloadingInvoicePdf}
+              onPayment={handleInvoicePayment}
+              onPdfDownload={handleInvoicePdfDownload}
+            />
+          )}
+
+          {activeTab === "questionnaires" && (
+            <QuestionnairesTab questionnaires={questionnaires} />
+          )}
+        </div>
       </div>
 
       <PortalFooter />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        pendingQuestionnaires={stats.pendingQuestionnaires}
+        unpaidInvoices={unpaidInvoicesCount}
+      />
     </div>
   );
 }
