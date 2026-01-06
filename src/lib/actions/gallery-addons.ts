@@ -945,7 +945,7 @@ export async function declineAddonQuote(requestId: string, deliverySlug?: string
 /**
  * Get default add-ons for an industry (for seeding/onboarding)
  */
-export function getDefaultAddonsForIndustry(industry: ClientIndustry): GalleryAddonInput[] {
+export async function getDefaultAddonsForIndustry(industry: ClientIndustry): Promise<GalleryAddonInput[]> {
   const commonAddons: GalleryAddonInput[] = [
     {
       name: "Rush Delivery",

@@ -1,5 +1,4 @@
-import { PageHeader } from "@/components/layout/page-header";
-import { PageContextNav } from "@/components/layout/page-context-nav";
+import { PageHeader, PageContextNav } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";

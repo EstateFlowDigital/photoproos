@@ -39,6 +39,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated sidebar navigation with consolidated Billing section containing all billing-related pages
   - Renamed "Invoices" module to "Billing" in navigation
 
+### Fixed
+- **ActionResult Type Narrowing** - Fixed TypeScript type inference issues with ActionResult discriminated unions
+  - Changed `fail()` function to return specific error type `{ success: false; error: string }` instead of `ActionResult<T>` to prevent `void` from appearing in union types
+  - Fixed non-standard return patterns in `custom-forms.ts` to use `data` property consistently (e.g., `{ success: true, data: form }` instead of `{ success: true, form }`)
+  - Updated consumer code in `forms/page.tsx`, `forms/[id]/page.tsx`, `forms-page-client.tsx`, `form-editor-client.tsx` to use `result.data` instead of `result.form` or `result.field`
+  - Fixed error handling in `gallery-detail-client.tsx` to properly narrow types before accessing `.error` property
+  - Fixed dashboard page to properly check `success` before accessing `data` on `expiringGalleriesResult`
+- **Billing Reports Page** - Fixed import paths for PageHeader and PageContextNav components
+- **Gallery Add-ons** - Made `getDefaultAddonsForIndustry` function async to comply with "use server" requirements
+
 ### Changed
 - **Action Result Pattern Migration** - Completed migration of all multiline `{ success: true, data: ... }` patterns to use the `success()` helper function across all server actions
   - Migrated 40+ files in `src/lib/actions/`
