@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { ok } from "@/lib/types/action-result";
 
 export interface GalleryCollectionInput {
   name: string;

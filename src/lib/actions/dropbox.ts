@@ -9,7 +9,7 @@ import {
   type DropboxAccountInfo,
   type DropboxEntry,
 } from "@/lib/integrations/dropbox";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES

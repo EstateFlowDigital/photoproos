@@ -16,7 +16,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { nanoid } from "nanoid";
 import type Stripe from "stripe";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Helper Functions

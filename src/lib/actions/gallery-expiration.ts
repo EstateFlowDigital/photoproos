@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { addDays, differenceInDays } from "date-fns";
+import { ok } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
@@ -155,8 +156,8 @@ export async function getPendingExpirationNotifications() {
         name: string;
         expiresAt: Date;
         daysUntilExpiry: number;
-        clientEmail: string | undefined;
-        clientName: string | undefined;
+        clientEmail: string | null | undefined;
+        clientName: string | null | undefined;
         organizationName: string;
         deliverySlug: string;
       };

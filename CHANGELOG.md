@@ -8,17 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Proof Sheet Download** - Improved reliability for galleries with many photos
+  - Added photo limit (150 max) to prevent timeout and memory issues
+  - Increased concurrency for faster image processing
+  - Better error handling with detailed error messages
+  - Note added to PDF when photos are truncated
+- **Paylock Bypass Type** - Added `downloadRequiresPayment` to `getGallery()` response
+  - Removed type cast workaround in gallery page component
 - **Gallery Collections Bug** - Fixed collections not showing photos after assignment
   - Added missing `collectionId` field to the `getGallery()` response in `galleries.ts`
   - Cleaned up type cast workaround in gallery page component
 - **Gallery List View Bug** - Fixed CSS conflict in virtual scrolling table
   - Added `table-fixed` layout and proper `data-index` tracking for virtualizer
   - Fixed row styling conflicts between absolute positioning and table display
-- **TypeScript Type Inference Issues** - Fixed array type inference in multiple files:
+- **TypeScript Type Inference Issues** - Fixed all type inference and narrowing issues:
   - Fixed `generateTimeSlots()` and `generateTimeOptions()` functions with explicit array types
   - Fixed `orderData` type narrowing in invoices/new and scheduling/new pages
   - Fixed `monthlyRevenue` and `projectedMonths` array types in analytics actions
-  - Reduced TypeScript errors from 110 to 76 across the codebase
+  - Fixed `organization` variable type narrowing in onboarding page
+  - Fixed `service` variable type narrowing in service-selector component
+  - Fixed `pending` array type in gallery-expiration actions
+  - Fixed `results` and `errors` array types in email-sync cron route
+  - Fixed `installments` array type in payment-plans actions
+  - Fixed Map constructor tuple types in orders actions
+  - Fixed VoidActionResult return handling in stripe-product-sync actions
+  - Eliminated all 110+ TypeScript errors in the codebase
 
 ### Changed
 - **ActionResult Type Migration** - Consolidated server action return types for improved type safety:

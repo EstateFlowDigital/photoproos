@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { sendGalleryReminderEmail } from "@/lib/email/send";
+import { ok } from "@/lib/types/action-result";
 import { logEmailSent } from "@/lib/actions/email-logs";
 import { EmailStatus, EmailType } from "@prisma/client";
 import { addDays, differenceInDays, isBefore, isAfter, startOfDay } from "date-fns";

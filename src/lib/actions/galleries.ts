@@ -855,6 +855,7 @@ export async function getGallery(id: string) {
       allowDownloads: gallery.allowDownloads,
       showWatermark: gallery.showWatermark,
       downloadResolution: gallery.downloadResolution,
+      downloadRequiresPayment: gallery.downloadRequiresPayment,
       viewCount: gallery.viewCount,
       downloadCount: gallery.downloadCount,
       deliveredAt: gallery.deliveredAt,

@@ -73,7 +73,7 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
       watermarkEnabled: gallery.showWatermark,
       allowDownloads: gallery.allowDownloads,
       downloadResolution: (gallery.downloadResolution || "both") as "full" | "web" | "both",
-      downloadRequiresPayment: Boolean((gallery as unknown as { downloadRequiresPayment?: boolean }).downloadRequiresPayment ?? true),
+      downloadRequiresPayment: gallery.downloadRequiresPayment ?? true,
       expirationDate: gallery.expiresAt?.toISOString() || null,
       passwordProtected: !!gallery.password,
       allowFavorites: true,

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { getGalleryHeatMapData, getGalleryDownloadAnalytics, getDownloadHistory } from "./download-tracking";
+import { ok } from "@/lib/types/action-result";
 
 // =============================================================================
 // Helper Functions

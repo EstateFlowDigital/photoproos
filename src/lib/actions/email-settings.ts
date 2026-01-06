@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { ok } from "@/lib/types/action-result";
 
 const emailSettingsSchema = z.object({
   emailSenderName: z.string().max(100).optional().nullable(),

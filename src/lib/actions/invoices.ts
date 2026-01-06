@@ -8,7 +8,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import { Resend } from "resend";
 import { InvoiceReminderEmail } from "@/emails/invoice-reminder";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 
 // Lazy initialize Resend to avoid build errors

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
+import { ok } from "@/lib/types/action-result";
 
 // =============================================================================
 // Lead Scoring Configuration

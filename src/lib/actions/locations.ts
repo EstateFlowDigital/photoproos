@@ -13,7 +13,7 @@ import {
   getTravelInfo,
 } from "@/lib/google-maps/distance";
 import { GoogleMapsError } from "@/lib/google-maps/types";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID (simplified for now - will integrate with auth later)
 async function getOrganizationId(): Promise<string> {

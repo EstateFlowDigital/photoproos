@@ -1,6 +1,6 @@
 "use server";
 
-import type { VoidActionResult } from "@/lib/types/action-result";
+import { ok, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";

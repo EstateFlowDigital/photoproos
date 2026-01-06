@@ -1,7 +1,7 @@
 "use server";
 
 import { getResend, DEFAULT_FROM_EMAIL } from "@/lib/email/resend";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 /**
  * Subscribe to the newsletter
