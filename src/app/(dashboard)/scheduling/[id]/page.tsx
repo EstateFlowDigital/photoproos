@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { BookingActions, BookingWeather } from "./booking-actions";
 import { BookingDeleteAction } from "./booking-delete-action";
 import { BookingProjectAction } from "./booking-project-action";
+import { BookingCrewPanel } from "@/components/scheduling/booking-crew-panel";
 
 interface BookingDetailPageProps {
   params: Promise<{ id: string }>;
@@ -172,6 +173,9 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
               />
             </div>
           )}
+
+          {/* Crew */}
+          <BookingCrewPanel bookingId={booking.id} />
 
           {/* Date & Time */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">

@@ -3,8 +3,26 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import type { BookingCrewRole } from "@prisma/client";
+import type { BookingCrewRole, CapabilityLevel } from "@prisma/client";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+
+// Suggestion reason types
+type SuggestionReason =
+  | { type: "expert"; serviceName: string }
+  | { type: "capable"; serviceName: string }
+  | { type: "learning"; serviceName: string }
+  | { type: "available" }
+  | { type: "has_equipment"; equipmentNames: string[] };
+
+interface CrewSuggestion {
+  userId: string;
+  fullName: string | null;
+  email: string;
+  avatarUrl: string | null;
+  reasons: SuggestionReason[];
+  capabilityLevel: CapabilityLevel | null;
+  score: number; // Higher is better
+}
 
 interface AddCrewMemberInput {
   bookingId: string;
@@ -494,5 +512,225 @@ export async function getMyCrewAssignments(): Promise<ActionResult<{
   } catch (error) {
     console.error("Error getting crew assignments:", error);
     return fail("Failed to get assignments");
+  }
+}
+
+/**
+ * Get smart crew suggestions based on service, capabilities, and availability
+ */
+export async function getSmartCrewSuggestions(
+  bookingId: string
+): Promise<ActionResult<{ suggestions: CrewSuggestion[] }>> {
+  try {
+    const organizationId = await getOrganizationId();
+    if (!organizationId) {
+      return fail("Not authenticated");
+    }
+
+    // Get the booking with its service
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        organizationId,
+      },
+      select: {
+        id: true,
+        serviceId: true,
+        startTime: true,
+        endTime: true,
+        assignedUserId: true,
+        service: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return fail("Booking not found");
+    }
+
+    // Get all org members (excluding already assigned to this booking)
+    const existingCrew = await prisma.bookingCrew.findMany({
+      where: { bookingId },
+      select: { userId: true },
+    });
+
+    const excludeUserIds = new Set([
+      ...existingCrew.map((c) => c.userId),
+      booking.assignedUserId, // Exclude the primary assigned photographer
+    ].filter(Boolean) as string[]);
+
+    const orgMembers = await prisma.organizationMember.findMany({
+      where: {
+        organizationId,
+        userId: { notIn: Array.from(excludeUserIds) },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    // Get service capabilities for these users
+    const userIds = orgMembers.map((m) => m.user.id);
+
+    const capabilities = booking.serviceId
+      ? await prisma.userServiceCapability.findMany({
+          where: {
+            userId: { in: userIds },
+            serviceId: booking.serviceId,
+          },
+          include: {
+            service: { select: { name: true } },
+          },
+        })
+      : [];
+
+    const capabilityMap = new Map(
+      capabilities.map((c) => [
+        c.userId,
+        { level: c.level, serviceName: c.service.name },
+      ])
+    );
+
+    // Get required equipment for the service
+    const requiredEquipment = booking.serviceId
+      ? await prisma.serviceEquipmentRequirement.findMany({
+          where: {
+            serviceId: booking.serviceId,
+            isRequired: true,
+          },
+          include: {
+            equipment: { select: { id: true, name: true } },
+          },
+        })
+      : [];
+
+    const requiredEquipmentIds = requiredEquipment.map((r) => r.equipmentId);
+
+    // Get user equipment assignments
+    const userEquipment = requiredEquipmentIds.length > 0
+      ? await prisma.userEquipment.findMany({
+          where: {
+            userId: { in: userIds },
+            equipmentId: { in: requiredEquipmentIds },
+          },
+          include: {
+            equipment: { select: { name: true } },
+          },
+        })
+      : [];
+
+    // Group equipment by user
+    const userEquipmentMap = new Map<string, string[]>();
+    for (const ue of userEquipment) {
+      const existing = userEquipmentMap.get(ue.userId) || [];
+      existing.push(ue.equipment.name);
+      userEquipmentMap.set(ue.userId, existing);
+    }
+
+    // Check availability (no conflicting bookings)
+    const conflictingBookings = await prisma.booking.findMany({
+      where: {
+        organizationId,
+        status: { in: ["confirmed", "pending"] },
+        id: { not: bookingId },
+        OR: [
+          {
+            // Booking as primary photographer
+            assignedUserId: { in: userIds },
+          },
+        ],
+        // Time overlap check
+        startTime: { lt: booking.endTime },
+        endTime: { gt: booking.startTime },
+      },
+      select: { assignedUserId: true },
+    });
+
+    // Also check crew assignments on other bookings
+    const conflictingCrew = await prisma.bookingCrew.findMany({
+      where: {
+        userId: { in: userIds },
+        booking: {
+          status: { in: ["confirmed", "pending"] },
+          id: { not: bookingId },
+          startTime: { lt: booking.endTime },
+          endTime: { gt: booking.startTime },
+        },
+      },
+      select: { userId: true },
+    });
+
+    const unavailableUserIds = new Set([
+      ...conflictingBookings.map((b) => b.assignedUserId).filter(Boolean) as string[],
+      ...conflictingCrew.map((c) => c.userId),
+    ]);
+
+    // Build suggestions with scoring
+    const suggestions: CrewSuggestion[] = [];
+
+    for (const member of orgMembers) {
+      const user = member.user;
+      const reasons: SuggestionReason[] = [];
+      let score = 0;
+
+      // Check capability
+      const capability = capabilityMap.get(user.id);
+      if (capability) {
+        if (capability.level === "expert") {
+          reasons.push({ type: "expert", serviceName: capability.serviceName });
+          score += 100;
+        } else if (capability.level === "capable") {
+          reasons.push({ type: "capable", serviceName: capability.serviceName });
+          score += 50;
+        } else if (capability.level === "learning") {
+          reasons.push({ type: "learning", serviceName: capability.serviceName });
+          score += 10;
+        }
+      }
+
+      // Check equipment
+      const equipment = userEquipmentMap.get(user.id);
+      if (equipment && equipment.length > 0) {
+        reasons.push({ type: "has_equipment", equipmentNames: equipment });
+        score += equipment.length * 5;
+      }
+
+      // Check availability
+      if (!unavailableUserIds.has(user.id)) {
+        reasons.push({ type: "available" });
+        score += 25;
+      } else {
+        score -= 50; // Penalize unavailable users
+      }
+
+      suggestions.push({
+        userId: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        reasons,
+        capabilityLevel: capability?.level || null,
+        score,
+      });
+    }
+
+    // Sort by score descending
+    suggestions.sort((a, b) => b.score - a.score);
+
+    return success({ suggestions });
+  } catch (error) {
+    console.error("Error getting smart crew suggestions:", error);
+    return fail("Failed to get crew suggestions");
   }
 }

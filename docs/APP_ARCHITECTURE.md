@@ -500,6 +500,7 @@ src/lib/actions/
 | `/settings/my-referrals` | `src/app/(dashboard)/settings/my-referrals/page.tsx` | My referrals |
 | `/settings/developer` | `src/app/(dashboard)/settings/developer/page.tsx` | API & developer tools |
 | `/settings/features` | `src/app/(dashboard)/settings/features/page.tsx` | Feature flags |
+| `/settings/mls-presets` | `src/app/(dashboard)/settings/mls-presets/page.tsx` | MLS preset configuration |
 
 ---
 
@@ -797,7 +798,7 @@ src/components/sections/
 
 **Location:** `src/lib/actions/`
 
-### Core Domain (80+ files)
+### Core Domain (129 files total)
 ```
 ├── galleries.ts                   → Gallery CRUD, deliver, archive
 ├── invoices.ts                    → Invoice CRUD, send, mark paid
@@ -998,15 +999,22 @@ Dashboard Page
 
 | Category | Count |
 |----------|-------|
-| Total Pages | 169 |
-| Dashboard Routes | 89 |
-| Settings Routes | 27 |
-| Marketing Routes | 31 |
+| Total Pages | 192 |
+| Dashboard Routes (non-settings) | 99 |
+| Settings Routes | 35 |
+| Marketing Routes | 34 |
 | Client Portal Routes | 3 + tabs |
-| Public Routes | 14 |
-| API Routes | 20+ |
-| Server Actions | 80+ files |
+| Public Routes | 15 |
+| Field Routes | 2 |
+| Auth Routes | 3 |
+| Onboarding Routes | 1 |
+| API Routes | 58 |
+| Server Actions | 129 files |
+| Prisma Models | 157 |
+| Prisma Enums | 56 |
 | UI Components | 30+ |
 | Layout Components | 10+ |
 | Dashboard Components | 25+ |
 | Providers/Contexts | 8 |
+
+*Last verified: 2026-01-06 via [TRUTH_LEDGER.md](./TRUTH_LEDGER.md)*

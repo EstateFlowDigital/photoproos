@@ -7,7 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Invoice Attachment Storage Cleanup** - Deleting invoice attachments now properly removes files from R2 storage
+  - `deleteInvoiceAttachment` extracts file key from URL and deletes from Cloudflare R2
+  - `bulkDeleteInvoiceAttachments` now also cleans up storage files after database deletion
+  - Graceful error handling: storage deletion failures are logged but don't block the operation
+
 ### Added
+- **Booking Crew Management** - Full crew assignment system with smart suggestions
+  - **Server Actions** (`booking-crew.ts`):
+    - `getBookingCrew` - Fetch assigned crew members with roles and confirmation status
+    - `getAvailableCrewMembers` - Get org members available for assignment
+    - `addCrewMember` - Assign crew to booking with role
+    - `updateCrewMember` - Edit role, notes, and hourly rate
+    - `removeCrewMember` - Remove crew from booking
+    - `confirmCrewAssignment` - Crew member accepts assignment
+    - `declineCrewAssignment` - Crew member declines with reason
+    - `getMyCrewAssignments` - View personal upcoming crew assignments
+    - `getSmartCrewSuggestions` - AI-powered crew recommendations based on:
+      - Service capabilities (expert/capable/learning levels)
+      - Equipment assignments for service requirements
+      - Availability (no conflicting bookings)
+      - Scoring algorithm for ranked suggestions
+  - **Crew Panel Component** (`booking-crew-panel.tsx`):
+    - Display assigned crew with roles and confirmation status
+    - Add crew with smart suggestions or all members view
+    - Visual reason badges: skill level, availability, equipment
+    - "Top Match" indicator for high-scoring suggestions
+    - Edit crew role and notes
+    - Remove crew with confirmation
+  - **Booking Integration**:
+    - Crew panel added to booking detail page between Service Package and Schedule
+    - Real-time crew list updates
+
 - **Project Automation & Recurring Tasks** - Enable task workflow automation
   - Automation Rules Modal fully integrated with Projects board
     - Trigger types: task created, task moved, subtasks complete, due date passed, priority changed, assignee changed

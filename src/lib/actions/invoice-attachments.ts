@@ -11,6 +11,7 @@ import type { InvoiceAttachment } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { logActivity } from "@/lib/utils/activity";
+import { deleteFile, extractKeyFromUrl } from "@/lib/storage/r2";
 
 // ============================================================================
 // Types
@@ -211,7 +212,16 @@ export async function deleteInvoiceAttachment(
 
   revalidatePath("/invoices/" + existing.invoice.id);
 
-  // TODO: Delete the actual file from storage (S3/Cloudflare R2/etc)
+  // Delete the actual file from R2 storage
+  const fileKey = extractKeyFromUrl(existing.fileUrl);
+  if (fileKey) {
+    try {
+      await deleteFile(fileKey);
+    } catch (error) {
+      // Log but don't fail - the database record is already deleted
+      console.error("Failed to delete attachment file from storage:", error);
+    }
+  }
 
   return ok();
 }
@@ -230,6 +240,7 @@ export async function bulkDeleteInvoiceAttachments(
   let deleted = 0;
   let failed = 0;
   const invoiceIdsToRevalidate = new Set<string>();
+  const fileUrlsToDelete: string[] = [];
 
   for (const attachmentId of attachmentIds) {
     const existing = await prisma.invoiceAttachment.findUnique({
@@ -250,12 +261,27 @@ export async function bulkDeleteInvoiceAttachments(
       where: { id: attachmentId },
     });
 
+    // Track file URL for storage cleanup
+    fileUrlsToDelete.push(existing.fileUrl);
     invoiceIdsToRevalidate.add(existing.invoice.id);
     deleted++;
   }
 
   for (const invoiceId of invoiceIdsToRevalidate) {
     revalidatePath("/invoices/" + invoiceId);
+  }
+
+  // Delete actual files from R2 storage
+  for (const fileUrl of fileUrlsToDelete) {
+    const fileKey = extractKeyFromUrl(fileUrl);
+    if (fileKey) {
+      try {
+        await deleteFile(fileKey);
+      } catch (error) {
+        // Log but don't fail - the database records are already deleted
+        console.error("Failed to delete attachment file from storage:", error);
+      }
+    }
   }
 
   return success({ deleted, failed });
