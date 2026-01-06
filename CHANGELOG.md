@@ -8,6 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Client Portal Sprint 2 Enhancements** - Continued improvements to the client portal experience
+  - **Selective Photo Downloads** - Download specific photos instead of entire galleries
+    - Photo selection grid with checkboxes in Downloads tab
+    - Select All / Clear buttons for quick bulk selection
+    - Download count displayed on submit button
+    - Photo selection persists while browsing
+  - **Favorites Section in Downloads** - Quick access to favorited photos
+    - Dedicated favorites section at top of Downloads tab
+    - Thumbnail preview of favorited photos
+    - Download All Favorites button
+    - Shows count and gallery sources
+  - **Image Loading Optimization** - Smoother loading experience
+    - Blur placeholder during image load (shimmer effect)
+    - Generated base64 SVG placeholders
+    - Applied across galleries, lightbox, downloads, and properties tabs
+    - Utility functions: `shimmer()`, `toBase64()`, `getShimmerDataUrl()`
+  - **Enhanced Empty States** - Better visual feedback when content is missing
+    - Custom illustrated SVG icons for each content type
+    - Gradient backgrounds with decorative blur effects
+    - Helpful descriptions explaining what will appear
+    - Consistent styling across all portal tabs
+    - New `EmptyState` component with illustration variants
+  - **Skeleton Loaders** - Loading state placeholders for all content
+    - Individual skeletons for each card type (property, gallery, invoice, etc.)
+    - Full tab skeletons for initial page load
+    - Shimmer animation for visual feedback
+    - Exported for use in Suspense boundaries
+  - **Accessibility Enhancements** - Improved screen reader support
+    - ARIA roles on tab navigation (`role="tablist"`, `role="tab"`, `role="tabpanel"`)
+    - `aria-selected`, `aria-controls`, `aria-labelledby` attributes
+    - Proper tab indexing for keyboard navigation
+    - Badge notifications announced with `aria-label`
+    - Decorative elements marked with `aria-hidden`
+
 - **Client Portal Sprint 1 Enhancements** - Major improvements to the client-facing portal experience
   - **Smart Dashboard** - Priority action cards for unpaid invoices, pending questionnaires, and new galleries
     - Time-based greetings ("Good morning/afternoon/evening")

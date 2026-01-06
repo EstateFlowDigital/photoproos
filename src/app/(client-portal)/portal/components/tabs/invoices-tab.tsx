@@ -1,6 +1,7 @@
 "use client";
 
 import { ReceiptIcon, CreditCardIcon, DownloadIcon, LoadingSpinner } from "../icons";
+import { EmptyState } from "../empty-state";
 import { formatPrice, formatDate } from "../utils";
 import type { InvoiceData } from "../types";
 
@@ -21,13 +22,12 @@ export function InvoicesTab({
 }: InvoicesTabProps) {
   if (invoices.length === 0) {
     return (
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
-        <ReceiptIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
-        <p className="mt-4 text-lg font-medium text-white">No invoices yet</p>
-        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-          Your invoices will appear here
-        </p>
-      </div>
+      <EmptyState
+        icon={<ReceiptIcon className="h-12 w-12" />}
+        illustration="invoice"
+        title="No invoices yet"
+        description="Your invoices will appear here when your photographer sends them. You'll be able to view details, download PDFs, and pay securely online."
+      />
     );
   }
 

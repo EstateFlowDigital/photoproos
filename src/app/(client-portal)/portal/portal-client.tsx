@@ -386,7 +386,13 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
         </div>
 
         {/* Tab Content */}
-        <div className="mt-6">
+        <div
+          className="mt-6"
+          role="tabpanel"
+          id={`${activeTab}-panel`}
+          aria-labelledby={`${activeTab}-tab`}
+          tabIndex={0}
+        >
           {activeTab === "properties" && <PropertiesTab properties={properties} />}
 
           {activeTab === "galleries" && (

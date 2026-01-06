@@ -46,32 +46,51 @@ export function MobileNav({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--card-border)] bg-[var(--card)] pb-[env(safe-area-inset-bottom)] md:hidden">
-      <div className="grid h-16 grid-cols-5">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
-            className={`relative flex flex-col items-center justify-center gap-1 transition-colors ${
-              activeTab === tab.id
-                ? "text-[var(--primary)]"
-                : "text-[var(--foreground-muted)] hover:text-[var(--foreground-secondary)]"
-            }`}
-          >
-            <div className="relative">
-              {tab.icon}
-              {tab.badge !== undefined && tab.badge > 0 && (
-                <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--error)] px-1 text-[10px] font-bold text-white">
-                  {tab.badge > 9 ? "9+" : tab.badge}
-                </span>
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--card-border)] bg-[var(--card)] pb-[env(safe-area-inset-bottom)] md:hidden"
+      aria-label="Mobile navigation"
+    >
+      <div className="grid h-16 grid-cols-5" role="tablist">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const badgeLabel =
+            tab.badge !== undefined && tab.badge > 0
+              ? ` (${tab.badge} pending)`
+              : "";
+
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`${tab.id}-panel`}
+              aria-label={`${tab.label}${badgeLabel}`}
+              tabIndex={isActive ? 0 : -1}
+              className={`relative flex flex-col items-center justify-center gap-1 transition-colors ${
+                isActive
+                  ? "text-[var(--primary)]"
+                  : "text-[var(--foreground-muted)] hover:text-[var(--foreground-secondary)]"
+              }`}
+            >
+              <div className="relative" aria-hidden="true">
+                {tab.icon}
+                {tab.badge !== undefined && tab.badge > 0 && (
+                  <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--error)] px-1 text-[10px] font-bold text-white">
+                    {tab.badge > 9 ? "9+" : tab.badge}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] font-medium">{tab.label}</span>
+              {isActive && (
+                <span
+                  className="absolute left-1/2 top-0 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[var(--primary)]"
+                  aria-hidden="true"
+                />
               )}
-            </div>
-            <span className="text-[10px] font-medium">{tab.label}</span>
-            {activeTab === tab.id && (
-              <span className="absolute left-1/2 top-0 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[var(--primary)]" />
-            )}
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
     </nav>
   );

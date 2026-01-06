@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ImageIcon, DownloadIcon, LoadingSpinner } from "../icons";
 import { Lightbox } from "../lightbox";
+import { EmptyState } from "../empty-state";
 import { formatDate, BLUR_DATA_URL } from "../utils";
 import type { GalleryData } from "../types";
 
@@ -39,13 +40,12 @@ export function GalleriesTab({
 
   if (galleries.length === 0) {
     return (
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
-        <ImageIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
-        <p className="mt-4 text-lg font-medium text-white">No galleries yet</p>
-        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-          Your photo galleries will appear here once delivered
-        </p>
-      </div>
+      <EmptyState
+        icon={<ImageIcon className="h-12 w-12" />}
+        illustration="photos"
+        title="No galleries yet"
+        description="Your photo galleries will appear here once your photographer delivers them. You'll be able to view, favorite, and download your photos all in one place."
+      />
     );
   }
 

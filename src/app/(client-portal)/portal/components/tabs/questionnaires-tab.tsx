@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ClipboardIcon, CheckCircleIcon, ChevronRightIcon } from "../icons";
+import { EmptyState } from "../empty-state";
 import { formatDate } from "../utils";
 import type { QuestionnaireData } from "../types";
 
@@ -12,13 +13,12 @@ interface QuestionnairesTabProps {
 export function QuestionnairesTab({ questionnaires }: QuestionnairesTabProps) {
   if (questionnaires.length === 0) {
     return (
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
-        <ClipboardIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
-        <p className="mt-4 text-lg font-medium text-white">No questionnaires yet</p>
-        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-          Your photographer will send you questionnaires to complete before your shoot
-        </p>
-      </div>
+      <EmptyState
+        icon={<ClipboardIcon className="h-12 w-12" />}
+        illustration="questionnaire"
+        title="No questionnaires yet"
+        description="Your photographer will send you questionnaires to complete before your shoot. These help ensure they capture exactly what you need."
+      />
     );
   }
 

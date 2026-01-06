@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { HomeIcon, ExternalLinkIcon } from "../icons";
-import { formatPrice } from "../utils";
+import { formatPrice, BLUR_DATA_URL } from "../utils";
+import { EmptyState } from "../empty-state";
 import type { PropertyData } from "../types";
 
 interface PropertiesTabProps {
@@ -13,13 +14,12 @@ interface PropertiesTabProps {
 export function PropertiesTab({ properties }: PropertiesTabProps) {
   if (properties.length === 0) {
     return (
-      <div className="col-span-full rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
-        <HomeIcon className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
-        <p className="mt-4 text-lg font-medium text-white">No property websites yet</p>
-        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-          Property websites will appear here once created by your photographer
-        </p>
-      </div>
+      <EmptyState
+        icon={<HomeIcon className="h-12 w-12" />}
+        illustration="property"
+        title="No property websites yet"
+        description="Your dedicated property websites will appear here once your photographer creates them. Each property gets its own beautiful, shareable website to showcase your listing."
+      />
     );
   }
 
@@ -42,6 +42,8 @@ function PropertyCard({ property }: { property: PropertyData }) {
             alt={property.address}
             fill
             className="object-cover"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
           />
         ) : (
           <div className="flex h-full items-center justify-center">
