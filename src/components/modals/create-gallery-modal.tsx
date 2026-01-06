@@ -117,6 +117,7 @@ export function CreateGalleryModal({
           expiresAt: null,
           allowDownloads: true,
           downloadResolution: "both",
+          downloadRequiresPayment: true,
           showWatermark: false,
           allowFavorites: true,
           sendNotifications: true,

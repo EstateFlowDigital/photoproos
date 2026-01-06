@@ -157,6 +157,7 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         expiresAt,
         allowDownloads,
         downloadResolution: "both",
+        downloadRequiresPayment: true,
         showWatermark,
         allowFavorites,
         sendNotifications,

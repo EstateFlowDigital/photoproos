@@ -7,7 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Responsive Design Guidelines** - Created comprehensive documentation at `docs/RESPONSIVE_GUIDELINES.md`
+  - Breakpoint reference for all device sizes (sm, md, lg, xl, 2xl)
+  - Testing checklist for common device widths (iPhone SE to Desktop)
+  - Component patterns for stats grids, photo grids, header actions, tabs, tables
+  - Common mistakes to avoid and utility class documentation
+
+- **Download Payment Bypass Setting** - New gallery setting to allow downloads without payment
+  - Added `downloadRequiresPayment` field to Project model in Prisma schema
+  - Toggle in gallery settings panel to enable/disable payment requirement
+  - Allows free downloads even when gallery has a price set
+  - Useful for promotional galleries or client perks
+
 ### Changed
+- **Download Options UI** - Replaced plain radio inputs with styled card buttons
+  - Clear visual distinction with border, background, and checkmark icon for selected state
+  - Uses design system tokens for consistent theming
+  - Better accessibility with larger touch targets
+
+- **List Virtualization** - Added virtualization to large table views for performance
+  - Created `invoices-page-client.tsx` with virtualized table using @tanstack/react-virtual
+  - Created `payments-page-client.tsx` with virtualized table rendering
+  - Both pages now render only visible rows, improving performance with large datasets
+  - Sticky table headers for better UX during scrolling
+  - Max height container (70vh) with auto-scroll
+
 - **Error State Component Consolidation** - Created reusable ErrorState component
   - Created `@/components/dashboard/error-state.tsx` with configurable title, description, icon, and logging
   - Migrated 10 error.tsx files to use shared component (dashboard, galleries, clients, payments, services, invoices, scheduling, analytics, contracts, settings)
@@ -26,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed TypeScript error in projects-client.tsx with confirm dialog variant prop
 - Fixed SettingsIcon import in gallery-detail-client.tsx
+- Fixed TypeScript type cast error in projects.ts for subtasks template
 
 ### Added
 - **Streaming ZIP Downloads** - Refactored batch download API for large galleries

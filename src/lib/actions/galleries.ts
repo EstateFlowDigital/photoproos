@@ -197,6 +197,7 @@ export async function updateGallery(
         ...(updateData.allowDownloads !== undefined && { allowDownloads: updateData.allowDownloads }),
         ...(updateData.showWatermark !== undefined && { showWatermark: updateData.showWatermark }),
         ...(updateData.downloadResolution !== undefined && { downloadResolution: updateData.downloadResolution }),
+        ...(updateData.downloadRequiresPayment !== undefined && { downloadRequiresPayment: updateData.downloadRequiresPayment }),
       },
     });
 

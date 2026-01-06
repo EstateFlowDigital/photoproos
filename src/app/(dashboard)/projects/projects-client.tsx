@@ -1767,6 +1767,7 @@ function TaskDetailModal({
   onUpdateField,
   onAddSubtask,
   onToggleSubtask,
+  onSaveAsTemplate,
 }: {
   task: Task;
   teamMembers: TeamMember[];
@@ -1778,12 +1779,19 @@ function TaskDetailModal({
   onUpdateField: (field: string, value: string | Date | null) => void;
   onAddSubtask: (title: string) => void;
   onToggleSubtask: (subtaskId: string) => void;
+  onSaveAsTemplate: (name: string, category?: string) => Promise<boolean>;
 }) {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [localTitle, setLocalTitle] = useState(task.title);
   const [localDescription, setLocalDescription] = useState(task.description || "");
+
+  // Save as template state
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateCategory, setTemplateCategory] = useState("");
+  const [savingTemplate, setSavingTemplate] = useState(false);
 
   const handleSubmitSubtask = () => {
     if (!newSubtaskTitle.trim()) return;
@@ -2072,14 +2080,84 @@ function TaskDetailModal({
           )}
         </div>
 
+        {/* Save as Template Section */}
+        {showSaveTemplate && (
+          <div className="border-t border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
+            <h4 className="mb-3 text-sm font-medium text-foreground">Save as Template</h4>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs text-foreground-muted">Template Name *</label>
+                <input
+                  type="text"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  placeholder="e.g., Gallery Delivery Checklist"
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-foreground-muted">Category (optional)</label>
+                <input
+                  type="text"
+                  value={templateCategory}
+                  onChange={(e) => setTemplateCategory(e.target.value)}
+                  placeholder="e.g., Post-Production"
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => {
+                    setShowSaveTemplate(false);
+                    setTemplateName("");
+                    setTemplateCategory("");
+                  }}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!templateName.trim()) return;
+                    setSavingTemplate(true);
+                    const success = await onSaveAsTemplate(
+                      templateName.trim(),
+                      templateCategory.trim() || undefined
+                    );
+                    setSavingTemplate(false);
+                    if (success) {
+                      setShowSaveTemplate(false);
+                      setTemplateName("");
+                      setTemplateCategory("");
+                    }
+                  }}
+                  disabled={!templateName.trim() || savingTemplate}
+                  className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {savingTemplate ? "Saving..." : "Save Template"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="flex flex-col gap-2 border-t border-[var(--card-border)] p-4 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            onClick={onDelete}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/10"
-          >
-            Delete Task
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onDelete}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/10"
+            >
+              Delete Task
+            </button>
+            <button
+              onClick={() => setShowSaveTemplate(!showSaveTemplate)}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
+            >
+              <TemplateIcon className="h-4 w-4" />
+              Save as Template
+            </button>
+          </div>
           <button
             onClick={onClose}
             className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
@@ -2420,5 +2498,167 @@ function ColumnSettingsPopover({
         </div>
       </div>
     </div>
+  );
+}
+
+function TemplateIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+      />
+    </svg>
+  );
+}
+
+// Template Library Modal
+function TemplateLibraryModal({
+  templates,
+  loading,
+  onClose,
+  onSelectTemplate,
+}: {
+  templates: TaskTemplateData[];
+  loading: boolean;
+  onClose: () => void;
+  onSelectTemplate: (templateId: string) => void;
+}) {
+  // Group templates by category
+  const groupedTemplates = useMemo(() => {
+    const groups: Record<string, TaskTemplateData[]> = {};
+    templates.forEach((t) => {
+      const category = t.category || "Uncategorized";
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+      groups[category].push(t);
+    });
+    return groups;
+  }, [templates]);
+
+  const priorityConfig = {
+    urgent: { bg: "bg-[var(--error)]/10", text: "text-[var(--error)]" },
+    high: { bg: "bg-[var(--warning)]/10", text: "text-[var(--warning)]" },
+    medium: { bg: "bg-[var(--primary)]/10", text: "text-[var(--primary)]" },
+    low: { bg: "bg-[var(--foreground-muted)]/10", text: "text-foreground-muted" },
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div
+        className="relative max-h-[80vh] w-full max-w-lg overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Task Templates</h2>
+            <p className="text-sm text-foreground-muted">
+              Select a template to create a new task
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+          >
+            <XIcon className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="max-h-[60vh] overflow-auto p-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
+            </div>
+          ) : templates.length === 0 ? (
+            <div className="py-12 text-center">
+              <TemplateIcon className="mx-auto h-12 w-12 text-foreground-muted/50" />
+              <h3 className="mt-4 text-sm font-medium text-foreground">No templates yet</h3>
+              <p className="mt-1 text-sm text-foreground-muted">
+                Save a task as a template to get started
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(groupedTemplates).map(([category, categoryTemplates]) => (
+                <div key={category}>
+                  <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                    {category}
+                  </h3>
+                  <div className="space-y-2">
+                    {categoryTemplates.map((template) => (
+                      <button
+                        key={template.id}
+                        onClick={() => onSelectTemplate(template.id)}
+                        className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 text-left transition-colors hover:border-[var(--primary)] hover:bg-[var(--background-hover)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              {template.icon && (
+                                <span className="text-lg">{template.icon}</span>
+                              )}
+                              <h4 className="font-medium text-foreground truncate">
+                                {template.name}
+                              </h4>
+                              {template.isGlobal && (
+                                <span className="rounded-full bg-[var(--ai)]/10 px-2 py-0.5 text-xs text-[var(--ai)]">
+                                  System
+                                </span>
+                              )}
+                            </div>
+                            {template.description && (
+                              <p className="mt-1 text-sm text-foreground-muted line-clamp-2">
+                                {template.description}
+                              </p>
+                            )}
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <span
+                                className={cn(
+                                  "rounded px-1.5 py-0.5 text-xs font-medium",
+                                  priorityConfig[template.priority].bg,
+                                  priorityConfig[template.priority].text
+                                )}
+                              >
+                                {template.priority.charAt(0).toUpperCase() + template.priority.slice(1)}
+                              </span>
+                              {template.estimatedMinutes && (
+                                <span className="flex items-center gap-1 text-xs text-foreground-muted">
+                                  <ClockIcon className="h-3 w-3" />
+                                  {template.estimatedMinutes}m
+                                </span>
+                              )}
+                              {template.subtasks && (template.subtasks as unknown[]).length > 0 && (
+                                <span className="flex items-center gap-1 text-xs text-foreground-muted">
+                                  <ChecklistIcon className="h-3 w-3" />
+                                  {(template.subtasks as unknown[]).length} subtasks
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <ChevronRightIcon className="h-5 w-5 flex-shrink-0 text-foreground-muted" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
   );
 }

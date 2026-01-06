@@ -19,6 +19,7 @@ import {
   sendEmailReply,
   sendNewEmail,
 } from "@/lib/actions/email-sync";
+import { VirtualList } from "@/components/ui/virtual-list";
 import {
   Mail,
   Search,
@@ -440,8 +441,13 @@ export function InboxPageClient({
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-[var(--card-border)]">
-                {filteredThreads.map((thread) => (
+              <VirtualList
+                items={filteredThreads}
+                className="divide-y divide-[var(--card-border)]"
+                estimateSize={() => 92}
+                itemGap={0}
+                getItemKey={(thread) => thread.id}
+                renderItem={(thread) => (
                   <ThreadItem
                     key={thread.id}
                     thread={thread}
@@ -450,8 +456,8 @@ export function InboxPageClient({
                     onClick={() => handleSelectThread(thread)}
                     formatTimeAgo={formatTimeAgo}
                   />
-                ))}
-              </div>
+                )}
+              />
             )}
           </div>
         </div>

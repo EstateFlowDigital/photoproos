@@ -1711,7 +1711,7 @@ export async function createTaskTemplate(data: {
         priority: data.priority || "medium",
         tags: data.tags || [],
         estimatedMinutes: data.estimatedMinutes,
-        subtasks: data.subtasks || [],
+        subtasks: (data.subtasks || []) as unknown as object,
       },
     });
 
@@ -1774,7 +1774,7 @@ export async function saveTaskAsTemplate(
         subtasks: task.subtasks.map((s, i) => ({
           title: s.title,
           position: i,
-        })),
+        })) as unknown as object,
       },
     });
 
@@ -1858,7 +1858,7 @@ export async function createTaskFromTemplate(
     });
 
     // Create subtasks from template
-    const subtasks = (template.subtasks as SubtaskTemplate[]) || [];
+    const subtasks = (template.subtasks as unknown as SubtaskTemplate[]) || [];
     if (subtasks.length > 0) {
       await prisma.taskSubtask.createMany({
         data: subtasks.map((s, i) => ({
@@ -1918,7 +1918,7 @@ export async function updateTaskTemplate(
         ...(data.priority && { priority: data.priority }),
         ...(data.tags && { tags: data.tags }),
         ...(data.estimatedMinutes !== undefined && { estimatedMinutes: data.estimatedMinutes }),
-        ...(data.subtasks && { subtasks: data.subtasks }),
+        ...(data.subtasks && { subtasks: data.subtasks as unknown as object }),
       },
     });
 

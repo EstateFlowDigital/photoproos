@@ -145,6 +145,7 @@ interface GallerySettings {
   watermarkEnabled: boolean;
   allowDownloads: boolean;
   downloadResolution: "full" | "web" | "both";
+  downloadRequiresPayment: boolean;
   expirationDate: string | null;
   passwordProtected: boolean;
   allowFavorites: boolean;
@@ -198,6 +199,7 @@ const defaultSettings: GallerySettings = {
   watermarkEnabled: true,
   allowDownloads: true,
   downloadResolution: "both",
+  downloadRequiresPayment: true,
   expirationDate: null,
   passwordProtected: false,
   allowFavorites: true,
@@ -279,6 +281,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         allowDownloads: updatedSettings.allowDownloads,
         showWatermark: updatedSettings.watermarkEnabled,
         downloadResolution: updatedSettings.downloadResolution,
+        downloadRequiresPayment: updatedSettings.downloadRequiresPayment,
       });
 
       if (result.success) {
@@ -1702,6 +1705,13 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     enabled={settings.allowDownloads}
                     onToggle={() => handleToggleSetting("allowDownloads")}
                     isLoading={isSavingSetting === "allowDownloads"}
+                  />
+                  <SettingToggle
+                    label="Require Payment for Downloads"
+                    description="Block downloads until gallery payment is complete"
+                    enabled={settings.downloadRequiresPayment}
+                    onToggle={() => handleToggleSetting("downloadRequiresPayment")}
+                    isLoading={isSavingSetting === "downloadRequiresPayment"}
                   />
                   <SettingToggle
                     label="Password Protection"

@@ -86,6 +86,7 @@ export const gallerySchema = z.object({
   allowDownloads: z.boolean().default(true),
   showWatermark: z.boolean().default(false),
   downloadResolution: z.enum(["full", "web", "both"]).optional().default("both"),
+  downloadRequiresPayment: z.boolean().default(true),
   // Additional settings (stored in form but may need schema updates)
   allowFavorites: z.boolean().default(true),
   sendNotifications: z.boolean().default(true),

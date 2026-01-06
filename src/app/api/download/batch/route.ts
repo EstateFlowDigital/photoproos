@@ -187,11 +187,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check payment status (if gallery has a price)
+    // Check payment status (if gallery has a price and requires payment for downloads)
     const isPaid = gallery.payments.length > 0;
     const isFree = !gallery.priceCents || gallery.priceCents === 0;
+    const requiresPayment = (gallery as { downloadRequiresPayment?: boolean }).downloadRequiresPayment !== false;
 
-    if (!isFree && !isPaid) {
+    if (!isFree && !isPaid && requiresPayment) {
       return NextResponse.json(
         { error: "Payment required to download photos" },
         { status: 402 }

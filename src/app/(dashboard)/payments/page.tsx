@@ -5,19 +5,10 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import { ExportButton } from "./export-button";
 import { BulkPdfButton } from "./bulk-pdf-button";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
-
-// Helper to format date
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
+import { PaymentsPageClient } from "./payments-page-client";
 
 type FilterTab = "all" | "paid" | "pending" | "overdue";
 
@@ -191,81 +182,8 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
       </div>
 
       {/* Payments Table */}
-      {payments.length > 0 ? (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
-                  Description
-                </th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--card-border)]">
-              {payments.map((payment) => (
-                <tr
-                  key={payment.id}
-                  className="transition-colors hover:bg-[var(--background-hover)]"
-                >
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-foreground">
-                      {payment.project?.name || payment.description || "Payment"}
-                    </p>
-                    {payment.clientEmail && (
-                      <p className="text-sm text-foreground-muted">{payment.clientEmail}</p>
-                    )}
-                  </td>
-                  <td className="hidden px-6 py-4 text-sm text-foreground-muted md:table-cell">
-                    {formatDate(payment.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 text-right font-medium text-foreground">
-                    {formatCurrency(payment.amountCents)}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span
-                      className={cn(
-                        "inline-flex rounded-full px-2.5 py-1 text-xs font-medium uppercase",
-                        getStatusBadgeClasses(payment.status),
-                        payment.status === "refunded" && "line-through"
-                      )}
-                    >
-                      {formatStatusLabel(payment.status)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16 text-center">
-          <PaymentIcon className="mx-auto h-12 w-12 text-foreground-muted" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">No payments found</h3>
-          <p className="mt-2 text-sm text-foreground-muted">
-            {filter === "all"
-              ? "Payments will appear here once clients pay for galleries."
-              : `No ${filter} payments found.`}
-          </p>
-        </div>
-      )}
+      <PaymentsPageClient payments={payments} filter={filter} />
     </div>
-  );
-}
-
-function PaymentIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M2.5 4A1.5 1.5 0 0 0 1 5.5V6h18v-.5A1.5 1.5 0 0 0 17.5 4h-15ZM19 8.5H1v6A1.5 1.5 0 0 0 2.5 16h15a1.5 1.5 0 0 0 1.5-1.5v-6ZM3 13.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Zm4.75-.75a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5h-3.5Z" clipRule="evenodd" />
-    </svg>
   );
 }
 
