@@ -6,7 +6,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import type { RecurringFrequency, LineItemType } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 export interface RecurringInvoiceLineItem {
   itemType: LineItemType;

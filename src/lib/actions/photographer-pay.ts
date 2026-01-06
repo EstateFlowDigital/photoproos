@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { EarningStatus } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types

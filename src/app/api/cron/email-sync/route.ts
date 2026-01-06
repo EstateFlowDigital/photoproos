@@ -49,8 +49,22 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const results = [];
-    const errors = [];
+    const results: Array<{
+      success: boolean;
+      threadsProcessed: number;
+      messagesProcessed: number;
+      newThreads: number;
+      updatedThreads: number;
+      error?: string;
+      accountId: string;
+      email: string;
+      organization: string;
+    }> = [];
+    const errors: Array<{
+      accountId: string;
+      email: string;
+      error: string;
+    }> = [];
 
     for (const account of accounts) {
       try {

@@ -11,7 +11,7 @@ import {
   type CreateCatalogInput,
   type CreateProductInput,
 } from "@/lib/validations/products";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 export async function listProductCatalogs() {
   await requireAuth();

@@ -302,6 +302,51 @@ See `prisma/schema.prisma` for the complete schema.
 | `/api/gallery/comment` | POST/GET/DELETE | Manage gallery comments |
 | `/api/webhooks/stripe` | POST | Stripe webhook handler |
 | `/api/auth/client` | POST/GET | Client portal authentication |
+| `/api/cron/late-fees` | GET/POST | Late fee automation (cron) |
+
+## Cron Jobs
+
+PhotoProOS includes automated background jobs that should be scheduled to run periodically.
+
+### Late Fee Automation
+
+**Endpoint:** `GET /api/cron/late-fees`
+
+**Recommended Schedule:** Daily at midnight (00:00 UTC)
+
+**What it does:**
+1. Marks all invoices past their due date as "overdue"
+2. Applies late fees to invoices where late fees are enabled
+3. Prevents duplicate fees (30-day minimum between applications)
+
+**Railway Setup:**
+
+1. Create a new service in Railway with type "Cron Job"
+2. Configure the cron expression: `0 0 * * *` (daily at midnight)
+3. Set the command:
+   ```bash
+   curl -X GET "https://your-domain.railway.app/api/cron/late-fees" \
+     -H "Authorization: Bearer $CRON_SECRET"
+   ```
+4. Add `CRON_SECRET` environment variable (any secure random string)
+5. Add the same `CRON_SECRET` to your main app's environment variables
+
+**Manual Testing:**
+```bash
+curl -X GET "http://localhost:3000/api/cron/late-fees" \
+  -H "Authorization: Bearer your-cron-secret"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "overdueMarked": 5,
+  "lateFeesApplied": 3,
+  "totalFeesAppliedCents": 15000,
+  "totalFeesFormatted": "$150.00"
+}
+```
 
 ## Server Actions
 
@@ -375,6 +420,7 @@ RESEND_API_KEY
 NEXT_PUBLIC_APP_URL
 UPSTASH_REDIS_REST_URL
 UPSTASH_REDIS_REST_TOKEN
+CRON_SECRET
 ```
 
 ## Architecture Decisions

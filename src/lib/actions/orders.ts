@@ -265,8 +265,8 @@ export async function createOrderCheckoutSession(
         : [],
     ]);
 
-    const serviceMap = new Map(services.map((s) => [s.id, s]));
-    const bundleMap = new Map(bundles.map((b) => [b.id, b]));
+    const serviceMap = new Map(services.map((s) => [s.id, s] as const));
+    const bundleMap = new Map(bundles.map((b) => [b.id, b] as const));
 
     // Build line items for Stripe
     // Use Stripe Price ID when available and price matches, otherwise use inline price_data

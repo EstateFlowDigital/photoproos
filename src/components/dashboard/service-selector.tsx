@@ -550,7 +550,17 @@ interface ServiceDisplayProps {
 
 export function ServiceDisplay({ services, serviceId, customPrice, customDescription, className, editHref, showEditButton = true }: ServiceDisplayProps) {
   // First try to find in database services, then fall back to static services
-  let service = null;
+  type ServiceInfo = {
+    id: string;
+    name: string;
+    category: ServiceCategory;
+    description: string;
+    basePrice: number;
+    estimatedDuration: string;
+    deliverables: string[];
+  };
+
+  let service: ServiceInfo | null = null;
   if (serviceId) {
     if (services && services.length > 0) {
       const dbService = services.find((s) => s.id === serviceId);

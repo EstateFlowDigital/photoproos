@@ -85,7 +85,11 @@ export async function createPaymentPlan(input: CreatePaymentPlanInput) {
     });
 
     // Create scheduled installments
-    const installments = [];
+    const installments: Array<{
+      paymentPlanId: string;
+      amount: number;
+      dueDate: Date;
+    }> = [];
     let dueDate = startDate;
 
     for (let i = 0; i < input.installments; i++) {

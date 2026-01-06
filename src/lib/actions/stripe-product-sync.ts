@@ -74,7 +74,10 @@ export async function syncSingleProductToStripe(
       }
 
       const result = await syncServiceToStripe(service, organization.id);
-      return { success: result.success, error: result.error };
+      if (result.success) {
+        return { success: true, data: undefined };
+      }
+      return { success: false, error: result.error || "Failed to sync service" };
     } else {
       const bundle = await prisma.serviceBundle.findFirst({
         where: { id: productId, organizationId: organization.id },
@@ -85,7 +88,10 @@ export async function syncSingleProductToStripe(
       }
 
       const result = await syncBundleToStripe(bundle, organization.id);
-      return { success: result.success, error: result.error };
+      if (result.success) {
+        return { success: true, data: undefined };
+      }
+      return { success: false, error: result.error || "Failed to sync bundle" };
     }
   } catch (error) {
     return {
