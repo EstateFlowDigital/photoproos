@@ -51,6 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Custom date picker with min date validation
   - Immediate save on preset selection
 
+- **Gallery Settings Sync** - Full parity between gallery creation and edit forms
+  - Added `allowFavorites` and `allowComments` fields to Project model
+  - New gallery form includes all settings: download resolution, payment requirements, favorites, comments
+  - Gallery detail page loads actual `allowFavorites` and `allowComments` values from database
+  - All settings persist correctly when creating and updating galleries
+
 - **Questionnaires Search & Filters** - Enhanced questionnaires page with search and filtering
   - Search by template name, description, industry, client name, or email
   - Status filter pills (All, Pending, In Progress, Completed, Approved) with counts
@@ -58,24 +64,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Empty states for no results
 
 - **Contracts Search** - Added search functionality to contracts page
-  - Search by contract name, client name, company, email, or template name
-  - Results count indicator when filtering
-  - Clear search button
-  - Empty state for no results
 
-- **Forms Search & Filters** - Enhanced forms page with search, filters, and stats
+- **Clients Bulk Operations** - Enhanced bulk actions for client management
+  - Bulk delete with confirmation (skips clients with existing projects/bookings)
+  - Bulk industry assignment with dropdown menu
+  - Bulk tag assignment for quick organization
+  - Export selected clients to CSV
+  - New server actions: `bulkDeleteClients`, `bulkUpdateIndustry`, `bulkAssignTags`, `bulkRemoveTags`
+
+- **Forms Search & Filters** - Enhanced booking forms page with search and filtering
   - Search by form name, description, or linked portfolio
   - Status filter pills (All, Active, Inactive) with counts
-  - Summary stats cards (Total Forms, Active, Total Submissions)
-  - Clear filters button for quick reset
-  - Empty state for no matching results
+  - Summary stats cards (Total Forms, Active Forms, Total Submissions)
+  - Clear filters for quick reset
+  - Empty states for no results
 
-- **Products Search & Filters** - Enhanced product catalogs page with search, filters, and stats
+- **Products Search & Filters** - Enhanced product catalogs page with search and filtering
   - Search by catalog name, description, or tags
   - Status filter pills (All, Active, Draft, Archived) with counts
   - Summary stats cards (Total Catalogs, Active, Drafts, Total Products)
-  - Clear filters button for quick reset
-  - Empty state for no matching results
+  - Clear filters for quick reset
+  - Empty states for no results
+
+- **Invoice Presets** - Reusable line item templates for quick invoice creation
+  - New `InvoiceTemplate` model storing preset line items as JSON
+  - Server actions: `createInvoicePreset`, `getInvoiceDataFromPreset`, `listInvoicePresets`
+  - Categories, default terms/notes, usage tracking
+  - Duplicate presets with one click
+
+- **Estimates/Quotes System** - Full quote-to-invoice workflow
+  - New `Estimate` and `EstimateLineItem` models with status workflow
+  - Complete CRUD operations with line item management
+  - Client approval/rejection workflow with timestamps
+  - Convert approved estimates directly to invoices
+  - Estimate statistics and conversion rate tracking
+
+- **Invoice Cloning** - Duplicate invoices with one click
+  - New `cloneInvoice` function copies invoice and all line items
+  - Option to assign to different client
+  - Preserves notes, terms, and all line item details
+
+- **Invoice Batch Operations** - Bulk actions for invoice management
+  - `bulkSendInvoices` - Send multiple draft invoices at once
+  - `bulkMarkPaid` - Mark multiple invoices as paid
+  - `bulkDeleteInvoices` - Delete multiple draft invoices
+  - Error tracking and summary reporting
+
+- **Invoice Aging Report** - 30/60/90 day overdue tracking
+  - `getInvoiceAgingReport` returns invoices grouped by aging buckets
+  - Current, 1-30, 31-60, 61-90, and 90+ day buckets
+  - Per-invoice details with balance and days overdue
+  - Total overdue amounts and counts
+
+- **Invoice Bundling** - Combine multiple invoices into one
+  - `bundleInvoices` merges draft invoices for same client
+  - Preserves all line items with source invoice headers
+  - Original invoices are deleted after bundling
+
+- **Tax Reporting** - Financial summaries by date range
+  - `getTaxSummary` for paid invoices in date range
+  - Monthly breakdown of revenue and tax collected
+  - Useful for quarterly/annual tax filing
+
+- **Invoice Attachments** - File attachments on invoices
+  - New `InvoiceAttachment` model for supporting documents
+  - Server actions: `addInvoiceAttachment`, `getInvoiceAttachments`, `deleteInvoiceAttachment`
+  - Track file size, type, and descriptions
+
+- **Retainer/Prepaid Balance Tracking** - Client prepaid accounts
+  - New `ClientRetainer` and `RetainerTransaction` models
+  - Deposit, usage, refund, and adjustment transaction types
+  - Apply retainer balance to invoices
+  - Low balance threshold alerts
+  - Transaction history and statistics
+
+- **Payment Tips/Gratuity** - Optional tipping on payments
+  - New `tipAmountCents` field on Payment model
+  - `getTipStats` for tip analytics with monthly breakdown
+  - `getPaymentsWithTips` to list tipped payments
+  - `calculateSuggestedTips` helper for suggested amounts (15%, 18%, 20%, 25%)
+
+- **Invoice Branding Templates** - Renamed and separated from line item presets
+  - Renamed model to `InvoiceBrandingTemplate` for visual styling
+  - Separate from `InvoiceTemplate` (line item presets)
+  - Controls logo position, colors, fonts, header/footer text
 
 ### Changed
 - **Refactored error returns to use `fail()` helper** - Replaced ~2,200 occurrences of verbose `return { success: false, error: "..." }` pattern with the cleaner `fail("...")` helper function across 105 action files

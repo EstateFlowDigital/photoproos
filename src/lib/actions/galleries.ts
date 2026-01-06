@@ -105,6 +105,10 @@ export async function createGallery(
           expiresAt: validated.expiresAt,
           allowDownloads: validated.allowDownloads,
           showWatermark: validated.showWatermark,
+          downloadResolution: validated.downloadResolution,
+          downloadRequiresPayment: validated.downloadRequiresPayment,
+          allowFavorites: validated.allowFavorites,
+          allowComments: validated.allowComments,
         },
       });
 
@@ -195,6 +199,8 @@ export async function updateGallery(
         ...(updateData.showWatermark !== undefined && { showWatermark: updateData.showWatermark }),
         ...(updateData.downloadResolution !== undefined && { downloadResolution: updateData.downloadResolution }),
         ...(updateData.downloadRequiresPayment !== undefined && { downloadRequiresPayment: updateData.downloadRequiresPayment }),
+        ...(updateData.allowFavorites !== undefined && { allowFavorites: updateData.allowFavorites }),
+        ...(updateData.allowComments !== undefined && { allowComments: updateData.allowComments }),
       },
     });
 
@@ -856,6 +862,8 @@ export async function getGallery(id: string) {
       showWatermark: gallery.showWatermark,
       downloadResolution: gallery.downloadResolution,
       downloadRequiresPayment: gallery.downloadRequiresPayment,
+      allowFavorites: gallery.allowFavorites,
+      allowComments: gallery.allowComments,
       viewCount: gallery.viewCount,
       downloadCount: gallery.downloadCount,
       deliveredAt: gallery.deliveredAt,
@@ -1459,7 +1467,7 @@ export async function bulkToggleWatermark(
 
     revalidatePath(`/galleries/${projectId}`);
 
-    return ok({
+    return success({
       updated: result.count,
     });
   } catch (error) {
@@ -1500,7 +1508,7 @@ export async function getWatermarkExclusions(
       exclusions[asset.id] = asset.excludeFromWatermark;
     }
 
-    return ok(exclusions);
+    return success(exclusions);
   } catch (error) {
     console.error("Error fetching watermark exclusions:", error);
     return fail("Failed to fetch watermark settings");

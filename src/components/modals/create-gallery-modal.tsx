@@ -120,6 +120,7 @@ export function CreateGalleryModal({
           downloadRequiresPayment: true,
           showWatermark: false,
           allowFavorites: true,
+          allowComments: false,
           sendNotifications: true,
           services: selectedServices,
         });

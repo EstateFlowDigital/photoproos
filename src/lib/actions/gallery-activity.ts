@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { ok, fail } from "@/lib/types/action-result";
+import { ok, fail, success } from "@/lib/types/action-result";
 
 // =============================================================================
 // Helper Functions
@@ -158,7 +158,7 @@ export async function getGalleryActivityTimeline(
       prisma.payment.findMany({
         where: {
           projectId,
-          status: "completed",
+          status: "paid",
         },
         orderBy: { createdAt: "desc" },
         select: {
@@ -286,7 +286,7 @@ export async function getGalleryActivityTimeline(
     const paginatedEvents = events.slice(offset, offset + limit);
     const hasMore = events.length > offset + limit;
 
-    return ok({
+    return success({
       events: paginatedEvents,
       total: events.length,
       hasMore,
@@ -353,7 +353,7 @@ export async function getGalleryActivitySummary(projectId: string) {
       prisma.payment.aggregate({
         where: {
           projectId,
-          status: "completed",
+          status: "paid",
         },
         _sum: { amount: true },
       }),
@@ -371,7 +371,7 @@ export async function getGalleryActivitySummary(projectId: string) {
         .then((results) => results.length),
     ]);
 
-    return ok({
+    return success({
       views: viewCount,
       downloads: downloadCount,
       favorites: favoriteCount,

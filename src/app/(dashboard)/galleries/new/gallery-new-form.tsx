@@ -68,8 +68,11 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
   // Settings
   const [allowDownloads, setAllowDownloads] = useState(defaultTemplate?.allowDownloads ?? true);
   const [allowFavorites, setAllowFavorites] = useState(defaultTemplate?.allowFavorites ?? true);
+  const [allowComments, setAllowComments] = useState(false);
   const [showWatermark, setShowWatermark] = useState(defaultTemplate?.showWatermark ?? false);
   const [sendNotifications, setSendNotifications] = useState(defaultTemplate?.sendNotifications ?? true);
+  const [downloadResolution, setDownloadResolution] = useState<"full" | "web" | "both">("both");
+  const [downloadRequiresPayment, setDownloadRequiresPayment] = useState(true);
 
   // Expiration settings
   const [expirationType, setExpirationType] = useState<"never" | "30days" | "60days" | "90days" | "custom">(
@@ -156,10 +159,11 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         password: accessType === "password" ? galleryPassword : null,
         expiresAt,
         allowDownloads,
-        downloadResolution: "both",
-        downloadRequiresPayment: true,
+        downloadResolution,
+        downloadRequiresPayment,
         showWatermark,
         allowFavorites,
+        allowComments,
         sendNotifications,
         services: selectedService ? [{ serviceId: selectedService.id, isPrimary: true }] : [],
       });
@@ -440,15 +444,27 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         <div className="space-y-4">
           <ToggleSetting
             label="Allow Downloads"
-            description="Let clients download photos after payment"
+            description="Let clients download photos from the gallery"
             checked={allowDownloads}
             onChange={setAllowDownloads}
+          />
+          <ToggleSetting
+            label="Require Payment for Downloads"
+            description="Block downloads until gallery payment is complete"
+            checked={downloadRequiresPayment}
+            onChange={setDownloadRequiresPayment}
           />
           <ToggleSetting
             label="Allow Favorites"
             description="Let clients mark their favorite photos"
             checked={allowFavorites}
             onChange={setAllowFavorites}
+          />
+          <ToggleSetting
+            label="Allow Comments"
+            description="Let clients leave comments on photos"
+            checked={allowComments}
+            onChange={setAllowComments}
           />
           <ToggleSetting
             label="Show Watermarks"
@@ -463,6 +479,41 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
             onChange={setSendNotifications}
           />
         </div>
+
+        {/* Download Resolution Options */}
+        {allowDownloads && (
+          <div className="mt-6 pt-6 border-t border-[var(--card-border)]">
+            <label className="block text-sm font-medium text-foreground mb-3">Download Resolution</label>
+            <div className="space-y-2">
+              {[
+                { value: "full" as const, label: "Full Resolution Only", desc: "Clients can only download original files" },
+                { value: "web" as const, label: "Web Resolution Only", desc: "Clients can only download web-optimized files" },
+                { value: "both" as const, label: "Both Options", desc: "Clients can choose either resolution" },
+              ].map((option) => (
+                <label
+                  key={option.value}
+                  className={`flex items-start gap-3 cursor-pointer rounded-lg border p-3 transition-colors ${
+                    downloadResolution === option.value
+                      ? "border-[var(--primary)] bg-[var(--primary)]/5"
+                      : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="downloadResolution"
+                    checked={downloadResolution === option.value}
+                    onChange={() => setDownloadResolution(option.value)}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-foreground">{option.label}</div>
+                    <div className="text-xs text-foreground-muted">{option.desc}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Gallery Expiration Section */}

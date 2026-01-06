@@ -990,6 +990,8 @@ model Project {
   password                String?
   expiresAt               DateTime?
   allowDownloads          Boolean               @default(true)
+  allowFavorites          Boolean               @default(true)
+  allowComments           Boolean               @default(false)
   showWatermark           Boolean               @default(false)
   downloadResolution      GalleryDownloadOption @default(both)
   downloadRequiresPayment Boolean               @default(true) // If true, downloads require payment. If false, allow free downloads even when gallery has a price.

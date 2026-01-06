@@ -76,8 +76,9 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
       downloadRequiresPayment: gallery.downloadRequiresPayment ?? true,
       expirationDate: gallery.expiresAt?.toISOString() || null,
       passwordProtected: !!gallery.password,
-      allowFavorites: true,
-      allowComments: true,
+      password: gallery.password || null,
+      allowFavorites: gallery.allowFavorites ?? true,
+      allowComments: gallery.allowComments ?? false,
     },
     propertyWebsite: gallery.propertyWebsite,
     // Comments from the database

@@ -89,6 +89,7 @@ export const gallerySchema = z.object({
   downloadRequiresPayment: z.boolean().default(true),
   // Additional settings (stored in form but may need schema updates)
   allowFavorites: z.boolean().default(true),
+  allowComments: z.boolean().default(false),
   sendNotifications: z.boolean().default(true),
 });
 
