@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Gallery Collections Bug** - Fixed collections not showing photos after assignment
+  - Added missing `collectionId` field to the `getGallery()` response in `galleries.ts`
+  - Cleaned up type cast workaround in gallery page component
+- **Gallery List View Bug** - Fixed CSS conflict in virtual scrolling table
+  - Added `table-fixed` layout and proper `data-index` tracking for virtualizer
+  - Fixed row styling conflicts between absolute positioning and table display
+- **TypeScript Type Inference Issues** - Fixed array type inference in multiple files:
+  - Fixed `generateTimeSlots()` and `generateTimeOptions()` functions with explicit array types
+  - Fixed `orderData` type narrowing in invoices/new and scheduling/new pages
+  - Fixed `monthlyRevenue` and `projectedMonths` array types in analytics actions
+  - Reduced TypeScript errors from 110 to 76 across the codebase
+
 ### Changed
 - **ActionResult Type Migration** - Consolidated server action return types for improved type safety:
   - Migrated 59 action files to use the shared `ActionResult` type from `@/lib/types/action-result`

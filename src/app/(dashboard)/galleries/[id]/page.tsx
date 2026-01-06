@@ -53,7 +53,7 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
       thumbnailUrl: photo.thumbnailUrl,
       mediumUrl: photo.mediumUrl,
       filename: photo.filename,
-      collectionId: (photo as any).collectionId ?? null,
+      collectionId: photo.collectionId ?? null,
     })),
     deliveryLink: gallery.deliverySlug
       ? `${process.env.NEXT_PUBLIC_APP_URL || ""}/g/${gallery.deliverySlug}`

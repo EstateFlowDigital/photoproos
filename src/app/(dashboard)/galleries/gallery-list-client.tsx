@@ -730,10 +730,12 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                     return (
                       <tr
                         key={gallery.id}
+                        data-index={virtualRow.index}
                         ref={rowVirtualizer.measureElement}
                         onClick={() => isSelectMode && toggleGallerySelection(gallery.id)}
                         className={cn(
-                          "absolute left-0 right-0 table w-full transition-colors",
+                          "absolute left-0 right-0 w-full transition-colors",
+                          "table table-fixed",
                           isSelectMode && "cursor-pointer",
                           isSelectMode && selectedGalleries.has(gallery.id) && "bg-[var(--primary)]/5",
                           "border-b border-[var(--card-border)] hover:bg-[var(--background-hover)]"
