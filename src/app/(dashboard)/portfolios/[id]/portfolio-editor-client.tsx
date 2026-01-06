@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -17,15 +18,15 @@ import {
 } from "@/lib/actions/portfolio-websites";
 
 // Import tabs
-import { DesignTab } from "./tabs/design-tab";
-import { SectionsTab } from "./tabs/sections-tab";
-import { ProjectsTab } from "./tabs/projects-tab";
-import { AnalyticsTab } from "./tabs/analytics-tab";
-import { SettingsTab } from "./tabs/settings-tab";
-import { CommentsTab } from "./tabs/comments-tab";
-import { ABTestingTab } from "./tabs/ab-testing-tab";
-import { PreviewPanel } from "./components/preview-panel";
-import { QRCodeModal } from "./components/qr-code-modal";
+const DesignTab = dynamic(() => import("./tabs/design-tab").then((m) => m.DesignTab));
+const SectionsTab = dynamic(() => import("./tabs/sections-tab").then((m) => m.SectionsTab));
+const ProjectsTab = dynamic(() => import("./tabs/projects-tab").then((m) => m.ProjectsTab));
+const AnalyticsTab = dynamic(() => import("./tabs/analytics-tab").then((m) => m.AnalyticsTab));
+const SettingsTab = dynamic(() => import("./tabs/settings-tab").then((m) => m.SettingsTab));
+const CommentsTab = dynamic(() => import("./tabs/comments-tab").then((m) => m.CommentsTab));
+const ABTestingTab = dynamic(() => import("./tabs/ab-testing-tab").then((m) => m.ABTestingTab));
+const PreviewPanel = dynamic(() => import("./components/preview-panel").then((m) => m.PreviewPanel));
+const QRCodeModal = dynamic(() => import("./components/qr-code-modal").then((m) => m.QRCodeModal));
 
 // ============================================================================
 // TYPES

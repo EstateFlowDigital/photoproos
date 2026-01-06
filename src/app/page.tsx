@@ -1,27 +1,62 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { HeroSection } from "@/components/sections/hero";
-import { LogosSection } from "@/components/sections/logos";
-import { HowItWorksSection } from "@/components/sections/how-it-works";
-import { NoiseToKnowledgeSection } from "@/components/sections/noise-to-knowledge";
-import { FeaturesSection } from "@/components/sections/features";
-import { UseCasesSection } from "@/components/sections/use-cases";
-import { ComparisonSection } from "@/components/sections/comparison";
-import { IntegrationsSection } from "@/components/sections/integrations";
-import { ROICalculatorSection } from "@/components/sections/roi-calculator";
-import { PricingSection } from "@/components/sections/pricing";
-import { TestimonialsSection } from "@/components/sections/testimonials";
-import { SecuritySection } from "@/components/sections/security";
-import { RoadmapSection } from "@/components/sections/roadmap";
-import { FAQSection } from "@/components/sections/faq";
-import { CTASection } from "@/components/sections/cta";
-import { ScrollProgress, BackToTop } from "@/components/ui/scroll-progress";
-import { StickyCTA } from "@/components/ui/sticky-cta";
-import { ExitIntentPopup } from "@/components/ui/exit-intent-popup";
-import { SocialProofToast } from "@/components/ui/social-proof-toast";
-import { ChatWidget } from "@/components/ui/chat-widget";
+
+const HeroSection = dynamic(() => import("@/components/sections/hero").then((m) => m.HeroSection), {
+  loading: () => <div className="h-[600px]" aria-hidden />,
+});
+const LogosSection = dynamic(() => import("@/components/sections/logos").then((m) => m.LogosSection));
+const HowItWorksSection = dynamic(() =>
+  import("@/components/sections/how-it-works").then((m) => m.HowItWorksSection)
+);
+const NoiseToKnowledgeSection = dynamic(() =>
+  import("@/components/sections/noise-to-knowledge").then((m) => m.NoiseToKnowledgeSection)
+);
+const FeaturesSection = dynamic(() =>
+  import("@/components/sections/features").then((m) => m.FeaturesSection)
+);
+const UseCasesSection = dynamic(() =>
+  import("@/components/sections/use-cases").then((m) => m.UseCasesSection)
+);
+const ComparisonSection = dynamic(() =>
+  import("@/components/sections/comparison").then((m) => m.ComparisonSection)
+);
+const IntegrationsSection = dynamic(() =>
+  import("@/components/sections/integrations").then((m) => m.IntegrationsSection)
+);
+const ROICalculatorSection = dynamic(() =>
+  import("@/components/sections/roi-calculator").then((m) => m.ROICalculatorSection)
+);
+const PricingSection = dynamic(() =>
+  import("@/components/sections/pricing").then((m) => m.PricingSection)
+);
+const TestimonialsSection = dynamic(() =>
+  import("@/components/sections/testimonials").then((m) => m.TestimonialsSection)
+);
+const SecuritySection = dynamic(() =>
+  import("@/components/sections/security").then((m) => m.SecuritySection)
+);
+const RoadmapSection = dynamic(() =>
+  import("@/components/sections/roadmap").then((m) => m.RoadmapSection)
+);
+const FAQSection = dynamic(() => import("@/components/sections/faq").then((m) => m.FAQSection));
+const CTASection = dynamic(() => import("@/components/sections/cta").then((m) => m.CTASection));
+const ScrollProgress = dynamic(() =>
+  import("@/components/ui/scroll-progress").then((m) => m.ScrollProgress)
+);
+const BackToTop = dynamic(() =>
+  import("@/components/ui/scroll-progress").then((m) => m.BackToTop)
+);
+const StickyCTA = dynamic(() => import("@/components/ui/sticky-cta").then((m) => m.StickyCTA));
+const ExitIntentPopup = dynamic(() =>
+  import("@/components/ui/exit-intent-popup").then((m) => m.ExitIntentPopup)
+);
+const SocialProofToast = dynamic(() =>
+  import("@/components/ui/social-proof-toast").then((m) => m.SocialProofToast)
+);
+const ChatWidget = dynamic(() => import("@/components/ui/chat-widget").then((m) => m.ChatWidget));
 
 export default async function Home() {
   const { userId } = await auth();
