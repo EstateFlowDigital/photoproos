@@ -8,6 +8,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import { Resend } from "resend";
 import { InvoiceReminderEmail } from "@/emails/invoice-reminder";
+import { InvoiceSentEmail } from "@/emails/invoice-sent";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 
@@ -793,6 +794,133 @@ export async function calculateTravelFeeForInvoice(
       return fail(error.message);
     }
     return fail("Failed to calculate travel fee");
+  }
+}
+
+// ============================================================================
+// INVOICE SENDING
+// ============================================================================
+
+/**
+ * Send an invoice to a client via email
+ */
+export async function sendInvoice(
+  invoiceId: string
+): Promise<ActionResult<{ sent: boolean }>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        organizationId,
+      },
+      include: {
+        client: {
+          select: {
+            email: true,
+            fullName: true,
+          },
+        },
+        organization: {
+          select: {
+            name: true,
+            publicEmail: true,
+          },
+        },
+        lineItems: {
+          select: {
+            description: true,
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      return fail("Invoice not found");
+    }
+
+    if (invoice.status === "paid") {
+      return fail("Invoice is already paid");
+    }
+
+    const clientEmail = invoice.clientEmail || invoice.client?.email;
+    if (!clientEmail) {
+      return fail("No email address for client");
+    }
+
+    // Format due date
+    const formattedDueDate = new Date(invoice.dueDate).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    // Generate payment URL
+    const paymentUrl = invoice.paymentLinkUrl ||
+      `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoiceId}`;
+
+    // Create line items summary (first 3 items)
+    const lineItemsSummary = invoice.lineItems
+      .slice(0, 3)
+      .map((item) => item.description)
+      .join(", ");
+
+    // Send email using InvoiceSentEmail template
+    const emailResult = await getResend().emails.send({
+      from: process.env.EMAIL_FROM || "PhotoProOS <noreply@photoproos.com>",
+      to: clientEmail,
+      subject: `Invoice ${invoice.invoiceNumber} from ${invoice.organization.name}`,
+      react: InvoiceSentEmail({
+        clientName: invoice.clientName || invoice.client?.fullName || "there",
+        invoiceNumber: invoice.invoiceNumber,
+        paymentUrl,
+        amountCents: invoice.totalCents,
+        currency: invoice.currency,
+        photographerName: invoice.organization.name,
+        dueDate: formattedDueDate,
+        lineItemsSummary: lineItemsSummary + (invoice.lineItems.length > 3 ? "..." : ""),
+      }),
+    });
+
+    if (emailResult.error) {
+      console.error("Failed to send invoice:", emailResult.error);
+      return fail("Failed to send invoice email");
+    }
+
+    // Update invoice status to sent if it was draft
+    if (invoice.status === "draft") {
+      await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          status: "sent",
+          issueDate: new Date(),
+        },
+      });
+    }
+
+    // Log activity
+    await logActivity({
+      organizationId,
+      entityType: "invoice",
+      entityId: invoiceId,
+      action: "invoice_sent",
+      details: {
+        invoiceNumber: invoice.invoiceNumber,
+        clientEmail,
+      },
+    });
+
+    revalidatePath("/invoices");
+    revalidatePath(`/invoices/${invoiceId}`);
+
+    return success({ sent: true });
+  } catch (error) {
+    console.error("Error sending invoice:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to send invoice");
   }
 }
 
@@ -2260,22 +2388,15 @@ export async function bulkSendInvoices(
 
   for (const invoiceId of invoiceIds) {
     try {
-      const invoice = await prisma.invoice.findFirst({
-        where: { id: invoiceId, organizationId, status: "draft" },
-      });
+      // Use the sendInvoice function which handles email and status update
+      const result = await sendInvoice(invoiceId);
 
-      if (!invoice) {
+      if (!result.success) {
         failed++;
-        errors.push("Invoice " + invoiceId + " not found or not in draft status");
+        errors.push(result.error || "Failed to send invoice " + invoiceId);
         continue;
       }
 
-      await prisma.invoice.update({
-        where: { id: invoiceId },
-        data: { status: "sent" },
-      });
-
-      // TODO: Send email notification
       sent++;
     } catch (error) {
       failed++;

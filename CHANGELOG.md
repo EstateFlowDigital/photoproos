@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Graceful error handling: storage deletion failures are logged but don't block the operation
 
 ### Added
+- **Invoice Email Notifications** - Send invoices to clients via email
+  - New `sendInvoice` server action sends professional invoice emails using `InvoiceSentEmail` template
+  - Includes payment link, invoice details, line items summary, and due date
+  - Automatically updates invoice status from draft to sent
+  - `bulkSendInvoices` now properly sends emails for each invoice (was TODO)
+  - Activity logging for audit trail
+
 - **Outlook Email Disconnect** - Proper Outlook account disconnection for unified inbox
   - Created `src/lib/integrations/outlook.ts` with token refresh and disconnect functions
   - `disconnectOutlookAccount` properly signs out user from Microsoft and logs disconnection

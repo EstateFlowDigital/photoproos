@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
-import { MobileMenuButton } from "./mobile-nav";
+import { DashboardMenuButton } from "./dashboard-menu-button";
+import { DashboardSubnavPanel } from "./dashboard-subnav-panel";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
-import { getFilteredNavigation } from "@/lib/modules/gating";
 import { useTheme } from "@/components/theme-provider";
 import { enableNavGuard } from "@/lib/utils/nav-guard";
+import { buildDashboardNav } from "@/lib/navigation/dashboard-nav";
 
 interface AutoThemeConfig {
   enabled: boolean;
@@ -37,6 +38,15 @@ export function DashboardLayoutClient({
   const pathname = usePathname();
   const shellRef = useRef<HTMLDivElement | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navData = useMemo(
+    () =>
+      buildDashboardNav({
+        enabledModules,
+        industries,
+        notificationCount: unreadNotificationCount,
+      }),
+    [enabledModules, industries, unreadNotificationCount]
+  );
 
   const handleOpenMenu = useCallback(() => {
     setMobileMenuOpen(true);
@@ -326,12 +336,10 @@ export function DashboardLayoutClient({
       </a>
       {/* Unified Sidebar */}
       <div className="shell-sidebar">
-        <DashboardSidebar
-          enabledModules={enabledModules}
-          industries={industries}
-          notificationCount={unreadNotificationCount}
-        />
+        <DashboardSidebar navData={navData} />
       </div>
+
+      <DashboardSubnavPanel navData={navData} />
 
       {mobileMenuOpen ? (
         <>
@@ -342,9 +350,7 @@ export function DashboardLayoutClient({
           />
           <div className="shell-mobile-panel fixed inset-y-0 left-0 z-50">
             <DashboardSidebar
-              enabledModules={enabledModules}
-              industries={industries}
-              notificationCount={unreadNotificationCount}
+              navData={navData}
               variant="overlay"
               onClose={handleCloseMenu}
             />
@@ -357,11 +363,11 @@ export function DashboardLayoutClient({
         {/* Topbar with mobile menu button */}
         <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]">
           <div className="flex items-center gap-3 px-4 py-3 sm:h-16 sm:py-0 lg:px-6">
-            <MobileMenuButton onClick={handleOpenMenu} />
+            <DashboardMenuButton onClick={handleOpenMenu} />
             <div className="flex-1 min-w-0">
               <DashboardTopbar
                 className="border-0 px-0 py-0"
-                navLinks={getFilteredNavigation({ enabledModules, industries })}
+                navLinks={navData.items}
                 navMode="sidebar"
                 navAutoForced={false}
               />
