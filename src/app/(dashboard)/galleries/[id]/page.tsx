@@ -118,6 +118,10 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
           })),
         }
       : undefined,
+    // Selection settings
+    allowSelections: gallery.allowSelections,
+    selectionLimit: gallery.selectionLimit,
+    selectionsSubmitted: gallery.selectionsSubmitted,
   };
 
   return (

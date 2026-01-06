@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { impersonateClientPortal } from "@/lib/actions/clients";
 import { ClientSearch } from "./client-search";
 import { PageHeader, PageContextNav, UsersIcon, TagIcon } from "@/components/dashboard";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 // Industry display names
 const industryLabels: Record<string, string> = {
@@ -61,6 +62,16 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
   const { showToast } = useToast();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
+  const tableParentRef = useRef<HTMLDivElement | null>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: clients.length,
+    getScrollElement: () => tableParentRef.current,
+    estimateSize: () => 84,
+    overscan: 8,
+    getItemKey: (index) => clients[index]?.id ?? index,
+    measureElement: (el) => el?.getBoundingClientRect().height ?? 0,
+  });
 
   const handleClientCreated = (client: { id: string }) => {
     router.refresh();
@@ -153,7 +164,10 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
 
       {/* Clients Table */}
       {clients.length > 0 ? (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
+        <div
+          ref={tableParentRef}
+          className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] max-h-[70vh] overflow-auto"
+        >
           <table className="w-full min-w-[640px]">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
               <tr>
@@ -174,80 +188,93 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--card-border)]">
-              {clients.map((client) => (
-                <tr
-                  key={client.id}
-                  className="group relative transition-colors hover:bg-[var(--background-hover)] cursor-pointer"
-                >
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/clients/${client.id}`}
-                      className="absolute inset-0 z-0"
-                      aria-label={`View client: ${client.fullName || client.email}`}
-                    />
-                    <div className="relative z-10 pointer-events-none flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
-                        {(client.fullName || client.email).substring(0, 2).toUpperCase()}
+            <tbody
+              style={{
+                position: "relative",
+                height: rowVirtualizer.getTotalSize(),
+              }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const client = clients[virtualRow.index];
+                if (!client) return null;
+                return (
+                  <tr
+                    key={client.id}
+                    ref={rowVirtualizer.measureElement}
+                    className="group relative table w-full cursor-pointer transition-colors hover:bg-[var(--background-hover)]"
+                    style={{ transform: `translateY(${virtualRow.start}px)` }}
+                  >
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/clients/${client.id}`}
+                        className="absolute inset-0 z-0"
+                        aria-label={`View client: ${client.fullName || client.email}`}
+                      />
+                      <div className="pointer-events-none relative z-10 flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
+                          {(client.fullName || client.email).substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {client.fullName || client.email}
+                          </p>
+                          {client.company && (
+                            <p className="text-sm text-foreground-muted">{client.company}</p>
+                          )}
+                          {client.tags && client.tags.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {client.tags.map((tag) => (
+                                <span
+                                  key={tag.id}
+                                  className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                                  style={{ backgroundColor: tag.color || "#6b7280" }}
+                                >
+                                  {tag.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {client.fullName || client.email}
-                        </p>
-                        {client.company && (
-                          <p className="text-sm text-foreground-muted">{client.company}</p>
+                    </td>
+                    <td className="hidden px-6 py-4 md:table-cell">
+                      <span className="relative z-10 pointer-events-none inline-flex rounded-full bg-[var(--background-secondary)] px-2.5 py-1 text-xs font-medium text-foreground-secondary">
+                        {industryLabels[client.industry] || client.industry}
+                      </span>
+                    </td>
+                    <td className="hidden px-6 py-4 text-sm text-foreground-muted lg:table-cell">
+                      <span className="relative z-10 pointer-events-none">{client._count.projects} projects</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span
+                        className={cn(
+                          "relative z-10 pointer-events-none font-medium",
+                          client.lifetimeRevenueCents > 0
+                            ? "text-[var(--success)]"
+                            : "text-foreground-muted"
                         )}
-                        {client.tags && client.tags.length > 0 && (
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {client.tags.map((tag) => (
-                              <span
-                                key={tag.id}
-                                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-white"
-                                style={{ backgroundColor: tag.color || "#6b7280" }}
-                              >
-                                {tag.name}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="hidden px-6 py-4 md:table-cell">
-                    <span className="relative z-10 pointer-events-none inline-flex rounded-full bg-[var(--background-secondary)] px-2.5 py-1 text-xs font-medium text-foreground-secondary">
-                      {industryLabels[client.industry] || client.industry}
-                    </span>
-                  </td>
-                  <td className="hidden px-6 py-4 text-sm text-foreground-muted lg:table-cell">
-                    <span className="relative z-10 pointer-events-none">{client._count.projects} projects</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className={cn(
-                      "relative z-10 pointer-events-none font-medium",
-                      client.lifetimeRevenueCents > 0
-                        ? "text-[var(--success)]"
-                        : "text-foreground-muted"
-                    )}>
-                      {formatCurrency(client.lifetimeRevenueCents)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="relative z-10 flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleImpersonate(client.id)}
-                        disabled={impersonatingId === client.id}
-                        className="inline-flex items-center gap-1 rounded-md border border-[var(--card-border)] px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
-                        aria-label={`View ${client.fullName || client.email} portal`}
                       >
-                        <PortalIcon className="h-3.5 w-3.5 text-foreground-muted" />
-                        {impersonatingId === client.id ? "Opening..." : "Portal"}
-                      </button>
-                      <ChevronRightIcon className="h-4 w-4 text-foreground-muted group-hover:text-foreground transition-colors" />
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {formatCurrency(client.lifetimeRevenueCents)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="relative z-10 flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleImpersonate(client.id)}
+                          disabled={impersonatingId === client.id}
+                          className="inline-flex items-center gap-1 rounded-md border border-[var(--card-border)] px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+                          aria-label={`View ${client.fullName || client.email} portal`}
+                        >
+                          <PortalIcon className="h-3.5 w-3.5 text-foreground-muted" />
+                          {impersonatingId === client.id ? "Opening..." : "Portal"}
+                        </button>
+                        <ChevronRightIcon className="h-4 w-4 text-foreground-muted transition-colors group-hover:text-foreground" />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

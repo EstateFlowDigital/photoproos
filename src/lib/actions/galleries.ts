@@ -1249,6 +1249,9 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       isPaid,
       allowDownload: canDownload,
       allowFavorites: true, // Default true for now
+      allowSelections: project.allowSelections,
+      selectionLimit: project.selectionLimit,
+      selectionsSubmitted: project.selectionsSubmitted,
       showWatermark: project.showWatermark,
       // Branding colors
       primaryColor: org.primaryColor || "#3b82f6",

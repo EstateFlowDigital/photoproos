@@ -183,6 +183,9 @@ interface Gallery {
   teamMembers?: { id: string; name: string; role: string; avatarUrl?: string }[];
   comments?: PhotoComment[];
   invoices?: InvoiceItem[];
+  allowSelections?: boolean;
+  selectionLimit?: number | null;
+  selectionsSubmitted?: boolean;
 }
 
 interface GalleryDetailClientProps {
@@ -200,7 +203,7 @@ const defaultSettings: GallerySettings = {
   allowComments: false,
 };
 
-type TabType = "photos" | "collections" | "activity" | "analytics" | "settings" | "invoices";
+type TabType = "photos" | "collections" | "selections" | "activity" | "analytics" | "settings" | "invoices";
 
 export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const { showToast } = useToast();
@@ -1020,7 +1023,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           {/* Tabs Navigation */}
           <div className="border-b border-[var(--card-border)] -mx-4 px-4 sm:mx-0 sm:px-0">
             <nav className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-px" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {(["photos", "collections", "activity", "analytics", "settings", "invoices"] as TabType[]).map((tab) => (
+              {(["photos", "collections", "selections", "activity", "analytics", "settings", "invoices"] as TabType[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -1414,6 +1417,67 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
             )}
           </div>
             </>
+          )}
+
+          {/* Selections Tab */}
+          {activeTab === "selections" && (
+            <div className="space-y-6">
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Client Selections</h2>
+                    <p className="text-sm text-foreground-muted">
+                      {gallery.selectionsSubmitted
+                        ? "Client has submitted their photo selections"
+                        : gallery.allowSelections
+                        ? "Waiting for client to submit their selections"
+                        : "Photo selections are disabled for this gallery"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {gallery.selectionsSubmitted && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1.5 text-xs font-medium text-green-400">
+                        <CheckIcon className="h-3.5 w-3.5" />
+                        Submitted
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Selection settings summary */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
+                    <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Selection Limit</p>
+                    <p className="mt-1 text-lg font-bold text-foreground">
+                      {gallery.selectionLimit ?? "Unlimited"}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
+                    <p className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Status</p>
+                    <p className="mt-1 text-lg font-bold text-foreground">
+                      {gallery.allowSelections ? "Enabled" : "Disabled"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Info about selections */}
+                <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] p-4">
+                  <p className="text-sm text-foreground-muted">
+                    Client selections allow your clients to choose their favorite photos for further editing, printing, or albums.
+                    When enabled, clients can select photos from the gallery and submit their choices for your review.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setActiveTab("settings")}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                    >
+                      <SettingsIcon className="h-3.5 w-3.5" />
+                      Manage Selection Settings
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Activity Tab */}

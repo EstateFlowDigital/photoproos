@@ -4,6 +4,13 @@ import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { PayButton } from "./pay-button";
+import {
+  getClientSelections,
+  toggleSelection,
+  updateSelectionNotes,
+  submitSelections,
+  resetSelections,
+} from "@/lib/actions/client-selections";
 import { SlideshowViewer } from "@/components/gallery/slideshow-viewer";
 import {
   HeartIcon,
@@ -97,6 +104,9 @@ interface GalleryData {
   isPaid: boolean;
   allowDownload: boolean;
   allowFavorites: boolean;
+  allowSelections: boolean;
+  selectionLimit: number | null;
+  selectionsSubmitted: boolean;
   showWatermark: boolean;
   primaryColor: string;
   secondaryColor: string;
@@ -168,6 +178,10 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
   const [showSelectionPanel, setShowSelectionPanel] = useState(false);
+  const [selectionNotes, setSelectionNotes] = useState<Record<string, string>>({});
+  const [isSubmittingSelections, setIsSubmittingSelections] = useState(false);
+  const [isTogglingSelection, setIsTogglingSelection] = useState(false);
+  const [selectionsSubmitted, setSelectionsSubmitted] = useState(gallery.selectionsSubmitted);
 
   // Keyboard shortcuts help
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
@@ -197,6 +211,29 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
+
+  // Fetch existing selections on mount
+  useEffect(() => {
+    if (!gallery.allowSelections) return;
+
+    const fetchSelections = async () => {
+      const result = await getClientSelections(gallery.id, gallery.deliverySlug || undefined);
+      if (result.success && result.data) {
+        const ids = new Set(result.data.selections.map((s) => s.assetId));
+        setSelectedPhotoIds(ids);
+
+        // Build notes map
+        const notes: Record<string, string> = {};
+        result.data.selections.forEach((s) => {
+          if (s.notes) notes[s.assetId] = s.notes;
+        });
+        setSelectionNotes(notes);
+        setSelectionsSubmitted(result.data.summary.submitted);
+      }
+    };
+
+    fetchSelections();
+  }, [gallery.id, gallery.allowSelections, gallery.deliverySlug]);
 
   // Calculate expiration countdown
   useEffect(() => {
@@ -529,22 +566,68 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   // Selection mode handlers (proofing)
   const handleToggleSelectionMode = useCallback(() => {
     setSelectionMode((prev) => !prev);
-    if (selectionMode) {
-      setSelectedPhotoIds(new Set());
-    }
-  }, [selectionMode]);
-
-  const handleTogglePhotoSelection = useCallback((photoId: string) => {
-    setSelectedPhotoIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(photoId)) {
-        newSet.delete(photoId);
-      } else {
-        newSet.add(photoId);
-      }
-      return newSet;
-    });
   }, []);
+
+  const handleTogglePhotoSelection = useCallback(async (photoId: string) => {
+    if (selectionsSubmitted || isTogglingSelection) return;
+
+    // Check selection limit before adding
+    if (!selectedPhotoIds.has(photoId) && gallery.selectionLimit) {
+      if (selectedPhotoIds.size >= gallery.selectionLimit) {
+        return; // Limit reached
+      }
+    }
+
+    setIsTogglingSelection(true);
+    try {
+      const result = await toggleSelection(gallery.id, photoId, gallery.deliverySlug || undefined);
+      if (result.success) {
+        setSelectedPhotoIds((prev) => {
+          const newSet = new Set(prev);
+          if (result.data?.selected) {
+            newSet.add(photoId);
+          } else {
+            newSet.delete(photoId);
+          }
+          return newSet;
+        });
+      }
+    } finally {
+      setIsTogglingSelection(false);
+    }
+  }, [gallery.id, gallery.deliverySlug, gallery.selectionLimit, selectedPhotoIds, selectionsSubmitted, isTogglingSelection]);
+
+  const handleSubmitSelections = useCallback(async () => {
+    if (isSubmittingSelections || selectionsSubmitted) return;
+
+    setIsSubmittingSelections(true);
+    try {
+      const result = await submitSelections(gallery.id, gallery.deliverySlug || undefined);
+      if (result.success) {
+        setSelectionsSubmitted(true);
+        setSelectionMode(false);
+      }
+    } finally {
+      setIsSubmittingSelections(false);
+    }
+  }, [gallery.id, gallery.deliverySlug, isSubmittingSelections, selectionsSubmitted]);
+
+  const handleResetSelections = useCallback(async () => {
+    if (selectionsSubmitted) return;
+
+    const result = await resetSelections(gallery.id, gallery.deliverySlug || undefined);
+    if (result.success) {
+      setSelectedPhotoIds(new Set());
+      setSelectionNotes({});
+    }
+  }, [gallery.id, gallery.deliverySlug, selectionsSubmitted]);
+
+  const handleUpdateSelectionNote = useCallback(async (photoId: string, note: string) => {
+    if (selectionsSubmitted) return;
+
+    await updateSelectionNotes(gallery.id, photoId, note, gallery.deliverySlug || undefined);
+    setSelectionNotes((prev) => ({ ...prev, [photoId]: note }));
+  }, [gallery.id, gallery.deliverySlug, selectionsSubmitted]);
 
   // Filter photos based on favorites view and collection filter
   const displayedPhotos = gallery.photos.filter((p) => {
@@ -560,12 +643,14 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   });
 
   const handleSelectAll = useCallback(() => {
+    // For select all, we can only do this locally since server would need multiple calls
+    // This is kept for UI purposes but won't persist selections
     setSelectedPhotoIds(new Set(displayedPhotos.map((p) => p.id)));
   }, [displayedPhotos]);
 
-  const handleClearSelection = useCallback(() => {
-    setSelectedPhotoIds(new Set());
-  }, []);
+  const handleClearSelection = useCallback(async () => {
+    await handleResetSelections();
+  }, [handleResetSelections]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -1217,35 +1302,41 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 )}
 
                 {/* Selection Mode Button */}
-                <button
-                  onClick={handleToggleSelectionMode}
-                  className={cn(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    selectionMode && "ring-2 ring-offset-2"
-                  )}
-                  style={{
-                    backgroundColor: selectionMode ? primaryColor : colors.cardBg,
-                    color: selectionMode ? "#fff" : colors.textColor,
-                    ["--tw-ring-color" as string]: primaryColor,
-                  }}
-                  title="Select photos (S)"
-                  aria-label="Select photos"
-                  aria-pressed={selectionMode}
-                >
-                  <SelectIcon className="h-4 w-4" />
-                  <span className="hidden lg:inline">Select</span>
-                  {selectedPhotoIds.size > 0 && (
-                    <span
-                      className="rounded-full px-1.5 py-0.5 text-xs"
-                      style={{
-                        backgroundColor: selectionMode ? "rgba(255,255,255,0.2)" : primaryColor,
-                        color: "#fff",
-                      }}
-                    >
-                      {selectedPhotoIds.size}
+                {gallery.allowSelections && (
+                  <button
+                    onClick={handleToggleSelectionMode}
+                    disabled={selectionsSubmitted}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      selectionMode && "ring-2 ring-offset-2",
+                      selectionsSubmitted && "opacity-50 cursor-not-allowed"
+                    )}
+                    style={{
+                      backgroundColor: selectionMode ? primaryColor : colors.cardBg,
+                      color: selectionMode ? "#fff" : colors.textColor,
+                      ["--tw-ring-color" as string]: primaryColor,
+                    }}
+                    title={selectionsSubmitted ? "Selections already submitted" : "Select photos (S)"}
+                    aria-label="Select photos"
+                    aria-pressed={selectionMode}
+                  >
+                    <SelectIcon className="h-4 w-4" />
+                    <span className="hidden lg:inline">
+                      {selectionsSubmitted ? "Submitted" : "Select"}
                     </span>
-                  )}
-                </button>
+                    {selectedPhotoIds.size > 0 && (
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-xs"
+                        style={{
+                          backgroundColor: selectionsSubmitted ? "rgba(34,197,94,0.3)" : selectionMode ? "rgba(255,255,255,0.2)" : primaryColor,
+                          color: "#fff",
+                        }}
+                      >
+                        {selectedPhotoIds.size}
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
 
               {/* Primary Actions - Always Visible */}
@@ -2690,61 +2781,88 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
       )}
 
       {/* Selection Panel */}
-      {selectionMode && selectedPhotoIds.size > 0 && (
+      {selectionMode && (
         <div
           className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 rounded-lg shadow-xl p-4"
           style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.borderColor}` }}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* Selection count */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium" style={{ color: colors.textColor }}>
-                {selectedPhotoIds.size} selected
+                {selectedPhotoIds.size}{gallery.selectionLimit ? ` / ${gallery.selectionLimit}` : ""} selected
               </span>
-              <button
-                onClick={handleSelectAll}
-                className="text-xs underline"
-                style={{ color: primaryColor }}
-              >
-                Select all
-              </button>
-              <button
-                onClick={handleClearSelection}
-                className="text-xs underline"
-                style={{ color: colors.mutedColor }}
-              >
-                Clear
-              </button>
+              {!selectionsSubmitted && selectedPhotoIds.size > 0 && (
+                <button
+                  onClick={handleClearSelection}
+                  className="text-xs underline"
+                  style={{ color: colors.mutedColor }}
+                >
+                  Clear
+                </button>
+              )}
             </div>
-            {gallery.isPaid && gallery.allowDownload && (
-              <button
-                onClick={() => {
-                  const assetIds = Array.from(selectedPhotoIds);
-                  fetch("/api/download/batch", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      galleryId: gallery.id,
-                      assetIds,
-                      deliverySlug: gallery.deliverySlug,
-                    }),
-                  })
-                    .then((res) => res.blob())
-                    .then((blob) => {
-                      const url = window.URL.createObjectURL(blob);
-                      const link = document.createElement("a");
-                      link.href = url;
-                      link.download = `${gallery.name}-selected.zip`;
-                      link.click();
-                      window.URL.revokeObjectURL(url);
-                    });
-                }}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                style={{ backgroundColor: primaryColor }}
-              >
-                Download Selected
-              </button>
+
+            {/* Submitted status */}
+            {selectionsSubmitted ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400">
+                <CheckIcon className="h-4 w-4" />
+                <span className="text-sm font-medium">Selections Submitted</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                {/* Submit Button */}
+                {gallery.allowSelections && selectedPhotoIds.size > 0 && (
+                  <button
+                    onClick={handleSubmitSelections}
+                    disabled={isSubmittingSelections}
+                    className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {isSubmittingSelections ? "Submitting..." : "Submit Selections"}
+                  </button>
+                )}
+
+                {/* Download selected (if paid and allowed) */}
+                {gallery.isPaid && gallery.allowDownload && selectedPhotoIds.size > 0 && (
+                  <button
+                    onClick={() => {
+                      const assetIds = Array.from(selectedPhotoIds);
+                      fetch("/api/download/batch", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          galleryId: gallery.id,
+                          assetIds,
+                          deliverySlug: gallery.deliverySlug,
+                        }),
+                      })
+                        .then((res) => res.blob())
+                        .then((blob) => {
+                          const url = window.URL.createObjectURL(blob);
+                          const link = document.createElement("a");
+                          link.href = url;
+                          link.download = `${gallery.name}-selected.zip`;
+                          link.click();
+                          window.URL.revokeObjectURL(url);
+                        });
+                    }}
+                    className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                    style={{ backgroundColor: colors.borderColor, color: colors.textColor }}
+                  >
+                    Download
+                  </button>
+                )}
+              </div>
             )}
           </div>
+
+          {/* Selection limit warning */}
+          {gallery.selectionLimit && selectedPhotoIds.size >= gallery.selectionLimit && !selectionsSubmitted && (
+            <p className="mt-2 text-xs text-center text-yellow-400">
+              Selection limit reached
+            </p>
+          )}
         </div>
       )}
 

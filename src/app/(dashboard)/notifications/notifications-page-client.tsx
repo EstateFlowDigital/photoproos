@@ -6,6 +6,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";
 import type { NotificationData } from "@/lib/actions/notifications";
 import type { ActivityData } from "@/lib/utils/activity";
+import { VirtualList } from "@/components/ui/virtual-list";
 import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
@@ -283,8 +284,13 @@ function NotificationsList({
   }
 
   return (
-    <div className="divide-y divide-[var(--card-border)]">
-      {notifications.map((notification) => (
+    <VirtualList
+      items={notifications}
+      itemGap={0}
+      estimateSize={() => 96}
+      className="divide-y divide-[var(--card-border)] max-h-[70vh]"
+      getItemKey={(n) => n.id}
+      renderItem={(notification) => (
         <button
           key={notification.id}
           onClick={() => onNotificationClick(notification)}
@@ -292,7 +298,7 @@ function NotificationsList({
             !notification.read ? "bg-[var(--primary)]/5" : ""
           }`}
         >
-          <div className="flex-shrink-0 mt-0.5">
+          <div className="mt-0.5 flex-shrink-0">
             <NotificationIcon type={notification.type} read={notification.read} />
           </div>
           <div className="min-w-0 flex-1">
@@ -310,7 +316,7 @@ function NotificationsList({
                 {formatTimeAgo(notification.createdAt)}
               </span>
             </div>
-            <p className="mt-0.5 text-sm text-foreground-muted line-clamp-2">
+            <p className="mt-0.5 line-clamp-2 text-sm text-foreground-muted">
               {notification.message}
             </p>
             {notification.linkUrl && (
@@ -326,8 +332,8 @@ function NotificationsList({
             </div>
           )}
         </button>
-      ))}
-    </div>
+      )}
+    />
   );
 }
 
