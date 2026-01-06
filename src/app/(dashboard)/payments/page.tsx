@@ -104,11 +104,11 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
 
   const totalCount = Object.values(countsMap).reduce((a, b) => a + b, 0);
 
-  const tabs: { id: FilterTab; label: string; count: number }[] = [
-    { id: "all", label: "All", count: totalCount },
-    { id: "paid", label: "Paid", count: countsMap.paid || 0 },
-    { id: "pending", label: "Pending", count: countsMap.pending || 0 },
-    { id: "overdue", label: "Overdue", count: countsMap.overdue || 0 },
+  const filterOptions = [
+    { value: "all", label: "All", count: totalCount, href: "/payments" },
+    { value: "paid", label: "Paid", count: countsMap.paid || 0, href: "/payments?filter=paid" },
+    { value: "pending", label: "Pending", count: countsMap.pending || 0, href: "/payments?filter=pending" },
+    { value: "overdue", label: "Overdue", count: countsMap.overdue || 0, href: "/payments?filter=overdue" },
   ];
 
   return (
