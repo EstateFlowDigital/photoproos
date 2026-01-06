@@ -2001,8 +2001,8 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
         />
       )}
 
-      {/* Automation Rules Modal - TODO: Create AutomationRulesModal component */}
-      {/* {showAutomationModal && (
+      {/* Automation Rules Modal */}
+      {showAutomationModal && (
         <AutomationRulesModal
           automations={automations}
           columns={board.columns}
@@ -2049,9 +2049,57 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
           }}
           onEdit={(automation) => setEditingAutomation(automation)}
         />
-      )} */}
+      )}
 
-      {/* TODO: Implement RecurringTasksModal component */}
+      {/* Recurring Tasks Modal */}
+      {showRecurringModal && (
+        <RecurringTasksModal
+          recurringTasks={recurringTasks}
+          columns={board.columns}
+          teamMembers={teamMembers}
+          loading={loadingRecurring}
+          editingTask={editingRecurringTask}
+          onClose={() => {
+            setShowRecurringModal(false);
+            setEditingRecurringTask(null);
+          }}
+          onCreate={async (data) => {
+            const result = await createRecurringTask({
+              ...data,
+              boardId: board.id,
+            });
+            if (result.success) {
+              showToast("Recurring task created", "success");
+              loadRecurringTasks();
+            } else {
+              showToast(result.error || "Failed to create recurring task", "error");
+            }
+            return result.success;
+          }}
+          onUpdate={async (id, data) => {
+            const result = await updateRecurringTask(id, data);
+            if (result.success) {
+              showToast("Recurring task updated", "success");
+              loadRecurringTasks();
+              setEditingRecurringTask(null);
+            } else {
+              showToast(result.error || "Failed to update recurring task", "error");
+            }
+            return result.success;
+          }}
+          onDelete={async (id) => {
+            const result = await deleteRecurringTask(id);
+            if (result.success) {
+              showToast("Recurring task deleted", "success");
+              loadRecurringTasks();
+            } else {
+              showToast(result.error || "Failed to delete recurring task", "error");
+            }
+            return result.success;
+          }}
+          onEdit={(task) => setEditingRecurringTask(task)}
+        />
+      )}
     </div>
   );
 }

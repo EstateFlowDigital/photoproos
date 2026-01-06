@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Project Automation & Recurring Tasks** - Enable task workflow automation
+  - Automation Rules Modal fully integrated with Projects board
+    - Trigger types: task created, task moved, subtasks complete, due date passed, priority changed, assignee changed
+    - Actions: move to column, assign to user, set priority, add/remove tag, send notification
+    - Enable/disable automations, edit, and delete functionality
+  - Recurring Tasks Modal fully integrated
+    - Schedule recurring tasks: daily, weekly, monthly, or custom intervals
+    - Configure day of week, day of month, and time of day
+    - Auto-create tasks in specified column with assignee
+
 - **Truth Ledger Documentation System** - Verification system for documentation accuracy
   - Created `docs/TRUTH_LEDGER.md` - Tracks verified vs documented state
   - Documented 157 Prisma models (grouped by domain)
