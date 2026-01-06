@@ -238,7 +238,7 @@ export async function updateBoard(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating board:", error);
     return {
@@ -276,7 +276,7 @@ export async function archiveBoard(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error archiving board:", error);
     return {
@@ -362,7 +362,7 @@ export async function updateColumn(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating column:", error);
     return {
@@ -403,7 +403,7 @@ export async function reorderColumns(
     );
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error reordering columns:", error);
     return {
@@ -448,7 +448,7 @@ export async function deleteColumn(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting column:", error);
     return {
@@ -699,7 +699,7 @@ export async function updateTask(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating task:", error);
     return {
@@ -812,7 +812,7 @@ export async function moveTask(
     await prisma.$transaction(updates);
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error moving task:", error);
     return {
@@ -840,7 +840,7 @@ export async function deleteTask(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting task:", error);
     return {
@@ -924,7 +924,7 @@ export async function toggleSubtask(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling subtask:", error);
     return {
@@ -961,7 +961,7 @@ export async function deleteSubtask(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting subtask:", error);
     return {
@@ -1049,7 +1049,7 @@ export async function deleteComment(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting comment:", error);
     return {
@@ -1929,7 +1929,7 @@ export async function updateTaskTemplate(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating task template:", error);
     return {
@@ -1957,7 +1957,7 @@ export async function deleteTaskTemplate(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting task template:", error);
     return {
@@ -2097,7 +2097,7 @@ export async function updateAutomation(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating automation:", error);
     return {
@@ -2125,7 +2125,7 @@ export async function deleteAutomation(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting automation:", error);
     return {
@@ -2424,7 +2424,7 @@ export async function updateRecurringTask(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating recurring task:", error);
     return {
@@ -2452,7 +2452,7 @@ export async function deleteRecurringTask(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting recurring task:", error);
     return {
@@ -2855,7 +2855,7 @@ export async function deleteTimeEntry(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting time entry:", error);
     return {
@@ -2948,7 +2948,7 @@ export async function addTaskDependency(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error adding task dependency:", error);
     return {
@@ -2988,7 +2988,7 @@ export async function removeTaskDependency(
     });
 
     revalidatePath("/projects");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing task dependency:", error);
     return {

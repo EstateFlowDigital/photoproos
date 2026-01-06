@@ -100,7 +100,7 @@ export async function updateEmailSettings(data: EmailSettings) {
     });
 
     revalidatePath("/settings/email");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues[0].message };
@@ -150,7 +150,7 @@ export async function sendTestEmail(toEmail: string) {
     });
 
     if (result.success) {
-      return { success: true, data: undefined };
+      return ok();
     } else {
       return { success: false, error: result.error || "Failed to send test email" };
     }

@@ -132,7 +132,7 @@ export async function trackLeadEngagement(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Lead Scoring] Error tracking engagement:", error);
     return { success: false, error: "Failed to track engagement" };
@@ -228,7 +228,7 @@ export async function updateLeadStatus(
       data: updateData,
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Lead Scoring] Error updating status:", error);
     return { success: false, error: "Failed to update lead status" };
@@ -263,7 +263,7 @@ export async function addLeadNotes(leadId: string, notes: string) {
       data: { notes },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Lead Scoring] Error adding notes:", error);
     return { success: false, error: "Failed to add notes" };
@@ -298,7 +298,7 @@ export async function setLeadFollowUp(leadId: string, followUpDate: Date) {
       data: { followUpDate },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Lead Scoring] Error setting follow-up:", error);
     return { success: false, error: "Failed to set follow-up date" };

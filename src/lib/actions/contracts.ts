@@ -203,7 +203,7 @@ export async function updateContract(
     revalidatePath(`/contracts/${id}`);
     revalidatePath("/contracts");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Contracts] Error updating contract:", error);
     if (error instanceof Error) {
@@ -243,7 +243,7 @@ export async function deleteContract(id: string): Promise<ActionResult> {
 
     revalidatePath("/contracts");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Contracts] Error deleting contract:", error);
     if (error instanceof Error) {
@@ -373,7 +373,7 @@ export async function sendContract(id: string): Promise<ActionResult> {
     revalidatePath(`/contracts/${id}`);
     revalidatePath("/contracts");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Contracts] Error sending contract:", error);
     if (error instanceof Error) {

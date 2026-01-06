@@ -176,7 +176,7 @@ export async function updateNotificationPreferences(
     });
 
     revalidatePath("/settings/notifications");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating notification preferences:", error);
     return { success: false, error: "Failed to update notification preferences" };
@@ -206,7 +206,7 @@ export async function updateDigestSettings(
     });
 
     revalidatePath("/settings/notifications");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating digest settings:", error);
     return { success: false, error: "Failed to update digest settings" };
@@ -235,7 +235,7 @@ export async function updateQuietHoursSettings(
     });
 
     revalidatePath("/settings/notifications");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating quiet hours settings:", error);
     return { success: false, error: "Failed to update quiet hours settings" };
@@ -271,7 +271,7 @@ export async function updateAllNotificationSettings(data: {
     });
 
     revalidatePath("/settings/notifications");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating notification settings:", error);
     return { success: false, error: "Failed to update notification settings" };

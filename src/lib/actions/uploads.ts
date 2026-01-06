@@ -389,7 +389,7 @@ export async function deleteAsset(
     // Revalidate gallery pages
     revalidatePath(`/galleries/${asset.projectId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Upload] Error deleting asset:", error);
     return {
@@ -462,7 +462,7 @@ export async function updateAssetUrls(
       data: urls,
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Upload] Error updating asset URLs:", error);
     return {

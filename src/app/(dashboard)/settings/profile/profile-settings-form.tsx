@@ -136,7 +136,9 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
       ]);
 
       if (!userResult.success || !orgResult.success) {
-        setError(userResult.error || orgResult.error || "Failed to save changes");
+        const userError = !userResult.success ? userResult.error : null;
+        const orgError = !orgResult.success ? orgResult.error : null;
+        setError(userError || orgError || "Failed to save changes");
       } else {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);

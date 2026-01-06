@@ -307,7 +307,7 @@ export async function updateCrewMember(
     revalidatePath(`/scheduling/${crew.bookingId}`);
     revalidatePath("/scheduling");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating crew member:", error);
     return { success: false, error: "Failed to update crew member" };
@@ -343,7 +343,7 @@ export async function removeCrewMember(crewId: string): Promise<ActionResult<voi
     revalidatePath(`/scheduling/${crew.bookingId}`);
     revalidatePath("/scheduling");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing crew member:", error);
     return { success: false, error: "Failed to remove crew member" };
@@ -384,7 +384,7 @@ export async function confirmCrewAssignment(crewId: string): Promise<ActionResul
     revalidatePath(`/scheduling/${crew.bookingId}`);
     revalidatePath("/scheduling");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error confirming crew assignment:", error);
     return { success: false, error: "Failed to confirm assignment" };
@@ -428,7 +428,7 @@ export async function declineCrewAssignment(
     revalidatePath(`/scheduling/${crew.bookingId}`);
     revalidatePath("/scheduling");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error declining crew assignment:", error);
     return { success: false, error: "Failed to decline assignment" };

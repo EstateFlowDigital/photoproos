@@ -263,7 +263,7 @@ export async function addFieldNote(
     });
 
     revalidatePath("/field");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error adding field note:", error);
     return { success: false, error: "Failed to add note" };

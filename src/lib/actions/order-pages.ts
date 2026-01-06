@@ -196,7 +196,7 @@ export async function deleteOrderPage(
       });
 
       revalidatePath("/order-pages");
-      return { success: true, data: undefined };
+      return ok();
     }
 
     // Actually delete if no orders or force is true
@@ -206,7 +206,7 @@ export async function deleteOrderPage(
 
     revalidatePath("/order-pages");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting order page:", error);
     if (error instanceof Error) {

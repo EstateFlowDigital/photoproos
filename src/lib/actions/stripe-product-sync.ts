@@ -1,6 +1,6 @@
 "use server";
 
-import type { VoidActionResult } from "@/lib/types/action-result";
+import { ok, type VoidActionResult } from "@/lib/types/action-result";
 
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
@@ -75,7 +75,7 @@ export async function syncSingleProductToStripe(
 
       const result = await syncServiceToStripe(service, organization.id);
       if (result.success) {
-        return { success: true, data: undefined };
+        return ok();
       }
       return { success: false, error: result.error || "Failed to sync service" };
     } else {
@@ -89,7 +89,7 @@ export async function syncSingleProductToStripe(
 
       const result = await syncBundleToStripe(bundle, organization.id);
       if (result.success) {
-        return { success: true, data: undefined };
+        return ok();
       }
       return { success: false, error: result.error || "Failed to sync bundle" };
     }

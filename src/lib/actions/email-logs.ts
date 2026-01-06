@@ -87,7 +87,7 @@ export async function updateEmailLogStatus(
       data: updateData,
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Failed to update email log status:", error);
     return { success: false };

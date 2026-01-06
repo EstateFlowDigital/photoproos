@@ -202,7 +202,7 @@ export async function markPaymentAsPaid(id: string) {
     revalidatePath(`/payments/${id}`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error marking payment as paid:", error);
     return { success: false, error: "Failed to update payment" };
@@ -242,7 +242,7 @@ export async function updatePaymentStatus(id: string, status: PaymentStatus) {
     revalidatePath(`/payments/${id}`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating payment status:", error);
     return { success: false, error: "Failed to update payment status" };
@@ -359,7 +359,7 @@ export async function sendPaymentReminder(id: string): Promise<VoidActionResult>
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error sending payment reminder:", error);
     return { success: false, error: "Failed to send reminder" };
@@ -570,7 +570,7 @@ export async function issueRefund(
 
     console.log(`[Refund] Processed refund for payment ${id}. Amount: ${refundAmount} cents. Reason: ${reason || "Not specified"}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error issuing refund:", error);
     return { success: false, error: "Failed to process refund" };

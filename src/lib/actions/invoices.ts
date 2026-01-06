@@ -353,7 +353,7 @@ export async function addTravelFeeToInvoice(
 
     revalidatePath(`/invoices/${invoiceId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error adding travel fee to invoice:", error);
     if (error instanceof Error) {
@@ -516,7 +516,7 @@ export async function updateInvoiceStatus(
     revalidatePath(`/invoices/${invoiceId}`);
     revalidatePath("/invoices");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating invoice status:", error);
     if (error instanceof Error) {
@@ -554,7 +554,7 @@ export async function deleteInvoice(invoiceId: string): Promise<ActionResult> {
 
     revalidatePath("/invoices");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting invoice:", error);
     if (error instanceof Error) {
@@ -1151,7 +1151,7 @@ export async function toggleInvoiceAutoReminders(
 
     revalidatePath(`/invoices/${invoiceId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling auto reminders:", error);
     if (error instanceof Error) {

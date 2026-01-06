@@ -222,7 +222,7 @@ export async function updatePropertyWebsite(
     revalidatePath(`/properties/${id}`);
     revalidatePath(`/p/${existing.slug}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating property website:", error);
     return { success: false, error: "Failed to update property website" };
@@ -272,7 +272,7 @@ export async function deletePropertyWebsite(
 
     revalidatePath("/properties");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting property website:", error);
     return { success: false, error: "Failed to delete property website" };
@@ -576,7 +576,7 @@ export async function submitPropertyLead(data: {
 
     revalidatePath("/properties");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error submitting lead:", error);
     return { success: false, error: "Failed to submit inquiry" };
@@ -611,7 +611,7 @@ export async function updateLeadStatus(
 
     revalidatePath("/properties");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating lead status:", error);
     return { success: false, error: "Failed to update lead status" };

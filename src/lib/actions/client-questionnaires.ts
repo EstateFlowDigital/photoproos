@@ -617,7 +617,7 @@ export async function updateClientQuestionnaire(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating client questionnaire:", error);
     if (error instanceof Error) {
@@ -660,7 +660,7 @@ export async function approveQuestionnaire(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error approving questionnaire:", error);
     return { success: false, error: "Failed to approve questionnaire" };
@@ -695,7 +695,7 @@ export async function deleteClientQuestionnaire(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting client questionnaire:", error);
     return { success: false, error: "Failed to delete questionnaire" };
@@ -836,7 +836,7 @@ export async function sendQuestionnaireReminder(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error sending questionnaire reminder:", error);
     return { success: false, error: "Failed to send reminder" };

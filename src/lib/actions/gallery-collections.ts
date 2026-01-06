@@ -203,7 +203,7 @@ export async function deleteGalleryCollection(collectionId: string) {
 
     revalidatePath(`/galleries/${existing.projectId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting gallery collection:", error);
     return { success: false, error: "Failed to delete collection" };
@@ -251,7 +251,7 @@ export async function addAssetsToCollection(
 
     revalidatePath(`/galleries/${collection.projectId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error adding assets to collection:", error);
     return { success: false, error: "Failed to add assets to collection" };
@@ -300,7 +300,7 @@ export async function removeAssetsFromCollection(assetIds: string[]) {
       revalidatePath(`/galleries/${projectId}`);
     }
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing assets from collection:", error);
     return { success: false, error: "Failed to remove assets from collection" };
@@ -348,7 +348,7 @@ export async function reorderGalleryCollections(
 
     revalidatePath(`/galleries/${projectId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error reordering collections:", error);
     return { success: false, error: "Failed to reorder collections" };

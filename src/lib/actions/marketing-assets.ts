@@ -350,7 +350,7 @@ export async function deleteMarketingAsset(assetId: string): Promise<VoidActionR
       where: { id: assetId },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting marketing asset:", error);
     return {

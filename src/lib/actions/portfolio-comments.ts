@@ -96,7 +96,7 @@ export async function approveComment(
     });
 
     revalidatePath("/portfolios");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error approving comment:", error);
     return { success: false, error: "Failed to approve comment" };
@@ -124,7 +124,7 @@ export async function hideComment(
     });
 
     revalidatePath("/portfolios");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error hiding comment:", error);
     return { success: false, error: "Failed to hide comment" };
@@ -152,7 +152,7 @@ export async function unhideComment(
     });
 
     revalidatePath("/portfolios");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error unhiding comment:", error);
     return { success: false, error: "Failed to unhide comment" };
@@ -179,7 +179,7 @@ export async function deleteComment(
     });
 
     revalidatePath("/portfolios");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting comment:", error);
     return { success: false, error: "Failed to delete comment" };
@@ -252,7 +252,7 @@ export async function updateCommentSettings(
 
     revalidatePath("/portfolios");
     revalidatePath(`/portfolios/${portfolioId}`);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating comment settings:", error);
     return { success: false, error: "Failed to update settings" };

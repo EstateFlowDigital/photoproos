@@ -242,7 +242,7 @@ export async function markInstallmentPaid(
     });
 
     revalidatePath("/payments");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Payment Plan] Error marking paid:", error);
     return { success: false, error: "Failed to mark installment as paid" };
@@ -270,7 +270,7 @@ export async function cancelPaymentPlan(planId: string) {
     });
 
     revalidatePath("/payments");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Payment Plan] Error cancelling:", error);
     return { success: false, error: "Failed to cancel payment plan" };

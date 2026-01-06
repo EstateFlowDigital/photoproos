@@ -236,7 +236,7 @@ export async function deleteABTest(testId: string) {
     });
 
     revalidatePath("/portfolios");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting A/B test:", error);
     return { success: false, error: "Failed to delete A/B test" };
@@ -273,7 +273,7 @@ export async function startABTest(testId: string) {
     });
 
     revalidatePath("/portfolios");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error starting A/B test:", error);
     return { success: false, error: "Failed to start A/B test" };
@@ -303,7 +303,7 @@ export async function pauseABTest(testId: string) {
     });
 
     revalidatePath("/portfolios");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error pausing A/B test:", error);
     return { success: false, error: "Failed to pause A/B test" };
@@ -333,7 +333,7 @@ export async function completeABTest(testId: string, winningVariant?: "control" 
     });
 
     revalidatePath("/portfolios");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error completing A/B test:", error);
     return { success: false, error: "Failed to complete A/B test" };
@@ -457,7 +457,7 @@ export async function recordABTestConversion(
     });
 
     if (!assignment || assignment.converted) {
-      return { success: true, data: undefined }; // Already converted or not assigned
+      return ok(); // Already converted or not assigned
     }
 
     // Mark as converted
@@ -476,7 +476,7 @@ export async function recordABTestConversion(
       data: { [updateField]: { increment: 1 } },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error recording conversion:", error);
     return { success: false, error: "Failed to record conversion" };

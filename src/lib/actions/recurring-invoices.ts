@@ -300,7 +300,7 @@ export async function updateRecurringInvoice(
     revalidatePath("/invoices/recurring");
     revalidatePath(`/invoices/recurring/${input.id}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating recurring invoice:", error);
     if (error instanceof Error) {
@@ -332,7 +332,7 @@ export async function deleteRecurringInvoice(id: string): Promise<ActionResult> 
     revalidatePath("/invoices");
     revalidatePath("/invoices/recurring");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting recurring invoice:", error);
     if (error instanceof Error) {
@@ -372,7 +372,7 @@ export async function pauseRecurringInvoice(
     revalidatePath("/invoices");
     revalidatePath("/invoices/recurring");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error pausing recurring invoice:", error);
     if (error instanceof Error) {
@@ -418,7 +418,7 @@ export async function resumeRecurringInvoice(id: string): Promise<ActionResult> 
     revalidatePath("/invoices");
     revalidatePath("/invoices/recurring");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error resuming recurring invoice:", error);
     if (error instanceof Error) {

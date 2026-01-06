@@ -260,7 +260,7 @@ export async function deleteGallery(
       });
 
       revalidatePath("/galleries");
-      return { success: true, data: undefined };
+      return ok();
     }
 
     // Get all assets to delete from R2
@@ -325,7 +325,7 @@ export async function deleteGallery(
     revalidatePath("/galleries");
     revalidatePath("/dashboard");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting gallery:", error);
     if (error instanceof Error) {
@@ -946,7 +946,7 @@ export async function reorderPhotos(
 
     revalidatePath(`/galleries/${projectId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error reordering photos:", error);
     if (error instanceof Error) {
@@ -1014,7 +1014,7 @@ export async function deletePhoto(
 
     revalidatePath(`/galleries/${projectId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting photo:", error);
     if (error instanceof Error) {
@@ -1364,7 +1364,7 @@ export async function recordGalleryView(slug: string): Promise<ActionResult> {
       { projectId: deliveryLink.projectId }
     );
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error recording gallery view:", error);
     return { success: false, error: "Failed to record view" };
@@ -1387,7 +1387,7 @@ export async function recordDownload(
       data: { downloadCount: { increment: 1 } },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error recording download:", error);
     return { success: false, error: "Failed to record download" };

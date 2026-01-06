@@ -452,7 +452,7 @@ export async function deleteQuestionnaireTemplate(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting questionnaire template:", error);
     if (error instanceof Error) {
@@ -490,7 +490,7 @@ export async function toggleQuestionnaireTemplateStatus(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling template status:", error);
     return { success: false, error: "Failed to toggle template status" };
@@ -554,7 +554,7 @@ export async function updateQuestionnaireFields(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating questionnaire fields:", error);
     if (error instanceof Error) {
@@ -599,7 +599,7 @@ export async function reorderQuestionnaireFields(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error reordering questionnaire fields:", error);
     return { success: false, error: "Failed to reorder fields" };
@@ -658,7 +658,7 @@ export async function updateQuestionnaireAgreements(
 
     revalidatePath("/questionnaires");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating questionnaire agreements:", error);
     if (error instanceof Error) {

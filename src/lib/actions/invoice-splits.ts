@@ -330,7 +330,7 @@ export async function deleteInvoiceSplit(invoiceId: string): Promise<ActionResul
     });
 
     revalidatePath(`/invoices/${invoiceId}`);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[InvoiceSplits] Error deleting split:", error);
     return { success: false, error: "Failed to delete invoice split" };

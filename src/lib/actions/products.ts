@@ -215,7 +215,7 @@ export async function updateProductStatus(productId: string, status: "pending" |
     });
 
     revalidatePath(`/products/${product.catalogId}`);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Products] update status error:", error);
     return { success: false, error: "Failed to update product" };

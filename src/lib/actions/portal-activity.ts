@@ -85,7 +85,7 @@ export async function createPortalActivity(input: CreateActivityInput) {
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Portal Activity] Error creating:", error);
     return { success: false, error: "Failed to create activity" };
@@ -172,7 +172,7 @@ export async function markActivitiesAsRead(activityIds?: string[]) {
       });
     }
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Portal Activity] Error marking read:", error);
     return { success: false, error: "Failed to mark activities as read" };

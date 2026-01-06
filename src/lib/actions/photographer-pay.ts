@@ -192,7 +192,7 @@ export async function deletePhotographerRate(id: string): Promise<ActionResult<v
     await prisma.photographerRate.delete({ where: { id } });
 
     revalidatePath("/settings/photographer-pay");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[PhotographerPay] Error deleting rate:", error);
     return { success: false, error: "Failed to delete photographer rate" };
@@ -405,7 +405,7 @@ export async function approveEarnings(earningIds: string[]): Promise<ActionResul
     });
 
     revalidatePath("/settings/photographer-pay");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[PhotographerPay] Error approving earnings:", error);
     return { success: false, error: "Failed to approve earnings" };

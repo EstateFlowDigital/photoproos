@@ -212,7 +212,7 @@ export async function deleteService(
     revalidatePath("/services");
     revalidatePath("/galleries");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting service:", error);
     if (error instanceof Error) {

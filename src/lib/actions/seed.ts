@@ -950,7 +950,7 @@ export async function clearSeededData(): Promise<ActionResult> {
 
     revalidatePath("/");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Seed] Error clearing data:", error);
     if (error instanceof Error) {

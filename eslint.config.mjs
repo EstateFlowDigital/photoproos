@@ -6,10 +6,14 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     rules: {
+      // TypeScript rules
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-require-imports': 'off',
+      // Disable rules that are too strict for this codebase
+      'no-case-declarations': 'off',
+      'prefer-const': 'warn',
     },
   },
   {

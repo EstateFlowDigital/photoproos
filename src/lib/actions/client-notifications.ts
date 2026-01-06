@@ -135,7 +135,7 @@ export async function markClientNotificationAsRead(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ClientNotifications] Error marking notification as read:", error);
     if (error instanceof Error) {
@@ -172,7 +172,7 @@ export async function markAllClientNotificationsAsRead(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ClientNotifications] Error marking all notifications as read:", error);
     if (error instanceof Error) {

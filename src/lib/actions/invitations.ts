@@ -274,7 +274,7 @@ export async function resendInvitation(
 
     revalidatePath("/settings/team");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Invitations] Error resending invitation:", error);
     return { success: false, error: "Failed to resend invitation" };
@@ -334,7 +334,7 @@ export async function revokeInvitation(
 
     revalidatePath("/settings/team");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Invitations] Error revoking invitation:", error);
     return { success: false, error: "Failed to revoke invitation" };

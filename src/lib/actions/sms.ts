@@ -143,7 +143,7 @@ export async function updateSMSSettings(data: {
     });
 
     revalidatePath("/settings/sms");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating SMS settings:", error);
     return { success: false, error: "Failed to update SMS settings" };
@@ -169,7 +169,7 @@ export async function sendTestSMS(toPhone: string): Promise<ActionResult> {
       return { success: false, error: result.error || "Failed to send test SMS" };
     }
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error sending test SMS:", error);
     return { success: false, error: "Failed to send test SMS" };
@@ -268,7 +268,7 @@ export async function seedDefaultTemplates(): Promise<ActionResult> {
     );
 
     if (templatesToCreate.length === 0) {
-      return { success: true, data: undefined };
+      return ok();
     }
 
     await prisma.sMSTemplate.createMany({
@@ -284,7 +284,7 @@ export async function seedDefaultTemplates(): Promise<ActionResult> {
     });
 
     revalidatePath("/settings/sms");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error seeding default templates:", error);
     return { success: false, error: "Failed to create default templates" };
@@ -427,7 +427,7 @@ export async function deleteSMSTemplate(id: string): Promise<ActionResult> {
     });
 
     revalidatePath("/settings/sms");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting SMS template:", error);
     return { success: false, error: "Failed to delete SMS template" };

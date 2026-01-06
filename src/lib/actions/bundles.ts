@@ -242,7 +242,7 @@ export async function deleteBundle(
       }
 
       revalidatePath("/services/bundles");
-      return { success: true, data: undefined };
+      return ok();
     }
 
     // Archive in Stripe before deleting locally
@@ -260,7 +260,7 @@ export async function deleteBundle(
     revalidatePath("/services/bundles");
     revalidatePath("/order-pages");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting bundle:", error);
     if (error instanceof Error) {
@@ -536,7 +536,7 @@ export async function addServiceToBundle(
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${bundleId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error adding service to bundle:", error);
     if (error instanceof Error) {
@@ -575,7 +575,7 @@ export async function removeServiceFromBundle(
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${bundleId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing service from bundle:", error);
     if (error instanceof Error) {
@@ -618,7 +618,7 @@ export async function reorderBundleItems(
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${bundleId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error reordering bundle items:", error);
     if (error instanceof Error) {
@@ -1054,7 +1054,7 @@ export async function deletePricingTier(id: string): Promise<ActionResult> {
     revalidatePath("/services/bundles");
     revalidatePath(`/services/bundles/${tier.bundle.id}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting pricing tier:", error);
     if (error instanceof Error) {

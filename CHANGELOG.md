@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **TypeScript Errors Eliminated** - Fixed remaining type errors for clean build
+  - Added missing `ok` import in stripe-product-sync.ts
+  - Fixed type narrowing for error handling in profile-settings-form.tsx
 - **Proof Sheet Download** - Improved reliability for galleries with many photos
   - Added photo limit (150 max) to prevent timeout and memory issues
   - Increased concurrency for faster image processing

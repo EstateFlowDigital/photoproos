@@ -58,7 +58,7 @@ export async function submitChatInquiry(input: {
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error submitting chat inquiry:", error);
     return { success: false, error: "Failed to submit message" };
@@ -108,7 +108,7 @@ export async function updateChatInquiryStatus(
 
     revalidatePath("/admin/inquiries");
     revalidatePath("/leads");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating chat inquiry status:", error);
     return { success: false, error: "Failed to update inquiry" };

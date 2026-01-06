@@ -143,7 +143,7 @@ export async function setBookingTypeEquipmentRequirements(
     });
 
     revalidatePath("/scheduling/types");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error setting equipment requirements:", error);
     if (error instanceof Error) {
@@ -225,7 +225,7 @@ export async function removeEquipmentRequirement(
     });
 
     revalidatePath("/scheduling/types");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing equipment requirement:", error);
     if (error instanceof Error) {
@@ -546,7 +546,7 @@ export async function uncheckAllEquipment(
     });
 
     revalidatePath(`/scheduling/${bookingId}`);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error unchecking all equipment:", error);
     if (error instanceof Error) {
@@ -663,7 +663,7 @@ export async function updateEquipmentCheckNote(
     });
 
     revalidatePath(`/scheduling/${bookingId}`);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating equipment check note:", error);
     if (error instanceof Error) {

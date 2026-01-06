@@ -262,7 +262,7 @@ export async function deleteTerritory(id: string): Promise<ActionResult<void>> {
     await prisma.serviceTerritory.delete({ where: { id } });
 
     revalidatePath("/settings/territories");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting territory:", error);
     return { success: false, error: "Failed to delete territory" };
@@ -286,7 +286,7 @@ export async function toggleTerritoryStatus(id: string): Promise<ActionResult<vo
     });
 
     revalidatePath("/settings/territories");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling territory status:", error);
     return { success: false, error: "Failed to update territory" };
@@ -409,7 +409,7 @@ export async function removeServiceOverride(
     });
 
     revalidatePath("/settings/territories");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing service override:", error);
     return { success: false, error: "Failed to remove service override" };

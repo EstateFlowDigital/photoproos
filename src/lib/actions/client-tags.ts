@@ -219,7 +219,7 @@ export async function deleteClientTag(id: string): Promise<ActionResult> {
     revalidatePath("/clients");
     revalidatePath("/settings/tags");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ClientTags] Error deleting tag:", error);
     if (error instanceof Error) {
@@ -352,7 +352,7 @@ export async function removeTagFromClient(
     });
 
     if (!assignment) {
-      return { success: true, data: undefined }; // Already not assigned
+      return ok(); // Already not assigned
     }
 
     await prisma.clientTagAssignment.delete({
@@ -362,7 +362,7 @@ export async function removeTagFromClient(
     revalidatePath(`/clients/${clientId}`);
     revalidatePath("/clients");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ClientTags] Error removing tag:", error);
     if (error instanceof Error) {
@@ -420,7 +420,7 @@ export async function setClientTags(
     revalidatePath(`/clients/${clientId}`);
     revalidatePath("/clients");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ClientTags] Error setting tags:", error);
     if (error instanceof Error) {

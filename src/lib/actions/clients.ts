@@ -486,7 +486,7 @@ export async function deleteClient(
     revalidatePath("/clients");
     revalidatePath("/dashboard");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting client:", error);
     if (error instanceof Error) {

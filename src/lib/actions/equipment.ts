@@ -161,7 +161,7 @@ export async function deleteEquipment(id: string): Promise<ActionResult> {
 
     revalidatePath("/settings/equipment");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting equipment:", error);
     if (error instanceof Error) {
@@ -397,7 +397,7 @@ export async function unassignEquipmentFromUser(
     revalidatePath("/settings/equipment");
     revalidatePath(`/settings/team/${userId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error unassigning equipment:", error);
     if (error instanceof Error) {
@@ -518,7 +518,7 @@ export async function removeServiceEquipmentRequirement(
     revalidatePath("/galleries/services");
     revalidatePath(`/galleries/services/${serviceId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing service equipment requirement:", error);
     if (error instanceof Error) {

@@ -150,7 +150,7 @@ export async function deleteAddon(
       });
 
       revalidatePath("/services/addons");
-      return { success: true, data: undefined };
+      return ok();
     }
 
     // Actually delete if not in use or force is true
@@ -161,7 +161,7 @@ export async function deleteAddon(
     revalidatePath("/services/addons");
     revalidatePath("/order-pages");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting addon:", error);
     if (error instanceof Error) {
@@ -575,7 +575,7 @@ export async function reorderAddons(
 
     revalidatePath("/services/addons");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error reordering addons:", error);
     if (error instanceof Error) {

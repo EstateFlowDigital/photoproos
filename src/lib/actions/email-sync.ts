@@ -389,7 +389,7 @@ export async function markThreadRead(
 
     revalidatePath("/inbox");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error marking thread read:", error);
     return { success: false, error: "Failed to update thread" };
@@ -565,7 +565,7 @@ export async function sendEmailReply(
 
     revalidatePath("/inbox");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error sending reply:", error);
     return { success: false, error: "Failed to send reply" };
@@ -620,7 +620,7 @@ export async function sendNewEmail(options: {
 
     revalidatePath("/inbox");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error sending email:", error);
     return { success: false, error: "Failed to send email" };
@@ -691,7 +691,7 @@ export async function linkThreadToClient(
 
     revalidatePath("/inbox");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error linking thread to client:", error);
     return { success: false, error: "Failed to link thread" };

@@ -74,7 +74,7 @@ export async function updateDashboardConfig(
     });
 
     revalidatePath("/dashboard");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating dashboard config:", error);
     return { success: false, error: "Failed to update dashboard config" };
@@ -129,7 +129,7 @@ export async function toggleSectionVisibility(
     });
 
     revalidatePath("/dashboard");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling section visibility:", error);
     return { success: false, error: "Failed to toggle section visibility" };
@@ -184,7 +184,7 @@ export async function toggleSectionCollapsed(
     });
 
     revalidatePath("/dashboard");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling section collapsed state:", error);
     return { success: false, error: "Failed to toggle section collapsed state" };
@@ -207,7 +207,7 @@ export async function resetDashboardConfig(): Promise<VoidActionResult> {
     });
 
     revalidatePath("/dashboard");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error resetting dashboard config:", error);
     return { success: false, error: "Failed to reset dashboard config" };

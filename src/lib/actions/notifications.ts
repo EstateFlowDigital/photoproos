@@ -78,7 +78,7 @@ export async function markNotificationAsRead(
     });
 
     revalidatePath("/");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Notifications] Error marking notification as read:", error);
     if (error instanceof Error) {
@@ -128,7 +128,7 @@ export async function markAllNotificationsAsRead(): Promise<ActionResult> {
     });
 
     revalidatePath("/");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Notifications] Error marking all notifications as read:", error);
     if (error instanceof Error) {
@@ -223,7 +223,7 @@ export async function deleteNotification(
     });
 
     revalidatePath("/");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Notifications] Error deleting notification:", error);
     if (error instanceof Error) {

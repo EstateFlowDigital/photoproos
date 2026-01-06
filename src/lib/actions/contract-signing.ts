@@ -288,7 +288,7 @@ export async function removeContractSigner(signerId: string): Promise<ActionResu
     revalidatePath(`/contracts/${signer.contract.id}`);
     revalidatePath("/contracts");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ContractSigning] Error removing signer:", error);
     if (error instanceof Error) {
@@ -846,7 +846,7 @@ export async function cancelContract(contractId: string): Promise<ActionResult> 
     revalidatePath(`/contracts/${contractId}`);
     revalidatePath("/contracts");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ContractSigning] Error cancelling contract:", error);
     if (error instanceof Error) {
@@ -911,7 +911,7 @@ export async function extendContractExpiration(
     revalidatePath(`/contracts/${contractId}`);
     revalidatePath("/contracts");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ContractSigning] Error extending expiration:", error);
     if (error instanceof Error) {

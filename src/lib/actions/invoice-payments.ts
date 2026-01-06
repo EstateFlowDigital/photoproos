@@ -278,7 +278,7 @@ export async function voidPayment(paymentId: string): Promise<ActionResult> {
     }
     revalidatePath("/invoices");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error voiding payment:", error);
     if (error instanceof Error) {
@@ -332,7 +332,7 @@ export async function configureLateFee(input: {
 
     revalidatePath(`/invoices/${input.invoiceId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error configuring late fee:", error);
     if (error instanceof Error) {

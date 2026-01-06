@@ -355,7 +355,7 @@ export async function updateDropboxSettings(data: {
     });
 
     revalidatePath("/settings/dropbox");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating Dropbox settings:", error);
     return { success: false, error: "Failed to update settings" };
@@ -383,7 +383,7 @@ export async function toggleDropboxIntegration(): Promise<ActionResult<void>> {
     });
 
     revalidatePath("/settings/dropbox");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling Dropbox integration:", error);
     return { success: false, error: "Failed to toggle integration" };
@@ -427,7 +427,7 @@ export async function deleteDropboxIntegration(): Promise<ActionResult<void>> {
     });
 
     revalidatePath("/settings/dropbox");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting Dropbox integration:", error);
     return { success: false, error: "Failed to delete integration" };
@@ -584,7 +584,7 @@ export async function updateSyncCursor(cursor: string): Promise<ActionResult<voi
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating sync cursor:", error);
     return { success: false, error: "Failed to update sync cursor" };
@@ -605,7 +605,7 @@ export async function recordSyncError(errorMessage: string): Promise<ActionResul
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error recording sync error:", error);
     return { success: false, error: "Failed to record error" };

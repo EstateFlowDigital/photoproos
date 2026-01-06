@@ -245,7 +245,7 @@ export async function deleteAvailabilityBlock(id: string): Promise<ActionResult>
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/availability");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Availability] Error deleting block:", error);
     if (error instanceof Error) {
@@ -436,7 +436,7 @@ export async function deleteBookingBuffer(id: string): Promise<ActionResult> {
     revalidatePath("/scheduling");
     revalidatePath("/settings/scheduling");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[BookingBuffer] Error deleting buffer:", error);
     if (error instanceof Error) {
@@ -955,7 +955,7 @@ export async function approveTimeOffRequest(id: string): Promise<ActionResult> {
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/time-off");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[TimeOff] Error approving request:", error);
     if (error instanceof Error) {
@@ -1002,7 +1002,7 @@ export async function rejectTimeOffRequest(
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/time-off");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[TimeOff] Error rejecting request:", error);
     if (error instanceof Error) {
@@ -1065,7 +1065,7 @@ export async function cancelTimeOffRequest(id: string): Promise<ActionResult> {
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/time-off");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[TimeOff] Error cancelling request:", error);
     if (error instanceof Error) {

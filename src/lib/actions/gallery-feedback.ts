@@ -173,7 +173,7 @@ export async function markFeedbackAsRead(feedbackId: string): Promise<VoidAction
     });
 
     revalidatePath("/feedback");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Gallery Feedback] Error marking as read:", error);
     return { success: false, error: "Failed to mark feedback as read" };
@@ -199,7 +199,7 @@ export async function markFeedbackAsResolved(feedbackId: string): Promise<VoidAc
     });
 
     revalidatePath("/feedback");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Gallery Feedback] Error marking as resolved:", error);
     return { success: false, error: "Failed to mark feedback as resolved" };
@@ -225,7 +225,7 @@ export async function markAllFeedbackAsRead(): Promise<VoidActionResult> {
     });
 
     revalidatePath("/feedback");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Gallery Feedback] Error marking all as read:", error);
     return { success: false, error: "Failed to mark all feedback as read" };
@@ -250,7 +250,7 @@ export async function deleteFeedback(feedbackId: string): Promise<VoidActionResu
     });
 
     revalidatePath("/feedback");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Gallery Feedback] Error deleting feedback:", error);
     return { success: false, error: "Failed to delete feedback" };

@@ -129,7 +129,7 @@ export async function updateServiceCapability(
     revalidatePath(`/settings/team/${userId}`);
     revalidatePath(`/settings/team/${userId}/capabilities`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating service capability:", error);
     if (error instanceof Error) {
@@ -159,7 +159,7 @@ export async function removeServiceCapability(
     revalidatePath(`/settings/team/${userId}`);
     revalidatePath(`/settings/team/${userId}/capabilities`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing service capability:", error);
     if (error instanceof Error) {
@@ -491,7 +491,7 @@ export async function setUserHomeBase(
 
     revalidatePath(`/settings/team/${userId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error setting user home base:", error);
     if (error instanceof Error) {

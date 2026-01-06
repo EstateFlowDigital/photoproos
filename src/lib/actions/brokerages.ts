@@ -383,7 +383,7 @@ export async function deleteBrokerage(id: string): Promise<ActionResult<void>> {
     });
 
     revalidatePath("/brokerages");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Brokerages] Error deleting brokerage:", error);
     return { success: false, error: "Failed to delete brokerage" };
@@ -436,7 +436,7 @@ export async function assignAgentToBrokerage(
 
     revalidatePath("/brokerages");
     revalidatePath("/clients");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Brokerages] Error assigning agent:", error);
     return { success: false, error: "Failed to assign agent to brokerage" };

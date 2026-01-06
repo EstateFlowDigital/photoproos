@@ -242,7 +242,7 @@ export async function deleteGalleryTemplate(id: string) {
     revalidatePath("/settings/templates");
     revalidatePath("/galleries/new");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting gallery template:", error);
     return { success: false, error: "Failed to delete template" };

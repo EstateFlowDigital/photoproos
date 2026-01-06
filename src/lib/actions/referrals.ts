@@ -271,7 +271,7 @@ export async function toggleReferralProgram(): Promise<ActionResult<void>> {
     });
 
     revalidatePath("/settings/referrals");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling referral program:", error);
     return { success: false, error: "Failed to toggle program status" };
@@ -345,7 +345,7 @@ export async function toggleReferrerStatus(
     });
 
     revalidatePath("/settings/referrals");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling referrer status:", error);
     return { success: false, error: "Failed to toggle referrer status" };
@@ -375,7 +375,7 @@ export async function deleteReferrer(
     await prisma.referrer.delete({ where: { id: referrerId } });
 
     revalidatePath("/settings/referrals");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting referrer:", error);
     return { success: false, error: "Failed to delete referrer" };
@@ -461,7 +461,7 @@ export async function updateReferralStatus(
     });
 
     revalidatePath("/settings/referrals");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating referral status:", error);
     return { success: false, error: "Failed to update referral status" };

@@ -231,7 +231,7 @@ export async function deleteSubscriptionPlan(
       where: { id },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[SubscriptionPlans] Error deleting plan:", error);
     return {
@@ -317,7 +317,7 @@ export async function deletePlanFeature(id: string): Promise<ActionResult> {
       where: { id },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[SubscriptionPlans] Error deleting feature:", error);
     return {
@@ -1040,7 +1040,7 @@ export async function deletePricingVariant(id: string): Promise<ActionResult> {
       where: { id },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[SubscriptionPlans] Error deleting variant:", error);
     return {

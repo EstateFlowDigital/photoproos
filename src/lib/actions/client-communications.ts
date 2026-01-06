@@ -234,7 +234,7 @@ export async function deleteCommunication(id: string): Promise<ActionResult> {
 
     revalidatePath(`/clients/${existing.client.id}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ClientCommunication] Error deleting communication:", error);
     if (error instanceof Error) {

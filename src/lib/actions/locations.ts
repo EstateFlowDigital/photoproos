@@ -252,7 +252,7 @@ export async function deleteLocation(id: string): Promise<ActionResult> {
 
     revalidatePath("/settings/travel");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting location:", error);
     if (error instanceof Error) {
@@ -579,7 +579,7 @@ export async function setOrganizationHomeBase(
     revalidatePath("/settings/travel");
     revalidatePath("/settings");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error setting home base:", error);
     if (error instanceof Error) {

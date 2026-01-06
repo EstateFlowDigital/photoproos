@@ -789,7 +789,7 @@ export async function cancelOrder(id: string): Promise<ActionResult> {
 
     revalidatePath("/orders");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Orders] Error cancelling order:", error);
     if (error instanceof Error) {

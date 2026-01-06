@@ -542,7 +542,7 @@ export async function updateBookingStatus(
     revalidatePath(`/scheduling/${id}`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating booking status:", error);
     if (error instanceof Error) {
@@ -708,7 +708,7 @@ export async function confirmBooking(
     revalidatePath(`/scheduling/${id}`);
     revalidatePath("/dashboard");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error confirming booking:", error);
     if (error instanceof Error) {
@@ -750,7 +750,7 @@ export async function deleteBooking(id: string): Promise<ActionResult> {
     revalidatePath("/scheduling");
     revalidatePath("/dashboard");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting booking:", error);
     if (error instanceof Error) {
@@ -1317,7 +1317,7 @@ export async function removeFromSeries(bookingId: string): Promise<ActionResult>
     revalidatePath("/scheduling");
     revalidatePath("/dashboard");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error removing booking from series:", error);
     if (error instanceof Error) {
@@ -1502,7 +1502,7 @@ export async function deleteBookingReminder(
       where: { id: reminderId },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting reminder:", error);
     if (error instanceof Error) {
@@ -1690,7 +1690,7 @@ export async function markReminderSent(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error marking reminder as sent:", error);
     if (error instanceof Error) {
@@ -1995,7 +1995,7 @@ export async function updateMultiDaySession(
     });
 
     revalidatePath("/scheduling");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating multi-day session:", error);
     if (error instanceof Error) {
@@ -2053,7 +2053,7 @@ export async function deleteMultiDaySession(
     });
 
     revalidatePath("/scheduling");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting multi-day session:", error);
     if (error instanceof Error) {
@@ -2095,7 +2095,7 @@ export async function deleteMultiDayEvent(
     });
 
     revalidatePath("/scheduling");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting multi-day event:", error);
     if (error instanceof Error) {

@@ -181,7 +181,7 @@ export async function submitContactForm(input: {
       `,
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Contact form error:", error);
     return { success: false, error: "An unexpected error occurred" };

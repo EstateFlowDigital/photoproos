@@ -588,7 +588,7 @@ export async function processReferralSignup(
       }
     }
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error processing signup:", error);
     return { success: false, error: "Failed to process referral signup" };
@@ -613,7 +613,7 @@ export async function processReferralConversion(
 
     if (!referral) {
       // Not a referred user, that's okay
-      return { success: true, data: undefined };
+      return ok();
     }
 
     const settings = await getPlatformSettings();
@@ -702,7 +702,7 @@ export async function processReferralConversion(
       }
     }
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error processing conversion:", error);
     return { success: false, error: "Failed to process conversion" };
@@ -772,7 +772,7 @@ export async function applyReward(
 
     revalidatePath("/settings/referrals");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error applying reward:", error);
     return { success: false, error: "Failed to apply reward" };
@@ -827,7 +827,7 @@ export async function updatePlatformReferralSettings(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error updating settings:", error);
     return { success: false, error: "Failed to update settings" };
@@ -974,7 +974,7 @@ export async function processReferralFromCode(
     }
 
     console.log(`[PlatformReferrals] Processed referral for user ${user.id} from code ${referralCode}`);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[PlatformReferrals] Error processing referral from code:", error);
     return { success: false, error: "Failed to process referral" };

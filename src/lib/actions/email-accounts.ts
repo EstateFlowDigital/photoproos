@@ -90,7 +90,7 @@ export async function disconnectEmailAccount(
     revalidatePath("/settings/email");
     revalidatePath("/inbox");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error disconnecting email account:", error);
     return { success: false, error: "Failed to disconnect email account" };
@@ -129,7 +129,7 @@ export async function toggleEmailAccountSync(
 
     revalidatePath("/settings/email");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling email sync:", error);
     return { success: false, error: "Failed to update sync setting" };

@@ -175,7 +175,7 @@ export async function toggleSlackIntegration(): Promise<ActionResult<void>> {
     });
 
     revalidatePath("/settings/slack");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error toggling Slack integration:", error);
     return { success: false, error: "Failed to toggle integration" };
@@ -219,7 +219,7 @@ export async function testSlackConnection(): Promise<ActionResult<void>> {
       return { success: false, error: "Failed to send test message to Slack" };
     }
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error testing Slack connection:", error);
     return { success: false, error: "Failed to test connection" };
@@ -238,7 +238,7 @@ export async function deleteSlackIntegration(): Promise<ActionResult<void>> {
     });
 
     revalidatePath("/settings/slack");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting Slack integration:", error);
     return { success: false, error: "Failed to delete integration" };

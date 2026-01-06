@@ -352,7 +352,7 @@ export async function updateGoogleCalendarSettings(data: {
     });
 
     revalidatePath("/settings/calendar");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[GoogleCalendar] Error updating settings:", error);
     return { success: false, error: "Failed to update settings" };
@@ -391,7 +391,7 @@ export async function disconnectGoogleCalendar(): Promise<ActionResult<void>> {
     });
 
     revalidatePath("/settings/calendar");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[GoogleCalendar] Error disconnecting:", error);
     return { success: false, error: "Failed to disconnect" };

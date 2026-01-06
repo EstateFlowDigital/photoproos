@@ -333,7 +333,7 @@ export async function updateContractTemplate(
   try {
     // For now, templates cannot be modified (system templates are read-only)
     console.log("[ContractTemplates] Updating template:", id, data);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
     return { success: false, error: "Failed to update template" };
@@ -352,7 +352,7 @@ export async function deleteContractTemplate(
       return { success: false, error: "System templates cannot be deleted" };
     }
     console.log("[ContractTemplates] Deleting template:", id);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[ContractTemplates] Error:", error);
     return { success: false, error: "Failed to delete template" };
@@ -382,5 +382,5 @@ export async function duplicateContractTemplate(
  */
 export async function seedDefaultContractTemplates(): Promise<ActionResult<void>> {
   // Templates are already available as SYSTEM_TEMPLATES
-  return { success: true, data: undefined };
+  return ok();
 }

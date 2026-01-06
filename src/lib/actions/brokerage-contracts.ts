@@ -355,7 +355,7 @@ export async function deleteBrokerageContract(id: string): Promise<ActionResult<
     });
 
     revalidatePath(`/brokerages/${contract.brokerage.id}`);
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[BrokerageContracts] Error deleting contract:", error);
     return { success: false, error: "Failed to delete contract" };

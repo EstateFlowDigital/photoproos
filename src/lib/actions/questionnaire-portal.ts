@@ -257,7 +257,7 @@ export async function saveQuestionnaireProgress(
       }
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error saving questionnaire progress:", error);
     if (error instanceof Error) {
@@ -310,7 +310,7 @@ export async function acceptAgreement(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error accepting agreement:", error);
     if (error instanceof Error) {
@@ -509,7 +509,7 @@ export async function submitQuestionnaireResponses(
       }
     }
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error submitting questionnaire responses:", error);
     if (error instanceof Error) {

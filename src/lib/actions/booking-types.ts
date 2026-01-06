@@ -109,7 +109,7 @@ export async function updateBookingType(
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/types");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error updating booking type:", error);
     return { success: false, error: "Failed to update booking type" };
@@ -145,7 +145,7 @@ export async function deleteBookingType(id: string): Promise<ActionResult> {
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/types");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting booking type:", error);
     return { success: false, error: "Failed to delete booking type" };
@@ -164,7 +164,7 @@ export async function seedDefaultBookingTypes(): Promise<ActionResult> {
     });
 
     if (existingCount > 0) {
-      return { success: true, data: undefined };
+      return ok();
     }
 
     const defaultTypes = [
@@ -212,7 +212,7 @@ export async function seedDefaultBookingTypes(): Promise<ActionResult> {
     revalidatePath("/scheduling");
     revalidatePath("/scheduling/types");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error seeding booking types:", error);
     return { success: false, error: "Failed to seed booking types" };

@@ -200,7 +200,7 @@ export async function deleteBookingForm(
       });
 
       revalidatePath("/scheduling/booking-forms");
-      return { success: true, data: undefined };
+      return ok();
     }
 
     // Actually delete if no submissions or force is true
@@ -210,7 +210,7 @@ export async function deleteBookingForm(
 
     revalidatePath("/scheduling/booking-forms");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error deleting booking form:", error);
     if (error instanceof Error) {
@@ -455,7 +455,7 @@ export async function reorderBookingFormFields(
     revalidatePath("/scheduling/booking-forms");
     revalidatePath(`/scheduling/booking-forms/${validated.bookingFormId}`);
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error reordering booking form fields:", error);
     if (error instanceof Error) {
@@ -1075,7 +1075,7 @@ export async function rejectSubmission(
 
     revalidatePath("/scheduling/booking-forms");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("Error rejecting submission:", error);
     if (error instanceof Error) {

@@ -590,7 +590,7 @@ export async function cancelPayoutBatch(batchId: string): Promise<ActionResult<v
     });
 
     revalidatePath("/settings/payouts");
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[Payouts] Error canceling batch:", error);
     return { success: false, error: "Failed to cancel payout batch" };
