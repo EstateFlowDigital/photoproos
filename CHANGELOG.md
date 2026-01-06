@@ -46,6 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Clear filters button for quick reset
   - Empty state for no matching results
 
+- **Products Search & Filters** - Enhanced product catalogs page with search, filters, and stats
+  - Search by catalog name, description, or tags
+  - Status filter pills (All, Active, Draft, Archived) with counts
+  - Summary stats cards (Total Catalogs, Active, Drafts, Total Products)
+  - Clear filters button for quick reset
+  - Empty state for no matching results
+
 ### Changed
 - **Refactored error returns to use `fail()` helper** - Replaced ~2,200 occurrences of verbose `return { success: false, error: "..." }` pattern with the cleaner `fail("...")` helper function across 105 action files
   - Added `fail` import from `@/lib/types/action-result` to all affected files
