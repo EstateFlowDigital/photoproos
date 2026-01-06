@@ -12,7 +12,7 @@ import {
   TaskStatus,
   TaskPriority,
 } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // Sample data for seeding
 const SAMPLE_CLIENTS = [

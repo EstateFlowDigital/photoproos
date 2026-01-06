@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added utility functions: `unwrap()`, `getOrDefault()`, `mapResult()` for common patterns
 
 ### Added
+- **ESLint v9 Flat Config**
+  - Added `eslint.config.mjs` with TypeScript support
+  - Compatible with pre-commit hooks (lint-staged)
+  - Configured with sensible defaults for Next.js projects
+
 - **Pre-commit Hooks with Husky**
   - Husky v9 configured with lint-staged
   - Runs ESLint with auto-fix on staged `.ts`/`.tsx` files

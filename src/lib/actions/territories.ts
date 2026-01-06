@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 export type ServiceTerritory = {
   id: string;

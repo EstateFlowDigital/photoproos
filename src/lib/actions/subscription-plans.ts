@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
 import type { PlanName, ExperimentStatus } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 export interface SubscriptionPlanInput {
   name: string;

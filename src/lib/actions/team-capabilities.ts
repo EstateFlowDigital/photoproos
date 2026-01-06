@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import type { CapabilityLevel } from "@prisma/client";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID
 async function getOrganizationId(): Promise<string> {

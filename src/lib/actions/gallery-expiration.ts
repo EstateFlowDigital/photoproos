@@ -148,7 +148,19 @@ export async function getPendingExpirationNotifications() {
     });
 
     // Filter to only include notifications that are due today
-    const pending = [];
+    const pending: Array<{
+      notification: typeof notifications[0];
+      project: {
+        id: string;
+        name: string;
+        expiresAt: Date;
+        daysUntilExpiry: number;
+        clientEmail: string | undefined;
+        clientName: string | undefined;
+        organizationName: string;
+        deliverySlug: string;
+      };
+    }> = [];
 
     for (const notification of notifications) {
       const project = await prisma.project.findUnique({

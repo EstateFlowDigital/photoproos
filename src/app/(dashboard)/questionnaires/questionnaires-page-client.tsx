@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { QuestionnaireTemplateWithRelations } from "@/lib/actions/questionnaire-templates";
 import type { ClientQuestionnaireWithRelations } from "@/lib/actions/client-questionnaires";
 import type { Industry } from "@prisma/client";
 import { FileText, Plus, Users, Clock, CheckCircle, AlertTriangle, Send } from "lucide-react";
 import { AssignQuestionnaireModal } from "@/components/modals/assign-questionnaire-modal";
+import { VirtualList } from "@/components/ui/virtual-list";
 
 interface QuestionnaireStats {
   total: number;
@@ -178,38 +179,41 @@ export function QuestionnairesPageClient({
               </p>
             </div>
           ) : (
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
-              <table className="w-full min-w-[640px]">
-                <thead className="border-b border-[var(--card-border)] bg-background">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase">Client</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase">Template</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground-muted uppercase">Due Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--card-border)]">
-                  {questionnaires.map((q) => (
-                    <tr
-                      key={q.id}
-                      className="hover:bg-background/50 cursor-pointer transition-colors"
-                      onClick={() => window.location.href = `/questionnaires/assigned/${q.id}`}
-                    >
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-foreground">{q.client.fullName || q.client.email}</p>
-                        <p className="text-xs text-foreground-muted">{q.client.email}</p>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-foreground">{q.template.name}</td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={q.status} />
-                      </td>
-                      <td className="px-4 py-3 text-sm text-foreground-muted">
-                        {q.dueDate ? new Date(q.dueDate).toLocaleDateString() : "-"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+              <VirtualList
+                className="max-h-[70vh]"
+                items={questionnaires}
+                getItemKey={(q) => q.id}
+                estimateSize={() => 96}
+                itemGap={0}
+                prepend={
+                  <div className="sticky top-0 z-10 hidden grid-cols-[1.4fr,1.2fr,1fr,1fr] items-center gap-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-foreground-muted md:grid">
+                    <span>Client</span>
+                    <span>Template</span>
+                    <span>Status</span>
+                    <span>Due</span>
+                  </div>
+                }
+                renderItem={(q) => (
+                  <button
+                    key={q.id}
+                    onClick={() => (window.location.href = `/questionnaires/assigned/${q.id}`)}
+                    className="flex w-full flex-col gap-3 border-b border-[var(--card-border)] px-4 py-3 text-left last:border-b-0 hover:bg-[var(--background-hover)] md:grid md:grid-cols-[1.4fr,1.2fr,1fr,1fr] md:items-center md:gap-3"
+                  >
+                    <div>
+                      <p className="font-medium text-foreground">{q.client.fullName || q.client.email}</p>
+                      <p className="text-xs text-foreground-muted">{q.client.email}</p>
+                    </div>
+                    <div className="text-sm text-foreground">{q.template.name}</div>
+                    <div>
+                      <StatusBadge status={q.status} />
+                    </div>
+                    <div className="text-sm text-foreground-muted">
+                      {q.dueDate ? new Date(q.dueDate).toLocaleDateString() : "-"}
+                    </div>
+                  </button>
+                )}
+              />
             </div>
           )}
         </div>

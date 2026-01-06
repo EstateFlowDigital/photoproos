@@ -8,20 +8,24 @@ import { ProofSheetDocument } from "./proof-sheet-document";
 const PLACEHOLDER_IMAGE =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIA1BQdCgAAAABJRU5ErkJggg==";
 
+// Configuration
+const MAX_PHOTOS = 150; // Maximum photos to include (prevents timeout/memory issues)
+const CONCURRENCY_LIMIT = 10; // Process images in parallel
+const IMAGE_TIMEOUT_MS = 10000; // 10 second timeout per image
+
 // Fetch image and convert to base64 data URL for react-pdf compatibility
 async function fetchImageAsBase64(url: string | null | undefined): Promise<string> {
   // Return placeholder for empty/invalid URLs
   if (!url || typeof url !== "string" || url.trim() === "") {
-    console.warn("Empty or invalid image URL, using placeholder");
     return PLACEHOLDER_IMAGE;
   }
 
   try {
     const response = await fetch(url, {
-      signal: AbortSignal.timeout(15000), // 15 second timeout per image
+      signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS),
     });
     if (!response.ok) {
-      console.warn(`Image fetch failed with status ${response.status}: ${url.substring(0, 100)}`);
+      console.warn(`[Proof Sheet] Image fetch failed (${response.status}): ${url.substring(0, 80)}`);
       return PLACEHOLDER_IMAGE;
     }
 
@@ -29,13 +33,13 @@ async function fetchImageAsBase64(url: string | null | undefined): Promise<strin
     const buffer = Buffer.from(arrayBuffer);
     const base64 = buffer.toString("base64");
 
-    // Determine mime type from content-type header or URL
+    // Determine mime type from content-type header
     const contentType = response.headers.get("content-type") || "image/jpeg";
     const mimeType = contentType.split(";")[0].trim();
 
     return `data:${mimeType};base64,${base64}`;
-  } catch (error) {
-    console.error("Failed to fetch image:", url.substring(0, 100), error);
+  } catch {
+    // Silently use placeholder for failed images
     return PLACEHOLDER_IMAGE;
   }
 }
@@ -102,9 +106,16 @@ export async function GET(
       logoBase64 = await fetchImageAsBase64(gallery.organization.logoUrl);
     }
 
-    // Fetch all photo images with concurrency limit to prevent overwhelming the server
-    // Use thumbnails for smaller file size and faster processing
-    const CONCURRENCY_LIMIT = 5;
+    // Limit photos to prevent timeout/memory issues
+    const assetsToProcess = gallery.assets.slice(0, MAX_PHOTOS);
+    const totalPhotos = gallery.assets.length;
+    const isLimited = totalPhotos > MAX_PHOTOS;
+
+    if (isLimited) {
+      console.log(`[Proof Sheet] Gallery has ${totalPhotos} photos, limiting to ${MAX_PHOTOS}`);
+    }
+
+    // Process images in batches with concurrency limit
     const photosWithBase64: Array<{
       id: string;
       url: string;
@@ -112,13 +123,12 @@ export async function GET(
       number: number;
     }> = [];
 
-    // Process images in batches
-    for (let i = 0; i < gallery.assets.length; i += CONCURRENCY_LIMIT) {
-      const batch = gallery.assets.slice(i, i + CONCURRENCY_LIMIT);
+    for (let i = 0; i < assetsToProcess.length; i += CONCURRENCY_LIMIT) {
+      const batch = assetsToProcess.slice(i, i + CONCURRENCY_LIMIT);
       const batchResults = await Promise.all(
         batch.map(async (asset, batchIndex) => {
           const globalIndex = i + batchIndex;
-          // Use first valid (non-empty) URL, preferring thumbnails for smaller size
+          // Use first valid URL, preferring thumbnails for smaller file size
           const url = (asset.thumbnailUrl && asset.thumbnailUrl.trim() !== "")
             ? asset.thumbnailUrl
             : (asset.mediumUrl && asset.mediumUrl.trim() !== "")
@@ -136,11 +146,15 @@ export async function GET(
       photosWithBase64.push(...batchResults);
     }
 
-    // Generate PDF
+    // Generate PDF with description note if photos were limited
+    const description = isLimited
+      ? `${gallery.description || ""}\n\nNote: This proof sheet shows the first ${MAX_PHOTOS} of ${totalPhotos} photos.`.trim()
+      : gallery.description || undefined;
+
     const pdfBuffer = await renderToBuffer(
       ProofSheetDocument({
         galleryName: gallery.name,
-        galleryDescription: gallery.description || undefined,
+        galleryDescription: description,
         clientName: gallery.client?.company || gallery.client?.fullName || undefined,
         photographerName: gallery.organization.publicName || gallery.organization.name,
         logoUrl: logoBase64,
@@ -157,16 +171,20 @@ export async function GET(
       pdfBytes.byteOffset + pdfBytes.byteLength
     ) as ArrayBuffer;
 
+    const safeFilename = gallery.name.replace(/[^a-z0-9]/gi, "-").substring(0, 50);
+
     return new NextResponse(pdfArrayBuffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${gallery.name.replace(/[^a-z0-9]/gi, "-")}-proof-sheet.pdf"`,
+        "Content-Disposition": `attachment; filename="${safeFilename}-proof-sheet.pdf"`,
+        "Cache-Control": "no-cache",
       },
     });
   } catch (error) {
-    console.error("Error generating proof sheet:", error);
+    console.error("[Proof Sheet] Error generating PDF:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to generate proof sheet" },
+      { error: "Failed to generate proof sheet", details: message },
       { status: 500 }
     );
   }

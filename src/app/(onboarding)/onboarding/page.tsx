@@ -44,13 +44,16 @@ export default async function OnboardingPage() {
   });
 
   // Resolve organization (prefer Clerk org when present)
-  let organization = null;
-  if (orgId) {
-    organization = await prisma.organization.findFirst({
-      where: { clerkOrganizationId: orgId },
-      include: { onboardingProgress: true },
-    });
-  }
+  type OrganizationType = Awaited<ReturnType<typeof prisma.organization.findFirst<{
+    include: { onboardingProgress: true };
+  }>>>;
+
+  let organization: OrganizationType = orgId
+    ? await prisma.organization.findFirst({
+        where: { clerkOrganizationId: orgId },
+        include: { onboardingProgress: true },
+      })
+    : null;
 
   if (!organization) {
     if (user.memberships.length === 0) {

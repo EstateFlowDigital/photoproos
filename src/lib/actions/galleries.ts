@@ -20,7 +20,7 @@ import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendGalleryDeliveredEmail } from "@/lib/email/send";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 import { extractKeyFromUrl, generatePresignedDownloadUrl, deleteFiles } from "@/lib/storage";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {

@@ -16,7 +16,7 @@ import {
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
 import type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // Re-export the type for consumers who import from this file
 export type { PortalQuestionnaireWithRelations } from "./questionnaire-types";

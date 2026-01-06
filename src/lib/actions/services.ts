@@ -18,7 +18,7 @@ import {
   archiveStripeProduct,
   reactivateStripeProduct,
 } from "@/lib/stripe/product-sync";
-import type { ActionResult } from "@/lib/types/action-result";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {

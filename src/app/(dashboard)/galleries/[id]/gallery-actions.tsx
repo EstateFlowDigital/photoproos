@@ -35,13 +35,19 @@ export function GalleryActions({
     try {
       const response = await fetch(`/api/gallery/${galleryId}/proof-sheet`);
       if (!response.ok) {
-        throw new Error("Failed to generate proof sheet");
+        // Try to get error details from JSON response
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to generate proof sheet");
+        }
+        throw new Error(`Failed to generate proof sheet (${response.status})`);
       }
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${galleryName.replace(/[^a-z0-9]/gi, "-")}-proof-sheet.pdf`;
+      a.download = `${galleryName.replace(/[^a-z0-9]/gi, "-").substring(0, 50)}-proof-sheet.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -49,7 +55,8 @@ export function GalleryActions({
       showToast("Proof sheet downloaded successfully", "success");
     } catch (error) {
       console.error("Error downloading proof sheet:", error);
-      showToast("Failed to download proof sheet", "error");
+      const message = error instanceof Error ? error.message : "Failed to download proof sheet";
+      showToast(message, "error");
     } finally {
       setIsDownloadingProofSheet(false);
     }
