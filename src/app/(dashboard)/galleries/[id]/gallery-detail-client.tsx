@@ -30,6 +30,7 @@ import { AssignToCollectionModal } from "@/components/gallery/assign-to-collecti
 import { AnalyticsDashboard } from "@/components/gallery/analytics-dashboard";
 import { ActivityTimeline } from "@/components/gallery/activity-timeline";
 import { SelectionsReviewPanel } from "@/components/gallery/selections-review-panel";
+import { PhotoComparisonModal } from "@/components/gallery/photo-comparison-modal";
 import {
   DndContext,
   closestCenter,
@@ -267,6 +268,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showAssignCollectionModal, setShowAssignCollectionModal] = useState(false);
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isSavingSetting, setIsSavingSetting] = useState<string | null>(null);
@@ -1402,6 +1404,15 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   >
                     <StarIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">Set as Cover</span>
+                  </button>
+                  <button
+                    onClick={() => setShowComparisonModal(true)}
+                    disabled={selectedPhotos.size < 2 || selectedPhotos.size > 4 || isBatchDeleting || isBatchDownloading}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px]"
+                    title={selectedPhotos.size < 2 ? "Select 2-4 photos to compare" : selectedPhotos.size > 4 ? "Max 4 photos for comparison" : "Compare selected photos"}
+                  >
+                    <GridIcon className="h-4 w-4" />
+                    <span className="hidden sm:inline">Compare</span>
                   </button>
                   {/* Watermark Toggle Dropdown */}
                   <div className="relative group">
@@ -2793,6 +2804,26 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           setIsSelectMode(false);
           router.refresh();
         }}
+      />
+
+      {/* Photo Comparison Modal */}
+      <PhotoComparisonModal
+        photos={photos.filter((p) => selectedPhotos.has(p.id)).map((p) => ({
+          id: p.id,
+          url: p.mediumUrl || p.url,
+          thumbnailUrl: p.thumbnailUrl,
+          mediumUrl: p.mediumUrl,
+          filename: p.filename,
+        }))}
+        isOpen={showComparisonModal}
+        onClose={() => setShowComparisonModal(false)}
+        allPhotos={photos.map((p) => ({
+          id: p.id,
+          url: p.mediumUrl || p.url,
+          thumbnailUrl: p.thumbnailUrl,
+          mediumUrl: p.mediumUrl,
+          filename: p.filename,
+        }))}
       />
     </>
   );

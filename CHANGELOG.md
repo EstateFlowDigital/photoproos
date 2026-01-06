@@ -94,6 +94,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Selection limit input with unlimited option
   - Real-time status tracking (in_progress, submitted, approved, rejected)
 
+- **Photo Comparison Mode** - Side-by-side photo comparison viewer
+  - Select 2-4 photos and compare them in a dedicated full-screen modal
+  - Multiple layout options: horizontal split, vertical split, or 2x2 grid
+  - Synchronized zoom and pan across all comparison photos
+  - Navigate through gallery photos within each comparison slot
+  - Show/hide filename info overlay
+  - Keyboard shortcuts: +/- for zoom, 0 to reset, I for info, Esc to close
+  - Remove photos from comparison (minimum 2)
+  - Compare button in batch actions bar (enabled when 2-4 photos selected)
+
 - **Questionnaires Search & Filters** - Enhanced questionnaires page with search and filtering
   - Search by template name, description, industry, client name, or email
   - Status filter pills (All, Pending, In Progress, Completed, Approved) with counts
