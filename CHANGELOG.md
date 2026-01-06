@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Email Delivery Error Visibility** - Gallery delivery now returns email status to UI
+  - Modified `deliverGallery()` to return `emailSent` and `emailError` status
+  - UI shows warning toast when email fails: "Email not sent: [reason]"
+  - Previously, email failures were silently caught and only logged to console
+  - Helps users understand when RESEND_API_KEY is missing or email config is broken
+
+- **Public Gallery Mobile Header Overflow** - Complete mobile-friendly header redesign
+  - Secondary actions (Copy Link, QR Code, Slideshow, Compare, Select) now in mobile dropdown menu
+  - Primary actions (Favorites, Download/Pay) always visible
+  - Added `MoreIcon` component and mobile menu state management
+  - Proper backdrop and click-outside-to-close behavior
+  - Added ARIA labels to all interactive header buttons
+
+- **Gallery List Table Mobile Scroll** - Added scroll affordance for table view
+  - Added gradient fade indicator on right side to hint scrollable content
+  - Reduced table min-width from 650px to 600px
+  - Better visual cue for horizontal scrolling on mobile devices
+
 - **Database Migration Safety** - Replaced unsafe `prisma db push` prestart with safe migration script
   - New `scripts/db-migrate.ts` handles duplicate cleanup before schema changes
   - Prevents deployment failures from unique constraint conflicts

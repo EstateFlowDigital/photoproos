@@ -648,8 +648,11 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
-            <table className="w-full min-w-[650px]">
+          <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+            {/* Mobile scroll hint */}
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[var(--card)] to-transparent pointer-events-none z-10 md:hidden" aria-hidden="true" />
+            <div className="overflow-x-auto scrollbar-thin">
+              <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-[var(--card-border)]">
                   {isSelectMode && (
@@ -854,7 +857,8 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         )
       ) : (

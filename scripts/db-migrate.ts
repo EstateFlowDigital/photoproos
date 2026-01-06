@@ -15,16 +15,17 @@ async function migrate() {
   const pool = new Pool({ connectionString: databaseUrl });
 
   try {
-    // Check if GalleryFavorite table exists
-    const tableCheck = await pool.query(`
+    // Check if GalleryFavorite table exists AND has the selectionType column
+    const columnCheck = await pool.query(`
       SELECT EXISTS (
-        SELECT FROM information_schema.tables
+        SELECT FROM information_schema.columns
         WHERE table_schema = 'public'
         AND table_name = 'GalleryFavorite'
+        AND column_name = 'selectionType'
       );
     `);
 
-    if (tableCheck.rows[0].exists) {
+    if (columnCheck.rows[0].exists) {
       console.log('Cleaning up duplicate GalleryFavorite records...');
 
       // Delete duplicates, keeping the most recent one
@@ -39,6 +40,8 @@ async function migrate() {
       `);
 
       console.log(`Removed ${result.rowCount} duplicate records`);
+    } else {
+      console.log('GalleryFavorite table or selectionType column does not exist yet, skipping duplicate cleanup');
     }
 
     await pool.end();
