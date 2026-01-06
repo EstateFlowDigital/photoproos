@@ -68,34 +68,53 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
   // Build filter query
   const statusFilter = filter === "all" ? undefined : filter;
 
-  // Fetch galleries, counts, clients, and services in parallel
-  const [galleries, counts, clients, services] = await Promise.all([
-    prisma.project.findMany({
+  // Fetch galleries, counts, clients, and services in parallel with error handling
+  let galleries: Awaited<ReturnType<typeof prisma.project.findMany<{ include: typeof galleryListInclude }>>> = [];
+  let counts = { all: 0, draft: 0, pending: 0, delivered: 0, archived: 0 };
+  let clients: { id: string; fullName: string | null; company: string | null; email: string }[] = [];
+  let services: { id: string; name: string; category: string }[] = [];
+
+  try {
+    // Primary query - galleries (critical)
+    galleries = await prisma.project.findMany({
       where: {
         organizationId: organization.id,
         ...(statusFilter ? { status: statusFilter } : {}),
       },
       include: galleryListInclude,
       orderBy: { createdAt: "desc" },
-    }),
-    getGalleryCounts(),
-    prisma.client.findMany({
-      where: { organizationId: organization.id },
-      select: {
-        id: true,
-        fullName: true,
-        company: true,
-        email: true,
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    }),
-    prisma.service.findMany({
-      where: { organizationId: organization.id, isActive: true },
-      select: { id: true, name: true, category: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+    });
+  } catch (error) {
+    console.error("[Galleries] Failed to fetch galleries:", error);
+    // Re-throw to trigger error boundary for critical failure
+    throw new Error("Failed to load galleries. Please try again.");
+  }
+
+  // Secondary queries - can fail gracefully
+  try {
+    [counts, clients, services] = await Promise.all([
+      getGalleryCounts(),
+      prisma.client.findMany({
+        where: { organizationId: organization.id },
+        select: {
+          id: true,
+          fullName: true,
+          company: true,
+          email: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+      prisma.service.findMany({
+        where: { organizationId: organization.id, isActive: true },
+        select: { id: true, name: true, category: true },
+        orderBy: { name: "asc" },
+      }),
+    ]);
+  } catch (error) {
+    console.error("[Galleries] Failed to fetch secondary data:", error);
+    // Continue with defaults - these aren't critical for viewing galleries
+  }
 
   // Map galleries to the format expected by GalleriesPageClient
   const mappedGalleries = galleries.map((gallery) => ({

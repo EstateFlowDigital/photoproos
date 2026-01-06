@@ -847,10 +847,19 @@ Track any differences between documentation and reality here.
 
 ## Recommended Actions
 
-1. **Update APP_ARCHITECTURE.md** with corrected counts
+1. ~~**Update APP_ARCHITECTURE.md** with corrected counts~~ ✅ DONE 2026-01-06
 2. **Add missing routes** to documentation:
-   - `/settings/mls-presets`
+   - ~~`/settings/mls-presets`~~ ✅ Added
    - `/schedule`
    - New billing routes
 3. **Document new server actions** added since last update
-4. **Create route-to-action mapping** for easier maintenance
+4. ~~**Create route-to-action mapping** for easier maintenance~~ ✅ DONE - See [ROUTE_ACTION_ATLAS.md](./ROUTE_ACTION_ATLAS.md)
+
+---
+
+## Related Documentation
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [APP_ARCHITECTURE.md](./APP_ARCHITECTURE.md) | High-level architecture | Updated 2026-01-06 |
+| [ROUTE_ACTION_ATLAS.md](./ROUTE_ACTION_ATLAS.md) | Route-to-action data flow mapping | IN PROGRESS (7/192 routes mapped) |

@@ -38,7 +38,7 @@ interface AssignToCollectionModalProps {
   onOpenChange: (open: boolean) => void;
   galleryId: string;
   selectedAssetIds: string[];
-  onSuccess?: () => void;
+  onSuccess?: (assignedCollectionId: string | null) => void;
 }
 
 export function AssignToCollectionModal({
@@ -89,9 +89,10 @@ export function AssignToCollectionModal({
 
       if (result.success) {
         showToast(`${selectedAssetIds.length} photo${selectedAssetIds.length !== 1 ? "s" : ""} added to collection`, "success");
+        const assignedId = selectedCollectionId;
         onOpenChange(false);
         setSelectedCollectionId(null);
-        onSuccess?.();
+        onSuccess?.(assignedId);
       } else {
         showToast(result.error || "Failed to assign photos", "error");
       }
@@ -110,7 +111,7 @@ export function AssignToCollectionModal({
       if (result.success) {
         showToast(`${selectedAssetIds.length} photo${selectedAssetIds.length !== 1 ? "s" : ""} removed from collection`, "success");
         onOpenChange(false);
-        onSuccess?.();
+        onSuccess?.(null); // null means removed from collection
       } else {
         showToast(result.error || "Failed to remove photos", "error");
       }
@@ -134,7 +135,7 @@ export function AssignToCollectionModal({
         name: newCollectionName.trim(),
       });
 
-      if (!createResult.success || !createResult.data) {
+      if (!createResult.success) {
         showToast(createResult.error || "Failed to create collection", "error");
         return;
       }
@@ -144,10 +145,11 @@ export function AssignToCollectionModal({
 
       if (assignResult.success) {
         showToast(`Created "${newCollectionName}" and added ${selectedAssetIds.length} photo${selectedAssetIds.length !== 1 ? "s" : ""}`, "success");
+        const newCollectionId = createResult.data.id;
         onOpenChange(false);
         setNewCollectionName("");
         setShowNewCollectionForm(false);
-        onSuccess?.();
+        onSuccess?.(newCollectionId);
       } else {
         showToast(assignResult.error || "Failed to assign photos", "error");
       }

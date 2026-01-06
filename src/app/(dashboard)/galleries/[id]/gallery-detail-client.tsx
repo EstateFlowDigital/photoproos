@@ -2177,96 +2177,106 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               {/* Download Options */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <h2 className="text-lg font-semibold text-foreground mb-4">Download Options</h2>
+                <p className="text-sm text-foreground-muted mb-4">Choose which resolution options are available to clients</p>
                 <div className="space-y-3">
                   <button
                     type="button"
                     onClick={() => handleSettingsChange({ downloadResolution: "full" })}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-all",
+                      "flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all",
                       settings.downloadResolution === "full"
-                        ? "border-[var(--primary)] bg-[var(--primary)]/10"
-                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)]"
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10 ring-2 ring-[var(--primary)]/20"
+                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
                     )}
                   >
                     <div
                       className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                         settings.downloadResolution === "full"
-                          ? "border-[var(--primary)] bg-[var(--primary)]"
-                          : "border-[var(--border-visible)]"
+                          ? "border-[var(--primary)] bg-[var(--primary)] shadow-sm shadow-[var(--primary)]/30"
+                          : "border-[var(--border-visible)] bg-transparent"
                       )}
                     >
                       {settings.downloadResolution === "full" && (
-                        <CheckIcon className="h-3 w-3 text-white" />
+                        <CheckIcon className="h-3.5 w-3.5 text-white" />
                       )}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className={cn(
-                        "text-sm font-medium",
+                        "text-sm font-semibold",
                         settings.downloadResolution === "full" ? "text-[var(--primary)]" : "text-foreground"
                       )}>Full Resolution Only</p>
-                      <p className="text-xs text-foreground-muted">Clients can only download full-res files</p>
+                      <p className="text-xs text-foreground-muted mt-0.5">Clients can only download original full-res files</p>
                     </div>
+                    {settings.downloadResolution === "full" && (
+                      <span className="shrink-0 rounded-full bg-[var(--primary)] px-2.5 py-1 text-xs font-medium text-white">Active</span>
+                    )}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSettingsChange({ downloadResolution: "web" })}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-all",
+                      "flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all",
                       settings.downloadResolution === "web"
-                        ? "border-[var(--primary)] bg-[var(--primary)]/10"
-                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)]"
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10 ring-2 ring-[var(--primary)]/20"
+                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
                     )}
                   >
                     <div
                       className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                         settings.downloadResolution === "web"
-                          ? "border-[var(--primary)] bg-[var(--primary)]"
-                          : "border-[var(--border-visible)]"
+                          ? "border-[var(--primary)] bg-[var(--primary)] shadow-sm shadow-[var(--primary)]/30"
+                          : "border-[var(--border-visible)] bg-transparent"
                       )}
                     >
                       {settings.downloadResolution === "web" && (
-                        <CheckIcon className="h-3 w-3 text-white" />
+                        <CheckIcon className="h-3.5 w-3.5 text-white" />
                       )}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className={cn(
-                        "text-sm font-medium",
+                        "text-sm font-semibold",
                         settings.downloadResolution === "web" ? "text-[var(--primary)]" : "text-foreground"
                       )}>Web Resolution Only</p>
-                      <p className="text-xs text-foreground-muted">Optimized for web (2048px max)</p>
+                      <p className="text-xs text-foreground-muted mt-0.5">Optimized for web sharing (2048px max)</p>
                     </div>
+                    {settings.downloadResolution === "web" && (
+                      <span className="shrink-0 rounded-full bg-[var(--primary)] px-2.5 py-1 text-xs font-medium text-white">Active</span>
+                    )}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSettingsChange({ downloadResolution: "both" })}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-all",
+                      "flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all",
                       settings.downloadResolution === "both"
-                        ? "border-[var(--primary)] bg-[var(--primary)]/10"
-                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)]"
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10 ring-2 ring-[var(--primary)]/20"
+                        : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
                     )}
                   >
                     <div
                       className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                         settings.downloadResolution === "both"
-                          ? "border-[var(--primary)] bg-[var(--primary)]"
-                          : "border-[var(--border-visible)]"
+                          ? "border-[var(--primary)] bg-[var(--primary)] shadow-sm shadow-[var(--primary)]/30"
+                          : "border-[var(--border-visible)] bg-transparent"
                       )}
                     >
                       {settings.downloadResolution === "both" && (
-                        <CheckIcon className="h-3 w-3 text-white" />
+                        <CheckIcon className="h-3.5 w-3.5 text-white" />
                       )}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className={cn(
-                        "text-sm font-medium",
+                        "text-sm font-semibold",
                         settings.downloadResolution === "both" ? "text-[var(--primary)]" : "text-foreground"
                       )}>Both Options</p>
-                      <p className="text-xs text-foreground-muted">Let clients choose resolution</p>
+                      <p className="text-xs text-foreground-muted mt-0.5">Let clients choose between full-res or web resolution</p>
                     </div>
+                    {settings.downloadResolution === "both" && (
+                      <span className="shrink-0 rounded-full bg-[var(--primary)] px-2.5 py-1 text-xs font-medium text-white">Active</span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -2869,7 +2879,16 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         onOpenChange={setShowAssignCollectionModal}
         galleryId={gallery.id}
         selectedAssetIds={Array.from(selectedPhotos)}
-        onSuccess={() => {
+        onSuccess={(assignedCollectionId) => {
+          // Optimistically update the photos state with new collection assignment
+          const selectedIds = new Set(selectedPhotos);
+          setPhotos((prevPhotos) =>
+            prevPhotos.map((photo) =>
+              selectedIds.has(photo.id)
+                ? { ...photo, collectionId: assignedCollectionId }
+                : photo
+            )
+          );
           setSelectedPhotos(new Set());
           setIsSelectMode(false);
           router.refresh();

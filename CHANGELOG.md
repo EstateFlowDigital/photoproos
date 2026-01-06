@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `bulkDeleteInvoiceAttachments` now also cleans up storage files after database deletion
   - Graceful error handling: storage deletion failures are logged but don't block the operation
 
+- **Scheduled Invoice Email Template** - Scheduled invoices now use the correct email template
+  - Changed from `InvoiceReminderEmail` to `InvoiceSentEmail` for better client experience
+  - Now includes line items summary, proper formatting, and PDF attachment support
+
 ### Added
 - **Project Automation Notifications** - Send_notification action now creates real notifications
   - Added `task_automation` notification type
@@ -26,12 +30,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Activity log created to notify photographer of approval
   - Includes add-on name, description, and price as line item
 
-- **Invoice Email Notifications** - Send invoices to clients via email
+- **Invoice Email Notifications with PDF Attachments** - Send invoices to clients via email
   - New `sendInvoice` server action sends professional invoice emails using `InvoiceSentEmail` template
+  - **PDF Invoice Attachment** - Automatically generates and attaches PDF invoice to all emails
   - Includes payment link, invoice details, line items summary, and due date
   - Automatically updates invoice status from draft to sent
-  - `bulkSendInvoices` now properly sends emails for each invoice (was TODO)
-  - Activity logging for audit trail
+  - `bulkSendInvoices` now properly sends emails for each invoice
+  - `sendInvoiceReminder` now includes PDF attachment
+  - `processScheduledInvoices` now uses correct template with PDF support
+  - Activity logging tracks whether PDF was attached
+
+- **Route-to-Action Atlas** - Comprehensive data flow documentation
+  - Created `docs/ROUTE_ACTION_ATLAS.md` - Maps routes to their complete data flow
+  - Documents: Route → Page → Client → Server Actions → Prisma Models
+  - **Verified routes mapped:**
+    - `/dashboard` - 15+ models, parallel data fetch pattern
+    - `/galleries` - Project model with virtual scrolling
+    - `/invoices` - Invoice model with bulk actions
+    - `/clients` - Client with tags, portal impersonation
+    - `/scheduling` - Calendar views with time-off blocks
+    - `/contracts` - Multi-signer with token-based signing
+    - `/leads/analytics` - Lead aggregation from 3 sources
+  - Progress: 7/192 routes mapped (4%)
+  - Cross-references TRUTH_LEDGER.md for verification status
 
 - **Outlook Email Disconnect** - Proper Outlook account disconnection for unified inbox
   - Created `src/lib/integrations/outlook.ts` with token refresh and disconnect functions

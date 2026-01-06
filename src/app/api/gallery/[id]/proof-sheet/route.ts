@@ -4,14 +4,17 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { ProofSheetDocument } from "./proof-sheet-document";
 
+// Route segment config for longer timeout (PDF generation can be slow)
+export const maxDuration = 60; // 60 seconds (Vercel Pro/Enterprise)
+
 // Simple gray placeholder image (1x1 pixel gray PNG)
 const PLACEHOLDER_IMAGE =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIA1BQdCgAAAABJRU5ErkJggg==";
 
-// Configuration
-const MAX_PHOTOS = 150; // Maximum photos to include (prevents timeout/memory issues)
-const CONCURRENCY_LIMIT = 10; // Process images in parallel
-const IMAGE_TIMEOUT_MS = 10000; // 10 second timeout per image
+// Configuration - tuned for serverless environments with limited memory/time
+const MAX_PHOTOS = 100; // Maximum photos (reduced from 150 for faster generation)
+const CONCURRENCY_LIMIT = 15; // Process more images in parallel
+const IMAGE_TIMEOUT_MS = 5000; // 5 second timeout per image (reduced for faster failure)
 
 // Fetch image and convert to base64 data URL for react-pdf compatibility
 async function fetchImageAsBase64(url: string | null | undefined): Promise<string> {

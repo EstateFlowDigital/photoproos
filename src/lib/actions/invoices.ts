@@ -11,6 +11,7 @@ import { InvoiceReminderEmail } from "@/emails/invoice-reminder";
 import { InvoiceSentEmail } from "@/emails/invoice-sent";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
+import { generateInvoicePdfBuffer } from "@/lib/actions/invoice-pdf";
 
 // Lazy initialize Resend to avoid build errors
 let _resend: Resend | null = null;
@@ -866,6 +867,21 @@ export async function sendInvoice(
       .map((item) => item.description)
       .join(", ");
 
+    // Generate PDF attachment
+    let pdfAttachment: { filename: string; content: Buffer } | null = null;
+    try {
+      const pdfResult = await generateInvoicePdfBuffer(invoiceId);
+      if (pdfResult.success && pdfResult.buffer && pdfResult.filename) {
+        pdfAttachment = {
+          filename: pdfResult.filename,
+          content: pdfResult.buffer,
+        };
+      }
+    } catch (pdfError) {
+      // Log but don't fail - sending without PDF is better than not sending
+      console.error("Failed to generate invoice PDF:", pdfError);
+    }
+
     // Send email using InvoiceSentEmail template
     const emailResult = await getResend().emails.send({
       from: process.env.EMAIL_FROM || "PhotoProOS <noreply@photoproos.com>",
@@ -880,6 +896,10 @@ export async function sendInvoice(
         photographerName: invoice.organization.name,
         dueDate: formattedDueDate,
         lineItemsSummary: lineItemsSummary + (invoice.lineItems.length > 3 ? "..." : ""),
+        hasPdfAttachment: !!pdfAttachment,
+      }),
+      ...(pdfAttachment && {
+        attachments: [pdfAttachment],
       }),
     });
 
@@ -908,6 +928,7 @@ export async function sendInvoice(
       details: {
         invoiceNumber: invoice.invoiceNumber,
         clientEmail,
+        hasPdfAttachment: !!pdfAttachment,
       },
     });
 
@@ -989,6 +1010,21 @@ export async function sendInvoiceReminder(
     const paymentUrl = invoice.paymentLinkUrl ||
       `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoiceId}`;
 
+    // Generate PDF attachment for reminder
+    let pdfAttachment: { filename: string; content: Buffer } | null = null;
+    try {
+      const pdfResult = await generateInvoicePdfBuffer(invoiceId);
+      if (pdfResult.success && pdfResult.buffer && pdfResult.filename) {
+        pdfAttachment = {
+          filename: pdfResult.filename,
+          content: pdfResult.buffer,
+        };
+      }
+    } catch (pdfError) {
+      // Log but don't fail - sending without PDF is better than not sending
+      console.error("Failed to generate invoice PDF for reminder:", pdfError);
+    }
+
     // Send email
     const emailResult = await getResend().emails.send({
       from: process.env.EMAIL_FROM || "PhotoProOS <noreply@photoproos.com>",
@@ -1007,6 +1043,9 @@ export async function sendInvoiceReminder(
         isOverdue,
         daysOverdue,
         reminderCount: invoice.remindersSent + 1,
+      }),
+      ...(pdfAttachment && {
+        attachments: [pdfAttachment],
       }),
     });
 
@@ -1566,20 +1605,52 @@ export async function processScheduledInvoices(): Promise<
           paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoice.id}`;
         }
 
-        // Send the invoice email
+        // Format due date
+        const formattedDueDate = new Date(invoice.dueDate).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+
+        // Create line items summary
+        const lineItemsSummary = invoice.lineItems
+          .slice(0, 3)
+          .map((item) => item.description)
+          .join(", ");
+
+        // Generate PDF attachment
+        let pdfAttachment: { filename: string; content: Buffer } | null = null;
+        try {
+          const pdfResult = await generateInvoicePdfBuffer(invoice.id);
+          if (pdfResult.success && pdfResult.buffer && pdfResult.filename) {
+            pdfAttachment = {
+              filename: pdfResult.filename,
+              content: pdfResult.buffer,
+            };
+          }
+        } catch (pdfError) {
+          console.error(`[Scheduled Invoice] Failed to generate PDF for ${invoice.invoiceNumber}:`, pdfError);
+        }
+
+        // Send the invoice email using proper InvoiceSentEmail template
         const resend = getResend();
         await resend.emails.send({
           from: `${invoice.organization.name} <invoices@mail.photoproos.com>`,
           to: clientEmail,
           subject: `Invoice ${invoice.invoiceNumber} from ${invoice.organization.name}`,
-          react: InvoiceReminderEmail({
+          react: InvoiceSentEmail({
             invoiceNumber: invoice.invoiceNumber,
             clientName: invoice.clientName || invoice.client?.fullName || "Customer",
-            businessName: invoice.organization.name,
-            amountDue: invoice.totalCents,
-            dueDate: invoice.dueDate,
+            photographerName: invoice.organization.name,
+            amountCents: invoice.totalCents,
+            currency: invoice.currency,
+            dueDate: formattedDueDate,
             paymentUrl,
-            isNewInvoice: true,
+            lineItemsSummary: lineItemsSummary + (invoice.lineItems.length > 3 ? "..." : ""),
+            hasPdfAttachment: !!pdfAttachment,
+          }),
+          ...(pdfAttachment && {
+            attachments: [pdfAttachment],
           }),
         });
 
