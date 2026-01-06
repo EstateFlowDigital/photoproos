@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Runs related Vitest tests for changed files
   - Ensures code quality on every commit
 
+- **Clients Module Improvements: Sorting Options**
+  - **Sorting options** - Sort by newest, oldest, name A-Z, revenue (high/low), or projects (most/least)
+  - **Results count** - Shows total client count
+  - **Improved layout** - Search and sort controls grouped together
+
 - **Orders Module Improvements: Search, Filters & Sorting**
   - **Search functionality** - Search by order number, client name/email, company, or order page
   - **Sorting options** - Sort by newest, oldest, amount (high/low), or preferred date

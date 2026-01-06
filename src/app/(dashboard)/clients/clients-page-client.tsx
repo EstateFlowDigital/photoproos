@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,8 @@ import { ClientSearch } from "./client-search";
 import { PageHeader, PageContextNav, UsersIcon, TagIcon } from "@/components/dashboard";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import { useVirtualizer } from "@tanstack/react-virtual";
+
+type SortOption = "newest" | "oldest" | "name" | "revenueHigh" | "revenueLow" | "projectsHigh" | "projectsLow";
 
 // Industry display names
 const industryLabels: Record<string, string> = {
@@ -62,14 +64,49 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
   const { showToast } = useToast();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
   const tableParentRef = useRef<HTMLDivElement | null>(null);
 
+  // Sort clients based on selected option
+  const sortedClients = useMemo(() => {
+    const result = [...clients];
+    result.sort((a, b) => {
+      switch (sortOption) {
+        case "newest":
+          // Default order from server (already sorted by createdAt desc)
+          return 0;
+        case "oldest":
+          // Reverse the default order
+          return -1;
+        case "name":
+          const nameA = (a.fullName || a.email || "").toLowerCase();
+          const nameB = (b.fullName || b.email || "").toLowerCase();
+          return nameA.localeCompare(nameB);
+        case "revenueHigh":
+          return b.lifetimeRevenueCents - a.lifetimeRevenueCents;
+        case "revenueLow":
+          return a.lifetimeRevenueCents - b.lifetimeRevenueCents;
+        case "projectsHigh":
+          return b._count.projects - a._count.projects;
+        case "projectsLow":
+          return a._count.projects - b._count.projects;
+        default:
+          return 0;
+      }
+    });
+    // For "oldest", we need to fully reverse since server returns newest first
+    if (sortOption === "oldest") {
+      result.reverse();
+    }
+    return result;
+  }, [clients, sortOption]);
+
   const rowVirtualizer = useVirtualizer({
-    count: clients.length,
+    count: sortedClients.length,
     getScrollElement: () => tableParentRef.current,
     estimateSize: () => 84,
     overscan: 8,
-    getItemKey: (index) => clients[index]?.id ?? index,
+    getItemKey: (index) => sortedClients[index]?.id ?? index,
     measureElement: (el) => el?.getBoundingClientRect().height ?? 0,
   });
 
@@ -122,8 +159,33 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
         ]}
       />
 
-      {/* Search bar */}
-      <ClientSearch initialQuery={searchQuery || ""} />
+      {/* Search and Sort Controls */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[200px] max-w-md">
+          <ClientSearch initialQuery={searchQuery || ""} />
+        </div>
+
+        {/* Sort Dropdown */}
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value as SortOption)}
+          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          aria-label="Sort clients"
+        >
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="name">Name A-Z</option>
+          <option value="revenueHigh">Revenue: High to Low</option>
+          <option value="revenueLow">Revenue: Low to High</option>
+          <option value="projectsHigh">Projects: Most</option>
+          <option value="projectsLow">Projects: Least</option>
+        </select>
+
+        {/* Results Count */}
+        <span className="text-sm text-foreground-muted">
+          {clients.length} client{clients.length !== 1 ? "s" : ""}
+        </span>
+      </div>
 
       {/* Tag Filter Pills */}
       {allTags && allTags.length > 0 && (
@@ -163,7 +225,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
       )}
 
       {/* Clients Table */}
-      {clients.length > 0 ? (
+      {sortedClients.length > 0 ? (
         <div
           ref={tableParentRef}
           className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] max-h-[70vh] overflow-auto"
@@ -195,7 +257,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
               }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const client = clients[virtualRow.index];
+                const client = sortedClients[virtualRow.index];
                 if (!client) return null;
                 return (
                   <tr
