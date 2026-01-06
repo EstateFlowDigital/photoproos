@@ -222,6 +222,7 @@ export default async function DashboardLayout({
             industries={organizationIndustries}
             unreadNotificationCount={unreadNotificationCount}
             sidebarPosition={userAppearance.sidebarPosition}
+            sidebarCompact={userAppearance.sidebarCompact}
             autoTheme={userAppearance.autoThemeEnabled ? {
               enabled: true,
               darkStart: userAppearance.autoThemeDarkStart,

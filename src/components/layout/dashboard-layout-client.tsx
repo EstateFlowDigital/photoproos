@@ -5,11 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
 import { DashboardMenuButton } from "./dashboard-menu-button";
-import { DashboardSubnavPanel } from "./dashboard-subnav-panel";
 import { getRedirectForDisabledModule } from "@/lib/modules/gating";
 import { useTheme } from "@/components/theme-provider";
 import { enableNavGuard } from "@/lib/utils/nav-guard";
 import { buildDashboardNav } from "@/lib/navigation/dashboard-nav";
+import { updateAppearancePreferences } from "@/lib/actions/appearance";
 
 interface AutoThemeConfig {
   enabled: boolean;
@@ -23,6 +23,7 @@ interface DashboardLayoutClientProps {
   industries: string[];
   unreadNotificationCount?: number;
   sidebarPosition?: "left" | "right";
+  sidebarCompact?: boolean;
   autoTheme?: AutoThemeConfig;
 }
 
@@ -32,12 +33,14 @@ export function DashboardLayoutClient({
   industries,
   unreadNotificationCount = 0,
   sidebarPosition = "left",
+  sidebarCompact = false,
   autoTheme,
 }: DashboardLayoutClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const shellRef = useRef<HTMLDivElement | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCompact, setIsCompact] = useState(sidebarCompact);
   const navData = useMemo(
     () =>
       buildDashboardNav({
@@ -47,6 +50,10 @@ export function DashboardLayoutClient({
       }),
     [enabledModules, industries, unreadNotificationCount]
   );
+
+  useEffect(() => {
+    setIsCompact(sidebarCompact);
+  }, [sidebarCompact]);
 
   const handleOpenMenu = useCallback(() => {
     setMobileMenuOpen(true);
@@ -84,6 +91,16 @@ export function DashboardLayoutClient({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [mobileMenuOpen]);
+
+  const handleToggleCompact = useCallback(() => {
+    setIsCompact((prev) => {
+      const next = !prev;
+      void updateAppearancePreferences({ sidebarCompact: next }).catch(() => {
+        // Ignore save errors; UI state already updated optimistically.
+      });
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     if (!pathname) return;
@@ -327,6 +344,7 @@ export function DashboardLayoutClient({
     <div
       ref={shellRef}
       className={`shell-container flex min-h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
+      data-sidebar-compact={isCompact ? "true" : undefined}
     >
       <a
         href="#main"
@@ -336,10 +354,8 @@ export function DashboardLayoutClient({
       </a>
       {/* Unified Sidebar */}
       <div className="shell-sidebar">
-        <DashboardSidebar navData={navData} />
+        <DashboardSidebar navData={navData} isCompact={isCompact} onToggleCompact={handleToggleCompact} />
       </div>
-
-      <DashboardSubnavPanel navData={navData} />
 
       {mobileMenuOpen ? (
         <>
@@ -351,6 +367,8 @@ export function DashboardLayoutClient({
           <div className="shell-mobile-panel fixed inset-y-0 left-0 z-50">
             <DashboardSidebar
               navData={navData}
+              isCompact={isCompact}
+              onToggleCompact={handleToggleCompact}
               variant="overlay"
               onClose={handleCloseMenu}
             />

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   type DashboardNavData,
@@ -13,6 +13,8 @@ import {
 interface DashboardSidebarProps {
   className?: string;
   navData: DashboardNavData;
+  isCompact?: boolean;
+  onToggleCompact?: () => void;
   variant?: "inline" | "overlay";
   onClose?: () => void;
 }
@@ -20,6 +22,8 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({
   className,
   navData,
+  isCompact = false,
+  onToggleCompact,
   variant = "inline",
   onClose,
 }: DashboardSidebarProps) {
@@ -78,16 +82,28 @@ export function DashboardSidebar({
             PhotoProOS
           </span>
         </Link>
-        {variant === "overlay" && onClose ? (
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
-            aria-label="Close menu"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {onToggleCompact ? (
+            <button
+              type="button"
+              onClick={onToggleCompact}
+              className="sidebar-toggle flex h-9 w-9 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCompact ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            </button>
+          ) : null}
+          {variant === "overlay" && onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+              aria-label="Close menu"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <nav
@@ -148,7 +164,10 @@ export function DashboardSidebar({
             const items = section.items;
             if (!items.length) return null;
             return (
-              <div key={section.id} className="space-y-2">
+              <div
+                key={section.id}
+                className={cn("space-y-2", section.id === "admin" ? "pb-4" : null)}
+              >
                 <p className="sidebar-section-title px-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted">
                   {section.label}
                 </p>
