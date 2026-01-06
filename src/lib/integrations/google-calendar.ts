@@ -4,14 +4,11 @@ import { google, calendar_v3 } from "googleapis";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId, requireUserId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
+import { ok, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
 // =============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 interface CalendarListItem {
   id: string;
@@ -181,7 +178,7 @@ export async function disconnectGoogleCalendar(
 
     revalidatePath("/settings/integrations");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[GoogleCalendar] Error disconnecting:", error);
     if (error instanceof Error) {
@@ -615,7 +612,7 @@ export async function deleteGoogleCalendarEvent(
       },
     });
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[GoogleCalendar] Error deleting event:", error);
     if (error instanceof Error) {
@@ -692,7 +689,7 @@ export async function updateCalendarIntegration(
 
     revalidatePath("/settings/integrations");
 
-    return { success: true, data: undefined };
+    return ok();
   } catch (error) {
     console.error("[GoogleCalendar] Error updating integration:", error);
     if (error instanceof Error) {
