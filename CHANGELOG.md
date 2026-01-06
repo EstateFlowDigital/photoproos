@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Action Result Pattern Migration** - Completed migration of all multiline `{ success: true, data: ... }` patterns to use the `success()` helper function across all server actions
+  - Migrated 40+ files in `src/lib/actions/`
+  - Files migrated include: download-tracking.ts, booking-crew.ts, watermark-settings.ts, portfolio-websites.ts, client-selections.ts, payouts.ts, equipment-checklists.ts, brokerages.ts, revenue-forecasting.ts, client-import.ts, google-calendar.ts, gallery-expiration.ts, booking-import.ts, questionnaire-portal.ts, notifications.ts, portal-activity.ts, services.ts, service-images.ts, invitations.ts, gallery-analytics.ts, seed.ts, notification-preferences.ts, and more
+  - Ensures consistent ActionResult pattern usage across the codebase
+
 ### Added
 - **Gallery Auto-Archive** - Automatically archive galleries when they expire
   - New cron endpoint `/api/cron/gallery-auto-archive` for daily processing
@@ -65,6 +71,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supports selection mode and favorite toggling in list view
   - Responsive design: hides non-essential columns on smaller screens
 
+- **Smart Collections (Auto-Organize)** - Intelligent photo organization
+  - Analyze uncategorized photos to detect grouping patterns automatically
+  - Group by EXIF date (photos taken on the same day)
+  - Group by filename patterns (e.g., DSC_, IMG_ prefixes create "Dsc Series", "Img Series")
+  - Group by camera/lens combinations from EXIF metadata
+  - Preview suggested groupings with thumbnail previews and photo counts
+  - Apply individual suggestions or all at once with "Apply All" button
+  - Smart deduplication prevents assigning photos to multiple collections in batch
+  - Located in Collections tab with dedicated panel UI
+
 - **Questionnaires Search & Filters** - Enhanced questionnaires page with search and filtering
   - Search by template name, description, industry, client name, or email
   - Status filter pills (All, Pending, In Progress, Completed, Approved) with counts
@@ -78,7 +94,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bulk industry assignment with dropdown menu
   - Bulk tag assignment for quick organization
   - Export selected clients to CSV
-  - New server actions: `bulkDeleteClients`, `bulkUpdateIndustry`, `bulkAssignTags`, `bulkRemoveTags`
+
+- **Orders Kanban Board View** - Visual pipeline management for orders
+  - Toggle between list and board views with icon buttons
+  - Kanban columns for Pending, Paid, Processing, Completed, and Cancelled statuses
+  - Drag-and-drop order cards between columns to change status
+  - Order cards display order number, client avatar, amount, item count, and preferred date
+  - Hover to reveal "View Details" link on each card
+  - Status change via drag updates order in real-time with toast notifications
+  - Prevents invalid transitions (e.g., pending → paid must go through payment)
+  - Maintains existing search, date range filters in board view
 
 - **Forms Search & Filters** - Enhanced booking forms page with search and filtering
   - Search by form name, description, or linked portfolio

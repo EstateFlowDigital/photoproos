@@ -25,6 +25,7 @@ import { createTaskFromGallery } from "@/lib/actions/projects";
 import { sendManualGalleryReminder } from "@/lib/actions/gallery-reminders";
 import { getDownloadHistory, exportDownloadHistory } from "@/lib/actions/download-tracking";
 import { CollectionManager } from "@/components/gallery/collection-manager";
+import { SmartCollectionsPanel } from "@/components/gallery/smart-collections-panel";
 import { AssignToCollectionModal } from "@/components/gallery/assign-to-collection-modal";
 import { AnalyticsDashboard } from "@/components/gallery/analytics-dashboard";
 import { ActivityTimeline } from "@/components/gallery/activity-timeline";
@@ -1860,6 +1861,13 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   </div>
                 )}
               </div>
+
+              {/* Smart Collections Panel */}
+              <SmartCollectionsPanel
+                galleryId={gallery.id}
+                onCollectionCreated={() => router.refresh()}
+                className="lg:col-span-2"
+              />
             </div>
           )}
 
