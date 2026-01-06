@@ -858,6 +858,10 @@ export async function getGallery(id: string) {
       deliveredAt: gallery.deliveredAt,
       createdAt: gallery.createdAt,
       updatedAt: gallery.updatedAt,
+      // Selection settings
+      allowSelections: gallery.allowSelections,
+      selectionLimit: gallery.selectionLimit,
+      selectionsSubmitted: gallery.selectionsSubmitted,
       // Related data
       client: gallery.client,
       service: gallery.service,

@@ -48,4 +48,5 @@ export {
   WarningIcon,
   GripIcon,
   FolderPlusIcon,
+  SettingsIcon,
 } from "@/components/ui/icons";

@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Streaming ZIP Downloads** - Refactored batch download API for large galleries
+  - Changed from memory buffering to true streaming using PassThrough and ReadableStream
+  - Concurrent asset fetching with retry logic for reliability
+  - Chunked transfer encoding for immediate download start
+  - Better error handling with graceful degradation
+
+- **Client Selections Feature** - Full proofing workflow for client photo selections
+  - Integrated server-side selection actions with public gallery UI
+  - Selection mode toggle with selection count display
+  - Selection limit enforcement (configurable per gallery)
+  - Submit selections button with confirmation state
+  - Selections tab in admin gallery detail page
+  - Shows selection status, limit, and settings
+
+- **Gallery Selections Tab** - Admin UI for viewing client selection status
+  - Displays whether selections are enabled/disabled
+  - Shows selection limit configuration
+  - Submitted status indicator with timestamp
+  - Quick link to manage selection settings
+
 - **VirtualList Component** - Reusable virtualized list component for performance optimization
   - Built on `@tanstack/react-virtual` for efficient rendering of large lists
   - Supports custom item sizing, prepend/append content, and empty states

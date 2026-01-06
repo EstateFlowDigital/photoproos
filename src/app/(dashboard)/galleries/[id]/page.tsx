@@ -119,9 +119,9 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
         }
       : undefined,
     // Selection settings
-    allowSelections: gallery.allowSelections,
-    selectionLimit: gallery.selectionLimit,
-    selectionsSubmitted: gallery.selectionsSubmitted,
+    allowSelections: (gallery as any).allowSelections ?? false,
+    selectionLimit: (gallery as any).selectionLimit ?? null,
+    selectionsSubmitted: (gallery as any).selectionsSubmitted ?? false,
   };
 
   return (

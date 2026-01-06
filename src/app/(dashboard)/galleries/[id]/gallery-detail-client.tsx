@@ -88,6 +88,7 @@ import {
   WarningIcon,
   GripIcon,
   FolderPlusIcon,
+  SettingsIcon,
 } from "./gallery-detail-icons";
 
 interface Photo {
