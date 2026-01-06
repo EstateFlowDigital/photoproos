@@ -6,11 +6,17 @@ import {
   useState,
   useCallback,
   useEffect,
+  lazy,
+  Suspense,
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { TourSpotlight } from "./tour-spotlight";
 import { markTourCompleted } from "@/lib/actions/tour";
+
+// Lazy load TourSpotlight to avoid loading framer-motion for all dashboard pages
+const TourSpotlight = lazy(() =>
+  import("./tour-spotlight").then((mod) => ({ default: mod.TourSpotlight }))
+);
 
 export interface TourStep {
   id: string;
@@ -130,14 +136,16 @@ export function TourProvider({ children, organizationId }: TourProviderProps) {
     >
       {children}
       {isActive && currentStep && (
-        <TourSpotlight
-          step={currentStep}
-          stepIndex={currentStepIndex}
-          totalSteps={currentTour?.steps.length ?? 0}
-          onNext={nextStep}
-          onPrev={prevStep}
-          onSkip={skipTour}
-        />
+        <Suspense fallback={null}>
+          <TourSpotlight
+            step={currentStep}
+            stepIndex={currentStepIndex}
+            totalSteps={currentTour?.steps.length ?? 0}
+            onNext={nextStep}
+            onPrev={prevStep}
+            onSkip={skipTour}
+          />
+        </Suspense>
       )}
     </TourContext.Provider>
   );

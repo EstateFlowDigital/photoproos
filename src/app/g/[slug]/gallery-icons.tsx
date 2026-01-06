@@ -38,6 +38,8 @@ export {
   ChevronDownIcon,
   StarIcon,
   MoreIcon,
+  WarningIcon as AlertTriangleIcon,
+  ReceiptIcon,
 } from "@/components/ui/icons";
 
 export type { IconProps } from "@/components/ui/icons";

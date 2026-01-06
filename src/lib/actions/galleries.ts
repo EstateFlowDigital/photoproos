@@ -1088,6 +1088,23 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
               isActive: true,
             },
           },
+          client: {
+            select: {
+              id: true,
+              fullName: true,
+              company: true,
+              invoices: {
+                where: {
+                  status: { in: ["sent", "overdue"] },
+                },
+                select: {
+                  id: true,
+                  totalCents: true,
+                  status: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -1147,6 +1164,23 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
               payments: {
                 where: { status: "paid" },
                 select: { id: true },
+              },
+              client: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  company: true,
+                  invoices: {
+                    where: {
+                      status: { in: ["sent", "overdue"] },
+                    },
+                    select: {
+                      id: true,
+                      totalCents: true,
+                      status: true,
+                    },
+                  },
+                },
               },
             },
           },
@@ -1239,6 +1273,14 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       photoCount: photos.filter((p) => p.collectionId === collection.id).length,
     }));
 
+    // Calculate outstanding balance from unpaid invoices
+    const outstandingBalance = project.client?.invoices?.reduce(
+      (sum, inv) => sum + inv.totalCents,
+      0
+    ) || 0;
+    const hasOutstandingBalance = outstandingBalance > 0;
+    const clientPortalUrl = project.client?.id ? `/portal/invoices` : null;
+
     return {
       id: project.id,
       name: project.name,
@@ -1270,6 +1312,10 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       isPasswordProtected: !!project.password,
       photos,
       collections,
+      // Outstanding balance info
+      outstandingBalance,
+      hasOutstandingBalance,
+      clientPortalUrl,
     };
   } catch (error) {
     console.error("Error fetching public gallery:", error);

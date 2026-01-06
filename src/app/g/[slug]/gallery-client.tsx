@@ -47,6 +47,8 @@ import {
   ChevronDownIcon,
   StarIcon,
   MoreIcon,
+  AlertTriangleIcon,
+  ReceiptIcon,
 } from "./gallery-icons";
 
 interface ExifData {
@@ -117,6 +119,10 @@ interface GalleryData {
   expiresAt?: string | null;
   photos: Photo[];
   collections?: Collection[];
+  // Outstanding balance
+  outstandingBalance?: number;
+  hasOutstandingBalance?: boolean;
+  clientPortalUrl?: string | null;
 }
 
 interface GalleryClientProps {
@@ -1612,6 +1618,41 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                   Purchase Now
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Outstanding Balance Banner */}
+      {gallery.hasOutstandingBalance && (
+        <div
+          className="border-b"
+          style={{
+            backgroundColor: "rgba(239, 68, 68, 0.1)",
+            borderColor: "rgba(239, 68, 68, 0.3)",
+          }}
+        >
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangleIcon className="h-5 w-5 text-[#ef4444] shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-[#ef4444]">
+                    Outstanding Balance: {formatCurrency(gallery.outstandingBalance || 0)}
+                  </p>
+                  <p className="text-sm" style={{ color: colors.mutedColor }}>
+                    You have unpaid invoices. Please view your invoices for details.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/portal/invoices"
+                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors shrink-0"
+                style={{ backgroundColor: "#ef4444" }}
+              >
+                <ReceiptIcon className="h-4 w-4" />
+                View Invoices
+              </Link>
             </div>
           </div>
         </div>

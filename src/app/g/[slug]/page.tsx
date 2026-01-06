@@ -233,6 +233,41 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
         </div>
       </div>
 
+      {/* Outstanding Balance Banner */}
+      {gallery.hasOutstandingBalance && (
+        <div
+          className="border-b"
+          style={{
+            backgroundColor: "rgba(239, 68, 68, 0.1)",
+            borderColor: "rgba(239, 68, 68, 0.3)",
+          }}
+        >
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <AlertIcon className="h-5 w-5 text-[#ef4444] shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-[#ef4444]">
+                    Outstanding Balance: {formatCurrency(gallery.outstandingBalance)}
+                  </p>
+                  <p className="text-sm" style={{ color: colors.mutedColor }}>
+                    You have unpaid invoices. Please view your invoices for details.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/portal/invoices"
+                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors shrink-0"
+                style={{ backgroundColor: "#ef4444" }}
+              >
+                <ReceiptIcon className="h-4 w-4" />
+                View Invoices
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment Banner (if not paid) */}
       {!gallery.isPaid && gallery.price > 0 && (
         <div
@@ -395,6 +430,22 @@ function EyeIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
       <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function AlertIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ReceiptIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13.227a.5.5 0 0 0 .824.384l2.51-2.09 2.833 2.09a.5.5 0 0 0 .594 0l2.833-2.09 2.51 2.09a.5.5 0 0 0 .824-.384V3.5A1.5 1.5 0 0 0 14.5 2h-10ZM6 6a.75.75 0 0 0 0 1.5h8a.75.75 0 0 0 0-1.5H6Zm0 3.5a.75.75 0 0 0 0 1.5h8a.75.75 0 0 0 0-1.5H6Z" clipRule="evenodd" />
     </svg>
   );
 }

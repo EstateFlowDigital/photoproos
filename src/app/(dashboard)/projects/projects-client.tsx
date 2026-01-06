@@ -270,7 +270,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
   const [isPending, startTransition] = useTransition();
 
   // View state
-  const [viewMode, setViewMode] = useState<"board" | "list" | "calendar">("board");
+  const [viewMode, setViewMode] = useState<"board" | "list" | "calendar" | "timeline">("board");
   const [showAddTask, setShowAddTask] = useState<string | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [showAddColumn, setShowAddColumn] = useState(false);
@@ -282,6 +282,14 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
+  });
+
+  // Timeline state
+  const [timelineZoom, setTimelineZoom] = useState<"day" | "week" | "month">("week");
+  const [timelineStartDate, setTimelineStartDate] = useState(() => {
+    const now = new Date();
+    now.setDate(now.getDate() - 7); // Start a week ago
+    return now;
   });
 
   // Search state
@@ -449,6 +457,10 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
       if ((e.metaKey || e.ctrlKey) && e.key === "3") {
         e.preventDefault();
         setViewMode("calendar");
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "4") {
+        e.preventDefault();
+        setViewMode("timeline");
       }
 
       // / - Focus search
@@ -1035,7 +1047,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
 
               {/* View Mode Toggle */}
               <div className="flex flex-wrap rounded-lg border border-[var(--card-border)] bg-background p-1">
-                {(["board", "list", "calendar"] as const).map((mode) => (
+                {(["board", "list", "calendar", "timeline"] as const).map((mode) => (
                   <button
                     key={mode}
                     onClick={() => setViewMode(mode)}
@@ -1824,6 +1836,19 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
             </div>
           </div>
         </div>
+      )}
+
+      {/* Timeline/Gantt View */}
+      {viewMode === "timeline" && (
+        <TimelineView
+          tasks={sortedTasks}
+          columns={board.columns}
+          zoom={timelineZoom}
+          startDate={timelineStartDate}
+          onZoomChange={setTimelineZoom}
+          onStartDateChange={setTimelineStartDate}
+          onTaskClick={setSelectedTask}
+        />
       )}
 
       {/* Floating Bulk Action Bar */}

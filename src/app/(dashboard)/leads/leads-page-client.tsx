@@ -8,6 +8,7 @@ import { updatePortfolioInquiryStatus, convertPortfolioInquiryToClient } from "@
 import { updateChatInquiryStatus, convertChatInquiryToClient } from "@/lib/actions/chat-inquiries";
 import { convertBookingSubmissionToClient } from "@/lib/actions/booking-forms";
 import type { LeadStatus, BookingFormSubmissionStatus } from "@prisma/client";
+import { VirtualList } from "@/components/ui/virtual-list";
 
 interface PortfolioInquiry {
   id: string;
@@ -135,8 +136,8 @@ const LeadRow = memo(function LeadRow({ inquiry, onView }: LeadRowProps) {
     : "-";
 
   return (
-    <tr className="border-b border-[var(--card-border)] last:border-0 hover:bg-[var(--background-hover)]">
-      <td className="px-4 py-3">
+    <div className="grid grid-cols-[120px,1.3fr,2fr,1.1fr,1fr,150px,110px] items-center gap-3 border-b border-[var(--card-border)] px-4 py-3 last:border-b-0 hover:bg-[var(--background-hover)]">
+      <div>
         <span
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
@@ -156,20 +157,20 @@ const LeadRow = memo(function LeadRow({ inquiry, onView }: LeadRowProps) {
           )}
           {inquiry.type === "portfolio" ? "Portfolio" : inquiry.type === "chat" ? "Chat" : "Booking"}
         </span>
-      </td>
-      <td className="px-4 py-3">
+      </div>
+      <div className="min-w-0">
         <div>
           <p className="font-medium text-foreground">{name}</p>
           <p className="text-xs text-foreground-muted">{email}</p>
         </div>
-      </td>
-      <td className="max-w-[300px] px-4 py-3">
+      </div>
+      <div className="min-w-0">
         <p className="truncate text-foreground-secondary">{messageOrDate}</p>
-      </td>
-      <td className="px-4 py-3">
+      </div>
+      <div>
         <p className="text-xs text-foreground-muted">{source}</p>
-      </td>
-      <td className="px-4 py-3">
+      </div>
+      <div>
         <span
           className={cn(
             "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
@@ -178,24 +179,24 @@ const LeadRow = memo(function LeadRow({ inquiry, onView }: LeadRowProps) {
         >
           {STATUS_LABELS[inquiry.status]}
         </span>
-      </td>
-      <td className="whitespace-nowrap px-4 py-3 text-foreground-muted">
+      </div>
+      <div className="whitespace-nowrap text-foreground-muted">
         {new Date(inquiry.createdAt).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
           hour: "numeric",
           minute: "2-digit",
         })}
-      </td>
-      <td className="px-4 py-3 text-right">
+      </div>
+      <div className="text-right">
         <button
           onClick={() => onView(inquiry)}
           className="text-sm text-[var(--primary)] hover:underline"
         >
           View
         </button>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 });
 
@@ -392,44 +393,31 @@ export function LeadsPageClient({
       {/* Inquiries Table */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
         {filteredInquiries.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--card-border)]">
-                  <th className="px-4 py-3 text-left font-medium text-foreground-muted">
-                    Type
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground-muted">
-                    Contact
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground-muted">
-                    Message
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground-muted">
-                    Source
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground-muted">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground-muted">
-                    Date
-                  </th>
-                  <th className="px-4 py-3 text-right font-medium text-foreground-muted">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredInquiries.map((inquiry) => (
-                  <LeadRow
-                    key={`${inquiry.type}-${inquiry.id}`}
-                    inquiry={inquiry}
-                    onView={handleViewInquiry}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <VirtualList
+            className="max-h-[70vh]"
+            items={filteredInquiries}
+            getItemKey={(inquiry) => `${inquiry.type}-${inquiry.id}`}
+            itemGap={0}
+            estimateSize={() => 96}
+            prepend={
+              <div className="sticky top-0 z-10 grid grid-cols-[120px,1.3fr,2fr,1.1fr,1fr,150px,110px] items-center gap-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3 text-xs font-semibold uppercase text-foreground-muted">
+                <span>Type</span>
+                <span>Contact</span>
+                <span>Message</span>
+                <span>Source</span>
+                <span>Status</span>
+                <span>Date</span>
+                <span className="text-right">Actions</span>
+              </div>
+            }
+            renderItem={(inquiry) => (
+              <LeadRow
+                key={`${inquiry.type}-${inquiry.id}`}
+                inquiry={inquiry}
+                onView={handleViewInquiry}
+              />
+            )}
+          />
         ) : (
           <div className="p-8 text-center">
             <MessageIcon className="mx-auto h-12 w-12 text-foreground-muted" />

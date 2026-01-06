@@ -55,7 +55,7 @@ export function VirtualList<T>({
 
   return (
     <div
-      ref={!scrollRef ? (parentRef as RefObject<HTMLDivElement>) : undefined}
+      ref={parentRef as RefObject<HTMLDivElement>}
       className={cn("overflow-auto", className)}
     >
       {prepend}

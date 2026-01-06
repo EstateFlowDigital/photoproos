@@ -60,6 +60,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Allows free downloads even when gallery has a price set
   - Useful for promotional galleries or client perks
 
+- **Outstanding Balance Banner** - Alert clients to unpaid invoices on public gallery
+  - Shows red banner with total outstanding balance when client has unpaid invoices
+  - Links to client portal invoices page for easy payment
+  - Displays on both static and auto-theme gallery views
+  - Added client invoice data to `getPublicGallery` server action
+
 ### Changed
 - **Download Options UI** - Replaced plain radio inputs with styled card buttons
   - Clear visual distinction with border, background, and checkmark icon for selected state
@@ -72,6 +78,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Both pages now render only visible rows, improving performance with large datasets
   - Sticky table headers for better UX during scrolling
   - Max height container (70vh) with auto-scroll
+
+- **Bundle Optimization** - Improved initial page load performance
+  - Lazy load TourSpotlight component to defer framer-motion loading
+  - Framer-motion now only loads when a tour is actually started
+  - Reduces dashboard bundle size for users not using guided tours
 
 - **Error State Component Consolidation** - Created reusable ErrorState component
   - Created `@/components/dashboard/error-state.tsx` with configurable title, description, icon, and logging
@@ -89,6 +100,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added selection fields (allowSelections, selectionLimit, selectionsSubmitted) to getGallery action
 
 ### Fixed
+- **TypeScript Type Cast Errors** - Fixed build-breaking type errors in projects.ts
+  - Fixed JSON to TypeScript type casts for AutomationTrigger and AutomationAction using `as unknown as`
+  - Fixed SubtaskTemplate type cast in task creation from template
+  - Removed problematic commented JSX code for unimplemented modal components
+
+- **Prisma Schema Duplicates** - Removed duplicate relation fields in Organization model
+  - Removed duplicate taskAutomations and recurringTasks fields added by prisma format
+
+- **Duplicate Import** - Fixed duplicate VirtualList import in leads-page-client.tsx
+
 - **Gallery Heat Map Broken Images** - Fixed analytics dashboard showing broken images
   - Added proper fallback chain in download-tracking.ts (thumbnailUrl → mediumUrl → originalUrl → placeholder)
   - Added onError handler in analytics-dashboard.tsx for runtime image failures
