@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import Link from "next/link";
+import { ExportButtons } from "./export-buttons";
 
 // Billing navigation items
 const billingNavItems = [
@@ -120,27 +121,46 @@ export default async function TaxReportsPage() {
     ? ((currentMonthTaxCents - lastMonthTaxCents) / lastMonthTaxCents) * 100
     : 0;
 
+  // Prepare export data
+  const exportData = {
+    monthlyBreakdown: monthlyBreakdown.map((row) => {
+      const monthDate = new Date(row.month);
+      const revenue = Number(row.revenue);
+      const tax = Number(row.tax);
+      return {
+        month: `${monthNames[monthDate.getMonth()]} ${monthDate.getFullYear()}`,
+        invoiceCount: Number(row.count),
+        revenue,
+        tax,
+        rate: revenue > 0 ? (tax / revenue) * 100 : 0,
+      };
+    }),
+    summary: {
+      thisMonthTax: currentMonthTaxCents,
+      thisQuarterTax: thisQuarterTax._sum.taxCents || 0,
+      ytdTax: ytdTax._sum.taxCents || 0,
+      effectiveRate: (ytdTax._sum.subtotalCents || 0) > 0
+        ? ((ytdTax._sum.taxCents || 0) / (ytdTax._sum.subtotalCents || 1)) * 100
+        : 0,
+      year: now.getFullYear(),
+    },
+    taxByClient: taxByClient.map((row) => {
+      const client = row.clientId ? clientMap.get(row.clientId) : null;
+      return {
+        clientName: client?.fullName || client?.company || "Unknown Client",
+        email: client?.email || "No email",
+        taxCollected: row._sum.taxCents || 0,
+        totalBilled: row._sum.totalCents || 0,
+      };
+    }),
+  };
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Tax Reports"
         description="Track and export tax collected on invoices"
-        actions={
-          <div className="flex items-center gap-2">
-            <button className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-secondary)]">
-              <span className="flex items-center gap-2">
-                <DownloadIcon className="h-4 w-4" />
-                Export CSV
-              </span>
-            </button>
-            <button className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-secondary)]">
-              <span className="flex items-center gap-2">
-                <DocumentIcon className="h-4 w-4" />
-                Export PDF
-              </span>
-            </button>
-          </div>
-        }
+        actions={<ExportButtons data={exportData} />}
       />
 
       <PageContextNav items={billingNavItems} />
@@ -406,27 +426,6 @@ export default async function TaxReportsPage() {
 }
 
 // Icons
-function DownloadIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
-      <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
-    </svg>
-  );
-}
-
-function DocumentIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path
-        fillRule="evenodd"
-        d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>

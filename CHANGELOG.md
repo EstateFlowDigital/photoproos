@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Billing Module Complete CRUD Operations** - Full create, view, edit functionality for all billing entities
+  - **Estimates**
+    - New estimate form with line items, services quick-add, validity period
+    - Estimate detail page with status badges, client info, line item breakdown
+    - Edit estimate page (draft only) with full form functionality
+    - Estimate-to-Invoice conversion with confirmation modal
+    - Status workflow: draft → sent → viewed → approved → converted
+  - **Credit Notes**
+    - New credit note form with client/invoice selection, reason codes
+    - Credit note detail page with credit breakdown (applied/refunded/available)
+    - Issue, apply to invoice, mark as refunded, void actions
+    - Apply-to-invoice modal with amount selection
+    - Status workflow: draft → issued → applied/refunded/voided
+  - **Retainers**
+    - Retainer detail page with full transaction history
+    - Balance overview with total deposited, total used, available balance
+    - Low balance alert threshold configuration
+    - Actions: Add deposit, apply to invoice, process refund, deactivate
+    - Transaction type badges (deposit, usage, refund, adjustment)
+  - **Tax Reports**
+    - CSV export with monthly breakdown, summary, and tax by client
+    - PDF export with print-ready formatting
+    - Export buttons component with loading states
 - **Client Portal Sprint 2 Enhancements** - Continued improvements to the client portal experience
   - **Selective Photo Downloads** - Download specific photos instead of entire galleries
     - Photo selection grid with checkboxes in Downloads tab
