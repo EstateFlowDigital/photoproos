@@ -390,33 +390,153 @@ src/app/(onboarding)/       → New user setup
 
 ## Route Verification Status
 
-### Dashboard Routes
-**Documented in APP_ARCHITECTURE.md:** 89 routes
-**Status:** NEEDS VERIFICATION
+### Summary Table
 
-Priority routes to verify first:
-- [x] `/dashboard` → `src/app/(dashboard)/dashboard/page.tsx` VERIFIED
-- [x] `/galleries` → `src/app/(dashboard)/galleries/page.tsx` VERIFIED
-- [ ] `/clients` → `src/app/(dashboard)/clients/page.tsx`
-- [ ] `/invoices` → `src/app/(dashboard)/invoices/page.tsx`
-- [ ] `/scheduling` → `src/app/(dashboard)/scheduling/page.tsx`
-- [x] `/leads/analytics` → `src/app/(dashboard)/leads/analytics/page.tsx` VERIFIED
+| Route Group | Documented | Actual | Status | Discrepancy |
+|-------------|------------|--------|--------|-------------|
+| Dashboard (non-settings) | 89 | 99 | VERIFIED | +10 routes |
+| Settings | 27 | 35 | VERIFIED | +8 routes |
+| Marketing | 31 | 34 | VERIFIED | +3 routes |
+| Client Portal | 3+ | 3 | VERIFIED | Matches |
+| Field | 2 | 2 | VERIFIED | Matches |
+| Onboarding | 1 | 1 | VERIFIED | Matches |
+| Auth | 3 | 3 | VERIFIED | Matches |
+| Public | 14 | 15 | VERIFIED | +1 route |
+| **TOTAL** | **169** | **192** | **VERIFIED** | **+23 routes** |
 
-### Settings Routes
-**Documented:** 27 routes
-**Status:** NEEDS VERIFICATION
+### Dashboard Routes (134 total pages, 99 non-settings)
+**Status:** VERIFIED 2026-01-06
 
-### Marketing Routes
-**Documented:** 31 routes
-**Status:** NEEDS VERIFICATION
+All routes exist in `src/app/(dashboard)/`:
+- `/dashboard` - Main dashboard
+- `/analytics` - Business analytics
+- `/create` - Quick create
+- `/inbox` - Unified inbox
+- `/notifications` - Notifications
+- `/feedback` - Feedback
+- `/galleries/*` - 7 routes (list, new, [id], [id]/edit, services/*, etc.)
+- `/clients/*` - 6 routes (list, new, [id], [id]/edit, import, merge)
+- `/invoices/*` - 5 routes (list, new, [id], [id]/edit, recurring)
+- `/scheduling/*` - 10 routes (list, new, [id], [id]/edit, availability, time-off, types, booking-forms/*)
+- `/contracts/*` - 7 routes
+- `/services/*` - 9 routes (services, addons, bundles with CRUD)
+- `/products/*` - 2 routes
+- `/orders/*` - 3 routes
+- `/order-pages/*` - 3 routes
+- `/projects/*` - 3 routes
+- `/properties/*` - 4 routes
+- `/portfolios/*` - 3 routes
+- `/questionnaires/*` - 5 routes
+- `/forms/*` - 2 routes
+- `/leads/*` - 2 routes (list, analytics)
+- `/brokerages/*` - 4 routes
+- `/billing/*` - 8 routes (analytics, credit-notes, estimates, reports, retainers)
+- `/payments/*` - 2 routes
+- `/batch` - 1 route
+- `/licensing` - 1 route
+- `/mini-sessions` - 1 route
+- `/booking` - 1 route
 
-### Client Portal Routes
-**Documented:** 3+ routes
-**Status:** NEEDS VERIFICATION
+### Settings Routes (35 total)
+**Status:** VERIFIED 2026-01-06
 
-### Public Routes
-**Documented:** 14 routes
-**Status:** NEEDS VERIFICATION
+All routes exist in `src/app/(dashboard)/settings/`:
+- `/settings` - Overview
+- `/settings/profile` - User profile
+- `/settings/team` - Team management
+- `/settings/team/[id]/capabilities` - Member capabilities
+- `/settings/branding` - Branding
+- `/settings/appearance` - Appearance
+- `/settings/notifications` - Notifications
+- `/settings/email` - Email settings
+- `/settings/email-logs` - Email logs
+- `/settings/sms` - SMS settings
+- `/settings/sms/templates` - SMS templates
+- `/settings/billing` - Subscription
+- `/settings/billing/upgrade` - Upgrade
+- `/settings/payments` - Payment settings
+- `/settings/payouts` - Payouts
+- `/settings/photographer-pay` - Photographer pay
+- `/settings/travel` - Travel fees
+- `/settings/territories` - Service territories
+- `/settings/gallery-templates` - Gallery templates
+- `/settings/gallery-addons` - Gallery addons
+- `/settings/watermarks` - Watermarks
+- `/settings/calendar` - Calendar
+- `/settings/calendly` - Calendly
+- `/settings/equipment` - Equipment
+- `/settings/integrations` - Integrations
+- `/settings/dropbox` - Dropbox
+- `/settings/mailchimp` - Mailchimp
+- `/settings/quickbooks` - QuickBooks
+- `/settings/slack` - Slack
+- `/settings/zapier` - Zapier
+- `/settings/referrals` - Referrals
+- `/settings/my-referrals` - My referrals
+- `/settings/developer` - Developer
+- `/settings/features` - Features
+- `/settings/mls-presets` - MLS presets (NEW - not documented)
+
+### Marketing Routes (34 total)
+**Status:** VERIFIED 2026-01-06
+
+All routes exist in `src/app/(marketing)/`:
+- `/about`
+- `/pricing`
+- `/contact`
+- `/changelog`
+- `/roadmap`
+- `/features/*` (6 routes: analytics, automation, clients, contracts, galleries, payments)
+- `/industries/*` (6 routes: architecture, commercial, events, food, portraits, real-estate)
+- `/blog`, `/blog/[slug]`
+- `/help`, `/help/[category]/[article]`
+- `/guides`
+- `/webinars`, `/webinars/[slug]`
+- `/affiliates`
+- `/partners`
+- `/integrations`
+- `/press`
+- `/careers`
+- `/legal/*` (5 routes: privacy, terms, cookies, security, dpa)
+
+### Client Portal Routes (3 total)
+**Status:** VERIFIED 2026-01-06
+
+- `/portal` - Portal home
+- `/portal/login` - Login
+- `/portal/questionnaires/[id]` - Fill questionnaire
+
+### Field Routes (2 total)
+**Status:** VERIFIED 2026-01-06
+
+- `/field` - Field app home
+- `/field/check-in` - Location check-in
+
+### Auth Routes (3 total)
+**Status:** VERIFIED 2026-01-06
+
+- `/sign-in/[[...sign-in]]` - Sign in
+- `/sign-up/[[...sign-up]]` - Sign up
+- `/signup` - Signup redirect
+
+### Public Routes (15 total)
+**Status:** VERIFIED 2026-01-06
+
+- `/g/[slug]` - Public gallery
+- `/p/[slug]` - Property website
+- `/portfolio/[slug]` - Portfolio website
+- `/book/[slug]` - Booking form
+- `/book/[slug]/confirmation` - Booking confirmation
+- `/order/[slug]` - Order page
+- `/order/[slug]/confirmation` - Order confirmation
+- `/pay/[id]` - Payment page
+- `/sign/[token]` - Contract signing
+- `/sign/[token]/complete` - Signing complete
+- `/invite/[token]` - Team invitation
+- `/r/[code]` - Referral redirect
+- `/schedule` - Schedule session
+- `/track` - Delivery tracking
+- `/unsubscribe` - Email unsubscribe
 
 ---
 
