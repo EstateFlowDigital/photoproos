@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "test": "vitest",
+    "test:run": "vitest run",
     "postinstall": "prisma generate",
     "prestart": "tsx scripts/db-migrate.ts",
     "start": "next start",
@@ -14,10 +16,17 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "prepare": "husky"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "vitest related --run"
+    ]
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
@@ -75,15 +84,22 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.1.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
     "@types/archiver": "^7.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/sharp": "^0.31.1",
+    "@vitejs/plugin-react": "^5.1.2",
+    "husky": "^9.1.7",
+    "jsdom": "^27.4.0",
+    "lint-staged": "^16.2.7",
     "postcss": "^8",
     "prisma": "^7.2.0",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.16"
   }
 }

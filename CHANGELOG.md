@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Pre-commit Hooks with Husky**
+  - Husky v9 configured with lint-staged
+  - Runs ESLint with auto-fix on staged `.ts`/`.tsx` files
+  - Runs related Vitest tests for changed files
+  - Ensures code quality on every commit
+
+- **Orders Module Improvements: Search, Filters & Sorting**
+  - **Search functionality** - Search by order number, client name/email, company, or order page
+  - **Sorting options** - Sort by newest, oldest, amount (high/low), or preferred date
+  - **Date range filter** - Filter by all time, last 7/30/90 days
+  - **Results count** - Shows filtered count out of total orders
+
+- **Payments Module Improvements: Search, Filters & Sorting**
+  - **Search functionality** - Search by project name, description, or client email
+  - **Sorting options** - Sort by newest, oldest, or amount (high/low)
+  - **Date range filter** - Filter by all time, last 7/30/90 days
+  - **Results count** - Shows filtered count out of total payments
+
 - **Invoices Module Improvements: Search, Filters & Bulk Actions**
   - **Search functionality** - Search by invoice number, client name, or email
   - **Sorting options** - Sort by newest, oldest, amount (high/low), or due date
