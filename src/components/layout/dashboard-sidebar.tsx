@@ -33,6 +33,7 @@ export function DashboardSidebar({
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
   const { topItems, sections } = navData;
+  const shouldAutoExpand = variant === "inline" && isCompact;
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -52,6 +53,16 @@ export function DashboardSidebar({
 
   const handleToggle = (id: string, nextState: boolean) => {
     setExpanded((prev) => ({ ...prev, [id]: nextState }));
+  };
+
+  const handleParentClick = (id: string, nextState: boolean) => {
+    if (shouldAutoExpand && onToggleCompact) {
+      onToggleCompact();
+      setExpanded((prev) => ({ ...prev, [id]: true }));
+      return;
+    }
+
+    handleToggle(id, nextState);
   };
 
   return (
@@ -207,7 +218,7 @@ export function DashboardSidebar({
                         {hasChildren ? (
                           <button
                             type="button"
-                            onClick={() => handleToggle(item.id, !isExpanded)}
+                            onClick={() => handleParentClick(item.id, !isExpanded)}
                             className={itemClassName}
                             aria-label={`Toggle ${item.label}`}
                             aria-expanded={isExpanded}
