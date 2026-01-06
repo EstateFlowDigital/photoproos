@@ -3504,6 +3504,52 @@ The following list is the full route inventory. Each module section below explai
   - `/api/unsubscribe`
   - `/api/unsubscribe?token=${token}`
 
+## End-to-End Workflow Playbooks
+- Each playbook is an explicit, step-by-step flow across routes, actions, and data.
+
+### Lead -> Client -> Project -> Booking -> Invoice -> Gallery -> Payment
+1. Lead captured via public form or inquiry (routes: `/forms`, `/portfolio/[slug]`, `/contact`).
+2. Lead triaged in `/leads` or `/inbox`; status updated (actions: `lead-scoring.ts`, `chat-inquiries.ts`).
+3. Convert lead to client in `/clients/new` or from lead context (actions: `clients.ts`, `client-merge.ts`).
+4. Create project in `/projects` and associate client (actions: `projects.ts`).
+5. Create booking in `/scheduling/new`; assign photographer; validate conflicts/buffers (actions: `bookings.ts`, `availability.ts`).
+6. Send contract from `/contracts/new`; collect signature (actions: `contracts.ts`, `contract-signing.ts`).
+7. Create invoice in `/invoices/new` or from booking (actions: `invoices.ts`, `stripe-checkout.ts`).
+8. Capture payment via `/pay/[id]` or invoice link; record payment (actions: `payments.ts`).
+9. Create gallery in `/galleries/new`; upload assets and deliver (actions: `galleries.ts`, `uploads.ts`).
+10. Client accesses `/g/[slug]`; favorites/selections tracked (actions: `client-selections.ts`).
+
+### Public Booking (Self-Serve)
+1. Client opens `/book/[slug]` and completes booking form.
+2. System checks availability/buffers/conflicts (actions: `self-booking.ts`, `availability.ts`).
+3. If requireApproval, booking status = pending; else confirmed.
+4. Confirmation page `/book/[slug]/confirmation` shown and email sent.
+
+### Contract -> Signature
+1. Contract template created in `/contracts/templates` (actions: `contract-templates.ts`).
+2. Contract created in `/contracts/new` and sent (actions: `contracts.ts`).
+3. Client signs via `/sign/[token]`; status updated (actions: `contract-signing.ts`).
+
+### Order Page -> Checkout -> Fulfillment
+1. Create order page in `/order-pages/new` with services/bundles (actions: `order-pages.ts`).
+2. Client visits `/order/[slug]` and checks out (actions: `orders.ts`, `stripe-checkout.ts`).
+3. Payment confirmation on `/order/[slug]/confirmation`; order status updated.
+
+### Client Portal
+1. Client receives magic link and logs into `/portal` (actions: `client-auth.ts`).
+2. Portal tabs load invoices, galleries, questionnaires, properties (actions: `client-portal.ts`).
+3. Client completes questionnaire in `/portal/questionnaires/[id]` (actions: `questionnaire-portal.ts`).
+
+### Gallery Delivery & Proofing
+1. Gallery created and assets uploaded in `/galleries/new` (actions: `galleries.ts`, `uploads.ts`).
+2. Gallery delivered; reminder/expiration automation runs (actions: `gallery-reminders.ts`, `gallery-expiration.ts`).
+3. Client favorites and selections tracked via `/g/[slug]` (actions: `client-selections.ts`).
+
+### Onboarding
+1. User signs in, organization created, onboarding status checked (layout: `src/app/(dashboard)/layout.tsx`).
+2. If incomplete, redirect to `/onboarding` and complete steps (actions: `onboarding.ts`).
+3. Enabled modules/industries stored on organization; dashboard unlocked.
+
 ## Core Modules (Authenticated Dashboard)
 
 ### Dashboard Home
@@ -4081,6 +4127,549 @@ The following list is the full route inventory. Each module section below explai
 - Prisma models: sMSLog
 - External services: twilio
 - Status codes: 200, 400, 500
+
+## API Example Payloads
+- Payloads are inferred from `request.json()` destructuring and query params in route handlers.
+
+### /api/admin/seed-questionnaire-templates
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/auth/client
+- Methods: GET
+- Query params: token
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/auth/client/dev-bypass
+- Methods: GET
+- Query params: client_id, email
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/calendar/ical/[token]
+- Methods: GET
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/contracts/bulk-pdf
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/booking-followups
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/email-sync
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/gallery-auto-archive
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/gallery-expiration
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/gallery-reminders
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/invoice-reminders
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/late-fees
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/photographer-digest
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/portfolio-digest
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/portfolio-publish
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/questionnaire-reminders
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/recurring-invoices
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/scheduled-invoices
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/cron/send-reminders
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/download/[assetId]
+- Methods: GET
+- Query params: deliverySlug
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/download/batch
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/email-preview
+- Methods: GET
+- Query params: agreementCount, bookingDate, bookingTitle, clientName, completedTodayCount, description, dueDate, inProgressCount, isOverdue, organizationName, overdueCount, pendingCount, photographerName, questionnaireName, reminderCount, responseCount, template
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/forms/submit
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/[id]/analytics-report
+- Methods: GET
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/[id]/download-history
+- Methods: GET
+- Query params: email, sessionId
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/[id]/favorites-export
+- Methods: GET
+- Query params: format
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/[id]/proof-sheet
+- Methods: GET
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/comment
+- Methods: GET, POST, DELETE
+- Query params: assetId, galleryId
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/favorite
+- Methods: GET, POST
+- Query params: email, galleryId
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/feedback
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/rating
+- Methods: GET, POST, DELETE
+- Query params: assetId, galleryId
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/gallery/verify-password
+- Methods: GET, POST
+- Query params: galleryId
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/images/process
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/integrations/dropbox/authorize
+- Methods: GET
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/integrations/dropbox/callback
+- Methods: GET
+- Query params: code, error, error_description, state
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/integrations/dropbox/webhook
+- Methods: GET, POST
+- Query params: challenge
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/integrations/gmail/authorize
+- Methods: GET
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/integrations/gmail/callback
+- Methods: GET
+- Query params: code, error, state
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/integrations/google/authorize
+- Methods: GET
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/integrations/google/callback
+- Methods: GET
+- Query params: code, error, error_description, state
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/integrations/slack
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/invoices/bulk-pdf
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/payments/bulk-pdf
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/portfolio/comments
+- Methods: GET, POST
+- Query params: projectId, sectionId, slug
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/portfolio/export
+- Methods: GET
+- Query params: format, portfolioId, timeRange
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/portfolio/lead-capture
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/portfolio/track
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/telemetry
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/unsubscribe
+- Methods: GET, POST
+- Query params: token
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/upload/booking-form
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/upload/complete
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/upload/presigned-url
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/upload/profile-photo
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/webhooks/clerk
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/webhooks/railway
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/webhooks/resend
+- Methods: GET, POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/webhooks/stripe
+- Methods: POST
+- Example response:
+```json
+{
+  "success": true
+}
+```
+
+### /api/webhooks/twilio/status
+- Methods: GET, POST
+- Query params: logId
+- Example response:
+```json
+{
+  "success": true
+}
+```
 
 ## API Endpoints Inventory
 - `GET, POST /api/admin/seed-questionnaire-templates`
@@ -6112,6 +6701,352 @@ The following list is the full route inventory. Each module section below explai
 - `watermark-templates.ts`: applyTemplateToOrganization, createWatermarkTemplate, deleteWatermarkTemplate, getDefaultWatermarkTemplate, getWatermarkTemplate, listWatermarkTemplates, setDefaultTemplate, updateWatermarkTemplate
 - `weather.ts`: checkWeatherApiAvailability, getBookingWeather, getGoldenHour, getLocationForecast
 - `webhooks.ts`: WEBHOOK_EVENT_TYPES, createWebhookEndpoint, deleteWebhookEndpoint, dispatchWebhookEvent, getWebhookDeliveries, getWebhookDelivery, getWebhookEndpoints, regenerateWebhookSecret, testWebhookEndpoint, updateWebhookEndpoint
+
+## Form Spec Catalog (Route -> Validation Schemas)
+- This catalog maps routes to validation schemas referenced by their UI components (direct imports only, BFS depth 4).
+- Field lists are summarized below; full schema code remains under Validation Schemas (Verbatim).
+
+### /portal/questionnaires/[id]
+- Validation schemas:
+  - `@/lib/validations/questionnaires`
+
+### /booking
+- Validation schemas:
+  - `@/lib/validations/booking-forms`
+
+### /galleries
+- Validation schemas:
+  - `@/lib/validations/galleries`
+
+### /galleries/[id]
+- Validation schemas:
+  - `@/lib/validations/galleries`
+
+### /galleries/[id]/edit
+- Validation schemas:
+  - `@/lib/validations/galleries`
+
+### /galleries/new
+- Validation schemas:
+  - `@/lib/validations/galleries`
+
+### /invoices/new
+- Validation schemas:
+  - `@/lib/validations/orders`
+
+### /leads
+- Validation schemas:
+  - `@/lib/validations/booking-forms`
+  - `@/lib/validations/portfolio-sections`
+
+### /mini-sessions
+- Validation schemas:
+  - `@/lib/validations/booking-forms`
+
+### /order-pages
+- Validation schemas:
+  - `@/lib/validations/order-pages`
+
+### /order-pages/[id]
+- Validation schemas:
+  - `@/lib/validations/bundles`
+  - `@/lib/validations/order-pages`: Testimonial
+  - `@/lib/validations/services`
+
+### /order-pages/new
+- Validation schemas:
+  - `@/lib/validations/bundles`
+  - `@/lib/validations/order-pages`: Testimonial
+  - `@/lib/validations/services`
+
+### /orders
+- Validation schemas:
+  - `@/lib/validations/orders`
+
+### /orders/[id]
+- Validation schemas:
+  - `@/lib/validations/orders`
+
+### /orders/analytics
+- Validation schemas:
+  - `@/lib/validations/orders`
+
+### /portfolios
+- Validation schemas:
+  - `@/lib/validations/portfolio-sections`
+
+### /portfolios/[id]
+- Validation schemas:
+  - `@/lib/validations/portfolio-sections`
+
+### /portfolios/new
+- Validation schemas:
+  - `@/lib/validations/portfolio-sections`
+
+### /products
+- Validation schemas:
+  - `@/lib/validations/products`
+
+### /products/[catalogId]
+- Validation schemas:
+  - `@/lib/validations/products`
+
+### /projects
+- Validation schemas:
+  - `@/lib/validations/galleries`
+
+### /projects/tasks/[id]
+- Validation schemas:
+  - `@/lib/validations/galleries`
+
+### /questionnaires
+- Validation schemas:
+  - `@/lib/validations/questionnaires`
+
+### /questionnaires/assigned/[id]
+- Validation schemas:
+  - `@/lib/validations/questionnaires`
+
+### /questionnaires/templates/[id]
+- Validation schemas:
+  - `@/lib/validations/questionnaires`
+
+### /questionnaires/templates/[id]/preview
+- Validation schemas:
+  - `@/lib/validations/questionnaires`
+
+### /questionnaires/templates/new
+- Validation schemas:
+  - `@/lib/validations/questionnaires`
+
+### /scheduling/booking-forms
+- Validation schemas:
+  - `@/lib/validations/booking-forms`
+  - `@/lib/validations/services`
+
+### /scheduling/booking-forms/[id]
+- Validation schemas:
+  - `@/lib/validations/booking-forms`: BookingFormField
+  - `@/lib/validations/services`
+
+### /scheduling/booking-forms/[id]/submissions
+- Validation schemas:
+  - `@/lib/validations/booking-forms`
+
+### /scheduling/new
+- Validation schemas:
+  - `@/lib/validations/orders`
+
+### /services
+- Validation schemas:
+  - `@/lib/validations/services`
+
+### /services/[id]
+- Validation schemas:
+  - `@/lib/validations/services`
+
+### /services/addons
+- Validation schemas:
+  - `@/lib/validations/addons`
+
+### /services/addons/[id]
+- Validation schemas:
+  - `@/lib/validations/addons`
+  - `@/lib/validations/services`
+
+### /services/addons/new
+- Validation schemas:
+  - `@/lib/validations/addons`
+  - `@/lib/validations/services`
+
+### /services/bundles
+- Validation schemas:
+  - `@/lib/validations/bundles`
+
+### /services/bundles/[id]
+- Validation schemas:
+  - `@/lib/validations/bundles`
+  - `@/lib/validations/services`
+
+### /services/bundles/new
+- Validation schemas:
+  - `@/lib/validations/bundles`
+  - `@/lib/validations/services`
+
+### /services/new
+- Validation schemas:
+  - `@/lib/validations/services`
+
+### /settings/developer
+- Validation schemas:
+  - `@/lib/validations/bundles`
+  - `@/lib/validations/services`
+
+### /settings/gallery-templates
+- Validation schemas:
+  - `@/lib/validations/services`
+
+### /settings/photographer-pay
+- Validation schemas:
+  - `@/lib/validations/services`
+
+### /settings/territories
+- Validation schemas:
+  - `@/lib/validations/services`
+
+### /_custom-domain
+- Validation schemas:
+  - `@/lib/validations/portfolio-sections`
+
+### /book/[slug]
+- Validation schemas:
+  - `@/lib/validations/booking-forms`
+
+### /g/[slug]
+- Validation schemas:
+  - `@/lib/validations/galleries`
+
+### /order/[slug]
+- Validation schemas:
+  - `@/lib/validations/order-pages`: Testimonial
+  - `@/lib/validations/orders`
+
+### /order/[slug]/confirmation
+- Validation schemas:
+  - `@/lib/validations/order-pages`
+  - `@/lib/validations/orders`
+
+### /portfolio/[slug]
+- Validation schemas:
+  - `@/lib/validations/portfolio-sections`
+
+## Validation Field Summary (By Schema)
+- Fields listed below are top-level keys per Zod object schema.
+
+### src/lib/validations/addons.ts
+- `addonCompatibilitySchema` fields: addonId, serviceIds
+- `addonFiltersSchema` fields: isActive, triggerType, search
+- `addonSchema` fields: name, description, priceCents, imageUrl, iconName, triggerType, triggerValue, isActive, isOneTime
+- `deleteAddonSchema` fields: id, force
+
+### src/lib/validations/booking-forms.ts
+- `addBookingFormFieldSchema` fields: bookingFormId, field
+- `bookingFormFieldSchema` fields: id, label, type, placeholder, helpText, isRequired, sortOrder, industries, validation, conditionalOn, conditionalValue
+- `bookingFormFiltersSchema` fields: isPublished, industry, search
+- `bookingFormSchema` fields: name, slug, description, industry, isPublished, isDefault, headline, subheadline, heroImageUrl, logoOverrideUrl, primaryColor, requireApproval, confirmationEmail
+- `bookingFormServicesSchema` fields: bookingFormId, services
+- `convertSubmissionSchema` fields: submissionId, bookingData
+- `deleteBookingFormFieldSchema` fields: id, bookingFormId
+- `deleteBookingFormSchema` fields: id, force
+- `duplicateBookingFormSchema` fields: id, newName, newSlug
+- `fieldValidationSchema` fields: minLength, maxLength, pattern, min, max, options
+- `rejectSubmissionSchema` fields: submissionId, rejectionNote
+- `reorderBookingFormFieldsSchema` fields: bookingFormId, fieldIds
+- `submissionFiltersSchema` fields: bookingFormId, status, startDate, endDate
+- `submitBookingFormSchema` fields: bookingFormId, data, clientName, clientEmail, clientPhone, preferredDate, preferredTime, serviceId
+- `updateBookingFormFieldsSchema` fields: bookingFormId, fields
+
+### src/lib/validations/bundles.ts
+- `bundleFiltersSchema` fields: isActive, isPublic, bundleType, search
+- `bundleSchema` fields: name, slug, description, priceCents, bundleType, pricingMethod, pricePerSqftCents, minSqft, maxSqft, sqftIncrements, imageUrl, badgeText, isActive, isPublic
+- `bundleServiceSchema` fields: bundleId, serviceId, isRequired, quantity
+- `bundleServicesSchema` fields: bundleId, services
+- `calculateBundlePriceSchema` fields: bundleId, sqft
+- `createPricingTiersSchema` fields: bundleId, tiers
+- `deleteBundleSchema` fields: id, force
+- `deletePricingTierSchema` fields: id
+- `duplicateBundleSchema` fields: id, newName, newSlug
+- `pricingTierSchema` fields: minSqft, maxSqft, priceCents, tierName, sortOrder
+- `reorderBundleItemsSchema` fields: bundleId, itemIds
+
+### src/lib/validations/galleries.ts
+- `archiveGallerySchema` fields: id, archive
+- `assetSchema` fields: projectId, filename, originalUrl, thumbnailUrl, mediumUrl, watermarkedUrl, mimeType, sizeBytes, width, height, exifData, sortOrder
+- `bulkArchiveGalleriesSchema` fields: ids, archive
+- `bulkDeleteGalleriesSchema` fields: ids, force
+- `deleteAssetSchema` fields: id, deleteFromStorage
+- `deleteGallerySchema` fields: id, force
+- `deliverGallerySchema` fields: id, sendEmail, message
+- `duplicateGallerySchema` fields: id, newName, includePhotos
+- `galleryFiltersSchema` fields: status, clientId, serviceId, search, fromDate, toDate
+- `gallerySchema` fields: name, description, clientId, serviceId, services, locationId, status, priceCents, currency, coverImageUrl, password, expiresAt, allowDownloads, showWatermark, downloadResolution, downloadRequiresPayment, allowFavorites, allowComments, sendNotifications, allowSelections, selectionLimit
+- `reorderAssetsSchema` fields: projectId, assetIds
+
+### src/lib/validations/order-pages.ts
+- `deleteOrderPageSchema` fields: id, force
+- `duplicateOrderPageSchema` fields: id, newName, newSlug
+- `orderPageBundlesSchema` fields: orderPageId, bundleIds
+- `orderPageFiltersSchema` fields: isPublished, clientId, search
+- `orderPageSchema` fields: name, slug, headline, subheadline, heroImageUrl, logoOverrideUrl, primaryColor, showPhone, showEmail, customPhone, customEmail, template, metaTitle, metaDescription, testimonials, isPublished, requireLogin, clientId
+- `orderPageServicesSchema` fields: orderPageId, services
+
+### src/lib/validations/orders.ts
+- `cartBundleSchema` fields: type, id, name, priceCents, sqft, pricingTierId, pricingTierName
+- `cartServiceSchema` fields: type, id, name, priceCents, quantity
+- `createOrderSchema` fields: orderPageId, items, clientName, clientEmail, clientPhone, clientCompany, locationNotes, preferredDate, preferredTime, flexibleDates, clientNotes, source, medium, campaign
+- `orderFiltersSchema` fields: status, orderPageId, clientId, search, fromDate, toDate
+- `updateOrderSchema` fields: id, clientName, clientEmail, clientPhone, clientCompany, locationNotes, preferredDate, preferredTime, flexibleDates, clientNotes, internalNotes, status
+
+### src/lib/validations/portfolio-sections.ts
+- `aboutSectionConfigSchema` fields: photoUrl, title, content, highlights
+- `awardItemSchema` fields: id, title, issuer, year, logoUrl
+- `awardsSectionConfigSchema` fields: title, items
+- `contactFieldSchema` fields: id, label, type, required
+- `contactSectionConfigSchema` fields: title, subtitle, showForm, showMap, showSocial, showEmail, showPhone, customFields, mapAddress
+- `createSectionSchema` fields: sectionType, position, config, customTitle
+- `customHtmlSectionConfigSchema` fields: html
+- `faqItemSchema` fields: id, question, answer
+- `faqSectionConfigSchema` fields: title, items
+- `gallerySectionConfigSchema` fields: projectIds, layout, columns, showProjectNames
+- `heroSectionConfigSchema` fields: title, subtitle, backgroundImageUrl, backgroundVideoUrl, ctaText, ctaLink, overlay, alignment
+- `imageSectionConfigSchema` fields: url, alt, caption, layout
+- `serviceItemSchema` fields: id, name, description, price, icon
+- `servicesSectionConfigSchema` fields: title, items, showPricing
+- `spacerSectionConfigSchema` fields: height
+- `testimonialItemSchema` fields: id, quote, clientName, clientTitle, photoUrl
+- `testimonialsSectionConfigSchema` fields: title, items, layout
+- `textSectionConfigSchema` fields: content, alignment
+- `updatePortfolioSettingsSchema` fields: portfolioType, template, fontHeading, fontBody, socialLinks, metaTitle, metaDescription, showBranding
+- `updateSectionSchema` fields: position, isVisible, config, customTitle
+- `videoSectionConfigSchema` fields: url, autoplay, loop, muted
+
+### src/lib/validations/products.ts
+- `attachPhotoSchema` fields: productId, assetId, variantId, angle, isPrimary
+- `createCatalogSchema` fields: name, description, tags
+- `createProductSchema` fields: catalogId, sku, name, category, angles, status, notes
+
+### src/lib/validations/questionnaires.ts
+- `acceptAgreementSchema` fields: questionnaireId, agreementId, signatureData, signatureType
+- `addQuestionnaireAgreementSchema` fields: templateId, agreement
+- `addQuestionnaireFieldSchema` fields: templateId, field
+- `approveQuestionnaireSchema` fields: id, internalNotes
+- `assignQuestionnaireSchema` fields: clientId, templateId, bookingId, projectId, isRequired, dueDate, sendReminders, internalNotes, personalNote
+- `clientQuestionnaireFiltersSchema` fields: clientId, templateId, bookingId, projectId, status, isRequired, dueBefore, dueAfter
+- `deleteClientQuestionnaireSchema` fields: id
+- `deleteQuestionnaireAgreementSchema` fields: id, templateId
+- `deleteQuestionnaireFieldSchema` fields: id, templateId
+- `deleteQuestionnaireTemplateSchema` fields: id, force
+- `duplicateQuestionnaireTemplateSchema` fields: id, newName, newSlug
+- `fieldValidationSchema` fields: minLength, maxLength, pattern, min, max, options
+- `questionnaireAgreementSchema` fields: id, agreementType, title, content, isRequired, requiresSignature, sortOrder
+- `questionnaireFieldSchema` fields: id, label, type, placeholder, helpText, isRequired, sortOrder, section, sectionOrder, validation, conditionalOn, conditionalValue
+- `questionnaireResponseSchema` fields: fieldLabel, fieldType, value
+- `questionnaireTemplateFiltersSchema` fields: industry, isSystemTemplate, isActive, search
+- `questionnaireTemplateSchema` fields: name, slug, description, industry, isActive
+- `reorderQuestionnaireFieldsSchema` fields: templateId, fieldIds
+- `saveQuestionnaireProgressSchema` fields: questionnaireId, responses
+- `submitQuestionnaireResponsesSchema` fields: questionnaireId, responses
+- `updateClientQuestionnaireSchema` fields: id, isRequired, dueDate, sendReminders, internalNotes, status
+- `updateQuestionnaireAgreementsSchema` fields: templateId, agreements
+- `updateQuestionnaireFieldsSchema` fields: templateId, fields
+
+### src/lib/validations/services.ts
+- `bulkArchiveSchema` fields: ids, archive
+- `bulkUpdatePricesSchema` fields: updates
+- `deleteServiceSchema` fields: id, force
+- `duplicateServiceSchema` fields: id, newName
+- `serviceFiltersSchema` fields: category, isActive, isDefault, search
+- `serviceSchema` fields: name, category, description, priceCents, duration, deliverables, isActive
 
 ## Validation Schemas (Verbatim)
 - These are the canonical Zod schemas used by forms/actions. Use them as the single source of validation rules.
@@ -8145,6 +9080,118 @@ export function getCharacterCount(value: string, maxLength: number): {
   };
 }
 ```
+
+## Permissions Matrix
+- Maps auth helpers to server actions and API routes that enforce them.
+
+### requireAuth
+- Server actions:
+  - `ab-testing.ts`
+  - `auth-helper.ts`
+  - `availability.ts`
+  - `bookings.ts`
+  - `chat-inquiries.ts`
+  - `clients.ts`
+  - `contract-pdf.ts`
+  - `custom-forms.ts`
+  - `galleries.ts`
+  - `invitations.ts`
+  - `invoice-pdf.ts`
+  - `marketing-assets.ts`
+  - `payments.ts`
+  - `portfolio-comments.ts`
+  - `portfolio-websites.ts`
+  - `products.ts`
+  - `projects.ts`
+  - `receipt-pdf.ts`
+  - `services.ts`
+  - `settings.ts`
+  - `sms.ts`
+  - `stripe-connect.ts`
+
+### requireOrganizationId
+- Server actions:
+  - `ab-testing.ts`
+  - `activity.ts`
+  - `addons.ts`
+  - `auth-helper.ts`
+  - `availability.ts`
+  - `booking-forms.ts`
+  - `booking-import.ts`
+  - `bookings.ts`
+  - `brokerage-contracts.ts`
+  - `brokerages.ts`
+  - `bundles.ts`
+  - `calendar-feeds.ts`
+  - `chat-inquiries.ts`
+  - `client-communications.ts`
+  - `client-import.ts`
+  - `client-merge.ts`
+  - `client-tags.ts`
+  - `clients.ts`
+  - `contract-pdf.ts`
+  - `contract-signing.ts`
+  - `contract-templates.ts`
+  - `contracts.ts`
+  - `credit-notes.ts`
+  - `custom-forms.ts`
+  - `equipment-checklists.ts`
+  - `estimates.ts`
+  - `galleries.ts`
+  - `invitations.ts`
+  - `invoice-analytics.ts`
+  - `invoice-attachments.ts`
+  - `invoice-email-templates.ts`
+  - `invoice-payments.ts`
+  - `invoice-pdf.ts`
+  - `invoice-presets.ts`
+  - `invoice-splits.ts`
+  - `invoices.ts`
+  - `marketing-assets.ts`
+  - `mls-presets.ts`
+  - `notifications.ts`
+  - `order-pages.ts`
+  - `orders.ts`
+  - `payments.ts`
+  - `payouts.ts`
+  - `photographer-pay.ts`
+  - `portfolio-comments.ts`
+  - `portfolio-websites.ts`
+  - `products.ts`
+  - `projects.ts`
+  - `receipt-pdf.ts`
+  - `recurring-invoices.ts`
+  - `retainers.ts`
+  - `revenue-forecasting.ts`
+  - `seed.ts`
+  - `services.ts`
+  - `settings.ts`
+  - `sms.ts`
+  - `stripe-connect.ts`
+  - `team-availability.ts`
+  - `uploads.ts`
+  - `waitlist.ts`
+
+### requireAdmin
+- Server actions:
+  - `auth-helper.ts`
+  - `clients.ts`
+  - `platform-referrals.ts`
+
+### requireOwner
+- Server actions:
+  - `auth-helper.ts`
+
+### requireUserId
+- Server actions:
+  - `auth-helper.ts`
+  - `client-communications.ts`
+  - `photographer-pay.ts`
+  - `seed.ts`
+
+### requireClientAuth
+- Server actions:
+  - `client-auth.ts`
 
 ## Data Model Dictionary
 - Fields are listed verbatim from Prisma schema for rebuild accuracy.
