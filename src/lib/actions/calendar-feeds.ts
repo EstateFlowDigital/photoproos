@@ -13,10 +13,7 @@ import { prisma } from "@/lib/db";
 import { nanoid } from "nanoid";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 async function getOrganizationId(): Promise<string> {
   return requireOrganizationId();

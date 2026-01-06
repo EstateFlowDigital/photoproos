@@ -12,11 +12,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
-
-// Result type for server actions
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {

@@ -4,11 +4,7 @@ import { getForecastForDate, getWeatherForecast } from "@/lib/weather/forecast";
 import { calculateGoldenHourLocal } from "@/lib/weather/golden-hour";
 import { isConfigured } from "@/lib/weather/client";
 import type { WeatherForecast, GoldenHourInfo } from "@/lib/weather/types";
-
-// Result type for server actions
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 /**
  * Get weather forecast for a specific booking

@@ -11,9 +11,10 @@ import { LeadGate } from "./lead-gate";
 export default async function PortfolioPublicPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const website = await getPortfolioWebsiteBySlug(params.slug);
+  const { slug } = await params;
+  const website = await getPortfolioWebsiteBySlug(slug);
 
   if (!website) {
     notFound();

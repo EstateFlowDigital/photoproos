@@ -4,10 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import type { EarningStatus } from "@prisma/client";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // Types

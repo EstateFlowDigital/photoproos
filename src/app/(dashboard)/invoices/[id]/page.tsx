@@ -80,6 +80,10 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
     ? "Overdue"
     : formatStatusLabel(invoice.status);
 
+  // Calculate outstanding balance including late fees
+  const totalDue = invoice.totalCents + invoice.lateFeeAppliedCents;
+  const outstandingBalance = totalDue - invoice.paidAmountCents;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -88,8 +92,11 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
         actions={
           <InvoiceActions
             invoiceId={invoice.id}
+            invoiceNumber={invoice.invoiceNumber}
             currentStatus={invoice.status}
             clientEmail={invoice.clientEmail}
+            outstandingBalance={outstandingBalance}
+            currency={invoice.currency}
           />
         }
       />
@@ -249,9 +256,34 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
                 </span>
               </div>
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-sm text-foreground-muted">Amount Due</span>
+                <span className="text-sm text-foreground-muted">Invoice Total</span>
                 <span className="text-sm font-medium text-foreground">
-                  {invoice.status === "paid" ? formatCurrency(0) : formatCurrency(invoice.totalCents)}
+                  {formatCurrency(invoice.totalCents)}
+                </span>
+              </div>
+              {invoice.lateFeeAppliedCents > 0 && (
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="text-sm text-[var(--error-text)]">Late Fees</span>
+                  <span className="text-sm font-medium text-[var(--error-text)]">
+                    +{formatCurrency(invoice.lateFeeAppliedCents)}
+                  </span>
+                </div>
+              )}
+              {invoice.paidAmountCents > 0 && (
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="text-sm text-[var(--success-text)]">Paid</span>
+                  <span className="text-sm font-medium text-[var(--success-text)]">
+                    -{formatCurrency(invoice.paidAmountCents)}
+                  </span>
+                </div>
+              )}
+              <div className="flex flex-col gap-1 pt-2 border-t border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-sm font-medium text-foreground">Balance Due</span>
+                <span className={cn(
+                  "text-lg font-semibold",
+                  outstandingBalance > 0 ? "text-foreground" : "text-[var(--success-text)]"
+                )}>
+                  {formatCurrency(Math.max(0, outstandingBalance))}
                 </span>
               </div>
               {invoice.paidAt && (
@@ -264,17 +296,21 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
               )}
             </div>
 
-            {invoice.paymentLinkUrl && (
+            {/* Payment Link */}
+            {invoice.status !== "paid" && invoice.status !== "draft" && invoice.status !== "cancelled" && (
               <div className="mt-4 pt-4 border-t border-[var(--card-border)]">
                 <a
-                  href={invoice.paymentLinkUrl}
+                  href={`/pay/${invoice.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
                 >
                   <LinkIcon className="h-4 w-4" />
-                  View Payment Link
+                  Client Payment Link
                 </a>
+                <p className="mt-2 text-center text-xs text-foreground-muted">
+                  Share this link with your client to collect payment
+                </p>
               </div>
             )}
           </div>

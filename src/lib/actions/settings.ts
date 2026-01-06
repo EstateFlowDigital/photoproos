@@ -79,7 +79,7 @@ export async function updateOrganizationProfile(input: {
     revalidatePath("/settings");
     revalidatePath("/settings/profile");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating organization profile:", error);
     return { success: false, error: "Failed to update profile" };
@@ -137,7 +137,7 @@ export async function updateOrganizationBranding(input: {
     revalidatePath("/settings/branding");
     revalidatePath("/g"); // Revalidate gallery pages
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating branding:", error);
     return { success: false, error: "Failed to update branding" };
@@ -167,7 +167,7 @@ export async function updateTravelSettings(input: {
     revalidatePath("/settings");
     revalidatePath("/settings/travel");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating travel settings:", error);
     return { success: false, error: "Failed to update travel settings" };
@@ -195,7 +195,7 @@ export async function updateTaxSettings(input: {
     revalidatePath("/settings");
     revalidatePath("/settings/payments");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating tax settings:", error);
     return { success: false, error: "Failed to update tax settings" };
@@ -286,7 +286,7 @@ export async function updateCurrencySettings(input: { currency: SupportedCurrenc
     revalidatePath("/invoices");
     revalidatePath("/galleries");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating currency settings:", error);
     return { success: false, error: "Failed to update currency settings" };
@@ -360,7 +360,7 @@ export async function updateMemberRole(memberId: string, role: MemberRole) {
 
     revalidatePath("/settings/team");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating member role:", error);
     return { success: false, error: "Failed to update role" };
@@ -399,7 +399,7 @@ export async function removeMember(memberId: string) {
 
     revalidatePath("/settings/team");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error removing member:", error);
     return { success: false, error: "Failed to remove member" };
@@ -466,7 +466,7 @@ export async function updateUserProfile(input: {
 
     revalidatePath("/settings/profile");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating user profile:", error);
     return { success: false, error: "Failed to update profile" };
@@ -740,7 +740,7 @@ export async function deleteAccount(confirmationText: string) {
       await tx.organization.delete({ where: { id: organizationId } });
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting account:", error);
     return { success: false, error: "Failed to delete account" };

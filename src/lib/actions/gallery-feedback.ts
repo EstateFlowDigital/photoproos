@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
@@ -155,7 +157,7 @@ export async function getFeedbackStats(): Promise<{ success: boolean; data?: Fee
 /**
  * Mark feedback as read
  */
-export async function markFeedbackAsRead(feedbackId: string): Promise<{ success: boolean; error?: string }> {
+export async function markFeedbackAsRead(feedbackId: string): Promise<VoidActionResult> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
     return { success: false, error: "Organization not found" };
@@ -171,7 +173,7 @@ export async function markFeedbackAsRead(feedbackId: string): Promise<{ success:
     });
 
     revalidatePath("/feedback");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Feedback] Error marking as read:", error);
     return { success: false, error: "Failed to mark feedback as read" };
@@ -181,7 +183,7 @@ export async function markFeedbackAsRead(feedbackId: string): Promise<{ success:
 /**
  * Mark feedback as resolved
  */
-export async function markFeedbackAsResolved(feedbackId: string): Promise<{ success: boolean; error?: string }> {
+export async function markFeedbackAsResolved(feedbackId: string): Promise<VoidActionResult> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
     return { success: false, error: "Organization not found" };
@@ -197,7 +199,7 @@ export async function markFeedbackAsResolved(feedbackId: string): Promise<{ succ
     });
 
     revalidatePath("/feedback");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Feedback] Error marking as resolved:", error);
     return { success: false, error: "Failed to mark feedback as resolved" };
@@ -207,7 +209,7 @@ export async function markFeedbackAsResolved(feedbackId: string): Promise<{ succ
 /**
  * Mark all unread feedback as read
  */
-export async function markAllFeedbackAsRead(): Promise<{ success: boolean; error?: string }> {
+export async function markAllFeedbackAsRead(): Promise<VoidActionResult> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
     return { success: false, error: "Organization not found" };
@@ -223,7 +225,7 @@ export async function markAllFeedbackAsRead(): Promise<{ success: boolean; error
     });
 
     revalidatePath("/feedback");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Feedback] Error marking all as read:", error);
     return { success: false, error: "Failed to mark all feedback as read" };
@@ -233,7 +235,7 @@ export async function markAllFeedbackAsRead(): Promise<{ success: boolean; error
 /**
  * Delete feedback
  */
-export async function deleteFeedback(feedbackId: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteFeedback(feedbackId: string): Promise<VoidActionResult> {
   const organizationId = await getOrganizationId();
   if (!organizationId) {
     return { success: false, error: "Organization not found" };
@@ -248,7 +250,7 @@ export async function deleteFeedback(feedbackId: string): Promise<{ success: boo
     });
 
     revalidatePath("/feedback");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Feedback] Error deleting feedback:", error);
     return { success: false, error: "Failed to delete feedback" };

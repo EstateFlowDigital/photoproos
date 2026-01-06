@@ -268,6 +268,50 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
         </div>
       )}
 
+      {/* Expiration Warning Banner */}
+      {(() => {
+        if (!gallery.expiresAt) return null;
+        const expiresDate = new Date(gallery.expiresAt);
+        const now = new Date();
+        const daysRemaining = Math.ceil((expiresDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+        // Only show if expiring within 14 days
+        if (daysRemaining > 14 || daysRemaining < 0) return null;
+
+        const isUrgent = daysRemaining <= 3;
+        const warningColor = isUrgent ? "#ef4444" : "#f97316"; // red for urgent, orange for warning
+
+        return (
+          <div
+            className="border-b"
+            style={{
+              backgroundColor: `${warningColor}15`,
+              borderColor: `${warningColor}30`,
+            }}
+          >
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex items-center gap-3">
+                <ClockIcon className="h-5 w-5 shrink-0" style={{ color: warningColor }} />
+                <div>
+                  <p className="font-medium" style={{ color: warningColor }}>
+                    {daysRemaining === 0
+                      ? "This gallery expires today!"
+                      : daysRemaining === 1
+                        ? "This gallery expires tomorrow!"
+                        : `This gallery expires in ${daysRemaining} days`}
+                  </p>
+                  <p className="text-sm" style={{ color: colors.mutedColor }}>
+                    {gallery.allowDownload && gallery.isPaid
+                      ? "Download your photos before they're no longer available."
+                      : "Please contact your photographer if you need more time."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Payment Banner (if not paid) */}
       {!gallery.isPaid && gallery.price > 0 && (
         <div
@@ -446,6 +490,14 @@ function ReceiptIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13.227a.5.5 0 0 0 .824.384l2.51-2.09 2.833 2.09a.5.5 0 0 0 .594 0l2.833-2.09 2.51 2.09a.5.5 0 0 0 .824-.384V3.5A1.5 1.5 0 0 0 14.5 2h-10ZM6 6a.75.75 0 0 0 0 1.5h8a.75.75 0 0 0 0-1.5H6Zm0 3.5a.75.75 0 0 0 0 1.5h8a.75.75 0 0 0 0-1.5H6Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} style={style}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clipRule="evenodd" />
     </svg>
   );
 }

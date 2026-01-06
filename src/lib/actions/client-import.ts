@@ -6,10 +6,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import type { ClientIndustry } from "@prisma/client";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export interface CSVClientRow {
   email: string;

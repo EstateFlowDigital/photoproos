@@ -169,7 +169,7 @@ export async function revokeApiKey(keyId: string) {
     });
 
     revalidatePath("/settings/integrations");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Failed to revoke API key:", error);
     return { success: false, error: "Failed to revoke API key" };
@@ -208,7 +208,7 @@ export async function deleteApiKey(keyId: string) {
     });
 
     revalidatePath("/settings/integrations");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Failed to delete API key:", error);
     return { success: false, error: "Failed to delete API key" };

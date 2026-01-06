@@ -19,15 +19,15 @@ export default async function BrokeragesPage({ searchParams }: BrokeragesPagePro
     search: search || undefined,
   });
 
-  const brokerages = result.success ? result.data : [];
+  const brokerages = result.success && result.data ? result.data : [];
 
   // Filter by status if needed
   const filteredBrokerages =
     status === "inactive"
-      ? brokerages.filter((b) => !b.isActive)
+      ? brokerages?.filter((b) => !b.isActive) ?? []
       : status === "active"
-      ? brokerages.filter((b) => b.isActive)
-      : brokerages;
+      ? brokerages?.filter((b) => b.isActive) ?? []
+      : brokerages ?? [];
 
   // Calculate summary stats
   const totalBrokerages = brokerages.length;

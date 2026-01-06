@@ -8,6 +8,8 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import { Resend } from "resend";
 import { InvoiceReminderEmail } from "@/emails/invoice-reminder";
+import type { ActionResult } from "@/lib/types/action-result";
+import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 
 // Lazy initialize Resend to avoid build errors
 let _resend: Resend | null = null;
@@ -17,11 +19,6 @@ function getResend() {
   }
   return _resend;
 }
-
-// Result type for server actions
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 // ============================================================================
 // INVOICE OPERATIONS
@@ -47,6 +44,29 @@ async function generateInvoiceNumber(organizationId: string): Promise<string> {
   const nextNumber = lastNumber + 1;
 
   return `INV-${nextNumber.toString().padStart(4, "0")}`;
+}
+
+/**
+ * Mark sent invoices as overdue if past due date
+ * This ensures the database status reflects reality
+ */
+async function markOverdueInvoices(organizationId: string): Promise<number> {
+  const now = new Date();
+
+  const result = await prisma.invoice.updateMany({
+    where: {
+      organizationId,
+      status: "sent",
+      dueDate: {
+        lt: now,
+      },
+    },
+    data: {
+      status: "overdue",
+    },
+  });
+
+  return result.count;
 }
 
 /**
@@ -381,13 +401,18 @@ export async function getInvoice(invoiceId: string) {
 
 /**
  * Get all invoices for the organization
+ * Automatically marks sent invoices as overdue if past due date
  */
 export async function getInvoices(filters?: {
   status?: InvoiceStatus;
   clientId?: string;
 }) {
+  const perfStartTime = perfStart("invoices:getInvoices");
   try {
     const organizationId = await requireOrganizationId();
+
+    // Auto-update overdue invoices before fetching
+    await markOverdueInvoices(organizationId);
 
     const invoices = await prisma.invoice.findMany({
       where: {
@@ -418,6 +443,8 @@ export async function getInvoices(filters?: {
   } catch (error) {
     console.error("Error fetching invoices:", error);
     return [];
+  } finally {
+    perfEnd("invoices:getInvoices", perfStartTime);
   }
 }
 
@@ -534,6 +561,176 @@ export async function deleteInvoice(invoiceId: string): Promise<ActionResult> {
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to delete invoice" };
+  }
+}
+
+/**
+ * Update an existing draft invoice
+ */
+interface UpdateInvoiceInput {
+  clientId: string;
+  dueDate?: Date;
+  notes?: string;
+  terms?: string;
+  discountCents?: number;
+  taxCents?: number;
+  lateFeeEnabled?: boolean;
+  lateFeeType?: string;
+  lateFeePercent?: number;
+  lateFeeFlatCents?: number;
+  lineItems: {
+    id?: string;
+    itemType: LineItemType;
+    bookingId?: string;
+    description: string;
+    quantity: number;
+    unitCents: number;
+    sortOrder: number;
+  }[];
+}
+
+export async function updateInvoice(
+  invoiceId: string,
+  input: UpdateInvoiceInput
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Verify invoice exists and belongs to organization
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        organizationId,
+      },
+      include: {
+        lineItems: true,
+      },
+    });
+
+    if (!invoice) {
+      return { success: false, error: "Invoice not found" };
+    }
+
+    if (invoice.status !== "draft") {
+      return { success: false, error: "Can only edit draft invoices" };
+    }
+
+    // Verify client belongs to organization
+    const client = await prisma.client.findFirst({
+      where: {
+        id: input.clientId,
+        organizationId,
+      },
+    });
+
+    if (!client) {
+      return { success: false, error: "Client not found" };
+    }
+
+    // Calculate totals
+    const subtotalCents = input.lineItems.reduce(
+      (sum, item) => sum + item.unitCents * item.quantity,
+      0
+    );
+    const discountCents = input.discountCents || 0;
+    const taxCents = input.taxCents || 0;
+    const totalCents = subtotalCents - discountCents + taxCents;
+
+    // Get existing line item IDs
+    const existingIds = invoice.lineItems.map((item) => item.id);
+    const inputIds = input.lineItems.filter((item) => item.id).map((item) => item.id);
+    const idsToDelete = existingIds.filter((id) => !inputIds.includes(id));
+
+    // Update invoice with new data in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Delete removed line items
+      if (idsToDelete.length > 0) {
+        await tx.invoiceLineItem.deleteMany({
+          where: {
+            id: { in: idsToDelete },
+            invoiceId,
+          },
+        });
+      }
+
+      // Upsert line items
+      for (const item of input.lineItems) {
+        if (item.id && existingIds.includes(item.id)) {
+          // Update existing
+          await tx.invoiceLineItem.update({
+            where: { id: item.id },
+            data: {
+              description: item.description,
+              quantity: item.quantity,
+              unitCents: item.unitCents,
+              totalCents: item.unitCents * item.quantity,
+              itemType: item.itemType,
+              sortOrder: item.sortOrder,
+            },
+          });
+        } else {
+          // Create new
+          await tx.invoiceLineItem.create({
+            data: {
+              invoiceId,
+              description: item.description,
+              quantity: item.quantity,
+              unitCents: item.unitCents,
+              totalCents: item.unitCents * item.quantity,
+              itemType: item.itemType,
+              sortOrder: item.sortOrder,
+            },
+          });
+        }
+      }
+
+      // Update invoice
+      await tx.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          clientId: input.clientId,
+          clientName: client.fullName || client.company,
+          clientEmail: client.email,
+          dueDate: input.dueDate,
+          notes: input.notes,
+          terms: input.terms,
+          subtotalCents,
+          discountCents,
+          taxCents,
+          totalCents,
+          lateFeeEnabled: input.lateFeeEnabled ?? false,
+          lateFeeType: input.lateFeeType,
+          lateFeePercent: input.lateFeePercent,
+          lateFeeFlatCents: input.lateFeeFlatCents,
+        },
+      });
+    });
+
+    // Log activity
+    const auth = await getAuthContext();
+    await logActivity({
+      organizationId,
+      type: "invoice_sent",
+      description: `Invoice ${invoice.invoiceNumber} updated`,
+      userId: auth?.userId,
+      invoiceId,
+      clientId: input.clientId,
+      metadata: {
+        invoiceNumber: invoice.invoiceNumber,
+        totalCents,
+      },
+    });
+
+    revalidatePath(`/invoices/${invoiceId}`);
+    revalidatePath("/invoices");
+
+    return { success: true, data: { id: invoiceId } };
+  } catch (error) {
+    console.error("Error updating invoice:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update invoice" };
   }
 }
 
@@ -961,5 +1158,41 @@ export async function toggleInvoiceAutoReminders(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to update settings" };
+  }
+}
+
+/**
+ * Update all overdue invoices across all organizations
+ * This is designed to be called by a cron job
+ * Returns the count of invoices that were marked as overdue
+ */
+export async function updateAllOverdueInvoices(): Promise<ActionResult<{ count: number }>> {
+  try {
+    const now = new Date();
+
+    const result = await prisma.invoice.updateMany({
+      where: {
+        status: "sent",
+        dueDate: {
+          lt: now,
+        },
+      },
+      data: {
+        status: "overdue",
+      },
+    });
+
+    console.log(`[Invoice Cron] Marked ${result.count} invoices as overdue`);
+
+    return {
+      success: true,
+      data: { count: result.count },
+    };
+  } catch (error) {
+    console.error("[Invoice Cron] Error updating overdue invoices:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update overdue invoices" };
   }
 }

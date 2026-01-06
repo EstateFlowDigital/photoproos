@@ -30,11 +30,7 @@ import { validateBookingTime } from "@/lib/actions/bookings";
 import { sendBookingConfirmationEmail } from "@/lib/email/send";
 import type { Industry, FormFieldType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
-
-// Result type for server actions
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {

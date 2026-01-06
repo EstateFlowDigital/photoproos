@@ -3,14 +3,11 @@
 import { prisma } from "@/lib/db";
 import { combineDateAndTime } from "@/lib/dates";
 import { validateBookingTime } from "./bookings";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
 // ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 export type PublicService = {
   id: string;

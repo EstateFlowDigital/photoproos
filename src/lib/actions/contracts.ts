@@ -22,14 +22,11 @@ import { prisma } from "@/lib/db";
 import type { ContractStatus } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { sendContractSigningEmail } from "@/lib/email/send";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
 // =============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 export interface CreateContractInput {
   name: string;

@@ -13,7 +13,7 @@ export default async function EditBrokeragePage({ params }: EditBrokeragePagePro
 
   const result = await getBrokerage(id);
 
-  if (!result.success) {
+  if (!result.success || !result.data) {
     notFound();
   }
 

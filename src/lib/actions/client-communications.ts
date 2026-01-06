@@ -4,14 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { CommunicationType, CommunicationDirection } from "@prisma/client";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
-
-// =============================================================================
-// Types
-// =============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export interface CreateCommunicationInput {
   clientId: string;

@@ -17,11 +17,7 @@ import {
   type Testimonial,
 } from "@/lib/validations/order-pages";
 import { requireOrganizationId } from "./auth-helper";
-
-// Result type for server actions
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {

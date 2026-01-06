@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getAuthContext } from "@/lib/auth/clerk";
@@ -53,7 +55,7 @@ export async function getConnectedEmailAccounts(): Promise<{
  */
 export async function disconnectEmailAccount(
   accountId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth) {
@@ -88,7 +90,7 @@ export async function disconnectEmailAccount(
     revalidatePath("/settings/email");
     revalidatePath("/inbox");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error disconnecting email account:", error);
     return { success: false, error: "Failed to disconnect email account" };
@@ -101,7 +103,7 @@ export async function disconnectEmailAccount(
 export async function toggleEmailAccountSync(
   accountId: string,
   enabled: boolean
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth) {
@@ -127,7 +129,7 @@ export async function toggleEmailAccountSync(
 
     revalidatePath("/settings/email");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error toggling email sync:", error);
     return { success: false, error: "Failed to update sync setting" };

@@ -9,10 +9,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types

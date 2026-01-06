@@ -4,16 +4,16 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { THEME_PRESETS, FONT_OPTIONS, DENSITY_OPTIONS, FONT_SIZE_OPTIONS, SIDEBAR_POSITION_OPTIONS, DEFAULT_APPEARANCE, type AppearancePreferences } from "@/lib/appearance-types";
-import type { ActionResult, ActionResultWithData } from "@/lib/types/action-result";
+import { type ActionResult, success, ok, fail } from "@/lib/types/action-result";
 
 /**
  * Get user's appearance preferences
  */
-export async function getAppearancePreferences(): Promise<ActionResultWithData<AppearancePreferences>> {
+export async function getAppearancePreferences(): Promise<ActionResult<AppearancePreferences>> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     const user = await prisma.user.findUnique({
@@ -35,29 +35,26 @@ export async function getAppearancePreferences(): Promise<ActionResultWithData<A
     });
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
-    return {
-      success: true,
-      data: {
-        dashboardTheme: user.dashboardTheme,
-        dashboardAccent: user.dashboardAccent,
-        sidebarCompact: user.sidebarCompact,
-        sidebarPosition: user.sidebarPosition,
-        fontFamily: user.fontFamily,
-        density: user.density,
-        fontSize: user.fontSize,
-        highContrast: user.highContrast,
-        reduceMotion: user.reduceMotion,
-        autoThemeEnabled: user.autoThemeEnabled,
-        autoThemeDarkStart: user.autoThemeDarkStart,
-        autoThemeDarkEnd: user.autoThemeDarkEnd,
-      },
-    };
+    return success({
+      dashboardTheme: user.dashboardTheme,
+      dashboardAccent: user.dashboardAccent,
+      sidebarCompact: user.sidebarCompact,
+      sidebarPosition: user.sidebarPosition,
+      fontFamily: user.fontFamily,
+      density: user.density,
+      fontSize: user.fontSize,
+      highContrast: user.highContrast,
+      reduceMotion: user.reduceMotion,
+      autoThemeEnabled: user.autoThemeEnabled,
+      autoThemeDarkStart: user.autoThemeDarkStart,
+      autoThemeDarkEnd: user.autoThemeDarkEnd,
+    });
   } catch (error) {
     console.error("Error fetching appearance preferences:", error);
-    return { success: false, error: "Failed to fetch preferences" };
+    return fail("Failed to fetch preferences");
   }
 }
 
@@ -66,18 +63,18 @@ export async function getAppearancePreferences(): Promise<ActionResultWithData<A
  */
 export async function updateAppearancePreferences(
   preferences: Partial<AppearancePreferences>
-): Promise<ActionResult> {
+): Promise<ActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Validate accent color format
     if (preferences.dashboardAccent) {
       const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
       if (!hexRegex.test(preferences.dashboardAccent)) {
-        return { success: false, error: "Invalid color format" };
+        return fail("Invalid color format");
       }
     }
 
@@ -85,7 +82,7 @@ export async function updateAppearancePreferences(
     if (preferences.dashboardTheme) {
       const validThemes = THEME_PRESETS.map((p) => p.id);
       if (!validThemes.includes(preferences.dashboardTheme)) {
-        return { success: false, error: "Invalid theme preset" };
+        return fail("Invalid theme preset");
       }
     }
 
@@ -93,7 +90,7 @@ export async function updateAppearancePreferences(
     if (preferences.fontFamily) {
       const validFonts = FONT_OPTIONS.map((f) => f.id as string);
       if (!validFonts.includes(preferences.fontFamily)) {
-        return { success: false, error: "Invalid font family" };
+        return fail("Invalid font family");
       }
     }
 
@@ -101,7 +98,7 @@ export async function updateAppearancePreferences(
     if (preferences.density) {
       const validDensities = DENSITY_OPTIONS.map((d) => d.id as string);
       if (!validDensities.includes(preferences.density)) {
-        return { success: false, error: "Invalid density option" };
+        return fail("Invalid density option");
       }
     }
 
@@ -109,7 +106,7 @@ export async function updateAppearancePreferences(
     if (preferences.fontSize) {
       const validFontSizes = FONT_SIZE_OPTIONS.map((f) => f.id as string);
       if (!validFontSizes.includes(preferences.fontSize)) {
-        return { success: false, error: "Invalid font size option" };
+        return fail("Invalid font size option");
       }
     }
 
@@ -117,17 +114,17 @@ export async function updateAppearancePreferences(
     if (preferences.sidebarPosition) {
       const validPositions = SIDEBAR_POSITION_OPTIONS.map((p) => p.id as string);
       if (!validPositions.includes(preferences.sidebarPosition)) {
-        return { success: false, error: "Invalid sidebar position" };
+        return fail("Invalid sidebar position");
       }
     }
 
     // Validate time format for auto theme
     const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (preferences.autoThemeDarkStart && !timeRegex.test(preferences.autoThemeDarkStart)) {
-      return { success: false, error: "Invalid time format for dark mode start" };
+      return fail("Invalid time format for dark mode start");
     }
     if (preferences.autoThemeDarkEnd && !timeRegex.test(preferences.autoThemeDarkEnd)) {
-      return { success: false, error: "Invalid time format for dark mode end" };
+      return fail("Invalid time format for dark mode end");
     }
 
     await prisma.user.update({
@@ -174,10 +171,10 @@ export async function updateAppearancePreferences(
 
     revalidatePath("/settings/appearance");
     revalidatePath("/dashboard");
-    return { success: true };
+    return ok();
   } catch (error) {
     console.error("Error updating appearance preferences:", error);
-    return { success: false, error: "Failed to update preferences" };
+    return fail("Failed to update preferences");
   }
 }
 
@@ -186,10 +183,10 @@ export async function updateAppearancePreferences(
  */
 export async function applyThemePreset(
   presetId: string
-): Promise<ActionResult> {
+): Promise<ActionResult<void>> {
   const preset = THEME_PRESETS.find((p) => p.id === presetId);
   if (!preset) {
-    return { success: false, error: "Invalid theme preset" };
+    return fail("Invalid theme preset");
   }
 
   return updateAppearancePreferences({
@@ -201,11 +198,11 @@ export async function applyThemePreset(
 /**
  * Reset all appearance preferences to defaults
  */
-export async function resetAppearancePreferences(): Promise<ActionResult> {
+export async function resetAppearancePreferences(): Promise<ActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     await prisma.user.update({
@@ -228,9 +225,9 @@ export async function resetAppearancePreferences(): Promise<ActionResult> {
 
     revalidatePath("/settings/appearance");
     revalidatePath("/dashboard");
-    return { success: true };
+    return ok();
   } catch (error) {
     console.error("Error resetting appearance preferences:", error);
-    return { success: false, error: "Failed to reset preferences" };
+    return fail("Failed to reset preferences");
   }
 }

@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -15,7 +17,7 @@ export async function saveOnboardingStep(
   organizationId: string,
   step: number,
   data: Record<string, unknown>
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -218,7 +220,7 @@ export async function saveOnboardingStep(
     }
 
     revalidatePath("/onboarding");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error saving onboarding step:", error);
     return { success: false, error: "Failed to save progress" };
@@ -230,7 +232,7 @@ export async function saveOnboardingStep(
  */
 export async function completeOnboarding(
   organizationId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -284,7 +286,7 @@ export async function completeOnboarding(
     ]);
 
     revalidatePath("/");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error completing onboarding:", error);
     return { success: false, error: "Failed to complete onboarding" };
@@ -298,7 +300,7 @@ export async function updateIndustries(
   organizationId: string,
   industries: string[],
   primaryIndustry: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -328,7 +330,7 @@ export async function updateIndustries(
     });
 
     revalidatePath("/settings");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating industries:", error);
     return { success: false, error: "Failed to update industries" };
@@ -341,7 +343,7 @@ export async function updateIndustries(
 export async function updateModules(
   organizationId: string,
   modules: string[]
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -368,7 +370,7 @@ export async function updateModules(
     });
 
     revalidatePath("/settings");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating modules:", error);
     return { success: false, error: "Failed to update modules" };
@@ -380,7 +382,7 @@ export async function updateModules(
  */
 export async function resetOnboarding(
   organizationId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -427,7 +429,7 @@ export async function resetOnboarding(
 
     revalidatePath("/onboarding");
     revalidatePath("/settings");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error resetting onboarding:", error);
     return { success: false, error: "Failed to reset onboarding" };

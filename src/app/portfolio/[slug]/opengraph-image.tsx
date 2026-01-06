@@ -9,9 +9,10 @@ export const size = {
 };
 export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { slug: string } }) {
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const website = await prisma.portfolioWebsite.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     select: {
       name: true,
       description: true,

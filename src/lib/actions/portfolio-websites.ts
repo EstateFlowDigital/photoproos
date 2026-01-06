@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
@@ -145,7 +147,7 @@ export async function updatePortfolioWebsite(
     primaryColor?: string | null;
     accentColor?: string | null;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -179,7 +181,7 @@ export async function updatePortfolioWebsite(
 
     revalidatePath("/portfolios");
     revalidatePath(`/portfolios/${id}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating portfolio website:", error);
     return { success: false, error: "Failed to update portfolio website" };
@@ -189,7 +191,7 @@ export async function updatePortfolioWebsite(
 export async function updatePortfolioWebsiteProjects(
   id: string,
   projectIds: string[]
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -234,7 +236,7 @@ export async function updatePortfolioWebsiteProjects(
 
     revalidatePath(`/portfolios/${id}`);
     revalidatePath(`/portfolios`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating portfolio projects:", error);
     return { success: false, error: "Failed to update portfolio projects" };
@@ -244,7 +246,7 @@ export async function updatePortfolioWebsiteProjects(
 export async function publishPortfolioWebsite(
   id: string,
   publish: boolean
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -267,7 +269,7 @@ export async function publishPortfolioWebsite(
 
     revalidatePath(`/portfolios/${id}`);
     revalidatePath(`/portfolio/${website.slug}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error publishing portfolio website:", error);
     return { success: false, error: "Failed to update publish status" };
@@ -276,7 +278,7 @@ export async function publishPortfolioWebsite(
 
 export async function deletePortfolioWebsite(
   id: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -291,7 +293,7 @@ export async function deletePortfolioWebsite(
 
     await prisma.portfolioWebsite.delete({ where: { id } });
     revalidatePath("/portfolios");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting portfolio website:", error);
     return { success: false, error: "Failed to delete portfolio website" };
@@ -452,7 +454,7 @@ export async function updatePortfolioWebsiteSettings(
     metaDescription?: string | null;
     showBranding?: boolean;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -488,7 +490,7 @@ export async function updatePortfolioWebsiteSettings(
 
     revalidatePath(`/portfolios/${id}`);
     revalidatePath(`/portfolio/${website.slug}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating portfolio settings:", error);
     return { success: false, error: "Failed to update portfolio settings" };
@@ -576,7 +578,7 @@ export async function updatePortfolioSection(
     config?: Record<string, unknown>;
     customTitle?: string | null;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -614,7 +616,7 @@ export async function updatePortfolioSection(
 
     revalidatePath(`/portfolios/${section.portfolioWebsite.id}`);
     revalidatePath(`/portfolio/${section.portfolioWebsite.slug}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating portfolio section:", error);
     return { success: false, error: "Failed to update section" };
@@ -623,7 +625,7 @@ export async function updatePortfolioSection(
 
 export async function deletePortfolioSection(
   id: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -658,7 +660,7 @@ export async function deletePortfolioSection(
 
     revalidatePath(`/portfolios/${section.portfolioWebsite.id}`);
     revalidatePath(`/portfolio/${section.portfolioWebsite.slug}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting portfolio section:", error);
     return { success: false, error: "Failed to delete section" };
@@ -668,7 +670,7 @@ export async function deletePortfolioSection(
 export async function reorderPortfolioSections(
   portfolioWebsiteId: string,
   sectionIds: string[]
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -692,7 +694,7 @@ export async function reorderPortfolioSections(
 
     revalidatePath(`/portfolios/${portfolioWebsiteId}`);
     revalidatePath(`/portfolio/${website.slug}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error reordering portfolio sections:", error);
     return { success: false, error: "Failed to reorder sections" };
@@ -701,7 +703,7 @@ export async function reorderPortfolioSections(
 
 export async function initializePortfolioSections(
   portfolioWebsiteId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -717,7 +719,7 @@ export async function initializePortfolioSections(
 
     // Don't initialize if sections already exist
     if (website.sections.length > 0) {
-      return { success: true };
+      return { success: true, data: undefined };
     }
 
     const defaultSectionTypes = getDefaultSectionsForType(
@@ -752,7 +754,7 @@ export async function initializePortfolioSections(
     }
 
     revalidatePath(`/portfolios/${portfolioWebsiteId}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error initializing portfolio sections:", error);
     return { success: false, error: "Failed to initialize sections" };
@@ -857,7 +859,7 @@ export async function setPortfolioPassword(
     isPasswordProtected: boolean;
     password?: string;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -895,7 +897,7 @@ export async function setPortfolioPassword(
     });
 
     revalidatePath(`/portfolios/${portfolioId}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error setting portfolio password:", error);
     return { success: false, error: "Failed to set password" };
@@ -905,7 +907,7 @@ export async function setPortfolioPassword(
 export async function verifyPortfolioPassword(
   slug: string,
   password: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const website = await prisma.portfolioWebsite.findUnique({
       where: { slug },
@@ -917,7 +919,7 @@ export async function verifyPortfolioPassword(
     }
 
     if (!website.isPasswordProtected) {
-      return { success: true };
+      return { success: true, data: undefined };
     }
 
     // Hash the provided password and compare
@@ -931,7 +933,7 @@ export async function verifyPortfolioPassword(
       return { success: false, error: "Incorrect password" };
     }
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error verifying portfolio password:", error);
     return { success: false, error: "Failed to verify password" };
@@ -952,7 +954,7 @@ export async function updatePortfolioAdvancedSettings(
     customCss?: string | null;
     enableAnimations?: boolean;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -979,7 +981,7 @@ export async function updatePortfolioAdvancedSettings(
 
     revalidatePath(`/portfolios/${portfolioId}`);
     revalidatePath(`/portfolio/${website.slug}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating advanced settings:", error);
     return { success: false, error: "Failed to update settings" };
@@ -989,7 +991,7 @@ export async function updatePortfolioAdvancedSettings(
 export async function schedulePortfolioPublish(
   portfolioId: string,
   scheduledAt: Date | null
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -1015,7 +1017,7 @@ export async function schedulePortfolioPublish(
     });
 
     revalidatePath(`/portfolios/${portfolioId}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error scheduling portfolio publish:", error);
     return { success: false, error: "Failed to schedule publication" };
@@ -1175,7 +1177,7 @@ export async function updatePortfolioViewEngagement(
     duration?: number;
     scrollDepth?: number;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await prisma.portfolioWebsiteView.update({
       where: { id: viewId },
@@ -1185,7 +1187,7 @@ export async function updatePortfolioViewEngagement(
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating view engagement:", error);
     return { success: false, error: "Failed to update engagement" };
@@ -1369,7 +1371,7 @@ export async function submitPortfolioContactForm(
     phone?: string;
     message: string;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const website = await prisma.portfolioWebsite.findUnique({
       where: { slug },
@@ -1440,7 +1442,7 @@ export async function submitPortfolioContactForm(
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error submitting contact form:", error);
     return { success: false, error: "Failed to send message" };
@@ -1608,7 +1610,7 @@ export async function verifyCustomDomain(
  */
 export async function removeCustomDomain(
   portfolioId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -1632,7 +1634,7 @@ export async function removeCustomDomain(
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error removing custom domain:", error);
     return { success: false, error: "Failed to remove custom domain" };
@@ -1745,7 +1747,7 @@ export async function submitPortfolioInquiry(input: {
   phone?: string;
   message: string;
   source?: string;
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<VoidActionResult> {
   try {
     // Validate required fields
     if (!input.name?.trim()) {
@@ -1835,7 +1837,7 @@ export async function submitPortfolioInquiry(input: {
       console.error("Failed to send inquiry notification:", emailError);
     }
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error submitting portfolio inquiry:", error);
     return { success: false, error: "Failed to submit inquiry" };
@@ -1878,7 +1880,7 @@ export async function updatePortfolioInquiryStatus(
   inquiryId: string,
   status: "new" | "contacted" | "qualified" | "closed",
   notes?: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -1905,7 +1907,7 @@ export async function updatePortfolioInquiryStatus(
 
     revalidatePath("/portfolios");
     revalidatePath("/leads");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating inquiry status:", error);
     return { success: false, error: "Failed to update inquiry" };

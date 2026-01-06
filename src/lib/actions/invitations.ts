@@ -23,6 +23,7 @@ import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendTeamInvitationEmail } from "@/lib/email/send";
 import { logActivity } from "@/lib/utils/activity";
 import type { MemberRole, InvitationStatus } from "@prisma/client";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Generate a secure random token
 function generateToken(): string {
@@ -32,11 +33,6 @@ function generateToken(): string {
     ""
   );
 }
-
-// Result type for server actions
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 // =============================================================================
 // Validation Schemas

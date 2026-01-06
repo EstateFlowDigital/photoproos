@@ -3,10 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { getStripe, DEFAULT_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -306,6 +303,236 @@ export async function verifyPayment(
     return { success: true, data: { paid: true, galleryId } };
   } catch (error) {
     console.error("Error verifying payment:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to verify payment" };
+  }
+}
+
+/**
+ * Create a checkout session for an invoice
+ * This is called from the public pay page, so no auth required
+ */
+export async function createInvoiceCheckoutSession(
+  invoiceId: string,
+  customerEmail?: string
+): Promise<ActionResult<{ sessionId: string; checkoutUrl: string }>> {
+  try {
+    // Get the invoice with organization info
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      include: {
+        organization: true,
+        client: true,
+        lineItems: true,
+      },
+    });
+
+    if (!invoice) {
+      return { success: false, error: "Invoice not found" };
+    }
+
+    if (invoice.status === "draft") {
+      return { success: false, error: "Invoice has not been sent yet" };
+    }
+
+    if (invoice.status === "paid") {
+      return { success: false, error: "Invoice has already been paid" };
+    }
+
+    if (invoice.status === "cancelled") {
+      return { success: false, error: "Invoice has been cancelled" };
+    }
+
+    // Calculate outstanding balance (including late fees)
+    const totalDue = invoice.totalCents + invoice.lateFeeAppliedCents;
+    const outstandingBalance = totalDue - invoice.paidAmountCents;
+
+    if (outstandingBalance <= 0) {
+      return { success: false, error: "Invoice has no outstanding balance" };
+    }
+
+    if (!invoice.organization.stripeConnectAccountId) {
+      return {
+        success: false,
+        error: "Business has not set up payment processing",
+      };
+    }
+
+    if (!invoice.organization.stripeConnectOnboarded) {
+      return {
+        success: false,
+        error: "Business payment account is not fully set up",
+      };
+    }
+
+    // Calculate platform fee
+    const platformFeePercent = DEFAULT_PLATFORM_FEE_PERCENT;
+    const platformFeeAmount = Math.round(
+      (outstandingBalance * platformFeePercent) / 100
+    );
+
+    // Build line items description
+    const lineItemsDescription = invoice.lineItems
+      .slice(0, 3)
+      .map((item) => item.description)
+      .join(", ");
+    const description = invoice.lineItems.length > 3
+      ? `${lineItemsDescription}, and ${invoice.lineItems.length - 3} more...`
+      : lineItemsDescription || `Invoice ${invoice.invoiceNumber}`;
+
+    // Create the checkout session
+    const session = await getStripe().checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: invoice.currency.toLowerCase(),
+            product_data: {
+              name: `Invoice ${invoice.invoiceNumber}`,
+              description,
+              metadata: {
+                invoiceId: invoice.id,
+                organizationId: invoice.organizationId,
+              },
+            },
+            unit_amount: outstandingBalance,
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: isValidEmail(customerEmail)
+        ? customerEmail
+        : isValidEmail(invoice.clientEmail)
+          ? invoice.clientEmail
+          : isValidEmail(invoice.client?.email)
+            ? invoice.client?.email
+            : undefined,
+      payment_intent_data: {
+        application_fee_amount: platformFeeAmount,
+        transfer_data: {
+          destination: invoice.organization.stripeConnectAccountId,
+        },
+        metadata: {
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          organizationId: invoice.organizationId,
+          clientId: invoice.clientId || "",
+        },
+      },
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoiceId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoiceId}?payment=cancelled`,
+      metadata: {
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        organizationId: invoice.organizationId,
+        clientId: invoice.clientId || "",
+        type: "invoice",
+      },
+    });
+
+    if (!session.url) {
+      return { success: false, error: "Failed to create checkout URL" };
+    }
+
+    return {
+      success: true,
+      data: {
+        sessionId: session.id,
+        checkoutUrl: session.url,
+      },
+    };
+  } catch (error) {
+    console.error("Error creating invoice checkout session:", error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create checkout session" };
+  }
+}
+
+/**
+ * Verify an invoice payment and record it
+ */
+export async function verifyInvoicePayment(
+  sessionId: string
+): Promise<ActionResult<{ paid: boolean; invoiceId: string }>> {
+  try {
+    const session = await getStripe().checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status !== "paid") {
+      return {
+        success: true,
+        data: {
+          paid: false,
+          invoiceId: (session.metadata?.invoiceId as string) || "",
+        },
+      };
+    }
+
+    const invoiceId = session.metadata?.invoiceId;
+    if (!invoiceId) {
+      return { success: false, error: "Invoice ID not found in session" };
+    }
+
+    // Check if we already recorded this payment
+    const existingPayment = await prisma.payment.findFirst({
+      where: {
+        stripeCheckoutSessionId: sessionId,
+      },
+    });
+
+    // If payment already recorded, just return success
+    if (existingPayment) {
+      return { success: true, data: { paid: true, invoiceId } };
+    }
+
+    // Get the invoice to record payment
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
+    });
+
+    if (invoice) {
+      const paymentAmount = session.amount_total || 0;
+
+      // Record the payment
+      await prisma.payment.create({
+        data: {
+          organizationId: invoice.organizationId,
+          invoiceId,
+          clientId: invoice.clientId,
+          amountCents: paymentAmount,
+          currency: session.currency?.toUpperCase() || "USD",
+          status: "paid",
+          stripeCheckoutSessionId: sessionId,
+          stripePaymentIntentId: session.payment_intent as string,
+          clientEmail: invoice.clientEmail,
+          clientName: invoice.clientName,
+          description: `Payment for Invoice ${invoice.invoiceNumber}`,
+          paidAt: new Date(),
+        },
+      });
+
+      // Update invoice paid amount and status
+      const newPaidAmount = invoice.paidAmountCents + paymentAmount;
+      const totalDue = invoice.totalCents + invoice.lateFeeAppliedCents;
+      const isFullyPaid = newPaidAmount >= totalDue;
+
+      await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          paidAmountCents: newPaidAmount,
+          status: isFullyPaid ? "paid" : invoice.status,
+          paidAt: isFullyPaid ? new Date() : null,
+        },
+      });
+    }
+
+    return { success: true, data: { paid: true, invoiceId } };
+  } catch (error) {
+    console.error("Error verifying invoice payment:", error);
     if (error instanceof Error) {
       return { success: false, error: error.message };
     }

@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { VirtualList } from "@/components/ui/virtual-list";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { CurrencyIcon } from "@/components/ui/icons";
 
 // Helper to format date
@@ -37,12 +37,61 @@ interface PaymentsPageClientProps {
 }
 
 export function PaymentsPageClient({ payments, filter }: PaymentsPageClientProps) {
-  const tableParentRef = useRef<HTMLDivElement | null>(null);
-
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>("all");
+
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Bulk selection helpers
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(filteredPayments.map((p) => p.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  // Export selected payments to CSV
+  const handleExportCSV = () => {
+    const selectedPayments = filteredPayments.filter((p) => selectedIds.has(p.id));
+    const headers = ["Description", "Client Email", "Amount", "Status", "Date"];
+    const rows = selectedPayments.map((p) => [
+      p.project?.name || p.description || "Payment",
+      p.clientEmail || "",
+      (p.amountCents / 100).toFixed(2),
+      p.status,
+      formatDate(p.createdAt),
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `payments-export-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    clearSelection();
+  };
 
   // Filter and sort payments
   const filteredPayments = useMemo(() => {
@@ -85,15 +134,6 @@ export function PaymentsPageClient({ payments, filter }: PaymentsPageClientProps
 
     return result;
   }, [payments, searchQuery, sortOption, dateRangeFilter]);
-
-  const rowVirtualizer = useVirtualizer({
-    count: filteredPayments.length,
-    getScrollElement: () => tableParentRef.current,
-    estimateSize: () => 68,
-    overscan: 8,
-    getItemKey: (index) => filteredPayments[index]?.id ?? index,
-    measureElement: (el) => el?.getBoundingClientRect().height ?? 0,
-  });
 
   if (payments.length === 0) {
     return (
@@ -170,75 +210,114 @@ export function PaymentsPageClient({ payments, filter }: PaymentsPageClientProps
 
       {/* Payments Table */}
       {filteredPayments.length > 0 && (
-        <div
-          ref={tableParentRef}
-          className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] max-h-[70vh] overflow-auto"
-        >
-      <table className="w-full min-w-[600px]">
-        <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] sticky top-0 z-10">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
-              Description
-            </th>
-            <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
-              Date
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
-              Amount
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
-              Status
-            </th>
-          </tr>
-        </thead>
-        <tbody
-          style={{
-            position: "relative",
-            height: rowVirtualizer.getTotalSize(),
-          }}
-        >
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const payment = filteredPayments[virtualRow.index];
-            if (!payment) return null;
-
-            return (
-              <tr
-                key={payment.id}
-                ref={rowVirtualizer.measureElement}
-                data-index={virtualRow.index}
-                className="table w-full transition-colors hover:bg-[var(--background-hover)]"
-                style={{ transform: `translateY(${virtualRow.start}px)` }}
-              >
-                <td className="px-6 py-4">
-                  <p className="font-medium text-foreground">
-                    {payment.project?.name || payment.description || "Payment"}
-                  </p>
-                  {payment.clientEmail && (
-                    <p className="text-sm text-foreground-muted">{payment.clientEmail}</p>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+          <VirtualList
+            className="max-h-[70vh]"
+            items={filteredPayments}
+            getItemKey={(p) => p.id}
+            estimateSize={() => 72}
+            itemGap={0}
+            prepend={
+              <div className="sticky top-0 z-10 hidden grid-cols-[60px,2fr,1fr,1fr,1fr] items-center gap-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-3 text-xs font-semibold uppercase tracking-wide text-foreground-muted md:grid">
+                <span className="w-12">
+                  <input
+                    type="checkbox"
+                    checked={filteredPayments.length > 0 && filteredPayments.every((p) => selectedIds.has(p.id))}
+                    onChange={() =>
+                      filteredPayments.every((p) => selectedIds.has(p.id)) ? clearSelection() : selectAll()
+                    }
+                    className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+                  />
+                </span>
+                <span>Description</span>
+                <span>Date</span>
+                <span className="text-right">Amount</span>
+                <span className="text-right">Status</span>
+              </div>
+            }
+            renderItem={(payment) => {
+              const isSelected = selectedIds.has(payment.id);
+              return (
+                <div
+                  className={cn(
+                    "border-b border-[var(--card-border)] px-4 py-4 last:border-b-0 hover:bg-[var(--background-hover)] md:px-6",
+                    isSelected && "bg-[var(--primary)]/5"
                   )}
-                </td>
-                <td className="hidden px-6 py-4 text-sm text-foreground-muted md:table-cell">
-                  {formatDate(payment.createdAt)}
-                </td>
-                <td className="px-6 py-4 text-right font-medium text-foreground">
-                  {formatCurrency(payment.amountCents)}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span
-                    className={cn(
-                      "inline-flex rounded-full px-2.5 py-1 text-xs font-medium uppercase",
-                      getStatusBadgeClasses(payment.status),
-                      payment.status === "refunded" && "line-through"
-                    )}
-                  >
-                    {formatStatusLabel(payment.status)}
-                  </span>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                >
+                  <div className="flex flex-col gap-3 md:grid md:grid-cols-[60px,2fr,1fr,1fr,1fr] md:items-center md:gap-3">
+                    <div className="flex items-center gap-2 md:justify-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelection(payment.id)}
+                        className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+                      />
+                      <div className="md:hidden">
+                        <p className="font-medium text-foreground">
+                          {payment.project?.name || payment.description || "Payment"}
+                        </p>
+                        {payment.clientEmail && (
+                          <p className="text-sm text-foreground-muted">{payment.clientEmail}</p>
+                        )}
+                        <p className="mt-1 text-xs text-foreground-muted">{formatDate(payment.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    <div className="hidden md:block">
+                      <p className="font-medium text-foreground">
+                        {payment.project?.name || payment.description || "Payment"}
+                      </p>
+                      {payment.clientEmail && (
+                        <p className="text-sm text-foreground-muted">{payment.clientEmail}</p>
+                      )}
+                    </div>
+
+                    <div className="hidden text-sm text-foreground-muted md:block">
+                      {formatDate(payment.createdAt)}
+                    </div>
+
+                    <div className="text-right font-medium text-foreground">
+                      {formatCurrency(payment.amountCents)}
+                    </div>
+
+                    <div className="flex justify-end">
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full px-2.5 py-1 text-xs font-medium uppercase",
+                          getStatusBadgeClasses(payment.status),
+                          payment.status === "refunded" && "line-through"
+                        )}
+                      >
+                        {formatStatusLabel(payment.status)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            }}
+          />
+        </div>
+      )}
+
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
+          <span className="text-sm font-medium text-foreground">
+            {selectedIds.size} selected
+          </span>
+          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <button
+            onClick={handleExportCSV}
+            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={clearSelection}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground"
+          >
+            Clear
+          </button>
         </div>
       )}
     </div>

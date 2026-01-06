@@ -10,10 +10,7 @@
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { BookingStatus } from "@prisma/client";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // CSV row structure for booking import
 interface CSVBookingRow {

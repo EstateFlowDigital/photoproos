@@ -30,14 +30,11 @@ import {
   sendContractSigningEmail,
   sendContractSignedConfirmationEmail,
 } from "@/lib/email/send";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types
 // =============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 export interface CreateSignerInput {
   contractId: string;

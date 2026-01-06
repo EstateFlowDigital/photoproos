@@ -4,14 +4,11 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import type { ActivityData } from "@/lib/utils/activity";
 import { ActivityType, Prisma } from "@prisma/client";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Note: Types can be re-exported but functions cannot from "use server" files
 // Import getActivityLinkUrl and getActivityIcon directly from "@/lib/utils/activity"
 export type { ActivityData } from "@/lib/utils/activity";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 // Activity feed filters
 export interface ActivityFeedFilters {

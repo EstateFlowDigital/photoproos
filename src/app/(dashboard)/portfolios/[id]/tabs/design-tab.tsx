@@ -77,10 +77,12 @@ export function DesignTab({ website, isPending: parentPending, onSave }: DesignT
         router.refresh();
         onSave?.();
       } else {
-        showToast(
-          settingsResult.error || colorsResult.error || "Failed to save",
-          "error"
-        );
+        const errorMessage = !settingsResult.success
+          ? settingsResult.error
+          : !colorsResult.success
+            ? colorsResult.error
+            : "Failed to save";
+        showToast(errorMessage, "error");
       }
     });
   };

@@ -1,9 +1,12 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
 import type { TaskStatus, TaskPriority } from "@prisma/client";
+import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 
 const COLUMN_STATUS_MAP: Record<string, TaskStatus> = {
   "To Do": "todo",
@@ -25,6 +28,7 @@ function getStatusForColumn(columnName: string, fallback: TaskStatus) {
  * Get all boards for the organization
  */
 export async function getBoards() {
+  const perfStartTime = perfStart("projects:getBoards");
   await requireAuth();
   const organizationId = await requireOrganizationId();
 
@@ -47,6 +51,7 @@ export async function getBoards() {
     ],
   });
 
+  perfEnd("projects:getBoards", perfStartTime);
   return boards;
 }
 
@@ -54,6 +59,7 @@ export async function getBoards() {
  * Get a single board with all columns and tasks
  */
 export async function getBoard(boardId: string) {
+  const perfStartTime = perfStart("projects:getBoard");
   await requireAuth();
   const organizationId = await requireOrganizationId();
 
@@ -112,6 +118,7 @@ export async function getBoard(boardId: string) {
     },
   });
 
+  perfEnd("projects:getBoard", perfStartTime);
   return board;
 }
 
@@ -217,7 +224,7 @@ export async function createBoard(data: {
 export async function updateBoard(
   boardId: string,
   data: { name?: string; description?: string; color?: string }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -231,7 +238,7 @@ export async function updateBoard(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating board:", error);
     return {
@@ -246,7 +253,7 @@ export async function updateBoard(
  */
 export async function archiveBoard(
   boardId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -269,7 +276,7 @@ export async function archiveBoard(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error archiving board:", error);
     return {
@@ -332,7 +339,7 @@ export async function createColumn(
 export async function updateColumn(
   columnId: string,
   data: { name?: string; color?: string; limit?: number | null }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -355,7 +362,7 @@ export async function updateColumn(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating column:", error);
     return {
@@ -371,7 +378,7 @@ export async function updateColumn(
 export async function reorderColumns(
   boardId: string,
   columnIds: string[]
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -396,7 +403,7 @@ export async function reorderColumns(
     );
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error reordering columns:", error);
     return {
@@ -411,7 +418,7 @@ export async function reorderColumns(
  */
 export async function deleteColumn(
   columnId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -441,7 +448,7 @@ export async function deleteColumn(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting column:", error);
     return {
@@ -657,7 +664,7 @@ export async function updateTask(
     estimatedMinutes?: number | null;
     actualMinutes?: number | null;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -692,7 +699,7 @@ export async function updateTask(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating task:", error);
     return {
@@ -709,7 +716,7 @@ export async function moveTask(
   taskId: string,
   targetColumnId: string,
   targetPosition: number
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -805,7 +812,7 @@ export async function moveTask(
     await prisma.$transaction(updates);
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error moving task:", error);
     return {
@@ -820,7 +827,7 @@ export async function moveTask(
  */
 export async function deleteTask(
   taskId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -833,7 +840,7 @@ export async function deleteTask(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting task:", error);
     return {
@@ -894,7 +901,7 @@ export async function addSubtask(
  */
 export async function toggleSubtask(
   subtaskId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -917,7 +924,7 @@ export async function toggleSubtask(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error toggling subtask:", error);
     return {
@@ -932,7 +939,7 @@ export async function toggleSubtask(
  */
 export async function deleteSubtask(
   subtaskId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -954,7 +961,7 @@ export async function deleteSubtask(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting subtask:", error);
     return {
@@ -1021,7 +1028,7 @@ export async function addComment(
  */
 export async function deleteComment(
   commentId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { clerkUserId } = await requireAuth();
 
@@ -1042,7 +1049,7 @@ export async function deleteComment(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting comment:", error);
     return {
@@ -1897,7 +1904,7 @@ export async function updateTaskTemplate(
     estimatedMinutes?: number | null;
     subtasks?: SubtaskTemplate[];
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -1922,7 +1929,7 @@ export async function updateTaskTemplate(
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating task template:", error);
     return {
@@ -1937,7 +1944,7 @@ export async function updateTaskTemplate(
  */
 export async function deleteTaskTemplate(
   templateId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -1950,7 +1957,7 @@ export async function deleteTaskTemplate(
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting task template:", error);
     return {
@@ -2070,7 +2077,7 @@ export async function updateAutomation(
     actions?: AutomationAction[];
     isActive?: boolean;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -2090,7 +2097,7 @@ export async function updateAutomation(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating automation:", error);
     return {
@@ -2105,7 +2112,7 @@ export async function updateAutomation(
  */
 export async function deleteAutomation(
   automationId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -2118,7 +2125,7 @@ export async function deleteAutomation(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting automation:", error);
     return {
@@ -2371,7 +2378,7 @@ export async function updateRecurringTask(
     time?: string;
     isActive?: boolean;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -2417,7 +2424,7 @@ export async function updateRecurringTask(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating recurring task:", error);
     return {
@@ -2432,7 +2439,7 @@ export async function updateRecurringTask(
  */
 export async function deleteRecurringTask(
   recurringTaskId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -2445,7 +2452,7 @@ export async function deleteRecurringTask(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting recurring task:", error);
     return {
@@ -2818,7 +2825,7 @@ export async function addManualTimeEntry(data: {
  */
 export async function deleteTimeEntry(
   entryId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const user = await requireAuth();
 
@@ -2848,7 +2855,7 @@ export async function deleteTimeEntry(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting time entry:", error);
     return {
@@ -2905,7 +2912,7 @@ export async function getActiveTimer(): Promise<{
 export async function addTaskDependency(
   taskId: string,
   blockedByTaskId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -2941,7 +2948,7 @@ export async function addTaskDependency(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error adding task dependency:", error);
     return {
@@ -2957,7 +2964,7 @@ export async function addTaskDependency(
 export async function removeTaskDependency(
   taskId: string,
   blockedByTaskId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -2981,7 +2988,7 @@ export async function removeTaskDependency(
     });
 
     revalidatePath("/projects");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error removing task dependency:", error);
     return {

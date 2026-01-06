@@ -205,7 +205,7 @@ export async function generateAnalyticsReportPdf(): Promise<{
 
 async function getMonthlyRevenue(organizationId: string) {
   const now = new Date();
-  const monthlyRevenue = [];
+  const monthlyRevenue: Array<{ month: string; revenue: number }> = [];
 
   for (let i = 5; i >= 0; i--) {
     const monthStart = startOfMonth(subMonths(now, i));

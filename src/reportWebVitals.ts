@@ -20,6 +20,11 @@ export function reportWebVitals(metric: NextWebVitalsMetric) {
   window.__pposVitals.push(entry);
 
   const shouldLog = localStorage.getItem("ppos_perf_logging") === "true";
+  try {
+    window.dispatchEvent(new CustomEvent("ppos:vitals", { detail: entry }));
+  } catch {
+    // no-op if dispatch fails
+  }
   if (shouldLog) {
     const value = typeof metric.value === "number" ? metric.value.toFixed(2) : metric.value;
     // eslint-disable-next-line no-console

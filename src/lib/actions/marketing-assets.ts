@@ -1,5 +1,6 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -324,10 +325,7 @@ export async function getPropertyMarketingAssets(propertyWebsiteId: string): Pro
 /**
  * Delete a marketing asset
  */
-export async function deleteMarketingAsset(assetId: string): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+export async function deleteMarketingAsset(assetId: string): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -352,7 +350,7 @@ export async function deleteMarketingAsset(assetId: string): Promise<{
       where: { id: assetId },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting marketing asset:", error);
     return {

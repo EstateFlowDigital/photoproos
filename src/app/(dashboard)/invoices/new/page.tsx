@@ -20,10 +20,7 @@ export default async function NewInvoicePage({ searchParams }: PageProps) {
   }
 
   // If creating from an order, fetch the order data
-  let orderData = null;
-  if (fromOrder) {
-    orderData = await getOrder(fromOrder);
-  }
+  const orderData = fromOrder ? await getOrder(fromOrder) : null;
 
   // Fetch clients for the dropdown
   const clients = await prisma.client.findMany({

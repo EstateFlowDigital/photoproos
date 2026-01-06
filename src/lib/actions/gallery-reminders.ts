@@ -242,7 +242,7 @@ export async function disableGalleryReminders(galleryId: string) {
       where: { id: galleryId },
       data: { reminderEnabled: false },
     });
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error disabling gallery reminders:", error);
     return { success: false, error: "Failed to disable reminders" };
@@ -258,7 +258,7 @@ export async function enableGalleryReminders(galleryId: string) {
       where: { id: galleryId },
       data: { reminderEnabled: true },
     });
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error enabling gallery reminders:", error);
     return { success: false, error: "Failed to enable reminders" };
@@ -278,7 +278,7 @@ export async function resetGalleryReminders(galleryId: string) {
         reminderEnabled: true,
       },
     });
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error resetting gallery reminders:", error);
     return { success: false, error: "Failed to reset reminders" };
@@ -524,7 +524,7 @@ export async function updateGalleryExpiration(
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Reminders] Error updating expiration:", error);
     return { success: false, error: "Failed to update expiration" };

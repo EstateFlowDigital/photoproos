@@ -248,7 +248,7 @@ export async function sendReceiptForDownload(downloadLogId: string) {
       receiptId: downloadLog.id,
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Download Tracking] Error sending receipt:", error);
     return { success: false, error: "Failed to send download receipt" };

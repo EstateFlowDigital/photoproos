@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { revalidatePath } from "next/cache";
@@ -159,7 +161,7 @@ export async function getNotificationPreferences(): Promise<{
  */
 export async function updateNotificationPreferences(
   preferences: NotificationPreferences
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
@@ -174,7 +176,7 @@ export async function updateNotificationPreferences(
     });
 
     revalidatePath("/settings/notifications");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating notification preferences:", error);
     return { success: false, error: "Failed to update notification preferences" };
@@ -186,7 +188,7 @@ export async function updateNotificationPreferences(
  */
 export async function updateDigestSettings(
   settings: DigestSettings
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
@@ -204,7 +206,7 @@ export async function updateDigestSettings(
     });
 
     revalidatePath("/settings/notifications");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating digest settings:", error);
     return { success: false, error: "Failed to update digest settings" };
@@ -216,7 +218,7 @@ export async function updateDigestSettings(
  */
 export async function updateQuietHoursSettings(
   settings: QuietHoursSettings
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
@@ -233,7 +235,7 @@ export async function updateQuietHoursSettings(
     });
 
     revalidatePath("/settings/notifications");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating quiet hours settings:", error);
     return { success: false, error: "Failed to update quiet hours settings" };
@@ -247,7 +249,7 @@ export async function updateAllNotificationSettings(data: {
   preferences: NotificationPreferences;
   digest: DigestSettings;
   quietHours: QuietHoursSettings;
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth?.organizationId) {
@@ -269,7 +271,7 @@ export async function updateAllNotificationSettings(data: {
     });
 
     revalidatePath("/settings/notifications");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating notification settings:", error);
     return { success: false, error: "Failed to update notification settings" };

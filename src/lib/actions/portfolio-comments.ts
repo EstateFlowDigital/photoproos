@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
@@ -74,7 +76,7 @@ export async function getPortfolioComments(options?: {
 
 export async function approveComment(
   commentId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -94,7 +96,7 @@ export async function approveComment(
     });
 
     revalidatePath("/portfolios");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error approving comment:", error);
     return { success: false, error: "Failed to approve comment" };
@@ -103,7 +105,7 @@ export async function approveComment(
 
 export async function hideComment(
   commentId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -122,7 +124,7 @@ export async function hideComment(
     });
 
     revalidatePath("/portfolios");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error hiding comment:", error);
     return { success: false, error: "Failed to hide comment" };
@@ -131,7 +133,7 @@ export async function hideComment(
 
 export async function unhideComment(
   commentId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -150,7 +152,7 @@ export async function unhideComment(
     });
 
     revalidatePath("/portfolios");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error unhiding comment:", error);
     return { success: false, error: "Failed to unhide comment" };
@@ -159,7 +161,7 @@ export async function unhideComment(
 
 export async function deleteComment(
   commentId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -177,7 +179,7 @@ export async function deleteComment(
     });
 
     revalidatePath("/portfolios");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting comment:", error);
     return { success: false, error: "Failed to delete comment" };
@@ -229,7 +231,7 @@ export async function updateCommentSettings(
     allowComments?: boolean;
     requireCommentEmail?: boolean;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -250,7 +252,7 @@ export async function updateCommentSettings(
 
     revalidatePath("/portfolios");
     revalidatePath(`/portfolios/${portfolioId}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating comment settings:", error);
     return { success: false, error: "Failed to update settings" };

@@ -4,11 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import type { EquipmentCategory } from "@prisma/client";
-
-// Result type for server actions
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID
 async function getOrganizationId(): Promise<string> {

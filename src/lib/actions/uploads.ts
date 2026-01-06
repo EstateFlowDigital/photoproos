@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
@@ -337,7 +339,7 @@ export async function createAssets(
 export async function deleteAsset(
   organizationId: string,
   assetId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     // Get the asset and verify ownership
     const asset = await prisma.asset.findFirst({
@@ -387,7 +389,7 @@ export async function deleteAsset(
     // Revalidate gallery pages
     revalidatePath(`/galleries/${asset.projectId}`);
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Upload] Error deleting asset:", error);
     return {
@@ -440,7 +442,7 @@ export async function updateAssetUrls(
     mediumUrl?: string;
     watermarkedUrl?: string;
   }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const asset = await prisma.asset.findFirst({
       where: {
@@ -460,7 +462,7 @@ export async function updateAssetUrls(
       data: urls,
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Upload] Error updating asset URLs:", error);
     return {

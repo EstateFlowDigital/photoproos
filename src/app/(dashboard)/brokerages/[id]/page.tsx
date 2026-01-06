@@ -23,13 +23,13 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
     getBrokerageContracts(id),
   ]);
 
-  if (!brokerageResult.success) {
+  if (!brokerageResult.success || !brokerageResult.data) {
     notFound();
   }
 
   const brokerage = brokerageResult.data;
-  const agents = agentsResult.success ? agentsResult.data : [];
-  const contracts = contractsResult.success ? contractsResult.data : [];
+  const agents = agentsResult.success && agentsResult.data ? agentsResult.data : [];
+  const contracts = contractsResult.success && contractsResult.data ? contractsResult.data : [];
 
   // Calculate totals
   const totalAgentRevenue = agents.reduce((sum, agent) => sum + agent.lifetimeRevenueCents, 0);

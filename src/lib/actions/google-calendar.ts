@@ -4,14 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import type { SyncDirection } from "@prisma/client";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export interface GoogleCalendarConfig {
   id: string;

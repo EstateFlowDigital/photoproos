@@ -5,10 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export interface DuplicateGroup {
   matchType: "email" | "phone" | "name";

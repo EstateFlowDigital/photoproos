@@ -6,8 +6,8 @@ import { getClientsForBooking, getServicesForBooking, getScheduleStats } from "@
 import { getOrder } from "@/lib/actions/orders";
 
 // Generate time slots
-function generateTimeSlots() {
-  const slots = [];
+function generateTimeSlots(): Array<{ value: string; label: string }> {
+  const slots: Array<{ value: string; label: string }> = [];
   for (let hour = 6; hour <= 21; hour++) {
     for (let min = 0; min < 60; min += 30) {
       const h = hour.toString().padStart(2, "0");
@@ -39,10 +39,7 @@ export default async function NewBookingPage({ searchParams }: PageProps) {
   ]);
 
   // If creating from an order, fetch the order data
-  let orderData = null;
-  if (fromOrder) {
-    orderData = await getOrder(fromOrder);
-  }
+  const orderData = fromOrder ? await getOrder(fromOrder) : null;
 
   // Map clients for dropdown
   const clientsForForm = clients.map((client) => ({

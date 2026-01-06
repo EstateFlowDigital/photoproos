@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **ActionResult Type Migration** - Consolidated server action return types for improved type safety:
+  - Migrated 59 action files to use the shared `ActionResult` type from `@/lib/types/action-result`
+  - Removed duplicate local type definitions across the codebase
+  - Made `data` required (not optional) in `ActionResult` discriminated union for proper TypeScript narrowing
+  - Updated return statements to use `{ success: true, data: undefined }` pattern for void operations
+  - Replaced inline return types with `VoidActionResult` across 15+ action files
+  - Added helper functions: `success()`, `ok()`, `fail()` for cleaner return statements
+  - Added type guards: `isSuccess()`, `isError()` for safer result handling
+  - Added utility functions: `unwrap()`, `getOrDefault()`, `mapResult()` for common patterns
+
 ### Added
 - **Pre-commit Hooks with Husky**
   - Husky v9 configured with lint-staged
@@ -14,21 +25,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Runs related Vitest tests for changed files
   - Ensures code quality on every commit
 
-- **Clients Module Improvements: Sorting Options**
+- **Clients Module Improvements: Sorting & Bulk Operations**
   - **Sorting options** - Sort by newest, oldest, name A-Z, revenue (high/low), or projects (most/least)
+  - **Bulk selection** - Checkbox selection with select all in header
+  - **Export to CSV** - Export selected clients to CSV file
+  - **Floating action bar** - Shows selected count with quick action buttons
   - **Results count** - Shows total client count
   - **Improved layout** - Search and sort controls grouped together
 
-- **Orders Module Improvements: Search, Filters & Sorting**
+- **Orders Module Improvements: Search, Filters, Sorting & Bulk Operations**
   - **Search functionality** - Search by order number, client name/email, company, or order page
   - **Sorting options** - Sort by newest, oldest, amount (high/low), or preferred date
   - **Date range filter** - Filter by all time, last 7/30/90 days
+  - **Bulk selection** - Checkbox selection with select all in header
+  - **Export to CSV** - Export selected orders to CSV file
+  - **Floating action bar** - Shows selected count with quick action buttons
   - **Results count** - Shows filtered count out of total orders
 
-- **Payments Module Improvements: Search, Filters & Sorting**
+- **Payments Module Improvements: Search, Filters, Sorting & Bulk Operations**
   - **Search functionality** - Search by project name, description, or client email
   - **Sorting options** - Sort by newest, oldest, or amount (high/low)
   - **Date range filter** - Filter by all time, last 7/30/90 days
+  - **Bulk selection** - Checkbox selection with select all in header
+  - **Export to CSV** - Export selected payments to CSV file
+  - **Floating action bar** - Shows selected count with quick action buttons
   - **Results count** - Shows filtered count out of total payments
 
 - **Invoices Module Improvements: Search, Filters & Bulk Actions**
@@ -39,6 +59,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Bulk actions** - Mark selected invoices as paid, send payment reminders
   - **Floating action bar** - Shows selected count with quick action buttons
   - **Results count** - Shows filtered count out of total
+  - **Automatic overdue status** - Invoices past due date are now automatically marked as "overdue" in the database (previously only displayed client-side)
+  - **Cron-ready function** - Added `updateAllOverdueInvoices()` for scheduled jobs
+
+- **Partial Payment Tracking** (`src/lib/actions/invoice-payments.ts`)
+  - **Record payments** - Record partial or full payments against invoices
+  - **Payment history** - View all payments for an invoice with dates and amounts
+  - **Balance tracking** - Track outstanding balance including late fees
+  - **Void payments** - Remove manual payments (not Stripe) with audit trail
+  - Schema: Added `paidAmountCents` field to Invoice model
+
+- **Late Fee Automation** (`src/lib/actions/invoice-payments.ts`)
+  - **Configure late fees** - Enable/disable per invoice, set percentage or flat amount
+  - **Apply late fees** - Manual or automatic application to overdue invoices
+  - **Batch processing** - Cron-ready `applyBatchLateFees()` for automated late fee application
+  - **Waive late fees** - Remove late fees with reason tracking
+  - Schema: Added `lateFeeEnabled`, `lateFeeType`, `lateFeePercent`, `lateFeeFlatCents`, `lateFeeAppliedCents`, `lastLateFeeAt` fields
+
+- **Invoice Analytics Dashboard** (`src/lib/actions/invoice-analytics.ts`)
+  - **Revenue by month** - Monthly breakdown of invoiced, collected, and outstanding amounts
+  - **AR aging report** - Categorize outstanding invoices by days overdue (Current, 1-30, 31-60, 61-90, 90+)
+  - **Collection metrics** - Collection rate, average days to payment, paid-on-time rate
+  - **Revenue by client** - Top clients by revenue or outstanding balance
+  - **Invoice summary** - Count by status with total amounts
+  - **Export to CSV** - Export filtered invoice data for external analysis
+
+- **Public Invoice Payment Page** (`/pay/[id]`)
+  - Client-facing payment page for invoices
+  - Shows invoice details, line items, and total due
+  - Displays late fees and partial payment history
+  - Stripe Checkout integration for secure payments
+  - Payment success/cancelled state handling
+  - Organization branding (logo, colors)
+  - Mobile-responsive design
+
+- **Late Fee Cron Endpoint** (`/api/cron/late-fees`)
+  - Automated late fee application for overdue invoices
+  - Marks sent invoices as overdue if past due date
+  - Applies late fees based on invoice settings (percentage or fixed)
+  - Prevents duplicate fees (30-day minimum between applications)
+  - Returns processing statistics
+
+- **Invoice Detail Payment Recording**
+  - "Record Payment" button for sent/overdue invoices with balance
+  - Modal for entering payment amount with validation
+  - "Pay full amount" quick-fill option
+  - Optional payment notes field
+  - Real-time balance updates after recording
+  - Payment Details sidebar now shows:
+    - Invoice total, late fees, paid amount, and balance due
+    - Client payment link for unpaid invoices
+
+- **Invoice Checkout via Stripe** (`createInvoiceCheckoutSession`)
+  - Create Stripe checkout sessions for invoice payments
+  - Supports partial payment of outstanding balance
+  - Automatic payment recording via `verifyInvoicePayment`
+  - Platform fee calculation
+  - Webhook-compatible payment verification
+
+- **Modular Invoice Editor** (`/invoices/[id]/edit`)
+  - Three-panel builder layout: Services palette, Line items canvas, Settings panel
+  - Drag-and-drop line item reordering using @dnd-kit
+  - Quick-add services from saved service catalog
+  - Inline line item editing (description, quantity, unit price, type)
+  - Live total calculation (subtotal, discount, tax, total)
+  - Late fee configuration (percentage or flat fee)
+  - Due date, notes, and terms editing
+  - Edit button in invoice detail page header for draft invoices
+  - `updateInvoice()` server action with line item upsert logic
 
 - **Leads Module Improvements: Kanban Board & Bulk Operations**
   - **View Mode Toggle** - Switch between List and Board views

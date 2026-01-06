@@ -22,17 +22,10 @@ import {
 import { getAuthContext } from "@/lib/auth/clerk";
 import { Prisma, Industry, LegalAgreementType } from "@prisma/client";
 import type { QuestionnaireTemplateWithRelations } from "./questionnaire-types";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Re-export the type for consumers who import from this file
 export type { QuestionnaireTemplateWithRelations } from "./questionnaire-types";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 // ============================================================================
 // HELPER FUNCTIONS

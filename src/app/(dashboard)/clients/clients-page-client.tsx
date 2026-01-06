@@ -67,6 +67,26 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const tableParentRef = useRef<HTMLDivElement | null>(null);
 
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Bulk selection helpers
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
   // Sort clients based on selected option
   const sortedClients = useMemo(() => {
     const result = [...clients];
@@ -100,6 +120,40 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
     }
     return result;
   }, [clients, sortOption]);
+
+  const selectAll = () => {
+    setSelectedIds(new Set(sortedClients.map((c) => c.id)));
+  };
+
+  const isAllSelected = sortedClients.length > 0 && sortedClients.every((c) => selectedIds.has(c.id));
+
+  // Export selected clients to CSV
+  const handleExportCSV = () => {
+    const selectedClients = sortedClients.filter((c) => selectedIds.has(c.id));
+    const headers = ["Name", "Email", "Company", "Industry", "Projects", "Revenue"];
+    const rows = selectedClients.map((c) => [
+      c.fullName || "",
+      c.email,
+      c.company || "",
+      industryLabels[c.industry] || c.industry,
+      c._count.projects.toString(),
+      (c.lifetimeRevenueCents / 100).toFixed(2),
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clients-export-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    clearSelection();
+  };
 
   const rowVirtualizer = useVirtualizer({
     count: sortedClients.length,
@@ -231,8 +285,17 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
           className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] max-h-[70vh] overflow-auto"
         >
           <table className="w-full min-w-[640px]">
-            <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
+            <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] sticky top-0 z-10">
               <tr>
+                <th className="w-12 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={() => (isAllSelected ? clearSelection() : selectAll())}
+                    className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+                    aria-label="Select all clients"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Client
                 </th>
@@ -259,13 +322,27 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const client = sortedClients[virtualRow.index];
                 if (!client) return null;
+                const isSelected = selectedIds.has(client.id);
                 return (
                   <tr
                     key={client.id}
                     ref={rowVirtualizer.measureElement}
-                    className="group relative table w-full cursor-pointer transition-colors hover:bg-[var(--background-hover)]"
+                    data-index={virtualRow.index}
+                    className={cn(
+                      "group relative table w-full cursor-pointer transition-colors hover:bg-[var(--background-hover)]",
+                      isSelected && "bg-[var(--primary)]/5"
+                    )}
                     style={{ transform: `translateY(${virtualRow.start}px)` }}
                   >
+                    <td className="w-12 px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelection(client.id)}
+                        className="relative z-20 h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+                        aria-label={`Select ${client.fullName || client.email}`}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <Link
                         href={`/clients/${client.id}`}
@@ -353,6 +430,28 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
           >
             <PlusIcon className="h-4 w-4" />
             Add Client
+          </button>
+        </div>
+      )}
+
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
+          <span className="text-sm font-medium text-foreground">
+            {selectedIds.size} selected
+          </span>
+          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <button
+            onClick={handleExportCSV}
+            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={clearSelection}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground"
+          >
+            Clear
           </button>
         </div>
       )}

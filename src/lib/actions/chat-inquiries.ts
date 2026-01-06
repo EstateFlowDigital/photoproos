@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
@@ -13,7 +15,7 @@ export async function submitChatInquiry(input: {
   message: string;
   category?: string;
   pageUrl?: string;
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<VoidActionResult> {
   try {
     // Validate required fields
     if (!input.message?.trim()) {
@@ -56,7 +58,7 @@ export async function submitChatInquiry(input: {
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error submitting chat inquiry:", error);
     return { success: false, error: "Failed to submit message" };
@@ -92,7 +94,7 @@ export async function updateChatInquiryStatus(
   inquiryId: string,
   status: "new" | "contacted" | "qualified" | "closed",
   notes?: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await requireAuth();
 
@@ -106,7 +108,7 @@ export async function updateChatInquiryStatus(
 
     revalidatePath("/admin/inquiries");
     revalidatePath("/leads");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating chat inquiry status:", error);
     return { success: false, error: "Failed to update inquiry" };

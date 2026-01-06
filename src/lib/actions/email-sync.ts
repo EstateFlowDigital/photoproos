@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getAuthContext } from "@/lib/auth/clerk";
@@ -341,7 +343,7 @@ export async function getEmailThread(threadId: string): Promise<{
 export async function markThreadRead(
   threadId: string,
   read: boolean
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth) {
@@ -387,7 +389,7 @@ export async function markThreadRead(
 
     revalidatePath("/inbox");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error marking thread read:", error);
     return { success: false, error: "Failed to update thread" };
@@ -504,7 +506,7 @@ export async function toggleThreadArchive(
 export async function sendEmailReply(
   threadId: string,
   body: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth) {
@@ -563,7 +565,7 @@ export async function sendEmailReply(
 
     revalidatePath("/inbox");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error sending reply:", error);
     return { success: false, error: "Failed to send reply" };
@@ -579,7 +581,7 @@ export async function sendNewEmail(options: {
   cc?: string[];
   subject: string;
   body: string;
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth) {
@@ -618,7 +620,7 @@ export async function sendNewEmail(options: {
 
     revalidatePath("/inbox");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error sending email:", error);
     return { success: false, error: "Failed to send email" };
@@ -649,7 +651,7 @@ export async function getOrganizationSyncStatus() {
 export async function linkThreadToClient(
   threadId: string,
   clientId: string | null
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const auth = await getAuthContext();
     if (!auth) {
@@ -689,7 +691,7 @@ export async function linkThreadToClient(
 
     revalidatePath("/inbox");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error linking thread to client:", error);
     return { success: false, error: "Failed to link thread" };

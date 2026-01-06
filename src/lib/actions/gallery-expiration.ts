@@ -126,7 +126,7 @@ export async function scheduleExpirationNotifications(
       });
     }
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Expiration] Error scheduling notifications:", error);
     return { success: false, error: "Failed to schedule notifications" };
@@ -203,7 +203,7 @@ export async function markNotificationSent(notificationId: string) {
       data: { sentAt: new Date() },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Expiration] Error marking sent:", error);
     return { success: false, error: "Failed to mark notification as sent" };
@@ -301,7 +301,7 @@ export async function sendExpirationWarningEmail(
     // Mark notification as sent
     await markNotificationSent(notificationId);
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Expiration] Error sending email:", error);
     return { success: false, error: "Failed to send expiration warning email" };

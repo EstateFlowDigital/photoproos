@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { clerkAppearance } from "@/lib/clerk-theme";
 import { ThemeProvider } from "@/components/theme-provider";
+import { PerfOverlay } from "@/components/perf/perf-overlay";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -138,6 +139,7 @@ export default function RootLayout({
               Skip to main content
             </a>
             {children}
+            <PerfOverlay />
           </ClerkProvider>
         </ThemeProvider>
       </body>

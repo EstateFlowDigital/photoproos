@@ -12,10 +12,7 @@ import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import { WaitlistStatus, Prisma } from "@prisma/client";
 import { sendWaitlistNotificationEmail } from "@/lib/email/send";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Types

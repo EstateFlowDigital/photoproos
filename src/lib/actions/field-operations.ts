@@ -3,14 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export type FieldBooking = {
   id: string;

@@ -16,17 +16,10 @@ import {
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
 import type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Re-export the type for consumers who import from this file
 export type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 // ============================================================================
 // HELPER FUNCTIONS

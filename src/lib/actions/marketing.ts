@@ -1,10 +1,7 @@
 "use server";
 
 import { getResend, DEFAULT_FROM_EMAIL } from "@/lib/email/resend";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 /**
  * Subscribe to the newsletter

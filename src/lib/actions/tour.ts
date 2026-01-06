@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { type ActionResult, success, ok, fail } from "@/lib/types/action-result";
 
 /**
  * Mark a tour as completed for an organization
@@ -10,11 +11,11 @@ import { revalidatePath } from "next/cache";
 export async function markTourCompleted(
   organizationId: string,
   tourId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Get current tour progress
@@ -24,7 +25,7 @@ export async function markTourCompleted(
     });
 
     if (!organization) {
-      return { success: false, error: "Organization not found" };
+      return fail("Organization not found");
     }
 
     // Get existing completed tours
@@ -49,10 +50,10 @@ export async function markTourCompleted(
     });
 
     revalidatePath("/dashboard");
-    return { success: true };
+    return ok();
   } catch (error) {
     console.error("Error marking tour as completed:", error);
-    return { success: false, error: "Failed to save tour progress" };
+    return fail("Failed to save tour progress");
   }
 }
 
@@ -61,11 +62,11 @@ export async function markTourCompleted(
  */
 export async function markModuleTourCompleted(
   moduleId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     // Get current user
@@ -75,7 +76,7 @@ export async function markModuleTourCompleted(
     });
 
     if (!user) {
-      return { success: false, error: "User not found" };
+      return fail("User not found");
     }
 
     // Get existing completed modules
@@ -95,20 +96,24 @@ export async function markModuleTourCompleted(
     });
 
     revalidatePath("/");
-    return { success: true };
+    return ok();
   } catch (error) {
     console.error("Error marking module tour as completed:", error);
-    return { success: false, error: "Failed to save tour progress" };
+    return fail("Failed to save tour progress");
   }
+}
+
+interface TourProgress {
+  completedTours: string[];
+  lastCompletedAt?: string;
 }
 
 /**
  * Get tour progress for an organization
  */
-export async function getTourProgress(organizationId: string): Promise<{
-  completedTours: string[];
-  lastCompletedAt?: string;
-}> {
+export async function getTourProgress(
+  organizationId: string
+): Promise<ActionResult<TourProgress>> {
   try {
     const organization = await prisma.organization.findUnique({
       where: { id: organizationId },
@@ -116,17 +121,17 @@ export async function getTourProgress(organizationId: string): Promise<{
     });
 
     if (!organization) {
-      return { completedTours: [] };
+      return success({ completedTours: [] });
     }
 
     const progress = (organization.tourProgress as Record<string, unknown>) || {};
-    return {
+    return success({
       completedTours: (progress.completedTours as string[]) || [],
       lastCompletedAt: progress.lastCompletedAt as string | undefined,
-    };
+    });
   } catch (error) {
     console.error("Error getting tour progress:", error);
-    return { completedTours: [] };
+    return success({ completedTours: [] });
   }
 }
 
@@ -135,11 +140,11 @@ export async function getTourProgress(organizationId: string): Promise<{
  */
 export async function resetTourProgress(
   organizationId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionResult<void>> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, error: "Unauthorized" };
+      return fail("Unauthorized");
     }
 
     await prisma.organization.update({
@@ -150,9 +155,9 @@ export async function resetTourProgress(
     });
 
     revalidatePath("/dashboard");
-    return { success: true };
+    return ok();
   } catch (error) {
     console.error("Error resetting tour progress:", error);
-    return { success: false, error: "Failed to reset tour progress" };
+    return fail("Failed to reset tour progress");
   }
 }

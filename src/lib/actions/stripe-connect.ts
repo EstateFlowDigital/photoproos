@@ -4,10 +4,7 @@ import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

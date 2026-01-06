@@ -180,7 +180,7 @@ export async function deleteDiscountCode(codeId: string) {
     });
 
     revalidatePath("/settings/payments");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Discount Code] Error deleting:", error);
     return { success: false, error: "Failed to delete discount code" };
@@ -310,7 +310,7 @@ export async function recordDiscountCodeUsage(
       }),
     ]);
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Discount Code] Error recording usage:", error);
     return { success: false, error: "Failed to record discount code usage" };

@@ -2,25 +2,37 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { updateInvoiceStatus, deleteInvoice } from "@/lib/actions/invoices";
 import { generateInvoicePdf } from "@/lib/actions/invoice-pdf";
+import { RecordPaymentModal } from "./record-payment-modal";
 import type { InvoiceStatus } from "@prisma/client";
-import { cn } from "@/lib/utils";
 
 interface InvoiceActionsProps {
   invoiceId: string;
+  invoiceNumber: string;
   currentStatus: InvoiceStatus;
   clientEmail: string | null;
+  outstandingBalance: number;
+  currency: string;
 }
 
-export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: InvoiceActionsProps) {
+export function InvoiceActions({
+  invoiceId,
+  invoiceNumber,
+  currentStatus,
+  clientEmail,
+  outstandingBalance,
+  currency,
+}: InvoiceActionsProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const confirm = useConfirm();
   const [isLoading, setIsLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const handleStatusChange = async (newStatus: InvoiceStatus) => {
     setIsLoading(true);
@@ -121,35 +133,33 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
     <div className="relative flex flex-wrap items-center gap-2">
       {/* Primary Action based on status */}
       {currentStatus === "draft" && (
-        <button
-          onClick={() => handleStatusChange("sent")}
-          disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
-        >
-          <SendIcon className="h-4 w-4" />
-          Send Invoice
-        </button>
+        <>
+          <Link
+            href={`/invoices/${invoiceId}/edit`}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+          >
+            <EditIcon className="h-4 w-4" />
+            Edit
+          </Link>
+          <button
+            onClick={() => handleStatusChange("sent")}
+            disabled={isLoading}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+          >
+            <SendIcon className="h-4 w-4" />
+            Send Invoice
+          </button>
+        </>
       )}
 
-      {currentStatus === "sent" && (
+      {(currentStatus === "sent" || currentStatus === "overdue") && outstandingBalance > 0 && (
         <button
-          onClick={() => handleStatusChange("paid")}
+          onClick={() => setShowPaymentModal(true)}
           disabled={isLoading}
           className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
         >
-          <CheckIcon className="h-4 w-4" />
-          Mark as Paid
-        </button>
-      )}
-
-      {currentStatus === "overdue" && (
-        <button
-          onClick={() => handleStatusChange("paid")}
-          disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-        >
-          <CheckIcon className="h-4 w-4" />
-          Mark as Paid
+          <DollarIcon className="h-4 w-4" />
+          Record Payment
         </button>
       )}
 
@@ -172,6 +182,14 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
             <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-lg">
               {currentStatus === "draft" && (
                 <>
+                  <Link
+                    href={`/invoices/${invoiceId}/edit`}
+                    onClick={() => setShowMenu(false)}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                  >
+                    <EditIcon className="h-4 w-4" />
+                    Edit Invoice
+                  </Link>
                   <button
                     onClick={handleSendEmail}
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
@@ -179,7 +197,6 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
                     <MailIcon className="h-4 w-4" />
                     Send via Email
                   </button>
-                  {/* Edit page coming in future update */}
                 </>
               )}
 
@@ -224,6 +241,29 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
                 </button>
               )}
 
+              {(currentStatus === "sent" || currentStatus === "overdue") && outstandingBalance > 0 && (
+                <>
+                  <div className="my-1 border-t border-[var(--card-border)]" />
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      setShowPaymentModal(true);
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                  >
+                    <DollarIcon className="h-4 w-4" />
+                    Record Payment
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange("paid")}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                  >
+                    <CheckIcon className="h-4 w-4" />
+                    Mark as Fully Paid
+                  </button>
+                </>
+              )}
+
               {currentStatus === "draft" && (
                 <>
                   <div className="my-1 border-t border-[var(--card-border)]" />
@@ -240,6 +280,17 @@ export function InvoiceActions({ invoiceId, currentStatus, clientEmail }: Invoic
           </>
         )}
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <RecordPaymentModal
+          invoiceId={invoiceId}
+          invoiceNumber={invoiceNumber}
+          outstandingBalance={outstandingBalance}
+          currency={currency}
+          onClose={() => setShowPaymentModal(false)}
+        />
+      )}
     </div>
   );
 }
@@ -249,6 +300,15 @@ function SendIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.155.75.75 0 0 0 0-1.114A28.897 28.897 0 0 0 3.105 2.288Z" />
+    </svg>
+  );
+}
+
+function DollarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 6.5a.75.75 0 0 0-1.5 0v.007a3.001 3.001 0 0 0-.879 5.715l2.39.797c.653.218.989.839.762 1.388a1.12 1.12 0 0 1-1.087.676H9.5a.75.75 0 0 0 0 1.5h.126c.069.012.14.017.21.017h.082c.082.337.251.661.507.922a.75.75 0 0 0 1.056-1.064l-.003-.003a.37.37 0 0 1-.078-.122v-.002a.75.75 0 0 0 .225-.002 3.001 3.001 0 0 0 .879-5.715l-2.39-.797c-.653-.218-.989-.839-.762-1.388a1.12 1.12 0 0 1 1.087-.676H10.5a.75.75 0 0 0 0-1.5h-.126a1.688 1.688 0 0 0-.21-.017h-.082a2.038 2.038 0 0 0-.507-.922.75.75 0 1 0-1.056 1.064l.003.003c.03.036.055.077.078.122Z" />
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v1h-.75a.75.75 0 0 0 0 1.5h.75v2h-.75a.75.75 0 0 0 0 1.5h.75v1a.75.75 0 0 0 1.5 0v-1h.75a.75.75 0 0 0 0-1.5h-.75v-2h.75a.75.75 0 0 0 0-1.5h-.75V5Z" clipRule="evenodd" />
     </svg>
   );
 }

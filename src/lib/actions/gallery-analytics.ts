@@ -286,7 +286,7 @@ export async function logGalleryView(
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Analytics] Error logging view:", error);
     return { success: false, error: "Failed to log view" };
@@ -327,7 +327,7 @@ export async function logPhotoView(
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Gallery Analytics] Error logging photo view:", error);
     return { success: false, error: "Failed to log photo view" };

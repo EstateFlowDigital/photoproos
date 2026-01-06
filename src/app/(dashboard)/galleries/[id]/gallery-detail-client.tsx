@@ -22,6 +22,7 @@ import {
 import { createInvoice } from "@/lib/actions/invoices";
 import { createTaskFromGallery } from "@/lib/actions/projects";
 import { sendManualGalleryReminder } from "@/lib/actions/gallery-reminders";
+import { getDownloadHistory, exportDownloadHistory } from "@/lib/actions/download-tracking";
 import { CollectionManager } from "@/components/gallery/collection-manager";
 import { AssignToCollectionModal } from "@/components/gallery/assign-to-collection-modal";
 import { AnalyticsDashboard } from "@/components/gallery/analytics-dashboard";
@@ -206,7 +207,20 @@ const defaultSettings: GallerySettings = {
   allowComments: false,
 };
 
-type TabType = "photos" | "collections" | "selections" | "activity" | "analytics" | "settings" | "invoices";
+type TabType = "photos" | "collections" | "selections" | "activity" | "analytics" | "downloads" | "settings" | "invoices";
+
+interface DownloadHistoryItem {
+  id: string;
+  createdAt: Date;
+  format: string;
+  fileCount: number;
+  totalBytes: bigint | null;
+  clientEmail: string | null;
+  sessionId: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  assetId: string | null;
+}
 
 export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const { showToast } = useToast();
@@ -249,10 +263,37 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const analytics = gallery.analytics;
   const invoices = gallery.invoices || [];
 
+  // Download history state
+  const [downloadHistory, setDownloadHistory] = useState<DownloadHistoryItem[]>([]);
+  const [downloadHistoryTotal, setDownloadHistoryTotal] = useState(0);
+  const [isLoadingDownloads, setIsLoadingDownloads] = useState(false);
+  const [isExportingDownloads, setIsExportingDownloads] = useState(false);
+
   // Sync photos state when gallery prop changes (e.g., after router.refresh())
   useEffect(() => {
     setPhotos(gallery.photos);
   }, [gallery.photos]);
+
+  // Fetch download history when downloads tab is active
+  useEffect(() => {
+    if (activeTab === "downloads" && downloadHistory.length === 0 && !isLoadingDownloads) {
+      const fetchDownloadHistory = async () => {
+        setIsLoadingDownloads(true);
+        try {
+          const result = await getDownloadHistory(gallery.id, { limit: 100 });
+          if (result.success && result.data) {
+            setDownloadHistory(result.data.downloads as DownloadHistoryItem[]);
+            setDownloadHistoryTotal(result.data.total);
+          }
+        } catch (error) {
+          console.error("Failed to fetch download history:", error);
+        } finally {
+          setIsLoadingDownloads(false);
+        }
+      };
+      fetchDownloadHistory();
+    }
+  }, [activeTab, gallery.id, downloadHistory.length, isLoadingDownloads]);
 
   // Handle submitting a new comment
   const handleSubmitComment = () => {
@@ -749,6 +790,32 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     showToast("Analytics exported successfully", "success");
   };
 
+  const handleExportDownloads = async () => {
+    setIsExportingDownloads(true);
+    try {
+      const result = await exportDownloadHistory(gallery.id);
+      if (result.success && result.data) {
+        const blob = new Blob([result.data], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${gallery.name.replace(/[^a-z0-9]/gi, "_")}-download-history.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("Download history exported successfully", "success");
+      } else {
+        showToast(result.error || "Failed to export download history", "error");
+      }
+    } catch (error) {
+      console.error("Failed to export downloads:", error);
+      showToast("Failed to export download history", "error");
+    } finally {
+      setIsExportingDownloads(false);
+    }
+  };
+
   const handlePreviewDelivery = () => {
     window.open(`/g/${gallery.id}?preview=true`, "_blank");
     showToast("Opening delivery preview in new tab", "info");
@@ -1032,7 +1099,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           {/* Tabs Navigation */}
           <div className="border-b border-[var(--card-border)] -mx-4 px-4 sm:mx-0 sm:px-0">
             <nav className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-px" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {(["photos", "collections", "selections", "activity", "analytics", "settings", "invoices"] as TabType[]).map((tab) => (
+              {(["photos", "collections", "selections", "activity", "analytics", "downloads", "settings", "invoices"] as TabType[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -1055,6 +1122,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   {tab === "analytics" && gallery.status === "delivered" && analytics && (
                     <span className="ml-1.5 rounded-full bg-[var(--success)]/10 px-1.5 py-0.5 text-xs text-[var(--success)]">
                       {analytics?.totalViews ?? 0}
+                    </span>
+                  )}
+                  {tab === "downloads" && gallery.downloads > 0 && (
+                    <span className="ml-1.5 rounded-full bg-[var(--primary)]/10 px-1.5 py-0.5 text-xs text-[var(--primary)]">
+                      {gallery.downloads}
                     </span>
                   )}
                 </button>
@@ -1683,6 +1755,101 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               isDelivered={gallery.status === "delivered"}
               onDeliverClick={handleDeliverGallery}
             />
+          )}
+
+          {/* Downloads Tab */}
+          {activeTab === "downloads" && (
+            <div className="space-y-6">
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Download History</h2>
+                    <p className="text-sm text-foreground-muted mt-1">
+                      {downloadHistoryTotal} total downloads
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleExportDownloads}
+                    disabled={isExportingDownloads || downloadHistory.length === 0}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ExportIcon className="h-4 w-4" />
+                    {isExportingDownloads ? "Exporting..." : "Export CSV"}
+                  </button>
+                </div>
+
+                {isLoadingDownloads ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
+                  </div>
+                ) : downloadHistory.length === 0 ? (
+                  <div className="text-center py-12">
+                    <DownloadIcon className="mx-auto h-12 w-12 text-foreground-muted opacity-50" />
+                    <h3 className="mt-4 text-sm font-medium text-foreground">No downloads yet</h3>
+                    <p className="mt-2 text-sm text-foreground-muted">
+                      Downloads will appear here once clients start downloading photos.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto -mx-6">
+                    <table className="w-full min-w-[600px]">
+                      <thead>
+                        <tr className="border-b border-[var(--card-border)]">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">Format</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">Files</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">Size</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-foreground-muted uppercase tracking-wider">Client</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[var(--card-border)]">
+                        {downloadHistory.map((download) => (
+                          <tr key={download.id} className="hover:bg-[var(--background-hover)]">
+                            <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">
+                              {new Date(download.createdAt).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                            </td>
+                            <td className="px-6 py-4 text-sm">
+                              <span className={cn(
+                                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                                download.format === "zip_all" && "bg-[var(--primary)]/10 text-[var(--primary)]",
+                                download.format === "original" && "bg-[var(--success)]/10 text-[var(--success)]",
+                                download.format === "web_size" && "bg-[var(--warning)]/10 text-[var(--warning)]",
+                                download.format === "high_res" && "bg-purple-500/10 text-purple-500",
+                              )}>
+                                {download.format === "zip_all" ? "All Photos (ZIP)" :
+                                 download.format === "original" ? "Original" :
+                                 download.format === "web_size" ? "Web Size" :
+                                 download.format === "high_res" ? "High Res" :
+                                 download.format}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">
+                              {download.fileCount} {download.fileCount === 1 ? "file" : "files"}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-foreground-muted whitespace-nowrap">
+                              {download.totalBytes
+                                ? `${(Number(download.totalBytes) / (1024 * 1024)).toFixed(1)} MB`
+                                : "—"}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">
+                              {download.clientEmail || (
+                                <span className="text-foreground-muted">Anonymous</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {/* Settings Tab */}

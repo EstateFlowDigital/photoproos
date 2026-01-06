@@ -11,14 +11,7 @@ import {
   sendReferralRewardEarnedEmail,
 } from "@/lib/email/send";
 import { requireAdmin } from "@/lib/actions/auth-helper";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export type PlatformReferrerProfile = {
   id: string;

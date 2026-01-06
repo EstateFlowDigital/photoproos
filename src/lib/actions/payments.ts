@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
@@ -9,6 +11,7 @@ import { sendEmail } from "@/lib/email/resend";
 import { PaymentReminderEmail } from "@/emails/payment-reminder";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
+import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -63,6 +66,7 @@ export async function getPayments(filters?: {
   fromDate?: Date;
   toDate?: Date;
 }) {
+  const perfStartTime = perfStart("payments:getPayments");
   try {
     const organizationId = await getOrganizationId();
 
@@ -99,6 +103,8 @@ export async function getPayments(filters?: {
   } catch (error) {
     console.error("Error fetching payments:", error);
     return [];
+  } finally {
+    perfEnd("payments:getPayments", perfStartTime);
   }
 }
 
@@ -106,6 +112,7 @@ export async function getPayments(filters?: {
  * Get payment stats
  */
 export async function getPaymentStats() {
+  const perfStartTime = perfStart("payments:getPaymentStats");
   try {
     const organizationId = await getOrganizationId();
 
@@ -148,6 +155,8 @@ export async function getPaymentStats() {
       pending: { count: 0, amountCents: 0 },
       overdue: { count: 0, amountCents: 0 },
     };
+  } finally {
+    perfEnd("payments:getPaymentStats", perfStartTime);
   }
 }
 
@@ -193,7 +202,7 @@ export async function markPaymentAsPaid(id: string) {
     revalidatePath(`/payments/${id}`);
     revalidatePath("/dashboard");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error marking payment as paid:", error);
     return { success: false, error: "Failed to update payment" };
@@ -233,7 +242,7 @@ export async function updatePaymentStatus(id: string, status: PaymentStatus) {
     revalidatePath(`/payments/${id}`);
     revalidatePath("/dashboard");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating payment status:", error);
     return { success: false, error: "Failed to update payment status" };
@@ -270,7 +279,7 @@ export async function getPaymentLinkUrl(id: string): Promise<{ success: boolean;
 /**
  * Send payment reminder email
  */
-export async function sendPaymentReminder(id: string): Promise<{ success: boolean; error?: string }> {
+export async function sendPaymentReminder(id: string): Promise<VoidActionResult> {
   try {
     const organizationId = await getOrganizationId();
 
@@ -350,7 +359,7 @@ export async function sendPaymentReminder(id: string): Promise<{ success: boolea
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error sending payment reminder:", error);
     return { success: false, error: "Failed to send reminder" };
@@ -492,7 +501,7 @@ export async function issueRefund(
   id: string,
   amountCents?: number,
   reason?: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const organizationId = await getOrganizationId();
 
@@ -561,7 +570,7 @@ export async function issueRefund(
 
     console.log(`[Refund] Processed refund for payment ${id}. Amount: ${refundAmount} cents. Reason: ${reason || "Not specified"}`);
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error issuing refund:", error);
     return { success: false, error: "Failed to process refund" };

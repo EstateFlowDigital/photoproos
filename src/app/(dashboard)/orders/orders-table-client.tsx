@@ -68,6 +68,56 @@ export function OrdersTableClient({
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>("all");
 
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Bulk selection helpers
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  // Export selected orders to CSV
+  const handleExportCSV = () => {
+    const selectedOrders = filteredOrders.filter((o) => selectedIds.has(o.id));
+    const headers = ["Order Number", "Client", "Email", "Items", "Total", "Status", "Preferred Date", "Created"];
+    const rows = selectedOrders.map((o) => [
+      o.orderNumber,
+      o.clientName || "Guest",
+      o.clientEmail || "",
+      o.itemCount.toString(),
+      (o.totalCents / 100).toFixed(2),
+      o.status,
+      o.preferredDate ? formatDate(o.preferredDate) : "",
+      formatDate(o.createdAt),
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders-export-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    clearSelection();
+  };
+
   // Filter and sort orders
   const filteredOrders = useMemo(() => {
     let result = [...orders];
@@ -118,6 +168,12 @@ export function OrdersTableClient({
 
     return result;
   }, [orders, searchQuery, sortOption, dateRangeFilter]);
+
+  const selectAll = () => {
+    setSelectedIds(new Set(filteredOrders.map((o) => o.id)));
+  };
+
+  const isAllSelected = filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.has(o.id));
 
   if (orders.length === 0) {
     return (
@@ -208,109 +264,154 @@ export function OrdersTableClient({
           <VirtualList
             className="max-h-[70vh]"
             items={filteredOrders}
-        estimateSize={() => 112}
-        itemGap={0}
-        getItemKey={(order) => order.id}
-        prepend={
-          <div className="sticky top-0 z-10 hidden grid-cols-[1.3fr,1.2fr,1fr,1.1fr,0.9fr,0.9fr,0.5fr] items-center gap-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-3 text-xs font-semibold uppercase tracking-wide text-foreground-muted lg:grid">
-            <span>Order</span>
-            <span>Client</span>
-            <span>Items</span>
-            <span>Preferred</span>
-            <span>Status</span>
-            <span className="text-right">Total</span>
-            <span className="text-right">Actions</span>
-          </div>
-        }
-        renderItem={(order) => {
-          const clientName = order.clientName || "Guest";
-          return (
-            <div className="border-b border-[var(--card-border)] px-4 py-4 last:border-b-0 hover:bg-[var(--background-hover)] lg:px-6">
-              <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[1.3fr,1.2fr,1fr,1.1fr,0.9fr,0.9fr,0.5fr] lg:items-center lg:gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-foreground">{order.orderNumber}</p>
-                    <p className="text-xs text-foreground-muted">{formatDate(order.createdAt)}</p>
-                    <p className="text-sm text-foreground-muted lg:hidden">{clientName}</p>
-                  </div>
-                  <div className="text-right lg:hidden">
-                    <span className="rounded-full bg-[var(--background-secondary)] px-2 py-1 text-xs font-medium text-foreground">
-                      {formatCurrency(order.totalCents)}
-                    </span>
-                  </div>
-                </div>
+            estimateSize={() => 112}
+            itemGap={0}
+            getItemKey={(order) => order.id}
+            prepend={
+              <div className="sticky top-0 z-10 hidden grid-cols-[40px,1.3fr,1.2fr,1fr,1.1fr,0.9fr,0.9fr,0.5fr] items-center gap-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-3 text-xs font-semibold uppercase tracking-wide text-foreground-muted lg:grid">
+                <span>
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={() => (isAllSelected ? clearSelection() : selectAll())}
+                    className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+                    aria-label="Select all orders"
+                  />
+                </span>
+                <span>Order</span>
+                <span>Client</span>
+                <span>Items</span>
+                <span>Preferred</span>
+                <span>Status</span>
+                <span className="text-right">Total</span>
+                <span className="text-right">Actions</span>
+              </div>
+            }
+            renderItem={(order) => {
+              const clientName = order.clientName || "Guest";
+              const isSelected = selectedIds.has(order.id);
+              return (
+                <div className={cn(
+                  "border-b border-[var(--card-border)] px-4 py-4 last:border-b-0 hover:bg-[var(--background-hover)] lg:px-6",
+                  isSelected && "bg-[var(--primary)]/5"
+                )}>
+                  <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[40px,1.3fr,1.2fr,1fr,1.1fr,0.9fr,0.9fr,0.5fr] lg:items-center lg:gap-3">
+                    {/* Checkbox - hidden on mobile */}
+                    <div className="hidden lg:block">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelection(order.id)}
+                        className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
+                        aria-label={`Select order ${order.orderNumber}`}
+                      />
+                    </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-foreground">{order.orderNumber}</p>
+                        <p className="text-xs text-foreground-muted">{formatDate(order.createdAt)}</p>
+                        <p className="text-sm text-foreground-muted lg:hidden">{clientName}</p>
+                      </div>
+                      <div className="text-right lg:hidden">
+                        <span className="rounded-full bg-[var(--background-secondary)] px-2 py-1 text-xs font-medium text-foreground">
+                          {formatCurrency(order.totalCents)}
+                        </span>
+                      </div>
+                    </div>
 
-                <div className="hidden items-center gap-3 lg:flex">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full avatar-gradient text-xs font-medium text-white">
-                    {clientName.substring(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-foreground">{clientName}</p>
-                    {order.clientEmail && (
-                      <p className="truncate text-xs text-foreground-muted">{order.clientEmail}</p>
-                    )}
-                  </div>
-                </div>
+                    <div className="hidden items-center gap-3 lg:flex">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full avatar-gradient text-xs font-medium text-white">
+                        {clientName.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-foreground">{clientName}</p>
+                        {order.clientEmail && (
+                          <p className="truncate text-xs text-foreground-muted">{order.clientEmail}</p>
+                        )}
+                      </div>
+                    </div>
 
-                <div className="hidden min-w-0 lg:block">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-foreground">
-                      {order.itemCount} item{order.itemCount !== 1 ? "s" : ""}
-                    </span>
-                    {order.orderPage?.name && (
-                      <span className="truncate rounded bg-[var(--background-secondary)] px-1.5 py-0.5 text-xs text-foreground-muted">
-                        {order.orderPage.name}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                    <div className="hidden min-w-0 lg:block">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-foreground">
+                          {order.itemCount} item{order.itemCount !== 1 ? "s" : ""}
+                        </span>
+                        {order.orderPage?.name && (
+                          <span className="truncate rounded bg-[var(--background-secondary)] px-1.5 py-0.5 text-xs text-foreground-muted">
+                            {order.orderPage.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                <div className="hidden lg:block">
-                  {order.preferredDate ? (
-                    <div className="text-sm">
-                      <p className="text-foreground">{formatDate(order.preferredDate)}</p>
-                      {order.preferredTime && (
-                        <p className="text-xs text-foreground-muted">
-                          {formatTimePreference(order.preferredTime)}
-                        </p>
+                    <div className="hidden lg:block">
+                      {order.preferredDate ? (
+                        <div className="text-sm">
+                          <p className="text-foreground">{formatDate(order.preferredDate)}</p>
+                          {order.preferredTime && (
+                            <p className="text-xs text-foreground-muted">
+                              {formatTimePreference(order.preferredTime)}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-foreground-muted">Not specified</span>
                       )}
                     </div>
-                  ) : (
-                    <span className="text-sm text-foreground-muted">Not specified</span>
-                  )}
-                </div>
 
-                <div className="flex items-center justify-between lg:justify-start lg:gap-2">
-                  <span
-                    className={cn(
-                      "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-                      getStatusBadgeClasses(order.status)
-                    )}
-                  >
-                    {formatStatusLabel(order.status)}
-                  </span>
-                  <span className="text-sm font-semibold text-foreground lg:hidden">
-                    {formatCurrency(order.totalCents)}
-                  </span>
-                </div>
+                    <div className="flex items-center justify-between lg:justify-start lg:gap-2">
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                          getStatusBadgeClasses(order.status)
+                        )}
+                      >
+                        {formatStatusLabel(order.status)}
+                      </span>
+                      <span className="text-sm font-semibold text-foreground lg:hidden">
+                        {formatCurrency(order.totalCents)}
+                      </span>
+                    </div>
 
-                <div className="hidden text-right font-medium text-foreground lg:block">
-                  {formatCurrency(order.totalCents)}
-                </div>
+                    <div className="hidden text-right font-medium text-foreground lg:block">
+                      {formatCurrency(order.totalCents)}
+                    </div>
 
-                <div className="flex justify-end">
-                  <Link
-                    href={`/orders/${order.id}`}
-                    className="inline-flex items-center justify-center rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
-                  >
-                    <ChevronRightIcon className="h-4 w-4" />
-                  </Link>
+                    <div className="flex justify-end">
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="inline-flex items-center justify-center rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
+                      >
+                        <ChevronRightIcon className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          );
-        }}
+              );
+            }}
           />
+        </div>
+      )}
+
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
+          <span className="text-sm font-medium text-foreground">
+            {selectedIds.size} selected
+          </span>
+          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <button
+            onClick={handleExportCSV}
+            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={clearSelection}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground"
+          >
+            Clear
+          </button>
         </div>
       )}
     </div>

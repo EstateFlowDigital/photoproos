@@ -3,14 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
 import type { PlanName, ExperimentStatus } from "@prisma/client";
-
-// =============================================================================
-// Types
-// =============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export interface SubscriptionPlanInput {
   name: string;

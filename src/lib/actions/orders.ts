@@ -15,14 +15,8 @@ import {
 import { requireOrganizationId } from "./auth-helper";
 import { nanoid } from "nanoid";
 import type Stripe from "stripe";
-
-// =============================================================================
-// Types
-// =============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // Helper Functions
@@ -518,6 +512,7 @@ export async function verifyOrderPayment(
  * Get orders for the organization (admin view)
  */
 export async function getOrders(filters?: OrderFilters) {
+  const perfStartTime = perfStart("orders:getOrders");
   try {
     const organizationId = await requireOrganizationId();
     const validatedFilters = filters ? orderFiltersSchema.parse(filters) : {};
@@ -556,7 +551,7 @@ export async function getOrders(filters?: OrderFilters) {
       orderBy: { createdAt: "desc" },
     });
 
-    return orders.map((order) => ({
+    const mapped = orders.map((order) => ({
       id: order.id,
       orderNumber: order.orderNumber,
       status: order.status,
@@ -576,9 +571,12 @@ export async function getOrders(filters?: OrderFilters) {
       createdAt: order.createdAt,
       submittedAt: order.submittedAt,
     }));
+    return mapped;
   } catch (error) {
     console.error("[Orders] Error fetching orders:", error);
     return [];
+  } finally {
+    perfEnd("orders:getOrders", perfStartTime);
   }
 }
 
@@ -805,6 +803,7 @@ export async function cancelOrder(id: string): Promise<ActionResult> {
  * Get order statistics for the organization
  */
 export async function getOrderStats() {
+  const perfStartTime = perfStart("orders:getOrderStats");
   try {
     const organizationId = await requireOrganizationId();
 
@@ -845,6 +844,8 @@ export async function getOrderStats() {
       paidOrders: 0,
       recentRevenue: 0,
     };
+  } finally {
+    perfEnd("orders:getOrderStats", perfStartTime);
   }
 }
 

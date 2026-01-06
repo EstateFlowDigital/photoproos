@@ -52,3 +52,4 @@ src/app/api/integrations/slack
 
 # clerk configuration (can include secrets)
 /.clerk/
+tmp/

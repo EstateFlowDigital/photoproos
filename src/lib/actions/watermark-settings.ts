@@ -91,7 +91,7 @@ export async function updateWatermarkSettings(settings: Partial<WatermarkSetting
     });
 
     revalidatePath("/settings/branding");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Watermark Settings] Error updating:", error);
     return { success: false, error: "Failed to update watermark settings" };
@@ -114,7 +114,7 @@ export async function toggleWatermarks(enabled: boolean) {
     });
 
     revalidatePath("/settings/branding");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Watermark Settings] Error toggling:", error);
     return { success: false, error: "Failed to toggle watermarks" };
@@ -182,7 +182,7 @@ export async function setWatermarkImage(imageUrl: string) {
     });
 
     revalidatePath("/settings/branding");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Watermark Settings] Error setting image:", error);
     return { success: false, error: "Failed to set watermark image" };

@@ -18,12 +18,9 @@ import {
 import type { ProjectStatus } from "@prisma/client";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { sendGalleryDeliveredEmail } from "@/lib/email/send";
+import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 import { extractKeyFromUrl, generatePresignedDownloadUrl, deleteFiles } from "@/lib/storage";
-
-// Result type for server actions
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -706,6 +703,7 @@ export async function bulkDeleteGalleries(
  * Get all galleries for the organization
  */
 export async function getGalleries(filters?: GalleryFilters) {
+  const perfStartTime = perfStart("galleries:getGalleries");
   try {
     const organizationId = await getOrganizationId();
 
@@ -757,7 +755,7 @@ export async function getGalleries(filters?: GalleryFilters) {
       orderBy: { createdAt: "desc" },
     });
 
-    return galleries.map((gallery) => ({
+    const mapped = galleries.map((gallery) => ({
       id: gallery.id,
       name: gallery.name,
       description: gallery.description,
@@ -778,9 +776,12 @@ export async function getGalleries(filters?: GalleryFilters) {
       photoCount: gallery._count.assets,
       paymentCount: gallery._count.payments,
     }));
+    return mapped;
   } catch (error) {
     console.error("Error fetching galleries:", error);
     return [];
+  } finally {
+    perfEnd("galleries:getGalleries", perfStartTime);
   }
 }
 
@@ -878,6 +879,7 @@ export async function getGallery(id: string) {
         width: asset.width,
         height: asset.height,
         sortOrder: asset.sortOrder,
+        collectionId: asset.collectionId,
       })),
       // Payments
       payments: gallery.payments,

@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -51,7 +53,7 @@ export async function getDashboardConfig(): Promise<{
  */
 export async function updateDashboardConfig(
   config: DashboardConfig
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -72,7 +74,7 @@ export async function updateDashboardConfig(
     });
 
     revalidatePath("/dashboard");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating dashboard config:", error);
     return { success: false, error: "Failed to update dashboard config" };
@@ -84,7 +86,7 @@ export async function updateDashboardConfig(
  */
 export async function toggleSectionVisibility(
   sectionId: DashboardSectionId
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -127,7 +129,7 @@ export async function toggleSectionVisibility(
     });
 
     revalidatePath("/dashboard");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error toggling section visibility:", error);
     return { success: false, error: "Failed to toggle section visibility" };
@@ -139,7 +141,7 @@ export async function toggleSectionVisibility(
  */
 export async function toggleSectionCollapsed(
   sectionId: DashboardSectionId
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -182,7 +184,7 @@ export async function toggleSectionCollapsed(
     });
 
     revalidatePath("/dashboard");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error toggling section collapsed state:", error);
     return { success: false, error: "Failed to toggle section collapsed state" };
@@ -192,10 +194,7 @@ export async function toggleSectionCollapsed(
 /**
  * Reset dashboard configuration to defaults
  */
-export async function resetDashboardConfig(): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+export async function resetDashboardConfig(): Promise<VoidActionResult> {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -208,7 +207,7 @@ export async function resetDashboardConfig(): Promise<{
     });
 
     revalidatePath("/dashboard");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error resetting dashboard config:", error);
     return { success: false, error: "Failed to reset dashboard config" };

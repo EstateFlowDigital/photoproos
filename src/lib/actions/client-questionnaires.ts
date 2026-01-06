@@ -22,14 +22,7 @@ import {
   createEmailLog,
   updateEmailLogStatus,
 } from "@/lib/actions/email-logs";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export type ClientQuestionnaireWithRelations = {
   id: string;

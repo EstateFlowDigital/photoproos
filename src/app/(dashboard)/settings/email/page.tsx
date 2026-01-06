@@ -476,8 +476,8 @@ export default function EmailSettingsPage() {
   );
 }
 
-function generateTimeOptions() {
-  const options = [];
+function generateTimeOptions(): Array<{ value: string; label: string }> {
+  const options: Array<{ value: string; label: string }> = [];
   for (let hour = 0; hour < 24; hour++) {
     const h = hour.toString().padStart(2, "0");
     const ampm = hour < 12 ? "AM" : "PM";

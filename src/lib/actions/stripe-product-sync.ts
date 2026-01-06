@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import {
@@ -46,7 +48,7 @@ export async function syncProductsToStripe() {
 export async function syncSingleProductToStripe(
   productId: string,
   productType: "service" | "bundle"
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   const { userId, orgId } = await auth();
   if (!userId || !orgId) {
     return { success: false, error: "Not authenticated" };

@@ -4,14 +4,11 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { formatCurrency } from "@/lib/utils/units";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
 // ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 export type SlackConfig = {
   id: string;

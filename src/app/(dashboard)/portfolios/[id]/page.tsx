@@ -4,10 +4,11 @@ import { PageHeader } from "@/components/dashboard";
 import { getPortfolioWebsite, getPortfolioAnalytics } from "@/lib/actions/portfolio-websites";
 import { PortfolioEditorClient } from "./portfolio-editor-client";
 
-export default async function PortfolioDetailPage({ params }: { params: { id: string } }) {
+export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const [data, analyticsResult] = await Promise.all([
-    getPortfolioWebsite(params.id),
-    getPortfolioAnalytics(params.id, "30d"),
+    getPortfolioWebsite(id),
+    getPortfolioAnalytics(id, "30d"),
   ]);
 
   if (!data) {

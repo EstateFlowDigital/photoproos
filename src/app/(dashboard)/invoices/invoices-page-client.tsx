@@ -297,11 +297,9 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
                 if (!invoice) return null;
 
                 const clientName = invoice.client?.fullName || invoice.client?.company || invoice.clientName || "Unknown";
-                const isOverdue = invoice.status === "sent" && new Date(invoice.dueDate) < new Date();
-                const displayStatus = isOverdue && invoice.status !== "overdue" ? "overdue" : invoice.status;
-                const statusLabel = isOverdue && invoice.status !== "overdue"
-                  ? "Overdue"
-                  : formatStatusLabel(invoice.status);
+                // Note: Overdue status is now automatically set server-side when invoices are fetched
+                const isOverdue = invoice.status === "overdue";
+                const statusLabel = formatStatusLabel(invoice.status);
                 const isSelected = selectedIds.has(invoice.id);
 
                 return (
@@ -363,7 +361,7 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
                     <td className="px-4 py-4">
                       <span className={cn(
                         "pointer-events-none relative z-10 inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-                        getStatusBadgeClasses(displayStatus),
+                        getStatusBadgeClasses(invoice.status),
                         invoice.status === "cancelled" && "line-through"
                       )}>
                         {statusLabel}

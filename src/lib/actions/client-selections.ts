@@ -150,7 +150,7 @@ export async function updateSelectionSettings(
 
     revalidatePath(`/galleries/${projectId}`);
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating selection settings:", error);
     return { success: false, error: "Failed to update settings" };
@@ -200,7 +200,7 @@ export async function reviewSelections(
 
     revalidatePath(`/galleries/${projectId}`);
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error reviewing selections:", error);
     return { success: false, error: "Failed to review selections" };
@@ -532,7 +532,7 @@ export async function updateSelectionNotes(
       data: { notes: notes.trim() || null },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating selection notes:", error);
     return { success: false, error: "Failed to update notes" };
@@ -691,7 +691,7 @@ export async function resetSelections(projectId: string, deliverySlug?: string) 
       },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error resetting selections:", error);
     return { success: false, error: "Failed to reset selections" };

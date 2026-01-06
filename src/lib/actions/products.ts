@@ -11,10 +11,7 @@ import {
   type CreateCatalogInput,
   type CreateProductInput,
 } from "@/lib/validations/products";
-
-type ActionResult<T = void> =
-  | { success: true; data?: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export async function listProductCatalogs() {
   await requireAuth();
@@ -218,7 +215,7 @@ export async function updateProductStatus(productId: string, status: "pending" |
     });
 
     revalidatePath(`/products/${product.catalogId}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Products] update status error:", error);
     return { success: false, error: "Failed to update product" };

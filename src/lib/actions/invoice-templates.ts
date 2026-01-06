@@ -196,7 +196,7 @@ export async function deleteInvoiceTemplate(templateId: string) {
     });
 
     revalidatePath("/settings/branding");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("[Invoice Template] Error deleting:", error);
     return { success: false, error: "Failed to delete invoice template" };

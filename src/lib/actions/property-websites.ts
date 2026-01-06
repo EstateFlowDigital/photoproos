@@ -1,5 +1,7 @@
 "use server";
 
+import type { VoidActionResult } from "@/lib/types/action-result";
+
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { PropertyWebsiteTemplate, PropertyType, LeadStatus } from "@prisma/client";
@@ -178,7 +180,7 @@ export async function createPropertyWebsite(
 export async function updatePropertyWebsite(
   id: string,
   data: Partial<PropertyWebsiteInput>
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const existing = await prisma.propertyWebsite.findUnique({ where: { id } });
     if (!existing) {
@@ -220,7 +222,7 @@ export async function updatePropertyWebsite(
     revalidatePath(`/properties/${id}`);
     revalidatePath(`/p/${existing.slug}`);
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating property website:", error);
     return { success: false, error: "Failed to update property website" };
@@ -259,7 +261,7 @@ export async function togglePropertyWebsitePublish(
 // Delete property website
 export async function deletePropertyWebsite(
   id: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     const existing = await prisma.propertyWebsite.findUnique({ where: { id } });
     if (!existing) {
@@ -270,7 +272,7 @@ export async function deletePropertyWebsite(
 
     revalidatePath("/properties");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting property website:", error);
     return { success: false, error: "Failed to delete property website" };
@@ -515,7 +517,7 @@ export async function submitPropertyLead(data: {
   phone?: string;
   message?: string;
   source?: string;
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<VoidActionResult> {
   try {
     // Get property website with organization info for email
     const propertyWebsite = await prisma.propertyWebsite.findUnique({
@@ -574,7 +576,7 @@ export async function submitPropertyLead(data: {
 
     revalidatePath("/properties");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error submitting lead:", error);
     return { success: false, error: "Failed to submit inquiry" };
@@ -600,7 +602,7 @@ export async function getPropertyLeads(propertyWebsiteId: string) {
 export async function updateLeadStatus(
   leadId: string,
   status: LeadStatus
-): Promise<{ success: boolean; error?: string }> {
+): Promise<VoidActionResult> {
   try {
     await prisma.propertyLead.update({
       where: { id: leadId },
@@ -609,7 +611,7 @@ export async function updateLeadStatus(
 
     revalidatePath("/properties");
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error updating lead status:", error);
     return { success: false, error: "Failed to update lead status" };

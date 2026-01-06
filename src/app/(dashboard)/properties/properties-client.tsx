@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -20,6 +20,7 @@ import {
   publishPropertyWebsites
 } from "@/lib/actions/property-websites";
 import type { PropertyWebsiteWithRelations } from "@/lib/actions/property-websites";
+import { VirtualList } from "@/components/ui/virtual-list";
 
 interface PropertiesClientProps {
   websites: PropertyWebsiteWithRelations[];
@@ -291,18 +292,34 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
               Select all
             </button>
           </div>
-          <div className="auto-grid grid-min-240 grid-gap-6">
-            {filteredWebsites.map((website) => (
-              <PropertyCard
-                key={website.id}
-                website={website}
-                isSelected={selectedIds.has(website.id)}
-                onToggleSelect={() => toggleSelect(website.id)}
-                onDelete={setDeleteTarget}
-                onDuplicate={() => handleDuplicate(website)}
-              />
-            ))}
-          </div>
+          <VirtualList
+            className="max-h-[70vh]"
+            items={useMemo(() => {
+              const rows: PropertyWebsiteWithRelations[][] = [];
+              const perRow = 3;
+              for (let i = 0; i < filteredWebsites.length; i += perRow) {
+                rows.push(filteredWebsites.slice(i, i + perRow));
+              }
+              return rows;
+            }, [filteredWebsites])}
+            getItemKey={(_, idx) => `row-${idx}`}
+            estimateSize={() => 340}
+            itemGap={16}
+            renderItem={(row) => (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {row.map((website) => (
+                  <PropertyCard
+                    key={website.id}
+                    website={website}
+                    isSelected={selectedIds.has(website.id)}
+                    onToggleSelect={() => toggleSelect(website.id)}
+                    onDelete={setDeleteTarget}
+                    onDuplicate={() => handleDuplicate(website)}
+                  />
+                ))}
+              </div>
+            )}
+          />
         </>
       )}
 

@@ -1646,11 +1646,20 @@ model Invoice {
   status InvoiceStatus @default(draft)
 
   // Amounts
-  subtotalCents Int    @default(0)
-  taxCents      Int    @default(0)
-  discountCents Int    @default(0)
-  totalCents    Int    @default(0)
-  currency      String @default("USD")
+  subtotalCents   Int    @default(0)
+  taxCents        Int    @default(0)
+  discountCents   Int    @default(0)
+  totalCents      Int    @default(0)
+  paidAmountCents Int    @default(0) // Tracks partial payments
+  currency        String @default("USD")
+
+  // Late Fees
+  lateFeeEnabled      Boolean   @default(false)
+  lateFeeType         String?   @default("percentage") // "percentage" or "fixed"
+  lateFeePercent      Float?    @default(5) // e.g., 5 = 5%
+  lateFeeFlatCents    Int? // Flat fee in cents
+  lateFeeAppliedCents Int       @default(0) // Total late fees applied
+  lastLateFeeAt       DateTime? // When late fee was last applied
 
   // Dates
   issueDate DateTime  @default(now())

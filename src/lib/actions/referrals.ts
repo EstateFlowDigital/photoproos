@@ -5,14 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { ReferralStatus, ReferralRewardType } from "@prisma/client";
 import { nanoid } from "nanoid";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+import type { ActionResult } from "@/lib/types/action-result";
 
 export type ReferralProgram = {
   id: string;

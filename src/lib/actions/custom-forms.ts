@@ -315,7 +315,7 @@ export async function deleteForm(formId: string) {
     });
 
     revalidatePath("/forms");
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting form:", error);
     return { success: false, error: "Failed to delete form" };
@@ -487,7 +487,7 @@ export async function deleteFormField(fieldId: string) {
     });
 
     revalidatePath(`/forms/${field.form.id}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting field:", error);
     return { success: false, error: "Failed to delete field" };
@@ -518,7 +518,7 @@ export async function reorderFormFields(formId: string, fieldIds: string[]) {
     );
 
     revalidatePath(`/forms/${formId}`);
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error reordering fields:", error);
     return { success: false, error: "Failed to reorder fields" };
@@ -762,7 +762,7 @@ export async function markSubmissionRead(submissionId: string) {
       data: { isRead: true, readAt: new Date() },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error marking submission read:", error);
     return { success: false, error: "Failed to mark submission read" };
@@ -788,7 +788,7 @@ export async function archiveSubmission(submissionId: string) {
       data: { isArchived: true },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error archiving submission:", error);
     return { success: false, error: "Failed to archive submission" };
@@ -813,7 +813,7 @@ export async function deleteSubmission(submissionId: string) {
       where: { id: submissionId },
     });
 
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (error) {
     console.error("Error deleting submission:", error);
     return { success: false, error: "Failed to delete submission" };

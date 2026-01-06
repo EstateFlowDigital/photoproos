@@ -84,7 +84,7 @@ export async function getRevenueForecast() {
     }, 0);
 
     // Get monthly revenue trend (last 6 months)
-    const monthlyRevenue = [];
+    const monthlyRevenue: Array<{ month: string; revenue: number }> = [];
     for (let i = 5; i >= 0; i--) {
       const monthStart = startOfMonth(subMonths(now, i));
       const monthEnd = endOfMonth(subMonths(now, i));
@@ -126,7 +126,7 @@ export async function getRevenueForecast() {
     // Project next 3 months
     const lastMonthRevenue =
       monthlyRevenue[monthlyRevenue.length - 1]?.revenue || 0;
-    const projectedMonths = [];
+    const projectedMonths: Array<{ month: string; projected: number; isProjection: boolean }> = [];
 
     for (let i = 1; i <= 3; i++) {
       const projectedMonth = startOfMonth(subMonths(now, -i));

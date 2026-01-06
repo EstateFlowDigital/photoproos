@@ -9,14 +9,11 @@ import {
   type DropboxAccountInfo,
   type DropboxEntry,
 } from "@/lib/integrations/dropbox";
+import type { ActionResult } from "@/lib/types/action-result";
 
 // ============================================================================
 // TYPES
 // ============================================================================
-
-type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 interface DropboxTokenResponse {
   access_token: string;
