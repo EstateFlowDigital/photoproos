@@ -233,10 +233,9 @@ export async function createInvoiceEmailTemplate(
 
   await logActivity({
     organizationId,
-    entityType: "invoice_email_template",
-    entityId: template.id,
-    action: "created",
-    details: { name: input.name, emailType: input.emailType },
+    type: "settings_updated",
+    description: `Invoice email template "${input.name}" created`,
+    metadata: { templateId: template.id, name: input.name, emailType: input.emailType },
   });
 
   revalidatePath("/settings/email-templates");
@@ -370,10 +369,9 @@ export async function deleteInvoiceEmailTemplate(
 
   await logActivity({
     organizationId,
-    entityType: "invoice_email_template",
-    entityId: templateId,
-    action: "deleted",
-    details: { name: existing.name },
+    type: "settings_updated",
+    description: `Invoice email template "${existing.name}" deleted`,
+    metadata: { templateId, name: existing.name },
   });
 
   revalidatePath("/settings/email-templates");
@@ -546,8 +544,8 @@ export async function buildInvoiceEmailVariables(
   const variables: Record<string, string> = {
     // Organization
     organizationName: invoice.organization.name,
-    organizationEmail: invoice.organization.email || "",
-    organizationPhone: invoice.organization.phone || "",
+    organizationEmail: "", // Organization contact email not stored on model
+    organizationPhone: "", // Organization contact phone not stored on model
 
     // Client
     clientName: invoice.client?.fullName || "",
@@ -557,7 +555,7 @@ export async function buildInvoiceEmailVariables(
 
     // Invoice
     invoiceNumber: invoice.invoiceNumber,
-    invoiceDate: formatDate(invoice.invoiceDate),
+    invoiceDate: formatDate(invoice.issueDate),
     dueDate: formatDate(invoice.dueDate),
     totalAmount: formatCurrency(invoice.totalCents),
     balanceDue: formatCurrency(balanceDue),
@@ -605,8 +603,8 @@ export async function buildEstimateEmailVariables(
   const variables: Record<string, string> = {
     // Organization
     organizationName: estimate.organization.name,
-    organizationEmail: estimate.organization.email || "",
-    organizationPhone: estimate.organization.phone || "",
+    organizationEmail: "", // Organization contact email not stored on model
+    organizationPhone: "", // Organization contact phone not stored on model
 
     // Client
     clientName: estimate.client?.fullName || "",

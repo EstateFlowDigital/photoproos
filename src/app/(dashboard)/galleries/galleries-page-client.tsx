@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { CreateGalleryModal } from "@/components/modals/create-gallery-modal";
 import { GalleryListClient } from "./gallery-list-client";
 import { PageHeader, PageContextNav, PhotoIcon, DropboxIcon } from "@/components/dashboard";
+import { FilterPills } from "@/components/ui/filter-pills";
 
 interface Client {
   id: string;
@@ -69,11 +68,11 @@ export function GalleriesPageClient({
     router.refresh();
   };
 
-  const tabs: { id: typeof filter; label: string; count: number }[] = [
-    { id: "all", label: "All", count: counts.all },
-    { id: "delivered", label: "Delivered", count: counts.delivered },
-    { id: "pending", label: "Pending", count: counts.pending },
-    { id: "draft", label: "Drafts", count: counts.draft },
+  const filterOptions = [
+    { value: "all", label: "All", count: counts.all, href: "/galleries" },
+    { value: "delivered", label: "Delivered", count: counts.delivered, href: "/galleries?filter=delivered" },
+    { value: "pending", label: "Pending", count: counts.pending, href: "/galleries?filter=pending" },
+    { value: "draft", label: "Drafts", count: counts.draft, href: "/galleries?filter=draft" },
   ];
 
   return (
@@ -105,32 +104,11 @@ export function GalleriesPageClient({
       />
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-2">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.id}
-            href={tab.id === "all" ? "/galleries" : `/galleries?filter=${tab.id}`}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
-              filter === tab.id
-                ? "bg-[var(--primary)] text-white"
-                : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
-            )}
-          >
-            {tab.label}
-            <span
-              className={cn(
-                "rounded-full px-1.5 py-0.5 text-xs",
-                filter === tab.id
-                  ? "bg-white/20"
-                  : "bg-[var(--background-secondary)]"
-              )}
-            >
-              {tab.count}
-            </span>
-          </Link>
-        ))}
-      </div>
+      <FilterPills
+        options={filterOptions}
+        value={filter}
+        asLinks
+      />
 
       {/* Empty State */}
       {galleries.length === 0 && (
