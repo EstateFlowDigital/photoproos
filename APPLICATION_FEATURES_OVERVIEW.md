@@ -45,6 +45,9 @@ The following list is the full route inventory. Each module section below explai
 - `/analytics`
 - `/batch`
 - `/billing/analytics`
+- `/billing/estimates/[id]`
+- `/billing/estimates/[id]/edit`
+- `/billing/estimates/new`
 - `/billing/reports`
 - `/billing/retainers`
 - `/booking`
@@ -228,6 +231,17 @@ The following list is the full route inventory. Each module section below explai
 - `/track`
 - `/unsubscribe`
 
+## Layout Catalog
+- `src/app/(auth)/layout.tsx`
+- `src/app/(client-portal)/layout.tsx`
+- `src/app/(dashboard)/layout.tsx`
+- `src/app/(dashboard)/settings/layout.tsx`
+- `src/app/(field)/layout.tsx`
+- `src/app/(marketing)/layout.tsx`
+- `src/app/(onboarding)/layout.tsx`
+- `src/app/book/layout.tsx`
+- `src/app/layout.tsx`
+
 ## Component Import Path Catalog
 - Alias: `@/*` maps to `src/*` (see `tsconfig.json`).
 - Import paths omit file extensions. For `index.ts` or `index.tsx`, use the folder path.
@@ -301,6 +315,7 @@ The following list is the full route inventory. Each module section below explai
 - `@/components/dev/responsive-tester`
 - `@/components/gallery/activity-timeline`
 - `@/components/gallery/addon-catalog-manager`
+- `@/components/gallery/addon-requests-panel`
 - `@/components/gallery/analytics-dashboard`
 - `@/components/gallery/assign-to-collection-modal`
 - `@/components/gallery/client-addon-panel`
@@ -421,6 +436,7 @@ The following list is the full route inventory. Each module section below explai
 - `@/components/upload/photo-upload-modal`
 
 ### Email Templates (src/emails)
+- `@/emails/addon-request`
 - `@/emails/booking-confirmation`
 - `@/emails/booking-followup`
 - `@/emails/booking-form-submitted`
@@ -453,12 +469,16 @@ The following list is the full route inventory. Each module section below explai
 
 ### App Route Components (src/app)
 - `@/app/(client-portal)/portal/components/action-cards`
+- `@/app/(client-portal)/portal/components/empty-state`
 - `@/app/(client-portal)/portal/components/icons`
 - `@/app/(client-portal)/portal/components/lightbox`
+- `@/app/(client-portal)/portal/components/mobile-nav`
+- `@/app/(client-portal)/portal/components/notification-bell`
 - `@/app/(client-portal)/portal/components/portal-footer`
 - `@/app/(client-portal)/portal/components/portal-header`
 - `@/app/(client-portal)/portal/components/portal-stats`
 - `@/app/(client-portal)/portal/components/portal-tabs`
+- `@/app/(client-portal)/portal/components/skeleton`
 - `@/app/(client-portal)/portal/components/tabs/downloads-tab`
 - `@/app/(client-portal)/portal/components/tabs/galleries-tab`
 - `@/app/(client-portal)/portal/components/tabs/invoices-tab`
@@ -468,6 +488,9 @@ The following list is the full route inventory. Each module section below explai
 - `@/app/(client-portal)/portal/questionnaires/[id]/questionnaire-form`
 - `@/app/(dashboard)/analytics/analytics-dashboard-client`
 - `@/app/(dashboard)/billing/credit-notes/credit-notes-page-client`
+- `@/app/(dashboard)/billing/estimates/[id]/edit/edit-estimate-form`
+- `@/app/(dashboard)/billing/estimates/[id]/estimate-actions`
+- `@/app/(dashboard)/billing/estimates/new/estimate-form`
 - `@/app/(dashboard)/billing/retainers/retainers-page-client`
 - `@/app/(dashboard)/brokerages/[id]/brokerage-contracts-section`
 - `@/app/(dashboard)/brokerages/brokerage-form`
@@ -629,6 +652,2857 @@ The following list is the full route inventory. Each module section below explai
 - `@/app/portfolio/[slug]/sections/testimonials-section`
 - `@/app/portfolio/[slug]/sections/text-section`
 - `@/app/portfolio/[slug]/sections/video-section`
+
+## Route Dependency Matrix (Direct Imports)
+- This section lists direct imports from each `page.tsx` entrypoint.
+- For layout-level dependencies, see the Layout Catalog above.
+- For deeper component dependencies, use the Component Import Path Catalog and Server Action specs.
+
+### /sign-in/[[...sign-in]]
+- Entry: `src/app/(auth)/sign-in/[[...sign-in]]/page.tsx`
+
+### /sign-up/[[...sign-up]]
+- Entry: `src/app/(auth)/sign-up/[[...sign-up]]/page.tsx`
+- Server actions:
+  - `@/lib/actions/platform-referrals`: trackReferralClick
+
+### /signup
+- Entry: `src/app/(auth)/signup/page.tsx`
+
+### /portal
+- Entry: `src/app/(client-portal)/portal/page.tsx`
+- App components:
+  - `@/app/(client-portal)/portal/portal-client`
+- Server actions:
+  - `@/lib/actions/client-portal`: getClientPortalData
+
+### /portal/login
+- Entry: `src/app/(client-portal)/portal/login/page.tsx`
+- Server actions:
+  - `@/lib/actions/client-auth`: sendClientMagicLink
+
+### /portal/questionnaires/[id]
+- Entry: `src/app/(client-portal)/portal/questionnaires/[id]/page.tsx`
+- App components:
+  - `@/app/(client-portal)/portal/questionnaires/[id]/questionnaire-form`
+- Server actions:
+  - `@/lib/actions/questionnaire-portal`: getQuestionnaireForCompletion
+
+### /analytics
+- Entry: `src/app/(dashboard)/analytics/page.tsx`
+- Components:
+  - `@/components/ui/skeleton`
+- App components:
+  - `@/app/(dashboard)/analytics/analytics-dashboard-client`
+- Server actions:
+  - `@/lib/actions/analytics`: getClientLTVMetrics, getDashboardAnalytics, getRevenueForecast
+
+### /batch
+- Entry: `src/app/(dashboard)/batch/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+
+### /billing/analytics
+- Entry: `src/app/(dashboard)/billing/analytics/page.tsx`
+- Components:
+  - `@/components/dashboard`
+
+### /billing/estimates/[id]
+- Entry: `src/app/(dashboard)/billing/estimates/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/estimates/[id]/estimate-actions`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+
+### /billing/estimates/[id]/edit
+- Entry: `src/app/(dashboard)/billing/estimates/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/estimates/[id]/edit/edit-estimate-form`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+
+### /billing/estimates/new
+- Entry: `src/app/(dashboard)/billing/estimates/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/estimates/new/estimate-form`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+
+### /billing/reports
+- Entry: `src/app/(dashboard)/billing/reports/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+
+### /billing/retainers
+- Entry: `src/app/(dashboard)/billing/retainers/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/retainers/retainers-page-client`
+
+### /booking
+- Entry: `src/app/(dashboard)/booking/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Server actions:
+  - `@/lib/actions/booking-forms`: getBookingForms
+
+### /brokerages
+- Entry: `src/app/(dashboard)/brokerages/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Server actions:
+  - `@/lib/actions/brokerages`: getBrokerages
+
+### /brokerages/[id]
+- Entry: `src/app/(dashboard)/brokerages/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/brokerages/[id]/brokerage-contracts-section`
+- Server actions:
+  - `@/lib/actions/brokerage-contracts`: getBrokerageContracts
+  - `@/lib/actions/brokerages`: getBrokerage, getBrokerageAgents
+
+### /brokerages/[id]/edit
+- Entry: `src/app/(dashboard)/brokerages/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/brokerages/brokerage-form`
+- Server actions:
+  - `@/lib/actions/brokerages`: getBrokerage
+
+### /brokerages/new
+- Entry: `src/app/(dashboard)/brokerages/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/brokerages/brokerage-form`
+
+### /clients
+- Entry: `src/app/(dashboard)/clients/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/clients/clients-page-client`
+  - `@/app/(dashboard)/clients/tags-management-client`
+- Server actions:
+  - `@/lib/actions/client-tags`: getClientTags
+
+### /clients/[id]
+- Entry: `src/app/(dashboard)/clients/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/clients/[id]/client-actions`
+  - `@/app/(dashboard)/clients/[id]/client-activity-timeline`
+  - `@/app/(dashboard)/clients/[id]/client-email-preferences`
+- Server actions:
+  - `@/lib/actions/email-logs`: getClientEmailHealth, getClientEmailLogs
+
+### /clients/[id]/edit
+- Entry: `src/app/(dashboard)/clients/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/clients/[id]/edit/client-edit-form`
+- Server actions:
+  - `@/lib/actions/clients`: deleteClient, getClient, updateClient
+
+### /clients/import
+- Entry: `src/app/(dashboard)/clients/import/page.tsx`
+- App components:
+  - `@/app/(dashboard)/clients/import/client-import-client`
+
+### /clients/merge
+- Entry: `src/app/(dashboard)/clients/merge/page.tsx`
+- App components:
+  - `@/app/(dashboard)/clients/merge/client-merge-client`
+
+### /clients/new
+- Entry: `src/app/(dashboard)/clients/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/clients/new/client-new-form`
+
+### /contracts
+- Entry: `src/app/(dashboard)/contracts/page.tsx`
+- App components:
+  - `@/app/(dashboard)/contracts/contracts-page-client`
+
+### /contracts/[id]
+- Entry: `src/app/(dashboard)/contracts/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/[id]/contract-download-button`
+- Server actions:
+  - `@/lib/actions/contract-signing`: cancelContract
+  - `@/lib/actions/contracts`: deleteContract, getContract, sendContract
+
+### /contracts/[id]/edit
+- Entry: `src/app/(dashboard)/contracts/[id]/edit/page.tsx`
+- App components:
+  - `@/app/(dashboard)/contracts/[id]/edit/contract-edit-client`
+- Server actions:
+  - `@/lib/actions/contracts`: getContract
+
+### /contracts/new
+- Entry: `src/app/(dashboard)/contracts/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/new/contract-form-client`
+
+### /contracts/templates
+- Entry: `src/app/(dashboard)/contracts/templates/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/templates/templates-list-client`
+- Server actions:
+  - `@/lib/actions/contract-templates`: getContractTemplates, seedDefaultContractTemplates
+
+### /contracts/templates/[id]
+- Entry: `src/app/(dashboard)/contracts/templates/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/templates/template-form-client`
+- Server actions:
+  - `@/lib/actions/contract-templates`: getContractTemplates
+
+### /contracts/templates/new
+- Entry: `src/app/(dashboard)/contracts/templates/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/templates/template-form-client`
+
+### /create
+- Entry: `src/app/(dashboard)/create/page.tsx`
+- App components:
+  - `@/app/(dashboard)/create/create-wizard-client`
+- Server actions:
+  - `@/lib/actions/create-wizard`: getWizardData
+
+### /dashboard
+- Entry: `src/app/(dashboard)/dashboard/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/dashboard-calendar`
+  - `@/components/dashboard/expiring-galleries-widget`
+  - `@/components/dashboard/gallery-card`
+  - `@/components/tour`
+- Server actions:
+  - `@/lib/actions/dashboard`: getDashboardConfig
+  - `@/lib/actions/gallery-expiration`: getExpiringSoonGalleries
+  - `@/lib/actions/invoices`: getOverdueInvoicesForDashboard
+
+### /feedback
+- Entry: `src/app/(dashboard)/feedback/page.tsx`
+- App components:
+  - `@/app/(dashboard)/feedback/feedback-inbox-client`
+
+### /forms
+- Entry: `src/app/(dashboard)/forms/page.tsx`
+- App components:
+  - `@/app/(dashboard)/forms/forms-page-client`
+- Server actions:
+  - `@/lib/actions/custom-forms`: getForms
+
+### /forms/[id]
+- Entry: `src/app/(dashboard)/forms/[id]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/forms/[id]/form-editor-client`
+- Server actions:
+  - `@/lib/actions/custom-forms`: getForm
+
+### /galleries
+- Entry: `src/app/(dashboard)/galleries/page.tsx`
+- App components:
+  - `@/app/(dashboard)/galleries/galleries-page-client`
+- Server actions:
+  - `@/lib/actions/galleries`: getGalleryCounts
+
+### /galleries/[id]
+- Entry: `src/app/(dashboard)/galleries/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/galleries/[id]/gallery-actions`
+  - `@/app/(dashboard)/galleries/[id]/gallery-detail-client`
+- Server actions:
+  - `@/lib/actions/download-tracking`: getGalleryDownloadAnalytics
+  - `@/lib/actions/galleries`: deliverGallery, getGallery
+  - `@/lib/actions/invoices`: getClientInvoices
+
+### /galleries/[id]/edit
+- Entry: `src/app/(dashboard)/galleries/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/service-selector`
+- App components:
+  - `@/app/(dashboard)/galleries/[id]/edit/gallery-edit-form`
+- Server actions:
+  - `@/lib/actions/galleries`: getGallery
+
+### /galleries/new
+- Entry: `src/app/(dashboard)/galleries/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/galleries/new/gallery-new-form`
+- Server actions:
+  - `@/lib/actions/gallery-templates`: getGalleryTemplates
+
+### /galleries/services
+- Entry: `src/app/(dashboard)/galleries/services/page.tsx`
+
+### /galleries/services/[id]
+- Entry: `src/app/(dashboard)/galleries/services/[id]/page.tsx`
+
+### /galleries/services/new
+- Entry: `src/app/(dashboard)/galleries/services/new/page.tsx`
+
+### /inbox
+- Entry: `src/app/(dashboard)/inbox/page.tsx`
+- App components:
+  - `@/app/(dashboard)/inbox/inbox-page-client`
+
+### /invoices
+- Entry: `src/app/(dashboard)/invoices/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/invoices/bulk-export-button`
+- App components:
+  - `@/app/(dashboard)/invoices/invoices-page-client`
+
+### /invoices/[id]
+- Entry: `src/app/(dashboard)/invoices/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/invoices/[id]/invoice-actions`
+  - `@/app/(dashboard)/invoices/[id]/invoice-split-section`
+
+### /invoices/[id]/edit
+- Entry: `src/app/(dashboard)/invoices/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/invoices/[id]/edit/invoice-editor`
+
+### /invoices/new
+- Entry: `src/app/(dashboard)/invoices/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/invoices/new/invoice-form`
+- Server actions:
+  - `@/lib/actions/orders`: getOrder
+
+### /invoices/recurring
+- Entry: `src/app/(dashboard)/invoices/recurring/page.tsx`
+- App components:
+  - `@/app/(dashboard)/invoices/recurring/recurring-invoices-client`
+
+### /leads
+- Entry: `src/app/(dashboard)/leads/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/leads/leads-page-client`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/booking-forms`: getAllSubmissions
+  - `@/lib/actions/chat-inquiries`: getChatInquiries
+  - `@/lib/actions/portfolio-websites`: getPortfolioInquiries
+
+### /licensing
+- Entry: `src/app/(dashboard)/licensing/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+
+### /mini-sessions
+- Entry: `src/app/(dashboard)/mini-sessions/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Server actions:
+  - `@/lib/actions/booking-forms`: getBookingForms
+
+### /notifications
+- Entry: `src/app/(dashboard)/notifications/page.tsx`
+- App components:
+  - `@/app/(dashboard)/notifications/notifications-page-client`
+- Server actions:
+  - `@/lib/actions/activity`: getActivityLogs
+  - `@/lib/actions/notifications`: getNotifications
+
+### /order-pages
+- Entry: `src/app/(dashboard)/order-pages/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Server actions:
+  - `@/lib/actions/order-pages`: getOrderPages
+
+### /order-pages/[id]
+- Entry: `src/app/(dashboard)/order-pages/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/order-page-form`
+- Server actions:
+  - `@/lib/actions/order-pages`: getOrderPage
+
+### /order-pages/new
+- Entry: `src/app/(dashboard)/order-pages/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/order-page-form`
+
+### /orders
+- Entry: `src/app/(dashboard)/orders/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/orders/orders-table-client`
+- Server actions:
+  - `@/lib/actions/orders`: getOrderStats, getOrders
+
+### /orders/[id]
+- Entry: `src/app/(dashboard)/orders/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/orders/[id]/order-actions`
+- Server actions:
+  - `@/lib/actions/orders`: getOrder
+
+### /orders/analytics
+- Entry: `src/app/(dashboard)/orders/analytics/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/orders/analytics/sqft-analytics-client`
+- Server actions:
+  - `@/lib/actions/orders`: getOrderStats, getSqftAnalytics
+
+### /payments
+- Entry: `src/app/(dashboard)/payments/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/payments/bulk-pdf-button`
+  - `@/app/(dashboard)/payments/export-button`
+  - `@/app/(dashboard)/payments/payments-page-client`
+
+### /payments/[id]
+- Entry: `src/app/(dashboard)/payments/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/payments/[id]/payment-actions`
+- Server actions:
+  - `@/lib/actions/payments`: getPayment
+
+### /portfolios
+- Entry: `src/app/(dashboard)/portfolios/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Server actions:
+  - `@/lib/actions/portfolio-websites`: getPortfolioWebsites
+
+### /portfolios/[id]
+- Entry: `src/app/(dashboard)/portfolios/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/portfolios/[id]/portfolio-editor-client`
+- Server actions:
+  - `@/lib/actions/portfolio-websites`: getPortfolioAnalytics, getPortfolioWebsite
+
+### /portfolios/new
+- Entry: `src/app/(dashboard)/portfolios/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/portfolios/new/new-portfolio-client`
+
+### /products
+- Entry: `src/app/(dashboard)/products/page.tsx`
+- App components:
+  - `@/app/(dashboard)/products/products-client`
+- Server actions:
+  - `@/lib/actions/products`: listProductCatalogs
+
+### /products/[catalogId]
+- Entry: `src/app/(dashboard)/products/[catalogId]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/products/[catalogId]/catalog-client`
+- Server actions:
+  - `@/lib/actions/products`: getProductCatalog
+
+### /projects
+- Entry: `src/app/(dashboard)/projects/page.tsx`
+- App components:
+  - `@/app/(dashboard)/projects/projects-client`
+- Server actions:
+  - `@/lib/actions/clients`: getClients
+  - `@/lib/actions/galleries`: getGalleries
+  - `@/lib/actions/projects`: getBoard, getOrCreateDefaultBoard
+  - `@/lib/actions/settings`: getTeamMembers
+
+### /projects/analytics
+- Entry: `src/app/(dashboard)/projects/analytics/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/projects/analytics/projects-analytics-client`
+- Server actions:
+  - `@/lib/actions/projects`: getTaskAnalytics
+
+### /projects/tasks/[id]
+- Entry: `src/app/(dashboard)/projects/tasks/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/projects/tasks/[id]/task-detail-client`
+- Server actions:
+  - `@/lib/actions/clients`: getClients
+  - `@/lib/actions/galleries`: getGalleries
+  - `@/lib/actions/projects`: getTask
+  - `@/lib/actions/settings`: getTeamMembers
+
+### /properties
+- Entry: `src/app/(dashboard)/properties/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/properties/analytics-view-client`
+  - `@/app/(dashboard)/properties/leads-view-client`
+  - `@/app/(dashboard)/properties/properties-page-client`
+- Server actions:
+  - `@/lib/actions/property-websites`
+
+### /properties/[id]
+- Entry: `src/app/(dashboard)/properties/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/properties/[id]/property-detail-client`
+- Server actions:
+  - `@/lib/actions/property-websites`: getPropertyAnalytics, getPropertyLeads, getPropertyWebsiteById
+
+### /properties/[id]/edit
+- Entry: `src/app/(dashboard)/properties/[id]/edit/page.tsx`
+- App components:
+  - `@/app/(dashboard)/properties/[id]/edit/property-edit-form`
+- Server actions:
+  - `@/lib/actions/property-websites`: getPropertyWebsiteById
+
+### /properties/new
+- Entry: `src/app/(dashboard)/properties/new/page.tsx`
+- App components:
+  - `@/app/(dashboard)/properties/new/new-property-website-client`
+- Server actions:
+  - `@/lib/actions/property-websites`: getProjectsWithoutPropertyWebsite
+
+### /questionnaires
+- Entry: `src/app/(dashboard)/questionnaires/page.tsx`
+- App components:
+  - `@/app/(dashboard)/questionnaires/questionnaires-page-client`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/client-questionnaires`: getClientQuestionnaires, getQuestionnaireStats
+  - `@/lib/actions/clients`: getClients
+  - `@/lib/actions/questionnaire-templates`: getQuestionnaireTemplates, getTemplatesByIndustry
+
+### /questionnaires/assigned/[id]
+- Entry: `src/app/(dashboard)/questionnaires/assigned/[id]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/questionnaires/assigned/[id]/response-viewer`
+- Server actions:
+  - `@/lib/actions/client-questionnaires`: getClientQuestionnaire
+
+### /questionnaires/templates/[id]
+- Entry: `src/app/(dashboard)/questionnaires/templates/[id]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/questionnaires/templates/[id]/template-editor-client`
+- Server actions:
+  - `@/lib/actions/questionnaire-templates`: getQuestionnaireTemplate
+
+### /questionnaires/templates/[id]/preview
+- Entry: `src/app/(dashboard)/questionnaires/templates/[id]/preview/page.tsx`
+- App components:
+  - `@/app/(dashboard)/questionnaires/templates/[id]/preview/preview-client`
+- Server actions:
+  - `@/lib/actions/questionnaire-templates`: getQuestionnaireTemplate
+
+### /questionnaires/templates/new
+- Entry: `src/app/(dashboard)/questionnaires/templates/new/page.tsx`
+- Server actions:
+  - `@/lib/actions/questionnaire-templates`
+
+### /scheduling
+- Entry: `src/app/(dashboard)/scheduling/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/scheduling-page-client`
+- Server actions:
+  - `@/lib/actions/availability`: getPendingTimeOffCount
+
+### /scheduling/[id]
+- Entry: `src/app/(dashboard)/scheduling/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/service-selector`
+- App components:
+  - `@/app/(dashboard)/scheduling/[id]/booking-actions`
+  - `@/app/(dashboard)/scheduling/[id]/booking-delete-action`
+  - `@/app/(dashboard)/scheduling/[id]/booking-project-action`
+- Server actions:
+  - `@/lib/actions/bookings`: getBooking, updateBookingStatus
+
+### /scheduling/[id]/edit
+- Entry: `src/app/(dashboard)/scheduling/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/scheduling/[id]/edit/booking-edit-form`
+- Server actions:
+  - `@/lib/actions/bookings`: getBooking, getClientsForBooking, updateBookingStatus
+
+### /scheduling/availability
+- Entry: `src/app/(dashboard)/scheduling/availability/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/availability/availability-page-client`
+
+### /scheduling/booking-forms
+- Entry: `src/app/(dashboard)/scheduling/booking-forms/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/booking-forms/booking-forms-page-client`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/booking-forms`: getBookingForms
+  - `@/lib/actions/services`: getServices
+
+### /scheduling/booking-forms/[id]
+- Entry: `src/app/(dashboard)/scheduling/booking-forms/[id]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/booking-forms/[id]/booking-form-edit-client`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/booking-forms`: getBookingForm
+  - `@/lib/actions/services`: getServices
+
+### /scheduling/booking-forms/[id]/submissions
+- Entry: `src/app/(dashboard)/scheduling/booking-forms/[id]/submissions/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/booking-forms/[id]/submissions/submissions-page-client`
+- Server actions:
+  - `@/lib/actions/booking-forms`: getBookingForm, getFormSubmissions
+
+### /scheduling/new
+- Entry: `src/app/(dashboard)/scheduling/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/scheduling/new/booking-new-form`
+- Server actions:
+  - `@/lib/actions/bookings`: getClientsForBooking, getScheduleStats, getServicesForBooking
+  - `@/lib/actions/orders`: getOrder
+
+### /scheduling/time-off
+- Entry: `src/app/(dashboard)/scheduling/time-off/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/time-off/time-off-page-client`
+- Server actions:
+  - `@/lib/actions/availability`: getPendingTimeOffRequests, getTimeOffRequests
+
+### /scheduling/types
+- Entry: `src/app/(dashboard)/scheduling/types/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/scheduling/types/booking-types-client`
+- Server actions:
+  - `@/lib/actions/booking-types`: getBookingTypes, seedDefaultBookingTypes
+
+### /services
+- Entry: `src/app/(dashboard)/services/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/services/services-page-client`
+- Server actions:
+  - `@/lib/actions/services`: getServices, seedDefaultServices
+
+### /services/[id]
+- Entry: `src/app/(dashboard)/services/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/service-form`
+  - `@/components/dashboard/service-quick-actions`
+- Server actions:
+  - `@/lib/actions/services`: getService
+
+### /services/addons
+- Entry: `src/app/(dashboard)/services/addons/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/addon-list`
+- Server actions:
+  - `@/lib/actions/addons`: getAddons
+
+### /services/addons/[id]
+- Entry: `src/app/(dashboard)/services/addons/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/addon-form`
+- Server actions:
+  - `@/lib/actions/addons`: getAddon
+
+### /services/addons/new
+- Entry: `src/app/(dashboard)/services/addons/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/addon-form`
+
+### /services/bundles
+- Entry: `src/app/(dashboard)/services/bundles/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/bundle-list`
+- Server actions:
+  - `@/lib/actions/bundles`: getBundles
+
+### /services/bundles/[id]
+- Entry: `src/app/(dashboard)/services/bundles/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/bundle-form`
+- Server actions:
+  - `@/lib/actions/bundles`: getBundle
+
+### /services/bundles/new
+- Entry: `src/app/(dashboard)/services/bundles/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/bundle-form`
+
+### /services/new
+- Entry: `src/app/(dashboard)/services/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/service-form`
+
+### /settings
+- Entry: `src/app/(dashboard)/settings/page.tsx`
+- Local layout: `src/app/(dashboard)/settings/layout.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/settings-page-client`
+
+### /settings/appearance
+- Entry: `src/app/(dashboard)/settings/appearance/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/appearance/appearance-settings-form`
+- Server actions:
+  - `@/lib/actions/appearance`: getAppearancePreferences
+
+### /settings/billing
+- Entry: `src/app/(dashboard)/settings/billing/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+- Server actions:
+  - `@/lib/actions/settings`: getBillingStats, getInvoiceHistory
+
+### /settings/billing/upgrade
+- Entry: `src/app/(dashboard)/settings/billing/upgrade/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/billing/upgrade/upgrade-form`
+
+### /settings/branding
+- Entry: `src/app/(dashboard)/settings/branding/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/branding/branding-settings-form`
+- Server actions:
+  - `@/lib/actions/settings`: getOrganizationSettings
+
+### /settings/calendar
+- Entry: `src/app/(dashboard)/settings/calendar/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/calendar/calendar-settings-client`
+- Server actions:
+  - `@/lib/actions/google-calendar`: getGoogleCalendarConfig
+
+### /settings/calendly
+- Entry: `src/app/(dashboard)/settings/calendly/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/calendly/calendly-settings-client`
+
+### /settings/developer
+- Entry: `src/app/(dashboard)/settings/developer/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/developer/seed-buttons`
+  - `@/app/(dashboard)/settings/developer/stripe-products`
+  - `@/app/(dashboard)/settings/developer/subscription-plans`
+- Server actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/subscription-plans`
+
+### /settings/dropbox
+- Entry: `src/app/(dashboard)/settings/dropbox/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/dropbox/dropbox-settings-client`
+- Server actions:
+  - `@/lib/actions/dropbox`: getDropboxConfig
+
+### /settings/email
+- Entry: `src/app/(dashboard)/settings/email/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/input`
+  - `@/components/ui/select`
+  - `@/components/ui/settings-icons`
+  - `@/components/ui/switch`
+  - `@/components/ui/toast`
+- Server actions:
+  - `@/lib/actions/email-accounts`
+  - `@/lib/actions/email-settings`
+- API references:
+  - `/api/integrations/gmail/authorize`
+
+### /settings/email-logs
+- Entry: `src/app/(dashboard)/settings/email-logs/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/checkbox`
+  - `@/components/ui/settings-icons`
+  - `@/components/ui/toast`
+- Server actions:
+  - `@/lib/actions/email-logs`
+
+### /settings/equipment
+- Entry: `src/app/(dashboard)/settings/equipment/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+- App components:
+  - `@/app/(dashboard)/settings/equipment/equipment-list`
+- Server actions:
+  - `@/lib/actions/equipment`: getEquipmentByCategory
+
+### /settings/features
+- Entry: `src/app/(dashboard)/settings/features/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/features/features-settings-form`
+
+### /settings/gallery-addons
+- Entry: `src/app/(dashboard)/settings/gallery-addons/page.tsx`
+- Components:
+  - `@/components/gallery/addon-catalog-manager`
+
+### /settings/gallery-templates
+- Entry: `src/app/(dashboard)/settings/gallery-templates/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/gallery-templates/gallery-templates-client`
+- Server actions:
+  - `@/lib/actions/gallery-templates`: getGalleryTemplates
+  - `@/lib/actions/services`: getServices
+
+### /settings/integrations
+- Entry: `src/app/(dashboard)/settings/integrations/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/integrations/integrations-client`
+
+### /settings/mailchimp
+- Entry: `src/app/(dashboard)/settings/mailchimp/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/mailchimp/mailchimp-settings-client`
+
+### /settings/my-referrals
+- Entry: `src/app/(dashboard)/settings/my-referrals/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/my-referrals/my-referrals-client`
+- Server actions:
+  - `@/lib/actions/platform-referrals`
+
+### /settings/notifications
+- Entry: `src/app/(dashboard)/settings/notifications/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/select`
+  - `@/components/ui/settings-icons`
+  - `@/components/ui/switch`
+  - `@/components/ui/toast`
+- Server actions:
+  - `@/lib/actions/notification-preferences`
+
+### /settings/payments
+- Entry: `src/app/(dashboard)/settings/payments/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/payments/payments-settings-client`
+- Server actions:
+  - `@/lib/actions/settings`: getCurrencySettings, getTaxSettings
+  - `@/lib/actions/stripe-connect`: getConnectAccountDetails
+
+### /settings/payouts
+- Entry: `src/app/(dashboard)/settings/payouts/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/payouts/payouts-page-client`
+- Server actions:
+  - `@/lib/actions/payouts`: getPayoutBatches, getPayoutStats, getPendingPayouts
+
+### /settings/photographer-pay
+- Entry: `src/app/(dashboard)/settings/photographer-pay/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+- App components:
+  - `@/app/(dashboard)/settings/photographer-pay/photographer-pay-client`
+- Server actions:
+  - `@/lib/actions/photographer-pay`: getEarningStats, getPhotographerRates
+  - `@/lib/actions/services`: getServices
+  - `@/lib/actions/settings`: getTeamMembers
+
+### /settings/profile
+- Entry: `src/app/(dashboard)/settings/profile/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/profile/profile-settings-form`
+- Server actions:
+  - `@/lib/actions/settings`: getBillingStats, getCurrentUser
+
+### /settings/quickbooks
+- Entry: `src/app/(dashboard)/settings/quickbooks/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/quickbooks/quickbooks-settings-client`
+
+### /settings/referrals
+- Entry: `src/app/(dashboard)/settings/referrals/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/referrals/referrals-client`
+- Server actions:
+  - `@/lib/actions/clients`: getClients
+  - `@/lib/actions/referrals`
+
+### /settings/slack
+- Entry: `src/app/(dashboard)/settings/slack/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/slack/slack-settings-client`
+- Server actions:
+  - `@/lib/actions/slack`: getSlackConfig
+
+### /settings/sms
+- Entry: `src/app/(dashboard)/settings/sms/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+- App components:
+  - `@/app/(dashboard)/settings/sms/sms-settings-client`
+- Server actions:
+  - `@/lib/actions/sms`: getSMSLogs, getSMSSettings, getSMSStats, getSMSTemplates
+
+### /settings/sms/templates
+- Entry: `src/app/(dashboard)/settings/sms/templates/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/sms/templates/sms-templates-client`
+- Server actions:
+  - `@/lib/actions/sms`: getSMSTemplates
+
+### /settings/team
+- Entry: `src/app/(dashboard)/settings/team/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/team/team-page-client`
+- Server actions:
+  - `@/lib/actions/invitations`: getPendingInvitations
+  - `@/lib/actions/settings`: getBillingStats, getTeamMembers
+
+### /settings/team/[id]/capabilities
+- Entry: `src/app/(dashboard)/settings/team/[id]/capabilities/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/team/[id]/capabilities/capabilities-form`
+- Server actions:
+  - `@/lib/actions/equipment`: getEquipmentList, getUserEquipment
+  - `@/lib/actions/team-capabilities`: getUserServiceCapabilities
+
+### /settings/territories
+- Entry: `src/app/(dashboard)/settings/territories/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/territories/territories-client`
+- Server actions:
+  - `@/lib/actions/services`: getServices
+  - `@/lib/actions/territories`: getTerritories
+
+### /settings/travel
+- Entry: `src/app/(dashboard)/settings/travel/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/travel/travel-settings-form`
+- Server actions:
+  - `@/lib/actions/settings`: getOrganizationSettings
+
+### /settings/watermarks
+- Entry: `src/app/(dashboard)/settings/watermarks/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/watermarks/watermark-templates-client`
+- Server actions:
+  - `@/lib/actions/watermark-templates`: listWatermarkTemplates
+
+### /settings/zapier
+- Entry: `src/app/(dashboard)/settings/zapier/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/zapier/zapier-settings-client`
+- Server actions:
+  - `@/lib/actions/api-keys`: getApiKeys
+
+### /field
+- Entry: `src/app/(field)/field/page.tsx`
+- App components:
+  - `@/app/(field)/field/field-schedule-client`
+- Server actions:
+  - `@/lib/actions/field-operations`: getTodaysBookings, getUpcomingBookings
+
+### /field/check-in
+- Entry: `src/app/(field)/field/check-in/page.tsx`
+- App components:
+  - `@/app/(field)/field/check-in/check-in-client`
+- Server actions:
+  - `@/lib/actions/field-operations`: getTodaysBookings
+
+### /about
+- Entry: `src/app/(marketing)/about/page.tsx`
+
+### /affiliates
+- Entry: `src/app/(marketing)/affiliates/page.tsx`
+
+### /blog
+- Entry: `src/app/(marketing)/blog/page.tsx`
+- App components:
+  - `@/app/(marketing)/blog/newsletter-form`
+
+### /blog/[slug]
+- Entry: `src/app/(marketing)/blog/[slug]/page.tsx`
+
+### /careers
+- Entry: `src/app/(marketing)/careers/page.tsx`
+
+### /changelog
+- Entry: `src/app/(marketing)/changelog/page.tsx`
+
+### /contact
+- Entry: `src/app/(marketing)/contact/page.tsx`
+- App components:
+  - `@/app/(marketing)/contact/contact-form`
+
+### /features/analytics
+- Entry: `src/app/(marketing)/features/analytics/page.tsx`
+
+### /features/automation
+- Entry: `src/app/(marketing)/features/automation/page.tsx`
+
+### /features/clients
+- Entry: `src/app/(marketing)/features/clients/page.tsx`
+
+### /features/contracts
+- Entry: `src/app/(marketing)/features/contracts/page.tsx`
+
+### /features/galleries
+- Entry: `src/app/(marketing)/features/galleries/page.tsx`
+
+### /features/payments
+- Entry: `src/app/(marketing)/features/payments/page.tsx`
+
+### /guides
+- Entry: `src/app/(marketing)/guides/page.tsx`
+
+### /help
+- Entry: `src/app/(marketing)/help/page.tsx`
+
+### /help/[category]/[article]
+- Entry: `src/app/(marketing)/help/[category]/[article]/page.tsx`
+
+### /industries/architecture
+- Entry: `src/app/(marketing)/industries/architecture/page.tsx`
+
+### /industries/commercial
+- Entry: `src/app/(marketing)/industries/commercial/page.tsx`
+
+### /industries/events
+- Entry: `src/app/(marketing)/industries/events/page.tsx`
+
+### /industries/food
+- Entry: `src/app/(marketing)/industries/food/page.tsx`
+
+### /industries/portraits
+- Entry: `src/app/(marketing)/industries/portraits/page.tsx`
+
+### /industries/real-estate
+- Entry: `src/app/(marketing)/industries/real-estate/page.tsx`
+
+### /integrations
+- Entry: `src/app/(marketing)/integrations/page.tsx`
+
+### /legal/cookies
+- Entry: `src/app/(marketing)/legal/cookies/page.tsx`
+
+### /legal/dpa
+- Entry: `src/app/(marketing)/legal/dpa/page.tsx`
+
+### /legal/privacy
+- Entry: `src/app/(marketing)/legal/privacy/page.tsx`
+
+### /legal/security
+- Entry: `src/app/(marketing)/legal/security/page.tsx`
+
+### /legal/terms
+- Entry: `src/app/(marketing)/legal/terms/page.tsx`
+
+### /partners
+- Entry: `src/app/(marketing)/partners/page.tsx`
+
+### /press
+- Entry: `src/app/(marketing)/press/page.tsx`
+
+### /pricing
+- Entry: `src/app/(marketing)/pricing/page.tsx`
+
+### /roadmap
+- Entry: `src/app/(marketing)/roadmap/page.tsx`
+
+### /webinars
+- Entry: `src/app/(marketing)/webinars/page.tsx`
+
+### /webinars/[slug]
+- Entry: `src/app/(marketing)/webinars/[slug]/page.tsx`
+
+### /onboarding
+- Entry: `src/app/(onboarding)/onboarding/page.tsx`
+- Components:
+  - `@/components/onboarding/onboarding-wizard`
+
+### /
+- Entry: `src/app/page.tsx`
+- Local layout: `src/app/layout.tsx`
+- Components:
+  - `@/components/layout/footer`
+  - `@/components/layout/navbar`
+  - `@/components/sections/lazy-section`
+
+### /_custom-domain
+- Entry: `src/app/_custom-domain/page.tsx`
+- App components:
+  - `@/app/portfolio/[slug]/expired-notice`
+  - `@/app/portfolio/[slug]/password-gate`
+  - `@/app/portfolio/[slug]/portfolio-renderer`
+- Server actions:
+  - `@/lib/actions/portfolio-websites`: getPortfolioByCustomDomain, getPortfolioWebsiteBySlug
+
+### /book/[slug]
+- Entry: `src/app/book/[slug]/page.tsx`
+- App components:
+  - `@/app/book/[slug]/booking-form-public`
+- Server actions:
+  - `@/lib/actions/booking-forms`: getBookingFormBySlug
+
+### /book/[slug]/confirmation
+- Entry: `src/app/book/[slug]/confirmation/page.tsx`
+
+### /g/[slug]
+- Entry: `src/app/g/[slug]/page.tsx`
+- App components:
+  - `@/app/g/[slug]/gallery-client`
+  - `@/app/g/[slug]/password-gate`
+  - `@/app/g/[slug]/pay-button`
+- Server actions:
+  - `@/lib/actions/galleries`: getPublicGallery, recordGalleryView
+
+### /invite/[token]
+- Entry: `src/app/invite/[token]/page.tsx`
+- App components:
+  - `@/app/invite/[token]/invite-accept-client`
+- Server actions:
+  - `@/lib/actions/invitations`: getInvitationByToken
+
+### /order/[slug]
+- Entry: `src/app/order/[slug]/page.tsx`
+- App components:
+  - `@/app/order/[slug]/order-page-client`
+- Server actions:
+  - `@/lib/actions/client-auth`: getClientSession
+  - `@/lib/actions/order-pages`: getOrderPageBySlug
+
+### /order/[slug]/confirmation
+- Entry: `src/app/order/[slug]/confirmation/page.tsx`
+- App components:
+  - `@/app/order/[slug]/confirmation/order-confirmation-client`
+- Server actions:
+  - `@/lib/actions/order-pages`: getOrderPageBySlug
+
+### /p/[slug]
+- Entry: `src/app/p/[slug]/page.tsx`
+- App components:
+  - `@/app/p/[slug]/property-inquiry-form`
+  - `@/app/p/[slug]/property-share-buttons`
+- Server actions:
+  - `@/lib/actions/property-websites`: getPropertyWebsiteBySlug
+
+### /pay/[id]
+- Entry: `src/app/pay/[id]/page.tsx`
+- App components:
+  - `@/app/pay/[id]/pay-client`
+
+### /portfolio/[slug]
+- Entry: `src/app/portfolio/[slug]/page.tsx`
+- App components:
+  - `@/app/portfolio/[slug]/expired-notice`
+  - `@/app/portfolio/[slug]/lead-gate`
+  - `@/app/portfolio/[slug]/password-gate`
+  - `@/app/portfolio/[slug]/portfolio-renderer`
+- Server actions:
+  - `@/lib/actions/portfolio-websites`: getPortfolioWebsiteBySlug
+
+### /r/[code]
+- Entry: `src/app/r/[code]/page.tsx`
+
+### /schedule
+- Entry: `src/app/schedule/page.tsx`
+
+### /sign/[token]
+- Entry: `src/app/sign/[token]/page.tsx`
+- Components:
+  - `@/components/ui/checkbox`
+- Server actions:
+  - `@/lib/actions/contract-signing`: getContractForSigning, signContract
+
+### /sign/[token]/complete
+- Entry: `src/app/sign/[token]/complete/page.tsx`
+- Server actions:
+  - `@/lib/actions/contract-signing`: getSigningCompletion
+
+### /track
+- Entry: `src/app/track/page.tsx`
+
+### /unsubscribe
+- Entry: `src/app/unsubscribe/page.tsx`
+- Components:
+  - `@/components/ui/switch`
+- API references:
+  - `/api/unsubscribe`
+  - `/api/unsubscribe?token=${token}`
+
+## Route-to-Data Flow Atlas
+- Each route lists direct UI dependencies and inferred data flows (actions, models, external services, emails, webhooks).
+- This is derived from direct `page.tsx` imports and action file heuristics.
+
+### /sign-in/[[...sign-in]]
+- Entry: `src/app/(auth)/sign-in/[[...sign-in]]/page.tsx`
+
+### /sign-up/[[...sign-up]]
+- Entry: `src/app/(auth)/sign-up/[[...sign-up]]/page.tsx`
+- Actions:
+  - `@/lib/actions/platform-referrals`: trackReferralClick
+- Models: notification, organizationMember, platformReferral, platformReferralReward, platformReferralSettings, platformReferrer, user
+- External services: clerk
+
+### /signup
+- Entry: `src/app/(auth)/signup/page.tsx`
+
+### /portal
+- Entry: `src/app/(client-portal)/portal/page.tsx`
+- App components:
+  - `@/app/(client-portal)/portal/portal-client`
+- Actions:
+  - `@/lib/actions/client-portal`: getClientPortalData
+- Models: client, clientQuestionnaire, invoice, project, propertyWebsite
+
+### /portal/login
+- Entry: `src/app/(client-portal)/portal/login/page.tsx`
+- Actions:
+  - `@/lib/actions/client-auth`: sendClientMagicLink
+- Models: client, clientSession
+- External services: resend
+- Email templates:
+  - `@/emails/client-magic-link`
+
+### /portal/questionnaires/[id]
+- Entry: `src/app/(client-portal)/portal/questionnaires/[id]/page.tsx`
+- App components:
+  - `@/app/(client-portal)/portal/questionnaires/[id]/questionnaire-form`
+- Actions:
+  - `@/lib/actions/questionnaire-portal`: getQuestionnaireForCompletion
+- Models: booking, client, clientQuestionnaire, clientQuestionnaireAgreement, clientSession, organization
+
+### /analytics
+- Entry: `src/app/(dashboard)/analytics/page.tsx`
+- Components:
+  - `@/components/ui/skeleton`
+- App components:
+  - `@/app/(dashboard)/analytics/analytics-dashboard-client`
+- Actions:
+  - `@/lib/actions/analytics`: getClientLTVMetrics, getDashboardAnalytics, getRevenueForecast
+- Models: client, invoice, organization, payment, project
+- External services: clerk
+
+### /batch
+- Entry: `src/app/(dashboard)/batch/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /billing/analytics
+- Entry: `src/app/(dashboard)/billing/analytics/page.tsx`
+- Components:
+  - `@/components/dashboard`
+
+### /billing/credit-notes/[id]
+- Entry: `src/app/(dashboard)/billing/credit-notes/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/credit-notes/[id]/credit-note-actions`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /billing/credit-notes/new
+- Entry: `src/app/(dashboard)/billing/credit-notes/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/credit-notes/new/credit-note-form`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /billing/estimates/[id]
+- Entry: `src/app/(dashboard)/billing/estimates/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/estimates/[id]/estimate-actions`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /billing/estimates/[id]/edit
+- Entry: `src/app/(dashboard)/billing/estimates/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/estimates/[id]/edit/edit-estimate-form`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /billing/estimates/new
+- Entry: `src/app/(dashboard)/billing/estimates/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/estimates/new/estimate-form`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /billing/reports
+- Entry: `src/app/(dashboard)/billing/reports/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/reports/export-buttons`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /billing/retainers
+- Entry: `src/app/(dashboard)/billing/retainers/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/retainers/retainers-page-client`
+
+### /billing/retainers/[id]
+- Entry: `src/app/(dashboard)/billing/retainers/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/billing/retainers/[id]/retainer-actions`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /booking
+- Entry: `src/app/(dashboard)/booking/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Actions:
+  - `@/lib/actions/booking-forms`: getBookingForms
+- Models: booking, bookingForm, bookingFormField, bookingFormService, bookingFormSubmission, client, organization, service
+
+### /brokerages
+- Entry: `src/app/(dashboard)/brokerages/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Actions:
+  - `@/lib/actions/brokerages`: getBrokerages
+- Models: brokerage, client
+
+### /brokerages/[id]
+- Entry: `src/app/(dashboard)/brokerages/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/brokerages/[id]/brokerage-contracts-section`
+- Actions:
+  - `@/lib/actions/brokerage-contracts`: getBrokerageContracts
+  - `@/lib/actions/brokerages`: getBrokerage, getBrokerageAgents
+- Models: brokerage, brokerageContract, client
+
+### /brokerages/[id]/edit
+- Entry: `src/app/(dashboard)/brokerages/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/brokerages/brokerage-form`
+- Actions:
+  - `@/lib/actions/brokerages`: getBrokerage
+- Models: brokerage, client
+
+### /brokerages/new
+- Entry: `src/app/(dashboard)/brokerages/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/brokerages/brokerage-form`
+
+### /clients
+- Entry: `src/app/(dashboard)/clients/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/clients/clients-page-client`
+  - `@/app/(dashboard)/clients/tags-management-client`
+- Actions:
+  - `@/lib/actions/client-tags`: getClientTags
+- Models: client, clientTag, clientTagAssignment
+
+### /clients/[id]
+- Entry: `src/app/(dashboard)/clients/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/clients/[id]/client-actions`
+  - `@/app/(dashboard)/clients/[id]/client-activity-timeline`
+  - `@/app/(dashboard)/clients/[id]/client-email-preferences`
+- Actions:
+  - `@/lib/actions/email-logs`: getClientEmailHealth, getClientEmailLogs
+- Models: booking, clientQuestionnaire, clientQuestionnaireAgreement, clientQuestionnaireResponse, contract, emailLog, order, organization, project
+- External services: clerk, resend
+
+### /clients/[id]/edit
+- Entry: `src/app/(dashboard)/clients/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/clients/[id]/edit/client-edit-form`
+- Actions:
+  - `@/lib/actions/clients`: deleteClient, getClient, updateClient
+- Models: activityLog, client, clientSession, clientTag, payment
+
+### /clients/import
+- Entry: `src/app/(dashboard)/clients/import/page.tsx`
+- App components:
+  - `@/app/(dashboard)/clients/import/client-import-client`
+
+### /clients/merge
+- Entry: `src/app/(dashboard)/clients/merge/page.tsx`
+- App components:
+  - `@/app/(dashboard)/clients/merge/client-merge-client`
+
+### /clients/new
+- Entry: `src/app/(dashboard)/clients/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/clients/new/client-new-form`
+
+### /contracts
+- Entry: `src/app/(dashboard)/contracts/page.tsx`
+- App components:
+  - `@/app/(dashboard)/contracts/contracts-page-client`
+
+### /contracts/[id]
+- Entry: `src/app/(dashboard)/contracts/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/[id]/contract-download-button`
+- Actions:
+  - `@/lib/actions/contract-signing`: cancelContract
+  - `@/lib/actions/contracts`: deleteContract, getContract, sendContract
+- Models: activityLog, contract, contractAuditLog, contractSignature, contractSigner, organization
+- External services: resend
+
+### /contracts/[id]/edit
+- Entry: `src/app/(dashboard)/contracts/[id]/edit/page.tsx`
+- App components:
+  - `@/app/(dashboard)/contracts/[id]/edit/contract-edit-client`
+- Actions:
+  - `@/lib/actions/contracts`: getContract
+- Models: activityLog, contract, contractAuditLog, contractSignature, contractSigner, organization
+
+### /contracts/new
+- Entry: `src/app/(dashboard)/contracts/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/new/contract-form-client`
+
+### /contracts/templates
+- Entry: `src/app/(dashboard)/contracts/templates/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/templates/templates-list-client`
+- Actions:
+  - `@/lib/actions/contract-templates`: getContractTemplates, seedDefaultContractTemplates
+- Models: contract
+
+### /contracts/templates/[id]
+- Entry: `src/app/(dashboard)/contracts/templates/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/templates/template-form-client`
+- Actions:
+  - `@/lib/actions/contract-templates`: getContractTemplates
+- Models: contract
+
+### /contracts/templates/new
+- Entry: `src/app/(dashboard)/contracts/templates/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/contracts/templates/template-form-client`
+
+### /create
+- Entry: `src/app/(dashboard)/create/page.tsx`
+- App components:
+  - `@/app/(dashboard)/create/create-wizard-client`
+- Actions:
+  - `@/lib/actions/create-wizard`: getWizardData
+- Models: bookingType, client, location, service
+- External services: clerk
+
+### /dashboard
+- Entry: `src/app/(dashboard)/dashboard/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/dashboard-calendar`
+  - `@/components/dashboard/expiring-galleries-widget`
+  - `@/components/dashboard/gallery-card`
+  - `@/components/tour`
+- Actions:
+  - `@/lib/actions/dashboard`: getDashboardConfig
+  - `@/lib/actions/gallery-expiration`: getExpiringSoonGalleries
+  - `@/lib/actions/invoices`: getOverdueInvoicesForDashboard
+- Models: booking, client, expirationNotification, invoice, invoiceLineItem, organization, project, user
+- External services: clerk, resend, stripe
+- Email templates:
+  - `@/emails/invoice-reminder`
+
+### /feedback
+- Entry: `src/app/(dashboard)/feedback/page.tsx`
+- App components:
+  - `@/app/(dashboard)/feedback/feedback-inbox-client`
+
+### /forms
+- Entry: `src/app/(dashboard)/forms/page.tsx`
+- App components:
+  - `@/app/(dashboard)/forms/forms-page-client`
+- Actions:
+  - `@/lib/actions/custom-forms`: getForms
+- Models: customForm, customFormField, formSubmission, organization
+
+### /forms/[id]
+- Entry: `src/app/(dashboard)/forms/[id]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/forms/[id]/form-editor-client`
+- Actions:
+  - `@/lib/actions/custom-forms`: getForm
+- Models: customForm, customFormField, formSubmission, organization
+
+### /galleries
+- Entry: `src/app/(dashboard)/galleries/page.tsx`
+- App components:
+  - `@/app/(dashboard)/galleries/galleries-page-client`
+- Actions:
+  - `@/lib/actions/galleries`: getGalleryCounts
+- Models: activityLog, asset, deliveryLink, galleryComment, galleryFavorite, organization, project
+- External services: r2
+
+### /galleries/[id]
+- Entry: `src/app/(dashboard)/galleries/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/galleries/[id]/gallery-actions`
+  - `@/app/(dashboard)/galleries/[id]/gallery-detail-client`
+- Actions:
+  - `@/lib/actions/download-tracking`: getGalleryDownloadAnalytics
+  - `@/lib/actions/galleries`: deliverGallery, getGallery
+  - `@/lib/actions/invoices`: getClientInvoices
+- Models: activityLog, asset, booking, client, deliveryLink, downloadLog, galleryComment, galleryFavorite, invoice, invoiceLineItem, organization, photoRating, project
+- External services: clerk, r2, resend, stripe
+- Email templates:
+  - `@/emails/invoice-reminder`
+
+### /galleries/[id]/edit
+- Entry: `src/app/(dashboard)/galleries/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/service-selector`
+- App components:
+  - `@/app/(dashboard)/galleries/[id]/edit/gallery-edit-form`
+- Actions:
+  - `@/lib/actions/galleries`: getGallery
+- Models: activityLog, asset, deliveryLink, galleryComment, galleryFavorite, organization, project
+- External services: r2
+
+### /galleries/new
+- Entry: `src/app/(dashboard)/galleries/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/galleries/new/gallery-new-form`
+- Actions:
+  - `@/lib/actions/gallery-templates`: getGalleryTemplates
+- Models: galleryTemplate, organization
+- External services: clerk
+
+### /galleries/services
+- Entry: `src/app/(dashboard)/galleries/services/page.tsx`
+
+### /galleries/services/[id]
+- Entry: `src/app/(dashboard)/galleries/services/[id]/page.tsx`
+
+### /galleries/services/new
+- Entry: `src/app/(dashboard)/galleries/services/new/page.tsx`
+
+### /inbox
+- Entry: `src/app/(dashboard)/inbox/page.tsx`
+- App components:
+  - `@/app/(dashboard)/inbox/inbox-page-client`
+
+### /invoices
+- Entry: `src/app/(dashboard)/invoices/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/invoices/bulk-export-button`
+- App components:
+  - `@/app/(dashboard)/invoices/invoices-page-client`
+
+### /invoices/[id]
+- Entry: `src/app/(dashboard)/invoices/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/invoices/[id]/invoice-actions`
+  - `@/app/(dashboard)/invoices/[id]/invoice-split-section`
+
+### /invoices/[id]/edit
+- Entry: `src/app/(dashboard)/invoices/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/invoices/[id]/edit/invoice-editor`
+
+### /invoices/new
+- Entry: `src/app/(dashboard)/invoices/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/invoices/new/invoice-form`
+- Actions:
+  - `@/lib/actions/orders`: getOrder
+- Models: order, orderItem, orderPage, service, serviceBundle
+- External services: stripe
+
+### /invoices/recurring
+- Entry: `src/app/(dashboard)/invoices/recurring/page.tsx`
+- App components:
+  - `@/app/(dashboard)/invoices/recurring/recurring-invoices-client`
+
+### /leads
+- Entry: `src/app/(dashboard)/leads/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/leads/leads-page-client`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/booking-forms`: getAllSubmissions
+  - `@/lib/actions/chat-inquiries`: getChatInquiries
+  - `@/lib/actions/portfolio-websites`: getPortfolioInquiries
+- Models: activityLog, booking, bookingForm, bookingFormField, bookingFormService, bookingFormSubmission, client, organization, portfolioInquiry, portfolioWebsite, portfolioWebsiteProject, portfolioWebsiteSection, portfolioWebsiteView, project, service, websiteChatInquiry
+- External services: clerk
+
+### /licensing
+- Entry: `src/app/(dashboard)/licensing/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+- External services: clerk
+
+### /mini-sessions
+- Entry: `src/app/(dashboard)/mini-sessions/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Actions:
+  - `@/lib/actions/booking-forms`: getBookingForms
+- Models: booking, bookingForm, bookingFormField, bookingFormService, bookingFormSubmission, client, organization, service
+
+### /notifications
+- Entry: `src/app/(dashboard)/notifications/page.tsx`
+- App components:
+  - `@/app/(dashboard)/notifications/notifications-page-client`
+- Actions:
+  - `@/lib/actions/activity`: getActivityLogs
+  - `@/lib/actions/notifications`: getNotifications
+- Models: activityLog, notification, user
+
+### /order-pages
+- Entry: `src/app/(dashboard)/order-pages/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Actions:
+  - `@/lib/actions/order-pages`: getOrderPages
+- Models: orderPage, orderPageBundle, orderPageService, service, serviceBundle
+
+### /order-pages/[id]
+- Entry: `src/app/(dashboard)/order-pages/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/order-page-form`
+- Actions:
+  - `@/lib/actions/order-pages`: getOrderPage
+- Models: orderPage, orderPageBundle, orderPageService, service, serviceBundle
+
+### /order-pages/new
+- Entry: `src/app/(dashboard)/order-pages/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/order-page-form`
+
+### /orders
+- Entry: `src/app/(dashboard)/orders/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/orders/orders-table-client`
+- Actions:
+  - `@/lib/actions/orders`: getOrderStats, getOrders
+- Models: order, orderItem, orderPage, service, serviceBundle
+- External services: stripe
+
+### /orders/[id]
+- Entry: `src/app/(dashboard)/orders/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/orders/[id]/order-actions`
+- Actions:
+  - `@/lib/actions/orders`: getOrder
+- Models: order, orderItem, orderPage, service, serviceBundle
+- External services: stripe
+
+### /orders/analytics
+- Entry: `src/app/(dashboard)/orders/analytics/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/orders/analytics/sqft-analytics-client`
+- Actions:
+  - `@/lib/actions/orders`: getOrderStats, getSqftAnalytics
+- Models: order, orderItem, orderPage, service, serviceBundle
+- External services: stripe
+
+### /payments
+- Entry: `src/app/(dashboard)/payments/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/payments/bulk-pdf-button`
+  - `@/app/(dashboard)/payments/export-button`
+  - `@/app/(dashboard)/payments/payments-page-client`
+
+### /payments/[id]
+- Entry: `src/app/(dashboard)/payments/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/payments/[id]/payment-actions`
+- Actions:
+  - `@/lib/actions/payments`: getPayment
+- Models: activityLog, organization, payment
+- External services: clerk, resend, stripe
+- Email templates:
+  - `@/emails/payment-reminder`
+
+### /portfolios
+- Entry: `src/app/(dashboard)/portfolios/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- Actions:
+  - `@/lib/actions/portfolio-websites`: getPortfolioWebsites
+- Models: activityLog, client, portfolioInquiry, portfolioWebsite, portfolioWebsiteProject, portfolioWebsiteSection, portfolioWebsiteView, project
+
+### /portfolios/[id]
+- Entry: `src/app/(dashboard)/portfolios/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/portfolios/[id]/portfolio-editor-client`
+- Actions:
+  - `@/lib/actions/portfolio-websites`: getPortfolioAnalytics, getPortfolioWebsite
+- Models: activityLog, client, portfolioInquiry, portfolioWebsite, portfolioWebsiteProject, portfolioWebsiteSection, portfolioWebsiteView, project
+
+### /portfolios/new
+- Entry: `src/app/(dashboard)/portfolios/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/portfolios/new/new-portfolio-client`
+
+### /products
+- Entry: `src/app/(dashboard)/products/page.tsx`
+- App components:
+  - `@/app/(dashboard)/products/products-client`
+- Actions:
+  - `@/lib/actions/products`: listProductCatalogs
+- Models: asset, productCatalog, productItem, productPhoto, productVariant
+
+### /products/[catalogId]
+- Entry: `src/app/(dashboard)/products/[catalogId]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/products/[catalogId]/catalog-client`
+- Actions:
+  - `@/lib/actions/products`: getProductCatalog
+- Models: asset, productCatalog, productItem, productPhoto, productVariant
+
+### /projects
+- Entry: `src/app/(dashboard)/projects/page.tsx`
+- App components:
+  - `@/app/(dashboard)/projects/projects-client`
+- Actions:
+  - `@/lib/actions/clients`: getClients
+  - `@/lib/actions/galleries`: getGalleries
+  - `@/lib/actions/projects`: getBoard, getOrCreateDefaultBoard
+  - `@/lib/actions/settings`: getTeamMembers
+- Models: activityLog, asset, booking, client, clientSession, clientTag, deliveryLink, galleryComment, galleryFavorite, invoice, organization, organizationMember, payment, project, propertyWebsite, recurringTask, service, task, taskAutomation, taskBoard, taskColumn, taskComment, taskSubtask, taskTemplate, taskTimeEntry, user
+- External services: clerk, r2, s3, stripe
+
+### /projects/analytics
+- Entry: `src/app/(dashboard)/projects/analytics/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/projects/analytics/projects-analytics-client`
+- Actions:
+  - `@/lib/actions/projects`: getTaskAnalytics
+- Models: booking, client, project, recurringTask, task, taskAutomation, taskBoard, taskColumn, taskComment, taskSubtask, taskTemplate, taskTimeEntry, user
+
+### /projects/tasks/[id]
+- Entry: `src/app/(dashboard)/projects/tasks/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/projects/tasks/[id]/task-detail-client`
+- Actions:
+  - `@/lib/actions/clients`: getClients
+  - `@/lib/actions/galleries`: getGalleries
+  - `@/lib/actions/projects`: getTask
+  - `@/lib/actions/settings`: getTeamMembers
+- Models: activityLog, asset, booking, client, clientSession, clientTag, deliveryLink, galleryComment, galleryFavorite, invoice, organization, organizationMember, payment, project, propertyWebsite, recurringTask, service, task, taskAutomation, taskBoard, taskColumn, taskComment, taskSubtask, taskTemplate, taskTimeEntry, user
+- External services: clerk, r2, s3, stripe
+
+### /properties
+- Entry: `src/app/(dashboard)/properties/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/properties/analytics-view-client`
+  - `@/app/(dashboard)/properties/leads-view-client`
+  - `@/app/(dashboard)/properties/properties-page-client`
+- Actions:
+  - `@/lib/actions/property-websites`
+- Models: project, propertyAnalytics, propertyLead, propertyWebsite
+
+### /properties/[id]
+- Entry: `src/app/(dashboard)/properties/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/properties/[id]/property-detail-client`
+- Actions:
+  - `@/lib/actions/property-websites`: getPropertyAnalytics, getPropertyLeads, getPropertyWebsiteById
+- Models: project, propertyAnalytics, propertyLead, propertyWebsite
+
+### /properties/[id]/edit
+- Entry: `src/app/(dashboard)/properties/[id]/edit/page.tsx`
+- App components:
+  - `@/app/(dashboard)/properties/[id]/edit/property-edit-form`
+- Actions:
+  - `@/lib/actions/property-websites`: getPropertyWebsiteById
+- Models: project, propertyAnalytics, propertyLead, propertyWebsite
+
+### /properties/new
+- Entry: `src/app/(dashboard)/properties/new/page.tsx`
+- App components:
+  - `@/app/(dashboard)/properties/new/new-property-website-client`
+- Actions:
+  - `@/lib/actions/property-websites`: getProjectsWithoutPropertyWebsite
+- Models: project, propertyAnalytics, propertyLead, propertyWebsite
+
+### /questionnaires
+- Entry: `src/app/(dashboard)/questionnaires/page.tsx`
+- App components:
+  - `@/app/(dashboard)/questionnaires/questionnaires-page-client`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/client-questionnaires`: getClientQuestionnaires, getQuestionnaireStats
+  - `@/lib/actions/clients`: getClients
+  - `@/lib/actions/questionnaire-templates`: getQuestionnaireTemplates, getTemplatesByIndustry
+- Models: activityLog, booking, client, clientQuestionnaire, clientSession, clientTag, organization, payment, project, questionnaireField, questionnaireTemplate
+- External services: clerk
+
+### /questionnaires/assigned/[id]
+- Entry: `src/app/(dashboard)/questionnaires/assigned/[id]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/questionnaires/assigned/[id]/response-viewer`
+- Actions:
+  - `@/lib/actions/client-questionnaires`: getClientQuestionnaire
+- Models: booking, client, clientQuestionnaire, organization, project, questionnaireTemplate
+- External services: clerk
+
+### /questionnaires/templates/[id]
+- Entry: `src/app/(dashboard)/questionnaires/templates/[id]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/questionnaires/templates/[id]/template-editor-client`
+- Actions:
+  - `@/lib/actions/questionnaire-templates`: getQuestionnaireTemplate
+- Models: questionnaireField, questionnaireTemplate
+- External services: clerk
+
+### /questionnaires/templates/[id]/preview
+- Entry: `src/app/(dashboard)/questionnaires/templates/[id]/preview/page.tsx`
+- App components:
+  - `@/app/(dashboard)/questionnaires/templates/[id]/preview/preview-client`
+- Actions:
+  - `@/lib/actions/questionnaire-templates`: getQuestionnaireTemplate
+- Models: questionnaireField, questionnaireTemplate
+- External services: clerk
+
+### /questionnaires/templates/new
+- Entry: `src/app/(dashboard)/questionnaires/templates/new/page.tsx`
+- Actions:
+  - `@/lib/actions/questionnaire-templates`
+- Models: questionnaireField, questionnaireTemplate
+- External services: clerk
+
+### /scheduling
+- Entry: `src/app/(dashboard)/scheduling/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/scheduling-page-client`
+- Actions:
+  - `@/lib/actions/availability`: getPendingTimeOffCount
+- Models: availabilityBlock, booking, bookingBuffer, user
+
+### /scheduling/[id]
+- Entry: `src/app/(dashboard)/scheduling/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/service-selector`
+- App components:
+  - `@/app/(dashboard)/scheduling/[id]/booking-actions`
+  - `@/app/(dashboard)/scheduling/[id]/booking-delete-action`
+  - `@/app/(dashboard)/scheduling/[id]/booking-project-action`
+- Actions:
+  - `@/lib/actions/bookings`: getBooking, updateBookingStatus
+- Models: activityLog, availabilityBlock, booking, bookingBuffer, bookingReminder, client, organization, service
+- External services: clerk, slack
+
+### /scheduling/[id]/edit
+- Entry: `src/app/(dashboard)/scheduling/[id]/edit/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/scheduling/[id]/edit/booking-edit-form`
+- Actions:
+  - `@/lib/actions/bookings`: getBooking, getClientsForBooking, updateBookingStatus
+- Models: activityLog, availabilityBlock, booking, bookingBuffer, bookingReminder, client, organization, service
+- External services: clerk, slack
+
+### /scheduling/availability
+- Entry: `src/app/(dashboard)/scheduling/availability/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/availability/availability-page-client`
+
+### /scheduling/booking-forms
+- Entry: `src/app/(dashboard)/scheduling/booking-forms/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/booking-forms/booking-forms-page-client`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/booking-forms`: getBookingForms
+  - `@/lib/actions/services`: getServices
+- Models: booking, bookingForm, bookingFormField, bookingFormService, bookingFormSubmission, client, organization, service
+- External services: clerk, stripe
+
+### /scheduling/booking-forms/[id]
+- Entry: `src/app/(dashboard)/scheduling/booking-forms/[id]/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/booking-forms/[id]/booking-form-edit-client`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/booking-forms`: getBookingForm
+  - `@/lib/actions/services`: getServices
+- Models: booking, bookingForm, bookingFormField, bookingFormService, bookingFormSubmission, client, organization, service
+- External services: clerk, stripe
+
+### /scheduling/booking-forms/[id]/submissions
+- Entry: `src/app/(dashboard)/scheduling/booking-forms/[id]/submissions/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/booking-forms/[id]/submissions/submissions-page-client`
+- Actions:
+  - `@/lib/actions/booking-forms`: getBookingForm, getFormSubmissions
+- Models: booking, bookingForm, bookingFormField, bookingFormService, bookingFormSubmission, client, organization, service
+
+### /scheduling/new
+- Entry: `src/app/(dashboard)/scheduling/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/scheduling/new/booking-new-form`
+- Actions:
+  - `@/lib/actions/bookings`: getClientsForBooking, getScheduleStats, getServicesForBooking
+  - `@/lib/actions/orders`: getOrder
+- Models: activityLog, availabilityBlock, booking, bookingBuffer, bookingReminder, client, order, orderItem, orderPage, organization, service, serviceBundle
+- External services: clerk, slack, stripe
+
+### /scheduling/time-off
+- Entry: `src/app/(dashboard)/scheduling/time-off/page.tsx`
+- App components:
+  - `@/app/(dashboard)/scheduling/time-off/time-off-page-client`
+- Actions:
+  - `@/lib/actions/availability`: getPendingTimeOffRequests, getTimeOffRequests
+- Models: availabilityBlock, booking, bookingBuffer, user
+
+### /scheduling/types
+- Entry: `src/app/(dashboard)/scheduling/types/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/scheduling/types/booking-types-client`
+- Actions:
+  - `@/lib/actions/booking-types`: getBookingTypes, seedDefaultBookingTypes
+- Models: booking, bookingType
+- External services: clerk
+
+### /services
+- Entry: `src/app/(dashboard)/services/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/services/services-page-client`
+- Actions:
+  - `@/lib/actions/services`: getServices, seedDefaultServices
+- Models: service
+- External services: stripe
+
+### /services/[id]
+- Entry: `src/app/(dashboard)/services/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/service-form`
+  - `@/components/dashboard/service-quick-actions`
+- Actions:
+  - `@/lib/actions/services`: getService
+- Models: service
+- External services: stripe
+
+### /services/addons
+- Entry: `src/app/(dashboard)/services/addons/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/addon-list`
+- Actions:
+  - `@/lib/actions/addons`: getAddons
+- Models: service, serviceAddon, serviceAddonCompat, serviceBundleItem
+
+### /services/addons/[id]
+- Entry: `src/app/(dashboard)/services/addons/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/addon-form`
+- Actions:
+  - `@/lib/actions/addons`: getAddon
+- Models: service, serviceAddon, serviceAddonCompat, serviceBundleItem
+
+### /services/addons/new
+- Entry: `src/app/(dashboard)/services/addons/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/addon-form`
+
+### /services/bundles
+- Entry: `src/app/(dashboard)/services/bundles/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/bundle-list`
+- Actions:
+  - `@/lib/actions/bundles`: getBundles
+- Models: booking, bundlePricingTier, service, serviceBundle, serviceBundleItem
+- External services: stripe
+
+### /services/bundles/[id]
+- Entry: `src/app/(dashboard)/services/bundles/[id]/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/bundle-form`
+- Actions:
+  - `@/lib/actions/bundles`: getBundle
+- Models: booking, bundlePricingTier, service, serviceBundle, serviceBundleItem
+- External services: stripe
+
+### /services/bundles/new
+- Entry: `src/app/(dashboard)/services/bundles/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/bundle-form`
+
+### /services/new
+- Entry: `src/app/(dashboard)/services/new/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/dashboard/service-form`
+
+### /settings
+- Entry: `src/app/(dashboard)/settings/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/settings-page-client`
+
+### /settings/appearance
+- Entry: `src/app/(dashboard)/settings/appearance/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/appearance/appearance-settings-form`
+- Actions:
+  - `@/lib/actions/appearance`: getAppearancePreferences
+- Models: user
+- External services: clerk
+
+### /settings/billing
+- Entry: `src/app/(dashboard)/settings/billing/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+- Actions:
+  - `@/lib/actions/settings`: getBillingStats, getInvoiceHistory
+- Models: booking, client, invoice, organization, organizationMember, payment, project, propertyWebsite, service, user
+- External services: clerk, r2, s3, stripe
+
+### /settings/billing/upgrade
+- Entry: `src/app/(dashboard)/settings/billing/upgrade/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/billing/upgrade/upgrade-form`
+
+### /settings/branding
+- Entry: `src/app/(dashboard)/settings/branding/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/branding/branding-settings-form`
+- Actions:
+  - `@/lib/actions/settings`: getOrganizationSettings
+- Models: booking, client, invoice, organization, organizationMember, payment, project, propertyWebsite, service, user
+- External services: clerk, r2, s3, stripe
+
+### /settings/calendar
+- Entry: `src/app/(dashboard)/settings/calendar/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/calendar/calendar-settings-client`
+- Actions:
+  - `@/lib/actions/google-calendar`: getGoogleCalendarConfig
+- Models: booking, calendarEvent, calendarIntegration
+- External services: clerk, google
+
+### /settings/calendly
+- Entry: `src/app/(dashboard)/settings/calendly/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/calendly/calendly-settings-client`
+
+### /settings/developer
+- Entry: `src/app/(dashboard)/settings/developer/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/developer/seed-buttons`
+  - `@/app/(dashboard)/settings/developer/stripe-products`
+  - `@/app/(dashboard)/settings/developer/subscription-plans`
+- Actions:
+  - `@/lib/actions/auth-helper`: requireOrganizationId
+  - `@/lib/actions/subscription-plans`
+- Models: planFeature, pricingExperiment, pricingVariant, subscriptionPlan
+- External services: clerk, r2, resend, s3, stripe, twilio
+
+### /settings/dropbox
+- Entry: `src/app/(dashboard)/settings/dropbox/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/dropbox/dropbox-settings-client`
+- Actions:
+  - `@/lib/actions/dropbox`: getDropboxConfig
+- Models: asset, dropboxIntegration, project
+- External services: clerk, dropbox, r2
+
+### /settings/email
+- Entry: `src/app/(dashboard)/settings/email/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/input`
+  - `@/components/ui/select`
+  - `@/components/ui/settings-icons`
+  - `@/components/ui/switch`
+  - `@/components/ui/toast`
+- Actions:
+  - `@/lib/actions/email-accounts`
+  - `@/lib/actions/email-settings`
+- Models: emailAccount, organization
+- External services: clerk, gmail, resend
+- API references:
+  - `/api/integrations/gmail/authorize`
+
+### /settings/email-logs
+- Entry: `src/app/(dashboard)/settings/email-logs/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/checkbox`
+  - `@/components/ui/settings-icons`
+  - `@/components/ui/toast`
+- Actions:
+  - `@/lib/actions/email-logs`
+- Models: booking, clientQuestionnaire, clientQuestionnaireAgreement, clientQuestionnaireResponse, contract, emailLog, order, organization, project
+- External services: clerk, resend
+
+### /settings/equipment
+- Entry: `src/app/(dashboard)/settings/equipment/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+- App components:
+  - `@/app/(dashboard)/settings/equipment/equipment-list`
+- Actions:
+  - `@/lib/actions/equipment`: getEquipmentByCategory
+- Models: booking, bookingEquipmentCheck, equipment, organization, organizationMember, service, serviceEquipmentRequirement, userEquipment
+
+### /settings/features
+- Entry: `src/app/(dashboard)/settings/features/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/features/features-settings-form`
+
+### /settings/gallery-addons
+- Entry: `src/app/(dashboard)/settings/gallery-addons/page.tsx`
+- Components:
+  - `@/components/gallery/addon-catalog-manager`
+
+### /settings/gallery-templates
+- Entry: `src/app/(dashboard)/settings/gallery-templates/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/gallery-templates/gallery-templates-client`
+- Actions:
+  - `@/lib/actions/gallery-templates`: getGalleryTemplates
+  - `@/lib/actions/services`: getServices
+- Models: galleryTemplate, organization, service
+- External services: clerk, stripe
+
+### /settings/integrations
+- Entry: `src/app/(dashboard)/settings/integrations/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/integrations/integrations-client`
+
+### /settings/mailchimp
+- Entry: `src/app/(dashboard)/settings/mailchimp/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/mailchimp/mailchimp-settings-client`
+
+### /settings/my-referrals
+- Entry: `src/app/(dashboard)/settings/my-referrals/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/my-referrals/my-referrals-client`
+- Actions:
+  - `@/lib/actions/platform-referrals`
+- Models: notification, organizationMember, platformReferral, platformReferralReward, platformReferralSettings, platformReferrer, user
+- External services: clerk
+
+### /settings/notifications
+- Entry: `src/app/(dashboard)/settings/notifications/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/select`
+  - `@/components/ui/settings-icons`
+  - `@/components/ui/switch`
+  - `@/components/ui/toast`
+- Actions:
+  - `@/lib/actions/notification-preferences`
+- Models: organization
+- External services: clerk
+
+### /settings/payments
+- Entry: `src/app/(dashboard)/settings/payments/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/payments/payments-settings-client`
+- Actions:
+  - `@/lib/actions/settings`: getCurrencySettings, getTaxSettings
+  - `@/lib/actions/stripe-connect`: getConnectAccountDetails
+- Models: booking, client, invoice, organization, organizationMember, payment, project, propertyWebsite, service, user
+- External services: clerk, r2, s3, stripe
+
+### /settings/payouts
+- Entry: `src/app/(dashboard)/settings/payouts/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/payouts/payouts-page-client`
+- Actions:
+  - `@/lib/actions/payouts`: getPayoutBatches, getPayoutStats, getPendingPayouts
+- Models: payoutBatch, payoutItem, photographerEarning, user
+- External services: stripe
+
+### /settings/photographer-pay
+- Entry: `src/app/(dashboard)/settings/photographer-pay/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+- App components:
+  - `@/app/(dashboard)/settings/photographer-pay/photographer-pay-client`
+- Actions:
+  - `@/lib/actions/photographer-pay`: getEarningStats, getPhotographerRates
+  - `@/lib/actions/services`: getServices
+  - `@/lib/actions/settings`: getTeamMembers
+- Models: booking, client, invoice, organization, organizationMember, payment, photographerEarning, photographerRate, project, propertyWebsite, service, user
+- External services: clerk, r2, s3, stripe
+
+### /settings/profile
+- Entry: `src/app/(dashboard)/settings/profile/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/profile/profile-settings-form`
+- Actions:
+  - `@/lib/actions/settings`: getBillingStats, getCurrentUser
+- Models: booking, client, invoice, organization, organizationMember, payment, project, propertyWebsite, service, user
+- External services: clerk, r2, s3, stripe
+
+### /settings/quickbooks
+- Entry: `src/app/(dashboard)/settings/quickbooks/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/quickbooks/quickbooks-settings-client`
+
+### /settings/referrals
+- Entry: `src/app/(dashboard)/settings/referrals/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/referrals/referrals-client`
+- Actions:
+  - `@/lib/actions/clients`: getClients
+  - `@/lib/actions/referrals`
+- Models: activityLog, client, clientSession, clientTag, payment, referral, referralProgram, referrer
+- External services: clerk
+
+### /settings/slack
+- Entry: `src/app/(dashboard)/settings/slack/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/slack/slack-settings-client`
+- Actions:
+  - `@/lib/actions/slack`: getSlackConfig
+- Models: slackIntegration
+- External services: clerk, slack
+
+### /settings/sms
+- Entry: `src/app/(dashboard)/settings/sms/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+- App components:
+  - `@/app/(dashboard)/settings/sms/sms-settings-client`
+- Actions:
+  - `@/lib/actions/sms`: getSMSLogs, getSMSSettings, getSMSStats, getSMSTemplates
+- Models: organization, sMSLog, sMSTemplate
+
+### /settings/sms/templates
+- Entry: `src/app/(dashboard)/settings/sms/templates/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/sms/templates/sms-templates-client`
+- Actions:
+  - `@/lib/actions/sms`: getSMSTemplates
+- Models: organization, sMSLog, sMSTemplate
+
+### /settings/team
+- Entry: `src/app/(dashboard)/settings/team/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/team/team-page-client`
+- Actions:
+  - `@/lib/actions/invitations`: getPendingInvitations
+  - `@/lib/actions/settings`: getBillingStats, getTeamMembers
+- Models: booking, client, invitation, invoice, organization, organizationMember, payment, project, propertyWebsite, service, user
+- External services: clerk, r2, resend, s3, stripe
+
+### /settings/team/[id]/capabilities
+- Entry: `src/app/(dashboard)/settings/team/[id]/capabilities/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/team/[id]/capabilities/capabilities-form`
+- Actions:
+  - `@/lib/actions/equipment`: getEquipmentList, getUserEquipment
+  - `@/lib/actions/team-capabilities`: getUserServiceCapabilities
+- Models: booking, bookingEquipmentCheck, equipment, location, organization, organizationMember, service, serviceEquipmentRequirement, user, userEquipment, userServiceCapability
+
+### /settings/territories
+- Entry: `src/app/(dashboard)/settings/territories/page.tsx`
+- App components:
+  - `@/app/(dashboard)/settings/territories/territories-client`
+- Actions:
+  - `@/lib/actions/services`: getServices
+  - `@/lib/actions/territories`: getTerritories
+- Models: organization, service, serviceTerritory, territoryServiceOverride
+- External services: clerk, stripe
+
+### /settings/travel
+- Entry: `src/app/(dashboard)/settings/travel/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/travel/travel-settings-form`
+- Actions:
+  - `@/lib/actions/settings`: getOrganizationSettings
+- Models: booking, client, invoice, organization, organizationMember, payment, project, propertyWebsite, service, user
+- External services: clerk, r2, s3, stripe
+
+### /settings/watermarks
+- Entry: `src/app/(dashboard)/settings/watermarks/page.tsx`
+- Components:
+  - `@/components/dashboard`
+- App components:
+  - `@/app/(dashboard)/settings/watermarks/watermark-templates-client`
+- Actions:
+  - `@/lib/actions/watermark-templates`: listWatermarkTemplates
+- Models: organization, watermarkTemplate
+- External services: clerk
+
+### /settings/zapier
+- Entry: `src/app/(dashboard)/settings/zapier/page.tsx`
+- Components:
+  - `@/components/dashboard`
+  - `@/components/ui/button`
+  - `@/components/ui/settings-icons`
+- App components:
+  - `@/app/(dashboard)/settings/zapier/zapier-settings-client`
+- Actions:
+  - `@/lib/actions/api-keys`: getApiKeys
+- Models: apiKey, organization
+- External services: clerk
+
+### /field
+- Entry: `src/app/(field)/field/page.tsx`
+- App components:
+  - `@/app/(field)/field/field-schedule-client`
+- Actions:
+  - `@/lib/actions/field-operations`: getTodaysBookings, getUpcomingBookings
+- Models: booking, bookingCheckIn
+- External services: clerk
+
+### /field/check-in
+- Entry: `src/app/(field)/field/check-in/page.tsx`
+- App components:
+  - `@/app/(field)/field/check-in/check-in-client`
+- Actions:
+  - `@/lib/actions/field-operations`: getTodaysBookings
+- Models: booking, bookingCheckIn
+- External services: clerk
+
+### /about
+- Entry: `src/app/(marketing)/about/page.tsx`
+
+### /affiliates
+- Entry: `src/app/(marketing)/affiliates/page.tsx`
+
+### /blog
+- Entry: `src/app/(marketing)/blog/page.tsx`
+- App components:
+  - `@/app/(marketing)/blog/newsletter-form`
+
+### /blog/[slug]
+- Entry: `src/app/(marketing)/blog/[slug]/page.tsx`
+
+### /careers
+- Entry: `src/app/(marketing)/careers/page.tsx`
+
+### /changelog
+- Entry: `src/app/(marketing)/changelog/page.tsx`
+
+### /contact
+- Entry: `src/app/(marketing)/contact/page.tsx`
+- App components:
+  - `@/app/(marketing)/contact/contact-form`
+
+### /features/analytics
+- Entry: `src/app/(marketing)/features/analytics/page.tsx`
+
+### /features/automation
+- Entry: `src/app/(marketing)/features/automation/page.tsx`
+
+### /features/clients
+- Entry: `src/app/(marketing)/features/clients/page.tsx`
+
+### /features/contracts
+- Entry: `src/app/(marketing)/features/contracts/page.tsx`
+
+### /features/galleries
+- Entry: `src/app/(marketing)/features/galleries/page.tsx`
+
+### /features/payments
+- Entry: `src/app/(marketing)/features/payments/page.tsx`
+
+### /guides
+- Entry: `src/app/(marketing)/guides/page.tsx`
+
+### /help
+- Entry: `src/app/(marketing)/help/page.tsx`
+
+### /help/[category]/[article]
+- Entry: `src/app/(marketing)/help/[category]/[article]/page.tsx`
+
+### /industries/architecture
+- Entry: `src/app/(marketing)/industries/architecture/page.tsx`
+
+### /industries/commercial
+- Entry: `src/app/(marketing)/industries/commercial/page.tsx`
+
+### /industries/events
+- Entry: `src/app/(marketing)/industries/events/page.tsx`
+
+### /industries/food
+- Entry: `src/app/(marketing)/industries/food/page.tsx`
+
+### /industries/portraits
+- Entry: `src/app/(marketing)/industries/portraits/page.tsx`
+
+### /industries/real-estate
+- Entry: `src/app/(marketing)/industries/real-estate/page.tsx`
+
+### /integrations
+- Entry: `src/app/(marketing)/integrations/page.tsx`
+
+### /legal/cookies
+- Entry: `src/app/(marketing)/legal/cookies/page.tsx`
+
+### /legal/dpa
+- Entry: `src/app/(marketing)/legal/dpa/page.tsx`
+
+### /legal/privacy
+- Entry: `src/app/(marketing)/legal/privacy/page.tsx`
+
+### /legal/security
+- Entry: `src/app/(marketing)/legal/security/page.tsx`
+
+### /legal/terms
+- Entry: `src/app/(marketing)/legal/terms/page.tsx`
+
+### /partners
+- Entry: `src/app/(marketing)/partners/page.tsx`
+
+### /press
+- Entry: `src/app/(marketing)/press/page.tsx`
+
+### /pricing
+- Entry: `src/app/(marketing)/pricing/page.tsx`
+
+### /roadmap
+- Entry: `src/app/(marketing)/roadmap/page.tsx`
+
+### /webinars
+- Entry: `src/app/(marketing)/webinars/page.tsx`
+
+### /webinars/[slug]
+- Entry: `src/app/(marketing)/webinars/[slug]/page.tsx`
+
+### /onboarding
+- Entry: `src/app/(onboarding)/onboarding/page.tsx`
+- Components:
+  - `@/components/onboarding/onboarding-wizard`
+
+### /
+- Entry: `src/app/page.tsx`
+- Components:
+  - `@/components/layout/footer`
+  - `@/components/layout/navbar`
+  - `@/components/sections/lazy-section`
+
+### /_custom-domain
+- Entry: `src/app/_custom-domain/page.tsx`
+- App components:
+  - `@/app/portfolio/[slug]/expired-notice`
+  - `@/app/portfolio/[slug]/password-gate`
+  - `@/app/portfolio/[slug]/portfolio-renderer`
+- Actions:
+  - `@/lib/actions/portfolio-websites`: getPortfolioByCustomDomain, getPortfolioWebsiteBySlug
+- Models: activityLog, client, portfolioInquiry, portfolioWebsite, portfolioWebsiteProject, portfolioWebsiteSection, portfolioWebsiteView, project
+
+### /book/[slug]
+- Entry: `src/app/book/[slug]/page.tsx`
+- App components:
+  - `@/app/book/[slug]/booking-form-public`
+- Actions:
+  - `@/lib/actions/booking-forms`: getBookingFormBySlug
+- Models: booking, bookingForm, bookingFormField, bookingFormService, bookingFormSubmission, client, organization, service
+
+### /book/[slug]/confirmation
+- Entry: `src/app/book/[slug]/confirmation/page.tsx`
+
+### /g/[slug]
+- Entry: `src/app/g/[slug]/page.tsx`
+- App components:
+  - `@/app/g/[slug]/gallery-client`
+  - `@/app/g/[slug]/password-gate`
+  - `@/app/g/[slug]/pay-button`
+- Actions:
+  - `@/lib/actions/galleries`: getPublicGallery, recordGalleryView
+- Models: activityLog, asset, deliveryLink, galleryComment, galleryFavorite, organization, project
+- External services: r2
+
+### /invite/[token]
+- Entry: `src/app/invite/[token]/page.tsx`
+- App components:
+  - `@/app/invite/[token]/invite-accept-client`
+- Actions:
+  - `@/lib/actions/invitations`: getInvitationByToken
+- Models: invitation, organization, organizationMember, user
+- External services: resend
+
+### /order/[slug]
+- Entry: `src/app/order/[slug]/page.tsx`
+- App components:
+  - `@/app/order/[slug]/order-page-client`
+- Actions:
+  - `@/lib/actions/client-auth`: getClientSession
+  - `@/lib/actions/order-pages`: getOrderPageBySlug
+- Models: client, clientSession, orderPage, orderPageBundle, orderPageService, service, serviceBundle
+- External services: resend
+- Email templates:
+  - `@/emails/client-magic-link`
+
+### /order/[slug]/confirmation
+- Entry: `src/app/order/[slug]/confirmation/page.tsx`
+- App components:
+  - `@/app/order/[slug]/confirmation/order-confirmation-client`
+- Actions:
+  - `@/lib/actions/order-pages`: getOrderPageBySlug
+- Models: orderPage, orderPageBundle, orderPageService, service, serviceBundle
+
+### /p/[slug]
+- Entry: `src/app/p/[slug]/page.tsx`
+- App components:
+  - `@/app/p/[slug]/property-inquiry-form`
+  - `@/app/p/[slug]/property-share-buttons`
+- Actions:
+  - `@/lib/actions/property-websites`: getPropertyWebsiteBySlug
+- Models: project, propertyAnalytics, propertyLead, propertyWebsite
+
+### /pay/[id]
+- Entry: `src/app/pay/[id]/page.tsx`
+- App components:
+  - `@/app/pay/[id]/pay-client`
+
+### /portfolio/[slug]
+- Entry: `src/app/portfolio/[slug]/page.tsx`
+- App components:
+  - `@/app/portfolio/[slug]/expired-notice`
+  - `@/app/portfolio/[slug]/lead-gate`
+  - `@/app/portfolio/[slug]/password-gate`
+  - `@/app/portfolio/[slug]/portfolio-renderer`
+- Actions:
+  - `@/lib/actions/portfolio-websites`: getPortfolioWebsiteBySlug
+- Models: activityLog, client, portfolioInquiry, portfolioWebsite, portfolioWebsiteProject, portfolioWebsiteSection, portfolioWebsiteView, project
+
+### /r/[code]
+- Entry: `src/app/r/[code]/page.tsx`
+
+### /schedule
+- Entry: `src/app/schedule/page.tsx`
+
+### /sign/[token]
+- Entry: `src/app/sign/[token]/page.tsx`
+- Components:
+  - `@/components/ui/checkbox`
+- Actions:
+  - `@/lib/actions/contract-signing`: getContractForSigning, signContract
+- Models: activityLog, contract, contractAuditLog, contractSignature, contractSigner, organization
+- External services: resend
+
+### /sign/[token]/complete
+- Entry: `src/app/sign/[token]/complete/page.tsx`
+- Actions:
+  - `@/lib/actions/contract-signing`: getSigningCompletion
+- Models: activityLog, contract, contractAuditLog, contractSignature, contractSigner, organization
+- External services: resend
+
+### /track
+- Entry: `src/app/track/page.tsx`
+
+### /unsubscribe
+- Entry: `src/app/unsubscribe/page.tsx`
+- Components:
+  - `@/components/ui/switch`
+- API references:
+  - `/api/unsubscribe`
+  - `/api/unsubscribe?token=${token}`
 
 ## Core Modules (Authenticated Dashboard)
 
@@ -794,6 +3668,420 @@ The following list is the full route inventory. Each module section below explai
 - Twilio: `/api/webhooks/twilio/status` for SMS delivery status.
 - Resend: `/api/webhooks/resend` for email delivery feedback.
 
+## API Route Specs
+- Auth detection is heuristic: based on `require*` helpers found in the handler.
+- Inputs list is heuristic: derived from `request.json()` destructuring and query params.
+
+### /api/admin/seed-questionnaire-templates
+- File: `src/app/api/admin/seed-questionnaire-templates/route.ts`
+- Methods: GET, POST
+- Prisma models: questionnaireTemplate
+- External services: clerk
+- Status codes: 401, 500
+
+### /api/auth/client
+- File: `src/app/api/auth/client/route.ts`
+- Methods: GET
+- Query params: token
+- Action modules:
+  - `@/lib/actions/client-auth`
+
+### /api/auth/client/dev-bypass
+- File: `src/app/api/auth/client/dev-bypass/route.ts`
+- Methods: GET
+- Query params: client_id, email
+- Prisma models: client, clientSession
+- Status codes: 403, 404, 500
+
+### /api/calendar/ical/[token]
+- File: `src/app/api/calendar/ical/[token]/route.ts`
+- Methods: GET
+- Prisma models: booking, calendarFeed
+- External services: google
+- Status codes: 404, 500
+
+### /api/contracts/bulk-pdf
+- File: `src/app/api/contracts/bulk-pdf/route.ts`
+- Methods: POST
+- Prisma models: contract
+- External services: clerk
+- Status codes: 401, 404, 500
+
+### /api/cron/booking-followups
+- File: `src/app/api/cron/booking-followups/route.ts`
+- Methods: GET, POST
+- Prisma models: booking
+- Status codes: 401, 500
+
+### /api/cron/email-sync
+- File: `src/app/api/cron/email-sync/route.ts`
+- Methods: GET, POST
+- Prisma models: emailAccount
+- Status codes: 400, 401, 500
+
+### /api/cron/gallery-auto-archive
+- File: `src/app/api/cron/gallery-auto-archive/route.ts`
+- Methods: GET, POST
+- Prisma models: project
+- Status codes: 401, 500
+
+### /api/cron/gallery-expiration
+- File: `src/app/api/cron/gallery-expiration/route.ts`
+- Methods: GET, POST
+- Prisma models: project
+- Status codes: 401, 500
+
+### /api/cron/gallery-reminders
+- File: `src/app/api/cron/gallery-reminders/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/gallery-reminders`
+- Prisma models: organization
+- Status codes: 401, 500
+
+### /api/cron/invoice-reminders
+- File: `src/app/api/cron/invoice-reminders/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/invoices`
+- Prisma models: organization
+- Status codes: 401, 500
+
+### /api/cron/late-fees
+- File: `src/app/api/cron/late-fees/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/invoice-payments`
+  - `@/lib/actions/invoices`
+- Status codes: 401, 500
+
+### /api/cron/photographer-digest
+- File: `src/app/api/cron/photographer-digest/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/email-logs`
+- Prisma models: clientQuestionnaire, organization
+- Status codes: 401, 500
+
+### /api/cron/portfolio-digest
+- File: `src/app/api/cron/portfolio-digest/route.ts`
+- Methods: GET, POST
+- Prisma models: organization, portfolioInquiry, portfolioWebsiteView
+- External services: resend
+- Status codes: 401, 500
+
+### /api/cron/portfolio-publish
+- File: `src/app/api/cron/portfolio-publish/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/portfolio-websites`
+- Status codes: 401, 500
+
+### /api/cron/questionnaire-reminders
+- File: `src/app/api/cron/questionnaire-reminders/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/email-logs`
+- Prisma models: clientQuestionnaire
+- Status codes: 401, 500
+
+### /api/cron/recurring-invoices
+- File: `src/app/api/cron/recurring-invoices/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/recurring-invoices`
+- Status codes: 401, 500
+
+### /api/cron/scheduled-invoices
+- File: `src/app/api/cron/scheduled-invoices/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/invoices`
+- Status codes: 401, 500
+
+### /api/cron/send-reminders
+- File: `src/app/api/cron/send-reminders/route.ts`
+- Methods: GET, POST
+- Action modules:
+  - `@/lib/actions/bookings`
+- External services: resend
+- Status codes: 401, 500
+
+### /api/download/[assetId]
+- File: `src/app/api/download/[assetId]/route.ts`
+- Methods: GET
+- Query params: deliverySlug
+- Action modules:
+  - `@/lib/actions/client-auth`
+- Prisma models: activityLog, asset, project
+- External services: r2
+- Status codes: 400, 402, 403, 404, 500
+
+### /api/download/batch
+- File: `src/app/api/download/batch/route.ts`
+- Methods: POST
+- Action modules:
+  - `@/lib/actions/client-auth`
+  - `@/lib/actions/download-tracking`
+- Prisma models: activityLog, project
+- Status codes: 200, 400, 402, 403, 404, 429, 500
+
+### /api/email-preview
+- File: `src/app/api/email-preview/route.ts`
+- Methods: GET
+- Query params: agreementCount, bookingDate, bookingTitle, clientName, completedTodayCount, description, dueDate, inProgressCount, isOverdue, organizationName, overdueCount, pendingCount, photographerName, questionnaireName, reminderCount, responseCount, template
+- External services: clerk
+- Status codes: 400, 401, 500
+
+### /api/forms/submit
+- File: `src/app/api/forms/submit/route.ts`
+- Methods: POST
+- Action modules:
+  - `@/lib/actions/custom-forms`
+- Status codes: 400, 500
+
+### /api/gallery/[id]/analytics-report
+- File: `src/app/api/gallery/[id]/analytics-report/route.ts`
+- Methods: GET
+- Action modules:
+  - `@/lib/actions/gallery-analytics`
+- Prisma models: project
+- External services: clerk
+- Status codes: 401, 404, 500
+
+### /api/gallery/[id]/download-history
+- File: `src/app/api/gallery/[id]/download-history/route.ts`
+- Methods: GET
+- Query params: email, sessionId
+- Prisma models: asset, downloadLog, project
+- Status codes: 400, 404, 500
+
+### /api/gallery/[id]/favorites-export
+- File: `src/app/api/gallery/[id]/favorites-export/route.ts`
+- Methods: GET
+- Query params: format
+- Prisma models: project
+- External services: clerk
+- Status codes: 400, 401, 404, 500
+
+### /api/gallery/[id]/proof-sheet
+- File: `src/app/api/gallery/[id]/proof-sheet/route.ts`
+- Methods: GET
+- Prisma models: project
+- External services: clerk
+- Status codes: 401, 404, 500
+
+### /api/gallery/comment
+- File: `src/app/api/gallery/comment/route.ts`
+- Methods: DELETE, GET, POST
+- Query params: assetId, galleryId
+- Prisma models: asset, galleryComment, project
+- Status codes: 400, 401, 403, 404, 429, 500
+
+### /api/gallery/favorite
+- File: `src/app/api/gallery/favorite/route.ts`
+- Methods: GET, POST
+- Query params: email, galleryId
+- Prisma models: asset, galleryFavorite
+- Status codes: 400, 403, 404, 429, 500
+
+### /api/gallery/feedback
+- File: `src/app/api/gallery/feedback/route.ts`
+- Methods: POST
+- Prisma models: galleryFeedback, project
+- Status codes: 400, 404, 429, 500
+
+### /api/gallery/rating
+- File: `src/app/api/gallery/rating/route.ts`
+- Methods: DELETE, GET, POST
+- Query params: assetId, galleryId
+- Prisma models: asset, photoRating
+- Status codes: 400, 401, 404, 429, 500
+
+### /api/gallery/verify-password
+- File: `src/app/api/gallery/verify-password/route.ts`
+- Methods: GET, POST
+- Query params: galleryId
+- Prisma models: project
+- Status codes: 400, 401, 404, 500
+
+### /api/images/process
+- File: `src/app/api/images/process/route.ts`
+- Methods: POST
+- Prisma models: asset
+- External services: clerk, r2
+- Status codes: 400, 401, 500
+
+### /api/integrations/dropbox/authorize
+- File: `src/app/api/integrations/dropbox/authorize/route.ts`
+- Methods: GET
+- External services: clerk, dropbox
+
+### /api/integrations/dropbox/callback
+- File: `src/app/api/integrations/dropbox/callback/route.ts`
+- Methods: GET
+- Query params: code, error, error_description, state
+- Prisma models: dropboxIntegration, organization, user
+- External services: clerk, dropbox
+
+### /api/integrations/dropbox/webhook
+- File: `src/app/api/integrations/dropbox/webhook/route.ts`
+- Methods: GET, POST
+- Query params: challenge
+- Action modules:
+  - `@/lib/actions/dropbox`
+- External services: dropbox
+- Status codes: 200, 400, 403, 500
+
+### /api/integrations/gmail/authorize
+- File: `src/app/api/integrations/gmail/authorize/route.ts`
+- Methods: GET
+- Prisma models: organization
+- External services: clerk, gmail, google
+
+### /api/integrations/gmail/callback
+- File: `src/app/api/integrations/gmail/callback/route.ts`
+- Methods: GET
+- Query params: code, error, state
+- Prisma models: emailAccount, integrationLog
+- External services: clerk, gmail
+
+### /api/integrations/google/authorize
+- File: `src/app/api/integrations/google/authorize/route.ts`
+- Methods: GET
+- External services: clerk, google
+
+### /api/integrations/google/callback
+- File: `src/app/api/integrations/google/callback/route.ts`
+- Methods: GET
+- Query params: code, error, error_description, state
+- Prisma models: calendarIntegration, organization
+- External services: clerk, google
+
+### /api/integrations/slack
+- File: `src/app/api/integrations/slack/route.ts`
+- Methods: POST
+
+### /api/invoices/bulk-pdf
+- File: `src/app/api/invoices/bulk-pdf/route.ts`
+- Methods: POST
+- Prisma models: invoice
+- External services: clerk
+- Status codes: 401, 404, 500
+
+### /api/payments/bulk-pdf
+- File: `src/app/api/payments/bulk-pdf/route.ts`
+- Methods: POST
+- Prisma models: payment
+- External services: clerk
+- Status codes: 401, 404, 500
+
+### /api/portfolio/comments
+- File: `src/app/api/portfolio/comments/route.ts`
+- Methods: GET, POST
+- Query params: projectId, sectionId, slug
+- Prisma models: portfolioComment, portfolioWebsite
+- Status codes: 400, 403, 404, 500
+
+### /api/portfolio/export
+- File: `src/app/api/portfolio/export/route.ts`
+- Methods: GET
+- Query params: format, portfolioId, timeRange
+- Prisma models: portfolioWebsite, portfolioWebsiteView
+- External services: clerk
+- Status codes: 400, 401, 404, 500
+
+### /api/portfolio/lead-capture
+- File: `src/app/api/portfolio/lead-capture/route.ts`
+- Methods: POST
+- Prisma models: portfolioLead, portfolioWebsite
+- Status codes: 400, 404, 500
+
+### /api/portfolio/track
+- File: `src/app/api/portfolio/track/route.ts`
+- Methods: POST
+- Action modules:
+  - `@/lib/actions/portfolio-websites`
+- Status codes: 400, 500
+
+### /api/telemetry
+- File: `src/app/api/telemetry/route.ts`
+- Methods: POST
+- Status codes: 204
+
+### /api/unsubscribe
+- File: `src/app/api/unsubscribe/route.ts`
+- Methods: GET, POST
+- Query params: token
+- Prisma models: client
+- Status codes: 400, 404, 500
+
+### /api/upload/booking-form
+- File: `src/app/api/upload/booking-form/route.ts`
+- Methods: POST
+- Prisma models: bookingForm
+- Status codes: 400, 404, 500
+
+### /api/upload/complete
+- File: `src/app/api/upload/complete/route.ts`
+- Methods: POST
+- Prisma models: activityLog, asset, project
+- External services: clerk, r2
+- Status codes: 400, 401, 404, 500
+
+### /api/upload/presigned-url
+- File: `src/app/api/upload/presigned-url/route.ts`
+- Methods: POST
+- Prisma models: project
+- External services: clerk, r2
+- Status codes: 400, 401, 403, 404, 500
+
+### /api/upload/profile-photo
+- File: `src/app/api/upload/profile-photo/route.ts`
+- Methods: POST
+- Prisma models: user
+- External services: clerk, r2
+- Status codes: 400, 401, 404, 500
+
+### /api/webhooks/clerk
+- File: `src/app/api/webhooks/clerk/route.ts`
+- Methods: POST
+- Action modules:
+  - `@/lib/actions/platform-referrals`
+- Prisma models: user
+- External services: clerk
+- Status codes: 400, 500
+
+### /api/webhooks/railway
+- File: `src/app/api/webhooks/railway/route.ts`
+- Methods: GET, POST
+- Status codes: 401, 500
+
+### /api/webhooks/resend
+- File: `src/app/api/webhooks/resend/route.ts`
+- Methods: GET, POST
+- Prisma models: emailLog
+- External services: resend
+- Status codes: 401, 500
+
+### /api/webhooks/stripe
+- File: `src/app/api/webhooks/stripe/route.ts`
+- Methods: POST
+- Action modules:
+  - `@/lib/actions/platform-referrals`
+  - `@/lib/actions/slack`
+- Prisma models: activityLog, deliveryLink, order, organization, payment, project
+- External services: stripe
+- Status codes: 400, 500
+
+### /api/webhooks/twilio/status
+- File: `src/app/api/webhooks/twilio/status/route.ts`
+- Methods: GET, POST
+- Query params: logId
+- Prisma models: sMSLog
+- External services: twilio
+- Status codes: 200, 400, 500
+
 ## API Endpoints Inventory
 - `GET, POST /api/admin/seed-questionnaire-templates`
 - `GET /api/auth/client`
@@ -853,6 +4141,1852 @@ The following list is the full route inventory. Each module section below explai
 - `GET, POST /api/webhooks/resend`
 - `POST /api/webhooks/stripe`
 - `GET, POST /api/webhooks/twilio/status`
+
+## Server Action Specs
+- Signatures are extracted from exported functions and constants.
+- Auth helpers and Prisma model usage are file-level heuristics.
+
+### ab-testing.ts
+- File: `src/lib/actions/ab-testing.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: aBTestAssignment, portfolioABTest, portfolioWebsite
+- Exported signatures:
+  - `export async function getABTests(portfolioId?: string)`
+  - `export async function getABTest(testId: string)`
+  - `export async function createABTest(input: CreateABTestInput)`
+  - `export async function updateABTest(testId: string, input: UpdateABTestInput)`
+  - `export async function deleteABTest(testId: string)`
+  - `export async function startABTest(testId: string)`
+  - `export async function pauseABTest(testId: string)`
+  - `export async function completeABTest(testId: string, winningVariant?: "control" | "variant")`
+  - `export async function getABTestVariant( portfolioSlug: string, visitorId: string ): Promise<`
+  - `export async function recordABTestConversion( testId: string, visitorId: string ): Promise<VoidActionResult>`
+  - `export async function getABTestStats(testId: string)`
+
+### activity.ts
+- File: `src/lib/actions/activity.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: activityLog, user
+- Exported signatures:
+  - `export async function getActivityLogs( limit: number = 50, offset: number = 0 ): Promise<ActionResult<`
+  - `export async function getActivityFeed( filters?: ActivityFeedFilters, pagination?:`
+  - `export async function getActivitySummary(): Promise<ActionResult<ActivitySummary>>`
+  - `export async function getActivityTimeline( days: number = 7 ): Promise< ActionResult<`
+  - `export async function searchActivities( query: string, limit: number = 20 ): Promise<ActionResult<ActivityData[]>>`
+  - `export async function getEntityActivities( entityType: "client" | "project" | "booking" | "invoice" | "contract", entityId: string, limit: number = 50 ): Promise<ActionResult<ActivityData[]>>`
+
+### addons.ts
+- File: `src/lib/actions/addons.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: service, serviceAddon, serviceAddonCompat, serviceBundleItem
+- Exported signatures:
+  - `export async function createAddon( input: CreateAddonInput ): Promise<ActionResult<`
+  - `export async function updateAddon( input: UpdateAddonInput ): Promise<ActionResult<`
+  - `export async function deleteAddon( id: string, force: boolean = false ): Promise<ActionResult>`
+  - `export async function toggleAddonStatus( id: string ): Promise<ActionResult<`
+  - `export async function setAddonCompatibility( input: AddonCompatibilityInput ): Promise<ActionResult<`
+  - `export async function getCompatibleAddons( serviceIds: string[] ): Promise<ActionResult<CompatibleAddon[]>>`
+  - `export async function getSuggestedAddons(params:`
+  - `export async function getAddons(filters?: AddonFilters)`
+  - `export async function getAddon(id: string)`
+  - `export async function reorderAddons( addonIds: string[] ): Promise<ActionResult>`
+
+### analytics-report.ts
+- File: `src/lib/actions/analytics-report.ts`
+- Prisma models: client, invoice, organization, payment, project
+- External services: clerk
+- Exported signatures:
+  - `export async function generateAnalyticsReportPdf(): Promise<`
+
+### analytics.ts
+- File: `src/lib/actions/analytics.ts`
+- Prisma models: client, invoice, organization, payment, project
+- External services: clerk
+- Exported signatures:
+  - `export async function getRevenueForecast()`
+  - `export async function getClientLTVMetrics()`
+  - `export async function getDashboardAnalytics()`
+  - `export async function generateRevenueReport(options:`
+  - `export async function exportReportAsCSV(reportData:`
+
+### api-keys.ts
+- File: `src/lib/actions/api-keys.ts`
+- Prisma models: apiKey, organization
+- External services: clerk
+- Exported signatures:
+  - `export async function getApiKeys()`
+  - `export async function generateNewApiKey(params:`
+  - `export async function revokeApiKey(keyId: string)`
+  - `export async function deleteApiKey(keyId: string)`
+  - `export async function validateApiKey(apiKeyValue: string)`
+  - `export async function updateApiKey( keyId: string, params:`
+
+### appearance.ts
+- File: `src/lib/actions/appearance.ts`
+- Prisma models: user
+- External services: clerk
+- Exported signatures:
+  - `export async function getAppearancePreferences(): Promise<ActionResult<AppearancePreferences>>`
+  - `export async function updateAppearancePreferences( preferences: Partial<AppearancePreferences> ): Promise<ActionResult<void>>`
+  - `export async function applyThemePreset( presetId: string ): Promise<ActionResult<void>>`
+  - `export async function resetAppearancePreferences(): Promise<ActionResult<void>>`
+
+### auth-helper.ts
+- File: `src/lib/actions/auth-helper.ts`
+- Auth helpers: requireAdmin, requireAuth, requireOrganizationId, requireOwner, requireUserId
+- External services: clerk
+- Exported signatures:
+  - `export async function requireAuth(): Promise<AuthContext>`
+  - `export async function requireOrganizationId(): Promise<string>`
+  - `export async function requireUserId(): Promise<string>`
+  - `export async function requireAdmin(): Promise<AuthContext>`
+  - `export async function requireOwner(): Promise<AuthContext>`
+
+### availability.ts
+- File: `src/lib/actions/availability.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: availabilityBlock, booking, bookingBuffer, user
+- Exported signatures:
+  - `export async function getAvailabilityBlocks(filters?:`
+  - `export async function getAvailabilityBlock(id: string)`
+  - `export async function createAvailabilityBlock( input: CreateAvailabilityBlockInput ): Promise<ActionResult<`
+  - `export async function updateAvailabilityBlock( input: UpdateAvailabilityBlockInput ): Promise<ActionResult<`
+  - `export async function deleteAvailabilityBlock(id: string): Promise<ActionResult>`
+  - `export async function getBookingBuffers()`
+  - `export async function getDefaultBookingBuffer()`
+  - `export async function getBookingBufferForService(serviceId: string)`
+  - `export async function upsertBookingBuffer( input: CreateBookingBufferInput ): Promise<ActionResult<`
+  - `export async function deleteBookingBuffer(id: string): Promise<ActionResult>`
+  - `export async function checkBookingConflicts( startTime: Date, endTime: Date, userId?: string, excludeBookingId?: string ): Promise<ActionResult<`
+  - `export async function getExpandedAvailabilityBlocks( fromDate: Date, toDate: Date, userId?: string )`
+  - `export async function addTimeOffToday( title: string = "Time Off" ): Promise<ActionResult<`
+  - `export async function addWeeklyRecurringBlock( title: string, dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6, // 0 = Sunday, 6 = Saturday blockType: AvailabilityBlockType = "time_off" ): Promise<ActionResult<`
+  - `export async function addHolidayBlock( title: string, date: Date ): Promise<ActionResult<`
+  - `export async function submitTimeOffRequest( input: TimeOffRequestInput ): Promise<ActionResult<`
+  - `export async function getPendingTimeOffCount(): Promise<ActionResult<number>>`
+  - `export async function getPendingTimeOffRequests()`
+  - `export async function getTimeOffRequests(filters?:`
+  - `export async function approveTimeOffRequest(id: string): Promise<ActionResult>`
+  - `export async function rejectTimeOffRequest( id: string, rejectionNote?: string ): Promise<ActionResult>`
+  - `export async function getMyTimeOffRequests()`
+  - `export async function cancelTimeOffRequest(id: string): Promise<ActionResult>`
+
+### booking-crew.ts
+- File: `src/lib/actions/booking-crew.ts`
+- Prisma models: booking, bookingCrew, organization, organizationMember, user
+- External services: clerk
+- Exported signatures:
+  - `export async function getBookingCrew(bookingId: string): Promise<ActionResult<`
+  - `export async function getAvailableCrewMembers( bookingId: string ): Promise<ActionResult<`
+  - `export async function addCrewMember( input: AddCrewMemberInput ): Promise<ActionResult<`
+  - `export async function updateCrewMember( input: UpdateCrewMemberInput ): Promise<ActionResult<void>>`
+  - `export async function removeCrewMember(crewId: string): Promise<ActionResult<void>>`
+  - `export async function confirmCrewAssignment(crewId: string): Promise<ActionResult<void>>`
+  - `export async function declineCrewAssignment( crewId: string, reason?: string ): Promise<ActionResult<void>>`
+  - `export async function getMyCrewAssignments(): Promise<ActionResult<`
+
+### booking-forms.ts
+- File: `src/lib/actions/booking-forms.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: booking, bookingForm, bookingFormField, bookingFormService, bookingFormSubmission, client, organization, service
+- Exported signatures:
+  - `export async function createBookingForm( input: CreateBookingFormInput ): Promise<ActionResult<`
+  - `export async function updateBookingForm( input: UpdateBookingFormInput ): Promise<ActionResult<`
+  - `export async function deleteBookingForm( id: string, force: boolean = false ): Promise<ActionResult>`
+  - `export async function duplicateBookingForm( id: string, newName?: string, newSlug?: string ): Promise<ActionResult<`
+  - `export async function toggleBookingFormStatus( id: string ): Promise<ActionResult<`
+  - `export async function updateBookingFormFields( input: UpdateBookingFormFieldsInput ): Promise<ActionResult<`
+  - `export async function reorderBookingFormFields( input: ReorderBookingFormFieldsInput ): Promise<ActionResult>`
+  - `export async function setBookingFormServices( input: BookingFormServicesInput ): Promise<ActionResult<`
+  - `export async function getBookingForms(filters?: BookingFormFilters)`
+  - `export async function getBookingForm(id: string)`
+  - `export async function getBookingFormBySlug(slug: string)`
+  - `export async function submitBookingForm( input: SubmitBookingFormInput ): Promise<ActionResult<`
+  - `export async function convertSubmissionToBooking( input: ConvertSubmissionInput ): Promise<ActionResult<`
+  - `export async function rejectSubmission( input: RejectSubmissionInput ): Promise<ActionResult>`
+  - `export async function getFormSubmissions( bookingFormId: string, filters?: SubmissionFilters )`
+  - `export async function getAllSubmissions(filters?: SubmissionFilters)`
+  - `export async function convertBookingSubmissionToClient( submissionId: string, additionalData?:`
+
+### booking-import.ts
+- File: `src/lib/actions/booking-import.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: activityLog, booking, client, service
+- Exported signatures:
+  - `export async function previewBookingImport( csvContent: string ): Promise<ActionResult<ImportPreview>>`
+  - `export async function importBookings( csvContent: string, options?:`
+  - `export async function getBookingImportTemplate(): Promise<ActionResult<string>>`
+
+### booking-types.ts
+- File: `src/lib/actions/booking-types.ts`
+- Prisma models: booking, bookingType
+- External services: clerk
+- Exported signatures:
+  - `export async function getBookingTypes()`
+  - `export async function getBookingType(id: string)`
+  - `export async function createBookingType( input: BookingTypeInput ): Promise<ActionResult<`
+  - `export async function updateBookingType( id: string, input: Partial<BookingTypeInput> ): Promise<ActionResult>`
+  - `export async function deleteBookingType(id: string): Promise<ActionResult>`
+  - `export async function seedDefaultBookingTypes(): Promise<ActionResult>`
+
+### bookings.ts
+- File: `src/lib/actions/bookings.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: activityLog, availabilityBlock, booking, bookingBuffer, bookingReminder, client, organization, service
+- External services: clerk, slack
+- Exported signatures:
+  - `export async function getBooking(id: string)`
+  - `export async function getBookings(filters?:`
+  - `export async function createBooking( input: CreateBookingInput ): Promise<ActionResult<`
+  - `export async function updateBooking( input: UpdateBookingInput ): Promise<ActionResult<`
+  - `export async function updateBookingStatus( id: string, status: BookingStatus ): Promise<ActionResult>`
+  - `export async function confirmBooking( id: string, options?:`
+  - `export async function deleteBooking(id: string): Promise<ActionResult>`
+  - `export async function getClientsForBooking()`
+  - `export async function getServicesForBooking()`
+  - `export async function getScheduleStats()`
+  - `export async function createRecurringBooking( input: CreateBookingInput ): Promise<ActionResult<`
+  - `export async function getBookingSeries(seriesId: string)`
+  - `export async function updateBookingSeries( seriesId: string, updates:`
+  - `export async function deleteBookingSeries( seriesId: string, deleteFutureOnly: boolean = true ): Promise<ActionResult<`
+  - `export async function removeFromSeries(bookingId: string): Promise<ActionResult>`
+  - `export async function createBookingReminders( bookingId: string, reminders: ReminderInput[] ): Promise<ActionResult<`
+  - `export async function getBookingReminders( bookingId: string ): Promise<ActionResult<`
+  - `export async function deleteBookingReminder( reminderId: string ): Promise<ActionResult>`
+  - `export async function updateBookingReminders( bookingId: string, reminders: ReminderInput[] ): Promise<ActionResult<`
+  - `export async function getPendingReminders(): Promise<ActionResult<`
+  - `export async function markReminderSent( reminderId: string, errorMessage?: string ): Promise<ActionResult>`
+  - `export async function createMultiDayEvent( input: CreateMultiDayEventInput ): Promise<ActionResult<`
+  - `export async function getMultiDayEvent( eventId: string ): Promise<ActionResult<`
+  - `export async function addSessionToMultiDayEvent( eventId: string, session: MultiDaySession ): Promise<ActionResult<`
+  - `export async function updateMultiDaySession( sessionId: string, updates: Partial<MultiDaySession> ): Promise<ActionResult>`
+  - `export async function deleteMultiDaySession( sessionId: string ): Promise<ActionResult>`
+  - `export async function deleteMultiDayEvent( eventId: string ): Promise<ActionResult>`
+  - `export async function getMultiDayEvents(): Promise< ActionResult< Array<`
+  - `export async function checkBookingConflicts(params:`
+  - `export async function getConflictsInRange(params:`
+  - `export async function validateBookingTime(params:`
+
+### brokerage-contracts.ts
+- File: `src/lib/actions/brokerage-contracts.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: brokerage, brokerageContract
+- Exported signatures:
+  - `export async function getBrokerageContracts( brokerageId: string ): Promise<ActionResult<BrokerageContractWithRelations[]>>`
+  - `export async function getBrokerageContract( id: string ): Promise<ActionResult<BrokerageContractWithRelations>>`
+  - `export async function getActiveBrokerageContract( brokerageId: string ): Promise<ActionResult<BrokerageContractWithRelations | null>>`
+  - `export async function createBrokerageContract( input: CreateContractInput ): Promise<ActionResult<BrokerageContractWithRelations>>`
+  - `export async function updateBrokerageContract( input: UpdateContractInput ): Promise<ActionResult<BrokerageContractWithRelations>>`
+  - `export async function deleteBrokerageContract(id: string): Promise<ActionResult<void>>`
+  - `export async function calculateBrokeragePrice( serviceId: string, brokerageId: string, basePriceCents: number ): Promise<ActionResult<`
+
+### brokerages.ts
+- File: `src/lib/actions/brokerages.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: brokerage, client
+- Exported signatures:
+  - `export async function getBrokerages(options?:`
+  - `export async function getBrokerage( id: string ): Promise<ActionResult<BrokerageWithRelations>>`
+  - `export async function getBrokerageBySlug( slug: string ): Promise<ActionResult<BrokerageWithRelations>>`
+  - `export async function getBrokerageAgents(brokerageId: string): Promise< ActionResult< Array<`
+  - `export async function createBrokerage( input: CreateBrokerageInput ): Promise<ActionResult<BrokerageWithRelations>>`
+  - `export async function updateBrokerage( input: UpdateBrokerageInput ): Promise<ActionResult<BrokerageWithRelations>>`
+  - `export async function deleteBrokerage(id: string): Promise<ActionResult<void>>`
+  - `export async function assignAgentToBrokerage( clientId: string, brokerageId: string | null ): Promise<ActionResult<void>>`
+  - `export async function getBrokerageStats(): Promise< ActionResult<`
+
+### bundles.ts
+- File: `src/lib/actions/bundles.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: booking, bundlePricingTier, service, serviceBundle, serviceBundleItem
+- External services: stripe
+- Exported signatures:
+  - `export async function createBundle( input: CreateBundleInput ): Promise<ActionResult<`
+  - `export async function updateBundle( input: UpdateBundleInput ): Promise<ActionResult<`
+  - `export async function deleteBundle( id: string, force: boolean = false ): Promise<ActionResult>`
+  - `export async function duplicateBundle( id: string, newName?: string, newSlug?: string ): Promise<ActionResult<`
+  - `export async function toggleBundleStatus( id: string ): Promise<ActionResult<`
+  - `export async function setBundleServices( input: BundleServicesInput ): Promise<ActionResult<`
+  - `export async function addServiceToBundle( bundleId: string, serviceId: string, isRequired: boolean = true, quantity: number = 1 ): Promise<ActionResult>`
+  - `export async function removeServiceFromBundle( bundleId: string, serviceId: string ): Promise<ActionResult>`
+  - `export async function reorderBundleItems( bundleId: string, itemIds: string[] ): Promise<ActionResult>`
+  - `export async function calculateBundleSavings( bundleId: string ): Promise<ActionResult<`
+  - `export async function getBundles(filters?: BundleFilters)`
+  - `export async function getBundle(id: string)`
+  - `export async function getBundleBySlug(orgSlug: string, bundleSlug: string)`
+  - `export async function setBundlePricingTiers( input: CreatePricingTiersInput ): Promise<ActionResult<`
+  - `export async function getBundlePricingTiers(bundleId: string)`
+  - `export async function deletePricingTier(id: string): Promise<ActionResult>`
+  - `export async function calculateBundlePrice( input: CalculateBundlePriceInput ): Promise<ActionResult<BundlePriceResult>>`
+  - `export async function getBundleWithPricing(bundleId: string)`
+  - `export async function getPackageAnalytics( dateRange?:`
+  - `export async function getPackageRecommendations(): Promise< ActionResult<`
+  - `export async function createPackageFromRecommendation( name: string, serviceIds: string[], priceCents: number, options?:`
+  - `export async function getPackageTemplates(): Promise< ActionResult<`
+
+### calendar-feeds.ts
+- File: `src/lib/actions/calendar-feeds.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: calendarFeed, user
+- External services: clerk, google
+- Exported signatures:
+  - `export async function getCalendarFeeds(): Promise< ActionResult<CalendarFeedInfo[]> >`
+  - `export async function createCalendarFeed(params:`
+  - `export async function regenerateCalendarFeedToken( feedId: string ): Promise<ActionResult<`
+  - `export async function updateCalendarFeed( feedId: string, params:`
+  - `export async function deleteCalendarFeed( feedId: string ): Promise<ActionResult<`
+  - `export async function createMyCalendarFeed(params?:`
+  - `export async function getMyCalendarFeed(): Promise< ActionResult<CalendarFeedInfo | null> >`
+
+### chat-inquiries.ts
+- File: `src/lib/actions/chat-inquiries.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: client, websiteChatInquiry
+- Exported signatures:
+  - `export async function submitChatInquiry(input:`
+  - `export async function getChatInquiries(filters?:`
+  - `export async function updateChatInquiryStatus( inquiryId: string, status: "new" | "contacted" | "qualified" | "closed", notes?: string ): Promise<VoidActionResult>`
+  - `export async function convertChatInquiryToClient( inquiryId: string, additionalData?:`
+  - `export async function getChatInquiryStats()`
+
+### client-auth.ts
+- File: `src/lib/actions/client-auth.ts`
+- Auth helpers: requireClientAuth
+- Prisma models: client, clientSession
+- External services: resend
+- Exported signatures:
+  - `export async function sendClientMagicLink(email: string): Promise<`
+  - `export async function validateMagicLinkToken(token: string): Promise<`
+  - `export async function getClientSession(): Promise<`
+  - `export async function logoutClient(): Promise<`
+  - `export async function requireClientAuth(): Promise<`
+
+### client-communications.ts
+- File: `src/lib/actions/client-communications.ts`
+- Auth helpers: requireOrganizationId, requireUserId
+- Prisma models: client, clientCommunication
+- Exported signatures:
+  - `export async function getClientCommunications( clientId: string, filters?:`
+  - `export async function getCommunication(id: string)`
+  - `export async function createCommunication( input: CreateCommunicationInput ): Promise<ActionResult<`
+  - `export async function updateCommunication( input: UpdateCommunicationInput ): Promise<ActionResult<`
+  - `export async function deleteCommunication(id: string): Promise<ActionResult>`
+  - `export async function addClientNote( clientId: string, content: string ): Promise<ActionResult<`
+  - `export async function logEmailSent( clientId: string, subject: string, content: string, relatedTo?:`
+  - `export async function logPhoneCall( clientId: string, direction: "inbound" | "outbound", notes: string, subject?: string ): Promise<ActionResult<`
+  - `export async function logMeeting( clientId: string, subject: string, notes: string, bookingId?: string ): Promise<ActionResult<`
+  - `export async function getClientCommunicationStats(clientId: string)`
+  - `export async function getRecentCommunications(limit: number = 10)`
+
+### client-import.ts
+- File: `src/lib/actions/client-import.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: client
+- External services: clerk
+- Exported signatures:
+  - `export async function previewClientImport( csvContent: string ): Promise<ActionResult<ImportPreview>>`
+  - `export async function importClients( csvContent: string, options?:`
+  - `export async function getImportTemplate(): Promise<string>`
+
+### client-merge.ts
+- File: `src/lib/actions/client-merge.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: client
+- External services: clerk
+- Exported signatures:
+  - `export async function findDuplicateClients(): Promise<ActionResult<`
+  - `export async function getClientMergePreview( primaryClientId: string, secondaryClientId: string ): Promise<ActionResult<`
+  - `export async function mergeClients( primaryClientId: string, secondaryClientId: string, options?:`
+  - `export async function getDuplicateCount(): Promise<ActionResult<`
+
+### client-notifications.ts
+- File: `src/lib/actions/client-notifications.ts`
+- Prisma models: client, clientNotification
+- Exported signatures:
+  - `export async function getClientNotifications( accessToken: string, limit: number = 20 ): Promise<ActionResult<`
+  - `export async function getClientUnreadCount( accessToken: string ): Promise<ActionResult<number>>`
+  - `export async function markClientNotificationAsRead( accessToken: string, notificationId: string ): Promise<ActionResult>`
+  - `export async function markAllClientNotificationsAsRead( accessToken: string ): Promise<ActionResult>`
+  - `export async function createClientNotification( input: CreateClientNotificationInput ): Promise<ActionResult<`
+  - `export async function createClientNotificationsBatch( notifications: CreateClientNotificationInput[] ): Promise<ActionResult<`
+  - `export async function cleanupOldClientNotifications( daysOld: number = 30 ): Promise<ActionResult<`
+  - `export async function notifyGalleryReady( clientId: string, galleryName: string, galleryUrl: string ): Promise<ActionResult<`
+  - `export async function notifyGalleryExpiring( clientId: string, galleryName: string, daysRemaining: number, galleryUrl: string ): Promise<ActionResult<`
+  - `export async function notifyInvoiceSent( clientId: string, invoiceNumber: string, amount: string, invoiceUrl: string ): Promise<ActionResult<`
+  - `export async function notifyPaymentConfirmed( clientId: string, amount: string, description: string ): Promise<ActionResult<`
+  - `export async function notifyContractReady( clientId: string, contractName: string, contractUrl: string ): Promise<ActionResult<`
+  - `export async function notifyBookingConfirmed( clientId: string, bookingTitle: string, bookingDate: string ): Promise<ActionResult<`
+  - `export async function notifyBookingReminder( clientId: string, bookingTitle: string, bookingDate: string, timeUntil: string ): Promise<ActionResult<`
+  - `export async function notifyQuestionnaireReady( clientId: string, questionnaireName: string, questionnaireUrl: string ): Promise<ActionResult<`
+
+### client-portal.ts
+- File: `src/lib/actions/client-portal.ts`
+- Prisma models: client, clientQuestionnaire, invoice, project, propertyWebsite
+- Exported signatures:
+  - `export async function getClientPortalData()`
+  - `export async function getClientPropertyDetails(propertyId: string)`
+  - `export async function getClientGalleryDownload(galleryId: string)`
+
+### client-questionnaires.ts
+- File: `src/lib/actions/client-questionnaires.ts`
+- Prisma models: booking, client, clientQuestionnaire, organization, project, questionnaireTemplate
+- External services: clerk
+- Exported signatures:
+  - `export async function getClientQuestionnaires( filters?: ClientQuestionnaireFilters ): Promise<ActionResult<ClientQuestionnaireWithRelations[]>>`
+  - `export async function getClientQuestionnairesByClient( clientId: string ): Promise<ActionResult<ClientQuestionnaireWithRelations[]>>`
+  - `export async function getClientQuestionnaire( id: string ): Promise<ActionResult<ClientQuestionnaireWithRelations | null>>`
+  - `export async function getQuestionnaireStats(): Promise< ActionResult<`
+  - `export async function assignQuestionnaireToClient( input: AssignQuestionnaireInput ): Promise<ActionResult<`
+  - `export async function updateClientQuestionnaire( input: UpdateClientQuestionnaireInput ): Promise<ActionResult<void>>`
+  - `export async function approveQuestionnaire( input: ApproveQuestionnaireInput ): Promise<ActionResult<void>>`
+  - `export async function deleteClientQuestionnaire( input:`
+  - `export async function sendQuestionnaireReminder( id: string ): Promise<ActionResult<void>>`
+  - `export async function markExpiredQuestionnaires(): Promise<ActionResult<`
+  - `export async function sendBatchReminders(options?:`
+  - `export async function getRemindableQuestionnairesCount(): Promise< ActionResult<`
+
+### client-selections.ts
+- File: `src/lib/actions/client-selections.ts`
+- Prisma models: activityLog, galleryFavorite, organization, project
+- External services: clerk
+- Exported signatures:
+  - `export async function getGallerySelections(projectId: string)`
+  - `export async function updateSelectionSettings( projectId: string, settings:`
+  - `export async function reviewSelections( projectId: string, status: "approved" | "rejected" )`
+  - `export async function exportSelectionsCSV(projectId: string)`
+  - `export async function getClientSelections(projectId: string, deliverySlug?: string)`
+  - `export async function toggleSelection( projectId: string, assetId: string, deliverySlug?: string )`
+  - `export async function updateSelectionNotes( projectId: string, assetId: string, notes: string, deliverySlug?: string )`
+  - `export async function submitSelections(projectId: string, deliverySlug?: string)`
+  - `export async function resetSelections(projectId: string, deliverySlug?: string)`
+
+### client-tags.ts
+- File: `src/lib/actions/client-tags.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: client, clientTag, clientTagAssignment
+- Exported signatures:
+  - `export async function getClientTags()`
+  - `export async function getClientTag(id: string)`
+  - `export async function createClientTag( input: CreateTagInput ): Promise<ActionResult<`
+  - `export async function updateClientTag( input: UpdateTagInput ): Promise<ActionResult<`
+  - `export async function deleteClientTag(id: string): Promise<ActionResult>`
+  - `export async function getTagsForClient(clientId: string)`
+  - `export async function assignTagToClient( clientId: string, tagId: string ): Promise<ActionResult<`
+  - `export async function removeTagFromClient( clientId: string, tagId: string ): Promise<ActionResult>`
+  - `export async function setClientTags( clientId: string, tagIds: string[] ): Promise<ActionResult>`
+  - `export async function bulkAssignTag( clientIds: string[], tagId: string ): Promise<ActionResult<`
+  - `export async function bulkRemoveTag( clientIds: string[], tagId: string ): Promise<ActionResult<`
+  - `export async function getClientsByTag(tagId: string)`
+  - `export async function getClientsByTags(tagIds: string[])`
+  - `export async function createDefaultTags(): Promise<ActionResult<`
+
+### clients.ts
+- File: `src/lib/actions/clients.ts`
+- Auth helpers: requireAdmin, requireAuth, requireOrganizationId
+- Prisma models: activityLog, client, clientSession, clientTag, payment
+- Exported signatures:
+  - `export async function getClient(id: string)`
+  - `export async function getClients(filters?:`
+  - `export async function createClient( input: CreateClientInput ): Promise<ActionResult<`
+  - `export async function updateClient( input: UpdateClientInput ): Promise<ActionResult<`
+  - `export async function impersonateClientPortal( clientId: string ): Promise<ActionResult<`
+  - `export async function updateClientEmailPreferences( input: UpdateClientPreferencesInput ): Promise<ActionResult<`
+  - `export async function getClientEmailPreferences(clientId: string)`
+  - `export async function deleteClient( id: string, force: boolean = false ): Promise<ActionResult>`
+  - `export async function updateClientSource( clientId: string, source: string ): Promise<ActionResult<`
+  - `export async function getAcquisitionAnalytics(options?:`
+  - `export async function getClientsBySource( source: string, options?:`
+  - `export async function getSourcePerformance( dateRange?:`
+  - `export async function bulkDeleteClients( ids: string[], force: boolean = false ): Promise<ActionResult<`
+  - `export async function bulkUpdateIndustry( ids: string[], industry: ClientIndustry ): Promise<ActionResult<`
+  - `export async function bulkAssignTags( clientIds: string[], tagIds: string[], mode: "add" | "replace" = "add" ): Promise<ActionResult<`
+  - `export async function bulkRemoveTags( clientIds: string[], tagIds: string[] ): Promise<ActionResult<`
+
+### contract-pdf.ts
+- File: `src/lib/actions/contract-pdf.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: contract
+- Exported signatures:
+  - `export async function generateContractPdf(contractId: string): Promise<`
+
+### contract-signing.ts
+- File: `src/lib/actions/contract-signing.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: activityLog, contract, contractAuditLog, contractSignature, contractSigner, organization
+- External services: resend
+- Exported signatures:
+  - `export async function getContractsWithSigningStatus(filters?:`
+  - `export async function addContractSigner( input: CreateSignerInput ): Promise<ActionResult<`
+  - `export async function removeContractSigner(signerId: string): Promise<ActionResult>`
+  - `export async function resendSigningInvitation( signerId: string ): Promise<ActionResult<`
+  - `export async function getContractForSigning(signingToken: string)`
+  - `export async function signContract( input: SignContractInput ): Promise<ActionResult<`
+  - `export async function getSigningCompletion(signingToken: string)`
+  - `export async function getContractAuditLog(contractId: string)`
+  - `export async function getContractSignatures(contractId: string)`
+  - `export async function cancelContract(contractId: string): Promise<ActionResult>`
+  - `export async function extendContractExpiration( contractId: string, newExpiresAt: Date ): Promise<ActionResult>`
+
+### contract-templates.ts
+- File: `src/lib/actions/contract-templates.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: contract
+- Exported signatures:
+  - `export async function getContractTemplates( filters?:`
+  - `export async function getTemplateCategories(): Promise< ActionResult<`
+  - `export async function useContractTemplate( templateId: string, variables: Record<string, string>, options?:`
+  - `export async function getContractTemplateById( id: string ): Promise<ActionResult<ContractTemplateWithCount>>`
+  - `export async function createContractTemplate(data:`
+  - `export async function updateContractTemplate( id: string, data:`
+  - `export async function deleteContractTemplate( id: string ): Promise<ActionResult<void>>`
+  - `export async function duplicateContractTemplate( id: string ): Promise<ActionResult<`
+  - `export async function seedDefaultContractTemplates(): Promise<ActionResult<void>>`
+
+### contracts.ts
+- File: `src/lib/actions/contracts.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: activityLog, contract, contractAuditLog, contractSignature, contractSigner, organization
+- Exported signatures:
+  - `export async function getContract(id: string)`
+  - `export async function createContract( input: CreateContractInput ): Promise<ActionResult<`
+  - `export async function updateContract( id: string, input: UpdateContractInput ): Promise<ActionResult>`
+  - `export async function deleteContract(id: string): Promise<ActionResult>`
+  - `export async function sendContract(id: string): Promise<ActionResult>`
+  - `export async function duplicateContract( id: string ): Promise<ActionResult<`
+
+### create-wizard.ts
+- File: `src/lib/actions/create-wizard.ts`
+- Prisma models: bookingType, client, location, service
+- External services: clerk
+- Exported signatures:
+  - `export async function createProjectBundle( input: CreateProjectBundleInput ): Promise<ActionResult<CreateProjectBundleResult>>`
+  - `export async function getWizardData()`
+
+### credit-notes.ts
+- File: `src/lib/actions/credit-notes.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: client, creditNote, invoice
+- Exported signatures:
+  - `export async function createCreditNote( input: CreateCreditNoteInput ): Promise<ActionResult<`
+  - `export async function getCreditNote(creditNoteId: string): Promise< ActionResult<`
+  - `export async function listCreditNotes(options?:`
+  - `export async function issueCreditNote(creditNoteId: string): Promise<ActionResult<void>>`
+  - `export async function applyCreditNoteToInvoice( creditNoteId: string, invoiceId: string, amountCents?: number ): Promise<ActionResult<`
+  - `export async function markCreditNoteRefunded( creditNoteId: string, refundedAmountCents?: number ): Promise<ActionResult<`
+  - `export async function voidCreditNote(creditNoteId: string): Promise<ActionResult<void>>`
+  - `export async function deleteCreditNote(creditNoteId: string): Promise<ActionResult<void>>`
+  - `export async function getClientAvailableCredit(clientId: string): Promise< ActionResult<`
+
+### custom-forms.ts
+- File: `src/lib/actions/custom-forms.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: customForm, customFormField, formSubmission, organization
+- Exported signatures:
+  - `export async function getForms(portfolioId?: string)`
+  - `export async function getForm(formId: string)`
+  - `export async function createForm(input: CreateFormInput)`
+  - `export async function updateForm(formId: string, input: UpdateFormInput)`
+  - `export async function deleteForm(formId: string)`
+  - `export async function duplicateForm(formId: string)`
+  - `export async function addFormField(formId: string, field: FormFieldInput)`
+  - `export async function updateFormField(fieldId: string, updates: Partial<FormFieldInput>)`
+  - `export async function deleteFormField(fieldId: string)`
+  - `export async function reorderFormFields(formId: string, fieldIds: string[])`
+  - `export async function getFormBySlug(slug: string)`
+  - `export async function submitForm( slug: string, data: Record<string, unknown>, metadata?:`
+  - `export async function getFormSubmissions( formId: string, options?:`
+  - `export async function markSubmissionRead(submissionId: string)`
+  - `export async function archiveSubmission(submissionId: string)`
+  - `export async function deleteSubmission(submissionId: string)`
+  - `export async function getFormStats(formId: string)`
+
+### dashboard.ts
+- File: `src/lib/actions/dashboard.ts`
+- Prisma models: user
+- External services: clerk
+- Exported signatures:
+  - `export async function getDashboardConfig(): Promise<`
+  - `export async function updateDashboardConfig( config: DashboardConfig ): Promise<VoidActionResult>`
+  - `export async function toggleSectionVisibility( sectionId: DashboardSectionId ): Promise<VoidActionResult>`
+  - `export async function toggleSectionCollapsed( sectionId: DashboardSectionId ): Promise<VoidActionResult>`
+  - `export async function resetDashboardConfig(): Promise<VoidActionResult>`
+
+### discount-codes.ts
+- File: `src/lib/actions/discount-codes.ts`
+- Prisma models: discountCode, discountCodeUsage, organization
+- External services: clerk
+- Exported signatures:
+  - `export async function createDiscountCode(input: CreateDiscountCodeInput)`
+  - `export async function getDiscountCodes()`
+  - `export async function updateDiscountCode( codeId: string, input: UpdateDiscountCodeInput )`
+  - `export async function deleteDiscountCode(codeId: string)`
+  - `export async function validateDiscountCode( code: string, amountCents: number, clientEmail?: string, serviceId?: string )`
+  - `export async function recordDiscountCodeUsage( discountCodeId: string, discountAmount: number, invoiceId?: string, paymentId?: string, clientEmail?: string )`
+
+### download-tracking.ts
+- File: `src/lib/actions/download-tracking.ts`
+- Prisma models: asset, downloadLog, organization, photoRating, project
+- External services: clerk
+- Exported signatures:
+  - `export async function logDownload(input: LogDownloadInput)`
+  - `export async function sendReceiptForDownload(downloadLogId: string)`
+  - `export async function getGalleryDownloadAnalytics( projectId: string ): Promise<`
+  - `export async function getDownloadHistory( projectId: string, options?:`
+  - `export async function exportDownloadHistory(projectId: string)`
+  - `export async function getOrganizationDownloadStats( dateRange?:`
+  - `export async function getGalleryHeatMapData(projectId: string)`
+
+### dropbox.ts
+- File: `src/lib/actions/dropbox.ts`
+- Prisma models: asset, dropboxIntegration, project
+- External services: clerk, dropbox, r2
+- Exported signatures:
+  - `export async function getDropboxConfig(): Promise<ActionResult<DropboxConfig | null>>`
+  - `export async function getDropboxConnectionStatus(): Promise< ActionResult<`
+  - `export async function saveDropboxConfig(data:`
+  - `export async function updateDropboxSettings(data:`
+  - `export async function toggleDropboxIntegration(): Promise<ActionResult<void>>`
+  - `export async function testDropboxIntegration(): Promise<ActionResult<`
+  - `export async function deleteDropboxIntegration(): Promise<ActionResult<void>>`
+  - `export async function listDropboxFolder( path: string = "" ): Promise<ActionResult<DropboxEntry[]>>`
+  - `export async function createDropboxFolder( folderName: string, parentPath?: string ): Promise<ActionResult<`
+  - `export async function getDropboxDownloadLink( path: string ): Promise<ActionResult<`
+  - `export async function ensureDropboxRootFolder(): Promise<ActionResult<`
+  - `export async function updateSyncCursor(cursor: string): Promise<ActionResult<void>>`
+  - `export async function recordSyncError(errorMessage: string): Promise<ActionResult<void>>`
+  - `export async function syncDropboxChangesForAccount( dropboxAccountId: string ): Promise<`
+
+### email-accounts.ts
+- File: `src/lib/actions/email-accounts.ts`
+- Prisma models: emailAccount
+- External services: clerk, gmail
+- Exported signatures:
+  - `export async function getConnectedEmailAccounts(): Promise<`
+  - `export async function disconnectEmailAccount( accountId: string ): Promise<VoidActionResult>`
+  - `export async function toggleEmailAccountSync( accountId: string, enabled: boolean ): Promise<VoidActionResult>`
+  - `export async function getEmailAccount( accountId: string ): Promise<`
+
+### email-logs.ts
+- File: `src/lib/actions/email-logs.ts`
+- Prisma models: booking, clientQuestionnaire, clientQuestionnaireAgreement, clientQuestionnaireResponse, contract, emailLog, order, organization, project
+- External services: clerk, resend
+- Exported signatures:
+  - `export async function createEmailLog(params:`
+  - `export async function updateEmailLogStatus( logId: string, status: EmailStatus, resendId?: string, errorMessage?: string )`
+  - `export async function getEmailLogs(options?:`
+  - `export async function getEmailStats()`
+  - `export async function logEmailSent(params:`
+  - `export async function getQuestionnaireEmailActivity(questionnaireId: string)`
+  - `export async function getClientEmailLogs(clientId: string, options?:`
+  - `export async function getClientEmailHealth(clientId: string)`
+  - `export async function getQuestionnaireDigestData(organizationId: string)`
+  - `export async function resendEmail(logId: string)`
+  - `export async function getEmailLog(logId: string)`
+
+### email-settings.ts
+- File: `src/lib/actions/email-settings.ts`
+- Prisma models: organization
+- External services: clerk, resend
+- Exported signatures:
+  - `export async function getEmailSettings()`
+  - `export async function updateEmailSettings(data: EmailSettings)`
+  - `export async function sendTestEmail(toEmail: string)`
+
+### email-sync.ts
+- File: `src/lib/actions/email-sync.ts`
+- Prisma models: client, emailAccount, emailMessage, emailThread
+- External services: clerk, gmail
+- Exported signatures:
+  - `export async function triggerEmailSync(options?:`
+  - `export async function getEmailThreads(options?:`
+  - `export async function getEmailThread(threadId: string): Promise<`
+  - `export async function markThreadRead( threadId: string, read: boolean ): Promise<VoidActionResult>`
+  - `export async function toggleThreadStar( threadId: string ): Promise<`
+  - `export async function toggleThreadArchive( threadId: string ): Promise<`
+  - `export async function sendEmailReply( threadId: string, body: string ): Promise<VoidActionResult>`
+  - `export async function sendNewEmail(options:`
+  - `export async function getOrganizationSyncStatus()`
+  - `export async function linkThreadToClient( threadId: string, clientId: string | null ): Promise<VoidActionResult>`
+
+### equipment-checklists.ts
+- File: `src/lib/actions/equipment-checklists.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: booking, bookingEquipmentCheck, bookingType, bookingTypeEquipmentRequirement, equipment, user
+- External services: clerk
+- Exported signatures:
+  - `export async function getBookingTypeEquipmentRequirements( bookingTypeId: string ): Promise< ActionResult< Array<`
+  - `export async function setBookingTypeEquipmentRequirements( bookingTypeId: string, requirements: EquipmentRequirementInput[] ): Promise<ActionResult>`
+  - `export async function addEquipmentRequirement( bookingTypeId: string, requirement: EquipmentRequirementInput ): Promise<ActionResult<`
+  - `export async function removeEquipmentRequirement( requirementId: string ): Promise<ActionResult>`
+  - `export async function getBookingEquipmentChecklist( bookingId: string ): Promise< ActionResult< Array<`
+  - `export async function toggleEquipmentCheck( bookingId: string, equipmentId: string, isChecked: boolean ): Promise<ActionResult<`
+  - `export async function checkAllEquipment( bookingId: string ): Promise<ActionResult<`
+  - `export async function uncheckAllEquipment( bookingId: string ): Promise<ActionResult>`
+  - `export async function getBookingChecklistSummaries( bookingIds: string[] ): Promise< ActionResult< Array<`
+  - `export async function updateEquipmentCheckNote( bookingId: string, equipmentId: string, notes: string | null ): Promise<ActionResult>`
+
+### equipment.ts
+- File: `src/lib/actions/equipment.ts`
+- Prisma models: booking, bookingEquipmentCheck, equipment, organization, organizationMember, service, serviceEquipmentRequirement, userEquipment
+- Exported signatures:
+  - `export async function createEquipment( input: z.infer<typeof createEquipmentSchema> ): Promise<ActionResult<`
+  - `export async function updateEquipment( input: z.infer<typeof updateEquipmentSchema> ): Promise<ActionResult<`
+  - `export async function deleteEquipment(id: string): Promise<ActionResult>`
+  - `export async function getEquipment(id: string)`
+  - `export async function getEquipmentList(filters?:`
+  - `export async function getEquipmentByCategory()`
+  - `export async function assignEquipmentToUser( userId: string, equipmentId: string, notes?: string ): Promise<ActionResult<`
+  - `export async function unassignEquipmentFromUser( userId: string, equipmentId: string ): Promise<ActionResult>`
+  - `export async function getUserEquipment(userId: string)`
+  - `export async function addServiceEquipmentRequirement( serviceId: string, equipmentId: string, isRequired: boolean = true ): Promise<ActionResult<`
+  - `export async function removeServiceEquipmentRequirement( serviceId: string, equipmentId: string ): Promise<ActionResult>`
+  - `export async function getServiceEquipmentRequirements(serviceId: string)`
+  - `export async function getEquipmentUsageStats(options?:`
+  - `export async function getEquipmentUsageTimeline(options?:`
+  - `export async function getUpcomingEquipmentNeeds(days: number = 7)`
+
+### estimates.ts
+- File: `src/lib/actions/estimates.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: client, estimate, invoice
+- Exported signatures:
+  - `export async function createEstimate( input: CreateEstimateInput ): Promise<ActionResult<EstimateWithLineItems>>`
+  - `export async function getEstimate( estimateId: string ): Promise<ActionResult<EstimateWithLineItems>>`
+  - `export async function listEstimates(options?:`
+  - `export async function updateEstimate( estimateId: string, input: UpdateEstimateInput ): Promise<ActionResult<EstimateWithLineItems>>`
+  - `export async function deleteEstimate( estimateId: string ): Promise<ActionResult<void>>`
+  - `export async function sendEstimate( estimateId: string ): Promise<ActionResult<Estimate>>`
+  - `export async function markEstimateViewed( estimateId: string ): Promise<ActionResult<Estimate>>`
+  - `export async function approveEstimate( estimateId: string ): Promise<ActionResult<Estimate>>`
+  - `export async function rejectEstimate( estimateId: string, reason?: string ): Promise<ActionResult<Estimate>>`
+  - `export async function convertEstimateToInvoice( estimateId: string, options?:`
+  - `export async function duplicateEstimate( estimateId: string ): Promise<ActionResult<EstimateWithLineItems>>`
+  - `export async function getEstimateStats(): Promise< ActionResult<`
+
+### field-operations.ts
+- File: `src/lib/actions/field-operations.ts`
+- Prisma models: booking, bookingCheckIn
+- External services: clerk
+- Exported signatures:
+  - `export async function getTodaysBookings(): Promise<ActionResult<FieldBooking[]>>`
+  - `export async function getUpcomingBookings(days: number = 7): Promise<ActionResult<FieldBooking[]>>`
+  - `export async function checkIn(data: CheckInData): Promise<ActionResult<`
+  - `export async function checkOut(data: CheckOutData): Promise<ActionResult<`
+  - `export async function addFieldNote( bookingId: string, note: string ): Promise<ActionResult<void>>`
+
+### galleries.ts
+- File: `src/lib/actions/galleries.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: activityLog, asset, deliveryLink, galleryComment, galleryFavorite, organization, project
+- External services: r2
+- Exported signatures:
+  - `export async function createGallery( input: CreateGalleryInput ): Promise<ActionResult<`
+  - `export async function updateGallery( input: UpdateGalleryInput ): Promise<ActionResult<`
+  - `export async function deleteGallery( id: string, force: boolean = false ): Promise<ActionResult>`
+  - `export async function duplicateGallery( id: string, newName?: string, includePhotos: boolean = false ): Promise<ActionResult<`
+  - `export async function archiveGallery( id: string, archive: boolean = true ): Promise<ActionResult<`
+  - `export async function deliverGallery( id: string, sendEmail: boolean = true, message?: string ): Promise<ActionResult<`
+  - `export async function bulkArchiveGalleries( ids: string[], archive: boolean = true ): Promise<ActionResult<`
+  - `export async function bulkDeleteGalleries( ids: string[], force: boolean = false ): Promise<ActionResult<`
+  - `export async function getGalleries(filters?: GalleryFilters)`
+  - `export async function getGallery(id: string)`
+  - `export async function reorderPhotos( projectId: string, assetIds: string[] ): Promise<ActionResult>`
+  - `export async function deletePhoto( projectId: string, assetId: string ): Promise<ActionResult>`
+  - `export async function getPublicGallery(slugOrId: string, isPreview: boolean = false)`
+  - `export async function recordGalleryView(slug: string): Promise<ActionResult>`
+  - `export async function recordDownload( projectId: string, assetId?: string ): Promise<ActionResult>`
+  - `export async function getGalleryCounts(): Promise<`
+  - `export async function bulkToggleWatermark( projectId: string, assetIds: string[], excludeFromWatermark: boolean ): Promise<ActionResult<`
+  - `export async function getWatermarkExclusions( projectId: string ): Promise<ActionResult<Record<string, boolean>>>`
+
+### gallery-activity.ts
+- File: `src/lib/actions/gallery-activity.ts`
+- Prisma models: activityLog, asset, downloadLog, galleryFavorite, organization, payment, project
+- External services: clerk
+- Exported signatures:
+  - `export async function getGalleryActivityTimeline( projectId: string, options?:`
+  - `export async function getGalleryActivitySummary(projectId: string)`
+
+### gallery-addons.ts
+- File: `src/lib/actions/gallery-addons.ts`
+- Prisma models: activityLog, galleryAddon, galleryAddonRequest, organization, organizationMember, project
+- External services: clerk
+- Exported signatures:
+  - `export async function getGalleryAddons()`
+  - `export async function createGalleryAddon(data: GalleryAddonInput)`
+  - `export async function updateGalleryAddon(id: string, data: Partial<GalleryAddonInput>)`
+  - `export async function deleteGalleryAddon(id: string)`
+  - `export async function reorderGalleryAddons(orderedIds: string[])`
+  - `export async function getGalleryAddonRequestsAdmin(projectId: string)`
+  - `export async function getAllAddonRequests(status?: GalleryAddonRequestStatus)`
+  - `export async function sendAddonQuote( requestId: string, quoteCents: number, quoteDescription?: string )`
+  - `export async function startAddonRequest(requestId: string)`
+  - `export async function completeAddonRequest(requestId: string, deliveryNote?: string)`
+  - `export async function cancelAddonRequest(requestId: string)`
+  - `export async function getAvailableAddons(projectId: string, deliverySlug?: string)`
+  - `export async function requestAddon(data: AddonRequestInput, deliverySlug?: string)`
+  - `export async function getClientAddonRequests(projectId: string, deliverySlug?: string)`
+  - `export async function approveAddonQuote(requestId: string, deliverySlug?: string)`
+  - `export async function declineAddonQuote(requestId: string, deliverySlug?: string)`
+  - `export async function getDefaultAddonsForIndustry(industry: ClientIndustry): Promise<GalleryAddonInput[]>`
+
+### gallery-analytics.ts
+- File: `src/lib/actions/gallery-analytics.ts`
+- Prisma models: activityLog, asset, organization, project
+- External services: clerk
+- Exported signatures:
+  - `export async function getComprehensiveGalleryAnalytics(projectId: string)`
+  - `export async function logGalleryView( projectId: string, data?:`
+  - `export async function logPhotoView( projectId: string, assetId: string, sessionId?: string )`
+  - `export async function exportGalleryAnalyticsReport( projectId: string, format: "csv" | "json" = "csv" )`
+
+### gallery-collections.ts
+- File: `src/lib/actions/gallery-collections.ts`
+- Prisma models: asset, galleryCollection, organization, project
+- External services: clerk
+- Exported signatures:
+  - `export async function getGalleryCollections(projectId: string)`
+  - `export async function createGalleryCollection( projectId: string, input: GalleryCollectionInput )`
+  - `export async function updateGalleryCollection( collectionId: string, input: Partial<GalleryCollectionInput> )`
+  - `export async function deleteGalleryCollection(collectionId: string)`
+  - `export async function addAssetsToCollection( collectionId: string, assetIds: string[] )`
+  - `export async function removeAssetsFromCollection(assetIds: string[])`
+  - `export async function reorderGalleryCollections( projectId: string, collectionIds: string[] )`
+
+### gallery-expiration.ts
+- File: `src/lib/actions/gallery-expiration.ts`
+- Prisma models: client, expirationNotification, organization, project
+- External services: clerk
+- Exported signatures:
+  - `export async function getExpiringSoonGalleries(daysAhead: number = 7)`
+  - `export async function scheduleExpirationNotifications( projectId: string, clientEmail: string, expiresAt: Date )`
+  - `export async function getPendingExpirationNotifications()`
+  - `export async function markNotificationSent(notificationId: string)`
+  - `export async function extendGalleryExpiration( projectId: string, additionalDays: number )`
+  - `export async function sendExpirationWarningEmail( notificationId: string, projectData:`
+  - `export async function processExpirationNotifications()`
+
+### gallery-feedback.ts
+- File: `src/lib/actions/gallery-feedback.ts`
+- Prisma models: galleryFeedback, organization
+- External services: clerk
+- Exported signatures:
+  - `export async function getAllFeedback(options?:`
+  - `export async function getFeedbackStats(): Promise<`
+  - `export async function markFeedbackAsRead(feedbackId: string): Promise<VoidActionResult>`
+  - `export async function markFeedbackAsResolved(feedbackId: string): Promise<VoidActionResult>`
+  - `export async function markAllFeedbackAsRead(): Promise<VoidActionResult>`
+  - `export async function deleteFeedback(feedbackId: string): Promise<VoidActionResult>`
+
+### gallery-reminders.ts
+- File: `src/lib/actions/gallery-reminders.ts`
+- Prisma models: activityLog, organization, project
+- External services: clerk
+- Exported signatures:
+  - `export async function sendBatchGalleryReminders(organizationId: string)`
+  - `export async function disableGalleryReminders(galleryId: string)`
+  - `export async function enableGalleryReminders(galleryId: string)`
+  - `export async function resetGalleryReminders(galleryId: string)`
+  - `export async function sendManualGalleryReminder( galleryId: string, options?:`
+  - `export async function getGalleryReminderHistory(galleryId: string)`
+  - `export async function updateGalleryExpiration( galleryId: string, expiresAt: Date | null )`
+  - `export async function extendGalleryExpiration(galleryId: string, days: number)`
+  - `export async function getExpiringGalleries(withinDays: number = 7)`
+  - `export async function getUnviewedGalleries(withinDays: number = 7)`
+  - `export async function getGalleryReminderStatus(galleryId: string)`
+
+### gallery-templates.ts
+- File: `src/lib/actions/gallery-templates.ts`
+- Prisma models: galleryTemplate, organization
+- External services: clerk
+- Exported signatures:
+  - `export async function getGalleryTemplates()`
+  - `export async function getGalleryTemplate(id: string)`
+  - `export async function createGalleryTemplate(input: GalleryTemplateInput)`
+  - `export async function updateGalleryTemplate(id: string, input: Partial<GalleryTemplateInput>)`
+  - `export async function deleteGalleryTemplate(id: string)`
+  - `export async function incrementTemplateUsage(id: string)`
+
+### google-calendar.ts
+- File: `src/lib/actions/google-calendar.ts`
+- Prisma models: booking, calendarEvent, calendarIntegration
+- External services: clerk, google
+- Exported signatures:
+  - `export async function getGoogleCalendarConfig(): Promise< ActionResult<GoogleCalendarConfig | null> >`
+  - `export async function getGoogleCalendars( integrationId: string ): Promise<ActionResult<CalendarListItem[]>>`
+  - `export async function testGoogleCalendarConnection(): Promise< ActionResult<`
+  - `export async function updateGoogleCalendarSettings(data:`
+  - `export async function disconnectGoogleCalendar(): Promise<ActionResult<void>>`
+  - `export async function syncGoogleCalendar( integrationId: string ): Promise<ActionResult<SyncResult>>`
+
+### integration-logs.ts
+- File: `src/lib/actions/integration-logs.ts`
+- Prisma models: integrationLog, organization
+- External services: clerk, dropbox, slack, stripe
+- Exported signatures:
+  - `export async function logIntegrationEvent(params:`
+  - `export async function getIntegrationLogs(options?:`
+  - `export async function getProviderLogs( provider: IntegrationProvider | string, options?:`
+  - `export async function getIntegrationActivitySummary()`
+  - `export async function getIntegrationSyncStatus()`
+  - `export async function cleanupOldIntegrationLogs(organizationId: string)`
+
+### invitations.ts
+- File: `src/lib/actions/invitations.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: invitation, organization, organizationMember, user
+- External services: resend
+- Exported signatures:
+  - `export async function createInvitation( input: z.infer<typeof createInvitationSchema> ): Promise<ActionResult<`
+  - `export async function resendInvitation( invitationId: string ): Promise<ActionResult>`
+  - `export async function revokeInvitation( invitationId: string ): Promise<ActionResult>`
+  - `export async function acceptInvitation( token: string, userData:`
+  - `export async function getInvitationByToken(token: string)`
+  - `export async function getPendingInvitations()`
+
+### invoice-analytics.ts
+- File: `src/lib/actions/invoice-analytics.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: invoice
+- Exported signatures:
+  - `export async function getRevenueByMonth(options?:`
+  - `export async function getARAging(): Promise<ActionResult<ARAgingBucket[]>>`
+  - `export async function getCollectionMetrics(options?:`
+  - `export async function getRevenueByClient(options?:`
+  - `export async function getInvoiceSummary(): Promise< ActionResult<`
+  - `export async function exportInvoicesToCSV(options?:`
+
+### invoice-attachments.ts
+- File: `src/lib/actions/invoice-attachments.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: invoice, invoiceAttachment
+- External services: r2
+- Exported signatures:
+  - `export async function addInvoiceAttachment( input: AddAttachmentInput ): Promise<ActionResult<InvoiceAttachment>>`
+  - `export async function getInvoiceAttachments( invoiceId: string ): Promise<ActionResult<InvoiceAttachment[]>>`
+  - `export async function getInvoiceAttachment( attachmentId: string ): Promise<ActionResult<InvoiceAttachment>>`
+  - `export async function updateInvoiceAttachment( attachmentId: string, input: UpdateAttachmentInput ): Promise<ActionResult<InvoiceAttachment>>`
+  - `export async function deleteInvoiceAttachment( attachmentId: string ): Promise<ActionResult<void>>`
+  - `export async function bulkDeleteInvoiceAttachments( attachmentIds: string[] ): Promise<ActionResult<`
+  - `export async function getInvoiceAttachmentStats( invoiceId: string ): Promise<ActionResult<`
+
+### invoice-email-templates.ts
+- File: `src/lib/actions/invoice-email-templates.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: estimate, invoice, invoiceEmailTemplate
+- Exported signatures:
+  - `export async function createInvoiceEmailTemplate( input: CreateEmailTemplateInput ): Promise<ActionResult<InvoiceEmailTemplate>>`
+  - `export async function getInvoiceEmailTemplate( templateId: string ): Promise<ActionResult<InvoiceEmailTemplate>>`
+  - `export async function listInvoiceEmailTemplates(options?:`
+  - `export async function updateInvoiceEmailTemplate( templateId: string, input: UpdateEmailTemplateInput ): Promise<ActionResult<InvoiceEmailTemplate>>`
+  - `export async function deleteInvoiceEmailTemplate( templateId: string ): Promise<ActionResult<void>>`
+  - `export async function duplicateInvoiceEmailTemplate( templateId: string, newName?: string ): Promise<ActionResult<InvoiceEmailTemplate>>`
+  - `export async function getDefaultTemplateForType( emailType: InvoiceEmailType ): Promise<ActionResult<`
+  - `export async function recordTemplateUsage( templateId: string ): Promise<ActionResult<void>>`
+  - `export function replaceTemplateVariables( content: string, variables: Record<string, string | number | undefined> ): string`
+  - `export async function buildInvoiceEmailVariables( invoiceId: string ): Promise<ActionResult<Record<string, string>>>`
+  - `export async function buildEstimateEmailVariables( estimateId: string ): Promise<ActionResult<Record<string, string>>>`
+  - `export async function initializeDefaultTemplates(): Promise<ActionResult<`
+  - `export async function getTemplateStats(): Promise< ActionResult<`
+  - `export function getAvailableTemplateVariables()`
+
+### invoice-payments.ts
+- File: `src/lib/actions/invoice-payments.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: invoice, payment
+- External services: clerk, stripe
+- Exported signatures:
+  - `export async function recordInvoicePayment(input:`
+  - `export async function getInvoicePayments(invoiceId: string): Promise< ActionResult<`
+  - `export async function voidPayment(paymentId: string): Promise<ActionResult>`
+  - `export async function configureLateFee(input:`
+  - `export async function applyLateFee(invoiceId: string): Promise< ActionResult<`
+  - `export async function applyBatchLateFees(): Promise< ActionResult<`
+  - `export async function waiveLateFees( invoiceId: string, reason?: string ): Promise<ActionResult<`
+  - `export async function getInvoiceBalance(invoiceId: string): Promise< ActionResult<`
+
+### invoice-pdf.ts
+- File: `src/lib/actions/invoice-pdf.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: invoice
+- Exported signatures:
+  - `export async function generateInvoicePdf(invoiceId: string): Promise<`
+  - `export async function generateInvoicePdfBuffer(invoiceId: string): Promise<`
+
+### invoice-presets.ts
+- File: `src/lib/actions/invoice-presets.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: invoiceTemplate
+- Exported signatures:
+  - `export async function createInvoicePreset( input: CreateInvoicePresetInput ): Promise<ActionResult<InvoiceTemplate>>`
+  - `export async function getInvoicePreset( presetId: string ): Promise<ActionResult<InvoiceTemplate>>`
+  - `export async function listInvoicePresets(options?:`
+  - `export async function getPresetCategories(): Promise<ActionResult<string[]>>`
+  - `export async function updateInvoicePreset( presetId: string, input: UpdateInvoicePresetInput ): Promise<ActionResult<InvoiceTemplate>>`
+  - `export async function deleteInvoicePreset( presetId: string ): Promise<ActionResult<void>>`
+  - `export async function duplicateInvoicePreset( presetId: string, newName?: string ): Promise<ActionResult<InvoiceTemplate>>`
+  - `export async function getInvoiceDataFromPreset( presetId: string ): Promise< ActionResult<`
+  - `export async function getDefaultInvoicePreset(): Promise< ActionResult<InvoiceTemplate | null> >`
+  - `export async function getPopularInvoicePresets( limit: number = 5 ): Promise<ActionResult<InvoiceTemplate[]>>`
+
+### invoice-splits.ts
+- File: `src/lib/actions/invoice-splits.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: invoice, invoiceSplit
+- Exported signatures:
+  - `export async function getInvoiceSplit( invoiceId: string ): Promise<ActionResult<InvoiceSplitWithRelations | null>>`
+  - `export async function getInvoiceSplits(options?:`
+  - `export async function createInvoiceSplit( input: CreateInvoiceSplitInput ): Promise<ActionResult<InvoiceSplitWithRelations>>`
+  - `export async function deleteInvoiceSplit(invoiceId: string): Promise<ActionResult<void>>`
+  - `export async function previewInvoiceSplit( invoiceId: string, splitType: InvoiceSplitType, brokeragePayPercent?: number | null, lineItemAssignments?: Record<string, "brokerage" | "agent"> | null ): Promise<ActionResult<SplitCalculation>>`
+  - `export async function getInvoiceSplitSummary(invoiceId: string): Promise< ActionResult<`
+
+### invoice-templates.ts
+- File: `src/lib/actions/invoice-templates.ts`
+- Prisma models: invoiceBrandingTemplate, organization
+- External services: clerk
+- Exported signatures:
+  - `export async function createInvoiceBrandingTemplate(input: InvoiceBrandingTemplateInput)`
+  - `export async function getInvoiceTemplates()`
+  - `export async function getInvoiceTemplate(templateId: string)`
+  - `export async function updateInvoiceBrandingTemplate( templateId: string, input: Partial<InvoiceBrandingTemplateInput> )`
+  - `export async function deleteInvoiceTemplate(templateId: string)`
+  - `export async function getDefaultInvoiceTemplate()`
+  - `export async function duplicateInvoiceTemplate(templateId: string)`
+
+### invoices.ts
+- File: `src/lib/actions/invoices.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: booking, client, invoice, invoiceLineItem, organization
+- External services: clerk, resend, stripe
+- Exported signatures:
+  - `export async function createInvoice( input: CreateInvoiceInput ): Promise<ActionResult<`
+  - `export async function generateInvoiceFromBooking( bookingId: string ): Promise<ActionResult<`
+  - `export async function addTravelFeeToInvoice( invoiceId: string, bookingId: string ): Promise<ActionResult>`
+  - `export async function getInvoice(invoiceId: string)`
+  - `export async function getInvoices(filters?:`
+  - `export async function getClientInvoices(clientId: string)`
+  - `export async function updateInvoiceStatus( invoiceId: string, status: InvoiceStatus ): Promise<ActionResult>`
+  - `export async function deleteInvoice(invoiceId: string): Promise<ActionResult>`
+  - `export async function updateInvoice( invoiceId: string, input: UpdateInvoiceInput ): Promise<ActionResult<`
+  - `export async function calculateTravelFeeForInvoice( bookingId: string ): Promise<ActionResult<`
+  - `export async function sendInvoiceReminder( invoiceId: string ): Promise<ActionResult<`
+  - `export async function getInvoicesNeedingReminders(): Promise<ActionResult<`
+  - `export async function sendBatchInvoiceReminders( organizationId: string ): Promise<ActionResult<`
+  - `export async function toggleInvoiceAutoReminders( invoiceId: string, enabled: boolean ): Promise<ActionResult>`
+  - `export async function updateAllOverdueInvoices(): Promise<ActionResult<`
+  - `export async function getOverdueInvoicesForDashboard(organizationId: string): Promise< ActionResult<`
+  - `export async function scheduleInvoice( invoiceId: string, scheduledSendAt: Date ): Promise<ActionResult<`
+  - `export async function cancelScheduledInvoice( invoiceId: string ): Promise<ActionResult<void>>`
+  - `export async function processScheduledInvoices(): Promise< ActionResult<`
+  - `export async function getScheduledInvoices(): Promise< ActionResult<`
+  - `export async function splitInvoiceForDeposit( input: SplitInvoiceInput ): Promise< ActionResult<`
+  - `export async function createInvoiceWithDeposit( input: CreateInvoiceWithDepositInput ): Promise< ActionResult<`
+  - `export async function getDepositBalancePair(invoiceId: string): Promise< ActionResult<`
+  - `export async function cloneInvoice( invoiceId: string, options?:`
+  - `export async function bulkSendInvoices( invoiceIds: string[] ): Promise<ActionResult<`
+  - `export async function bulkMarkPaid( invoiceIds: string[], paidAt?: Date ): Promise<ActionResult<`
+  - `export async function bulkDeleteInvoices( invoiceIds: string[] ): Promise<ActionResult<`
+  - `export async function getInvoiceAgingReport(): Promise< ActionResult<`
+  - `export async function bundleInvoices( invoiceIds: string[], options?:`
+  - `export async function getTaxSummary( startDate: Date, endDate: Date ): Promise< ActionResult<`
+
+### lead-scoring.ts
+- File: `src/lib/actions/lead-scoring.ts`
+- Prisma models: organization, propertyLead, propertyWebsite
+- External services: clerk
+- Exported signatures:
+  - `export async function trackLeadEngagement( leadId: string, event: "page_view" | "photo_view" | "tour_click" | "time_spent", value?: number )`
+  - `export async function getLeadsByTemperature(propertyWebsiteId: string)`
+  - `export async function updateLeadStatus( leadId: string, status: "new" | "contacted" | "qualified" | "closed" )`
+  - `export async function addLeadNotes(leadId: string, notes: string)`
+  - `export async function setLeadFollowUp(leadId: string, followUpDate: Date)`
+  - `export async function getLeadsForFollowUp()`
+  - `export async function getLeadAnalytics(dateRange?:`
+
+### locale.ts
+- File: `src/lib/actions/locale.ts`
+- Exported signatures:
+  - `export async function getLocale(): Promise<Locale>`
+  - `export async function setLocale(locale: Locale): Promise<void>`
+
+### locations.ts
+- File: `src/lib/actions/locations.ts`
+- Prisma models: location, organization, user
+- External services: google
+- Exported signatures:
+  - `export async function createLocation( input: z.infer<typeof createLocationSchema> ): Promise<ActionResult<`
+  - `export async function createLocationFromAddress( address: string, notes?: string ): Promise<ActionResult<`
+  - `export async function updateLocation( input: z.infer<typeof updateLocationSchema> ): Promise<ActionResult<`
+  - `export async function deleteLocation(id: string): Promise<ActionResult>`
+  - `export async function getLocation(id: string)`
+  - `export async function getLocations()`
+  - `export async function calculateTravelBetweenLocations( fromLocationId: string, toLocationId: string ): Promise<ActionResult<`
+  - `export async function calculateTravelFromHomeBase( toLocationId: string, assignedUserId?: string ): Promise<ActionResult<`
+  - `export async function calculateTravelPreview( destLat: number, destLng: number, assignedUserId?: string ): Promise<ActionResult<`
+  - `export async function setOrganizationHomeBase( locationId: string ): Promise<ActionResult>`
+  - `export async function createAndSetHomeBase( address: string ): Promise<ActionResult<`
+  - `export async function getOrganizationHomeBase()`
+  - `export async function validateAddressAction( address: string ): Promise<ActionResult<`
+
+### marketing-assets.ts
+- File: `src/lib/actions/marketing-assets.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: marketingAsset, propertyWebsite
+- Exported signatures:
+  - `export async function generatePropertyFlyer(input: GenerateFlyerInput): Promise<`
+  - `export async function generateSocialSquare(input: GenerateSocialInput): Promise<`
+  - `export async function saveMarketingAsset(input:`
+  - `export async function getPropertyMarketingAssets(propertyWebsiteId: string): Promise<`
+  - `export async function deleteMarketingAsset(assetId: string): Promise<VoidActionResult>`
+
+### marketing.ts
+- File: `src/lib/actions/marketing.ts`
+- External services: resend
+- Exported signatures:
+  - `export async function subscribeToNewsletter( email: string ): Promise<ActionResult<`
+  - `export async function submitContactForm(input:`
+
+### notification-preferences.ts
+- File: `src/lib/actions/notification-preferences.ts`
+- Prisma models: organization
+- External services: clerk
+- Exported signatures:
+  - `export async function getNotificationPreferences(): Promise<`
+  - `export async function updateNotificationPreferences( preferences: NotificationPreferences ): Promise<VoidActionResult>`
+  - `export async function updateDigestSettings( settings: DigestSettings ): Promise<VoidActionResult>`
+  - `export async function updateQuietHoursSettings( settings: QuietHoursSettings ): Promise<VoidActionResult>`
+  - `export async function updateAllNotificationSettings(data:`
+  - `export async function shouldSendNotification( organizationId: string, type: keyof NotificationPreferences["email"], channel: "email" | "push" ): Promise<boolean>`
+
+### notifications.ts
+- File: `src/lib/actions/notifications.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: notification
+- Exported signatures:
+  - `export async function getNotifications( limit: number = 10 ): Promise<ActionResult<`
+  - `export async function markNotificationAsRead( notificationId: string ): Promise<ActionResult>`
+  - `export async function getUnreadNotificationCount(): Promise<ActionResult<number>>`
+  - `export async function markAllNotificationsAsRead(): Promise<ActionResult>`
+  - `export async function createNotification( input: CreateNotificationInput ): Promise<ActionResult<`
+  - `export async function deleteNotification( notificationId: string ): Promise<ActionResult>`
+  - `export async function deleteReadNotifications(): Promise<ActionResult<`
+
+### onboarding.ts
+- File: `src/lib/actions/onboarding.ts`
+- Prisma models: onboardingProgress, organization, user
+- External services: clerk
+- Exported signatures:
+  - `export async function saveOnboardingStep( organizationId: string, step: number, data: Record<string, unknown> ): Promise<VoidActionResult>`
+  - `export async function completeOnboarding( organizationId: string ): Promise<VoidActionResult>`
+  - `export async function updateIndustries( organizationId: string, industries: string[], primaryIndustry: string ): Promise<VoidActionResult>`
+  - `export async function updateModules( organizationId: string, modules: string[] ): Promise<VoidActionResult>`
+  - `export async function resetOnboarding( organizationId: string ): Promise<VoidActionResult>`
+
+### order-pages.ts
+- File: `src/lib/actions/order-pages.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: orderPage, orderPageBundle, orderPageService, service, serviceBundle
+- Exported signatures:
+  - `export async function createOrderPage( input: CreateOrderPageInput ): Promise<ActionResult<`
+  - `export async function updateOrderPage( input: UpdateOrderPageInput ): Promise<ActionResult<`
+  - `export async function deleteOrderPage( id: string, force: boolean = false ): Promise<ActionResult>`
+  - `export async function duplicateOrderPage( id: string, newName?: string, newSlug?: string ): Promise<ActionResult<`
+  - `export async function toggleOrderPageStatus( id: string ): Promise<ActionResult<`
+  - `export async function setOrderPageBundles( input: OrderPageBundlesInput ): Promise<ActionResult<`
+  - `export async function setOrderPageServices( input: OrderPageServicesInput ): Promise<ActionResult<`
+  - `export async function getOrderPages(filters?: OrderPageFilters)`
+  - `export async function getOrderPage(id: string)`
+  - `export async function getOrderPageBySlug(slug: string, orgSlug?: string)`
+
+### orders.ts
+- File: `src/lib/actions/orders.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: order, orderItem, orderPage, service, serviceBundle
+- External services: stripe
+- Exported signatures:
+  - `export async function createOrder( input: CreateOrderInput ): Promise<ActionResult<`
+  - `export async function createOrderCheckoutSession( orderId: string, sessionToken: string ): Promise<ActionResult<`
+  - `export async function getOrderBySessionToken( orderId: string, sessionToken: string ): Promise<ActionResult<`
+  - `export async function verifyOrderPayment( sessionId: string ): Promise<ActionResult<`
+  - `export async function getOrders(filters?: OrderFilters)`
+  - `export async function getOrder(id: string)`
+  - `export async function updateOrder( input: UpdateOrderInput ): Promise<ActionResult<`
+  - `export async function cancelOrder(id: string): Promise<ActionResult>`
+  - `export async function getOrderStats()`
+  - `export async function getSqftAnalytics()`
+
+### payment-plans.ts
+- File: `src/lib/actions/payment-plans.ts`
+- Prisma models: organization, paymentPlan, paymentPlanInstallment
+- External services: clerk
+- Exported signatures:
+  - `export async function createPaymentPlan(input: CreatePaymentPlanInput)`
+  - `export async function getPaymentPlans(filters?:`
+  - `export async function getPaymentPlan(planId: string)`
+  - `export async function markInstallmentPaid( installmentId: string, stripePaymentIntentId?: string )`
+  - `export async function cancelPaymentPlan(planId: string)`
+  - `export async function checkOverdueInstallments()`
+  - `export async function getUpcomingInstallments(daysAhead: number = 3)`
+
+### payments.ts
+- File: `src/lib/actions/payments.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: activityLog, organization, payment
+- External services: clerk, resend, stripe
+- Exported signatures:
+  - `export async function getPayment(id: string)`
+  - `export async function getPayments(filters?:`
+  - `export async function getPaymentStats()`
+  - `export async function markPaymentAsPaid(id: string)`
+  - `export async function updatePaymentStatus(id: string, status: PaymentStatus)`
+  - `export async function getPaymentLinkUrl(id: string): Promise<`
+  - `export async function sendPaymentReminder(id: string): Promise<VoidActionResult>`
+  - `export async function getPaymentReceiptData(id: string)`
+  - `export async function exportPaymentsToCSV(paymentIds?: string[]): Promise<`
+  - `export async function issueRefund( id: string, amountCents?: number, reason?: string ): Promise<VoidActionResult>`
+  - `export async function getTipStats(options?:`
+  - `export async function getPaymentsWithTips(options?:`
+  - `export async function calculateSuggestedTips(amountCents: number)`
+
+### payouts.ts
+- File: `src/lib/actions/payouts.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: payoutBatch, payoutItem, photographerEarning, user
+- External services: stripe
+- Exported signatures:
+  - `export async function getPayoutBatches(options?:`
+  - `export async function getPayoutBatch( batchId: string ): Promise<ActionResult<PayoutBatchWithRelations>>`
+  - `export async function getPendingPayouts(): Promise< ActionResult< Array<`
+  - `export async function createPayoutBatch( input: CreatePayoutBatchInput ): Promise<ActionResult<PayoutBatchWithRelations>>`
+  - `export async function processPayoutBatch( batchId: string ): Promise<ActionResult<PayoutBatchWithRelations>>`
+  - `export async function cancelPayoutBatch(batchId: string): Promise<ActionResult<void>>`
+  - `export async function getPayoutStats(): Promise< ActionResult<`
+
+### photographer-pay.ts
+- File: `src/lib/actions/photographer-pay.ts`
+- Auth helpers: requireOrganizationId, requireUserId
+- Prisma models: booking, photographerEarning, photographerRate
+- Exported signatures:
+  - `export async function getPhotographerRates(options?:`
+  - `export async function getPhotographerRateForService( userId: string, serviceId: string ): Promise<ActionResult<PhotographerRateWithRelations | null>>`
+  - `export async function upsertPhotographerRate( input: CreateRateInput ): Promise<ActionResult<PhotographerRateWithRelations>>`
+  - `export async function deletePhotographerRate(id: string): Promise<ActionResult<void>>`
+  - `export async function getPhotographerEarnings(options?:`
+  - `export async function getMyEarnings(options?:`
+  - `export async function calculateBookingEarnings( bookingId: string, photographerId: string, invoiceAmountCents: number ): Promise<ActionResult<`
+  - `export async function recordPhotographerEarning(input:`
+  - `export async function approveEarnings(earningIds: string[]): Promise<ActionResult<void>>`
+  - `export async function getEarningStats(options?:`
+  - `export async function getMyEarningStats(): Promise< ActionResult<`
+
+### platform-referrals.ts
+- File: `src/lib/actions/platform-referrals.ts`
+- Auth helpers: requireAdmin
+- Prisma models: notification, organizationMember, platformReferral, platformReferralReward, platformReferralSettings, platformReferrer, user
+- External services: clerk
+- Exported signatures:
+  - `export async function getMyReferralProfile(): Promise<ActionResult<PlatformReferrerProfile>>`
+  - `export async function getMyReferralStats(): Promise<ActionResult<PlatformReferralStats>>`
+  - `export async function getMyReferrals(): Promise<ActionResult<PlatformReferralItem[]>>`
+  - `export async function getMyRewards(): Promise<ActionResult<PlatformReward[]>>`
+  - `export async function getMyReferralLink(): Promise<ActionResult<string>>`
+  - `export async function sendReferralInvite( email: string, name?: string ): Promise<ActionResult<`
+  - `export async function trackReferralClick( referralCode: string, metadata?:`
+  - `export async function processReferralSignup( referralCode: string, newUserId: string, newOrgId?: string ): Promise<ActionResult>`
+  - `export async function processReferralConversion( userId: string ): Promise<ActionResult>`
+  - `export async function applyReward( rewardId: string ): Promise<ActionResult>`
+  - `export async function getPlatformReferralSettings(): Promise<ActionResult<Awaited<ReturnType<typeof getPlatformSettings>>>>`
+  - `export async function updatePlatformReferralSettings( updates:`
+  - `export async function getReferralLeaderboard( limit: number = 10 ): Promise<ActionResult<Array<`
+  - `export async function processReferralFromCode( referralCode: string ): Promise<ActionResult>`
+
+### portal-activity.ts
+- File: `src/lib/actions/portal-activity.ts`
+- Prisma models: clientSession, portalActivity
+- Exported signatures:
+  - `export async function createPortalActivity(input: CreateActivityInput)`
+  - `export async function getClientActivities(options?:`
+  - `export async function markActivitiesAsRead(activityIds?: string[])`
+  - `export async function getUnreadActivityCount()`
+  - `export async function logGalleryDelivered( organizationId: string, clientId: string, projectId: string, galleryName: string )`
+  - `export async function logInvoiceSent( organizationId: string, clientId: string, invoiceId: string, invoiceNumber: string, amount: number )`
+  - `export async function logPaymentReceived( organizationId: string, clientId: string, paymentId: string, amount: number, projectId?: string )`
+  - `export async function logDownloadCompleted( organizationId: string, clientId: string, projectId: string, format: string, fileCount: number )`
+
+### portal-downloads.ts
+- File: `src/lib/actions/portal-downloads.ts`
+- Prisma models: invoice, project, propertyWebsite
+- External services: stripe
+- Exported signatures:
+  - `export async function getGalleryZipDownload(galleryId: string): Promise<`
+  - `export async function getWebSizeDownload(galleryId: string): Promise<`
+  - `export async function getHighResDownload(galleryId: string): Promise<`
+  - `export async function getMarketingKitDownload(propertyId: string): Promise<`
+  - `export async function getInvoicePaymentLink(invoiceId: string): Promise<`
+  - `export async function getInvoicePdfDownload(invoiceId: string): Promise<`
+
+### portfolio-comments.ts
+- File: `src/lib/actions/portfolio-comments.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: portfolioComment, portfolioWebsite
+- Exported signatures:
+  - `export async function getPortfolioComments(options?:`
+  - `export async function approveComment( commentId: string ): Promise<VoidActionResult>`
+  - `export async function hideComment( commentId: string ): Promise<VoidActionResult>`
+  - `export async function unhideComment( commentId: string ): Promise<VoidActionResult>`
+  - `export async function deleteComment( commentId: string ): Promise<VoidActionResult>`
+  - `export async function getCommentStats(): Promise<`
+  - `export async function updateCommentSettings( portfolioId: string, settings:`
+
+### portfolio-websites.ts
+- File: `src/lib/actions/portfolio-websites.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: activityLog, client, portfolioInquiry, portfolioWebsite, portfolioWebsiteProject, portfolioWebsiteSection, portfolioWebsiteView, project
+- Exported signatures:
+  - `export async function getPortfolioWebsites()`
+  - `export async function createPortfolioWebsite(data:`
+  - `export async function getPortfolioWebsite(id: string)`
+  - `export async function updatePortfolioWebsite( id: string, data:`
+  - `export async function updatePortfolioWebsiteProjects( id: string, projectIds: string[] ): Promise<VoidActionResult>`
+  - `export async function publishPortfolioWebsite( id: string, publish: boolean ): Promise<VoidActionResult>`
+  - `export async function deletePortfolioWebsite( id: string ): Promise<VoidActionResult>`
+  - `export async function duplicatePortfolioWebsite( id: string ): Promise<`
+  - `export async function getPortfolioWebsiteBySlug(slug: string)`
+  - `export async function updatePortfolioWebsiteSettings( id: string, data:`
+  - `export async function getPortfolioSections(portfolioWebsiteId: string)`
+  - `export async function createPortfolioSection( portfolioWebsiteId: string, data:`
+  - `export async function updatePortfolioSection( id: string, data:`
+  - `export async function deletePortfolioSection( id: string ): Promise<VoidActionResult>`
+  - `export async function reorderPortfolioSections( portfolioWebsiteId: string, sectionIds: string[] ): Promise<VoidActionResult>`
+  - `export async function initializePortfolioSections( portfolioWebsiteId: string ): Promise<VoidActionResult>`
+  - `export async function duplicatePortfolioSection( id: string ): Promise<`
+  - `export async function toggleSectionVisibility( id: string ): Promise<`
+  - `export async function setPortfolioPassword( portfolioId: string, data:`
+  - `export async function verifyPortfolioPassword( slug: string, password: string ): Promise<VoidActionResult>`
+  - `export async function updatePortfolioAdvancedSettings( portfolioId: string, data:`
+  - `export async function schedulePortfolioPublish( portfolioId: string, scheduledAt: Date | null ): Promise<VoidActionResult>`
+  - `export async function getScheduledPortfolios(): Promise<`
+  - `export async function processScheduledPortfolioPublishing(): Promise<`
+  - `export async function trackPortfolioView( slug: string, data:`
+  - `export async function updatePortfolioViewEngagement( viewId: string, data:`
+  - `export async function getPortfolioAnalytics( portfolioId: string, timeRange: "7d" | "30d" | "90d" | "all" = "30d" ): Promise<`
+  - `export async function submitPortfolioContactForm( slug: string, data:`
+  - `export async function addCustomDomain( portfolioId: string, domain: string ): Promise<`
+  - `export async function verifyCustomDomain( portfolioId: string ): Promise<`
+  - `export async function removeCustomDomain( portfolioId: string ): Promise<VoidActionResult>`
+  - `export async function getCustomDomainStatus( portfolioId: string ): Promise<`
+  - `export async function getPortfolioByCustomDomain( domain: string ): Promise<`
+  - `export async function submitPortfolioInquiry(input:`
+  - `export async function getPortfolioInquiries(filters?:`
+  - `export async function updatePortfolioInquiryStatus( inquiryId: string, status: "new" | "contacted" | "qualified" | "closed", notes?: string ): Promise<VoidActionResult>`
+  - `export async function convertPortfolioInquiryToClient( inquiryId: string, additionalData?:`
+
+### products.ts
+- File: `src/lib/actions/products.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: asset, productCatalog, productItem, productPhoto, productVariant
+- Exported signatures:
+  - `export async function listProductCatalogs()`
+  - `export async function getProductCatalog(catalogId: string)`
+  - `export async function createProductCatalog(input: CreateCatalogInput): Promise<ActionResult<`
+  - `export async function createProduct(input: CreateProductInput): Promise<ActionResult<`
+  - `export async function attachPhotoToProduct(input: AttachPhotoInput): Promise<ActionResult<`
+  - `export async function updateProductStatus(productId: string, status: "pending" | "shot" | "edited" | "approved" | "delivered" | "archived"): Promise<ActionResult>`
+
+### projects.ts
+- File: `src/lib/actions/projects.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: booking, client, project, recurringTask, task, taskAutomation, taskBoard, taskColumn, taskComment, taskSubtask, taskTemplate, taskTimeEntry, user
+- Exported signatures:
+  - `export async function getBoards()`
+  - `export async function getBoard(boardId: string)`
+  - `export async function getOrCreateDefaultBoard()`
+  - `export async function createBoard(data:`
+  - `export async function updateBoard( boardId: string, data:`
+  - `export async function archiveBoard( boardId: string ): Promise<VoidActionResult>`
+  - `export async function createColumn( boardId: string, data:`
+  - `export async function updateColumn( columnId: string, data:`
+  - `export async function reorderColumns( boardId: string, columnIds: string[] ): Promise<VoidActionResult>`
+  - `export async function deleteColumn( columnId: string ): Promise<VoidActionResult>`
+  - `export async function getTasks(filters?:`
+  - `export async function getTask(taskId: string)`
+  - `export async function createTask(data:`
+  - `export async function updateTask( taskId: string, data:`
+  - `export async function moveTask( taskId: string, targetColumnId: string, targetPosition: number ): Promise<VoidActionResult>`
+  - `export async function deleteTask( taskId: string ): Promise<VoidActionResult>`
+  - `export async function addSubtask( taskId: string, title: string ): Promise<`
+  - `export async function toggleSubtask( subtaskId: string ): Promise<VoidActionResult>`
+  - `export async function deleteSubtask( subtaskId: string ): Promise<VoidActionResult>`
+  - `export async function addComment( taskId: string, content: string ): Promise<`
+  - `export async function deleteComment( commentId: string ): Promise<VoidActionResult>`
+  - `export async function createTaskFromGallery( galleryId: string, options?:`
+  - `export async function createTaskFromBooking( bookingId: string, options?:`
+  - `export async function createTaskFromClient( clientId: string, options?:`
+  - `export async function getTaskAnalytics(): Promise<`
+  - `export async function bulkMoveTasks( taskIds: string[], columnId: string ): Promise<`
+  - `export async function bulkUpdatePriority( taskIds: string[], priority: TaskPriority ): Promise<`
+  - `export async function bulkAssignTasks( taskIds: string[], assigneeId: string | null ): Promise<`
+  - `export async function bulkDeleteTasks( taskIds: string[] ): Promise<`
+  - `export async function getTaskTemplates()`
+  - `export async function createTaskTemplate(data:`
+  - `export async function saveTaskAsTemplate( taskId: string, templateData:`
+  - `export async function createTaskFromTemplate( templateId: string, data:`
+  - `export async function updateTaskTemplate( templateId: string, data:`
+  - `export async function deleteTaskTemplate( templateId: string ): Promise<VoidActionResult>`
+  - `export async function getAutomations(boardId: string)`
+  - `export async function createAutomation(data:`
+  - `export async function updateAutomation( automationId: string, data:`
+  - `export async function deleteAutomation( automationId: string ): Promise<VoidActionResult>`
+  - `export async function executeAutomations( boardId: string, taskId: string, triggerType: AutomationTriggerType, context?:`
+  - `export async function getRecurringTasks(boardId: string)`
+  - `export async function createRecurringTask(data:`
+  - `export async function updateRecurringTask( recurringTaskId: string, data:`
+  - `export async function deleteRecurringTask( recurringTaskId: string ): Promise<VoidActionResult>`
+  - `export async function processRecurringTasks(): Promise<`
+  - `export async function getTaskTimeEntries(taskId: string)`
+  - `export async function startTimeTracking( taskId: string ): Promise<`
+  - `export async function stopTimeTracking( entryId: string ): Promise<`
+  - `export async function addManualTimeEntry(data:`
+  - `export async function deleteTimeEntry( entryId: string ): Promise<VoidActionResult>`
+  - `export async function getActiveTimer(): Promise<`
+  - `export async function addTaskDependency( taskId: string, blockedByTaskId: string ): Promise<VoidActionResult>`
+  - `export async function removeTaskDependency( taskId: string, blockedByTaskId: string ): Promise<VoidActionResult>`
+  - `export async function getTaskDependencies(taskId: string): Promise<`
+
+### property-websites.ts
+- File: `src/lib/actions/property-websites.ts`
+- Prisma models: project, propertyAnalytics, propertyLead, propertyWebsite
+- Exported signatures:
+  - `export async function createPropertyWebsite( data: PropertyWebsiteInput ): Promise<`
+  - `export async function updatePropertyWebsite( id: string, data: Partial<PropertyWebsiteInput> ): Promise<VoidActionResult>`
+  - `export async function togglePropertyWebsitePublish( id: string ): Promise<`
+  - `export async function deletePropertyWebsite( id: string ): Promise<VoidActionResult>`
+  - `export async function getPropertyWebsites( organizationId: string ): Promise<PropertyWebsiteWithRelations[]>`
+  - `export async function getPropertyWebsiteById( id: string ): Promise<PropertyWebsiteWithRelations | null>`
+  - `export async function getPropertyWebsiteBySlug(slug: string)`
+  - `export async function incrementPropertyWebsiteViews(id: string): Promise<void>`
+  - `export async function submitPropertyLead(data:`
+  - `export async function getPropertyLeads(propertyWebsiteId: string)`
+  - `export async function updateLeadStatus( leadId: string, status: LeadStatus ): Promise<VoidActionResult>`
+  - `export async function getPropertyAnalytics( propertyWebsiteId: string, days: number = 30 )`
+  - `export async function getAllPropertyLeads(organizationId: string)`
+  - `export async function getAggregateAnalytics(organizationId: string, days: number = 30)`
+  - `export async function duplicatePropertyWebsite( id: string ): Promise<`
+  - `export async function deletePropertyWebsites( ids: string[] ): Promise<`
+  - `export async function publishPropertyWebsites( ids: string[], publish: boolean ): Promise<`
+  - `export async function getProjectsWithoutPropertyWebsite(organizationId: string)`
+
+### questionnaire-portal.ts
+- File: `src/lib/actions/questionnaire-portal.ts`
+- Prisma models: booking, client, clientQuestionnaire, clientQuestionnaireAgreement, clientSession, organization
+- Exported signatures:
+  - `export async function getClientQuestionnairesForPortal(): Promise< ActionResult<PortalQuestionnaireWithRelations[]> >`
+  - `export async function getQuestionnaireForCompletion( id: string ): Promise<ActionResult<PortalQuestionnaireWithRelations | null>>`
+  - `export async function saveQuestionnaireProgress( input: SaveQuestionnaireProgressInput ): Promise<ActionResult<void>>`
+  - `export async function acceptAgreement( input: AcceptAgreementInput ): Promise<ActionResult<void>>`
+  - `export async function submitQuestionnaireResponses( input: SubmitQuestionnaireResponsesInput ): Promise<ActionResult<void>>`
+  - `export async function getQuestionnaireCompletionStatus( id: string ): Promise< ActionResult<`
+
+### questionnaire-templates.ts
+- File: `src/lib/actions/questionnaire-templates.ts`
+- Prisma models: questionnaireField, questionnaireTemplate
+- External services: clerk
+- Exported signatures:
+  - `export async function getQuestionnaireTemplates( filters?: QuestionnaireTemplateFilters ): Promise<ActionResult<QuestionnaireTemplateWithRelations[]>>`
+  - `export async function getSystemTemplates( industry?: Industry ): Promise<ActionResult<QuestionnaireTemplateWithRelations[]>>`
+  - `export async function getQuestionnaireTemplate( id: string ): Promise<ActionResult<QuestionnaireTemplateWithRelations | null>>`
+  - `export async function createQuestionnaireTemplate( input: CreateQuestionnaireTemplateInput ): Promise<ActionResult<`
+  - `export async function updateQuestionnaireTemplate( input: UpdateQuestionnaireTemplateInput ): Promise<ActionResult<`
+  - `export async function duplicateQuestionnaireTemplate( input:`
+  - `export async function deleteQuestionnaireTemplate( input:`
+  - `export async function toggleQuestionnaireTemplateStatus( id: string ): Promise<ActionResult<void>>`
+  - `export async function updateQuestionnaireFields( input: UpdateQuestionnaireFieldsInput ): Promise<ActionResult<void>>`
+  - `export async function reorderQuestionnaireFields( input: ReorderQuestionnaireFieldsInput ): Promise<ActionResult<void>>`
+  - `export async function updateQuestionnaireAgreements( input: UpdateQuestionnaireAgreementsInput ): Promise<ActionResult<void>>`
+  - `export async function getTemplatesByIndustry(): Promise< ActionResult<Record<Industry, QuestionnaireTemplateWithRelations[]>> >`
+
+### questionnaire-types.ts
+- File: `src/lib/actions/questionnaire-types.ts`
+
+### receipt-pdf.ts
+- File: `src/lib/actions/receipt-pdf.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: payment
+- Exported signatures:
+  - `export async function generateReceiptPdf(paymentId: string): Promise<`
+
+### recurring-invoices.ts
+- File: `src/lib/actions/recurring-invoices.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: client, invoice, organization, recurringInvoice
+- External services: clerk
+- Exported signatures:
+  - `export async function createRecurringInvoice( input: CreateRecurringInvoiceInput ): Promise<ActionResult<`
+  - `export async function updateRecurringInvoice( input: UpdateRecurringInvoiceInput ): Promise<ActionResult>`
+  - `export async function deleteRecurringInvoice(id: string): Promise<ActionResult>`
+  - `export async function pauseRecurringInvoice( id: string, pauseUntil?: Date ): Promise<ActionResult>`
+  - `export async function resumeRecurringInvoice(id: string): Promise<ActionResult>`
+  - `export async function getRecurringInvoices(): Promise< ActionResult< Array<`
+  - `export async function getRecurringInvoice(id: string): Promise< ActionResult<`
+  - `export async function getRecurringInvoicesDueToRun(): Promise< ActionResult< Array<`
+  - `export async function createInvoiceFromRecurring( recurringId: string ): Promise<ActionResult<`
+  - `export async function processRecurringInvoices(): Promise< ActionResult<`
+
+### referrals.ts
+- File: `src/lib/actions/referrals.ts`
+- Prisma models: referral, referralProgram, referrer
+- External services: clerk
+- Exported signatures:
+  - `export async function getReferralProgram(): Promise<ActionResult<ReferralProgram | null>>`
+  - `export async function getReferrers(): Promise<ActionResult<Referrer[]>>`
+  - `export async function getReferrals(): Promise<ActionResult<Referral[]>>`
+  - `export async function getReferralStats(): Promise< ActionResult<`
+  - `export async function upsertReferralProgram(data:`
+  - `export async function toggleReferralProgram(): Promise<ActionResult<void>>`
+  - `export async function createReferrer(data:`
+  - `export async function toggleReferrerStatus( referrerId: string ): Promise<ActionResult<void>>`
+  - `export async function deleteReferrer( referrerId: string ): Promise<ActionResult<void>>`
+  - `export async function regenerateReferralCode( referrerId: string ): Promise<ActionResult<`
+  - `export async function updateReferralStatus( referralId: string, status: ReferralStatus ): Promise<ActionResult<void>>`
+
+### retainers.ts
+- File: `src/lib/actions/retainers.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: client, clientRetainer, invoice, retainerTransaction
+- Exported signatures:
+  - `export async function createRetainer( input: CreateRetainerInput ): Promise<ActionResult<ClientRetainer>>`
+  - `export async function getRetainer(options:`
+  - `export async function listRetainers(options?:`
+  - `export async function updateRetainer( retainerId: string, input:`
+  - `export async function addDeposit( retainerId: string, input: DepositInput ): Promise<ActionResult<RetainerTransaction>>`
+  - `export async function applyToInvoice( retainerId: string, input: ApplyToInvoiceInput ): Promise<ActionResult<RetainerTransaction>>`
+  - `export async function refundFromRetainer( retainerId: string, amountCents: number, description?: string ): Promise<ActionResult<RetainerTransaction>>`
+  - `export async function adjustRetainerBalance( retainerId: string, amountCents: number, description: string ): Promise<ActionResult<RetainerTransaction>>`
+  - `export async function getRetainerTransactions( retainerId: string, options?:`
+  - `export async function getRetainerStats(): Promise< ActionResult<`
+  - `export async function getLowBalanceRetainers(): Promise<ActionResult<RetainerWithTransactions[]>>`
+
+### revenue-forecasting.ts
+- File: `src/lib/actions/revenue-forecasting.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: booking, client, invoice, payment
+- Exported signatures:
+  - `export async function getRevenueForecast( months: number = 6 ): Promise<ActionResult<RevenueForecast[]>>`
+  - `export async function getHistoricalTrends( months: number = 12 ): Promise<ActionResult<HistoricalTrend[]>>`
+  - `export async function getSeasonalPatterns(): Promise< ActionResult<SeasonalPattern[]> >`
+  - `export async function getRevenueGoals( year?: number ): Promise< ActionResult<`
+  - `export async function getRevenueInsights(): Promise< ActionResult<`
+
+### search.ts
+- File: `src/lib/actions/search.ts`
+- Prisma models: booking, client, invoice, project, propertyWebsite, service
+- External services: clerk
+- Exported signatures:
+  - `export async function globalSearch(query: string): Promise<SearchResults>`
+
+### seed.ts
+- File: `src/lib/actions/seed.ts`
+- Auth helpers: requireOrganizationId, requireUserId
+- Prisma models: activityLog, asset, availabilityBlock, booking, bookingReminder, client, clientCommunication, clientSession, clientTag, clientTagAssignment, contract, contractAuditLog, contractSignature, contractSigner, contractTemplate, deliveryLink, equipment, galleryComment, galleryFavorite, invoice, invoiceLineItem, marketingAsset, notification, payment, project, propertyAnalytics, propertyLead, propertyWebsite, service, serviceEquipmentRequirement, task, taskBoard, taskColumn, taskComment, taskSubtask, userEquipment, userServiceCapability
+- External services: google
+- Exported signatures:
+  - `export async function seedDatabase(): Promise<ActionResult<`
+  - `export async function clearSeededData(): Promise<ActionResult>`
+
+### self-booking.ts
+- File: `src/lib/actions/self-booking.ts`
+- Prisma models: booking, client, organization, service
+- Exported signatures:
+  - `export async function getPublicOrganization(slug: string): Promise< ActionResult<`
+  - `export async function getPublicServices( organizationSlug: string ): Promise<ActionResult<PublicService[]>>`
+  - `export async function getAvailableSlots( organizationSlug: string, serviceId: string, startDate: string, endDate: string ): Promise<ActionResult<AvailableSlot[]>>`
+  - `export async function submitBooking( data: BookingSubmission ): Promise<ActionResult<BookingConfirmation>>`
+
+### service-images.ts
+- File: `src/lib/actions/service-images.ts`
+- External services: clerk, r2
+- Exported signatures:
+  - `export async function getServiceImageUploadUrl( request: ServiceImageUploadRequest ): Promise<ServiceImageUploadResult>`
+
+### services.ts
+- File: `src/lib/actions/services.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: service
+- External services: stripe
+- Exported signatures:
+  - `export async function createService( input: CreateServiceInput ): Promise<ActionResult<`
+  - `export async function updateService( input: UpdateServiceInput ): Promise<ActionResult<`
+  - `export async function deleteService( id: string, force: boolean = false ): Promise<ActionResult>`
+  - `export async function duplicateService( id: string, newName?: string ): Promise<ActionResult<`
+  - `export async function toggleServiceStatus( id: string ): Promise<ActionResult<`
+  - `export async function getServices(filters?: ServiceFilters)`
+  - `export async function getService(id: string)`
+  - `export async function seedDefaultServices(): Promise<ActionResult<`
+  - `export async function bulkToggleServiceStatus( ids: string[] ): Promise<ActionResult<`
+  - `export async function bulkArchiveServices( ids: string[], archive: boolean = true ): Promise<ActionResult<`
+  - `export async function bulkDeleteServices( ids: string[] ): Promise<ActionResult<`
+
+### settings.ts
+- File: `src/lib/actions/settings.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: booking, client, invoice, organization, organizationMember, payment, project, propertyWebsite, service, user
+- External services: clerk, r2, stripe
+- Exported signatures:
+  - `export async function getSupportedCurrencies()`
+  - `export async function getOrganizationSettings()`
+  - `export async function updateOrganizationProfile(input:`
+  - `export async function updateOrganizationBranding(input:`
+  - `export async function updateTravelSettings(input:`
+  - `export async function updateTaxSettings(input:`
+  - `export async function getTaxSettings()`
+  - `export async function getCurrencySettings()`
+  - `export async function updateCurrencySettings(input:`
+  - `export async function getTeamMembers()`
+  - `export async function updateMemberRole(memberId: string, role: MemberRole)`
+  - `export async function removeMember(memberId: string)`
+  - `export async function getCurrentUser()`
+  - `export async function updateUserProfile(input:`
+  - `export async function exportAllData()`
+  - `export async function deleteAccount(confirmationText: string)`
+  - `export async function getBillingStats()`
+  - `export async function getInvoiceHistory(limit: number = 10)`
+
+### slack.ts
+- File: `src/lib/actions/slack.ts`
+- Prisma models: slackIntegration
+- External services: clerk, slack
+- Exported signatures:
+  - `export async function getSlackConfig(): Promise<ActionResult<SlackConfig | null>>`
+  - `export async function saveSlackConfig(data:`
+  - `export async function toggleSlackIntegration(): Promise<ActionResult<void>>`
+  - `export async function testSlackConnection(): Promise<ActionResult<void>>`
+  - `export async function deleteSlackIntegration(): Promise<ActionResult<void>>`
+  - `export async function notifySlackNewBooking( data: SlackBookingNotification ): Promise<void>`
+  - `export async function notifySlackPayment( data: SlackPaymentNotification ): Promise<void>`
+  - `export async function notifySlackCancellation( data: SlackCancellationNotification ): Promise<void>`
+  - `export async function notifySlackGalleryDelivery( data: SlackGalleryDeliveryNotification ): Promise<void>`
+
+### smart-collections.ts
+- File: `src/lib/actions/smart-collections.ts`
+- Prisma models: asset, organization, project
+- External services: clerk
+- Exported signatures:
+  - `export async function analyzePhotosForSmartCollections(projectId: string)`
+  - `export async function applySmartCollection( projectId: string, suggestion:`
+  - `export async function applyAllSmartCollections( projectId: string, suggestions:`
+
+### sms.ts
+- File: `src/lib/actions/sms.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: organization, sMSLog, sMSTemplate
+- Exported signatures:
+  - `export async function getSMSSettings(): Promise<ActionResult<SMSSettings>>`
+  - `export async function getSMSStats(): Promise<ActionResult<SMSStats>>`
+  - `export async function updateSMSSettings(data:`
+  - `export async function sendTestSMS(toPhone: string): Promise<ActionResult>`
+  - `export async function getSMSTemplates(): Promise< ActionResult< Array< SMSTemplateData &`
+  - `export async function seedDefaultTemplates(): Promise<ActionResult>`
+  - `export async function getTemplateTypes(): Promise< ActionResult< Array<`
+  - `export async function upsertSMSTemplate(data:`
+  - `export async function deleteSMSTemplate(id: string): Promise<ActionResult>`
+  - `export async function getSMSLogs(params?:`
+  - `export async function sendSMSToClientAction(data:`
+  - `export async function sendCustomSMS(data:`
+
+### stripe-checkout.ts
+- File: `src/lib/actions/stripe-checkout.ts`
+- Prisma models: invoice, organization, payment, project
+- External services: clerk, stripe
+- Exported signatures:
+  - `export async function createCheckoutSession(params:`
+  - `export async function createGalleryCheckoutSession( galleryId: string, customerEmail?: string ): Promise<ActionResult<`
+  - `export async function verifyPayment( sessionId: string ): Promise<ActionResult<`
+  - `export async function createInvoiceCheckoutSession( invoiceId: string, customerEmail?: string ): Promise<ActionResult<`
+  - `export async function verifyInvoicePayment( sessionId: string ): Promise<ActionResult<`
+  - `export async function checkGalleryPaymentStatus( galleryId: string ): Promise<ActionResult<`
+
+### stripe-connect.ts
+- File: `src/lib/actions/stripe-connect.ts`
+- Auth helpers: requireAuth, requireOrganizationId
+- Prisma models: organization
+- External services: stripe
+- Exported signatures:
+  - `export async function createConnectAccount(): Promise< ActionResult<`
+  - `export async function getConnectAccountStatus(): Promise< ActionResult<`
+  - `export async function createAccountLink(): Promise< ActionResult<`
+  - `export async function createDashboardLink(): Promise< ActionResult<`
+  - `export async function isStripeTestMode(): Promise<boolean>`
+  - `export async function getConnectAccountDetails(): Promise< ActionResult<ConnectAccountDetails> >`
+
+### stripe-product-sync.ts
+- File: `src/lib/actions/stripe-product-sync.ts`
+- Prisma models: organization, service, serviceBundle
+- External services: clerk, stripe
+- Exported signatures:
+  - `export async function syncProductsToStripe()`
+  - `export async function syncSingleProductToStripe( productId: string, productType: "service" | "bundle" ): Promise<VoidActionResult>`
+  - `export async function refreshSyncOverview(): Promise<ProductSyncOverview>`
+
+### subscription-plans.ts
+- File: `src/lib/actions/subscription-plans.ts`
+- Prisma models: planFeature, pricingExperiment, pricingVariant, subscriptionPlan
+- External services: clerk, r2, resend, stripe, twilio
+- Exported signatures:
+  - `export async function getSubscriptionPlans()`
+  - `export async function getSubscriptionPlan(idOrSlug: string)`
+  - `export async function createSubscriptionPlan( input: SubscriptionPlanInput ): Promise<ActionResult<`
+  - `export async function updateSubscriptionPlan( id: string, input: Partial<SubscriptionPlanInput> ): Promise<ActionResult<`
+  - `export async function deleteSubscriptionPlan( id: string ): Promise<ActionResult>`
+  - `export async function addPlanFeature( input: PlanFeatureInput ): Promise<ActionResult<`
+  - `export async function updatePlanFeature( id: string, input: Partial<PlanFeatureInput> ): Promise<ActionResult<`
+  - `export async function deletePlanFeature(id: string): Promise<ActionResult>`
+  - `export async function syncPlanToStripe( planId: string ): Promise<ActionResult<`
+  - `export async function syncAllPlansToStripe(): Promise< ActionResult<`
+  - `export async function getPricingExperiments()`
+  - `export async function createPricingExperiment( input: PricingExperimentInput ): Promise<ActionResult<`
+  - `export async function updateExperimentStatus( id: string, status: ExperimentStatus ): Promise<ActionResult<`
+  - `export async function createPricingVariant( input: PricingVariantInput ): Promise<ActionResult<`
+  - `export async function syncVariantToStripe( variantId: string ): Promise<ActionResult<`
+  - `export async function recordVariantImpression(variantId: string): Promise<void>`
+  - `export async function recordVariantConversion(variantId: string): Promise<void>`
+  - `export async function getPublicPricingPlans(experimentSlug?: string)`
+  - `export async function seedDefaultPlans(): Promise< ActionResult<`
+  - `export async function cloneSubscriptionPlan( planId: string, newName?: string, newSlug?: string ): Promise<ActionResult<`
+  - `export async function deletePricingVariant(id: string): Promise<ActionResult>`
+  - `export async function checkEnvironmentStatus(): Promise<EnvironmentStatus>`
+
+### team-availability.ts
+- File: `src/lib/actions/team-availability.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: availabilityBlock, booking, user
+- Exported signatures:
+  - `export async function getTeamAvailability( startDate: Date, endDate: Date, options?:`
+  - `export async function getDailyTeamSummary( date: Date ): Promise<ActionResult<DayAvailability>>`
+  - `export async function findAvailableTeamMembers( startTime: Date, endTime: Date, serviceId?: string ): Promise< ActionResult<`
+  - `export async function getTeamUtilization( startDate: Date, endDate: Date ): Promise< ActionResult<`
+  - `export async function getSuggestedBookingTimes( date: Date, durationMinutes: number, serviceId?: string ): Promise< ActionResult<`
+
+### team-capabilities.ts
+- File: `src/lib/actions/team-capabilities.ts`
+- Prisma models: location, organization, organizationMember, service, serviceEquipmentRequirement, user, userServiceCapability
+- Exported signatures:
+  - `export async function assignServiceCapability( input: z.infer<typeof serviceCapabilitySchema> ): Promise<ActionResult<`
+  - `export async function updateServiceCapability( userId: string, serviceId: string, level: "learning" | "capable" | "expert", notes?: string ): Promise<ActionResult>`
+  - `export async function removeServiceCapability( userId: string, serviceId: string ): Promise<ActionResult>`
+  - `export async function getUserServiceCapabilities(userId: string)`
+  - `export async function getQualifiedTeamMembers( serviceId: string, minLevel?: "learning" | "capable" | "expert" ): Promise<Array<`
+  - `export async function getTeamMembersWithCapabilities()`
+  - `export async function bulkAssignCapabilities( userId: string, capabilities: Array<`
+  - `export async function setUserHomeBase( userId: string, locationId: string | null ): Promise<ActionResult>`
+
+### territories.ts
+- File: `src/lib/actions/territories.ts`
+- Prisma models: organization, serviceTerritory, territoryServiceOverride
+- External services: clerk
+- Exported signatures:
+  - `export async function getTerritories(): Promise<ActionResult<ServiceTerritory[]>>`
+  - `export async function findTerritoryByZipCode( zipCode: string ): Promise<ActionResult<ServiceTerritory | null>>`
+  - `export async function createTerritory(data:`
+  - `export async function updateTerritory( id: string, data:`
+  - `export async function deleteTerritory(id: string): Promise<ActionResult<void>>`
+  - `export async function toggleTerritoryStatus(id: string): Promise<ActionResult<void>>`
+  - `export async function importZipCodes( territoryId: string, zipCodesString: string ): Promise<ActionResult<`
+  - `export async function setServiceOverride(data:`
+  - `export async function removeServiceOverride( territoryId: string, serviceId: string ): Promise<ActionResult<void>>`
+  - `export async function checkServiceAreaPublic( orgSlug: string, zipCode: string ): Promise<ActionResult<`
+
+### tour.ts
+- File: `src/lib/actions/tour.ts`
+- Prisma models: organization, user
+- External services: clerk
+- Exported signatures:
+  - `export async function markTourCompleted( organizationId: string, tourId: string ): Promise<ActionResult<void>>`
+  - `export async function markModuleTourCompleted( moduleId: string ): Promise<ActionResult<void>>`
+  - `export async function getTourProgress( organizationId: string ): Promise<ActionResult<TourProgress>>`
+  - `export async function resetTourProgress( organizationId: string ): Promise<ActionResult<void>>`
+
+### types.ts
+- File: `src/lib/actions/types.ts`
+
+### uploads.ts
+- File: `src/lib/actions/uploads.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: activityLog, asset, project
+- External services: r2
+- Exported signatures:
+  - `export async function getUploadPresignedUrls( galleryId: string, files: UploadRequestFile[] ): Promise<UploadPresignedUrlResult>`
+  - `export async function createAsset( organizationId: string, input: CreateAssetInput ): Promise<CreateAssetResult>`
+  - `export async function createAssets( projectId: string, assets: Array<Omit<CreateAssetInput, "projectId">> ): Promise<BulkCreateAssetsResult>`
+  - `export async function deleteAsset( organizationId: string, assetId: string ): Promise<VoidActionResult>`
+  - `export async function deleteAssets( organizationId: string, assetIds: string[] ): Promise<`
+  - `export async function updateAssetUrls( organizationId: string, assetId: string, urls:`
+
+### waitlist.ts
+- File: `src/lib/actions/waitlist.ts`
+- Auth helpers: requireOrganizationId
+- Prisma models: activityLog, booking, bookingWaitlist, service
+- Exported signatures:
+  - `export async function getWaitlistEntries( filters?: WaitlistFilters, options?:`
+  - `export async function addToWaitlist( input: CreateWaitlistInput ): Promise<ActionResult<`
+  - `export async function updateWaitlistStatus( entryId: string, status: WaitlistStatus ): Promise<ActionResult<`
+  - `export async function updateWaitlistPriority( entryId: string, priority: number ): Promise<ActionResult<`
+  - `export async function removeFromWaitlist( entryId: string ): Promise<ActionResult<`
+  - `export async function notifyWaitlistClient( entryId: string, expiresInHours: number = 24 ): Promise<ActionResult<`
+  - `export async function convertWaitlistToBooking( entryId: string, bookingDetails:`
+  - `export async function processExpiredNotifications(): Promise< ActionResult<`
+  - `export async function getWaitlistStats( dateRange?:`
+  - `export async function getWaitlistMatches(): Promise< ActionResult<`
+
+### watermark-settings.ts
+- File: `src/lib/actions/watermark-settings.ts`
+- Prisma models: organization
+- External services: clerk
+- Exported signatures:
+  - `export async function getWatermarkSettings()`
+  - `export async function updateWatermarkSettings(settings: Partial<WatermarkSettings>)`
+  - `export async function toggleWatermarks(enabled: boolean)`
+  - `export async function getWatermarkUploadUrl(filename: string, contentType: string)`
+  - `export async function setWatermarkImage(imageUrl: string)`
+  - `export async function getWatermarkPreviewStyles()`
+  - `export async function generateDefaultWatermarkText()`
+
+### watermark-templates.ts
+- File: `src/lib/actions/watermark-templates.ts`
+- Prisma models: organization, watermarkTemplate
+- External services: clerk
+- Exported signatures:
+  - `export async function createWatermarkTemplate(data: WatermarkTemplateInput)`
+  - `export async function updateWatermarkTemplate( templateId: string, data: Partial<WatermarkTemplateInput> )`
+  - `export async function deleteWatermarkTemplate(templateId: string)`
+  - `export async function listWatermarkTemplates()`
+  - `export async function getWatermarkTemplate(templateId: string)`
+  - `export async function setDefaultTemplate(templateId: string)`
+  - `export async function getDefaultWatermarkTemplate()`
+  - `export async function applyTemplateToOrganization(templateId: string)`
+
+### weather.ts
+- File: `src/lib/actions/weather.ts`
+- Exported signatures:
+  - `export async function getBookingWeather( latitude: number, longitude: number, bookingDate: Date ): Promise<ActionResult<`
+  - `export async function getLocationForecast( latitude: number, longitude: number ): Promise<ActionResult<WeatherForecast[]>>`
+  - `export async function getGoldenHour( latitude: number, longitude: number, date: Date ): Promise<ActionResult<GoldenHourInfo>>`
+  - `export async function checkWeatherApiAvailability(): Promise<boolean>`
+
+### webhooks.ts
+- File: `src/lib/actions/webhooks.ts`
+- Prisma models: organization, webhookDelivery, webhookEndpoint
+- External services: clerk
+- Exported signatures:
+  - `export async function getWebhookEndpoints()`
+  - `export async function createWebhookEndpoint(params:`
+  - `export async function updateWebhookEndpoint( webhookId: string, params:`
+  - `export async function deleteWebhookEndpoint(webhookId: string)`
+  - `export async function regenerateWebhookSecret(webhookId: string)`
+  - `export async function testWebhookEndpoint(webhookId: string)`
+  - `export async function getWebhookDeliveries( webhookId: string, options?:`
+  - `export async function getWebhookDelivery(deliveryId: string)`
+  - `export async function dispatchWebhookEvent( organizationId: string, eventType: WebhookEventId, payload: Record<string, unknown> )`
 
 ## Server Actions Inventory
 - `ab-testing.ts`: completeABTest, createABTest, deleteABTest, getABTest, getABTestStats, getABTestVariant, getABTests, pauseABTest, recordABTestConversion, startABTest, updateABTest
@@ -978,6 +6112,4524 @@ The following list is the full route inventory. Each module section below explai
 - `watermark-templates.ts`: applyTemplateToOrganization, createWatermarkTemplate, deleteWatermarkTemplate, getDefaultWatermarkTemplate, getWatermarkTemplate, listWatermarkTemplates, setDefaultTemplate, updateWatermarkTemplate
 - `weather.ts`: checkWeatherApiAvailability, getBookingWeather, getGoldenHour, getLocationForecast
 - `webhooks.ts`: WEBHOOK_EVENT_TYPES, createWebhookEndpoint, deleteWebhookEndpoint, dispatchWebhookEvent, getWebhookDeliveries, getWebhookDelivery, getWebhookEndpoints, regenerateWebhookSecret, testWebhookEndpoint, updateWebhookEndpoint
+
+## Data Model Dictionary
+- Fields are listed verbatim from Prisma schema for rebuild accuracy.
+- Action usage lists server action files that touch each Prisma model.
+
+### Model: Organization
+- Fields:
+  - `id                  String   @id @default(cuid())`
+  - `clerkOrganizationId String?  @unique`
+  - `name                String`
+  - `slug                String   @unique`
+  - `plan                PlanName @default(free)`
+  - `stripeCustomerId       String? @unique`
+  - `stripeSubscriptionId   String?`
+  - `stripeConnectAccountId String?`
+  - `stripeConnectOnboarded Boolean @default(false)`
+  - `logoUrl        String?`
+  - `logoLightUrl   String? // Logo variant for light backgrounds`
+  - `faviconUrl     String?`
+  - `primaryColor   String? @default("#3b82f6")`
+  - `secondaryColor String? @default("#8b5cf6")`
+  - `accentColor    String? @default("#22c55e")`
+  - `customDomain   String? @unique`
+  - `portalMode     PortalMode @default(dark) // light or dark mode for client-facing pages`
+  - `invoiceLogoUrl String? // Separate logo for invoices (optional)`
+  - `hidePlatformBranding Boolean @default(false) // Hide "Powered by PhotoProOS"`
+  - `customEmailDomain    String? // For white-label email sending`
+  - `watermarkEnabled  Boolean           @default(true)`
+  - `watermarkType     String?           @default("text") // "text" or "image"`
+  - `watermarkText     String? // Custom text (e.g., "(c) Studio Name")`
+  - `watermarkImageUrl String? // URL to watermark image`
+  - `watermarkPosition WatermarkPosition @default(bottom_right)`
+  - `watermarkOpacity  Float             @default(0.5) // 0-1`
+  - `watermarkScale    Float             @default(0.15) // Size relative to image (0-1)`
+  - `timezone String @default("America/New_York")`
+  - `currency String @default("USD")`
+  - `defaultTaxRate Float?  @default(0) // Default tax rate as percentage (e.g., 8.25 for 8.25%)`
+  - `taxLabel       String? @default("Sales Tax") // Label shown on invoices (e.g., "Sales Tax", "VAT", "GST")`
+  - `homeBaseLocationId String?`
+  - `travelFeePerMile   Int?    @default(0) // in cents (e.g., 65 = $0.65/mile)`
+  - `travelFeeThreshold Float?  @default(0) // free miles before charging`
+  - `onboardingCompleted   Boolean   @default(false)`
+  - `onboardingStep        Int       @default(0)`
+  - `onboardingCompletedAt DateTime?`
+  - `industries      Industry[] @default([real_estate])`
+  - `primaryIndustry Industry   @default(real_estate)`
+  - `enabledModules String[] @default([])`
+  - `businessType    BusinessType?`
+  - `teamSize        String? // "1", "2-5", "6-10", "11-25", "25+"`
+  - `yearsInBusiness String? // "<1", "1-3", "3-5", "5-10", "10+"`
+  - `annualRevenue   String? // "<50k", "50-100k", "100-250k", "250k+"`
+  - `displayMode DisplayMode @default(company)`
+  - `publicName  String? // What clients see (company or personal name)`
+  - `publicEmail String? // Public-facing email`
+  - `publicPhone String? // Public-facing phone`
+  - `website     String? // Company website`
+  - `trialStartedAt     DateTime?`
+  - `trialEndsAt        DateTime?`
+  - `paymentMethodAdded Boolean   @default(false)`
+  - `autoArchiveExpiredGalleries Boolean @default(true) // Auto-archive galleries when they expire`
+  - `emailSenderName           String? // Custom "from" name for emails`
+  - `emailReplyTo              String? // Custom reply-to email address`
+  - `emailSignature            String? @db.Text // Optional email signature`
+  - `enableQuestionnaireEmails Boolean @default(true)`
+  - `enableDigestEmails        Boolean @default(true)`
+  - `digestEmailFrequency      String? @default("daily") // "daily", "weekly", "none"`
+  - `digestEmailTime           String? @default("08:00") // Time in HH:MM format`
+  - `digestEmailDayOfWeek      Int?    @default(0) // 0=Sunday, 1=Monday, etc. (for weekly digest)`
+  - `notificationPreferences Json? // { email: {...}, push: {...}, quietHours: {...} }`
+  - `quietHoursEnabled       Boolean @default(false)`
+  - `quietHoursFrom          String? @default("22:00") // HH:MM format`
+  - `quietHoursTo            String? @default("07:00") // HH:MM format`
+  - `twilioAccountSid  String?`
+  - `twilioAuthToken   String?`
+  - `twilioPhoneNumber String?`
+  - `smsEnabled        Boolean @default(false)`
+  - `selfBookingEnabled  Boolean @default(false)`
+  - `selfBookingPageSlug String?`
+  - `slackTeamId      String?`
+  - `slackAccessToken String? @db.Text`
+  - `tourProgress Json?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `members                  OrganizationMember[]`
+  - `invitations              Invitation[]`
+  - `projects                 Project[]`
+  - `portfolioWebsites        PortfolioWebsite[]`
+  - `portfolioInquiries       PortfolioInquiry[]`
+  - `portfolioLeads           PortfolioLead[]`
+  - `portfolioComments        PortfolioComment[]`
+  - `portfolioABTests         PortfolioABTest[]`
+  - `customForms              CustomForm[]`
+  - `clients                  Client[]`
+  - `payments                 Payment[]`
+  - `galleryFeedback          GalleryFeedback[]`
+  - `bookings                 Booking[]`
+  - `bookingTypes             BookingType[]`
+  - `invoices                 Invoice[]`
+  - `creditNotes              CreditNote[]`
+  - `estimates                Estimate[]`
+  - `clientRetainers          ClientRetainer[]`
+  - `contracts                Contract[]`
+  - `contractTemplates        ContractTemplate[]`
+  - `activityLogs             ActivityLog[]`
+  - `notifications            Notification[]`
+  - `usageMeters              UsageMeter[]`
+  - `onboardingProgress       OnboardingProgress?`
+  - `services                 Service[]`
+  - `locations                Location[]`
+  - `equipment                Equipment[]`
+  - `watermarkTemplates       WatermarkTemplate[]`
+  - `homeBaseLocation         Location?                 @relation("OrgHomeBase", fields: [homeBaseLocationId], references: [id])`
+  - `taskBoards               TaskBoard[]`
+  - `tasks                    Task[]`
+  - `taskTemplates            TaskTemplate[]`
+  - `taskAutomations          TaskAutomation[]`
+  - `recurringTasks           RecurringTask[]`
+  - `discountCodes            DiscountCode[]`
+  - `paymentPlans             PaymentPlan[]`
+  - `invoiceTemplates         InvoiceTemplate[]`
+  - `invoiceBrandingTemplates InvoiceBrandingTemplate[]`
+  - `invoiceEmailTemplates    InvoiceEmailTemplate[]`
+  - `galleryTemplates         GalleryTemplate[]`
+  - `serviceBundles ServiceBundle[]`
+  - `serviceAddons  ServiceAddon[]`
+  - `orderPages     OrderPage[]`
+  - `orders         Order[]`
+  - `brokerages    Brokerage[]`
+  - `payoutBatches PayoutBatch[]`
+  - `smsTemplates       SMSTemplate[]`
+  - `smsLogs            SMSLog[]`
+  - `slackIntegrations  SlackIntegration[]`
+  - `dropboxIntegration DropboxIntegration?`
+  - `bookingSlots       BookingSlot[]`
+  - `bookingForms    BookingForm[]`
+  - `productCatalogs ProductCatalog[]`
+  - `territories     ServiceTerritory[]`
+  - `referralProgram ReferralProgram?`
+  - `questionnaireTemplates QuestionnaireTemplate[]`
+  - `clientQuestionnaires   ClientQuestionnaire[]`
+  - `emailLogs EmailLog[]`
+  - `referredByPlatform PlatformReferral[] @relation("ReferredOrgByPlatform")`
+  - `recurringInvoices RecurringInvoice[]`
+  - `apiKeys          ApiKey[]`
+  - `webhookEndpoints WebhookEndpoint[]`
+  - `integrationLogs  IntegrationLog[]`
+  - `calendarFeeds CalendarFeed[]`
+  - `waitlistEntries BookingWaitlist[]`
+  - `emailAccounts        EmailAccount[]`
+  - `emailThreads         EmailThread[]`
+  - `galleryAddons        GalleryAddon[]`
+  - `galleryAddonRequests GalleryAddonRequest[]`
+- Indexes/constraints:
+  - `@@index([slug])`
+  - `@@index([plan])`
+- Action usage:
+  - `analytics-report.ts`
+  - `analytics.ts`
+  - `api-keys.ts`
+  - `booking-crew.ts`
+  - `booking-forms.ts`
+  - `bookings.ts`
+  - `client-questionnaires.ts`
+  - `client-selections.ts`
+  - `contract-signing.ts`
+  - `contracts.ts`
+  - `custom-forms.ts`
+  - `discount-codes.ts`
+  - `download-tracking.ts`
+  - `email-logs.ts`
+  - `email-settings.ts`
+  - `equipment.ts`
+  - `galleries.ts`
+  - `gallery-activity.ts`
+  - `gallery-addons.ts`
+  - `gallery-analytics.ts`
+  - `gallery-collections.ts`
+  - `gallery-expiration.ts`
+  - `gallery-feedback.ts`
+  - `gallery-reminders.ts`
+  - `gallery-templates.ts`
+  - `integration-logs.ts`
+  - `invitations.ts`
+  - `invoice-templates.ts`
+  - `invoices.ts`
+  - `lead-scoring.ts`
+  - `locations.ts`
+  - `notification-preferences.ts`
+  - `onboarding.ts`
+  - `payment-plans.ts`
+  - `payments.ts`
+  - `questionnaire-portal.ts`
+  - `recurring-invoices.ts`
+  - `self-booking.ts`
+  - `settings.ts`
+  - `smart-collections.ts`
+  - `sms.ts`
+  - `stripe-checkout.ts`
+  - `stripe-connect.ts`
+  - `stripe-product-sync.ts`
+  - `team-capabilities.ts`
+  - `territories.ts`
+  - `tour.ts`
+  - `watermark-settings.ts`
+  - `watermark-templates.ts`
+  - `webhooks.ts`
+
+### Model: User
+- Fields:
+  - `id          String  @id @default(cuid())`
+  - `clerkUserId String  @unique`
+  - `email       String  @unique`
+  - `fullName    String?`
+  - `avatarUrl   String?`
+  - `phone       String?`
+  - `firstName String?`
+  - `lastName  String?`
+  - `hasSeenWelcome       Boolean  @default(false)`
+  - `tourCompletedModules String[] @default([])`
+  - `dashboardTheme     String  @default("default") // Theme preset: default, midnight, forest, sunset, ocean, lavender`
+  - `dashboardAccent    String  @default("#3b82f6") // Custom accent color`
+  - `sidebarCompact     Boolean @default(false) // Compact sidebar mode`
+  - `sidebarPosition    String  @default("left") // Sidebar position: left, right`
+  - `fontFamily         String  @default("system") // Font: system, inter, jakarta, dm-sans, space-grotesk, jetbrains`
+  - `density            String  @default("comfortable") // Spacing: compact, comfortable, spacious`
+  - `fontSize           String  @default("medium") // Font size: small, medium, large, x-large`
+  - `highContrast       Boolean @default(false) // High contrast mode for accessibility`
+  - `reduceMotion       Boolean @default(false) // Reduce animations for accessibility`
+  - `autoThemeEnabled   Boolean @default(false) // Auto switch theme based on time`
+  - `autoThemeDarkStart String  @default("18:00") // When to switch to dark mode (HH:MM)`
+  - `autoThemeDarkEnd   String  @default("06:00") // When to switch to light mode (HH:MM)`
+  - `dashboardConfig Json? // JSON config for widget visibility, collapsed sections, order`
+  - `homeBaseLocationId String?`
+  - `stripeConnectAccountId String? @unique`
+  - `stripeConnectOnboarded Boolean @default(false)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `memberships         OrganizationMember[]`
+  - `activityLogs        ActivityLog[]`
+  - `serviceCapabilities UserServiceCapability[]`
+  - `equipment           UserEquipment[]`
+  - `assignedBookings    Booking[]               @relation("AssignedBookings")`
+  - `homeBaseLocation    Location?               @relation("UserHomeBase", fields: [homeBaseLocationId], references: [id])`
+  - `assignedTasks       Task[]`
+  - `taskComments        TaskComment[]`
+  - `equipmentChecks     BookingEquipmentCheck[] @relation("EquipmentChecker")`
+  - `crewAssignments     BookingCrew[]           @relation("BookingCrewAssignments")`
+  - `platformReferrer   PlatformReferrer?`
+  - `referredByPlatform PlatformReferral[] @relation("ReferredByPlatform")`
+  - `calendarFeeds   CalendarFeed[]  @relation("UserCalendarFeeds")`
+  - `recurringTasks  RecurringTask[]`
+  - `taskTimeEntries TaskTimeEntry[]`
+- Indexes/constraints:
+  - `@@index([email])`
+  - `@@index([clerkUserId])`
+- Action usage:
+  - `activity.ts`
+  - `appearance.ts`
+  - `availability.ts`
+  - `booking-crew.ts`
+  - `calendar-feeds.ts`
+  - `dashboard.ts`
+  - `equipment-checklists.ts`
+  - `invitations.ts`
+  - `locations.ts`
+  - `onboarding.ts`
+  - `payouts.ts`
+  - `platform-referrals.ts`
+  - `projects.ts`
+  - `settings.ts`
+  - `team-availability.ts`
+  - `team-capabilities.ts`
+  - `tour.ts`
+
+### Model: OrganizationMember
+- Fields:
+  - `id             String     @id @default(cuid())`
+  - `organizationId String`
+  - `userId         String`
+  - `role           MemberRole @default(member)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([organizationId, userId])`
+  - `@@index([organizationId])`
+  - `@@index([userId])`
+- Action usage:
+  - `booking-crew.ts`
+  - `equipment.ts`
+  - `gallery-addons.ts`
+  - `invitations.ts`
+  - `platform-referrals.ts`
+  - `settings.ts`
+  - `team-capabilities.ts`
+
+### Model: Invitation
+- Fields:
+  - `id             String           @id @default(cuid())`
+  - `organizationId String`
+  - `email          String`
+  - `role           MemberRole       @default(member)`
+  - `status         InvitationStatus @default(pending)`
+  - `token     String   @unique`
+  - `expiresAt DateTime`
+  - `invitedById String`
+  - `acceptedAt DateTime?`
+  - `revokedAt  DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([organizationId, email, status]) // Only one pending invitation per email per org`
+  - `@@index([organizationId])`
+  - `@@index([email])`
+  - `@@index([token])`
+  - `@@index([status])`
+- Action usage:
+  - `invitations.ts`
+
+### Model: Client
+- Fields:
+  - `id             String         @id @default(cuid())`
+  - `organizationId String`
+  - `email          String`
+  - `fullName       String?`
+  - `company        String?`
+  - `phone          String?`
+  - `address        String?`
+  - `industry       ClientIndustry @default(other)`
+  - `notes          String?`
+  - `lifetimeRevenueCents Int @default(0)`
+  - `totalProjects        Int @default(0)`
+  - `portalAccessToken String?   @unique`
+  - `lastPortalAccess  DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `source         String? // How client found you: REFERRAL, ORGANIC, AD, REPEAT`
+  - `preferences    Json? // Client style/delivery preferences`
+  - `isVIP          Boolean   @default(false)`
+  - `lastActivityAt DateTime?`
+  - `smsOptIn                 Boolean @default(true) // Client consent for SMS notifications`
+  - `emailOptIn               Boolean @default(true) // Client consent for email communications`
+  - `questionnaireEmailsOptIn Boolean @default(true) // Receive questionnaire-related emails`
+  - `marketingEmailsOptIn     Boolean @default(false) // Receive marketing emails (opt-in required)`
+  - `brokerageId String?`
+  - `organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `brokerage      Brokerage?            @relation("BrokerageAgents", fields: [brokerageId], references: [id], onDelete: SetNull)`
+  - `projects       Project[]`
+  - `bookings       Booking[]`
+  - `invoices       Invoice[]`
+  - `creditNotes    CreditNote[]`
+  - `contracts      Contract[]`
+  - `payments       Payment[]`
+  - `clientSessions ClientSession[]`
+  - `tasks          Task[]`
+  - `communications ClientCommunication[]`
+  - `tags           ClientTagAssignment[]`
+  - `orderPages OrderPage[] // Dedicated order pages for this client`
+  - `orders     Order[] // Orders placed by this client`
+  - `referrer  Referrer?  @relation("ClientReferrer")`
+  - `referrals Referral[] @relation("ReferralClient")`
+  - `questionnaires ClientQuestionnaire[]`
+  - `recurringInvoices RecurringInvoice[]`
+  - `smsLogs SMSLog[]`
+  - `emailLogs EmailLog[]`
+  - `notifications ClientNotification[]`
+  - `waitlistEntries BookingWaitlist[]`
+  - `emailThreads EmailThread[] @relation("ClientEmailThreads")`
+  - `estimates Estimate[]`
+  - `retainer             ClientRetainer?`
+  - `galleryAddonRequests GalleryAddonRequest[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, email])`
+  - `@@index([organizationId])`
+  - `@@index([email])`
+  - `@@index([industry])`
+  - `@@index([brokerageId])`
+- Action usage:
+  - `analytics-report.ts`
+  - `analytics.ts`
+  - `booking-forms.ts`
+  - `booking-import.ts`
+  - `bookings.ts`
+  - `brokerages.ts`
+  - `chat-inquiries.ts`
+  - `client-auth.ts`
+  - `client-communications.ts`
+  - `client-import.ts`
+  - `client-merge.ts`
+  - `client-notifications.ts`
+  - `client-portal.ts`
+  - `client-questionnaires.ts`
+  - `client-tags.ts`
+  - `clients.ts`
+  - `create-wizard.ts`
+  - `credit-notes.ts`
+  - `email-sync.ts`
+  - `estimates.ts`
+  - `gallery-expiration.ts`
+  - `invoices.ts`
+  - `portfolio-websites.ts`
+  - `projects.ts`
+  - `questionnaire-portal.ts`
+  - `recurring-invoices.ts`
+  - `retainers.ts`
+  - `revenue-forecasting.ts`
+  - `search.ts`
+  - `seed.ts`
+  - `self-booking.ts`
+  - `settings.ts`
+
+### Model: ClientSession
+- Fields:
+  - `id        String   @id @default(cuid())`
+  - `clientId  String`
+  - `token     String   @unique`
+  - `expiresAt DateTime`
+  - `createdAt DateTime @default(now())`
+  - `client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([clientId])`
+  - `@@index([token])`
+- Action usage:
+  - `client-auth.ts`
+  - `clients.ts`
+  - `portal-activity.ts`
+  - `questionnaire-portal.ts`
+  - `seed.ts`
+
+### Model: Service
+- Fields:
+  - `id             String          @id @default(cuid())`
+  - `organizationId String`
+  - `name           String`
+  - `category       ServiceCategory @default(other)`
+  - `description    String?`
+  - `priceCents     Int             @default(0)`
+  - `duration       String? // e.g., "2-3 hours"`
+  - `deliverables   String[] // Array of included items`
+  - `isActive       Boolean         @default(true)`
+  - `isDefault      Boolean         @default(false) // System-provided template`
+  - `sortOrder      Int             @default(0)`
+  - `stripeProductId String? // Stripe Product ID (prod_xxx)`
+  - `stripePriceId   String? // Stripe Price ID (price_xxx)`
+  - `stripeSyncedAt  DateTime? // Last successful sync timestamp`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization          Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `projects              Project[] // Galleries using this service (deprecated - use projectServices)`
+  - `projectServices       ProjectService[] // Many-to-many: galleries using this service`
+  - `bookings              Booking[] // Bookings using this service`
+  - `userCapabilities      UserServiceCapability[] // Team members who can perform this service`
+  - `equipmentRequirements ServiceEquipmentRequirement[] // Equipment required for this service`
+  - `bundleItems        ServiceBundleItem[] // Bundles this service is part of`
+  - `addonCompatibility ServiceAddonCompat[] // Addons compatible with this service`
+  - `orderPageServices  OrderPageService[] // Order pages featuring this service`
+  - `orderItems         OrderItem[] // Order items referencing this service`
+  - `bookingFormServices BookingFormService[]`
+  - `territoryOverrides TerritoryServiceOverride[] @relation("ServiceTerritoryOverrides")`
+  - `galleryTemplates GalleryTemplate[]`
+  - `waitlistEntries BookingWaitlist[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([category])`
+  - `@@index([isActive])`
+  - `@@index([isDefault])`
+- Action usage:
+  - `addons.ts`
+  - `booking-forms.ts`
+  - `booking-import.ts`
+  - `bookings.ts`
+  - `bundles.ts`
+  - `create-wizard.ts`
+  - `equipment.ts`
+  - `order-pages.ts`
+  - `orders.ts`
+  - `search.ts`
+  - `seed.ts`
+  - `self-booking.ts`
+  - `services.ts`
+  - `settings.ts`
+  - `stripe-product-sync.ts`
+  - `team-capabilities.ts`
+  - `waitlist.ts`
+
+### Model: Project
+- Fields:
+  - `id             String        @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String?`
+  - `serviceId      String?`
+  - `locationId     String?`
+  - `name           String`
+  - `description    String?`
+  - `status         ProjectStatus @default(draft)`
+  - `priceCents Int    @default(0)`
+  - `currency   String @default("USD")`
+  - `coverImageUrl           String?`
+  - `password                String?`
+  - `expiresAt               DateTime?`
+  - `allowDownloads          Boolean               @default(true)`
+  - `allowFavorites          Boolean               @default(true)`
+  - `allowComments           Boolean               @default(false)`
+  - `showWatermark           Boolean               @default(false)`
+  - `downloadResolution      GalleryDownloadOption @default(both)`
+  - `downloadRequiresPayment Boolean               @default(true) // If true, downloads require payment. If false, allow free downloads even when gallery has a price.`
+  - `allowSelections     Boolean @default(true) // Allow clients to make selections`
+  - `selectionLimit      Int? // Maximum photos client can select (null = unlimited)`
+  - `selectionRequired   Boolean @default(false) // Require selection before download`
+  - `selectionsSubmitted Boolean @default(false) // Whether client has submitted selections`
+  - `deliveredAt   DateTime?`
+  - `archivedAt    DateTime? // When gallery was archived (auto or manual)`
+  - `viewCount     Int       @default(0)`
+  - `downloadCount Int       @default(0)`
+  - `lastReminderSentAt     DateTime? // When last reminder was sent`
+  - `reminderCount          Int       @default(0) // Number of reminders sent`
+  - `reminderEnabled        Boolean   @default(true) // Allow reminders for this gallery`
+  - `expirationWarningsSent Int[]     @default([]) // Days before expiration when warnings were sent (e.g., [7, 3, 1])`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client            Client?                   @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `service           Service?                  @relation(fields: [serviceId], references: [id], onDelete: SetNull) // Deprecated - use services`
+  - `location          Location?                 @relation(fields: [locationId], references: [id], onDelete: SetNull)`
+  - `services          ProjectService[] // Many-to-many: services for this gallery`
+  - `assets            Asset[]`
+  - `collections       GalleryCollection[] // Sub-albums within the gallery`
+  - `deliveryLinks     DeliveryLink[]`
+  - `payments          Payment[]`
+  - `favorites         GalleryFavorite[]`
+  - `comments          GalleryComment[]`
+  - `ratings           PhotoRating[]`
+  - `feedback          GalleryFeedback[]`
+  - `propertyWebsite   PropertyWebsite?`
+  - `portfolioWebsites PortfolioWebsiteProject[]`
+  - `tasks             Task[]`
+  - `questionnaires       ClientQuestionnaire[]`
+  - `galleryAddonRequests GalleryAddonRequest[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([serviceId])`
+  - `@@index([locationId])`
+  - `@@index([status])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `analytics-report.ts`
+  - `analytics.ts`
+  - `client-portal.ts`
+  - `client-questionnaires.ts`
+  - `client-selections.ts`
+  - `download-tracking.ts`
+  - `dropbox.ts`
+  - `email-logs.ts`
+  - `galleries.ts`
+  - `gallery-activity.ts`
+  - `gallery-addons.ts`
+  - `gallery-analytics.ts`
+  - `gallery-collections.ts`
+  - `gallery-expiration.ts`
+  - `gallery-reminders.ts`
+  - `portal-downloads.ts`
+  - `portfolio-websites.ts`
+  - `projects.ts`
+  - `property-websites.ts`
+  - `search.ts`
+  - `seed.ts`
+  - `settings.ts`
+  - `smart-collections.ts`
+  - `stripe-checkout.ts`
+  - `uploads.ts`
+
+### Model: ProjectService
+- Fields:
+  - `id                 String   @id @default(cuid())`
+  - `projectId          String`
+  - `serviceId          String`
+  - `isPrimary          Boolean  @default(false) // Mark the primary service if needed`
+  - `priceCentsOverride Int? // Override the service price for this specific project`
+  - `createdAt          DateTime @default(now())`
+  - `project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([projectId, serviceId])`
+  - `@@index([projectId])`
+  - `@@index([serviceId])`
+
+### Model: GalleryTemplate
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `name           String // Template name`
+  - `description    String? // Optional description`
+  - `serviceId String?`
+  - `defaultPriceCents Int    @default(0)`
+  - `currency          String @default("USD")`
+  - `isPasswordProtected Boolean @default(false)`
+  - `defaultPassword     String? // Optional default password`
+  - `allowDownloads    Boolean @default(true)`
+  - `allowFavorites    Boolean @default(true)`
+  - `showWatermark     Boolean @default(false)`
+  - `sendNotifications Boolean @default(true)`
+  - `expirationDays Int? // Number of days until expiration (null = never)`
+  - `isDefault  Boolean  @default(false) // Mark as default template`
+  - `usageCount Int      @default(0) // Track how often template is used`
+  - `createdAt  DateTime @default(now())`
+  - `updatedAt  DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `service      Service?     @relation(fields: [serviceId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([serviceId])`
+- Action usage:
+  - `gallery-templates.ts`
+
+### Model: WatermarkTemplate
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name           String // Template name (e.g., "Full Signature", "Corner Logo")`
+  - `watermarkType     String // "text" | "image"`
+  - `watermarkText     String? // Text content for text watermarks`
+  - `watermarkImageUrl String? // Image URL for image watermarks`
+  - `watermarkPosition String // "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"`
+  - `watermarkOpacity  Float   @default(0.5) // 0.0 to 1.0`
+  - `watermarkScale    Float   @default(1.0) // Scale multiplier`
+  - `isDefault Boolean  @default(false) // Mark as default template`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+- Action usage:
+  - `watermark-templates.ts`
+
+### Model: GalleryCollection
+- Fields:
+  - `id           String  @id @default(cuid())`
+  - `projectId    String`
+  - `name         String`
+  - `description  String?`
+  - `coverAssetId String? // Cover photo for the collection`
+  - `sortOrder    Int     @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `assets  Asset[]`
+- Indexes/constraints:
+  - `@@index([projectId])`
+  - `@@index([sortOrder])`
+- Action usage:
+  - `gallery-collections.ts`
+
+### Model: Asset
+- Fields:
+  - `id           String  @id @default(cuid())`
+  - `projectId    String`
+  - `collectionId String? // Optional collection assignment`
+  - `filename       String`
+  - `originalUrl    String`
+  - `thumbnailUrl   String?`
+  - `mediumUrl      String?`
+  - `watermarkedUrl String?`
+  - `mimeType  String`
+  - `sizeBytes Int`
+  - `width     Int?`
+  - `height    Int?`
+  - `exifData Json?`
+  - `sortOrder Int @default(0)`
+  - `excludeFromWatermark Boolean @default(false)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `project       Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `collection    GalleryCollection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)`
+  - `favorites     GalleryFavorite[]`
+  - `comments      GalleryComment[]`
+  - `ratings       PhotoRating[]`
+  - `productPhotos ProductPhoto[]`
+- Indexes/constraints:
+  - `@@index([projectId])`
+  - `@@index([collectionId])`
+  - `@@index([sortOrder])`
+- Action usage:
+  - `download-tracking.ts`
+  - `dropbox.ts`
+  - `galleries.ts`
+  - `gallery-activity.ts`
+  - `gallery-analytics.ts`
+  - `gallery-collections.ts`
+  - `products.ts`
+  - `seed.ts`
+  - `smart-collections.ts`
+  - `uploads.ts`
+
+### Model: DeliveryLink
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `projectId String`
+  - `slug      String @unique`
+  - `password  String?`
+  - `expiresAt DateTime?`
+  - `isActive  Boolean   @default(true)`
+  - `viewCount    Int       @default(0)`
+  - `lastViewedAt DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([projectId])`
+  - `@@index([slug])`
+- Action usage:
+  - `galleries.ts`
+  - `seed.ts`
+
+### Model: GalleryFavorite
+- Fields:
+  - `id            String          @id @default(cuid())`
+  - `projectId     String`
+  - `assetId       String`
+  - `clientEmail   String?`
+  - `sessionId     String?`
+  - `selectionType SelectionType   @default(favorite)`
+  - `notes         String? // Client notes for this selection`
+  - `status        SelectionStatus @default(in_progress)`
+  - `createdAt   DateTime  @default(now())`
+  - `submittedAt DateTime? // When the client submitted their selections for review`
+  - `project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([projectId, assetId, clientEmail, selectionType])`
+  - `@@index([projectId])`
+  - `@@index([assetId])`
+  - `@@index([selectionType])`
+  - `@@index([status])`
+- Action usage:
+  - `client-selections.ts`
+  - `galleries.ts`
+  - `gallery-activity.ts`
+  - `seed.ts`
+
+### Model: GalleryComment
+- Fields:
+  - `id          String  @id @default(cuid())`
+  - `projectId   String`
+  - `assetId     String? // Optional - if set, this is a per-photo comment; if null, it's a gallery-level comment`
+  - `clientEmail String?`
+  - `clientName  String?`
+  - `content     String`
+  - `sessionId   String? // Session ID for secure comment ownership verification`
+  - `createdAt DateTime @default(now())`
+  - `project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `asset   Asset?  @relation(fields: [assetId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([projectId])`
+  - `@@index([assetId])`
+  - `@@index([sessionId])`
+- Action usage:
+  - `galleries.ts`
+  - `seed.ts`
+
+### Model: PhotoRating
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `projectId String`
+  - `assetId   String`
+  - `rating    Int // 1-5 stars`
+  - `sessionId String // Track who rated for updates`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([assetId, sessionId])`
+  - `@@index([projectId])`
+  - `@@index([assetId])`
+- Action usage:
+  - `download-tracking.ts`
+
+### Model: GalleryFeedback
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `projectId      String`
+  - `organizationId String`
+  - `type           String // "feedback", "feature", "issue"`
+  - `message        String`
+  - `clientName     String?`
+  - `clientEmail    String?`
+  - `ipAddress      String?`
+  - `userAgent      String?`
+  - `isRead         Boolean @default(false)`
+  - `isResolved     Boolean @default(false)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([projectId])`
+  - `@@index([organizationId])`
+  - `@@index([type])`
+  - `@@index([isRead])`
+- Action usage:
+  - `gallery-feedback.ts`
+
+### Model: Payment
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `projectId      String?`
+  - `invoiceId      String?`
+  - `clientId       String?`
+  - `amountCents    Int`
+  - `tipAmountCents Int           @default(0) // Gratuity amount`
+  - `currency       String        @default("USD")`
+  - `status         PaymentStatus @default(pending)`
+  - `stripePaymentIntentId   String? @unique`
+  - `stripeCheckoutSessionId String? @unique`
+  - `stripeChargeId          String?`
+  - `clientEmail String?`
+  - `clientName  String?`
+  - `description String?`
+  - `receiptUrl  String?`
+  - `paidAt    DateTime?`
+  - `createdAt DateTime  @default(now())`
+  - `updatedAt DateTime  @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `project      Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)`
+  - `invoice      Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)`
+  - `client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([projectId])`
+  - `@@index([invoiceId])`
+  - `@@index([clientId])`
+  - `@@index([status])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `analytics-report.ts`
+  - `analytics.ts`
+  - `clients.ts`
+  - `gallery-activity.ts`
+  - `invoice-payments.ts`
+  - `payments.ts`
+  - `receipt-pdf.ts`
+  - `revenue-forecasting.ts`
+  - `seed.ts`
+  - `settings.ts`
+  - `stripe-checkout.ts`
+
+### Model: BookingType
+- Fields:
+  - `id              String  @id @default(cuid())`
+  - `organizationId  String`
+  - `name            String`
+  - `description     String?`
+  - `durationMinutes Int     @default(60)`
+  - `priceCents      Int     @default(0)`
+  - `color           String  @default("#3b82f6")`
+  - `isActive        Boolean @default(true)`
+  - `bufferBeforeMinutes Int @default(0) // Prep time before booking`
+  - `bufferAfterMinutes  Int @default(0) // Travel/wrap-up time after booking`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization          Organization                      @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `bookings              Booking[]`
+  - `equipmentRequirements BookingTypeEquipmentRequirement[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+- Action usage:
+  - `booking-types.ts`
+  - `create-wizard.ts`
+  - `equipment-checklists.ts`
+
+### Model: Booking
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String?`
+  - `bookingTypeId  String?`
+  - `serviceId      String?`
+  - `locationId     String?`
+  - `assignedUserId String?`
+  - `title       String`
+  - `description String?`
+  - `status      BookingStatus @default(pending)`
+  - `startTime DateTime`
+  - `endTime   DateTime`
+  - `timezone  String   @default("America/New_York")`
+  - `clientName  String?`
+  - `clientEmail String?`
+  - `clientPhone String?`
+  - `location      String?`
+  - `locationNotes String?`
+  - `isVirtual     Boolean @default(false)`
+  - `meetingUrl    String?`
+  - `distanceMiles     Float?`
+  - `travelTimeMinutes Int?`
+  - `travelFeeCents    Int?   @default(0)`
+  - `bufferBeforeMinutes Int? // Prep time before booking`
+  - `bufferAfterMinutes  Int? // Travel/wrap-up time after booking`
+  - `weatherCache    Json?`
+  - `weatherCachedAt DateTime?`
+  - `notes         String?`
+  - `internalNotes String?`
+  - `isMultiDay       Boolean @default(false)`
+  - `multiDayName     String? // Overall event name like "Smith Wedding Weekend"`
+  - `multiDayParentId String? // For sessions within a multi-day event`
+  - `isRecurring          Boolean            @default(false)`
+  - `recurrencePattern    RecurrencePattern?`
+  - `recurrenceInterval   Int?               @default(1) // e.g., every 2 weeks`
+  - `recurrenceEndDate    DateTime? // Optional end date for the series`
+  - `recurrenceCount      Int? // Optional max occurrences`
+  - `recurrenceDaysOfWeek Int[]              @default([]) // For weekly: 0=Sun, 1=Mon, etc.`
+  - `seriesId             String? // Groups all bookings in a series`
+  - `parentBookingId      String? // Reference to the original booking`
+  - `industry Industry?`
+  - `completedAt DateTime? // When booking status changed to "completed"`
+  - `followupsSent String[] @default([]) // Tracks which follow-up emails were sent (e.g., "thank_you_1", "review_request_3")`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization       Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client             Client?                 @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `bookingType        BookingType?            @relation(fields: [bookingTypeId], references: [id], onDelete: SetNull)`
+  - `service            Service?                @relation(fields: [serviceId], references: [id], onDelete: SetNull)`
+  - `locationRef        Location?               @relation(fields: [locationId], references: [id], onDelete: SetNull)`
+  - `assignedUser       User?                   @relation("AssignedBookings", fields: [assignedUserId], references: [id], onDelete: SetNull)`
+  - `reminders          BookingReminder[]`
+  - `invoiceLineItems   InvoiceLineItem[]`
+  - `tasks              Task[]`
+  - `equipmentChecklist BookingEquipmentCheck[]`
+  - `orderId String? @unique`
+  - `order   Order?  @relation("OrderBooking", fields: [orderId], references: [id], onDelete: SetNull)`
+  - `formSubmission BookingFormSubmission?`
+  - `parentBooking Booking?  @relation("RecurringBookings", fields: [parentBookingId], references: [id], onDelete: SetNull)`
+  - `childBookings Booking[] @relation("RecurringBookings")`
+  - `multiDayParent   Booking?  @relation("MultiDaySessions", fields: [multiDayParentId], references: [id], onDelete: SetNull)`
+  - `multiDaySessions Booking[] @relation("MultiDaySessions")`
+  - `crew BookingCrew[]`
+  - `referrals Referral[] @relation("ReferralBooking")`
+  - `questionnaires ClientQuestionnaire[]`
+  - `smsLogs SMSLog[]`
+  - `convertedFromWaitlist BookingWaitlist? @relation("WaitlistConversion")`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([multiDayParentId])`
+  - `@@index([clientId])`
+  - `@@index([serviceId])`
+  - `@@index([locationId])`
+  - `@@index([assignedUserId])`
+  - `@@index([startTime])`
+  - `@@index([status])`
+  - `@@index([seriesId])`
+  - `@@index([parentBookingId])`
+  - `@@index([industry])`
+- Action usage:
+  - `availability.ts`
+  - `booking-crew.ts`
+  - `booking-forms.ts`
+  - `booking-import.ts`
+  - `booking-types.ts`
+  - `bookings.ts`
+  - `bundles.ts`
+  - `client-questionnaires.ts`
+  - `email-logs.ts`
+  - `equipment-checklists.ts`
+  - `equipment.ts`
+  - `field-operations.ts`
+  - `google-calendar.ts`
+  - `invoices.ts`
+  - `photographer-pay.ts`
+  - `projects.ts`
+  - `questionnaire-portal.ts`
+  - `revenue-forecasting.ts`
+  - `search.ts`
+  - `seed.ts`
+  - `self-booking.ts`
+  - `settings.ts`
+  - `team-availability.ts`
+  - `waitlist.ts`
+
+### Model: BookingWaitlist
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `clientId    String?`
+  - `clientName  String`
+  - `clientEmail String`
+  - `clientPhone String?`
+  - `serviceId     String?`
+  - `preferredDate DateTime // Preferred date/time`
+  - `alternateDate DateTime? // Alternate date if available`
+  - `flexibleDates Boolean   @default(false) // Willing to take any available slot`
+  - `notes         String? // Special requests`
+  - `status             WaitlistStatus @default(pending)`
+  - `priority           Int            @default(0) // Higher = more priority`
+  - `position           Int? // Position in queue (calculated)`
+  - `notifiedAt         DateTime? // When client was notified of availability`
+  - `expiresAt          DateTime? // When the offer expires`
+  - `convertedBookingId String?        @unique // If converted to booking`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client           Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `service          Service?     @relation(fields: [serviceId], references: [id], onDelete: SetNull)`
+  - `convertedBooking Booking?     @relation("WaitlistConversion", fields: [convertedBookingId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([serviceId])`
+  - `@@index([status])`
+  - `@@index([preferredDate])`
+  - `@@index([priority])`
+- Action usage:
+  - `waitlist.ts`
+
+### Model: BookingCrew
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `bookingId String`
+  - `userId    String`
+  - `role       BookingCrewRole @default(second_shooter)`
+  - `notes      String? // Special instructions for this team member`
+  - `hourlyRate Int? // Rate in cents (override user default)`
+  - `confirmed  Boolean         @default(false) // Has the crew member confirmed availability`
+  - `confirmedAt DateTime?`
+  - `declinedAt  DateTime?`
+  - `declineNote String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)`
+  - `user    User    @relation("BookingCrewAssignments", fields: [userId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([bookingId, userId])`
+  - `@@index([bookingId])`
+  - `@@index([userId])`
+  - `@@index([confirmed])`
+- Action usage:
+  - `booking-crew.ts`
+
+### Model: BookingReminder
+- Fields:
+  - `id        String    @id @default(cuid())`
+  - `bookingId String`
+  - `sendAt    DateTime`
+  - `sent      Boolean   @default(false)`
+  - `sentAt    DateTime?`
+  - `type          ReminderType      @default(hours_24)`
+  - `channel       ReminderChannel   @default(email)`
+  - `recipient     ReminderRecipient @default(client)`
+  - `minutesBefore Int               @default(1440) // 24 hours = 1440 minutes`
+  - `errorMessage String?`
+  - `createdAt DateTime @default(now())`
+  - `booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([bookingId])`
+  - `@@index([sendAt])`
+  - `@@index([sent, sendAt]) // For finding unsent reminders due to be sent`
+- Action usage:
+  - `bookings.ts`
+  - `seed.ts`
+
+### Model: Invoice
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String?`
+  - `invoiceNumber  String`
+  - `status InvoiceStatus @default(draft)`
+  - `subtotalCents   Int    @default(0)`
+  - `taxCents        Int    @default(0)`
+  - `discountCents   Int    @default(0)`
+  - `totalCents      Int    @default(0)`
+  - `paidAmountCents Int    @default(0) // Tracks partial payments`
+  - `currency        String @default("USD")`
+  - `lateFeeEnabled      Boolean   @default(false)`
+  - `lateFeeType         String?   @default("percentage") // "percentage" or "fixed"`
+  - `lateFeePercent      Float?    @default(5) // e.g., 5 = 5%`
+  - `lateFeeFlatCents    Int? // Flat fee in cents`
+  - `lateFeeAppliedCents Int       @default(0) // Total late fees applied`
+  - `lastLateFeeAt       DateTime? // When late fee was last applied`
+  - `issueDate DateTime  @default(now())`
+  - `dueDate   DateTime`
+  - `paidAt    DateTime?`
+  - `clientName    String?`
+  - `clientEmail   String?`
+  - `clientAddress String?`
+  - `notes String?`
+  - `terms String?`
+  - `stripePaymentLinkId String?`
+  - `paymentLinkUrl      String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client       Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `lineItems    InvoiceLineItem[]`
+  - `payments     Payment[]`
+  - `tasks        Task[]`
+  - `orderId String? @unique`
+  - `order   Order?  @relation("OrderInvoice", fields: [orderId], references: [id], onDelete: SetNull)`
+  - `referrals Referral[] @relation("ReferralInvoice")`
+  - `remindersSent  Int       @default(0)`
+  - `lastReminderAt DateTime?`
+  - `nextReminderAt DateTime?`
+  - `autoReminders  Boolean   @default(true) // Enable/disable auto reminders`
+  - `scheduledSendAt DateTime? // When to automatically send the invoice`
+  - `scheduledSentAt DateTime? // When the scheduled send was processed`
+  - `creditNotesOriginal CreditNote[] @relation("CreditNoteOriginalInvoice") // Credit notes issued for this invoice`
+  - `creditNotesApplied  CreditNote[] @relation("CreditNoteAppliedInvoice") // Credit notes applied to this invoice`
+  - `isDeposit       Boolean   @default(false) // Is this a deposit invoice?`
+  - `isBalance       Boolean   @default(false) // Is this a balance invoice?`
+  - `depositPercent  Float? // Deposit percentage (e.g., 50 for 50%)`
+  - `parentInvoiceId String? // Link to the original invoice (for deposit/balance invoices)`
+  - `parentInvoice   Invoice?  @relation("InvoiceDepositBalance", fields: [parentInvoiceId], references: [id], onDelete: SetNull)`
+  - `childInvoices   Invoice[] @relation("InvoiceDepositBalance") // Deposit and balance invoices`
+  - `attachments InvoiceAttachment[]`
+  - `estimateSource       Estimate?             @relation("EstimateToInvoice")`
+  - `galleryAddonRequests GalleryAddonRequest[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, invoiceNumber])`
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([status])`
+  - `@@index([dueDate])`
+- Action usage:
+  - `analytics-report.ts`
+  - `analytics.ts`
+  - `client-portal.ts`
+  - `credit-notes.ts`
+  - `estimates.ts`
+  - `invoice-analytics.ts`
+  - `invoice-attachments.ts`
+  - `invoice-email-templates.ts`
+  - `invoice-payments.ts`
+  - `invoice-pdf.ts`
+  - `invoice-splits.ts`
+  - `invoices.ts`
+  - `portal-downloads.ts`
+  - `recurring-invoices.ts`
+  - `retainers.ts`
+  - `revenue-forecasting.ts`
+  - `search.ts`
+  - `seed.ts`
+  - `settings.ts`
+  - `stripe-checkout.ts`
+
+### Model: InvoiceLineItem
+- Fields:
+  - `id          String       @id @default(cuid())`
+  - `invoiceId   String`
+  - `bookingId   String? // Link to booking for travel fees`
+  - `itemType    LineItemType @default(service)`
+  - `description String`
+  - `quantity    Int          @default(1)`
+  - `unitCents   Int`
+  - `totalCents  Int`
+  - `sortOrder   Int          @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `invoice Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)`
+  - `booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([invoiceId])`
+  - `@@index([bookingId])`
+  - `@@index([itemType])`
+- Action usage:
+  - `invoices.ts`
+  - `seed.ts`
+
+### Model: CreditNote
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String?`
+  - `invoiceId      String? // Optional link to original invoice`
+  - `creditNoteNumber String`
+  - `status CreditNoteStatus @default(draft)`
+  - `amountCents Int    @default(0)`
+  - `currency    String @default("USD")`
+  - `clientName  String?`
+  - `clientEmail String?`
+  - `reason      String? // Reason for the credit note`
+  - `description String? // Detailed description`
+  - `notes       String? // Internal notes`
+  - `appliedToInvoiceId  String? // If applied to a different invoice`
+  - `appliedAmountCents  Int       @default(0) // Amount applied from this credit note`
+  - `appliedAt           DateTime?`
+  - `refundedAmountCents Int       @default(0) // Amount refunded to client`
+  - `refundedAt          DateTime?`
+  - `issueDate DateTime @default(now())`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client           Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `invoice          Invoice?     @relation("CreditNoteOriginalInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)`
+  - `appliedToInvoice Invoice?     @relation("CreditNoteAppliedInvoice", fields: [appliedToInvoiceId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@unique([organizationId, creditNoteNumber])`
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([invoiceId])`
+  - `@@index([status])`
+- Action usage:
+  - `credit-notes.ts`
+
+### Model: InvoiceTemplate
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String // Template name (e.g., "Wedding Package", "Headshot Session")`
+  - `description String? // Optional description`
+  - `category    String? // Category for organization (e.g., "Weddings", "Portraits")`
+  - `defaultDueDays Int     @default(30) // Days until due`
+  - `defaultNotes   String? // Default invoice notes`
+  - `defaultTerms   String? // Default terms and conditions`
+  - `taxRate        Float? // Default tax rate override`
+  - `lineItems Json // Array of { itemType, description, quantity, unitCents }`
+  - `subtotalCents Int @default(0)`
+  - `taxCents      Int @default(0)`
+  - `totalCents    Int @default(0)`
+  - `isActive   Boolean @default(true)`
+  - `isDefault  Boolean @default(false) // Default template for new invoices`
+  - `usageCount Int     @default(0) // Track how often this template is used`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([category])`
+  - `@@index([isActive])`
+- Action usage:
+  - `invoice-presets.ts`
+
+### Model: Estimate
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String?`
+  - `estimateNumber String`
+  - `status EstimateStatus @default(draft)`
+  - `subtotalCents Int    @default(0)`
+  - `taxCents      Int    @default(0)`
+  - `discountCents Int    @default(0)`
+  - `totalCents    Int    @default(0)`
+  - `currency      String @default("USD")`
+  - `clientName    String?`
+  - `clientEmail   String?`
+  - `clientAddress String?`
+  - `title       String? // Project/service title`
+  - `description String? // Detailed description`
+  - `notes       String?`
+  - `terms       String?`
+  - `issueDate  DateTime @default(now())`
+  - `validUntil DateTime // When the estimate expires`
+  - `convertedToInvoiceId String?   @unique`
+  - `convertedAt          DateTime?`
+  - `viewedAt        DateTime?`
+  - `approvedAt      DateTime?`
+  - `rejectedAt      DateTime?`
+  - `rejectionReason String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client             Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `convertedToInvoice Invoice?           @relation("EstimateToInvoice", fields: [convertedToInvoiceId], references: [id], onDelete: SetNull)`
+  - `lineItems          EstimateLineItem[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, estimateNumber])`
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([status])`
+- Action usage:
+  - `estimates.ts`
+  - `invoice-email-templates.ts`
+
+### Model: EstimateLineItem
+- Fields:
+  - `id          String       @id @default(cuid())`
+  - `estimateId  String`
+  - `itemType    LineItemType @default(service)`
+  - `description String`
+  - `quantity    Int          @default(1)`
+  - `unitCents   Int`
+  - `totalCents  Int`
+  - `sortOrder   Int          @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `estimate Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([estimateId])`
+
+### Model: InvoiceAttachment
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `invoiceId String`
+  - `fileName    String`
+  - `fileUrl     String`
+  - `fileType    String // MIME type`
+  - `fileSizeMb  Float   @default(0)`
+  - `description String?`
+  - `createdAt DateTime @default(now())`
+  - `invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([invoiceId])`
+- Action usage:
+  - `invoice-attachments.ts`
+
+### Model: ClientRetainer
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String @unique // One-to-one with Client`
+  - `balanceCents        Int    @default(0) // Current available balance`
+  - `totalDepositedCents Int    @default(0) // Lifetime deposits`
+  - `totalUsedCents      Int    @default(0) // Lifetime usage`
+  - `currency            String @default("USD")`
+  - `isActive                 Boolean @default(true)`
+  - `lowBalanceThresholdCents Int? // Alert when balance falls below this`
+  - `notes String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client       Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)`
+  - `transactions RetainerTransaction[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, clientId]) // One retainer per client`
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+- Action usage:
+  - `retainers.ts`
+
+### Model: RetainerTransaction
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `retainerId String`
+  - `type        RetainerTransactionType`
+  - `amountCents Int`
+  - `description String?`
+  - `invoiceId String? // If applied to an invoice`
+  - `paymentId String? // If from a payment`
+  - `balanceAfterCents Int // Balance after this transaction`
+  - `createdAt DateTime @default(now())`
+  - `retainer ClientRetainer @relation(fields: [retainerId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([retainerId])`
+  - `@@index([invoiceId])`
+- Action usage:
+  - `retainers.ts`
+
+### Model: RecurringInvoice
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String`
+  - `frequency   RecurringFrequency @default(monthly)`
+  - `dayOfMonth  Int?               @default(1) // 1-28 for monthly`
+  - `dayOfWeek   Int? // 0-6 for weekly (0 = Sunday)`
+  - `anchorDate  DateTime // Start date for the recurring schedule`
+  - `nextRunDate DateTime // Next scheduled invoice creation`
+  - `isActive   Boolean   @default(true)`
+  - `isPaused   Boolean   @default(false)`
+  - `pausedAt   DateTime?`
+  - `pauseUntil DateTime? // Resume date if paused temporarily`
+  - `subtotalCents Int     @default(0)`
+  - `taxCents      Int     @default(0)`
+  - `totalCents    Int     @default(0)`
+  - `currency      String  @default("USD")`
+  - `notes         String?`
+  - `terms         String?`
+  - `dueDays       Int     @default(30) // Days after creation until due`
+  - `lineItems Json // Array of { itemType, description, quantity, unitCents }`
+  - `invoicesCreated Int       @default(0)`
+  - `lastInvoiceAt   DateTime?`
+  - `lastInvoiceId   String? // Reference to last created invoice`
+  - `endDate     DateTime? // Stop after this date`
+  - `maxInvoices Int? // Stop after this many invoices`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([isActive])`
+  - `@@index([nextRunDate])`
+- Action usage:
+  - `recurring-invoices.ts`
+
+### Model: ContractTemplate
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `name           String`
+  - `description    String?`
+  - `content        String  @db.Text`
+  - `isDefault      Boolean @default(false)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `contracts    Contract[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+- Action usage:
+  - `seed.ts`
+
+### Model: Contract
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String?`
+  - `templateId     String?`
+  - `name    String`
+  - `content String         @db.Text`
+  - `status  ContractStatus @default(draft)`
+  - `pdfUrl String?`
+  - `sentAt    DateTime?`
+  - `signedAt  DateTime?`
+  - `expiresAt DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client       Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `template     ContractTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)`
+  - `signers      ContractSigner[]`
+  - `auditLogs    ContractAuditLog[]`
+  - `signatures   ContractSignature[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([status])`
+- Action usage:
+  - `contract-pdf.ts`
+  - `contract-signing.ts`
+  - `contract-templates.ts`
+  - `contracts.ts`
+  - `email-logs.ts`
+  - `seed.ts`
+
+### Model: ContractSigner
+- Fields:
+  - `id         String  @id @default(cuid())`
+  - `contractId String`
+  - `email      String`
+  - `name       String?`
+  - `signatureUrl    String?`
+  - `signedAt        DateTime?`
+  - `signedIp        String?`
+  - `signedUserAgent String?`
+  - `signingToken   String    @unique`
+  - `tokenExpiresAt DateTime?`
+  - `sortOrder Int @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([contractId])`
+  - `@@index([signingToken])`
+- Action usage:
+  - `contract-signing.ts`
+  - `contracts.ts`
+  - `seed.ts`
+
+### Model: ContractAuditLog
+- Fields:
+  - `id         String  @id @default(cuid())`
+  - `contractId String`
+  - `action     String`
+  - `actorEmail String?`
+  - `actorIp    String?`
+  - `metadata   Json?`
+  - `createdAt DateTime @default(now())`
+  - `contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([contractId])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `contract-signing.ts`
+  - `contracts.ts`
+  - `seed.ts`
+
+### Model: ActivityLog
+- Fields:
+  - `id             String       @id @default(cuid())`
+  - `organizationId String`
+  - `userId         String?`
+  - `type           ActivityType`
+  - `description    String`
+  - `metadata       Json?`
+  - `projectId  String?`
+  - `clientId   String?`
+  - `paymentId  String?`
+  - `bookingId  String?`
+  - `invoiceId  String?`
+  - `contractId String?`
+  - `createdAt DateTime @default(now())`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([userId])`
+  - `@@index([type])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `activity.ts`
+  - `booking-import.ts`
+  - `bookings.ts`
+  - `client-selections.ts`
+  - `clients.ts`
+  - `contract-signing.ts`
+  - `contracts.ts`
+  - `galleries.ts`
+  - `gallery-activity.ts`
+  - `gallery-addons.ts`
+  - `gallery-analytics.ts`
+  - `gallery-reminders.ts`
+  - `payments.ts`
+  - `portfolio-websites.ts`
+  - `seed.ts`
+  - `uploads.ts`
+  - `waitlist.ts`
+
+### Model: Notification
+- Fields:
+  - `id             String           @id @default(cuid())`
+  - `organizationId String`
+  - `type           NotificationType`
+  - `title          String`
+  - `message        String`
+  - `linkUrl        String?`
+  - `read           Boolean          @default(false)`
+  - `readAt         DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([read])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `notifications.ts`
+  - `platform-referrals.ts`
+  - `seed.ts`
+
+### Model: ClientNotification
+- Fields:
+  - `id       String                 @id @default(cuid())`
+  - `clientId String`
+  - `type     ClientNotificationType`
+  - `title    String`
+  - `message  String`
+  - `linkUrl  String?`
+  - `read     Boolean                @default(false)`
+  - `readAt   DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([clientId])`
+  - `@@index([read])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `client-notifications.ts`
+
+### Model: UsageMeter
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `month          String // "2025-01" format`
+  - `storageBytes     BigInt @default(0)`
+  - `galleriesCreated Int    @default(0)`
+  - `emailsSent       Int    @default(0)`
+  - `apiCalls         Int    @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([organizationId, month])`
+  - `@@index([organizationId])`
+  - `@@index([month])`
+
+### Model: OnboardingProgress
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String @unique`
+  - `profileComplete     Boolean @default(false)`
+  - `brandingComplete    Boolean @default(false)`
+  - `firstGalleryCreated Boolean @default(false)`
+  - `stripeConnected     Boolean @default(false)`
+  - `welcomeViewed    Boolean @default(false) // Step 0`
+  - `personalComplete Boolean @default(false) // Step 1: First/last name`
+  - `businessComplete Boolean @default(false) // Step 2: Company, type, size`
+  - `brandingStepDone Boolean @default(false) // Step 3: Display mode, public info`
+  - `industriesSet    Boolean @default(false) // Step 4: Industry selection`
+  - `featuresSelected Boolean @default(false) // Step 5: Module selection`
+  - `goalsSet         Boolean @default(false) // Step 6: Business goals`
+  - `paymentStepDone  Boolean @default(false) // Step 7: Payment/trial setup`
+  - `tourStarted      Boolean @default(false) // Step 8: Guided tour`
+  - `currentStep  Int      @default(0)`
+  - `skippedSteps String[] @default([]) // Steps user skipped`
+  - `selectedGoals String[] @default([])`
+  - `completedAt DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Action usage:
+  - `onboarding.ts`
+
+### Model: Location
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `placeId          String? // Google Place ID for caching`
+  - `formattedAddress String`
+  - `streetAddress    String?`
+  - `city             String?`
+  - `state            String?`
+  - `postalCode       String?`
+  - `country          String  @default("US")`
+  - `latitude  Float`
+  - `longitude Float`
+  - `notes String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `orgHomeBase     Organization[]   @relation("OrgHomeBase")`
+  - `userHomeBase    User[]           @relation("UserHomeBase")`
+  - `bookings        Booking[]`
+  - `projects        Project[]`
+  - `propertyDetails PropertyDetails?`
+  - `orders Order[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([placeId])`
+- Action usage:
+  - `create-wizard.ts`
+  - `locations.ts`
+  - `team-capabilities.ts`
+
+### Model: PropertyDetails
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `locationId String @unique`
+  - `propertyType PropertyType?`
+  - `bedrooms     Int?`
+  - `bathrooms    Float? // 2.5 baths, etc.`
+  - `squareFeet   Int?`
+  - `lotSize      Int? // in sqft`
+  - `yearBuilt    Int?`
+  - `listingPrice Int? // in cents`
+  - `mlsNumber         String?`
+  - `listingAgent      String?`
+  - `listingAgentPhone String?`
+  - `dataSource String? // "attom", "zillow", "manual"`
+  - `fetchedAt  DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([mlsNumber])`
+
+### Model: Equipment
+- Fields:
+  - `id             String            @id @default(cuid())`
+  - `organizationId String`
+  - `name           String`
+  - `category       EquipmentCategory`
+  - `description    String?`
+  - `serialNumber   String?`
+  - `purchaseDate   DateTime?`
+  - `valueCents     Int? // Equipment value in cents`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization            Organization                      @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `userAssignments         UserEquipment[]`
+  - `serviceRequirements     ServiceEquipmentRequirement[]`
+  - `bookingTypeRequirements BookingTypeEquipmentRequirement[]`
+  - `bookingChecks           BookingEquipmentCheck[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([category])`
+- Action usage:
+  - `equipment-checklists.ts`
+  - `equipment.ts`
+  - `seed.ts`
+
+### Model: UserEquipment
+- Fields:
+  - `id          String   @id @default(cuid())`
+  - `userId      String`
+  - `equipmentId String`
+  - `assignedAt  DateTime @default(now())`
+  - `notes       String?`
+  - `user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)`
+  - `equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([userId, equipmentId])`
+  - `@@index([userId])`
+  - `@@index([equipmentId])`
+- Action usage:
+  - `equipment.ts`
+  - `seed.ts`
+
+### Model: UserServiceCapability
+- Fields:
+  - `id        String          @id @default(cuid())`
+  - `userId    String`
+  - `serviceId String`
+  - `level     CapabilityLevel @default(capable)`
+  - `notes     String?`
+  - `createdAt DateTime @default(now())`
+  - `user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)`
+  - `service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([userId, serviceId])`
+  - `@@index([userId])`
+  - `@@index([serviceId])`
+  - `@@index([level])`
+- Action usage:
+  - `seed.ts`
+  - `team-capabilities.ts`
+
+### Model: ServiceEquipmentRequirement
+- Fields:
+  - `id          String  @id @default(cuid())`
+  - `serviceId   String`
+  - `equipmentId String`
+  - `isRequired  Boolean @default(true) // vs. recommended`
+  - `service   Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)`
+  - `equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([serviceId, equipmentId])`
+  - `@@index([serviceId])`
+  - `@@index([equipmentId])`
+- Action usage:
+  - `equipment.ts`
+  - `seed.ts`
+  - `team-capabilities.ts`
+
+### Model: BookingTypeEquipmentRequirement
+- Fields:
+  - `id            String  @id @default(cuid())`
+  - `bookingTypeId String`
+  - `equipmentId   String`
+  - `isRequired    Boolean @default(true) // Required vs recommended`
+  - `quantity      Int     @default(1) // How many of this item needed`
+  - `notes         String? // Special instructions for this equipment`
+  - `bookingType BookingType @relation(fields: [bookingTypeId], references: [id], onDelete: Cascade)`
+  - `equipment   Equipment   @relation(fields: [equipmentId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([bookingTypeId, equipmentId])`
+  - `@@index([bookingTypeId])`
+  - `@@index([equipmentId])`
+- Action usage:
+  - `equipment-checklists.ts`
+
+### Model: BookingEquipmentCheck
+- Fields:
+  - `id          String    @id @default(cuid())`
+  - `bookingId   String`
+  - `equipmentId String`
+  - `isChecked   Boolean   @default(false) // Has the item been checked/packed?`
+  - `checkedAt   DateTime? // When it was checked`
+  - `checkedById String? // Who checked it`
+  - `notes       String? // Any notes about this item for this booking`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)`
+  - `equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)`
+  - `checkedBy User?     @relation("EquipmentChecker", fields: [checkedById], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@unique([bookingId, equipmentId])`
+  - `@@index([bookingId])`
+  - `@@index([equipmentId])`
+- Action usage:
+  - `equipment-checklists.ts`
+  - `equipment.ts`
+
+### Model: PropertyWebsite
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `projectId String @unique`
+  - `address      String`
+  - `city         String`
+  - `state        String`
+  - `zipCode      String`
+  - `price        Int? // in cents`
+  - `beds         Int?`
+  - `baths        Float?`
+  - `sqft         Int?`
+  - `lotSize      String?`
+  - `yearBuilt    Int?`
+  - `propertyType PropertyType?`
+  - `headline       String?`
+  - `description    String?  @db.Text`
+  - `features       String[] // Array of feature highlights`
+  - `virtualTourUrl String? // Matterport, iGuide, etc.`
+  - `videoUrl       String?`
+  - `template     PropertyWebsiteTemplate @default(modern)`
+  - `isPublished  Boolean                 @default(false)`
+  - `isBranded    Boolean                 @default(true) // Show photographer branding`
+  - `showPrice    Boolean                 @default(true)`
+  - `showAgent    Boolean                 @default(true)`
+  - `customDomain String?                 @unique`
+  - `accentColor String? // Custom accent color override (hex, e.g., "#3b82f6")`
+  - `openHouseDate    DateTime? // Open house start date/time`
+  - `openHouseEndDate DateTime? // Open house end date/time (optional, defaults to +2 hours)`
+  - `slug            String  @unique`
+  - `metaTitle       String?`
+  - `metaDescription String?`
+  - `viewCount Int @default(0)`
+  - `createdAt   DateTime  @default(now())`
+  - `updatedAt   DateTime  @updatedAt`
+  - `publishedAt DateTime?`
+  - `project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `analytics       PropertyAnalytics[]`
+  - `marketingAssets MarketingAsset[]`
+  - `leads           PropertyLead[]`
+  - `tasks           Task[]`
+- Indexes/constraints:
+  - `@@index([slug])`
+  - `@@index([isPublished])`
+- Action usage:
+  - `client-portal.ts`
+  - `lead-scoring.ts`
+  - `marketing-assets.ts`
+  - `portal-downloads.ts`
+  - `property-websites.ts`
+  - `search.ts`
+  - `seed.ts`
+  - `settings.ts`
+
+### Model: PropertyAnalytics
+- Fields:
+  - `id                String   @id @default(cuid())`
+  - `propertyWebsiteId String`
+  - `date              DateTime @default(now()) @db.Date`
+  - `pageViews      Int  @default(0)`
+  - `uniqueVisitors Int  @default(0)`
+  - `avgTimeOnPage  Int? // seconds`
+  - `tourClicks   Int @default(0)`
+  - `photoViews   Int @default(0)`
+  - `socialShares Int @default(0)`
+  - `directTraffic Int @default(0)`
+  - `socialTraffic Int @default(0)`
+  - `emailTraffic  Int @default(0)`
+  - `searchTraffic Int @default(0)`
+  - `mobileViews  Int @default(0)`
+  - `desktopViews Int @default(0)`
+  - `tabletViews  Int @default(0)`
+  - `propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([propertyWebsiteId, date])`
+  - `@@index([propertyWebsiteId])`
+  - `@@index([date])`
+- Action usage:
+  - `property-websites.ts`
+  - `seed.ts`
+
+### Model: PropertyLead
+- Fields:
+  - `id                String @id @default(cuid())`
+  - `propertyWebsiteId String`
+  - `name    String`
+  - `email   String`
+  - `phone   String?`
+  - `message String? @db.Text`
+  - `source  String? // website, social, email, etc.`
+  - `status LeadStatus @default(new)`
+  - `score          Int    @default(0) // 0-100 score`
+  - `scoreBreakdown Json? // { "pageViews": 10, "timeOnSite": 15, "photoViews": 20, ... }`
+  - `temperature    String @default("cold") // "hot", "warm", "cold"`
+  - `pageViews        Int       @default(0)`
+  - `photoViews       Int       @default(0)`
+  - `tourClicks       Int       @default(0)`
+  - `totalTimeSeconds Int       @default(0)`
+  - `lastActivityAt   DateTime?`
+  - `contactedAt  DateTime?`
+  - `followUpDate DateTime?`
+  - `notes        String?   @db.Text`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([propertyWebsiteId])`
+  - `@@index([status])`
+  - `@@index([score])`
+  - `@@index([temperature])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `lead-scoring.ts`
+  - `property-websites.ts`
+  - `seed.ts`
+
+### Model: MarketingAsset
+- Fields:
+  - `id                String @id @default(cuid())`
+  - `propertyWebsiteId String`
+  - `type         MarketingAssetType`
+  - `name         String`
+  - `fileUrl      String`
+  - `thumbnailUrl String?`
+  - `templateUsed String?`
+  - `settings     Json? // Custom settings used to generate`
+  - `createdAt DateTime @default(now())`
+  - `propertyWebsite PropertyWebsite @relation(fields: [propertyWebsiteId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([propertyWebsiteId])`
+  - `@@index([type])`
+- Action usage:
+  - `marketing-assets.ts`
+  - `seed.ts`
+
+### Model: PortfolioWebsite
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `slug        String  @unique`
+  - `description String? @db.Text`
+  - `heroTitle    String?`
+  - `heroSubtitle String? @db.Text`
+  - `portfolioType PortfolioType     @default(photographer)`
+  - `template      PortfolioTemplate @default(modern)`
+  - `fontHeading String?`
+  - `fontBody    String?`
+  - `logoUrl      String?`
+  - `primaryColor String? @default("#3b82f6")`
+  - `accentColor  String? @default("#8b5cf6")`
+  - `socialLinks Json?`
+  - `metaTitle       String?`
+  - `metaDescription String? @db.Text`
+  - `faviconUrl      String?`
+  - `isPublished  Boolean @default(false)`
+  - `showBranding Boolean @default(true)`
+  - `customDomain                  String?   @unique`
+  - `customDomainVerified          Boolean   @default(false)`
+  - `customDomainVerificationToken String? // DNS TXT record value for verification`
+  - `customDomainVerifiedAt        DateTime?`
+  - `customDomainSslStatus         String? // pending, active, error`
+  - `isPasswordProtected Boolean @default(false)`
+  - `password            String? // Hashed password`
+  - `requireLeadCapture Boolean @default(false)`
+  - `leadCaptureMessage String? @db.Text // Custom message shown on gate`
+  - `leadCaptureFields  Json? // Array of field configs: [{ name, label, type, required }]`
+  - `expiresAt DateTime?`
+  - `scheduledPublishAt DateTime? // Auto-publish at this date/time`
+  - `allowDownloads    Boolean @default(false)`
+  - `downloadWatermark Boolean @default(true) // Apply watermark to downloads`
+  - `customCss String? @db.Text`
+  - `enableAnimations Boolean @default(true)`
+  - `allowComments       Boolean @default(false)`
+  - `requireCommentEmail Boolean @default(true) // Require email to leave comment`
+  - `createdAt   DateTime  @default(now())`
+  - `updatedAt   DateTime  @updatedAt`
+  - `publishedAt DateTime?`
+  - `organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `projects     PortfolioWebsiteProject[]`
+  - `sections     PortfolioWebsiteSection[]`
+  - `views        PortfolioWebsiteView[]`
+  - `inquiries    PortfolioInquiry[]`
+  - `leads        PortfolioLead[]`
+  - `comments     PortfolioComment[]`
+  - `abTests      PortfolioABTest[]`
+  - `customForms  CustomForm[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([slug])`
+  - `@@index([isPublished])`
+  - `@@index([portfolioType])`
+  - `@@index([expiresAt])`
+- Action usage:
+  - `ab-testing.ts`
+  - `portfolio-comments.ts`
+  - `portfolio-websites.ts`
+
+### Model: PortfolioInquiry
+- Fields:
+  - `id                 String @id @default(cuid())`
+  - `portfolioWebsiteId String`
+  - `organizationId     String`
+  - `name    String`
+  - `email   String`
+  - `phone   String?`
+  - `message String  @db.Text`
+  - `status LeadStatus @default(new)`
+  - `notes  String?    @db.Text`
+  - `source    String? // where they came from`
+  - `userAgent String?`
+  - `ipAddress String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)`
+  - `organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([portfolioWebsiteId])`
+  - `@@index([organizationId])`
+  - `@@index([status])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `portfolio-websites.ts`
+
+### Model: WebsiteChatInquiry
+- Fields:
+  - `id String @id @default(cuid())`
+  - `name  String?`
+  - `email String?`
+  - `phone String?`
+  - `message  String  @db.Text`
+  - `category String? // "pricing", "features", "trial", "other"`
+  - `status LeadStatus @default(new)`
+  - `notes  String?    @db.Text`
+  - `source    String? // "marketing_website", "portfolio", etc.`
+  - `pageUrl   String? // URL where chat was initiated`
+  - `userAgent String?`
+  - `ipAddress String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+- Indexes/constraints:
+  - `@@index([status])`
+  - `@@index([createdAt])`
+  - `@@index([email])`
+- Action usage:
+  - `chat-inquiries.ts`
+
+### Model: PortfolioWebsiteProject
+- Fields:
+  - `id                 String @id @default(cuid())`
+  - `portfolioWebsiteId String`
+  - `projectId          String`
+  - `position           Int    @default(0)`
+  - `portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)`
+  - `project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([portfolioWebsiteId, projectId])`
+  - `@@index([portfolioWebsiteId])`
+  - `@@index([projectId])`
+- Action usage:
+  - `portfolio-websites.ts`
+
+### Model: PortfolioWebsiteSection
+- Fields:
+  - `id                 String @id @default(cuid())`
+  - `portfolioWebsiteId String`
+  - `sectionType PortfolioSectionType`
+  - `position    Int                  @default(0)`
+  - `isVisible   Boolean              @default(true)`
+  - `config Json`
+  - `customTitle String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([portfolioWebsiteId])`
+  - `@@index([position])`
+- Action usage:
+  - `portfolio-websites.ts`
+
+### Model: PortfolioWebsiteView
+- Fields:
+  - `id                 String @id @default(cuid())`
+  - `portfolioWebsiteId String`
+  - `visitorId String? // Anonymous visitor ID (cookie-based)`
+  - `ipAddress String?`
+  - `userAgent String?`
+  - `referrer  String?`
+  - `country   String?`
+  - `city      String?`
+  - `pagePath  String? // Which section/page was viewed`
+  - `sessionId String? // Group views into sessions`
+  - `duration    Int? // Time spent in seconds`
+  - `scrollDepth Int? // Max scroll depth percentage`
+  - `createdAt DateTime @default(now())`
+  - `portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([portfolioWebsiteId])`
+  - `@@index([createdAt])`
+  - `@@index([visitorId])`
+  - `@@index([sessionId])`
+- Action usage:
+  - `portfolio-websites.ts`
+
+### Model: PortfolioLead
+- Fields:
+  - `id                 String @id @default(cuid())`
+  - `portfolioWebsiteId String`
+  - `organizationId     String`
+  - `email     String`
+  - `name      String?`
+  - `phone     String?`
+  - `company   String?`
+  - `message   String? @db.Text`
+  - `extraData Json? // Additional custom field data`
+  - `visitorId String?`
+  - `referrer  String?`
+  - `country   String?`
+  - `city      String?`
+  - `createdAt DateTime @default(now())`
+  - `portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)`
+  - `organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([portfolioWebsiteId])`
+  - `@@index([organizationId])`
+  - `@@index([email])`
+  - `@@index([createdAt])`
+
+### Model: PortfolioComment
+- Fields:
+  - `id                 String @id @default(cuid())`
+  - `portfolioWebsiteId String`
+  - `organizationId     String`
+  - `content   String  @db.Text`
+  - `sectionId String? // Optional: which section the comment is on`
+  - `projectId String? // Optional: which project/image the comment is on`
+  - `authorName  String?`
+  - `authorEmail String?`
+  - `isApproved Boolean @default(false)`
+  - `isHidden   Boolean @default(false)`
+  - `createdAt DateTime @default(now())`
+  - `portfolioWebsite PortfolioWebsite @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)`
+  - `organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([portfolioWebsiteId])`
+  - `@@index([organizationId])`
+  - `@@index([isApproved])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `portfolio-comments.ts`
+
+### Model: PortfolioABTest
+- Fields:
+  - `id                 String @id @default(cuid())`
+  - `portfolioWebsiteId String`
+  - `organizationId     String`
+  - `name        String`
+  - `description String?               @db.Text`
+  - `status      PortfolioABTestStatus @default(draft)`
+  - `controlTrafficPercent Int @default(50)`
+  - `variantTrafficPercent Int @default(50)`
+  - `variantHeroTitle    String?            @db.Text`
+  - `variantHeroSubtitle String?            @db.Text`
+  - `variantPrimaryColor String?`
+  - `variantTemplate     PortfolioTemplate?`
+  - `goalType        ABTestGoalType @default(views)`
+  - `targetMetric    Int? // Target number to reach`
+  - `confidenceLevel Float          @default(0.95) // Statistical confidence required`
+  - `startDate DateTime?`
+  - `endDate   DateTime?`
+  - `controlViews       Int     @default(0)`
+  - `controlConversions Int     @default(0)`
+  - `variantViews       Int     @default(0)`
+  - `variantConversions Int     @default(0)`
+  - `winningVariant     String? // "control" or "variant" once determined`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `portfolioWebsite PortfolioWebsite   @relation(fields: [portfolioWebsiteId], references: [id], onDelete: Cascade)`
+  - `organization     Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `assignments      ABTestAssignment[]`
+- Indexes/constraints:
+  - `@@index([portfolioWebsiteId])`
+  - `@@index([organizationId])`
+  - `@@index([status])`
+- Action usage:
+  - `ab-testing.ts`
+
+### Model: ABTestAssignment
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `testId    String`
+  - `visitorId String`
+  - `variant   String // "control" or "variant"`
+  - `converted Boolean @default(false)`
+  - `createdAt   DateTime  @default(now())`
+  - `convertedAt DateTime?`
+  - `test PortfolioABTest @relation(fields: [testId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([testId, visitorId])`
+  - `@@index([testId])`
+  - `@@index([visitorId])`
+- Action usage:
+  - `ab-testing.ts`
+
+### Model: CustomForm
+- Fields:
+  - `id                 String  @id @default(cuid())`
+  - `portfolioWebsiteId String?`
+  - `organizationId     String`
+  - `name        String`
+  - `description String? @db.Text`
+  - `slug        String  @unique // URL-friendly identifier`
+  - `submitButtonText String  @default("Submit")`
+  - `successMessage   String  @default("Thank you for your submission!")`
+  - `redirectUrl      String? // Optional redirect after submission`
+  - `isActive           Boolean @default(true)`
+  - `requiresAuth       Boolean @default(false)`
+  - `maxSubmissions     Int? // Limit total submissions`
+  - `submissionsPerUser Int? // Limit per visitor`
+  - `sendEmailOnSubmission Boolean @default(true)`
+  - `notificationEmails    String? @db.Text // Comma-separated emails`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `portfolioWebsite PortfolioWebsite? @relation(fields: [portfolioWebsiteId], references: [id], onDelete: SetNull)`
+  - `organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `fields           CustomFormField[]`
+  - `submissions      FormSubmission[]`
+- Indexes/constraints:
+  - `@@index([portfolioWebsiteId])`
+  - `@@index([organizationId])`
+  - `@@index([slug])`
+  - `@@index([isActive])`
+- Action usage:
+  - `custom-forms.ts`
+
+### Model: CustomFormField
+- Fields:
+  - `id     String @id @default(cuid())`
+  - `formId String`
+  - `name        String // Internal field name`
+  - `label       String // Display label`
+  - `type        CustomFormFieldType`
+  - `placeholder String?`
+  - `helpText    String?`
+  - `isRequired   Boolean @default(false)`
+  - `minLength    Int?`
+  - `maxLength    Int?`
+  - `pattern      String? // Regex pattern for validation`
+  - `patternError String? // Custom error message for pattern mismatch`
+  - `options Json? // Array of { label: string, value: string }`
+  - `position Int    @default(0)`
+  - `width    String @default("full") // "full", "half", "third"`
+  - `conditionalLogic Json? // { showWhen: { field: string, operator: string, value: string } }`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `form CustomForm @relation(fields: [formId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([formId])`
+  - `@@index([position])`
+- Action usage:
+  - `custom-forms.ts`
+
+### Model: FormSubmission
+- Fields:
+  - `id     String @id @default(cuid())`
+  - `formId String`
+  - `data      Json // All field values`
+  - `ipAddress String?`
+  - `userAgent String?`
+  - `visitorId String?`
+  - `country String?`
+  - `city    String?`
+  - `isRead     Boolean   @default(false)`
+  - `isArchived Boolean   @default(false)`
+  - `readAt     DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `form CustomForm @relation(fields: [formId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([formId])`
+  - `@@index([isRead])`
+  - `@@index([isArchived])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `custom-forms.ts`
+
+### Model: TaskBoard
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `description String?`
+  - `color       String? // Board color for visual distinction`
+  - `icon        String? // Icon name (emoji or icon key)`
+  - `isDefault   Boolean @default(false) // Default board for org`
+  - `isArchived  Boolean @default(false)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `columns         TaskColumn[]`
+  - `tasks           Task[]`
+  - `taskAutomations TaskAutomation[]`
+  - `recurringTasks  RecurringTask[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([isArchived])`
+- Action usage:
+  - `projects.ts`
+  - `seed.ts`
+
+### Model: TaskColumn
+- Fields:
+  - `id      String @id @default(cuid())`
+  - `boardId String`
+  - `name     String`
+  - `color    String? // Column header color`
+  - `position Int     @default(0) // Sort order`
+  - `limit    Int? // WIP limit (optional)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `board          TaskBoard       @relation(fields: [boardId], references: [id], onDelete: Cascade)`
+  - `tasks          Task[]`
+  - `recurringTasks RecurringTask[]`
+- Indexes/constraints:
+  - `@@index([boardId])`
+  - `@@index([position])`
+- Action usage:
+  - `projects.ts`
+  - `seed.ts`
+
+### Model: Task
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `boardId        String`
+  - `columnId       String`
+  - `assigneeId     String? // Assigned team member (User id)`
+  - `title       String`
+  - `description String?`
+  - `status      TaskStatus   @default(todo)`
+  - `priority    TaskPriority @default(medium)`
+  - `position    Int          @default(0) // Sort order within column`
+  - `startDate   DateTime?`
+  - `dueDate     DateTime?`
+  - `completedAt DateTime?`
+  - `estimatedMinutes Int?`
+  - `actualMinutes    Int?`
+  - `tags String[] @default([])`
+  - `clientId          String?`
+  - `projectId         String? // Gallery/Project`
+  - `bookingId         String?`
+  - `invoiceId         String?`
+  - `propertyWebsiteId String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `board           TaskBoard        @relation(fields: [boardId], references: [id], onDelete: Cascade)`
+  - `column          TaskColumn       @relation(fields: [columnId], references: [id], onDelete: Cascade)`
+  - `assignee        User?            @relation(fields: [assigneeId], references: [id], onDelete: SetNull)`
+  - `client          Client?          @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `project         Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)`
+  - `booking         Booking?         @relation(fields: [bookingId], references: [id], onDelete: SetNull)`
+  - `invoice         Invoice?         @relation(fields: [invoiceId], references: [id], onDelete: SetNull)`
+  - `propertyWebsite PropertyWebsite? @relation(fields: [propertyWebsiteId], references: [id], onDelete: SetNull)`
+  - `subtasks        TaskSubtask[]`
+  - `comments        TaskComment[]`
+  - `taskTimeEntries TaskTimeEntry[]`
+  - `blockedByTasks Task[] @relation("TaskDependencies")`
+  - `blocksTasks    Task[] @relation("TaskDependencies")`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([boardId])`
+  - `@@index([columnId])`
+  - `@@index([assigneeId])`
+  - `@@index([status])`
+  - `@@index([priority])`
+  - `@@index([dueDate])`
+  - `@@index([clientId])`
+  - `@@index([projectId])`
+  - `@@index([bookingId])`
+- Action usage:
+  - `projects.ts`
+  - `seed.ts`
+
+### Model: TaskSubtask
+- Fields:
+  - `id     String @id @default(cuid())`
+  - `taskId String`
+  - `title       String`
+  - `isCompleted Boolean @default(false)`
+  - `position    Int     @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([taskId])`
+- Action usage:
+  - `projects.ts`
+  - `seed.ts`
+
+### Model: TaskComment
+- Fields:
+  - `id       String @id @default(cuid())`
+  - `taskId   String`
+  - `authorId String`
+  - `content String`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)`
+  - `author User @relation(fields: [authorId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([taskId])`
+  - `@@index([authorId])`
+- Action usage:
+  - `projects.ts`
+  - `seed.ts`
+
+### Model: TaskTemplate
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `description String? // Description for the template itself`
+  - `category    String? // Category for organization (e.g., "Gallery Delivery", "Post-Production")`
+  - `icon        String? // Emoji or icon key`
+  - `isGlobal    Boolean @default(false) // System templates vs org templates`
+  - `taskTitle        String // Template for task title (can include placeholders)`
+  - `taskDescription  String? // Template for task description`
+  - `priority         TaskPriority @default(medium)`
+  - `tags             String[]     @default([])`
+  - `estimatedMinutes Int?`
+  - `subtasks Json? // [{title: string, position: number}]`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([category])`
+  - `@@index([isGlobal])`
+- Action usage:
+  - `projects.ts`
+
+### Model: TaskAutomation
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `boardId        String`
+  - `name        String`
+  - `description String?`
+  - `isActive    Boolean @default(true)`
+  - `trigger Json`
+  - `actions Json`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `board        TaskBoard    @relation(fields: [boardId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([boardId])`
+  - `@@index([isActive])`
+- Action usage:
+  - `projects.ts`
+
+### Model: RecurringTask
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `boardId        String`
+  - `columnId       String // Column to create task in`
+  - `title            String`
+  - `description      String?`
+  - `priority         TaskPriority @default(medium)`
+  - `tags             String[]     @default([])`
+  - `estimatedMinutes Int?`
+  - `assigneeId       String? // Default assignee`
+  - `frequency  String // "daily", "weekly", "monthly", "custom"`
+  - `interval   Int    @default(1) // Every N days/weeks/months`
+  - `daysOfWeek Int[]  @default([]) // 0-6 for weekly (0=Sunday)`
+  - `dayOfMonth Int? // 1-31 for monthly`
+  - `time       String @default("09:00") // HH:MM when to create`
+  - `nextRunAt DateTime?`
+  - `lastRunAt DateTime?`
+  - `isActive  Boolean   @default(true)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `board        TaskBoard    @relation(fields: [boardId], references: [id], onDelete: Cascade)`
+  - `column       TaskColumn   @relation(fields: [columnId], references: [id], onDelete: Cascade)`
+  - `assignee     User?        @relation(fields: [assigneeId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([boardId])`
+  - `@@index([nextRunAt])`
+  - `@@index([isActive])`
+- Action usage:
+  - `projects.ts`
+
+### Model: TaskTimeEntry
+- Fields:
+  - `id     String @id @default(cuid())`
+  - `taskId String`
+  - `userId String`
+  - `startedAt DateTime`
+  - `endedAt   DateTime?`
+  - `minutes   Int? // Calculated or manual`
+  - `description String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)`
+  - `user User @relation(fields: [userId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([taskId])`
+  - `@@index([userId])`
+  - `@@index([startedAt])`
+- Action usage:
+  - `projects.ts`
+
+### Model: ProductCatalog
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `description String?`
+  - `status      ProductCatalogStatus @default(planning)`
+  - `tags        String[]             @default([])`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `products     ProductItem[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([status])`
+- Action usage:
+  - `products.ts`
+
+### Model: ProductItem
+- Fields:
+  - `id        String        @id @default(cuid())`
+  - `catalogId String`
+  - `sku       String`
+  - `name      String`
+  - `category  String?`
+  - `status    ProductStatus @default(pending)`
+  - `angles    String[]      @default([])`
+  - `notes     String?`
+  - `priority  Int?          @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `catalog  ProductCatalog   @relation(fields: [catalogId], references: [id], onDelete: Cascade)`
+  - `variants ProductVariant[]`
+  - `photos   ProductPhoto[]`
+- Indexes/constraints:
+  - `@@unique([catalogId, sku])`
+  - `@@index([catalogId])`
+  - `@@index([status])`
+- Action usage:
+  - `products.ts`
+
+### Model: ProductVariant
+- Fields:
+  - `id        String  @id @default(cuid())`
+  - `productId String`
+  - `skuSuffix String?`
+  - `name      String?`
+  - `color     String?`
+  - `size      String?`
+  - `notes     String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `product ProductItem    @relation(fields: [productId], references: [id], onDelete: Cascade)`
+  - `photos  ProductPhoto[]`
+- Indexes/constraints:
+  - `@@index([productId])`
+- Action usage:
+  - `products.ts`
+
+### Model: ProductPhoto
+- Fields:
+  - `id           String             @id @default(cuid())`
+  - `productId    String`
+  - `variantId    String?`
+  - `assetId      String`
+  - `angle        String`
+  - `isPrimary    Boolean            @default(false)`
+  - `status       ProductPhotoStatus @default(raw)`
+  - `version      Int                @default(1)`
+  - `retouchNotes String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `product ProductItem     @relation(fields: [productId], references: [id], onDelete: Cascade)`
+  - `variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)`
+  - `asset   Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([productId])`
+  - `@@index([variantId])`
+  - `@@index([assetId])`
+  - `@@index([status])`
+- Action usage:
+  - `products.ts`
+
+### Model: DiscountCode
+- Fields:
+  - `id             String       @id @default(cuid())`
+  - `organizationId String`
+  - `code           String // The actual code (e.g., "SUMMER20")`
+  - `description    String? // Internal description`
+  - `discountType   DiscountType @default(percentage)`
+  - `discountValue  Int // Percentage (0-100) or cents for fixed_amount`
+  - `maxUses     Int? @default(0) // 0 = unlimited`
+  - `usedCount   Int  @default(0)`
+  - `minPurchase Int? @default(0) // Minimum purchase in cents`
+  - `maxDiscount Int? // Maximum discount in cents (for percentage discounts)`
+  - `validFrom  DateTime  @default(now())`
+  - `validUntil DateTime?`
+  - `isActive   Boolean   @default(true)`
+  - `applicableServices String[] @default([]) // Empty = all services`
+  - `applicableClients  String[] @default([]) // Empty = all clients`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `usages       DiscountCodeUsage[]`
+  - `orders Order[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, code])`
+  - `@@index([organizationId])`
+  - `@@index([code])`
+  - `@@index([isActive])`
+- Action usage:
+  - `discount-codes.ts`
+
+### Model: DiscountCodeUsage
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `discountCodeId String`
+  - `invoiceId      String?`
+  - `paymentId      String?`
+  - `clientEmail    String?`
+  - `discountAmount Int // Amount discounted in cents`
+  - `createdAt DateTime @default(now())`
+  - `discountCode DiscountCode @relation(fields: [discountCodeId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([discountCodeId])`
+  - `@@index([invoiceId])`
+- Action usage:
+  - `discount-codes.ts`
+
+### Model: PaymentPlan
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `invoiceId      String?`
+  - `projectId      String?`
+  - `clientId       String?`
+  - `totalAmount  Int // Total amount in cents`
+  - `installments Int // Number of installments (e.g., 3, 6, 12)`
+  - `paidAmount   Int @default(0) // Amount paid so far`
+  - `status PaymentPlanStatus @default(active)`
+  - `startDate   DateTime`
+  - `frequency   String    @default("monthly") // "weekly", "biweekly", "monthly"`
+  - `nextDueDate DateTime?`
+  - `stripeSubscriptionId String? @unique`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `scheduledPayments PaymentPlanInstallment[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([invoiceId])`
+  - `@@index([clientId])`
+  - `@@index([status])`
+- Action usage:
+  - `payment-plans.ts`
+
+### Model: PaymentPlanInstallment
+- Fields:
+  - `id            String @id @default(cuid())`
+  - `paymentPlanId String`
+  - `amount  Int // Amount in cents`
+  - `dueDate DateTime`
+  - `paidAt  DateTime?`
+  - `isPaid  Boolean   @default(false)`
+  - `stripePaymentIntentId String? @unique`
+  - `reminderSentAt DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `paymentPlan PaymentPlan @relation(fields: [paymentPlanId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([paymentPlanId])`
+  - `@@index([dueDate])`
+  - `@@index([isPaid])`
+- Action usage:
+  - `payment-plans.ts`
+
+### Model: DownloadLog
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `projectId      String`
+  - `assetId        String? // Null for batch/zip downloads`
+  - `format     DownloadFormat @default(original)`
+  - `fileCount  Int            @default(1) // For batch downloads`
+  - `totalBytes BigInt?`
+  - `clientEmail String?`
+  - `sessionId   String?`
+  - `ipAddress   String?`
+  - `userAgent   String?`
+  - `createdAt DateTime @default(now())`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([projectId])`
+  - `@@index([assetId])`
+  - `@@index([clientEmail])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `download-tracking.ts`
+  - `gallery-activity.ts`
+
+### Model: ExpirationNotification
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `projectId String`
+  - `daysBeforeExpiry Int // 7, 3, 1, etc.`
+  - `sentAt           DateTime?`
+  - `recipientEmail String`
+  - `emailType      String @default("expiry_warning") // "expiry_warning", "expired", "extended"`
+  - `createdAt DateTime @default(now())`
+- Indexes/constraints:
+  - `@@unique([projectId, daysBeforeExpiry])`
+  - `@@index([projectId])`
+  - `@@index([sentAt])`
+- Action usage:
+  - `gallery-expiration.ts`
+
+### Model: InvoiceBrandingTemplate
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name      String`
+  - `isDefault Boolean @default(false)`
+  - `logoPosition String @default("left") // "left", "center", "right"`
+  - `primaryColor String @default("#3b82f6")`
+  - `accentColor  String @default("#8b5cf6")`
+  - `headerText   String?`
+  - `footerText   String?`
+  - `paymentTerms String? // e.g., "Net 30", "Due on Receipt"`
+  - `notes        String?`
+  - `fontFamily      String  @default("Inter")`
+  - `showLogo        Boolean @default(true)`
+  - `showPaymentLink Boolean @default(true)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+- Action usage:
+  - `invoice-templates.ts`
+
+### Model: InvoiceEmailTemplate
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name      String`
+  - `emailType InvoiceEmailType`
+  - `isDefault Boolean          @default(false)`
+  - `isActive  Boolean          @default(true)`
+  - `subject  String // Supports variables like {{invoiceNumber}}, {{clientName}}`
+  - `bodyHtml String  @db.Text // HTML email body`
+  - `bodyText String? @db.Text // Plain text fallback`
+  - `fromName String? // Override sender name`
+  - `replyTo  String? // Reply-to email`
+  - `sendDelayDays Int? // Days after event to send (e.g., reminder 7 days after due)`
+  - `ccEmails  String[] @default([])`
+  - `bccEmails String[] @default([])`
+  - `usageCount Int       @default(0)`
+  - `lastUsedAt DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([organizationId, emailType, isDefault])`
+  - `@@index([organizationId])`
+  - `@@index([emailType])`
+- Action usage:
+  - `invoice-email-templates.ts`
+
+### Model: PortalActivity
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String`
+  - `activityType String // "gallery_delivered", "invoice_sent", "payment_received", "comment_posted", etc.`
+  - `title        String`
+  - `description  String?`
+  - `projectId String?`
+  - `invoiceId String?`
+  - `paymentId String?`
+  - `isRead Boolean   @default(false)`
+  - `readAt DateTime?`
+  - `createdAt DateTime @default(now())`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([isRead])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `portal-activity.ts`
+
+### Model: AvailabilityBlock
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `userId         String? // null = org-wide block`
+  - `title       String`
+  - `description String?`
+  - `blockType   AvailabilityBlockType @default(time_off)`
+  - `startDate DateTime`
+  - `endDate   DateTime`
+  - `allDay    Boolean  @default(true)`
+  - `isRecurring    Boolean   @default(false)`
+  - `recurrenceRule String? // e.g., "FREQ=WEEKLY;BYDAY=SU"`
+  - `recurrenceEnd  DateTime?`
+  - `requestStatus TimeOffRequestStatus @default(approved) // Legacy blocks are auto-approved`
+  - `approvedById  String?`
+  - `approvedAt    DateTime?`
+  - `rejectionNote String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([userId])`
+  - `@@index([startDate])`
+  - `@@index([endDate])`
+  - `@@index([requestStatus])`
+- Action usage:
+  - `availability.ts`
+  - `bookings.ts`
+  - `seed.ts`
+  - `team-availability.ts`
+
+### Model: BookingBuffer
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `serviceId      String? // null = org-wide default`
+  - `bufferBefore Int @default(0) // Setup time before booking`
+  - `bufferAfter  Int @default(0) // Teardown time after booking`
+  - `minAdvanceHours Int? // Minimum hours in advance to book`
+  - `maxAdvanceDays  Int? // Maximum days in advance to book`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+- Indexes/constraints:
+  - `@@unique([organizationId, serviceId])`
+  - `@@index([organizationId])`
+  - `@@index([serviceId])`
+- Action usage:
+  - `availability.ts`
+  - `bookings.ts`
+
+### Model: BookingForm
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `slug        String`
+  - `description String?`
+  - `industry Industry?`
+  - `isPublished Boolean @default(false)`
+  - `isDefault   Boolean @default(false) // Default form for the org`
+  - `headline        String?`
+  - `subheadline     String?`
+  - `heroImageUrl    String?`
+  - `logoOverrideUrl String?`
+  - `primaryColor    String?`
+  - `requireApproval   Boolean @default(true) // Auto-confirm or require admin approval`
+  - `confirmationEmail Boolean @default(true)`
+  - `viewCount    Int @default(0)`
+  - `bookingCount Int @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `fields       BookingFormField[]`
+  - `services     BookingFormService[]`
+  - `submissions  BookingFormSubmission[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, slug])`
+  - `@@index([organizationId])`
+  - `@@index([slug])`
+  - `@@index([isPublished])`
+- Action usage:
+  - `booking-forms.ts`
+
+### Model: BookingFormField
+- Fields:
+  - `id            String @id @default(cuid())`
+  - `bookingFormId String`
+  - `label       String`
+  - `type        FormFieldType`
+  - `placeholder String?`
+  - `helpText    String?`
+  - `isRequired  Boolean       @default(false)`
+  - `sortOrder   Int           @default(0)`
+  - `industries Industry[]`
+  - `validation Json?`
+  - `conditionalOn    String? // Field ID this depends on`
+  - `conditionalValue String? // Value that triggers display`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `bookingForm BookingForm @relation(fields: [bookingFormId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([bookingFormId])`
+  - `@@index([sortOrder])`
+- Action usage:
+  - `booking-forms.ts`
+
+### Model: BookingFormService
+- Fields:
+  - `id            String  @id @default(cuid())`
+  - `bookingFormId String`
+  - `serviceId     String`
+  - `sortOrder     Int     @default(0)`
+  - `isDefault     Boolean @default(false) // Pre-selected on form`
+  - `bookingForm BookingForm @relation(fields: [bookingFormId], references: [id], onDelete: Cascade)`
+  - `service     Service     @relation(fields: [serviceId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([bookingFormId, serviceId])`
+  - `@@index([bookingFormId])`
+  - `@@index([serviceId])`
+- Action usage:
+  - `booking-forms.ts`
+
+### Model: BookingFormSubmission
+- Fields:
+  - `id            String  @id @default(cuid())`
+  - `bookingFormId String`
+  - `bookingId     String? @unique // Linked once converted to booking`
+  - `data Json // All field values as key-value pairs`
+  - `clientName  String?`
+  - `clientEmail String?`
+  - `clientPhone String?`
+  - `preferredDate DateTime?`
+  - `preferredTime String?`
+  - `serviceId String?`
+  - `status BookingFormSubmissionStatus @default(pending)`
+  - `convertedAt   DateTime?`
+  - `convertedBy   String? // User ID who converted`
+  - `rejectedAt    DateTime?`
+  - `rejectionNote String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `bookingForm BookingForm @relation(fields: [bookingFormId], references: [id], onDelete: Cascade)`
+  - `booking     Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([bookingFormId])`
+  - `@@index([status])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `booking-forms.ts`
+
+### Model: ClientCommunication
+- Fields:
+  - `id       String @id @default(cuid())`
+  - `clientId String`
+  - `type      CommunicationType`
+  - `direction CommunicationDirection`
+  - `subject   String?`
+  - `content   String                 @db.Text`
+  - `sentAt DateTime?`
+  - `readAt DateTime?`
+  - `createdById String?`
+  - `bookingId String?`
+  - `projectId String?`
+  - `invoiceId String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([clientId])`
+  - `@@index([type])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `client-communications.ts`
+  - `seed.ts`
+
+### Model: ClientTag
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `color       String  @default("#6366f1")`
+  - `description String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `clients ClientTagAssignment[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, name])`
+  - `@@index([organizationId])`
+- Action usage:
+  - `client-tags.ts`
+  - `clients.ts`
+  - `seed.ts`
+
+### Model: ClientTagAssignment
+- Fields:
+  - `id       String @id @default(cuid())`
+  - `clientId String`
+  - `tagId    String`
+  - `createdAt DateTime @default(now())`
+  - `client Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)`
+  - `tag    ClientTag @relation(fields: [tagId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([clientId, tagId])`
+  - `@@index([clientId])`
+  - `@@index([tagId])`
+- Action usage:
+  - `client-tags.ts`
+  - `seed.ts`
+
+### Model: ContractSignature
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `contractId String`
+  - `signerId   String // ContractSigner id`
+  - `signatureData String        @db.Text // Base64 encoded signature image`
+  - `signatureType SignatureType @default(drawn)`
+  - `signedAt  DateTime @default(now())`
+  - `ipAddress String?`
+  - `userAgent String?`
+  - `consentGiven Boolean @default(true)`
+  - `consentText  String? @db.Text`
+  - `createdAt DateTime @default(now())`
+  - `contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([contractId])`
+  - `@@index([signerId])`
+- Action usage:
+  - `contract-signing.ts`
+  - `contracts.ts`
+  - `seed.ts`
+
+### Model: CalendarIntegration
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `userId         String? // User-specific or org-wide`
+  - `provider   CalendarProvider`
+  - `externalId String // Calendar ID from provider`
+  - `name       String // Display name`
+  - `accessToken    String    @db.Text`
+  - `refreshToken   String?   @db.Text`
+  - `tokenExpiresAt DateTime?`
+  - `syncEnabled   Boolean       @default(true)`
+  - `syncDirection SyncDirection @default(both)`
+  - `lastSyncAt    DateTime?`
+  - `lastSyncError String?`
+  - `color String @default("#3b82f6")`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+- Indexes/constraints:
+  - `@@unique([organizationId, provider, externalId])`
+  - `@@index([organizationId])`
+  - `@@index([userId])`
+  - `@@index([provider])`
+- Action usage:
+  - `google-calendar.ts`
+
+### Model: CalendarEvent
+- Fields:
+  - `id                    String @id @default(cuid())`
+  - `calendarIntegrationId String`
+  - `externalEventId String`
+  - `title       String`
+  - `description String?  @db.Text`
+  - `startTime   DateTime`
+  - `endTime     DateTime`
+  - `allDay      Boolean  @default(false)`
+  - `location    String?`
+  - `bookingId String? @unique`
+  - `lastSyncedAt DateTime @default(now())`
+  - `etag         String? // For change detection`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+- Indexes/constraints:
+  - `@@unique([calendarIntegrationId, externalEventId])`
+  - `@@index([calendarIntegrationId])`
+  - `@@index([bookingId])`
+  - `@@index([startTime])`
+- Action usage:
+  - `google-calendar.ts`
+
+### Model: CalendarFeed
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `userId         String? // User-specific feed (null = org-wide)`
+  - `token    String @unique // Unique token for feed URL`
+  - `name     String @default("Bookings") // Display name for the feed`
+  - `timezone String @default("America/New_York")`
+  - `isActive Boolean @default(true)`
+  - `lastAccessedAt DateTime?`
+  - `accessCount    Int       @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `user         User?        @relation("UserCalendarFeeds", fields: [userId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([userId])`
+  - `@@index([token])`
+- Action usage:
+  - `calendar-feeds.ts`
+
+### Model: ServiceBundle
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `slug        String`
+  - `description String?    @db.Text`
+  - `priceCents  Int // Bundle price (for fixed pricing)`
+  - `bundleType  BundleType @default(fixed)`
+  - `pricingMethod BundlePricingMethod @default(fixed)`
+  - `pricePerSqftCents Int? @default(0) // Price per sqft for sqft_based pricing`
+  - `minSqft           Int? @default(0) // Minimum sqft (floor for pricing)`
+  - `maxSqft           Int? // Maximum sqft (optional ceiling)`
+  - `sqftIncrements    Int? @default(500) // Round to nearest X sqft (e.g., 500)`
+  - `imageUrl  String?`
+  - `badgeText String? // "Most Popular", "Best Value"`
+  - `sortOrder Int     @default(0)`
+  - `originalPriceCents Int? // Sum of individual services (for savings display)`
+  - `savingsPercent     Float? // Calculated savings percentage`
+  - `isActive Boolean @default(true)`
+  - `isPublic Boolean @default(true) // Show on public order pages`
+  - `stripeProductId String? // Stripe Product ID (prod_xxx)`
+  - `stripePriceId   String? // Stripe Price ID (price_xxx)`
+  - `stripeSyncedAt  DateTime? // Last successful sync timestamp`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `services     ServiceBundleItem[] // Services included in bundle`
+  - `pricingTiers BundlePricingTier[] // Tiered pricing tiers (for tiered_sqft)`
+  - `orderPages   OrderPageBundle[] // Order pages featuring this bundle`
+  - `orderItems   OrderItem[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, slug])`
+  - `@@index([organizationId])`
+  - `@@index([isActive, isPublic])`
+- Action usage:
+  - `bundles.ts`
+  - `order-pages.ts`
+  - `orders.ts`
+  - `stripe-product-sync.ts`
+
+### Model: ServiceBundleItem
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `bundleId  String`
+  - `serviceId String`
+  - `isRequired Boolean @default(true)`
+  - `quantity   Int     @default(1)`
+  - `sortOrder  Int     @default(0)`
+  - `bundle  ServiceBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)`
+  - `service Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([bundleId, serviceId])`
+  - `@@index([bundleId])`
+  - `@@index([serviceId])`
+- Action usage:
+  - `addons.ts`
+  - `bundles.ts`
+
+### Model: BundlePricingTier
+- Fields:
+  - `id       String @id @default(cuid())`
+  - `bundleId String`
+  - `minSqft Int // Minimum sqft for this tier (inclusive)`
+  - `maxSqft Int? // Maximum sqft for this tier (null = unlimited)`
+  - `priceCents Int // Fixed price for this tier`
+  - `tierName   String? // Optional display name (e.g., "Small Home", "Medium Home")`
+  - `sortOrder Int @default(0)`
+  - `bundle ServiceBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([bundleId, minSqft])`
+  - `@@index([bundleId])`
+- Action usage:
+  - `bundles.ts`
+
+### Model: ServiceAddon
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `description String?`
+  - `priceCents  Int`
+  - `imageUrl  String?`
+  - `iconName  String? // Icon identifier`
+  - `sortOrder Int     @default(0)`
+  - `triggerType  AddonTrigger @default(always)`
+  - `triggerValue String? // Service ID or amount threshold`
+  - `isActive  Boolean @default(true)`
+  - `isOneTime Boolean @default(true) // Can only add once`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `compatibleWith ServiceAddonCompat[] // Services this addon works with`
+  - `orderItems     OrderItem[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([isActive])`
+- Action usage:
+  - `addons.ts`
+
+### Model: ServiceAddonCompat
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `addonId   String`
+  - `serviceId String`
+  - `addon   ServiceAddon @relation(fields: [addonId], references: [id], onDelete: Cascade)`
+  - `service Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([addonId, serviceId])`
+  - `@@index([addonId])`
+  - `@@index([serviceId])`
+- Action usage:
+  - `addons.ts`
+
+### Model: OrderPage
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String? // Optional: dedicated page for specific client`
+  - `brokerageId    String? // Optional: dedicated page for specific brokerage`
+  - `name String`
+  - `slug String`
+  - `headline        String?`
+  - `subheadline     String?`
+  - `heroImageUrl    String?`
+  - `logoOverrideUrl String? // Override org logo for this page`
+  - `primaryColor    String? // Override org primary color`
+  - `showPhone   Boolean @default(true)`
+  - `showEmail   Boolean @default(true)`
+  - `customPhone String?`
+  - `customEmail String?`
+  - `template String @default("default") // "default", "minimal", "luxury"`
+  - `metaTitle       String?`
+  - `metaDescription String?`
+  - `isPublished  Boolean @default(false)`
+  - `requireLogin Boolean @default(false) // Require client portal login`
+  - `testimonials Json? // Array of { name, company, quote, photoUrl }`
+  - `viewCount  Int @default(0)`
+  - `orderCount Int @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client       Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `brokerage    Brokerage?         @relation("BrokerageOrderPages", fields: [brokerageId], references: [id], onDelete: SetNull)`
+  - `bundles      OrderPageBundle[]`
+  - `services     OrderPageService[]`
+  - `orders       Order[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, slug])`
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([brokerageId])`
+  - `@@index([isPublished])`
+- Action usage:
+  - `order-pages.ts`
+  - `orders.ts`
+
+### Model: OrderPageBundle
+- Fields:
+  - `id          String  @id @default(cuid())`
+  - `orderPageId String`
+  - `bundleId    String`
+  - `sortOrder   Int     @default(0)`
+  - `isFeatured  Boolean @default(false) // Highlight as recommended`
+  - `orderPage OrderPage     @relation(fields: [orderPageId], references: [id], onDelete: Cascade)`
+  - `bundle    ServiceBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([orderPageId, bundleId])`
+  - `@@index([orderPageId])`
+- Action usage:
+  - `order-pages.ts`
+
+### Model: OrderPageService
+- Fields:
+  - `id          String @id @default(cuid())`
+  - `orderPageId String`
+  - `serviceId   String`
+  - `sortOrder   Int    @default(0)`
+  - `orderPage OrderPage @relation(fields: [orderPageId], references: [id], onDelete: Cascade)`
+  - `service   Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([orderPageId, serviceId])`
+  - `@@index([orderPageId])`
+- Action usage:
+  - `order-pages.ts`
+
+### Model: Order
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `orderPageId    String? // Which order page it came from`
+  - `clientId       String? // Linked client (if known)`
+  - `orderNumber String // e.g., "ORD-2025-0001"`
+  - `status      OrderStatus @default(cart)`
+  - `subtotalCents Int @default(0)`
+  - `discountCents Int @default(0)`
+  - `taxCents      Int @default(0)`
+  - `totalCents    Int @default(0)`
+  - `discountCodeId String?`
+  - `clientName    String?`
+  - `clientEmail   String?`
+  - `clientPhone   String?`
+  - `clientCompany String?`
+  - `locationId    String?`
+  - `locationNotes String?`
+  - `preferredDate DateTime?`
+  - `preferredTime String? // "morning", "afternoon", "evening"`
+  - `flexibleDates Boolean   @default(true)`
+  - `clientNotes   String? @db.Text`
+  - `internalNotes String? @db.Text`
+  - `sessionToken String? @unique`
+  - `paidAt        DateTime?`
+  - `paymentMethod String?`
+  - `stripeCheckoutSessionId String? @unique`
+  - `stripePaymentIntentId   String? @unique`
+  - `source   String? // utm_source`
+  - `medium   String? // utm_medium`
+  - `campaign String? // utm_campaign`
+  - `createdAt   DateTime  @default(now())`
+  - `updatedAt   DateTime  @updatedAt`
+  - `submittedAt DateTime? // When cart was submitted`
+  - `organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `orderPage    OrderPage?    @relation(fields: [orderPageId], references: [id], onDelete: SetNull)`
+  - `client       Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `location     Location?     @relation(fields: [locationId], references: [id], onDelete: SetNull)`
+  - `discountCode DiscountCode? @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)`
+  - `items        OrderItem[]`
+  - `invoice      Invoice?      @relation("OrderInvoice")`
+  - `booking      Booking?      @relation("OrderBooking")`
+- Indexes/constraints:
+  - `@@unique([organizationId, orderNumber])`
+  - `@@index([organizationId])`
+  - `@@index([orderPageId])`
+  - `@@index([clientId])`
+  - `@@index([status])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `email-logs.ts`
+  - `orders.ts`
+
+### Model: OrderItem
+- Fields:
+  - `id      String @id @default(cuid())`
+  - `orderId String`
+  - `itemType  String // "service", "bundle", "addon"`
+  - `serviceId String?`
+  - `bundleId  String?`
+  - `addonId   String?`
+  - `name        String`
+  - `description String?`
+  - `quantity    Int     @default(1)`
+  - `unitCents   Int`
+  - `totalCents  Int`
+  - `sqft            Int? // Square footage entered by client`
+  - `pricingTierId   String? // Which pricing tier was applied (for tiered_sqft)`
+  - `pricingTierName String? // Tier name at time of order (snapshot)`
+  - `sortOrder Int @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)`
+  - `service Service?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)`
+  - `bundle  ServiceBundle? @relation(fields: [bundleId], references: [id], onDelete: SetNull)`
+  - `addon   ServiceAddon?  @relation(fields: [addonId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([orderId])`
+  - `@@index([serviceId])`
+  - `@@index([bundleId])`
+- Action usage:
+  - `orders.ts`
+
+### Model: Brokerage
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name    String`
+  - `slug    String`
+  - `email   String?`
+  - `phone   String?`
+  - `website String?`
+  - `address String?`
+  - `city    String?`
+  - `state   String?`
+  - `zipCode String?`
+  - `logoUrl      String?`
+  - `primaryColor String?`
+  - `contactName  String?`
+  - `contactEmail String?`
+  - `contactPhone String?`
+  - `isActive Boolean @default(true)`
+  - `totalRevenueCents Int @default(0)`
+  - `activeAgentCount  Int @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `agents       Client[]            @relation("BrokerageAgents")`
+  - `contracts    BrokerageContract[]`
+  - `orderPages   OrderPage[]         @relation("BrokerageOrderPages")`
+- Indexes/constraints:
+  - `@@unique([organizationId, slug])`
+  - `@@index([organizationId])`
+  - `@@index([isActive])`
+- Action usage:
+  - `brokerage-contracts.ts`
+  - `brokerages.ts`
+
+### Model: BrokerageContract
+- Fields:
+  - `id          String @id @default(cuid())`
+  - `brokerageId String`
+  - `name        String`
+  - `description String?`
+  - `discountPercent    Float? @default(0) // Global discount percentage`
+  - `discountFixedCents Int?   @default(0) // Fixed discount amount`
+  - `servicePricing Json?`
+  - `paymentTermsDays Int     @default(30) // Net 30, etc.`
+  - `autoInvoice      Boolean @default(false) // Auto-create invoices`
+  - `invoiceSplitType    InvoiceSplitType @default(single)`
+  - `brokeragePayPercent Float? // % brokerage pays (for split invoices)`
+  - `startDate DateTime  @default(now())`
+  - `endDate   DateTime?`
+  - `isActive  Boolean   @default(true)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `brokerage Brokerage @relation(fields: [brokerageId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([brokerageId])`
+  - `@@index([isActive])`
+- Action usage:
+  - `brokerage-contracts.ts`
+
+### Model: InvoiceSplit
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `primaryInvoiceId   String`
+  - `secondaryInvoiceId String? // For dual invoices`
+  - `splitType InvoiceSplitType`
+  - `agentAmountCents     Int @default(0)`
+  - `brokerageAmountCents Int @default(0)`
+  - `lineItemAssignments Json?`
+  - `createdAt DateTime @default(now())`
+- Indexes/constraints:
+  - `@@unique([primaryInvoiceId])`
+  - `@@index([organizationId])`
+  - `@@index([primaryInvoiceId])`
+  - `@@index([secondaryInvoiceId])`
+- Action usage:
+  - `invoice-splits.ts`
+
+### Model: PhotographerRate
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `userId         String // Photographer (team member)`
+  - `serviceId      String? // Null = default rate for all services`
+  - `rateType  String @default("percentage") // "percentage", "fixed", "hourly"`
+  - `rateValue Int // Percentage (0-100) or cents`
+  - `minPayCents Int? // Minimum pay per booking`
+  - `maxPayCents Int? // Maximum pay per booking`
+  - `bookingTypeId String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+- Indexes/constraints:
+  - `@@unique([organizationId, userId, serviceId])`
+  - `@@index([organizationId])`
+  - `@@index([userId])`
+  - `@@index([serviceId])`
+- Action usage:
+  - `photographer-pay.ts`
+
+### Model: PhotographerEarning
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `userId         String // Photographer`
+  - `bookingId      String?`
+  - `invoiceId      String?`
+  - `description String`
+  - `amountCents Int`
+  - `status      EarningStatus @default(pending)`
+  - `rateType        String? // How this was calculated`
+  - `rateValue       Int?`
+  - `baseAmountCents Int? // What the earning was calculated from`
+  - `payoutItemId String?`
+  - `earnedAt   DateTime  @default(now())`
+  - `approvedAt DateTime?`
+  - `paidAt     DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `payoutItem PayoutItem? @relation(fields: [payoutItemId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([userId])`
+  - `@@index([bookingId])`
+  - `@@index([status])`
+  - `@@index([payoutItemId])`
+- Action usage:
+  - `payouts.ts`
+  - `photographer-pay.ts`
+
+### Model: PayoutBatch
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `batchNumber String // e.g., "PAY-2025-0001"`
+  - `status      PayoutStatus @default(pending)`
+  - `periodStart DateTime`
+  - `periodEnd   DateTime`
+  - `totalAmountCents Int @default(0)`
+  - `itemCount        Int @default(0)`
+  - `processedAt  DateTime?`
+  - `failedReason String?`
+  - `stripeTransferId String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `items        PayoutItem[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, batchNumber])`
+  - `@@index([organizationId])`
+  - `@@index([status])`
+  - `@@index([periodStart])`
+- Action usage:
+  - `payouts.ts`
+
+### Model: PayoutItem
+- Fields:
+  - `id      String @id @default(cuid())`
+  - `batchId String`
+  - `userId  String // Recipient photographer`
+  - `amountCents Int`
+  - `description String?`
+  - `status       PayoutStatus @default(pending)`
+  - `failedReason String?`
+  - `stripeTransferId String?`
+  - `stripePayoutId   String?`
+  - `processedAt DateTime?`
+  - `paidAt      DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `batch    PayoutBatch           @relation(fields: [batchId], references: [id], onDelete: Cascade)`
+  - `earnings PhotographerEarning[]`
+- Indexes/constraints:
+  - `@@index([batchId])`
+  - `@@index([userId])`
+  - `@@index([status])`
+- Action usage:
+  - `payouts.ts`
+
+### Model: SMSTemplate
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name         String`
+  - `templateType SMSTemplateType`
+  - `content      String          @db.Text // Message with {{variables}}`
+  - `availableVariables String[] @default([])`
+  - `isActive  Boolean @default(true)`
+  - `isDefault Boolean @default(false) // System default template`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `smsLogs      SMSLog[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, templateType, isDefault])`
+  - `@@index([organizationId])`
+  - `@@index([templateType])`
+  - `@@index([isActive])`
+- Action usage:
+  - `sms.ts`
+
+### Model: SMSLog
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `templateId String?`
+  - `toPhone    String`
+  - `fromPhone  String`
+  - `content    String  @db.Text`
+  - `twilioMessageSid String?           @unique`
+  - `deliveryStatus   SMSDeliveryStatus @default(queued)`
+  - `errorCode        String?`
+  - `errorMessage     String?`
+  - `bookingId String?`
+  - `clientId  String?`
+  - `userId    String? // Photographer (if sent to team)`
+  - `sentAt      DateTime?`
+  - `deliveredAt DateTime?`
+  - `failedAt    DateTime?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `template     SMSTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)`
+  - `booking      Booking?     @relation(fields: [bookingId], references: [id], onDelete: SetNull)`
+  - `client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([templateId])`
+  - `@@index([bookingId])`
+  - `@@index([clientId])`
+  - `@@index([deliveryStatus])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `sms.ts`
+
+### Model: BookingCheckIn
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `bookingId String`
+  - `userId    String // Photographer`
+  - `checkInType CheckInType`
+  - `latitude    Float`
+  - `longitude   Float`
+  - `accuracy    Float? // GPS accuracy in meters`
+  - `address String?`
+  - `distanceFromLocation Float? // Meters from booking location`
+  - `photoUrl String?`
+  - `notes String?`
+  - `createdAt DateTime @default(now())`
+- Indexes/constraints:
+  - `@@index([bookingId])`
+  - `@@index([userId])`
+  - `@@index([checkInType])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `field-operations.ts`
+
+### Model: LocationPing
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `bookingId String`
+  - `userId    String // Photographer`
+  - `latitude  Float`
+  - `longitude Float`
+  - `accuracy  Float? // GPS accuracy in meters`
+  - `altitude  Float?`
+  - `speed     Float? // meters/second`
+  - `heading   Float? // Compass heading`
+  - `batteryLevel Float?`
+  - `createdAt DateTime @default(now())`
+- Indexes/constraints:
+  - `@@index([bookingId])`
+  - `@@index([userId])`
+  - `@@index([createdAt])`
+
+### Model: SlackIntegration
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `teamId   String`
+  - `teamName String`
+  - `accessToken    String  @db.Text`
+  - `botUserId      String?`
+  - `botAccessToken String? @db.Text`
+  - `incomingWebhookUrl String?`
+  - `isActive Boolean @default(true)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `channels     SlackChannel[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, teamId])`
+  - `@@index([organizationId])`
+  - `@@index([teamId])`
+- Action usage:
+  - `slack.ts`
+
+### Model: SlackChannel
+- Fields:
+  - `id            String @id @default(cuid())`
+  - `integrationId String`
+  - `channelId   String`
+  - `channelName String`
+  - `eventTypes SlackEventType[]`
+  - `isActive    Boolean @default(true)`
+  - `mentionHere Boolean @default(false) // @here mentions`
+  - `mentionAll  Boolean @default(false) // @channel mentions`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `integration SlackIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([integrationId, channelId])`
+  - `@@index([integrationId])`
+  - `@@index([channelId])`
+
+### Model: DropboxIntegration
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String @unique`
+  - `accountId   String // Dropbox account_id`
+  - `email       String`
+  - `displayName String`
+  - `accessToken  String  @db.Text`
+  - `refreshToken String? @db.Text`
+  - `syncEnabled Boolean @default(true)`
+  - `syncFolder  String  @default("/PhotoProOS") // Root folder in Dropbox`
+  - `autoSync    Boolean @default(true) // Auto-sync on file changes`
+  - `cursor String? @db.Text`
+  - `lastSyncAt    DateTime?`
+  - `lastSyncError String?`
+  - `isActive Boolean @default(true)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([accountId])`
+- Action usage:
+  - `dropbox.ts`
+
+### Model: BookingSlot
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `userId         String? // Specific photographer (null = any available)`
+  - `serviceId      String? // Specific service (null = any)`
+  - `startTime DateTime`
+  - `endTime   DateTime`
+  - `timezone  String   @default("America/New_York")`
+  - `isRecurring    Boolean   @default(false)`
+  - `recurrenceRule String? // RRULE format`
+  - `recurrenceEnd  DateTime?`
+  - `maxBookings     Int @default(1) // How many can book this slot`
+  - `currentBookings Int @default(0)`
+  - `priceCentsOverride Int? // Override service price for this slot`
+  - `isActive Boolean @default(true)`
+  - `bufferBeforeMinutes Int?`
+  - `bufferAfterMinutes  Int?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([userId])`
+  - `@@index([serviceId])`
+  - `@@index([startTime])`
+  - `@@index([isActive])`
+
+### Model: ServiceTerritory
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `name           String`
+  - `description    String? @db.Text`
+  - `zipCodes    String[] // Array of ZIP codes in this territory`
+  - `centerLat   Decimal? @db.Decimal(10, 7) // Center point latitude`
+  - `centerLng   Decimal? @db.Decimal(10, 7) // Center point longitude`
+  - `radiusMiles Float? // Radius in miles from center (alternative to ZIP codes)`
+  - `pricingModifier Float @default(1.0) // 1.0 = normal, 1.2 = 20% more, 0.9 = 10% discount`
+  - `flatFeeOverride Int? // Flat fee override in cents (instead of modifier)`
+  - `travelFee       Int? // Additional travel fee in cents`
+  - `isActive            Boolean @default(true)`
+  - `minLeadTimeHours    Int? // Minimum hours notice for bookings`
+  - `maxLeadTimeDays     Int? // Maximum days in advance for bookings`
+  - `availableDaysOfWeek Int[] // 0=Sun, 1=Mon, etc. Empty = all days`
+  - `color String? // Hex color for map display`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `services     TerritoryServiceOverride[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([isActive])`
+- Action usage:
+  - `territories.ts`
+
+### Model: TerritoryServiceOverride
+- Fields:
+  - `id          String @id @default(cuid())`
+  - `territoryId String`
+  - `serviceId   String`
+  - `pricingModifier Float? // Override territory default`
+  - `flatPrice       Int? // Fixed price in cents (overrides modifier)`
+  - `isAvailable     Boolean @default(true) // Service available in this territory?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `territory ServiceTerritory @relation(fields: [territoryId], references: [id], onDelete: Cascade)`
+  - `service   Service          @relation("ServiceTerritoryOverrides", fields: [serviceId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([territoryId, serviceId])`
+  - `@@index([territoryId])`
+  - `@@index([serviceId])`
+- Action usage:
+  - `territories.ts`
+
+### Model: ReferralProgram
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String  @unique`
+  - `name           String  @default("Referral Program")`
+  - `description    String? @db.Text`
+  - `isActive         Boolean @default(false)`
+  - `requiresApproval Boolean @default(true) // Manual approval before reward`
+  - `rewardType     ReferralRewardType @default(percentage)`
+  - `rewardValue    Float              @default(10) // 10% or $10 depending on type`
+  - `maxRewardCents Int? // Cap on reward amount`
+  - `referredDiscount      Float? // Discount for referred client (e.g., 5%)`
+  - `referredDiscountCents Int? // Fixed discount in cents`
+  - `referralValidDays    Int  @default(90) // How long referral link is valid`
+  - `rewardExpirationDays Int? // How long until reward expires after issue`
+  - `termsUrl String? // Link to referral program terms`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `referrers    Referrer[]`
+  - `referrals    Referral[]`
+- Action usage:
+  - `referrals.ts`
+
+### Model: Referrer
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `programId String`
+  - `clientId String? @unique // If referrer is an existing client`
+  - `name     String`
+  - `email    String`
+  - `phone    String?`
+  - `referralCode String @unique`
+  - `totalReferrals      Int @default(0)`
+  - `successfulReferrals Int @default(0)`
+  - `totalEarned         Int @default(0) // Total rewards in cents`
+  - `isActive Boolean @default(true)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `program   ReferralProgram  @relation(fields: [programId], references: [id], onDelete: Cascade)`
+  - `client    Client?          @relation("ClientReferrer", fields: [clientId], references: [id], onDelete: SetNull)`
+  - `referrals Referral[]`
+  - `rewards   ReferralReward[]`
+- Indexes/constraints:
+  - `@@index([programId])`
+  - `@@index([clientId])`
+  - `@@index([referralCode])`
+- Action usage:
+  - `referrals.ts`
+
+### Model: Referral
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `programId  String`
+  - `referrerId String`
+  - `referredName  String`
+  - `referredEmail String`
+  - `referredPhone String?`
+  - `status    ReferralStatus @default(pending)`
+  - `clientId  String? // Created client (after conversion)`
+  - `bookingId String? // First booking`
+  - `invoiceId String? // First invoice`
+  - `source      String? // Where referral came from (link, form, etc.)`
+  - `landingPage String? // URL they landed on`
+  - `utmCampaign String?`
+  - `utmSource   String?`
+  - `submittedAt DateTime  @default(now())`
+  - `qualifiedAt DateTime?`
+  - `completedAt DateTime?`
+  - `expiresAt   DateTime`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `program  ReferralProgram  @relation(fields: [programId], references: [id], onDelete: Cascade)`
+  - `referrer Referrer         @relation(fields: [referrerId], references: [id], onDelete: Cascade)`
+  - `client   Client?          @relation("ReferralClient", fields: [clientId], references: [id], onDelete: SetNull)`
+  - `booking  Booking?         @relation("ReferralBooking", fields: [bookingId], references: [id], onDelete: SetNull)`
+  - `invoice  Invoice?         @relation("ReferralInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)`
+  - `rewards  ReferralReward[]`
+- Indexes/constraints:
+  - `@@index([programId])`
+  - `@@index([referrerId])`
+  - `@@index([status])`
+  - `@@index([referredEmail])`
+- Action usage:
+  - `referrals.ts`
+
+### Model: ReferralReward
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `referrerId String`
+  - `referralId String`
+  - `rewardType  ReferralRewardType`
+  - `amountCents Int`
+  - `description String?`
+  - `isIssued  Boolean   @default(false)`
+  - `issuedAt  DateTime?`
+  - `isClaimed Boolean   @default(false)`
+  - `claimedAt DateTime?`
+  - `expiresAt DateTime?`
+  - `paymentMethod String? // How reward was paid (check, paypal, credit, etc.)`
+  - `paymentRef    String? // Reference number`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `referrer Referrer @relation(fields: [referrerId], references: [id], onDelete: Cascade)`
+  - `referral Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([referrerId])`
+  - `@@index([referralId])`
+  - `@@index([isIssued])`
+
+### Model: PlatformReferralSettings
+- Fields:
+  - `id String @id @default("default")`
+  - `isActive              Boolean @default(true)`
+  - `referralLinkValidDays Int     @default(30) // How long referral links are valid`
+  - `referrerRewardType         PlatformRewardType @default(account_credit)`
+  - `referrerRewardValue        Int                @default(2500) // $25 credit or 25 days, etc.`
+  - `referrerMaxRewardsPerMonth Int? // Cap monthly rewards`
+  - `referredTrialDays       Int  @default(21) // Extended trial (vs default 14)`
+  - `referredDiscountPercent Int? // First month discount`
+  - `referredDiscountMonths  Int  @default(1) // How many months discount applies`
+  - `rewardExpirationDays Int? // How long until reward expires after issue`
+  - `totalReferrals          Int @default(0)`
+  - `totalConversions        Int @default(0)`
+  - `totalRewardsIssuedCents Int @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+- Action usage:
+  - `platform-referrals.ts`
+
+### Model: PlatformReferrer
+- Fields:
+  - `id     String @id @default(cuid())`
+  - `userId String @unique`
+  - `referralCode String  @unique`
+  - `referralUrl  String? // Custom vanity URL if allowed`
+  - `totalReferrals      Int @default(0)`
+  - `successfulReferrals Int @default(0) // Converted to paid`
+  - `totalEarnedCents    Int @default(0)`
+  - `pendingCreditCents  Int @default(0) // Credited but not yet applied`
+  - `isActive Boolean @default(true)`
+  - `isBanned Boolean @default(false) // For abuse prevention`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `user      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)`
+  - `referrals PlatformReferral[]`
+  - `rewards   PlatformReferralReward[]`
+- Indexes/constraints:
+  - `@@index([referralCode])`
+  - `@@index([userId])`
+- Action usage:
+  - `platform-referrals.ts`
+
+### Model: PlatformReferral
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `referrerId String`
+  - `referredEmail String`
+  - `referredName  String?`
+  - `status                 PlatformReferralStatus @default(pending)`
+  - `referredUserId         String? // Set when they sign up`
+  - `referredOrganizationId String? // Set when org created`
+  - `source      String? // Where link was shared (email, social, etc.)`
+  - `landingPage String? // Which page they landed on`
+  - `utmCampaign String?`
+  - `utmSource   String?`
+  - `utmMedium   String?`
+  - `clickedAt    DateTime? // When they clicked the link`
+  - `signedUpAt   DateTime? // When they created account`
+  - `subscribedAt DateTime? // When they started paid subscription`
+  - `expiresAt    DateTime // When referral link expires`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `referrer             PlatformReferrer         @relation(fields: [referrerId], references: [id], onDelete: Cascade)`
+  - `referredUser         User?                    @relation("ReferredByPlatform", fields: [referredUserId], references: [id], onDelete: SetNull)`
+  - `referredOrganization Organization?            @relation("ReferredOrgByPlatform", fields: [referredOrganizationId], references: [id], onDelete: SetNull)`
+  - `rewards              PlatformReferralReward[]`
+- Indexes/constraints:
+  - `@@index([referrerId])`
+  - `@@index([referredEmail])`
+  - `@@index([referredUserId])`
+  - `@@index([status])`
+  - `@@index([expiresAt])`
+- Action usage:
+  - `platform-referrals.ts`
+
+### Model: PlatformReferralReward
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `referrerId String`
+  - `referralId String`
+  - `rewardType  PlatformRewardType`
+  - `valueCents  Int // Dollar value or days`
+  - `description String?`
+  - `isApplied Boolean   @default(false) // Has it been used?`
+  - `appliedAt DateTime?`
+  - `expiresAt DateTime? // Rewards can expire`
+  - `stripePromotionCodeId String? // If using Stripe promo codes`
+  - `stripeCouponId        String?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `referrer PlatformReferrer @relation(fields: [referrerId], references: [id], onDelete: Cascade)`
+  - `referral PlatformReferral @relation(fields: [referralId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([referrerId])`
+  - `@@index([referralId])`
+  - `@@index([isApplied])`
+- Action usage:
+  - `platform-referrals.ts`
+
+### Model: QuestionnaireTemplate
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String? // Null = system template`
+  - `name        String`
+  - `slug        String`
+  - `description String?  @db.Text`
+  - `industry    Industry`
+  - `isSystemTemplate Boolean @default(false)`
+  - `isActive         Boolean @default(true)`
+  - `usageCount       Int     @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization    Organization?                    @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `fields          QuestionnaireField[]`
+  - `legalAgreements QuestionnaireTemplateAgreement[]`
+  - `questionnaires  ClientQuestionnaire[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, slug])`
+  - `@@index([organizationId])`
+  - `@@index([industry])`
+  - `@@index([isSystemTemplate])`
+  - `@@index([isActive])`
+- Action usage:
+  - `client-questionnaires.ts`
+  - `questionnaire-templates.ts`
+
+### Model: QuestionnaireField
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `templateId String`
+  - `label       String`
+  - `type        FormFieldType`
+  - `placeholder String?`
+  - `helpText    String?`
+  - `isRequired  Boolean       @default(false)`
+  - `sortOrder   Int           @default(0)`
+  - `section      String? // e.g., "Property Details", "Agent Information"`
+  - `sectionOrder Int     @default(0)`
+  - `validation Json?`
+  - `conditionalOn    String? // Field ID this depends on`
+  - `conditionalValue String? // Value that triggers display`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `template QuestionnaireTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([templateId])`
+  - `@@index([sortOrder])`
+- Action usage:
+  - `questionnaire-templates.ts`
+
+### Model: QuestionnaireTemplateAgreement
+- Fields:
+  - `id         String @id @default(cuid())`
+  - `templateId String`
+  - `agreementType     LegalAgreementType`
+  - `title             String`
+  - `content           String             @db.Text`
+  - `isRequired        Boolean            @default(true)`
+  - `requiresSignature Boolean            @default(false)`
+  - `sortOrder         Int                @default(0)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `template QuestionnaireTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([templateId])`
+  - `@@index([agreementType])`
+
+### Model: ClientQuestionnaire
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `clientId       String`
+  - `templateId     String`
+  - `bookingId String?`
+  - `projectId String?`
+  - `isRequired  Boolean                   @default(true)`
+  - `dueDate     DateTime?`
+  - `status      ClientQuestionnaireStatus @default(pending)`
+  - `startedAt   DateTime?`
+  - `completedAt DateTime?`
+  - `sendReminders Boolean   @default(true)`
+  - `remindersSent Int       @default(0)`
+  - `lastReminder  DateTime?`
+  - `internalNotes String?`
+  - `personalNote String? @db.Text`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client       Client                         @relation(fields: [clientId], references: [id], onDelete: Cascade)`
+  - `template     QuestionnaireTemplate          @relation(fields: [templateId], references: [id], onDelete: Cascade)`
+  - `booking      Booking?                       @relation(fields: [bookingId], references: [id], onDelete: SetNull)`
+  - `project      Project?                       @relation(fields: [projectId], references: [id], onDelete: SetNull)`
+  - `responses    ClientQuestionnaireResponse[]`
+  - `agreements   ClientQuestionnaireAgreement[]`
+  - `emailLogs    EmailLog[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([templateId])`
+  - `@@index([bookingId])`
+  - `@@index([projectId])`
+  - `@@index([status])`
+  - `@@index([dueDate])`
+- Action usage:
+  - `client-portal.ts`
+  - `client-questionnaires.ts`
+  - `email-logs.ts`
+  - `questionnaire-portal.ts`
+
+### Model: ClientQuestionnaireResponse
+- Fields:
+  - `id              String @id @default(cuid())`
+  - `questionnaireId String`
+  - `fieldLabel String // Store label for reference after template changes`
+  - `fieldType  String // Store type for proper rendering`
+  - `value      Json // Actual response value`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `questionnaire ClientQuestionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([questionnaireId])`
+- Action usage:
+  - `email-logs.ts`
+
+### Model: ClientQuestionnaireAgreement
+- Fields:
+  - `id              String @id @default(cuid())`
+  - `questionnaireId String`
+  - `agreementType LegalAgreementType`
+  - `title         String`
+  - `content       String             @db.Text`
+  - `accepted   Boolean   @default(false)`
+  - `acceptedAt DateTime?`
+  - `signatureData String?        @db.Text // Base64 encoded signature image`
+  - `signatureType SignatureType?`
+  - `acceptedIp        String?`
+  - `acceptedUserAgent String? @db.Text`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `questionnaire ClientQuestionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([questionnaireId])`
+  - `@@index([agreementType])`
+  - `@@index([accepted])`
+- Action usage:
+  - `email-logs.ts`
+  - `questionnaire-portal.ts`
+
+### Model: SubscriptionPlan
+- Fields:
+  - `id   String   @id @default(cuid())`
+  - `name String   @unique // "Pro", "Studio", "Enterprise"`
+  - `slug String   @unique // "pro", "studio", "enterprise"`
+  - `plan PlanName // Links to the enum`
+  - `description    String? @db.Text`
+  - `tagline        String? // Short marketing tagline`
+  - `badgeText      String? // e.g., "Most Popular", "Best Value"`
+  - `displayOrder   Int     @default(0) // For ordering on pricing page`
+  - `isHighlighted  Boolean @default(false) // Highlight this plan (e.g., recommended)`
+  - `highlightColor String? // Custom highlight color`
+  - `monthlyPriceCents Int // Base monthly price in cents`
+  - `yearlyPriceCents  Int // Base yearly price in cents (usually discounted)`
+  - `stripeProductId      String?   @unique // Stripe Product ID (prod_xxx)`
+  - `stripeMonthlyPriceId String? // Stripe Price ID for monthly (price_xxx)`
+  - `stripeYearlyPriceId  String? // Stripe Price ID for yearly (price_xxx)`
+  - `stripeSyncedAt       DateTime?`
+  - `trialDays Int @default(14) // Free trial duration`
+  - `isActive Boolean @default(true) // Available for new signups`
+  - `isPublic Boolean @default(true) // Visible on public pricing page`
+  - `isLegacy Boolean @default(false) // Old plan, grandfathered users only`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `features        PlanFeature[]`
+  - `pricingVariants PricingVariant[]`
+- Indexes/constraints:
+  - `@@index([isActive, isPublic])`
+  - `@@index([plan])`
+- Action usage:
+  - `subscription-plans.ts`
+
+### Model: PlanFeature
+- Fields:
+  - `id     String @id @default(cuid())`
+  - `planId String`
+  - `name        String // "Unlimited Galleries", "Priority Support"`
+  - `description String? // Detailed description`
+  - `category    String? // "Core", "Support", "Integrations", etc.`
+  - `featureKey   String // Unique key like "galleries_limit", "storage_gb", "team_members"`
+  - `featureValue String // Can be "unlimited", a number, or "true"/"false"`
+  - `displayOrder  Int     @default(0)`
+  - `isHighlighted Boolean @default(false) // Show with emphasis`
+  - `tooltip       String? // Help text`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `plan SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([planId, featureKey])`
+  - `@@index([planId])`
+  - `@@index([featureKey])`
+- Action usage:
+  - `subscription-plans.ts`
+
+### Model: PricingExperiment
+- Fields:
+  - `id   String @id @default(cuid())`
+  - `name String // "Q1 2025 Price Test", "Enterprise Discount Test"`
+  - `slug String @unique`
+  - `description String? @db.Text`
+  - `hypothesis  String? @db.Text // What we're testing`
+  - `status    ExperimentStatus @default(draft)`
+  - `startDate DateTime?`
+  - `endDate   DateTime?`
+  - `trafficPercent Int @default(50) // Percent of traffic to see experiment (vs control)`
+  - `landingPagePaths String[] // e.g., ["/pricing", "/enterprise"] - which pages to run on`
+  - `controlConversions      Int     @default(0)`
+  - `controlImpressions      Int     @default(0)`
+  - `variantConversions      Int     @default(0)`
+  - `variantImpressions      Int     @default(0)`
+  - `winningVariantId        String?`
+  - `statisticalSignificance Float?`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `variants PricingVariant[]`
+- Indexes/constraints:
+  - `@@index([status])`
+  - `@@index([startDate, endDate])`
+- Action usage:
+  - `subscription-plans.ts`
+
+### Model: PricingVariant
+- Fields:
+  - `id           String  @id @default(cuid())`
+  - `experimentId String?`
+  - `planId       String`
+  - `name        String // "10% Discount", "Premium Pricing", "Control"`
+  - `description String?`
+  - `isControl   Boolean @default(false) // Is this the control variant?`
+  - `monthlyPriceCents Int?`
+  - `yearlyPriceCents  Int?`
+  - `trialDays Int?`
+  - `stripeMonthlyPriceId String?`
+  - `stripeYearlyPriceId  String?`
+  - `stripeSyncedAt       DateTime?`
+  - `badgeText     String? // Override badge`
+  - `isHighlighted Boolean?`
+  - `impressions Int @default(0)`
+  - `conversions Int @default(0)`
+  - `isActive Boolean @default(true)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `experiment PricingExperiment? @relation(fields: [experimentId], references: [id], onDelete: SetNull)`
+  - `plan       SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([experimentId])`
+  - `@@index([planId])`
+  - `@@index([isActive])`
+- Action usage:
+  - `subscription-plans.ts`
+
+### Model: EmailLog
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `toEmail  String`
+  - `toName   String?`
+  - `clientId String?`
+  - `emailType EmailType`
+  - `subject   String`
+  - `status    EmailStatus @default(pending)`
+  - `questionnaireId String?`
+  - `bookingId       String?`
+  - `projectId       String?`
+  - `invoiceId       String?`
+  - `contractId      String?`
+  - `galleryId       String?`
+  - `resendId     String? // ID from Resend API`
+  - `errorMessage String? @db.Text`
+  - `sentAt      DateTime?`
+  - `deliveredAt DateTime?`
+  - `failedAt    DateTime?`
+  - `createdAt   DateTime  @default(now())`
+  - `organization  Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client        Client?              @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `questionnaire ClientQuestionnaire? @relation(fields: [questionnaireId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([clientId])`
+  - `@@index([emailType])`
+  - `@@index([status])`
+  - `@@index([questionnaireId])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `email-logs.ts`
+
+### Model: ApiKey
+- Fields:
+  - `id             String    @id @default(cuid())`
+  - `organizationId String`
+  - `name           String // User-provided name for the key`
+  - `keyPrefix      String // Visible prefix (e.g., "sk_live_xxxx") for identification`
+  - `keyHash        String // SHA-256 hash of the full key (never store plaintext)`
+  - `lastUsedAt     DateTime?`
+  - `expiresAt      DateTime?`
+  - `scopes         String[]  @default(["read", "write"]) // Permissions: read, write, admin`
+  - `isActive       Boolean   @default(true)`
+  - `createdAt      DateTime  @default(now())`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@unique([organizationId, keyPrefix])`
+  - `@@index([organizationId])`
+  - `@@index([keyHash])`
+  - `@@index([isActive])`
+- Action usage:
+  - `api-keys.ts`
+
+### Model: WebhookEndpoint
+- Fields:
+  - `id             String    @id @default(cuid())`
+  - `organizationId String`
+  - `url            String // The URL to send webhook payloads to`
+  - `description    String? // Optional user description`
+  - `secret         String // HMAC signing secret for verification`
+  - `events         String[] // Array of WebhookEventType values to subscribe to`
+  - `isActive       Boolean   @default(true)`
+  - `lastDeliveryAt DateTime?`
+  - `failureCount   Int       @default(0) // Consecutive failures (reset on success)`
+  - `createdAt      DateTime  @default(now())`
+  - `updatedAt      DateTime  @updatedAt`
+  - `organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `deliveries   WebhookDelivery[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([isActive])`
+- Action usage:
+  - `webhooks.ts`
+
+### Model: WebhookDelivery
+- Fields:
+  - `id                String    @id @default(cuid())`
+  - `webhookEndpointId String`
+  - `eventType         String // The event that triggered this delivery`
+  - `payload           Json // The full payload that was sent`
+  - `responseStatus    Int? // HTTP status code from the receiver`
+  - `responseBody      String?   @db.Text // Response body (truncated if too large)`
+  - `deliveredAt       DateTime? // When the webhook was successfully delivered`
+  - `attemptCount      Int       @default(1) // Number of delivery attempts`
+  - `success           Boolean   @default(false)`
+  - `errorMessage      String? // Error message if delivery failed`
+  - `createdAt         DateTime  @default(now())`
+  - `endpoint WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([webhookEndpointId])`
+  - `@@index([createdAt])`
+  - `@@index([success])`
+- Action usage:
+  - `webhooks.ts`
+
+### Model: IntegrationLog
+- Fields:
+  - `id             String   @id @default(cuid())`
+  - `organizationId String`
+  - `provider       String // Integration provider: google_calendar, dropbox, slack, stripe, etc.`
+  - `eventType      String // Event type: connected, disconnected, sync_started, sync_completed, error, etc.`
+  - `message        String // Human-readable description of the event`
+  - `details        Json? // Additional structured data about the event`
+  - `createdAt      DateTime @default(now())`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([organizationId, provider])`
+  - `@@index([createdAt])`
+- Action usage:
+  - `integration-logs.ts`
+
+### Model: EmailAccount
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `provider EmailProvider // GMAIL or OUTLOOK`
+  - `email    String // User's email address`
+  - `accessToken  String   @db.Text`
+  - `refreshToken String   @db.Text`
+  - `tokenExpiry  DateTime`
+  - `syncCursor  String? // For incremental sync (Gmail historyId or Outlook deltaLink)`
+  - `lastSyncAt  DateTime?`
+  - `syncEnabled Boolean   @default(true)`
+  - `isActive     Boolean @default(true)`
+  - `errorMessage String? // Last sync error if any`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `threads      EmailThread[]`
+- Indexes/constraints:
+  - `@@unique([organizationId, email])`
+  - `@@index([organizationId])`
+  - `@@index([provider])`
+  - `@@index([isActive])`
+- Action usage:
+  - `email-accounts.ts`
+  - `email-sync.ts`
+
+### Model: EmailThread
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `emailAccountId String`
+  - `subject           String`
+  - `snippet           String   @db.Text // Preview text of latest message`
+  - `participantEmails String[] // All email addresses in the thread`
+  - `clientId String?`
+  - `isRead     Boolean @default(false)`
+  - `isStarred  Boolean @default(false)`
+  - `isArchived Boolean @default(false)`
+  - `isDraft    Boolean @default(false)`
+  - `providerThreadId String // Gmail thread ID or Outlook conversation ID`
+  - `lastMessageAt DateTime`
+  - `createdAt     DateTime @default(now())`
+  - `updatedAt     DateTime @updatedAt`
+  - `emailAccount EmailAccount   @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)`
+  - `organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `client       Client?        @relation("ClientEmailThreads", fields: [clientId], references: [id], onDelete: SetNull)`
+  - `messages     EmailMessage[]`
+- Indexes/constraints:
+  - `@@unique([emailAccountId, providerThreadId])`
+  - `@@index([organizationId])`
+  - `@@index([emailAccountId])`
+  - `@@index([clientId])`
+  - `@@index([isRead])`
+  - `@@index([isArchived])`
+  - `@@index([lastMessageAt])`
+- Action usage:
+  - `email-sync.ts`
+
+### Model: EmailMessage
+- Fields:
+  - `id       String @id @default(cuid())`
+  - `threadId String`
+  - `providerMessageId String // Gmail message ID or Outlook message ID`
+  - `fromEmail  String`
+  - `fromName   String?`
+  - `toEmails   String[]`
+  - `toNames    String[]`
+  - `ccEmails   String[]`
+  - `bccEmails  String[]`
+  - `replyTo    String?`
+  - `subject    String`
+  - `inReplyTo  String? // Message-ID of parent message`
+  - `references String[] // Message-ID chain for threading`
+  - `bodyHtml String? @db.Text`
+  - `bodyText String? @db.Text`
+  - `direction EmailDirection // INBOUND or OUTBOUND`
+  - `isRead Boolean @default(false)`
+  - `hasAttachments Boolean @default(false)`
+  - `sentAt    DateTime`
+  - `createdAt DateTime @default(now())`
+  - `thread      EmailThread       @relation(fields: [threadId], references: [id], onDelete: Cascade)`
+  - `attachments EmailAttachment[]`
+- Indexes/constraints:
+  - `@@unique([threadId, providerMessageId])`
+  - `@@index([threadId])`
+  - `@@index([direction])`
+  - `@@index([sentAt])`
+  - `@@index([fromEmail])`
+- Action usage:
+  - `email-sync.ts`
+
+### Model: EmailAttachment
+- Fields:
+  - `id        String @id @default(cuid())`
+  - `messageId String`
+  - `filename    String`
+  - `contentType String`
+  - `size        Int // Size in bytes`
+  - `storageKey String // S3/R2 key for the file`
+  - `storageUrl String? // Pre-signed URL (temporary) or public URL`
+  - `providerAttachmentId String?`
+  - `createdAt DateTime @default(now())`
+  - `message EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)`
+- Indexes/constraints:
+  - `@@index([messageId])`
+
+### Model: GalleryAddon
+- Fields:
+  - `id             String @id @default(cuid())`
+  - `organizationId String`
+  - `name        String`
+  - `description String?`
+  - `iconName    String? // Icon identifier (lucide icon name)`
+  - `priceCents   Int? // Base price in cents (null = "Request Quote")`
+  - `pricePerItem Boolean @default(false) // If true, price is per photo`
+  - `category GalleryAddonCategory @default(other)`
+  - `industries ClientIndustry[] // Which industries this add-on applies to`
+  - `estimatedTurnaround String? // e.g., "24-48 hours", "3-5 business days"`
+  - `sortOrder Int     @default(0)`
+  - `imageUrl  String? // Preview/sample image`
+  - `isActive          Boolean @default(true)`
+  - `requiresSelection Boolean @default(false) // Requires selecting specific photos`
+  - `maxPhotos         Int? // Maximum photos that can be selected (null = unlimited)`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `requests     GalleryAddonRequest[]`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([isActive])`
+  - `@@index([category])`
+- Action usage:
+  - `gallery-addons.ts`
+
+### Model: GalleryAddonRequest
+- Fields:
+  - `id             String  @id @default(cuid())`
+  - `organizationId String`
+  - `projectId      String // The gallery`
+  - `addonId        String`
+  - `clientEmail    String? // Email of requesting client`
+  - `clientId       String? // If associated with a client record`
+  - `status GalleryAddonRequestStatus @default(pending)`
+  - `notes          String?  @db.Text // Client notes/instructions`
+  - `selectedPhotos String[] // Asset IDs of selected photos (if requiresSelection)`
+  - `quoteCents       Int? // Quoted price`
+  - `quoteDescription String?   @db.Text // Quote details`
+  - `quotedAt         DateTime?`
+  - `approvedAt DateTime?`
+  - `declinedAt DateTime?`
+  - `completedAt  DateTime?`
+  - `deliveryNote String?   @db.Text // Note when delivering completed work`
+  - `invoiceId String? // If an invoice was created for this`
+  - `createdAt DateTime @default(now())`
+  - `updatedAt DateTime @updatedAt`
+  - `organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)`
+  - `project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)`
+  - `addon        GalleryAddon @relation(fields: [addonId], references: [id], onDelete: Cascade)`
+  - `client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)`
+  - `invoice      Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)`
+- Indexes/constraints:
+  - `@@index([organizationId])`
+  - `@@index([projectId])`
+  - `@@index([addonId])`
+  - `@@index([clientId])`
+  - `@@index([status])`
+- Action usage:
+  - `gallery-addons.ts`
 
 ## Data Model Reference (Prisma Schema - Verbatim)
 ```prisma
