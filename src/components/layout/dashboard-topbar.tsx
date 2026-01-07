@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { QuickThemeSwitcher } from "@/components/ui/quick-theme-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
-import { ChevronDown, Bell, HelpCircle, Search, LightningBolt } from "lucide-react";
+import { ChevronDown, Bell, HelpCircle, Search, Zap } from "lucide-react";
 import {
   getNotifications,
   markNotificationAsRead,
@@ -513,7 +513,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
           className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
         >
           <IconBadge size="sm" tone={quickActionsOpen ? "primary" : "default"}>
-            <LightningBolt className="h-3.5 w-3.5" />
+            <Zap className="h-3.5 w-3.5" />
           </IconBadge>
           <span className="hidden lg:inline">Quick Actions</span>
           <ChevronDown
