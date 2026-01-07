@@ -50,6 +50,16 @@ export const batchDownloadRatelimit = redis
     })
   : null;
 
+// Single asset downloads: 30 requests per minute per session
+export const singleDownloadRatelimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(30, "60 s"),
+      analytics: true,
+      prefix: "ratelimit:single-download",
+    })
+  : null;
+
 // Property inquiry: 3 requests per minute per IP
 export const propertyInquiryRatelimit = redis
   ? new Ratelimit({

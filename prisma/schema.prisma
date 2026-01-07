@@ -654,6 +654,37 @@ enum MessageVisibility {
   client // Visible to client and team
 }
 
+// Messaging system enums
+enum ConversationType {
+  direct // 1:1 between team members
+  group // Multiple team members
+  channel // Organization-wide topic channel
+  client_support // Client-to-team conversation
+}
+
+enum ConversationParticipantRole {
+  owner // Can delete conversation, manage all settings
+  admin // Can add/remove members, change settings
+  member // Can send/receive messages
+  observer // Read-only access
+}
+
+enum ChatRequestStatus {
+  pending // Client requested, awaiting approval
+  approved // Team approved, conversation active
+  rejected // Team rejected the request
+  expired // Request timed out
+}
+
+enum MessageReactionType {
+  thumbs_up
+  thumbs_down
+  heart
+  check
+  eyes
+  celebration
+}
+
 // ============================================================================
 // CORE MODELS
 // ============================================================================
@@ -895,6 +926,10 @@ model Organization {
   marketingTemplates MarketingTemplate[]
   audioTracks        AudioTrack[]
 
+  // Messaging System
+  conversations Conversation[]
+  chatRequests  ChatRequest[]
+
   @@index([slug])
   @@index([plan])
 }
@@ -962,6 +997,13 @@ model User {
   calendarFeeds   CalendarFeed[]  @relation("UserCalendarFeeds")
   recurringTasks  RecurringTask[]
   taskTimeEntries TaskTimeEntry[]
+
+  // Messaging System
+  conversationParticipants ConversationParticipant[]
+  messagesSent             Message[]                 @relation("MessageSender")
+  messageReactions         MessageReaction[]
+  messageReadReceipts      MessageReadReceipt[]
+  chatRequestResponses     ChatRequest[]             @relation("ChatRequestResponder")
 
   @@index([email])
   @@index([clerkUserId])
@@ -1110,6 +1152,14 @@ model Client {
   retainer             ClientRetainer?
   galleryAddonRequests GalleryAddonRequest[]
   mlsPresetOverrides   MlsPresetOverride[]
+
+  // Messaging System
+  conversations            Conversation[]            @relation("ConversationClient")
+  conversationParticipants ConversationParticipant[] @relation("ParticipantClient")
+  messagesSent             Message[]                 @relation("MessageSenderClient")
+  messageReactions         MessageReaction[]         @relation("ReactionClient")
+  messageReadReceipts      MessageReadReceipt[]      @relation("ReadReceiptClient")
+  chatRequests             ChatRequest[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -1309,6 +1359,9 @@ model Project {
 
   // Project P&L
   expenses ProjectExpense[]
+
+  // Messaging System
+  conversations Conversation[] @relation("ConversationProject")
 
   @@index([organizationId])
   @@index([clientId])
@@ -2907,6 +2960,9 @@ model PropertyWebsite {
   enableMortgageCalc Boolean @default(true)
   enableScheduleTour Boolean @default(true)
   enableFavorite     Boolean @default(true) // Allow users to "heart" the property
+
+  // Marketing Kit Auto-Generation
+  autoGenerateMarketingKit Boolean @default(false) // Auto-create marketing materials on publish
 
   // SEO
   slug            String  @unique
@@ -7616,4 +7672,234 @@ model ProjectExpense {
   @@index([projectId])
   @@index([category])
   @@index([expenseDate])
+}
+
+// ============================================================================
+// MESSAGING SYSTEM
+// ============================================================================
+
+// Conversation - Container for all message threads
+model Conversation {
+  id             String           @id @default(cuid())
+  organizationId String
+  type           ConversationType @default(direct)
+
+  // Metadata
+  name        String? // Required for group/channel, optional for direct
+  description String?
+  avatarUrl   String? // Custom avatar for group chats
+
+  // For client_support: link to client
+  clientId String?
+
+  // For project-specific conversations
+  projectId String?
+
+  // Settings
+  isArchived     Boolean @default(false)
+  isMuted        Boolean @default(false)
+  allowReactions Boolean @default(true)
+  allowThreads   Boolean @default(true)
+
+  // Real-time support fields (for polling optimization)
+  lastMessageAt DateTime?
+  lastMessageId String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  archivedAt DateTime?
+
+  // Relations
+  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client?                   @relation("ConversationClient", fields: [clientId], references: [id], onDelete: SetNull)
+  project      Project?                  @relation("ConversationProject", fields: [projectId], references: [id], onDelete: SetNull)
+  participants ConversationParticipant[]
+  messages     Message[]
+  chatRequest  ChatRequest?
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([projectId])
+  @@index([type])
+  @@index([lastMessageAt])
+  @@index([isArchived])
+}
+
+// ConversationParticipant - Who's in each conversation
+model ConversationParticipant {
+  id             String @id @default(cuid())
+  conversationId String
+
+  // Participant can be team member OR client (not both)
+  userId   String? // Clerk user ID for team members
+  clientId String? // Client ID for clients
+
+  role ConversationParticipantRole @default(member)
+
+  // Individual settings per participant
+  isMuted  Boolean @default(false)
+  isPinned Boolean @default(false)
+
+  // Read tracking
+  lastReadAt        DateTime?
+  lastReadMessageId String?
+
+  // Notification preferences (overrides org defaults)
+  notifyOnMessage Boolean @default(true)
+  notifyOnMention Boolean @default(true)
+
+  // Brokerage context (for broker-level access)
+  addedByBrokerId String? // Track who added this participant
+  hasBrokerAccess Boolean @default(false) // Full broker visibility
+
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client       Client?      @relation("ParticipantClient", fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@unique([conversationId, clientId])
+  @@index([conversationId])
+  @@index([userId])
+  @@index([clientId])
+  @@index([lastReadAt])
+}
+
+// Message - Individual messages within conversations
+model Message {
+  id             String @id @default(cuid())
+  conversationId String
+
+  // Sender (either team member or client)
+  senderUserId   String? // Clerk user ID for team
+  senderClientId String? // Client ID for clients
+  senderName     String // Cached display name
+  senderAvatar   String? // Cached avatar URL
+
+  // Content
+  content     String  @db.Text
+  contentHtml String? @db.Text // Pre-rendered HTML for rich text
+
+  // Threading
+  parentId    String? // For thread replies
+  threadCount Int     @default(0) // Denormalized reply count
+
+  // Attachments (stored as JSON array)
+  attachments Json? // [{filename, url, size, type, thumbnailUrl}]
+
+  // Mentions (stored as JSON array of user/client IDs)
+  mentions Json? // [{type: "user"|"client", id: string}]
+
+  // Status
+  isEdited       Boolean   @default(false)
+  editedAt       DateTime?
+  isDeleted      Boolean   @default(false)
+  deletedAt      DateTime?
+  isPinned       Boolean   @default(false)
+  pinnedAt       DateTime?
+  pinnedByUserId String?
+
+  // System messages
+  isSystemMessage Boolean @default(false)
+  systemAction    String? // "member_added", "member_removed", "conversation_created", etc.
+
+  // Real-time sync
+  clientMessageId String? // Client-side ID for optimistic updates
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  conversation Conversation         @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderUser   User?                @relation("MessageSender", fields: [senderUserId], references: [id], onDelete: SetNull)
+  senderClient Client?              @relation("MessageSenderClient", fields: [senderClientId], references: [id], onDelete: SetNull)
+  parent       Message?             @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
+  replies      Message[]            @relation("MessageThread")
+  reactions    MessageReaction[]
+  readReceipts MessageReadReceipt[]
+
+  @@index([conversationId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([senderUserId])
+  @@index([senderClientId])
+  @@index([isDeleted])
+}
+
+// MessageReaction - Emoji reactions on messages
+model MessageReaction {
+  id        String              @id @default(cuid())
+  messageId String
+  userId    String? // Team member
+  clientId  String? // Or client
+  type      MessageReactionType
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client  Client? @relation("ReactionClient", fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, type])
+  @@unique([messageId, clientId, type])
+  @@index([messageId])
+}
+
+// MessageReadReceipt - Track who read each message
+model MessageReadReceipt {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String?
+  clientId  String?
+  readAt    DateTime @default(now())
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client  Client? @relation("ReadReceiptClient", fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@unique([messageId, clientId])
+  @@index([messageId])
+}
+
+// ChatRequest - Client chat approval workflow
+model ChatRequest {
+  id             String  @id @default(cuid())
+  organizationId String
+  clientId       String
+  conversationId String? @unique // Created when approved
+
+  // Request details
+  subject        String // Client's topic/reason
+  initialMessage String @db.Text
+
+  // Status
+  status ChatRequestStatus @default(pending)
+
+  // Response
+  respondedAt       DateTime?
+  respondedByUserId String?
+  rejectionReason   String?
+
+  // Expiration
+  expiresAt DateTime? // Optional auto-expiration
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  respondedBy  User?         @relation("ChatRequestResponder", fields: [respondedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
 }

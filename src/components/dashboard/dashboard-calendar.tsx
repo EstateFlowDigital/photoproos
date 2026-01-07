@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 export type DashboardEventType = "task" | "booking" | "open_house";
 
@@ -115,9 +117,10 @@ function ChevronRightIcon({ className }: { className?: string }) {
 }
 
 export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[] }) {
-  const now = new Date();
-  const [currentMonth, setCurrentMonth] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
-  const [selectedDate, setSelectedDate] = useState(now);
+  const hydrated = useHydrated();
+  const [currentMonth, setCurrentMonth] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [today, setToday] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<CalendarView>("month");
   const [isCompact, setIsCompact] = useState(false);
   const [activeFilters, setActiveFilters] = useState<DashboardEventType[]>([
@@ -125,6 +128,14 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
     "booking",
     "open_house",
   ]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const now = new Date();
+    setToday(now);
+    setCurrentMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+    setSelectedDate(now);
+  }, [hydrated]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -137,6 +148,32 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  if (!hydrated || !currentMonth || !selectedDate || !today) {
+    return (
+      <div
+        className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4"
+        role="status"
+        aria-live="polite"
+        aria-label="Loading calendar"
+      >
+        <div className="flex items-center justify-between">
+          <Skeleton variant="text" className="h-5 w-40" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-16 rounded-lg" />
+            <Skeleton className="h-7 w-20 rounded-lg" />
+            <Skeleton className="h-7 w-7 rounded-lg" />
+            <Skeleton className="h-7 w-7 rounded-lg" />
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-7 gap-1">
+          {Array.from({ length: 21 }).map((_, index) => (
+            <Skeleton key={index} className="h-16 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const normalizedEvents = useMemo<CalendarEvent[]>(() => {
     return events
@@ -239,6 +276,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
 
   const handleToday = () => {
     const today = new Date();
+    setToday(today);
     setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
     setSelectedDate(today);
   };
@@ -376,7 +414,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
                 const dayEvents = eventsByDate.get(dateKey) ?? [];
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isSelected = isSameDay(day, selectedDate);
-                const isToday = isSameDay(day, now);
+                const isToday = isSameDay(day, today);
 
                 return (
                   <button

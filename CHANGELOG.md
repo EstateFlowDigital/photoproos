@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Project Expense Panel Accessibility** - Full WCAG 2.1 AA compliance improvements
+  - Added `aria-hidden="true"` to all decorative SVG icons
+  - Added `role="region"`, `role="list"`, `role="listitem"`, `role="toolbar"` landmarks
+  - Added `aria-label` to all interactive elements (buttons, inputs, checkboxes)
+  - Added `aria-expanded` and `aria-controls` for filter panel toggle
+  - Added `aria-selected` for expense item selection state
+  - Keyboard navigation with Arrow Up/Down between expense items
+  - Screen reader-only loading text with `sr-only` class
+  - Proper `htmlFor` labels on all form inputs
+  - Focus ring styles for keyboard navigation visibility
+  - Dismissible error alerts with `role="alert"`
 - **Code Quality Improvements** - Fixed lint warnings across 23 files
   - Removed unused catch error parameters
   - Prefixed intentionally unused parameters with underscore

@@ -91,6 +91,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
   const [isBranded, setIsBranded] = useState(website.isBranded);
   const [showPrice, setShowPrice] = useState(website.showPrice);
   const [showAgent, setShowAgent] = useState(website.showAgent);
+  const [autoGenerateMarketingKit, setAutoGenerateMarketingKit] = useState(website.autoGenerateMarketingKit);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Marketing state
@@ -172,6 +173,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         isBranded,
         showPrice,
         showAgent,
+        autoGenerateMarketingKit,
         accentColor: accentColor || null,
       });
       if (result.success) {
@@ -1138,6 +1140,27 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                     <span
                       className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
                         showAgent ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </label>
+
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">Auto-Generate Marketing Kit</p>
+                    <p className="text-sm text-foreground-secondary">
+                      Automatically create flyers and social graphics when published
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAutoGenerateMarketingKit(!autoGenerateMarketingKit)}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      autoGenerateMarketingKit ? "bg-[var(--primary)]" : "bg-[var(--background-tertiary)]"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                        autoGenerateMarketingKit ? "translate-x-5" : "translate-x-0"
                       }`}
                     />
                   </button>

@@ -36,6 +36,7 @@ export interface PropertyWebsiteInput {
   isBranded?: boolean;
   showPrice?: boolean;
   showAgent?: boolean;
+  autoGenerateMarketingKit?: boolean;
   metaTitle?: string | null;
   metaDescription?: string | null;
   // Template customization
@@ -96,6 +97,7 @@ export interface PropertyWebsiteWithRelations {
   enableMortgageCalc: boolean;
   enableScheduleTour: boolean;
   enableFavorite: boolean;
+  autoGenerateMarketingKit: boolean;
   // Branding
   logoUrl: string | null;
   socialImage: string | null;
@@ -237,6 +239,7 @@ export async function updatePropertyWebsite(
         isBranded: data.isBranded,
         showPrice: data.showPrice,
         showAgent: data.showAgent,
+        autoGenerateMarketingKit: data.autoGenerateMarketingKit,
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
         accentColor: data.accentColor,
@@ -263,18 +266,54 @@ export async function togglePropertyWebsitePublish(
   id: string
 ): Promise<{ success: boolean; isPublished?: boolean; error?: string }> {
   try {
-    const existing = await prisma.propertyWebsite.findUnique({ where: { id } });
+    const existing = await prisma.propertyWebsite.findUnique({
+      where: { id },
+      include: {
+        project: {
+          select: {
+            organizationId: true,
+          },
+        },
+        marketingKit: true,
+      },
+    });
     if (!existing) {
       return fail("Property website not found");
     }
 
+    const willBePublished = !existing.isPublished;
+
     const updated = await prisma.propertyWebsite.update({
       where: { id },
       data: {
-        isPublished: !existing.isPublished,
-        publishedAt: !existing.isPublished ? new Date() : null,
+        isPublished: willBePublished,
+        publishedAt: willBePublished ? new Date() : null,
       },
     });
+
+    // Auto-generate marketing kit when publishing if enabled
+    if (willBePublished && existing.autoGenerateMarketingKit && !existing.marketingKit) {
+      try {
+        // Create a marketing kit for this property
+        await prisma.marketingKit.create({
+          data: {
+            propertyWebsiteId: id,
+            organizationId: existing.project.organizationId,
+            name: `${existing.address} Marketing Kit`,
+            autoGenerateOnCreate: true,
+            autoGenerateTypes: [
+              "flyer_portrait",
+              "social_square",
+              "tile_just_listed",
+            ],
+          },
+        });
+        console.log(`[Marketing Kit] Auto-created for property: ${existing.address}`);
+      } catch (mkError) {
+        // Log but don't fail the publish operation
+        console.error("[Marketing Kit] Auto-creation failed:", mkError);
+      }
+    }
 
     revalidatePath("/properties");
     revalidatePath(`/properties/${id}`);

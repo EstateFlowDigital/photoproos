@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Calendar, AlertTriangle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { extendGalleryExpiration } from "@/lib/actions/gallery-expiration";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 interface ExpiringGallery {
   id: string;
   name: string;
   clientEmail: string;
   clientName: string;
-  expiresAt: Date;
+  expiresAt: Date | string;
   daysUntilExpiry: number;
   deliverySlug: string;
 }
@@ -22,6 +23,14 @@ interface ExpiringGalleriesWidgetProps {
 
 export function ExpiringGalleriesWidget({ galleries }: ExpiringGalleriesWidgetProps) {
   const [extendingId, setExtendingId] = useState<string | null>(null);
+  const hydrated = useHydrated();
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    []
+  );
+
+  const formatExpiresDate = (dateLike: Date | string) =>
+    dateFormatter.format(typeof dateLike === "string" ? new Date(dateLike) : dateLike);
 
   if (galleries.length === 0) {
     return null;
@@ -89,7 +98,7 @@ export function ExpiringGalleriesWidget({ galleries }: ExpiringGalleriesWidgetPr
               <div className="flex items-center gap-2 text-xs text-foreground-muted mb-3">
                 <Calendar className="h-3 w-3" />
                 <span>
-                  Expires {new Date(gallery.expiresAt).toLocaleDateString()}
+                  Expires {hydrated ? formatExpiresDate(gallery.expiresAt) : "—"}
                 </span>
               </div>
             </Link>

@@ -416,3 +416,257 @@ export async function toggleExpensePaidStatus(expenseId: string) {
 }
 
 // Note: getExpenseCategoryInfo and getExpenseCategories moved to @/lib/utils/expenses.ts
+
+// ============================================================================
+// TEAM MEMBERS
+// ============================================================================
+
+/**
+ * Get team members for expense assignment
+ */
+export async function getTeamMembers() {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    const members = await prisma.organizationMember.findMany({
+      where: { organizationId: org.id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: { user: { firstName: "asc" } },
+    });
+
+    const formattedMembers = members.map((m) => ({
+      id: m.userId,
+      name: m.user.firstName && m.user.lastName
+        ? `${m.user.firstName} ${m.user.lastName}`
+        : m.user.email,
+      email: m.user.email,
+      role: m.role,
+    }));
+
+    return success(formattedMembers);
+  } catch (error) {
+    console.error("Error fetching team members:", error);
+    return fail("Failed to fetch team members");
+  }
+}
+
+// ============================================================================
+// BULK OPERATIONS
+// ============================================================================
+
+/**
+ * Bulk mark expenses as paid/unpaid
+ */
+export async function bulkUpdateExpenseStatus(
+  expenseIds: string[],
+  isPaid: boolean
+) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  if (!expenseIds.length) {
+    return fail("No expenses selected");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    // Verify all expenses belong to this organization
+    const expenses = await prisma.projectExpense.findMany({
+      where: {
+        id: { in: expenseIds },
+        organizationId: org.id,
+      },
+      select: { id: true, projectId: true },
+    });
+
+    if (expenses.length !== expenseIds.length) {
+      return fail("Some expenses not found or unauthorized");
+    }
+
+    // Get unique project IDs for cache invalidation
+    const projectIds = [...new Set(expenses.map((e) => e.projectId))];
+
+    await prisma.projectExpense.updateMany({
+      where: {
+        id: { in: expenseIds },
+        organizationId: org.id,
+      },
+      data: {
+        isPaid,
+        paidDate: isPaid ? new Date() : null,
+      },
+    });
+
+    // Invalidate caches
+    for (const projectId of projectIds) {
+      revalidatePath(`/galleries/${projectId}`);
+    }
+
+    return success({ count: expenses.length });
+  } catch (error) {
+    console.error("Error bulk updating expenses:", error);
+    return fail("Failed to update expenses");
+  }
+}
+
+/**
+ * Bulk delete expenses
+ */
+export async function bulkDeleteExpenses(expenseIds: string[]) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  if (!expenseIds.length) {
+    return fail("No expenses selected");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    // Verify all expenses belong to this organization
+    const expenses = await prisma.projectExpense.findMany({
+      where: {
+        id: { in: expenseIds },
+        organizationId: org.id,
+      },
+      select: { id: true, projectId: true },
+    });
+
+    if (expenses.length !== expenseIds.length) {
+      return fail("Some expenses not found or unauthorized");
+    }
+
+    // Get unique project IDs for cache invalidation
+    const projectIds = [...new Set(expenses.map((e) => e.projectId))];
+
+    await prisma.projectExpense.deleteMany({
+      where: {
+        id: { in: expenseIds },
+        organizationId: org.id,
+      },
+    });
+
+    // Invalidate caches
+    for (const projectId of projectIds) {
+      revalidatePath(`/galleries/${projectId}`);
+    }
+
+    return success({ count: expenses.length });
+  } catch (error) {
+    console.error("Error bulk deleting expenses:", error);
+    return fail("Failed to delete expenses");
+  }
+}
+
+// ============================================================================
+// EXPORT
+// ============================================================================
+
+/**
+ * Export expenses to CSV format
+ */
+export async function exportExpensesToCSV(projectId: string) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    // Verify the project belongs to this organization
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, organizationId: org.id },
+      select: { id: true, name: true },
+    });
+
+    if (!project) {
+      return fail("Project not found");
+    }
+
+    const expenses = await prisma.projectExpense.findMany({
+      where: { projectId, organizationId: org.id },
+      orderBy: { expenseDate: "desc" },
+    });
+
+    // Build CSV
+    const headers = [
+      "Date",
+      "Description",
+      "Category",
+      "Vendor",
+      "Amount",
+      "Status",
+      "Paid Date",
+      "Notes",
+    ];
+
+    const rows = expenses.map((e) => [
+      new Date(e.expenseDate).toISOString().split("T")[0],
+      `"${e.description.replace(/"/g, '""')}"`,
+      e.category,
+      e.vendor ? `"${e.vendor.replace(/"/g, '""')}"` : "",
+      (e.amountCents / 100).toFixed(2),
+      e.isPaid ? "Paid" : "Unpaid",
+      e.paidDate ? new Date(e.paidDate).toISOString().split("T")[0] : "",
+      e.notes ? `"${e.notes.replace(/"/g, '""')}"` : "",
+    ]);
+
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+
+    return success({
+      csv,
+      filename: `${project.name.replace(/[^a-zA-Z0-9]/g, "-")}-expenses.csv`,
+    });
+  } catch (error) {
+    console.error("Error exporting expenses:", error);
+    return fail("Failed to export expenses");
+  }
+}
