@@ -20,10 +20,10 @@ import {
   updateProjectExpense,
   deleteProjectExpense,
   toggleExpensePaidStatus,
-  getExpenseCategories,
   type ProjectPLSummary,
   type CreateExpenseInput,
 } from "@/lib/actions/project-expenses";
+import { getExpenseCategories } from "@/lib/utils/expenses";
 import type { ProjectExpense, ExpenseCategory } from "@prisma/client";
 
 // ============================================================================
