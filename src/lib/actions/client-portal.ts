@@ -6,6 +6,7 @@ import {
   extractKeyFromUrl,
   generatePresignedDownloadUrl,
 } from "@/lib/storage";
+import type { ClientPreferences } from "@/lib/types/client-preferences";
 
 /**
  * Get all data for the client portal dashboard
@@ -169,6 +170,7 @@ export async function getClientPortalData() {
   const totalPhotos = galleries.reduce((sum, g) => sum + g.assets.length, 0);
 
   // Transform data for the portal
+  // Convert all Date objects to ISO strings for proper server-to-client serialization
   const transformedProperties = properties.map((property) => ({
     id: property.id,
     address: property.address,
@@ -187,7 +189,7 @@ export async function getClientPortalData() {
     leadCount: property._count.leads,
     photoCount: property.project.assets.length,
     slug: property.slug,
-    createdAt: property.createdAt,
+    createdAt: property.createdAt.toISOString(),
     thumbnailUrl: property.project.assets[0]?.thumbnailUrl || null,
   }));
 
@@ -197,8 +199,8 @@ export async function getClientPortalData() {
     photoCount: gallery.assets.length,
     status: gallery.status,
     downloadable: gallery.status === "delivered" && gallery.allowDownloads,
-    deliveredAt: gallery.deliveredAt,
-    expiresAt: gallery.expiresAt,
+    deliveredAt: gallery.deliveredAt?.toISOString() ?? null,
+    expiresAt: gallery.expiresAt?.toISOString() ?? null,
     serviceName: gallery.service?.name || null,
     photos: gallery.assets.slice(0, 4).map((asset) => ({
       id: asset.id,
@@ -213,9 +215,9 @@ export async function getClientPortalData() {
     invoiceNumber: invoice.invoiceNumber,
     amount: invoice.totalCents,
     status: invoice.status,
-    dueDate: invoice.dueDate,
-    paidAt: invoice.paidAt,
-    createdAt: invoice.createdAt,
+    dueDate: invoice.dueDate?.toISOString() ?? null,
+    paidAt: invoice.paidAt?.toISOString() ?? null,
+    createdAt: invoice.createdAt.toISOString(),
   }));
 
   const transformedQuestionnaires = questionnaires.map((q) => ({
@@ -226,12 +228,12 @@ export async function getClientPortalData() {
     industry: q.template.industry,
     status: q.status,
     isRequired: q.isRequired,
-    dueDate: q.dueDate,
-    startedAt: q.startedAt,
-    completedAt: q.completedAt,
-    createdAt: q.createdAt,
+    dueDate: q.dueDate?.toISOString() ?? null,
+    startedAt: q.startedAt?.toISOString() ?? null,
+    completedAt: q.completedAt?.toISOString() ?? null,
+    createdAt: q.createdAt.toISOString(),
     bookingTitle: q.booking?.title || null,
-    bookingDate: q.booking?.startTime || null,
+    bookingDate: q.booking?.startTime?.toISOString() ?? null,
     responseCount: q._count.responses,
   }));
 
@@ -250,8 +252,8 @@ export async function getClientPortalData() {
     photoViews: lead.photoViews,
     tourClicks: lead.tourClicks,
     totalTimeSeconds: lead.totalTimeSeconds,
-    createdAt: lead.createdAt,
-    lastActivityAt: lead.lastActivityAt,
+    createdAt: lead.createdAt.toISOString(),
+    lastActivityAt: lead.lastActivityAt?.toISOString() ?? null,
   }));
 
   // Count pending questionnaires for the badge
@@ -262,8 +264,18 @@ export async function getClientPortalData() {
   // Count new leads for the badge
   const newLeadsCount = leads.filter((l) => l.status === "new").length;
 
+  // Transform client data with properly typed preferences
+  const transformedClient = {
+    id: client.id,
+    email: client.email,
+    fullName: client.fullName,
+    company: client.company,
+    phone: client.phone,
+    preferences: client.preferences as ClientPreferences | null,
+  };
+
   return {
-    client,
+    client: transformedClient,
     stats: {
       totalProperties,
       totalViews,

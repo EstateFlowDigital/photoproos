@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useGalleryTheme, getThemedLogoUrl } from "@/lib/theme";
 import Link from "next/link";
+import { Confetti } from "@/components/ui/confetti";
+import { useCelebration, celebrations } from "@/hooks/use-celebration";
 import { PayButton } from "./pay-button";
 import {
   getClientSelections,
@@ -140,6 +143,24 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     logoUrl: gallery.photographer.logoUrl,
     logoLightUrl: gallery.photographer.logoLightUrl,
   });
+
+  // Payment success celebration
+  const searchParams = useSearchParams();
+  const { celebrate, confettiProps } = useCelebration();
+  const [hasShownCelebration, setHasShownCelebration] = useState(false);
+
+  // Trigger celebration on payment success
+  useEffect(() => {
+    const paymentSuccess = searchParams.get("payment") === "success";
+    if (paymentSuccess && gallery.isPaid && !hasShownCelebration) {
+      setHasShownCelebration(true);
+      // Small delay for page to fully render
+      const timer = setTimeout(() => {
+        celebrate(celebrations.payment());
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, gallery.isPaid, hasShownCelebration, celebrate]);
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<{ current: number; total: number } | null>(null);
@@ -1094,6 +1115,9 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
   return (
     <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: colors.bgColor, color: colors.textColor }}>
+      {/* Payment Success Celebration */}
+      <Confetti {...confettiProps} />
+
       {/* Preview Mode Banner */}
       {isPreview && (
         <div className="sticky top-0 z-[60] bg-amber-500 text-black px-4 py-2 text-center text-sm font-medium">

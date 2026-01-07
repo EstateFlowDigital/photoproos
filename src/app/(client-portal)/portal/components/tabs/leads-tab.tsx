@@ -206,7 +206,7 @@ function LeadCard({ lead, isExpanded, onToggle, hydrated }: LeadCardProps) {
     []
   );
 
-  const formatDate = (date: Date) => dateFormatter.format(new Date(date));
+  const formatDate = (date: Date | string) => dateFormatter.format(new Date(date));
 
   const formatTime = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;

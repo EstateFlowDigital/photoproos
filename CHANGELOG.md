@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Dashboard React Error (Too Many Re-renders)** - Fixed Date serialization issue causing React error #310 and #301 on dashboard page. Date objects passed from server to client components must be serialized as ISO strings to avoid becoming empty objects during hydration. Updated `UpcomingBookings` component to accept ISO string dates.
+- **Client Portal Date Serialization** - Fixed the same Date serialization issue across the entire client portal. Updated all date fields in types to use `string` and converted all Date objects to ISO strings in `getClientPortalData` server action. Affects properties, galleries, invoices, questionnaires, and leads tabs.
 - **PWA Icon Missing (404)** - Created SVG icon and updated manifest.json to use SVG format instead of missing PNG files
 - **Middleware Route Mismatch** - Added `/support(.*)` to public routes after renaming marketing help folder
 - **Clerk Deprecation Warning** - Updated .env.example to document deprecated `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` and `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` environment variables (use `fallbackRedirectUrl` prop instead)
@@ -56,6 +57,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add/remove split parts dynamically
   - Preserves original expense metadata (vendor, payment method, billable status)
   - Visual feedback for fully allocated vs unallocated amounts
+- **Receipt Gallery View** - Visual gallery for browsing expense receipts
+  - Dedicated "Receipts" tab in expense management
+  - Grid layout with receipt thumbnails (responsive 2-5 columns)
+  - Hover overlay showing expense details (description, amount, date, category)
+  - Full-screen lightbox viewer with click-to-close
+  - Expense info panel in lightbox with all metadata
+  - Sorted by expense date (newest first)
+  - Empty state when no receipts are attached
+  - Receipt count badge on tab button
+- **CSV Expense Import** - Import expenses from CSV files
+  - Multi-step import wizard (Upload → Map Columns → Preview → Import)
+  - Automatic column detection for common headers (Description, Amount, Category, Date, Vendor)
+  - Column mapping UI for custom CSV formats
+  - Data validation with error reporting for skipped rows
+  - Preview table showing expenses before import
+  - Bulk create server action for efficient database operations
+  - Support for billable status and paid status columns
 - **Advanced Expense Filters** - Enhanced expense filtering capabilities
   - Payment method filter (cash, credit card, bank transfer, etc.)
   - Billable status filter (billable, non-billable, all)

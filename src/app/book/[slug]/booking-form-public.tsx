@@ -376,11 +376,10 @@ export function BookingFormPublic({ form, organization, clientProfile }: Booking
   const [isPending, startTransition] = useTransition();
   const services = form.services ?? [];
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedIndustry, setSelectedIndustry] = useState<Industry | null>(form.industry);
-  const [formData, setFormData] = useState<Record<string, unknown>>(() => {
-    const bookingPrefs = clientProfile?.preferences?.booking;
-    return bookingPrefs?.preferences ? { ...bookingPrefs.preferences } : {};
-  });
+  const [selectedIndustry, setSelectedIndustry] = useState<Industry | null>(
+    () => form.industry ?? organization?.primaryIndustry ?? organization?.industries?.[0] ?? null
+  );
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [selectedService, setSelectedService] = useState<string | null>(
     services.find((s) => s.isDefault)?.serviceId || services[0]?.serviceId || null
   );

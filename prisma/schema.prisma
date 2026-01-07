@@ -1565,6 +1565,7 @@ model Asset {
   thumbnailUrl   String?
   mediumUrl      String?
   watermarkedUrl String?
+  blurDataUrl    String? // Base64 LQIP for blur-up loading effect
 
   // Metadata
   mimeType  String

@@ -740,7 +740,15 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
   const csvFileInputRef = useRef<HTMLInputElement>(null);
 
   // Active tab for advanced features
-  const [activeAdvancedTab, setActiveAdvancedTab] = useState<"expenses" | "templates" | "budget" | "analytics">("expenses");
+  const [activeAdvancedTab, setActiveAdvancedTab] = useState<"expenses" | "templates" | "budget" | "analytics" | "receipts">("expenses");
+
+  // Receipt gallery state
+  const [selectedReceipt, setSelectedReceipt] = useState<{ url: string; expense: ProjectExpense } | null>(null);
+
+  // Profit margin alerts
+  const [marginAlertThreshold, setMarginAlertThreshold] = useState(20); // Default 20% threshold
+  const [showMarginSettings, setShowMarginSettings] = useState(false);
+  const [dismissedMarginAlert, setDismissedMarginAlert] = useState(false);
 
   // Load data
   useEffect(() => {
@@ -1193,6 +1201,43 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     return splittingExpense.amountCents - allocated;
   }, [splittingExpense, splitItems]);
 
+  // Profit margin alert status
+  const marginAlertStatus = useMemo(() => {
+    if (!plSummary) return null;
+
+    const margin = plSummary.profit.margin;
+    const revenue = plSummary.revenue.total;
+
+    // Don't show alert if there's no revenue yet
+    if (revenue === 0) return null;
+
+    // Calculate severity based on how far below threshold
+    if (margin < 0) {
+      return {
+        type: "negative" as const,
+        message: `Project is operating at a loss`,
+        margin,
+        severity: "critical" as const,
+      };
+    } else if (margin < marginAlertThreshold / 2) {
+      return {
+        type: "critical" as const,
+        message: `Profit margin is critically low`,
+        margin,
+        severity: "critical" as const,
+      };
+    } else if (margin < marginAlertThreshold) {
+      return {
+        type: "warning" as const,
+        message: `Profit margin is below ${marginAlertThreshold}% target`,
+        margin,
+        severity: "warning" as const,
+      };
+    }
+
+    return null;
+  }, [plSummary, marginAlertThreshold]);
+
   // Handle split expense submission
   async function handleSplitExpense() {
     if (!splittingExpense) return;
@@ -1480,6 +1525,281 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       URL.revokeObjectURL(url);
     } catch {
       setError("Failed to export expenses");
+    }
+  }
+
+  // CSV Import functions
+  function openCsvImportModal() {
+    setCsvData([]);
+    setCsvHeaders([]);
+    setCsvMapping({
+      description: "",
+      amount: "",
+      category: "",
+      date: "",
+      vendor: "",
+      notes: "",
+      billable: "",
+      paid: "",
+    });
+    setCsvImportStep("upload");
+    setCsvImportError(null);
+    setCsvPreviewData([]);
+    setShowCsvImportModal(true);
+  }
+
+  function handleCsvFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setCsvImportError(null);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (!text) {
+        setCsvImportError("Failed to read file");
+        return;
+      }
+
+      // Parse CSV
+      const lines = text.split(/\r?\n/).filter((line) => line.trim());
+      if (lines.length < 2) {
+        setCsvImportError("CSV file must have at least a header row and one data row");
+        return;
+      }
+
+      // Parse header
+      const headers = parseCSVLine(lines[0]);
+      setCsvHeaders(headers);
+
+      // Parse data rows
+      const dataRows = lines.slice(1).map((line) => parseCSVLine(line));
+      setCsvData(dataRows);
+
+      // Auto-map common column names
+      const lowercaseHeaders = headers.map((h) => h.toLowerCase().trim());
+      const autoMapping = { ...csvMapping };
+
+      // Description
+      const descIdx = lowercaseHeaders.findIndex((h) =>
+        ["description", "name", "title", "item", "expense"].includes(h)
+      );
+      if (descIdx >= 0) autoMapping.description = headers[descIdx];
+
+      // Amount
+      const amountIdx = lowercaseHeaders.findIndex((h) =>
+        ["amount", "total", "price", "cost", "value"].includes(h)
+      );
+      if (amountIdx >= 0) autoMapping.amount = headers[amountIdx];
+
+      // Category
+      const catIdx = lowercaseHeaders.findIndex((h) =>
+        ["category", "type", "expense type", "expense category"].includes(h)
+      );
+      if (catIdx >= 0) autoMapping.category = headers[catIdx];
+
+      // Date
+      const dateIdx = lowercaseHeaders.findIndex((h) =>
+        ["date", "expense date", "transaction date", "created"].includes(h)
+      );
+      if (dateIdx >= 0) autoMapping.date = headers[dateIdx];
+
+      // Vendor
+      const vendorIdx = lowercaseHeaders.findIndex((h) =>
+        ["vendor", "merchant", "payee", "supplier", "from"].includes(h)
+      );
+      if (vendorIdx >= 0) autoMapping.vendor = headers[vendorIdx];
+
+      // Notes
+      const notesIdx = lowercaseHeaders.findIndex((h) =>
+        ["notes", "note", "memo", "comments", "description"].includes(h)
+      );
+      if (notesIdx >= 0 && notesIdx !== descIdx) autoMapping.notes = headers[notesIdx];
+
+      setCsvMapping(autoMapping);
+      setCsvImportStep("mapping");
+    };
+
+    reader.onerror = () => {
+      setCsvImportError("Failed to read file");
+    };
+
+    reader.readAsText(file);
+  }
+
+  function parseCSVLine(line: string): string[] {
+    const result: string[] = [];
+    let current = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === "," && !inQuotes) {
+        result.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  }
+
+  function generateCsvPreview() {
+    setCsvImportError(null);
+
+    // Validate required fields
+    if (!csvMapping.description) {
+      setCsvImportError("Description column is required");
+      return;
+    }
+    if (!csvMapping.amount) {
+      setCsvImportError("Amount column is required");
+      return;
+    }
+
+    const headerIndex: Record<string, number> = {};
+    csvHeaders.forEach((h, i) => {
+      headerIndex[h] = i;
+    });
+
+    const previewExpenses: CreateExpenseInput[] = [];
+    const errors: string[] = [];
+
+    for (let i = 0; i < csvData.length; i++) {
+      const row = csvData[i];
+      const rowNum = i + 2; // +2 for header row and 1-based indexing
+
+      try {
+        // Get description
+        const description = row[headerIndex[csvMapping.description]] || "";
+        if (!description.trim()) {
+          errors.push(`Row ${rowNum}: Missing description`);
+          continue;
+        }
+
+        // Get and parse amount
+        const amountStr = row[headerIndex[csvMapping.amount]] || "";
+        const cleanAmount = amountStr.replace(/[$,\s]/g, "");
+        const amount = parseFloat(cleanAmount);
+        if (isNaN(amount) || amount <= 0) {
+          errors.push(`Row ${rowNum}: Invalid amount "${amountStr}"`);
+          continue;
+        }
+
+        // Get category
+        let category: ExpenseCategory = "other";
+        if (csvMapping.category && headerIndex[csvMapping.category] !== undefined) {
+          const catValue = row[headerIndex[csvMapping.category]]?.toLowerCase().trim();
+          const matchedCat = EXPENSE_CATEGORIES.find(
+            (c) => c.value === catValue || c.label.toLowerCase() === catValue
+          );
+          if (matchedCat) {
+            category = matchedCat.value as ExpenseCategory;
+          }
+        }
+
+        // Get date
+        let expenseDate = new Date();
+        if (csvMapping.date && headerIndex[csvMapping.date] !== undefined) {
+          const dateStr = row[headerIndex[csvMapping.date]];
+          if (dateStr) {
+            const parsedDate = new Date(dateStr);
+            if (!isNaN(parsedDate.getTime())) {
+              expenseDate = parsedDate;
+            }
+          }
+        }
+
+        // Get vendor
+        const vendor =
+          csvMapping.vendor && headerIndex[csvMapping.vendor] !== undefined
+            ? row[headerIndex[csvMapping.vendor]] || ""
+            : "";
+
+        // Get notes
+        const notes =
+          csvMapping.notes && headerIndex[csvMapping.notes] !== undefined
+            ? row[headerIndex[csvMapping.notes]] || ""
+            : "";
+
+        // Get billable status
+        let isBillable = false;
+        if (csvMapping.billable && headerIndex[csvMapping.billable] !== undefined) {
+          const billableStr = row[headerIndex[csvMapping.billable]]?.toLowerCase().trim();
+          isBillable = ["yes", "true", "1", "y", "billable"].includes(billableStr);
+        }
+
+        // Get paid status
+        let isPaid = true;
+        if (csvMapping.paid && headerIndex[csvMapping.paid] !== undefined) {
+          const paidStr = row[headerIndex[csvMapping.paid]]?.toLowerCase().trim();
+          isPaid = !["no", "false", "0", "n", "unpaid"].includes(paidStr);
+        }
+
+        previewExpenses.push({
+          description: description.trim(),
+          amountCents: Math.round(amount * 100),
+          category,
+          expenseDate,
+          vendor: vendor || undefined,
+          notes: notes || undefined,
+          isBillable,
+          isPaid,
+        });
+      } catch {
+        errors.push(`Row ${rowNum}: Failed to parse`);
+      }
+    }
+
+    if (previewExpenses.length === 0) {
+      setCsvImportError(
+        errors.length > 0
+          ? `No valid rows found. Errors:\n${errors.slice(0, 5).join("\n")}`
+          : "No valid rows found in CSV"
+      );
+      return;
+    }
+
+    setCsvPreviewData(previewExpenses);
+    setCsvImportStep("preview");
+
+    if (errors.length > 0) {
+      setCsvImportError(`${errors.length} row(s) skipped with errors`);
+    }
+  }
+
+  async function handleCsvImport() {
+    if (csvPreviewData.length === 0) return;
+
+    setCsvImportStep("importing");
+    setCsvImportError(null);
+
+    try {
+      const result = await bulkCreateExpenses(galleryId, csvPreviewData);
+
+      if (!result.success) {
+        setCsvImportError(result.error);
+        setCsvImportStep("preview");
+        return;
+      }
+
+      // Success - close modal and reload
+      setShowCsvImportModal(false);
+      await loadData();
+    } catch {
+      setCsvImportError("Failed to import expenses");
+      setCsvImportStep("preview");
     }
   }
 
@@ -2099,6 +2419,19 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
             <TrendingIcon className="h-4 w-4 mr-1" />
             Analytics
           </Button>
+          <Button
+            variant={activeAdvancedTab === "receipts" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setActiveAdvancedTab("receipts")}
+          >
+            <ReceiptIcon className="h-4 w-4 mr-1" />
+            Receipts
+            {expenses.filter(e => e.receiptUrl).length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-[var(--primary)]/20 text-[var(--primary)]">
+                {expenses.filter(e => e.receiptUrl).length}
+              </span>
+            )}
+          </Button>
         </div>
         <div className="flex items-center gap-2">
           {recurringTemplates.length > 0 && (
@@ -2579,6 +2912,73 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         </div>
       )}
 
+      {/* Receipt Gallery */}
+      {activeAdvancedTab === "receipts" && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-foreground">Receipt Gallery</h3>
+            <span className="text-sm text-foreground-muted">
+              {expenses.filter(e => e.receiptUrl).length} receipt{expenses.filter(e => e.receiptUrl).length !== 1 ? "s" : ""}
+            </span>
+          </div>
+
+          {expenses.filter(e => e.receiptUrl).length === 0 ? (
+            <div className="text-center py-12">
+              <ReceiptIcon className="h-12 w-12 mx-auto text-foreground-muted/40 mb-4" />
+              <p className="text-foreground-muted mb-2">No receipts attached yet</p>
+              <p className="text-sm text-foreground-muted/70">
+                Add receipts to your expenses to view them here
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {expenses
+                .filter(e => e.receiptUrl)
+                .sort((a, b) => new Date(b.expenseDate).getTime() - new Date(a.expenseDate).getTime())
+                .map((expense) => (
+                  <button
+                    key={expense.id}
+                    onClick={() => setSelectedReceipt({ url: expense.receiptUrl!, expense })}
+                    className="group relative aspect-[3/4] rounded-lg overflow-hidden border border-[var(--card-border)] bg-[var(--background-secondary)] hover:border-[var(--primary)] transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2"
+                  >
+                    {/* Receipt image */}
+                    <img
+                      src={expense.receiptUrl!}
+                      alt={`Receipt for ${expense.description}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    />
+                    {/* Overlay with expense info */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-white text-sm font-medium truncate">
+                          {expense.description}
+                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-white/80 text-xs">
+                            {formatCurrency(expense.amountCents)}
+                          </span>
+                          <span className="text-white/60 text-xs">
+                            {new Date(expense.expenseDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <span className="inline-block mt-1 px-1.5 py-0.5 text-xs rounded bg-white/20 text-white/90 capitalize">
+                          {expense.category.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                    </div>
+                    {/* View icon */}
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="p-1.5 rounded-full bg-black/40 backdrop-blur-sm">
+                        <SearchIcon className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Expenses List */}
       {activeAdvancedTab === "expenses" && (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
@@ -2612,6 +3012,16 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   Export
                 </Button>
               )}
+              {/* Import CSV Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={openCsvImportModal}
+                aria-label="Import expenses from CSV"
+              >
+                <UploadIcon className="h-4 w-4 mr-1" />
+                Import
+              </Button>
               {/* Quick Add Dropdown */}
               <div className="relative" ref={quickAddRef}>
                 <Button
@@ -4281,6 +4691,441 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* CSV Import Modal */}
+      <Dialog open={showCsvImportModal} onOpenChange={(open) => !open && setShowCsvImportModal(false)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Import Expenses from CSV</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            {/* Step indicator */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              {["Upload", "Map Columns", "Preview", "Import"].map((step, idx) => {
+                const steps = ["upload", "mapping", "preview", "importing"] as const;
+                const isActive = steps.indexOf(csvImportStep) >= idx;
+                const isCurrent = steps[idx] === csvImportStep;
+                return (
+                  <React.Fragment key={step}>
+                    {idx > 0 && (
+                      <div
+                        className={cn(
+                          "w-8 h-0.5",
+                          isActive ? "bg-[var(--primary)]" : "bg-[var(--card-border)]"
+                        )}
+                      />
+                    )}
+                    <div
+                      className={cn(
+                        "flex items-center justify-center w-7 h-7 rounded-full text-xs font-medium transition-colors",
+                        isCurrent
+                          ? "bg-[var(--primary)] text-white"
+                          : isActive
+                          ? "bg-[var(--primary)]/20 text-[var(--primary)]"
+                          : "bg-[var(--background-secondary)] text-foreground-muted"
+                      )}
+                    >
+                      {idx + 1}
+                    </div>
+                    <span
+                      className={cn(
+                        "text-xs hidden sm:inline",
+                        isCurrent ? "text-foreground font-medium" : "text-foreground-muted"
+                      )}
+                    >
+                      {step}
+                    </span>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Error message */}
+            {csvImportError && (
+              <div className="p-3 rounded-lg bg-[var(--error)]/10 border border-[var(--error)]/30 text-sm text-[var(--error)]">
+                {csvImportError}
+              </div>
+            )}
+
+            {/* Step: Upload */}
+            {csvImportStep === "upload" && (
+              <div className="space-y-4">
+                <p className="text-sm text-foreground-muted">
+                  Upload a CSV file with your expense data. The first row should contain column headers.
+                </p>
+                <div
+                  className="border-2 border-dashed border-[var(--card-border)] rounded-xl p-8 text-center hover:border-[var(--primary)] transition-colors cursor-pointer"
+                  onClick={() => csvFileInputRef.current?.click()}
+                >
+                  <UploadIcon className="h-10 w-10 mx-auto text-foreground-muted mb-3" />
+                  <p className="text-foreground font-medium">Click to upload or drag and drop</p>
+                  <p className="text-sm text-foreground-muted mt-1">CSV files only</p>
+                  <input
+                    ref={csvFileInputRef}
+                    type="file"
+                    accept=".csv,text/csv"
+                    onChange={handleCsvFileSelect}
+                    className="hidden"
+                  />
+                </div>
+                <div className="text-sm text-foreground-muted">
+                  <p className="font-medium mb-2">Expected columns:</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li><strong>Description</strong> (required) - Expense name/title</li>
+                    <li><strong>Amount</strong> (required) - Dollar amount</li>
+                    <li>Category - expense category (e.g., travel, equipment)</li>
+                    <li>Date - expense date</li>
+                    <li>Vendor - vendor/merchant name</li>
+                    <li>Notes - additional notes</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Step: Mapping */}
+            {csvImportStep === "mapping" && (
+              <div className="space-y-4">
+                <p className="text-sm text-foreground-muted">
+                  Map your CSV columns to expense fields. We&apos;ve auto-detected some mappings.
+                </p>
+                <div className="text-sm text-foreground-muted mb-3">
+                  Found <strong>{csvData.length}</strong> rows in your CSV file.
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Description (Required) */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Description <span className="text-[var(--error)]">*</span>
+                    </label>
+                    <select
+                      value={csvMapping.description}
+                      onChange={(e) => setCsvMapping({ ...csvMapping, description: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                    >
+                      <option value="">— Select column —</option>
+                      {csvHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Amount (Required) */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Amount <span className="text-[var(--error)]">*</span>
+                    </label>
+                    <select
+                      value={csvMapping.amount}
+                      onChange={(e) => setCsvMapping({ ...csvMapping, amount: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                    >
+                      <option value="">— Select column —</option>
+                      {csvHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Category
+                    </label>
+                    <select
+                      value={csvMapping.category}
+                      onChange={(e) => setCsvMapping({ ...csvMapping, category: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                    >
+                      <option value="">— Skip —</option>
+                      {csvHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Date */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Date
+                    </label>
+                    <select
+                      value={csvMapping.date}
+                      onChange={(e) => setCsvMapping({ ...csvMapping, date: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                    >
+                      <option value="">— Skip (use today) —</option>
+                      {csvHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Vendor */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Vendor
+                    </label>
+                    <select
+                      value={csvMapping.vendor}
+                      onChange={(e) => setCsvMapping({ ...csvMapping, vendor: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                    >
+                      <option value="">— Skip —</option>
+                      {csvHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Notes
+                    </label>
+                    <select
+                      value={csvMapping.notes}
+                      onChange={(e) => setCsvMapping({ ...csvMapping, notes: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                    >
+                      <option value="">— Skip —</option>
+                      {csvHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Billable */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Billable
+                    </label>
+                    <select
+                      value={csvMapping.billable}
+                      onChange={(e) => setCsvMapping({ ...csvMapping, billable: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                    >
+                      <option value="">— Skip (default: no) —</option>
+                      {csvHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Paid */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Paid Status
+                    </label>
+                    <select
+                      value={csvMapping.paid}
+                      onChange={(e) => setCsvMapping({ ...csvMapping, paid: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                    >
+                      <option value="">— Skip (default: yes) —</option>
+                      {csvHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step: Preview */}
+            {csvImportStep === "preview" && (
+              <div className="space-y-4">
+                <p className="text-sm text-foreground-muted">
+                  Review the expenses to be imported. <strong>{csvPreviewData.length}</strong> valid rows found.
+                </p>
+                <div className="max-h-64 overflow-y-auto border border-[var(--card-border)] rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[var(--background-secondary)] sticky top-0">
+                      <tr>
+                        <th className="px-3 py-2 text-left font-medium text-foreground">Description</th>
+                        <th className="px-3 py-2 text-right font-medium text-foreground">Amount</th>
+                        <th className="px-3 py-2 text-left font-medium text-foreground">Category</th>
+                        <th className="px-3 py-2 text-left font-medium text-foreground">Date</th>
+                        <th className="px-3 py-2 text-left font-medium text-foreground">Vendor</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--card-border)]">
+                      {csvPreviewData.slice(0, 50).map((expense, idx) => (
+                        <tr key={idx} className="hover:bg-[var(--background-secondary)]">
+                          <td className="px-3 py-2 text-foreground">{expense.description}</td>
+                          <td className="px-3 py-2 text-right text-foreground">
+                            {formatCurrency(expense.amountCents)}
+                          </td>
+                          <td className="px-3 py-2 text-foreground-muted capitalize">
+                            {expense.category.replace(/_/g, " ")}
+                          </td>
+                          <td className="px-3 py-2 text-foreground-muted">
+                            {expense.expenseDate
+                              ? new Date(expense.expenseDate).toLocaleDateString()
+                              : "—"}
+                          </td>
+                          <td className="px-3 py-2 text-foreground-muted">
+                            {expense.vendor || "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {csvPreviewData.length > 50 && (
+                    <div className="px-3 py-2 text-center text-sm text-foreground-muted bg-[var(--background-secondary)]">
+                      And {csvPreviewData.length - 50} more rows...
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground-muted">
+                  <DollarIcon className="h-4 w-4" />
+                  Total: <strong className="text-foreground">
+                    {formatCurrency(csvPreviewData.reduce((sum, e) => sum + e.amountCents, 0))}
+                  </strong>
+                </div>
+              </div>
+            )}
+
+            {/* Step: Importing */}
+            {csvImportStep === "importing" && (
+              <div className="py-8 text-center">
+                <RefreshIcon className="h-8 w-8 mx-auto text-[var(--primary)] animate-spin mb-4" />
+                <p className="text-foreground font-medium">Importing expenses...</p>
+                <p className="text-sm text-foreground-muted mt-1">
+                  Creating {csvPreviewData.length} expense{csvPreviewData.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            {csvImportStep === "upload" && (
+              <Button variant="ghost" onClick={() => setShowCsvImportModal(false)}>
+                Cancel
+              </Button>
+            )}
+            {csvImportStep === "mapping" && (
+              <>
+                <Button variant="ghost" onClick={() => setCsvImportStep("upload")}>
+                  Back
+                </Button>
+                <Button onClick={generateCsvPreview}>
+                  Preview Import
+                </Button>
+              </>
+            )}
+            {csvImportStep === "preview" && (
+              <>
+                <Button variant="ghost" onClick={() => setCsvImportStep("mapping")}>
+                  Back
+                </Button>
+                <Button onClick={handleCsvImport} disabled={csvPreviewData.length === 0}>
+                  Import {csvPreviewData.length} Expense{csvPreviewData.length !== 1 ? "s" : ""}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Receipt Lightbox */}
+      {selectedReceipt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={() => setSelectedReceipt(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Receipt viewer"
+        >
+          {/* Close button */}
+          <button
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+            onClick={() => setSelectedReceipt(null)}
+            aria-label="Close receipt viewer"
+          >
+            <XIcon className="h-6 w-6 text-white" />
+          </button>
+
+          {/* Receipt image */}
+          <div
+            className="relative max-w-3xl max-h-[85vh] mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedReceipt.url}
+              alt={`Receipt for ${selectedReceipt.expense.description}`}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            />
+
+            {/* Expense info panel */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h4 className="text-white font-semibold text-lg">
+                    {selectedReceipt.expense.description}
+                  </h4>
+                  {selectedReceipt.expense.vendor && (
+                    <p className="text-white/70 text-sm mt-1">
+                      {selectedReceipt.expense.vendor}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 text-white capitalize">
+                      {selectedReceipt.expense.category.replace(/_/g, " ")}
+                    </span>
+                    <span className="text-white/70 text-sm">
+                      {new Date(selectedReceipt.expense.expenseDate).toLocaleDateString()}
+                    </span>
+                    {selectedReceipt.expense.isPaid ? (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--success)]/30 text-[var(--success)]">
+                        Paid
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--warning)]/30 text-[var(--warning)]">
+                        Unpaid
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-white text-2xl font-bold">
+                    {formatCurrency(selectedReceipt.expense.amountCents)}
+                  </p>
+                  {selectedReceipt.expense.isBillable && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--primary)]/30 text-[var(--primary)] mt-1">
+                      Billable
+                    </span>
+                  )}
+                </div>
+              </div>
+              {selectedReceipt.expense.notes && (
+                <p className="text-white/60 text-sm mt-3 border-t border-white/20 pt-3">
+                  {selectedReceipt.expense.notes}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation hint */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-sm">
+            Click outside to close
+          </div>
+        </div>
+      )}
     </div>
   );
 }

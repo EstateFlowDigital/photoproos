@@ -27,7 +27,7 @@ export interface PropertyData {
   leadCount: number;
   photoCount: number;
   slug: string;
-  createdAt: Date;
+  createdAt: string; // ISO string for server-to-client serialization
   thumbnailUrl: string | null;
 }
 
@@ -37,8 +37,8 @@ export interface GalleryData {
   photoCount: number;
   status: string;
   downloadable: boolean;
-  deliveredAt: Date | null;
-  expiresAt: Date | null;
+  deliveredAt: string | null; // ISO string for server-to-client serialization
+  expiresAt: string | null; // ISO string for server-to-client serialization
   serviceName: string | null;
   photos: {
     id: string;
@@ -54,9 +54,9 @@ export interface InvoiceData {
   invoiceNumber: string;
   amount: number;
   status: string;
-  dueDate: Date | null;
-  paidAt: Date | null;
-  createdAt: Date;
+  dueDate: string | null; // ISO string for server-to-client serialization
+  paidAt: string | null; // ISO string for server-to-client serialization
+  createdAt: string; // ISO string for server-to-client serialization
 }
 
 export interface QuestionnaireData {
@@ -67,12 +67,12 @@ export interface QuestionnaireData {
   industry: string;
   status: string;
   isRequired: boolean;
-  dueDate: Date | null;
-  startedAt: Date | null;
-  completedAt: Date | null;
-  createdAt: Date;
+  dueDate: string | null; // ISO string for server-to-client serialization
+  startedAt: string | null; // ISO string for server-to-client serialization
+  completedAt: string | null; // ISO string for server-to-client serialization
+  createdAt: string; // ISO string for server-to-client serialization
   bookingTitle: string | null;
-  bookingDate: Date | null;
+  bookingDate: string | null; // ISO string for server-to-client serialization
   responseCount: number;
 }
 
@@ -100,8 +100,8 @@ export interface LeadData {
   photoViews: number;
   tourClicks: number;
   totalTimeSeconds: number;
-  createdAt: Date;
-  lastActivityAt: Date | null;
+  createdAt: string; // ISO string for server-to-client serialization
+  lastActivityAt: string | null; // ISO string for server-to-client serialization
 }
 
 export type PortalTab = "properties" | "galleries" | "downloads" | "invoices" | "leads" | "questionnaires" | "messages" | "settings";

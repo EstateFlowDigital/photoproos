@@ -21,6 +21,7 @@ export interface ProcessedImage {
   mediumKey: string;
   width: number;
   height: number;
+  blurDataUrl?: string; // Base64 LQIP for blur-up loading
 }
 
 export interface ProcessingOptions {
@@ -90,6 +91,15 @@ export async function processImage(
     .webp({ quality: opts.quality })
     .toBuffer();
 
+  // Generate blur placeholder (10x10 tiny image for blur-up effect)
+  const blurBuffer = await sharp(imageBuffer)
+    .resize(10, 10, { fit: "inside" })
+    .blur(2)
+    .webp({ quality: 20 })
+    .toBuffer();
+
+  const blurDataUrl = `data:image/webp;base64,${blurBuffer.toString("base64")}`;
+
   // Upload both versions to R2
   const [thumbnailResult, mediumResult] = await Promise.all([
     uploadFile(thumbnailKey, thumbnailBuffer, "image/webp"),
@@ -103,6 +113,7 @@ export async function processImage(
     mediumKey,
     width: originalWidth,
     height: originalHeight,
+    blurDataUrl,
   };
 }
 
