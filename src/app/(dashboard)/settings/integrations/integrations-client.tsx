@@ -19,6 +19,7 @@ import {
   type IntegrationStatus,
 } from "@/lib/integrations/registry";
 import { CodeIcon, PlugIcon, ChevronDownIcon } from "@/components/ui/settings-icons";
+import Link from "next/link";
 
 // ============================================================================
 // Types
@@ -188,6 +189,73 @@ export function IntegrationsClient({
         )}
       </section>
 
+      {/* Coming Soon Section */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold text-foreground">Coming Soon</h2>
+        <p className="mb-4 text-sm text-foreground-muted">
+          Powerful marketing features in development. Click to learn more and join the waitlist.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* Email Marketing */}
+          <Link
+            href="/features/email-marketing"
+            className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:border-[var(--ai)]/50 hover:shadow-lg hover:shadow-[var(--ai)]/5"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--ai)]/10">
+                <MailIcon className="h-6 w-6 text-[var(--ai)]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-foreground group-hover:text-[var(--ai)] transition-colors">
+                    Email Marketing
+                  </h3>
+                  <span className="rounded-full bg-[var(--ai)]/10 px-2 py-0.5 text-xs font-medium text-[var(--ai)]">
+                    Q2 2026
+                  </span>
+                </div>
+                <p className="text-sm text-foreground-muted">
+                  Nurture leads, engage clients, and grow your business with beautiful, automated email campaigns.
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[var(--ai)] group-hover:underline">
+                  Learn more & join waitlist
+                  <ArrowRightIcon className="h-3 w-3" />
+                </span>
+              </div>
+            </div>
+          </Link>
+
+          {/* Social Media Manager */}
+          <Link
+            href="/features/social-media"
+            className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:border-pink-500/50 hover:shadow-lg hover:shadow-pink-500/5"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-pink-500/10">
+                <ShareIcon className="h-6 w-6 text-pink-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-foreground group-hover:text-pink-400 transition-colors">
+                    Social Media Manager
+                  </h3>
+                  <span className="rounded-full bg-pink-500/10 px-2 py-0.5 text-xs font-medium text-pink-400">
+                    Q3 2026
+                  </span>
+                </div>
+                <p className="text-sm text-foreground-muted">
+                  Schedule, publish, and analyze your social media content across Instagram, Facebook, Pinterest, and more.
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-pink-400 group-hover:underline">
+                  Learn more & join waitlist
+                  <ArrowRightIcon className="h-3 w-3" />
+                </span>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       {/* API Access Section */}
       <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
         <button
@@ -248,5 +316,34 @@ export function IntegrationsClient({
         )}
       </section>
     </div>
+  );
+}
+
+// ============================================================================
+// Icons
+// ============================================================================
+
+function MailIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z" />
+      <path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z" />
+    </svg>
+  );
+}
+
+function ShareIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path fillRule="evenodd" d="M15.75 4.5a3 3 0 1 1 .825 2.066l-8.421 4.679a3.002 3.002 0 0 1 0 1.51l8.421 4.679a3 3 0 1 1-.729 1.31l-8.421-4.678a3 3 0 1 1 0-4.132l8.421-4.679a3 3 0 0 1-.096-.755Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden="true">
+      <path fillRule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clipRule="evenodd" />
+    </svg>
   );
 }

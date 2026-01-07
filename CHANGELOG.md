@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Email Marketing Coming Soon Page** - Notion-style documentation page at `/features/email-marketing`
+  - Planned features with priority badges (Launch vs Phase 2)
+  - Pre-built email template previews (Gallery Delivery, Booking Confirmation, etc.)
+  - Development roadmap with Q2-Q4 2026 timeline
+  - FAQ section addressing common questions
+  - Feedback CTA for user input
+- **Social Media Manager Coming Soon Page** - Notion-style documentation page at `/features/social-media`
+  - Platform support grid (Instagram, Facebook, Pinterest, LinkedIn, TikTok)
+  - Planned features (Multi-Platform Publishing, Content Calendar, AI Caption Writer)
+  - Use cases (Showcase work, BTS content, Mini session promos, Testimonials)
+  - Development roadmap with Q3 2026-Q1 2027 timeline
+  - FAQ section addressing platform and API questions
+- **Coming Soon Section in Integrations** - New section on integrations settings page
+  - Email Marketing card linking to feature page (Q2 2026 badge)
+  - Social Media Manager card linking to feature page (Q3 2026 badge)
+  - Hover effects with brand colors (purple for Email, pink for Social)
+  - "Learn more & join waitlist" CTAs
+- **Messaging System** - Comprehensive internal and client messaging with full feature set
+  - **Database Models**: 6 new models (Conversation, ConversationParticipant, Message, MessageReaction, MessageReadReceipt, ChatRequest) and 4 enums
+  - **Conversation Types**: Direct messages, group chats, channels, and client support conversations
+  - **Participant Roles**: Owner, admin, member, and observer roles with permission-based access
+  - **Brokerage Support**: Broker access flag for brokerage-level visibility in client conversations
+  - **Threading**: Message threading with reply counts and nested conversations
+  - **Reactions**: Emoji reactions (thumbs_up, thumbs_down, heart, laugh, surprised, fire, party, clap)
+  - **Read Receipts**: Track who has read each message with timestamps
+  - **Chat Request Workflow**: Clients can request support chats, team must approve before conversation starts
+  - **Real-time Polling**: 3-second polling for active conversations, 15-second for list, 60-second for inactive tabs
+  - **Dashboard UI**: Full messaging interface at `/messages` with conversation list, chat view, and search
+  - **Chat Requests Page**: Pending request management at `/messages/requests` for admins
+  - **Client Portal Integration**: Messages tab in client portal with conversation list and chat interface
+  - **Mobile Navigation**: Updated mobile nav with messages tab and unread badge
+- **Messaging Server Actions** - 6 new server action files
+  - `conversations.ts`: CRUD operations, archiving, unread counts
+  - `messages.ts`: Send, edit, delete, reactions, pin messages, search
+  - `conversation-participants.ts`: Add/remove participants, role management, broker access
+  - `chat-requests.ts`: Client request creation, team approval/rejection workflow
+  - `client-messages.ts`: Client portal specific actions for viewing and sending messages
+  - `conversation-permissions.ts`: Permission checking utilities
+
 ### Changed
 - **Project Expense Panel Accessibility** - Full WCAG 2.1 AA compliance improvements
   - Added `aria-hidden="true"` to all decorative SVG icons
