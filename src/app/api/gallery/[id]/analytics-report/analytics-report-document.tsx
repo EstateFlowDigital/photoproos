@@ -244,8 +244,8 @@ export function AnalyticsReportDocument({
               </View>
               {photoEngagement.slice(0, 10).map((photo, index) => (
                 <View key={photo.id} style={styles.tableRow}>
-                  <Text style={[styles.tableCell, styles.col1]} numberOfLines={1}>
-                    {index + 1}. {photo.filename}
+                  <Text style={[styles.tableCell, styles.col1]}>
+                    {index + 1}. {photo.filename.length > 30 ? photo.filename.substring(0, 27) + "..." : photo.filename}
                   </Text>
                   <Text style={[styles.tableCell, styles.col2]}>{photo.downloads}</Text>
                   <Text style={[styles.tableCell, styles.col3]}>{photo.favorites}</Text>

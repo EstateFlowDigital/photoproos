@@ -51,11 +51,21 @@ export async function GET(
     }
 
     const {
-      overview,
+      overview: rawOverview,
       photoEngagement,
       downloadsByDay,
       downloadsByFormat,
+      photoCount,
     } = analyticsResult.data;
+
+    // Transform overview to match document expected format
+    const overview = {
+      totalViews: rawOverview.totalViews,
+      totalDownloads: rawOverview.totalDownloads,
+      uniqueClients: rawOverview.uniqueVisitors,
+      avgEngagementRate: rawOverview.avgEngagementRate,
+      totalPhotos: photoCount,
+    };
 
     // Fetch logo as base64 if exists
     let logoBase64: string | undefined;
