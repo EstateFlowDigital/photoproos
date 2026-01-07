@@ -7,7 +7,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **PWA Icon Missing (404)** - Created SVG icon and updated manifest.json to use SVG format instead of missing PNG files
+- **Middleware Route Mismatch** - Added `/support(.*)` to public routes after renaming marketing help folder
+- **Clerk Deprecation Warning** - Updated .env.example to document deprecated `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` and `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` environment variables (use `fallbackRedirectUrl` prop instead)
+
 ### Added
+- **Expense Analytics Dashboard** - Comprehensive expense analytics with interactive charts
+  - Spending over time bar chart with monthly trends
+  - Category breakdown pie chart with percentage labels
+  - Payment method distribution with progress bars
+  - Billable vs non-billable expenses donut chart
+  - Summary cards (total spent, average per expense, top category, expense count)
+  - Detailed category table with amounts, percentages, and counts
+  - Installed recharts library for chart rendering
+- **Expense Split Functionality** - Split expenses across multiple categories
+  - Split any expense into 2+ parts with different categories
+  - Real-time allocation tracking with remaining amount display
+  - Add/remove split parts dynamically
+  - Preserves original expense metadata (vendor, payment method, billable status)
+  - Visual feedback for fully allocated vs unallocated amounts
+- **Advanced Expense Filters** - Enhanced expense filtering capabilities
+  - Payment method filter (cash, credit card, bank transfer, etc.)
+  - Billable status filter (billable, non-billable, all)
+  - Approval status filter (pending, approved, rejected)
+  - Collapsible advanced filters section
+  - Updated filter count badge to include advanced filters
+- **Premium Gallery Experience** - Comprehensive visual polish for elevated user experience
+  - **EXIF Data Support for Photographers** - Camera metadata display in gallery lightbox
+    - Added exifData to getGallery photo mapping for photographer dashboard
+    - Camera, lens, aperture, shutter speed, ISO, and focal length display
+    - Collapsible info panel in lightbox (keyboard shortcut: I)
+  - **Enhanced ImageLightbox Component** - Premium lightbox with advanced features
+    - Progressive zoom (50-400%) with smooth transitions
+    - Pan/drag support when zoomed in
+    - Cross-fade transitions between images
+    - Keyboard shortcuts (+/- for zoom, 0 to reset, I for info, arrows for navigation)
+    - Touch gesture support (swipe, pinch)
+    - Premium backdrop with gradient and blur
+  - **Shimmer Skeleton Animations** - Premium loading states
+    - Shimmer effect instead of basic pulse animation
+    - Staggered animation support for grid items
+    - Configurable animation delays
+  - **Micro-interaction Utilities** - Premium interaction feedback
+    - Button press feedback (btn-press class)
+    - Enhanced focus ring styles (focus-ring-premium, focus-glow)
+    - Interactive element hover lift (hover-lift)
+    - Card hover scale (card-hover-scale)
+    - Content fade loading state (content-fade)
+  - **Premium Design Tokens** - New CSS variables
+    - --shadow-card-hover for elevated card states
+    - --skeleton and --skeleton-highlight for loading states
+    - --ease-premium and --ease-smooth for refined animations
+
+### Changed
+- **Gallery Cards Polish** - Enhanced hover states and visual refinement
+  - Improved hover shadow (shadow-xl with higher opacity)
+  - Subtle lift effect on hover (-translate-y-0.5)
+  - Smoother image scale transition (duration-500 ease-out)
+  - Added subtle vignette overlay on thumbnail hover
+- **Status Badge Refinement** - Better visibility and visual feedback
+  - Increased background opacity from /10 to /15 for better contrast
+  - Added subtle borders for definition
+  - Dot indicators with status-specific colors
+  - Animated pulse for warning status (pending)
+- **Client Gallery Visual Polish** - Premium client-facing experience
+  - Staggered entrance animation on photo grid items (animate-fade-in-up)
+  - Smoother hover transitions (duration-500 ease-out)
+  - Less intrusive lock overlay (lighter treatment with backdrop blur)
+- **Password Gate Polish** - Enhanced authentication experience
+  - Staggered entrance animation for form elements
+  - Show/hide password toggle button
+  - Smooth error message transitions with max-height animation
+  - Shake animation on invalid password (animate-shake)
+  - Refined focus states and hover interactions
+
 - **Canned Responses / Quick Replies System** - Pre-written message templates for faster client communication
   - **CannedResponse Database Model** - Store reusable message templates
     - Organize by category (greeting, booking, pricing, scheduling, delivery, follow-up, objection, closing, support, general)
@@ -59,6 +133,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Calendar, Settings, Analytics, Integrations, Property Websites
   - **WalkthroughWrapper** - Client-side state management with server sync
   - **Spotlight hook** - `useTourTarget()` for adding tour targets to elements
+  - **Full Page Integration** - WalkthroughWrapper added to all main dashboard pages:
+    - Dashboard, Galleries, Clients (pre-existing)
+    - Invoices, Contracts, Scheduling, Analytics, Settings (newly integrated)
+  - **Spotlight Target Attributes** - `data-tour` attributes added throughout the app:
+    - Dashboard: metrics-section, quick-actions, calendar-widget, customize-button
+    - Galleries: new-gallery-button, gallery-list
+    - Clients: add-client-button, client-search, client-list
+    - Invoices: create-invoice-button, invoice-stats, invoice-list
+    - Contracts: create-contract-button, contract-stats, contract-list
+    - Scheduling: new-booking-button, calendar-view
+    - Analytics: analytics-stats, revenue-chart, client-insights
+  - **Walkthrough Config Enhancements** - Added targetSelectors, tooltipPositions, and actionHrefs to walkthrough steps
+  - **Walkthrough Recovery System** - Restore accidentally dismissed walkthroughs
+    - `restoreDismissedWalkthrough()` - Restore individual dismissed walkthrough
+    - `resetAllDismissedWalkthroughs()` - Bulk restore all dismissed walkthroughs
+    - Updated Settings → Walkthroughs page with restore buttons
+    - Individual restore buttons for each dismissed walkthrough
+    - "Reset Dismissed" button to restore all at once
+    - Improved messaging to clarify walkthroughs can be recovered
+  - **First-Visit Detection** - Walkthroughs auto-open for new users (null preference = "open" state)
+  - **Accessibility Enhancements**
+    - Keyboard navigation in PageWalkthrough (Arrow keys, Home, End, Escape)
+    - ARIA live region for screen reader step announcements
+    - Focus visible states with ring outline
+    - Keyboard instructions for screen readers
+    - Escape key to close Spotlight overlay
+    - Proper ARIA roles and labels throughout
 
 - **Dashboard Widget System Enhancements** - Data integration and new widgets
   - **Widget Data Server Actions** - Real-time data fetching for widgets

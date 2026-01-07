@@ -63,6 +63,7 @@ const isPublicRoute = createRouteMatcher([
   "/changelog",
   "/roadmap",
   "/help(.*)",
+  "/support(.*)",
   "/legal(.*)",
 
   // Referral redirect route
