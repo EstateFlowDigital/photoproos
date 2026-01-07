@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { XpDisplay } from "./level-progress";
 
@@ -25,22 +26,26 @@ export function ChallengeCard({
   completed,
   className,
 }: ChallengeCardProps) {
-  const progressPercent = Math.min((currentCount / targetCount) * 100, 100);
-  const timeRemaining = getTimeRemaining(endsAt);
+  const progressPercent = useMemo(
+    () => Math.min((currentCount / targetCount) * 100, 100),
+    [currentCount, targetCount]
+  );
+  const timeRemaining = useMemo(() => getTimeRemaining(endsAt), [endsAt]);
 
   return (
-    <div
+    <article
       className={cn(
         "challenge-card rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4",
         completed && "border-[var(--success)]/30 bg-[var(--success)]/5",
         className
       )}
+      aria-label={`Challenge: ${name}${completed ? " - Completed" : ""}`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-lg">🎯</span>
+            <span className="text-lg" aria-hidden="true">🎯</span>
             <h4 className="font-semibold text-[var(--foreground)]">{name}</h4>
           </div>
           <p className="mt-1 text-sm text-[var(--foreground-muted)]">{description}</p>
@@ -52,11 +57,18 @@ export function ChallengeCard({
       <div className="mt-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-[var(--foreground-muted)]">Progress</span>
-          <span className="font-medium text-[var(--foreground)]">
+          <span className="font-medium text-[var(--foreground)]" aria-hidden="true">
             {currentCount} / {targetCount}
           </span>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+        <div
+          role="progressbar"
+          aria-valuenow={currentCount}
+          aria-valuemin={0}
+          aria-valuemax={targetCount}
+          aria-label={`Challenge progress: ${currentCount} of ${targetCount} (${Math.round(progressPercent)}%)${completed ? " - Completed" : ""}`}
+          className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]"
+        >
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500",
@@ -65,6 +77,7 @@ export function ChallengeCard({
                 : "bg-gradient-to-r from-[var(--primary)] to-[var(--ai)]"
             )}
             style={{ width: `${progressPercent}%` }}
+            aria-hidden="true"
           />
         </div>
       </div>
@@ -72,18 +85,22 @@ export function ChallengeCard({
       {/* Footer */}
       <div className="mt-3 flex items-center justify-between">
         {completed ? (
-          <div className="flex items-center gap-1.5 text-sm text-[var(--success)]">
-            <CheckCircleIcon className="h-4 w-4" />
+          <div
+            role="status"
+            aria-label="Challenge completed"
+            className="flex items-center gap-1.5 text-sm text-[var(--success)]"
+          >
+            <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
             <span className="font-medium">Completed!</span>
           </div>
         ) : (
           <div className="flex items-center gap-1.5 text-sm text-[var(--foreground-muted)]">
-            <ClockIcon className="h-4 w-4" />
-            <span>{timeRemaining}</span>
+            <ClockIcon className="h-4 w-4" aria-hidden="true" />
+            <span aria-label={`Time remaining: ${timeRemaining}`}>{timeRemaining}</span>
           </div>
         )}
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -97,7 +114,7 @@ export function ChallengeList({
 }) {
   if (challenges.length === 0) {
     return (
-      <div className={cn("text-center py-6", className)}>
+      <div className={cn("text-center py-6", className)} role="status">
         <p className="text-sm text-[var(--foreground-muted)]">No active challenges</p>
         <p className="mt-1 text-xs text-[var(--foreground-muted)]">
           Check back next week for new challenges!
@@ -107,11 +124,14 @@ export function ChallengeList({
   }
 
   return (
-    <div className={cn("flex flex-col gap-3", className)}>
+    <section
+      aria-label="Active challenges"
+      className={cn("flex flex-col gap-3", className)}
+    >
       {challenges.map((challenge) => (
         <ChallengeCard key={challenge.id} {...challenge} />
       ))}
-    </div>
+    </section>
   );
 }
 

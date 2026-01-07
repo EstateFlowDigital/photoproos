@@ -184,7 +184,7 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Twilio Configuration */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Twilio Configuration</h2>

@@ -34,9 +34,9 @@ export function SettingsPageSkeleton({
 
       {/* Content */}
       {hasSidebar ? (
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {/* Main content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="md:col-span-2 space-y-6">
             {Array.from({ length: cards }).map((_, i) => (
               <SettingsCardSkeleton key={i} />
             ))}

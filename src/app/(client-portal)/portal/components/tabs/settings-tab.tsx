@@ -122,8 +122,17 @@ const SHOOT_PREFERENCE_OPTIONS = [
 export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
   const [preferences, setPreferences] = useState<NotificationPreferences>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(`portal_notification_prefs_${client.id}`);
-      return stored ? { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) } : DEFAULT_PREFERENCES;
+      try {
+        const stored = localStorage.getItem(`portal_notification_prefs_${client.id}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return parsed && typeof parsed === "object"
+            ? { ...DEFAULT_PREFERENCES, ...parsed }
+            : DEFAULT_PREFERENCES;
+        }
+      } catch {
+        localStorage.removeItem(`portal_notification_prefs_${client.id}`);
+      }
     }
     return DEFAULT_PREFERENCES;
   });

@@ -14,6 +14,8 @@ export const metadata = {
   description: "View and manage review requests and responses",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ReviewRequestsPage() {
   const [requestsResult, statsResult] = await Promise.all([
     getReviewRequests({ pageSize: 50 }),

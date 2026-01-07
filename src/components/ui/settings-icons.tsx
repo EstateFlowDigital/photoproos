@@ -60,6 +60,7 @@ export {
   StarIcon,
   RocketIcon,
   ClipboardIcon,
+  TrophyIcon,
   // UI Icons
   EyeIcon,
   EyeOffIcon,

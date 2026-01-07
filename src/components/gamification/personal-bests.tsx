@@ -19,8 +19,8 @@ export function PersonalBestsCard({ bests, className }: PersonalBestsCardProps) 
         : "No record yet",
       date: bests.bestMonthRevenue.date,
       icon: Trophy,
-      color: "text-amber-500",
-      bgColor: "bg-amber-500/15",
+      color: "text-[var(--reward-text)]",
+      bgColor: "bg-[var(--reward-muted)]",
     },
     {
       label: "Fastest Delivery",
@@ -49,8 +49,8 @@ export function PersonalBestsCard({ bests, className }: PersonalBestsCardProps) 
         : "No record yet",
       date: null,
       icon: Flame,
-      color: "text-orange-500",
-      bgColor: "bg-orange-500/15",
+      color: "text-[var(--warning)]",
+      bgColor: "bg-[var(--warning-muted)]",
     },
     {
       label: "Longest Delivery Streak",
@@ -69,7 +69,7 @@ export function PersonalBestsCard({ bests, className }: PersonalBestsCardProps) 
   return (
     <div className={cn("personal-bests-card rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5", className)}>
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "var(--reward-gradient)" }}>
           <Trophy className="h-4 w-4 text-white" />
         </div>
         <div>

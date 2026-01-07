@@ -25,6 +25,7 @@ import {
   MessageSquare,
   FileInput,
   Mail,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 
@@ -103,6 +104,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
     industries: ["*"],
     category: "core",
     sortOrder: 1.7,
+  },
+  achievements: {
+    id: "achievements",
+    name: "Achievements",
+    description: "Gamification, XP, levels, quests, and skill trees",
+    icon: Trophy,
+    href: "/achievements",
+    isCore: true,
+    industries: ["*"],
+    category: "core",
+    sortOrder: 1.8,
   },
 
   // ============================================================================

@@ -2,19 +2,175 @@
 
 import { ReactNode } from "react";
 
+type IllustrationType = "photos" | "property" | "invoice" | "questionnaire" | "download" | "leads" | "messages";
+
 interface EmptyStateProps {
   icon: ReactNode;
   title: string;
   description: string;
-  illustration?: "photos" | "property" | "invoice" | "questionnaire" | "download";
+  illustration?: IllustrationType;
   action?: {
     label: string;
     onClick?: () => void;
     href?: string;
   };
+  secondaryAction?: {
+    label: string;
+    onClick?: () => void;
+    href?: string;
+  };
+  tips?: string[];
+  features?: string[];
+  variant?: "default" | "compact" | "inProgress";
+  progress?: {
+    current: number;
+    total: number;
+    label?: string;
+  };
 }
 
-export function EmptyState({ icon, title, description, illustration, action }: EmptyStateProps) {
+// Contextual tips for each illustration type
+const contextualTips: Record<IllustrationType, string[]> = {
+  photos: [
+    "Your photos will be available for viewing and download",
+    "Mark your favorites by clicking the heart icon",
+    "Download full galleries or select specific photos",
+  ],
+  property: [
+    "Property websites showcase your listings beautifully",
+    "Share the link directly with potential buyers",
+    "Track views and engagement in real-time",
+  ],
+  invoice: [
+    "View and pay invoices securely online",
+    "Download PDF copies for your records",
+    "Payment confirmation sent automatically",
+  ],
+  questionnaire: [
+    "Complete questionnaires to help prepare for your shoot",
+    "Your progress is saved automatically",
+    "Submit once you've filled out all required fields",
+  ],
+  download: [
+    "Download full-resolution photos for printing",
+    "Web-optimized versions available for social media",
+    "Marketing kits include ready-to-use assets",
+  ],
+  leads: [
+    "Track inquiries from your property websites",
+    "View contact information and messages",
+    "Stay on top of potential buyers and renters",
+  ],
+  messages: [
+    "Chat directly with your photographer",
+    "Get updates on your projects",
+    "Share files and feedback easily",
+  ],
+};
+
+export function EmptyState({
+  icon,
+  title,
+  description,
+  illustration,
+  action,
+  secondaryAction,
+  tips,
+  features,
+  variant = "default",
+  progress,
+}: EmptyStateProps) {
+  // Use provided tips or contextual tips based on illustration type
+  const displayTips = tips || (illustration ? contextualTips[illustration] : []);
+
+  // Compact variant for inline use
+  if (variant === "compact") {
+    return (
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--background-tertiary)]">
+          {illustration ? (
+            <IllustrationIcon type={illustration} size="sm" />
+          ) : (
+            <div className="text-[var(--foreground-muted)]">{icon}</div>
+          )}
+        </div>
+        <h3 className="font-medium text-[var(--foreground)]">{title}</h3>
+        <p className="mt-1 text-sm text-[var(--foreground-muted)]">{description}</p>
+        {action && (
+          <div className="mt-4">
+            {action.href ? (
+              <a href={action.href} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                {action.label} →
+              </a>
+            ) : (
+              <button onClick={action.onClick} className="text-sm font-medium text-[var(--primary)] hover:underline">
+                {action.label} →
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // In-progress variant with progress indicator
+  if (variant === "inProgress" && progress) {
+    const progressPercent = Math.round((progress.current / progress.total) * 100);
+
+    return (
+      <div className="relative overflow-hidden rounded-xl border border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--card)] p-8 text-center sm:p-12">
+        <div className="pointer-events-none absolute -right-4 -top-4 h-32 w-32 rounded-full bg-gradient-to-br from-[var(--primary)]/20 to-transparent blur-2xl" />
+
+        <div className="relative z-10">
+          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[var(--primary)]/10 ring-4 ring-[var(--primary)]/20">
+            <span className="text-2xl font-bold text-[var(--primary)]">{progressPercent}%</span>
+          </div>
+
+          <h3 className="text-lg font-semibold text-[var(--foreground)] sm:text-xl">{title}</h3>
+          <p className="mx-auto mt-3 max-w-md text-sm text-[var(--foreground-muted)]">
+            {description}
+          </p>
+
+          {/* Progress Bar */}
+          <div className="mx-auto mt-6 max-w-xs">
+            <div className="mb-2 flex items-center justify-between text-xs text-[var(--foreground-muted)]">
+              <span>{progress.label || "Progress"}</span>
+              <span>{progress.current}/{progress.total}</span>
+            </div>
+            <div className="h-2 rounded-full bg-[var(--card-border)] overflow-hidden">
+              <div
+                className="h-full bg-[var(--primary)] transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {action && (
+            <div className="mt-6">
+              {action.href ? (
+                <a
+                  href={action.href}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary)]/90"
+                >
+                  {action.label}
+                  <ArrowRightIcon className="h-4 w-4" />
+                </a>
+              ) : (
+                <button
+                  onClick={action.onClick}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary)]/90"
+                >
+                  {action.label}
+                  <ArrowRightIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative overflow-hidden rounded-xl border border-dashed border-[var(--card-border)] bg-gradient-to-br from-[var(--card)] via-[var(--card)] to-[var(--background-tertiary)] p-8 text-center sm:p-12">
       {/* Background Pattern */}
@@ -44,26 +200,80 @@ export function EmptyState({ icon, title, description, illustration, action }: E
           {description}
         </p>
 
-        {/* Action Button */}
-        {action && (
-          <div className="mt-6">
-            {action.href ? (
-              <a
-                href={action.href}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/20"
+        {/* Feature Highlights */}
+        {features && features.length > 0 && (
+          <div className="mx-auto mt-6 flex max-w-lg flex-wrap justify-center gap-2">
+            {features.map((feature, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[var(--background-tertiary)] px-3 py-1 text-xs text-[var(--foreground-secondary)]"
               >
-                {action.label}
-                <ArrowRightIcon className="h-4 w-4" />
-              </a>
-            ) : (
-              <button
-                onClick={action.onClick}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/20"
-              >
-                {action.label}
-                <ArrowRightIcon className="h-4 w-4" />
-              </button>
+                <CheckIcon className="h-3.5 w-3.5 text-[var(--success)]" />
+                {feature}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        {(action || secondaryAction) && (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            {action && (
+              action.href ? (
+                <a
+                  href={action.href}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/20"
+                >
+                  {action.label}
+                  <ArrowRightIcon className="h-4 w-4" />
+                </a>
+              ) : (
+                <button
+                  onClick={action.onClick}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary)]/90 hover:shadow-lg hover:shadow-[var(--primary)]/20"
+                >
+                  {action.label}
+                  <ArrowRightIcon className="h-4 w-4" />
+                </button>
+              )
             )}
+            {secondaryAction && (
+              secondaryAction.href ? (
+                <a
+                  href={secondaryAction.href}
+                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-5 py-2.5 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-hover)] hover:text-[var(--foreground)]"
+                >
+                  {secondaryAction.label}
+                </a>
+              ) : (
+                <button
+                  onClick={secondaryAction.onClick}
+                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-5 py-2.5 text-sm font-medium text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-hover)] hover:text-[var(--foreground)]"
+                >
+                  {secondaryAction.label}
+                </button>
+              )
+            )}
+          </div>
+        )}
+
+        {/* Contextual Tips */}
+        {displayTips.length > 0 && (
+          <div className="mx-auto mt-8 max-w-md rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4">
+            <p className="mb-3 flex items-center justify-center gap-2 text-xs font-medium text-[var(--foreground-secondary)]">
+              <LightbulbIcon className="h-4 w-4 text-[var(--warning)]" />
+              What to expect
+            </p>
+            <ul className="space-y-2 text-left">
+              {displayTips.slice(0, 3).map((tip, index) => (
+                <li key={index} className="flex items-start gap-2 text-xs text-[var(--foreground-muted)]">
+                  <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[10px] font-semibold text-[var(--primary)]">
+                    {index + 1}
+                  </span>
+                  {tip}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -77,11 +287,13 @@ export function EmptyState({ icon, title, description, illustration, action }: E
 }
 
 // Custom illustration icons with more detail
-function IllustrationIcon({ type }: { type: "photos" | "property" | "invoice" | "questionnaire" | "download" }) {
+function IllustrationIcon({ type, size = "default" }: { type: IllustrationType; size?: "sm" | "default" }) {
+  const sizeClass = size === "sm" ? "h-8 w-8" : "h-12 w-12";
+
   switch (type) {
     case "photos":
       return (
-        <svg className="h-12 w-12" viewBox="0 0 48 48" fill="none">
+        <svg className={sizeClass} viewBox="0 0 48 48" fill="none">
           {/* Stack of photos effect */}
           <rect x="8" y="12" width="28" height="22" rx="2" fill="var(--foreground-muted)" fillOpacity="0.1" stroke="var(--foreground-muted)" strokeOpacity="0.3" strokeWidth="1.5" />
           <rect x="12" y="8" width="28" height="22" rx="2" fill="var(--card)" stroke="var(--primary)" strokeWidth="1.5" />
@@ -93,7 +305,7 @@ function IllustrationIcon({ type }: { type: "photos" | "property" | "invoice" | 
 
     case "property":
       return (
-        <svg className="h-12 w-12" viewBox="0 0 48 48" fill="none">
+        <svg className={sizeClass} viewBox="0 0 48 48" fill="none">
           {/* House shape */}
           <path d="M24 6L6 20v22h36V20L24 6z" fill="var(--card)" stroke="var(--primary)" strokeWidth="1.5" strokeLinejoin="round" />
           {/* Door */}
@@ -108,7 +320,7 @@ function IllustrationIcon({ type }: { type: "photos" | "property" | "invoice" | 
 
     case "invoice":
       return (
-        <svg className="h-12 w-12" viewBox="0 0 48 48" fill="none">
+        <svg className={sizeClass} viewBox="0 0 48 48" fill="none">
           {/* Paper */}
           <path d="M12 6h18l8 8v28a2 2 0 01-2 2H12a2 2 0 01-2-2V8a2 2 0 012-2z" fill="var(--card)" stroke="var(--primary)" strokeWidth="1.5" />
           {/* Folded corner */}
@@ -123,7 +335,7 @@ function IllustrationIcon({ type }: { type: "photos" | "property" | "invoice" | 
 
     case "questionnaire":
       return (
-        <svg className="h-12 w-12" viewBox="0 0 48 48" fill="none">
+        <svg className={sizeClass} viewBox="0 0 48 48" fill="none">
           {/* Clipboard */}
           <rect x="10" y="8" width="28" height="34" rx="2" fill="var(--card)" stroke="var(--primary)" strokeWidth="1.5" />
           {/* Clip */}
@@ -140,7 +352,7 @@ function IllustrationIcon({ type }: { type: "photos" | "property" | "invoice" | 
 
     case "download":
       return (
-        <svg className="h-12 w-12" viewBox="0 0 48 48" fill="none">
+        <svg className={sizeClass} viewBox="0 0 48 48" fill="none">
           {/* Cloud */}
           <path d="M14 32a6 6 0 01-.5-12 8 8 0 0115.5-2 7 7 0 014.5 12.5" fill="var(--card)" stroke="var(--primary)" strokeWidth="1.5" strokeLinejoin="round" />
           {/* Arrow */}
@@ -148,6 +360,32 @@ function IllustrationIcon({ type }: { type: "photos" | "property" | "invoice" | 
           {/* Progress indicator */}
           <rect x="14" y="42" width="20" height="3" rx="1.5" fill="var(--foreground-muted)" fillOpacity="0.2" />
           <rect x="14" y="42" width="10" height="3" rx="1.5" fill="var(--primary)" fillOpacity="0.6" />
+        </svg>
+      );
+
+    case "leads":
+      return (
+        <svg className={sizeClass} viewBox="0 0 48 48" fill="none">
+          {/* Inbox */}
+          <path d="M6 16l6 18h24l6-18" stroke="var(--primary)" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M6 34v6a2 2 0 002 2h32a2 2 0 002-2v-6H30l-2 4h-8l-2-4H6z" fill="var(--card)" stroke="var(--primary)" strokeWidth="1.5" />
+          {/* Notification badge */}
+          <circle cx="36" cy="12" r="6" fill="var(--error)" />
+          <path d="M36 10v4M36 16v1" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+
+    case "messages":
+      return (
+        <svg className={sizeClass} viewBox="0 0 48 48" fill="none">
+          {/* Chat bubbles */}
+          <path d="M8 12h24a4 4 0 014 4v12a4 4 0 01-4 4H16l-6 6v-6H8a4 4 0 01-4-4V16a4 4 0 014-4z" fill="var(--card)" stroke="var(--primary)" strokeWidth="1.5" />
+          <path d="M40 16v12a4 4 0 01-4 4" stroke="var(--foreground-muted)" strokeOpacity="0.5" strokeWidth="1.5" />
+          <rect x="36" y="8" width="8" height="16" rx="4" fill="var(--card)" stroke="var(--primary)" strokeWidth="1.5" />
+          {/* Typing dots */}
+          <circle cx="14" cy="22" r="2" fill="var(--primary)" fillOpacity="0.6" />
+          <circle cx="22" cy="22" r="2" fill="var(--primary)" fillOpacity="0.6" />
+          <circle cx="30" cy="22" r="2" fill="var(--primary)" fillOpacity="0.6" />
         </svg>
       );
   }
@@ -171,6 +409,22 @@ function ArrowRightIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+  );
+}
+
+function LightbulbIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
     </svg>
   );
 }

@@ -93,7 +93,7 @@ export default async function DeveloperSettingsPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Seed Database */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-4">

@@ -12,6 +12,12 @@ import {
   PlusIcon,
   XIcon,
   CheckIcon,
+  GlobeIcon,
+  UsersIcon,
+  CreditCardIcon,
+  MailIcon,
+  CameraIcon,
+  CodeIcon,
 } from "@/components/ui/settings-icons";
 import { cn } from "@/lib/utils";
 
@@ -19,8 +25,22 @@ import { cn } from "@/lib/utils";
 // Types
 // ============================================================================
 
-type FeatureCategory = "integrations" | "marketing" | "workflow" | "communication" | "analytics";
+type FeatureCategory =
+  | "website"
+  | "marketing"
+  | "social"
+  | "crm"
+  | "communication"
+  | "workflow"
+  | "galleries"
+  | "finance"
+  | "team"
+  | "integrations"
+  | "ai"
+  | "analytics";
+
 type FeatureStatus = "in_progress" | "planned" | "exploring";
+type FeatureTier = "core" | "growth" | "enterprise";
 
 interface RoadmapFeature {
   id: string;
@@ -28,6 +48,7 @@ interface RoadmapFeature {
   description: string;
   category: FeatureCategory;
   status: FeatureStatus;
+  tier: FeatureTier;
   timeline?: string;
   learnMoreUrl?: string;
 }
@@ -39,267 +60,828 @@ interface FeatureRequestFormData {
 }
 
 // ============================================================================
-// Data
+// Data - Comprehensive Business OS Roadmap
 // ============================================================================
 
 const ROADMAP_FEATURES: RoadmapFeature[] = [
-  // ============ Integrations ============
+  // ============================================================================
+  // WEBSITE BUILDER & HOSTING
+  // ============================================================================
   {
-    id: "google-drive",
-    title: "Google Drive",
+    id: "website-builder",
+    title: "Website Builder",
     description:
-      "Seamlessly sync your photos and galleries with Google Drive for automatic backups and easy file sharing.",
-    category: "integrations",
-    status: "in_progress",
-    timeline: "Q1 2026",
-  },
-  {
-    id: "notion",
-    title: "Notion",
-    description:
-      "Connect your workflow with Notion to automatically create project pages and sync client information.",
-    category: "integrations",
+      "Drag-and-drop website builder with professional templates designed for photographers. Create stunning portfolio sites without coding.",
+    category: "website",
     status: "planned",
+    tier: "core",
     timeline: "Q2 2026",
   },
   {
-    id: "lightroom",
-    title: "Adobe Lightroom",
+    id: "custom-domain",
+    title: "Custom Domain Hosting",
     description:
-      "Direct integration with Adobe Lightroom for seamless photo export and editing workflow.",
-    category: "integrations",
-    status: "exploring",
-  },
-  {
-    id: "capture-one",
-    title: "Capture One",
-    description:
-      "Native integration with Capture One for professional photographers who prefer this editing platform.",
-    category: "integrations",
-    status: "exploring",
-  },
-  {
-    id: "icloud-photos",
-    title: "iCloud Photos",
-    description:
-      "Sync galleries with iCloud Photos for Apple users who want seamless backup across their devices.",
-    category: "integrations",
-    status: "exploring",
-  },
-  {
-    id: "slack-notifications",
-    title: "Slack Notifications",
-    description:
-      "Get instant notifications in Slack when clients view galleries, make payments, or submit forms.",
-    category: "integrations",
+      "Connect your own domain (yourname.com) with SSL certificates, DNS management, and email forwarding included.",
+    category: "website",
     status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "blog-cms",
+    title: "Blog & Content Management",
+    description:
+      "Built-in blog system with rich text editor, image optimization, categories, tags, and scheduled publishing.",
+    category: "website",
+    status: "planned",
+    tier: "core",
     timeline: "Q3 2026",
   },
   {
-    id: "whatsapp-business",
-    title: "WhatsApp Business",
+    id: "service-areas",
+    title: "Service Area Pages",
     description:
-      "Communicate with clients via WhatsApp directly from PhotoProOS with message templates and automation.",
-    category: "integrations",
+      "Auto-generated SEO-optimized pages for each city/area you serve. Rank locally and attract nearby clients.",
+    category: "website",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "seo-toolkit",
+    title: "SEO Toolkit",
+    description:
+      "Built-in SEO tools including meta tags, sitemaps, schema markup, page speed optimization, and keyword tracking.",
+    category: "website",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "landing-pages",
+    title: "Landing Page Builder",
+    description:
+      "Create high-converting landing pages for promotions, mini sessions, and special offers with A/B testing.",
+    category: "website",
     status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "website-analytics",
+    title: "Website Analytics",
+    description:
+      "Track visitors, page views, traffic sources, and conversions without needing Google Analytics.",
+    category: "website",
+    status: "planned",
+    tier: "core",
+    timeline: "Q3 2026",
   },
 
-  // ============ Marketing ============
+  // ============================================================================
+  // SOCIAL MEDIA MANAGEMENT
+  // ============================================================================
   {
-    id: "email-marketing",
-    title: "Email Marketing",
+    id: "social-scheduler",
+    title: "Social Media Scheduler",
     description:
-      "Create beautiful email campaigns, newsletters, and automated sequences to engage your clients and grow your business.",
-    category: "marketing",
+      "Schedule posts to Instagram, Facebook, Pinterest, and LinkedIn. Visual calendar with drag-and-drop scheduling.",
+    category: "social",
     status: "planned",
-    timeline: "Q2 2026",
-    learnMoreUrl: "/features/email-marketing",
-  },
-  {
-    id: "social-media-manager",
-    title: "Social Media Manager",
-    description:
-      "Schedule, publish, and manage your social media content across multiple platforms from one dashboard.",
-    category: "marketing",
-    status: "planned",
+    tier: "growth",
     timeline: "Q3 2026",
     learnMoreUrl: "/features/social-media",
   },
   {
-    id: "referral-automation",
-    title: "Referral Program Automation",
+    id: "social-templates",
+    title: "Social Media Templates",
     description:
-      "Automatically track referrals, send thank-you gifts, and reward clients who bring you new business.",
-    category: "marketing",
+      "Library of customizable templates for Instagram stories, reels covers, carousel posts, and more. Match your brand.",
+    category: "social",
     status: "planned",
+    tier: "growth",
     timeline: "Q3 2026",
   },
   {
-    id: "testimonial-collector",
-    title: "Testimonial Collector",
+    id: "social-analytics",
+    title: "Social Analytics Dashboard",
     description:
-      "Automatically collect and showcase client testimonials with video, photo, and text options.",
-    category: "marketing",
-    status: "exploring",
+      "Track engagement, follower growth, best posting times, and content performance across all platforms.",
+    category: "social",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q4 2026",
   },
   {
-    id: "seo-tools",
-    title: "SEO Optimization Tools",
+    id: "content-calendar",
+    title: "Content Calendar",
     description:
-      "Built-in SEO tools to help your property websites and galleries rank higher in search results.",
-    category: "marketing",
+      "Plan your content strategy with a unified calendar showing blog posts, social media, emails, and campaigns.",
+    category: "social",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "hashtag-manager",
+    title: "Hashtag Manager",
+    description:
+      "Save hashtag sets, track performance, and get AI-suggested hashtags based on your content and niche.",
+    category: "social",
     status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "auto-posting",
+    title: "Auto-Post Gallery Highlights",
+    description:
+      "Automatically create and schedule social posts when you deliver a gallery. Share your best work effortlessly.",
+    category: "social",
+    status: "exploring",
+    tier: "growth",
   },
 
-  // ============ Communication ============
+  // ============================================================================
+  // EMAIL MARKETING
+  // ============================================================================
   {
-    id: "sms-reminders",
-    title: "SMS Reminders",
+    id: "email-campaigns",
+    title: "Email Campaign Builder",
     description:
-      "Automated text message reminders for appointments, gallery deliveries, and payment due dates.",
-    category: "communication",
+      "Drag-and-drop email designer with templates for newsletters, promotions, and announcements. No coding required.",
+    category: "marketing",
     status: "planned",
+    tier: "growth",
+    timeline: "Q2 2026",
+    learnMoreUrl: "/features/email-marketing",
+  },
+  {
+    id: "email-automation",
+    title: "Email Automation Sequences",
+    description:
+      "Set up automated drip campaigns for lead nurturing, onboarding, post-session follow-ups, and re-engagement.",
+    category: "marketing",
+    status: "planned",
+    tier: "growth",
     timeline: "Q2 2026",
   },
   {
-    id: "video-messaging",
-    title: "Video Messaging",
+    id: "email-templates",
+    title: "Email Template Library",
     description:
-      "Record and send quick video messages to clients for a more personal touch in your communication.",
-    category: "communication",
-    status: "exploring",
+      "Pre-built email templates for common scenarios: booking confirmations, session reminders, thank you notes, and more.",
+    category: "marketing",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
   },
   {
-    id: "voice-notes",
-    title: "Voice Notes",
+    id: "email-analytics",
+    title: "Email Analytics",
     description:
-      "Send voice notes to clients and team members when typing isn't convenient.",
-    category: "communication",
+      "Track opens, clicks, bounces, and conversions. See which emails drive bookings and revenue.",
+    category: "marketing",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "list-segmentation",
+    title: "Audience Segmentation",
+    description:
+      "Segment your contacts by client type, booking history, location, or custom tags for targeted messaging.",
+    category: "marketing",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+
+  // ============================================================================
+  // CRM & CLIENT MANAGEMENT
+  // ============================================================================
+  {
+    id: "crm-pipeline",
+    title: "Sales Pipeline",
+    description:
+      "Visual pipeline to track leads from inquiry to booking. Drag-and-drop stages, automated follow-ups, and win/loss tracking.",
+    category: "crm",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "lead-capture",
+    title: "Lead Capture Forms",
+    description:
+      "Embeddable contact forms for your website with custom fields, file uploads, and instant notifications.",
+    category: "crm",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "client-portal-v2",
+    title: "Enhanced Client Portal",
+    description:
+      "Redesigned client portal with personalized dashboard, project timeline, document storage, and communication hub.",
+    category: "crm",
+    status: "in_progress",
+    tier: "core",
+    timeline: "Q1 2026",
+  },
+  {
+    id: "client-lifecycle",
+    title: "Client Lifecycle Tracking",
+    description:
+      "See the complete history with each client: bookings, payments, communications, and lifetime value.",
+    category: "crm",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "referral-tracking",
+    title: "Referral Program",
+    description:
+      "Track who referred whom, automate thank-you gifts, and reward your best promoters with credits or commissions.",
+    category: "crm",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "testimonial-collection",
+    title: "Testimonial Collection",
+    description:
+      "Automatically request and collect testimonials via video, photo, or text. Showcase on your website.",
+    category: "crm",
     status: "exploring",
+    tier: "growth",
+  },
+
+  // ============================================================================
+  // COMMUNICATION HUB
+  // ============================================================================
+  {
+    id: "unified-inbox",
+    title: "Unified Inbox",
+    description:
+      "All your emails, texts, and in-app messages in one place. Never miss a client message again.",
+    category: "communication",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "sms-marketing",
+    title: "SMS Marketing",
+    description:
+      "Send text message campaigns, appointment reminders, and promotional offers with high open rates.",
+    category: "communication",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q2 2026",
   },
   {
     id: "client-chat-v2",
     title: "Enhanced Client Chat",
     description:
-      "Real-time chat with typing indicators, read receipts, and file sharing capabilities.",
+      "Real-time chat with typing indicators, read receipts, file sharing, and threaded conversations.",
     category: "communication",
     status: "in_progress",
+    tier: "core",
     timeline: "Q1 2026",
   },
-
-  // ============ Workflow ============
   {
-    id: "ai-culling",
-    title: "AI Photo Culling",
+    id: "video-messaging",
+    title: "Video Messaging",
     description:
-      "Use AI to automatically identify and select the best shots from your photo sessions, saving hours of manual work.",
-    category: "workflow",
+      "Record and send personalized video messages to clients. Stand out with a personal touch.",
+    category: "communication",
     status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "voicemail-drop",
+    title: "Voicemail Drop",
+    description:
+      "Leave pre-recorded voicemails directly to client phones without calling. Perfect for reminders.",
+    category: "communication",
+    status: "exploring",
+    tier: "enterprise",
+  },
+  {
+    id: "whatsapp-integration",
+    title: "WhatsApp Business",
+    description:
+      "Connect WhatsApp Business for international clients. Templates, automation, and full conversation history.",
+    category: "communication",
+    status: "exploring",
+    tier: "enterprise",
+  },
+
+  // ============================================================================
+  // WORKFLOW & AUTOMATION
+  // ============================================================================
+  {
+    id: "workflow-automation",
+    title: "Workflow Automation",
+    description:
+      "Build custom automations: when X happens, do Y. Automate emails, tasks, status changes, and notifications.",
+    category: "workflow",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "task-templates",
+    title: "Project Task Templates",
+    description:
+      "Create reusable task lists for different shoot types. Auto-assign tasks when projects are created.",
+    category: "workflow",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
   },
   {
     id: "advanced-scheduling",
     title: "Advanced Scheduling",
     description:
-      "Enhanced scheduling features including multi-day shoots, buffer times, and team availability management.",
+      "Multi-day shoots, buffer times, travel time calculations, and team availability management.",
     category: "workflow",
     status: "planned",
+    tier: "core",
     timeline: "Q2 2026",
+  },
+  {
+    id: "online-booking",
+    title: "Online Booking System",
+    description:
+      "Let clients book sessions directly from your website. Choose available times, packages, and pay deposits.",
+    category: "workflow",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "quote-proposals",
+    title: "Quote & Proposal Builder",
+    description:
+      "Create beautiful, branded proposals with pricing options, expiration dates, and e-signature acceptance.",
+    category: "workflow",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
   },
   {
     id: "mobile-app",
     title: "Native Mobile App",
     description:
-      "A dedicated iOS and Android app for managing your business on the go with offline support.",
+      "iOS and Android apps for managing your business on the go. Offline mode for on-location work.",
     category: "workflow",
     status: "planned",
+    tier: "core",
     timeline: "Q4 2026",
   },
+
+  // ============================================================================
+  // GALLERIES & DELIVERY
+  // ============================================================================
   {
-    id: "batch-operations",
-    title: "Batch Operations",
+    id: "ai-culling",
+    title: "AI Photo Culling",
     description:
-      "Apply watermarks, resize, rename, and organize hundreds of photos at once with batch processing.",
-    category: "workflow",
+      "Use AI to automatically identify and select the best shots. Save hours of manual culling work.",
+    category: "galleries",
+    status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "client-selections",
+    title: "Client Selection Galleries",
+    description:
+      "Let clients pick their favorite photos with voting, hearts, and comments. Export selections easily.",
+    category: "galleries",
     status: "planned",
+    tier: "core",
     timeline: "Q2 2026",
+  },
+  {
+    id: "album-proofing",
+    title: "Album Proofing",
+    description:
+      "Drag-and-drop album designer with client approval workflow. Integrates with print labs.",
+    category: "galleries",
+    status: "exploring",
+    tier: "growth",
   },
   {
     id: "print-fulfillment",
     title: "Print Fulfillment",
     description:
-      "Partner with print labs to offer wall art, albums, and prints directly from your galleries.",
-    category: "workflow",
+      "Partner integrations with print labs. Offer wall art, albums, and prints directly from galleries.",
+    category: "galleries",
     status: "exploring",
+    tier: "growth",
   },
   {
-    id: "offline-mode",
-    title: "Offline Mode",
+    id: "batch-editing",
+    title: "Batch Operations",
     description:
-      "Work without internet and sync your changes when you're back online. Perfect for on-location shoots.",
-    category: "workflow",
-    status: "exploring",
-  },
-
-  // ============ Analytics ============
-  {
-    id: "advanced-analytics",
-    title: "Advanced Business Analytics",
-    description:
-      "Deep insights into your business performance with revenue forecasting, client trends, and profitability analysis.",
-    category: "analytics",
+      "Apply watermarks, resize, rename, and organize hundreds of photos at once.",
+    category: "galleries",
     status: "planned",
-    timeline: "Q3 2026",
-  },
-  {
-    id: "tax-exports",
-    title: "Tax Preparation Exports",
-    description:
-      "Export income, expenses, and mileage in formats ready for your accountant or tax software.",
-    category: "analytics",
-    status: "planned",
+    tier: "core",
     timeline: "Q2 2026",
   },
   {
-    id: "client-ltv",
-    title: "Client Lifetime Value",
+    id: "slideshow-builder",
+    title: "Slideshow Builder",
     description:
-      "Track and predict the lifetime value of each client to focus your marketing efforts effectively.",
+      "Create beautiful video slideshows from gallery photos with music, transitions, and branding.",
+    category: "galleries",
+    status: "exploring",
+    tier: "growth",
+  },
+
+  // ============================================================================
+  // FINANCE & PAYMENTS
+  // ============================================================================
+  {
+    id: "recurring-invoices",
+    title: "Recurring Invoices",
+    description:
+      "Set up automatic monthly or quarterly billing for retainer clients and ongoing services.",
+    category: "finance",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "multi-currency",
+    title: "Multi-Currency Support",
+    description:
+      "Accept payments in multiple currencies with automatic conversion and localized pricing.",
+    category: "finance",
+    status: "planned",
+    tier: "enterprise",
+    timeline: "Q4 2026",
+  },
+  {
+    id: "tax-reports",
+    title: "Tax Preparation Reports",
+    description:
+      "Export income, expenses, and mileage in formats ready for your accountant or tax software.",
+    category: "finance",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "profit-dashboard",
+    title: "Profit & Loss Dashboard",
+    description:
+      "Real-time P&L statements, cash flow tracking, and profitability analysis per project or client.",
+    category: "finance",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "payment-plans",
+    title: "Flexible Payment Plans",
+    description:
+      "Offer clients custom payment schedules with automatic payment collection and reminders.",
+    category: "finance",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "commission-tracking",
+    title: "Commission Tracking",
+    description:
+      "Track commissions owed to agents, referrers, and partners. Automate payout calculations.",
+    category: "finance",
+    status: "exploring",
+    tier: "growth",
+  },
+
+  // ============================================================================
+  // TEAM & OPERATIONS
+  // ============================================================================
+  {
+    id: "team-scheduling",
+    title: "Team Scheduling",
+    description:
+      "Manage availability, assign shoots, and track capacity across your team. Avoid double-bookings.",
+    category: "team",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "contractor-portal",
+    title: "Contractor Portal",
+    description:
+      "Self-service portal for contractors to view assignments, submit invoices, and track payments.",
+    category: "team",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "time-tracking",
+    title: "Time Tracking",
+    description:
+      "Track time spent on editing, shoots, and admin work. Analyze where your time goes.",
+    category: "team",
+    status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "performance-metrics",
+    title: "Team Performance Metrics",
+    description:
+      "Track photographer ratings, delivery times, and client satisfaction scores.",
+    category: "team",
+    status: "exploring",
+    tier: "enterprise",
+  },
+  {
+    id: "training-library",
+    title: "Training Resource Library",
+    description:
+      "Upload training videos, SOPs, and guides for onboarding new team members.",
+    category: "team",
+    status: "exploring",
+    tier: "enterprise",
+  },
+
+  // ============================================================================
+  // INTEGRATIONS
+  // ============================================================================
+  {
+    id: "google-drive",
+    title: "Google Drive Sync",
+    description:
+      "Automatically sync galleries and backups to Google Drive. Never lose a photo.",
+    category: "integrations",
+    status: "in_progress",
+    tier: "core",
+    timeline: "Q1 2026",
+  },
+  {
+    id: "lightroom-plugin",
+    title: "Adobe Lightroom Plugin",
+    description:
+      "Export directly from Lightroom to PhotoProOS. Sync edits and metadata seamlessly.",
+    category: "integrations",
+    status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "capture-one",
+    title: "Capture One Integration",
+    description:
+      "Native integration for Capture One users. Export sessions directly to galleries.",
+    category: "integrations",
+    status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "quickbooks-sync",
+    title: "QuickBooks Sync",
+    description:
+      "Two-way sync with QuickBooks for invoices, payments, and expense tracking.",
+    category: "integrations",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "slack-notifications",
+    title: "Slack Notifications",
+    description:
+      "Get instant Slack notifications for bookings, payments, gallery views, and client messages.",
+    category: "integrations",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "zapier-integration",
+    title: "Zapier Integration",
+    description:
+      "Connect PhotoProOS to 5,000+ apps. Build custom automations without code.",
+    category: "integrations",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q4 2026",
+  },
+  {
+    id: "api-access",
+    title: "Public API",
+    description:
+      "RESTful API for custom integrations, data export, and building on top of PhotoProOS.",
+    category: "integrations",
+    status: "planned",
+    tier: "enterprise",
+    timeline: "Q4 2026",
+  },
+  {
+    id: "platform-migration",
+    title: "Platform Migration Tools",
+    description:
+      "One-click import from Pic-Time, ShootProof, Pixieset, and Zenfolio. Bring your data with you.",
+    category: "integrations",
+    status: "exploring",
+    tier: "core",
+  },
+
+  // ============================================================================
+  // AI & AUTOMATION
+  // ============================================================================
+  {
+    id: "ai-assistant",
+    title: "AI Business Assistant",
+    description:
+      "Ask questions about your business in natural language. Get insights, reports, and recommendations.",
+    category: "ai",
+    status: "exploring",
+    tier: "enterprise",
+  },
+  {
+    id: "ai-content-writer",
+    title: "AI Content Writer",
+    description:
+      "Generate blog posts, social captions, and email copy with AI. Match your brand voice.",
+    category: "ai",
+    status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "ai-image-tagging",
+    title: "AI Image Tagging",
+    description:
+      "Automatically tag photos by content (bride, groom, venue, details) for easy searching.",
+    category: "ai",
+    status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "smart-scheduling",
+    title: "Smart Scheduling",
+    description:
+      "AI suggests optimal shoot times based on client preferences, team availability, and location.",
+    category: "ai",
+    status: "exploring",
+    tier: "enterprise",
+  },
+  {
+    id: "predictive-analytics",
+    title: "Predictive Revenue Forecasting",
+    description:
+      "AI-powered forecasts based on your pipeline, seasonality, and historical data.",
+    category: "ai",
+    status: "exploring",
+    tier: "enterprise",
+  },
+
+  // ============================================================================
+  // ANALYTICS & INSIGHTS
+  // ============================================================================
+  {
+    id: "business-dashboard",
+    title: "Business Intelligence Dashboard",
+    description:
+      "Customizable dashboard with KPIs, charts, and real-time metrics. See your business at a glance.",
+    category: "analytics",
+    status: "planned",
+    tier: "core",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "client-insights",
+    title: "Client Insights",
+    description:
+      "Understand your clients: average booking value, repeat rate, acquisition channels, and lifetime value.",
+    category: "analytics",
+    status: "planned",
+    tier: "growth",
+    timeline: "Q3 2026",
+  },
+  {
+    id: "revenue-reports",
+    title: "Revenue Reports",
+    description:
+      "Detailed revenue breakdowns by service, client type, month, and team member.",
+    category: "analytics",
+    status: "planned",
+    tier: "core",
+    timeline: "Q2 2026",
+  },
+  {
+    id: "marketing-attribution",
+    title: "Marketing Attribution",
+    description:
+      "Track which marketing channels drive bookings. See ROI on ads, social, referrals, and more.",
     category: "analytics",
     status: "exploring",
+    tier: "growth",
+  },
+  {
+    id: "benchmark-reports",
+    title: "Industry Benchmarks",
+    description:
+      "Compare your metrics to industry averages. See how you stack up against similar businesses.",
+    category: "analytics",
+    status: "exploring",
+    tier: "enterprise",
   },
 ];
 
+// ============================================================================
+// Category Configuration
+// ============================================================================
+
 const CATEGORIES: Record<
   FeatureCategory,
-  { label: string; description: string; icon: React.ComponentType<{ className?: string }>; color: string }
+  {
+    label: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+  }
 > = {
-  integrations: {
-    label: "Integrations",
-    description: "Connect with your favorite tools",
-    icon: PlugIcon,
+  website: {
+    label: "Website & Hosting",
+    description: "Your professional online presence",
+    icon: GlobeIcon,
     color: "var(--primary)",
   },
-  marketing: {
-    label: "Marketing & Growth",
-    description: "Grow your business and reach more clients",
+  social: {
+    label: "Social Media",
+    description: "Manage all your social platforms",
     icon: SparklesIcon,
+    color: "#E1306C", // Instagram pink
+  },
+  marketing: {
+    label: "Email Marketing",
+    description: "Campaigns, automation, and newsletters",
+    icon: MailIcon,
     color: "var(--ai)",
   },
+  crm: {
+    label: "CRM & Clients",
+    description: "Manage leads and client relationships",
+    icon: UsersIcon,
+    color: "#10B981", // Emerald
+  },
   communication: {
-    label: "Communication",
-    description: "Better ways to connect with clients",
+    label: "Communication Hub",
+    description: "Email, SMS, chat, and calls",
     icon: MessageIcon,
     color: "var(--success)",
   },
   workflow: {
-    label: "Workflow & Productivity",
-    description: "Work smarter, not harder",
+    label: "Workflow & Booking",
+    description: "Scheduling, tasks, and automation",
     icon: LayersIcon,
     color: "var(--warning)",
   },
+  galleries: {
+    label: "Galleries & Delivery",
+    description: "Photo delivery and client proofing",
+    icon: CameraIcon,
+    color: "#8B5CF6", // Violet
+  },
+  finance: {
+    label: "Finance & Payments",
+    description: "Invoicing, payments, and accounting",
+    icon: CreditCardIcon,
+    color: "#06B6D4", // Cyan
+  },
+  team: {
+    label: "Team & Operations",
+    description: "Manage your team and contractors",
+    icon: UsersIcon,
+    color: "#F59E0B", // Amber
+  },
+  integrations: {
+    label: "Integrations",
+    description: "Connect your favorite tools",
+    icon: PlugIcon,
+    color: "#6366F1", // Indigo
+  },
+  ai: {
+    label: "AI & Automation",
+    description: "Smart features powered by AI",
+    icon: SparklesIcon,
+    color: "#EC4899", // Pink
+  },
   analytics: {
-    label: "Analytics & Reporting",
-    description: "Data-driven insights for your business",
+    label: "Analytics & Insights",
+    description: "Data-driven business decisions",
     icon: SparklesIcon,
     color: "var(--error)",
   },
@@ -329,12 +911,22 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const TIER_CONFIG: Record<
+  FeatureTier,
+  { label: string; color: string }
+> = {
+  core: { label: "Core", color: "var(--success)" },
+  growth: { label: "Growth", color: "var(--primary)" },
+  enterprise: { label: "Enterprise", color: "var(--ai)" },
+};
+
 // ============================================================================
 // Feature Card Component
 // ============================================================================
 
 function FeatureCard({ feature }: { feature: RoadmapFeature }) {
   const status = STATUS_CONFIG[feature.status];
+  const tier = TIER_CONFIG[feature.tier];
 
   return (
     <article
@@ -370,19 +962,28 @@ function FeatureCard({ feature }: { feature: RoadmapFeature }) {
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        {feature.timeline ? (
-          <div
-            className="flex items-center gap-1.5 text-xs text-foreground-muted"
-            aria-label={`Expected release: ${feature.timeline}`}
+        <div className="flex items-center gap-3">
+          {feature.timeline ? (
+            <div
+              className="flex items-center gap-1.5 text-xs text-foreground-muted"
+              aria-label={`Expected release: ${feature.timeline}`}
+            >
+              <CalendarIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{feature.timeline}</span>
+            </div>
+          ) : (
+            <div className="text-xs text-foreground-muted">Timeline TBD</div>
+          )}
+          <span
+            className="text-xs font-medium px-1.5 py-0.5 rounded"
+            style={{
+              backgroundColor: `${tier.color}15`,
+              color: tier.color,
+            }}
           >
-            <CalendarIcon className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>Expected {feature.timeline}</span>
-          </div>
-        ) : (
-          <div className="text-xs text-foreground-muted" aria-label="Timeline to be determined">
-            Timeline TBD
-          </div>
-        )}
+            {tier.label}
+          </span>
+        </div>
 
         {feature.learnMoreUrl && (
           <Link
@@ -422,9 +1023,11 @@ function CategorySection({
           style={{ backgroundColor: `${category.color}15` }}
           aria-hidden="true"
         >
-          <Icon className="h-5 w-5" style={{ color: category.color }} />
+          <span style={{ color: category.color }}>
+            <Icon className="h-5 w-5" />
+          </span>
         </div>
-        <div>
+        <div className="flex-1">
           <h2
             id={`category-${categoryId}-heading`}
             className="text-lg font-semibold text-foreground"
@@ -434,14 +1037,14 @@ function CategorySection({
           <p className="text-sm text-foreground-muted">{category.description}</p>
         </div>
         <span
-          className="ml-auto text-xs font-medium text-foreground-muted bg-[var(--background-tertiary)] px-2 py-1 rounded-full"
+          className="text-xs font-medium text-foreground-muted bg-[var(--background-tertiary)] px-2 py-1 rounded-full"
           aria-label={`${features.length} features`}
         >
           {features.length}
         </span>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2" role="list" aria-label={`${category.label} features`}>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label={`${category.label} features`}>
         {features.map((feature) => (
           <FeatureCard key={feature.id} feature={feature} />
         ))}
@@ -477,14 +1080,10 @@ function FeatureRequestModal({
       if (!formData.title.trim() || !formData.description.trim()) return;
 
       setIsSubmitting(true);
-
-      // Simulate API call - in production, this would send to your backend
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       setIsSubmitting(false);
       setIsSubmitted(true);
 
-      // Reset after showing success
       setTimeout(() => {
         setIsSubmitted(false);
         setFormData({ title: "", description: "", category: "" });
@@ -512,16 +1111,13 @@ function FeatureRequestModal({
       aria-labelledby={modalTitleId}
       aria-describedby={modalDescId}
     >
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={handleClose}
         aria-hidden="true"
       />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-lg rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-        {/* Close button */}
+      <div className="relative w-full max-w-lg rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl max-h-[90vh] overflow-y-auto">
         <button
           onClick={handleClose}
           className="absolute right-4 top-4 p-2 text-foreground-muted hover:text-foreground rounded-lg hover:bg-[var(--background-tertiary)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
@@ -538,7 +1134,7 @@ function FeatureRequestModal({
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">Thank You!</h3>
             <p className="text-sm text-foreground-secondary">
-              Your feature request has been submitted. We&apos;ll review it and get back to you.
+              Your feature request has been submitted. We review all requests and prioritize based on demand.
             </p>
           </div>
         ) : (
@@ -548,7 +1144,7 @@ function FeatureRequestModal({
                 Request a Feature
               </h2>
               <p id={modalDescId} className="mt-1 text-sm text-foreground-secondary">
-                Tell us what feature would help your photography business the most.
+                Help us build the ultimate business OS. What would make your life easier?
               </p>
             </div>
 
@@ -565,7 +1161,7 @@ function FeatureRequestModal({
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                  placeholder="e.g., Album Designer Tool"
+                  placeholder="e.g., Album Designer, Instagram Auto-Post"
                   className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
                   required
                   disabled={isSubmitting}
@@ -614,7 +1210,7 @@ function FeatureRequestModal({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, description: e.target.value }))
                   }
-                  placeholder="Describe the feature and how it would help your business..."
+                  placeholder="Describe the feature and how it would help your business. What problem does it solve?"
                   rows={4}
                   className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 resize-none"
                   required
@@ -692,20 +1288,52 @@ function FilterButton({
 }
 
 // ============================================================================
+// Stats Summary Component
+// ============================================================================
+
+function StatsSummary() {
+  const inProgress = ROADMAP_FEATURES.filter((f) => f.status === "in_progress").length;
+  const planned = ROADMAP_FEATURES.filter((f) => f.status === "planned").length;
+  const exploring = ROADMAP_FEATURES.filter((f) => f.status === "exploring").length;
+  const categories = Object.keys(CATEGORIES).length;
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 text-center">
+        <div className="text-2xl font-bold text-foreground">{ROADMAP_FEATURES.length}</div>
+        <div className="text-xs text-foreground-muted">Total Features</div>
+      </div>
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 text-center">
+        <div className="text-2xl font-bold text-[var(--success)]">{inProgress}</div>
+        <div className="text-xs text-foreground-muted">In Progress</div>
+      </div>
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 text-center">
+        <div className="text-2xl font-bold text-[var(--primary)]">{planned}</div>
+        <div className="text-xs text-foreground-muted">Planned</div>
+      </div>
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 text-center">
+        <div className="text-2xl font-bold text-foreground-muted">{exploring}</div>
+        <div className="text-xs text-foreground-muted">Exploring</div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Main Component
 // ============================================================================
 
 export function RoadmapClient() {
   const [filter, setFilter] = useState<"all" | FeatureStatus>("all");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | FeatureCategory>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Memoize filtered features
-  const filteredFeatures =
-    filter === "all"
-      ? ROADMAP_FEATURES
-      : ROADMAP_FEATURES.filter((f) => f.status === filter);
+  const filteredFeatures = ROADMAP_FEATURES.filter((f) => {
+    const statusMatch = filter === "all" || f.status === filter;
+    const categoryMatch = categoryFilter === "all" || f.category === categoryFilter;
+    return statusMatch && categoryMatch;
+  });
 
-  // Group by category
   const featuresByCategory = (Object.keys(CATEGORIES) as FeatureCategory[]).reduce(
     (acc, category) => {
       acc[category] = filteredFeatures.filter((f) => f.category === category);
@@ -714,7 +1342,6 @@ export function RoadmapClient() {
     {} as Record<FeatureCategory, RoadmapFeature[]>
   );
 
-  // Count by status
   const statusCounts = {
     all: ROADMAP_FEATURES.length,
     in_progress: ROADMAP_FEATURES.filter((f) => f.status === "in_progress").length,
@@ -742,10 +1369,10 @@ export function RoadmapClient() {
             </div>
             <div>
               <h1 id="roadmap-hero-title" className="text-xl font-bold text-foreground">
-                What&apos;s Coming Next
+                The Complete Business OS
               </h1>
               <p className="text-sm text-foreground-secondary">
-                {ROADMAP_FEATURES.length} features in our roadmap. Here&apos;s what we&apos;re building.
+                {ROADMAP_FEATURES.length} features across {Object.keys(CATEGORIES).length} categories. One platform to run your entire business.
               </p>
             </div>
           </div>
@@ -761,7 +1388,55 @@ export function RoadmapClient() {
         </div>
       </section>
 
-      {/* Filter Pills */}
+      {/* Stats Summary */}
+      <StatsSummary />
+
+      {/* Category Filter */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-foreground">Filter by Category</h3>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setCategoryFilter("all")}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[var(--primary)]",
+              categoryFilter === "all"
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background-tertiary)] text-foreground-secondary hover:bg-[var(--background-hover)]"
+            )}
+          >
+            All Categories
+          </button>
+          {(Object.keys(CATEGORIES) as FeatureCategory[]).map((cat) => {
+            const category = CATEGORIES[cat];
+            const count = ROADMAP_FEATURES.filter((f) => f.category === cat).length;
+            const Icon = category.icon;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-[var(--primary)]",
+                  categoryFilter === cat
+                    ? "text-white"
+                    : "bg-[var(--background-tertiary)] text-foreground-secondary hover:bg-[var(--background-hover)]"
+                )}
+                style={categoryFilter === cat ? { backgroundColor: category.color } : {}}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {category.label}
+                <span className={cn(
+                  "text-[10px] px-1 rounded",
+                  categoryFilter === cat ? "bg-white/20" : "bg-[var(--background)]"
+                )}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Status Filter */}
       <nav aria-label="Filter features by status" className="flex flex-wrap gap-2">
         <FilterButton
           label="All Features"
@@ -791,13 +1466,20 @@ export function RoadmapClient() {
 
       {/* Categories */}
       <div className="space-y-10" role="region" aria-label="Feature categories">
-        {(Object.keys(CATEGORIES) as FeatureCategory[]).map((categoryId) => (
+        {categoryFilter === "all" ? (
+          (Object.keys(CATEGORIES) as FeatureCategory[]).map((categoryId) => (
+            <CategorySection
+              key={categoryId}
+              categoryId={categoryId}
+              features={featuresByCategory[categoryId]}
+            />
+          ))
+        ) : (
           <CategorySection
-            key={categoryId}
-            categoryId={categoryId}
-            features={featuresByCategory[categoryId]}
+            categoryId={categoryFilter}
+            features={featuresByCategory[categoryFilter]}
           />
-        ))}
+        )}
       </div>
 
       {/* Empty State */}
@@ -814,87 +1496,97 @@ export function RoadmapClient() {
             <RocketIcon className="h-8 w-8 text-foreground-muted" />
           </div>
           <h3 className="mt-4 text-lg font-medium text-foreground">
-            No features in this category
+            No features match your filters
           </h3>
           <p className="mt-1 text-sm text-foreground-muted">
-            Try selecting a different filter to see more features.
+            Try adjusting your category or status filters.
           </p>
         </div>
       )}
 
-      {/* Status Legend */}
-      <section
-        className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5"
-        aria-labelledby="status-legend-heading"
-      >
-        <h3 id="status-legend-heading" className="mb-4 text-sm font-semibold text-foreground">
-          Status Legend
-        </h3>
-        <dl className="grid gap-4 sm:grid-cols-3">
-          <div className="flex items-start gap-3">
-            <dt>
-              <span
-                className={cn(
-                  "mt-0.5 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
-                  STATUS_CONFIG.in_progress.bg,
-                  STATUS_CONFIG.in_progress.text,
-                  STATUS_CONFIG.in_progress.border
-                )}
-              >
-                In Progress
-              </span>
-            </dt>
-            <dd className="text-xs text-foreground-secondary">
-              Actively being developed with an expected release date.
-            </dd>
-          </div>
-          <div className="flex items-start gap-3">
-            <dt>
-              <span
-                className={cn(
-                  "mt-0.5 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
-                  STATUS_CONFIG.planned.bg,
-                  STATUS_CONFIG.planned.text,
-                  STATUS_CONFIG.planned.border
-                )}
-              >
-                Planned
-              </span>
-            </dt>
-            <dd className="text-xs text-foreground-secondary">
-              On our roadmap with a tentative timeline.
-            </dd>
-          </div>
-          <div className="flex items-start gap-3">
-            <dt>
-              <span
-                className={cn(
-                  "mt-0.5 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
-                  STATUS_CONFIG.exploring.bg,
-                  STATUS_CONFIG.exploring.text,
-                  STATUS_CONFIG.exploring.border
-                )}
-              >
-                Exploring
-              </span>
-            </dt>
-            <dd className="text-xs text-foreground-secondary">
-              Under consideration based on user feedback.
-            </dd>
-          </div>
-        </dl>
-      </section>
+      {/* Legend & Tiers */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <section
+          className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5"
+          aria-labelledby="status-legend-heading"
+        >
+          <h3 id="status-legend-heading" className="mb-4 text-sm font-semibold text-foreground">
+            Status Legend
+          </h3>
+          <dl className="space-y-3">
+            <div className="flex items-start gap-3">
+              <dt>
+                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border", STATUS_CONFIG.in_progress.bg, STATUS_CONFIG.in_progress.text, STATUS_CONFIG.in_progress.border)}>
+                  In Progress
+                </span>
+              </dt>
+              <dd className="text-xs text-foreground-secondary">Currently being developed</dd>
+            </div>
+            <div className="flex items-start gap-3">
+              <dt>
+                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border", STATUS_CONFIG.planned.bg, STATUS_CONFIG.planned.text, STATUS_CONFIG.planned.border)}>
+                  Planned
+                </span>
+              </dt>
+              <dd className="text-xs text-foreground-secondary">On our roadmap with timeline</dd>
+            </div>
+            <div className="flex items-start gap-3">
+              <dt>
+                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border", STATUS_CONFIG.exploring.bg, STATUS_CONFIG.exploring.text, STATUS_CONFIG.exploring.border)}>
+                  Exploring
+                </span>
+              </dt>
+              <dd className="text-xs text-foreground-secondary">Under consideration</dd>
+            </div>
+          </dl>
+        </section>
 
-      {/* Vote CTA */}
+        <section
+          className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5"
+          aria-labelledby="tier-legend-heading"
+        >
+          <h3 id="tier-legend-heading" className="mb-4 text-sm font-semibold text-foreground">
+            Plan Tiers
+          </h3>
+          <dl className="space-y-3">
+            <div className="flex items-start gap-3">
+              <dt>
+                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium" style={{ backgroundColor: `${TIER_CONFIG.core.color}15`, color: TIER_CONFIG.core.color }}>
+                  Core
+                </span>
+              </dt>
+              <dd className="text-xs text-foreground-secondary">Available on all plans</dd>
+            </div>
+            <div className="flex items-start gap-3">
+              <dt>
+                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium" style={{ backgroundColor: `${TIER_CONFIG.growth.color}15`, color: TIER_CONFIG.growth.color }}>
+                  Growth
+                </span>
+              </dt>
+              <dd className="text-xs text-foreground-secondary">Pro plan and above</dd>
+            </div>
+            <div className="flex items-start gap-3">
+              <dt>
+                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium" style={{ backgroundColor: `${TIER_CONFIG.enterprise.color}15`, color: TIER_CONFIG.enterprise.color }}>
+                  Enterprise
+                </span>
+              </dt>
+              <dd className="text-xs text-foreground-secondary">Enterprise plan only</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+
+      {/* CTA */}
       <section
         className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--background-tertiary)]/50 p-6 text-center"
         aria-labelledby="vote-cta-heading"
       >
         <h3 id="vote-cta-heading" className="text-base font-semibold text-foreground mb-2">
-          Don&apos;t see what you need?
+          Help Us Build Your Perfect Business OS
         </h3>
         <p className="text-sm text-foreground-secondary mb-4">
-          We prioritize features based on user feedback. Let us know what would help your business!
+          We prioritize features based on user feedback. Tell us what would replace your other tools!
         </p>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -905,7 +1597,7 @@ export function RoadmapClient() {
         </button>
       </section>
 
-      {/* Feature Request Modal */}
+      {/* Modal */}
       <FeatureRequestModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );

@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { exportAllData, deleteAccount } from "@/lib/actions/settings";
 import { resetOnboarding } from "@/lib/actions/onboarding";
+import { SettingsExportImport } from "@/components/settings/settings-export-import";
+import { SettingsHistory } from "@/components/settings/settings-history";
 
 interface SettingsPageClientProps {
   organizationName?: string;
@@ -118,8 +120,14 @@ export function SettingsPageClient({
 
   return (
     <>
+      {/* Settings Export/Import Section */}
+      <SettingsExportImport className="mt-8" />
+
+      {/* Settings History Section */}
+      <SettingsHistory className="mt-4" />
+
       {/* Restart Onboarding Section */}
-      <div className="mt-8 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+      <div className="mt-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="font-medium text-foreground">Restart Onboarding</h3>

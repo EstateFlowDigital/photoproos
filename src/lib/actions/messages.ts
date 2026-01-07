@@ -10,6 +10,8 @@ import {
   getPublicUrl,
   type PresignedUrlResponse,
 } from "@/lib/storage/r2";
+import { sendNewMessageNotificationEmail } from "@/lib/email/send";
+import { shouldSendNotification } from "./notification-preferences";
 
 // =============================================================================
 // Types
@@ -233,6 +235,17 @@ export async function sendMessage(
 
     // Mark as read for sender
     await markConversationAsRead(input.conversationId);
+
+    // Send email notifications to other participants (non-blocking)
+    sendMessageEmailNotifications({
+      conversationId: input.conversationId,
+      senderId: userId,
+      senderName: user?.fullName || "Unknown",
+      messagePreview: input.content.slice(0, 150),
+      organizationId,
+    }).catch((err) => {
+      console.error("[Messages] Failed to send email notifications:", err);
+    });
 
     revalidatePath(`/messages/${input.conversationId}`);
     return success(message as unknown as MessageWithDetails);
@@ -1176,5 +1189,285 @@ export async function getBatchAttachmentUploadUrls(
   } catch (error) {
     console.error("[Messages] Error generating batch upload URLs:", error);
     return fail("Failed to generate upload URLs");
+  }
+}
+
+// =============================================================================
+// Message Forwarding
+// =============================================================================
+
+/**
+ * Forward a message to another conversation
+ */
+export async function forwardMessage(
+  messageId: string,
+  targetConversationId: string,
+  includeAttachments: boolean = true
+): Promise<ActionResult<MessageWithDetails>> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const userId = await requireUserId();
+
+    // Get the original message
+    const originalMessage = await prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        conversation: {
+          select: {
+            organizationId: true,
+            participants: {
+              where: { userId, leftAt: null },
+              select: { id: true },
+            },
+          },
+        },
+        senderUser: {
+          select: { fullName: true },
+        },
+        senderClient: {
+          select: { fullName: true },
+        },
+      },
+    });
+
+    if (!originalMessage || originalMessage.conversation.organizationId !== organizationId) {
+      return fail("Message not found");
+    }
+
+    if (originalMessage.conversation.participants.length === 0) {
+      return fail("You don't have access to this message");
+    }
+
+    if (originalMessage.isDeleted) {
+      return fail("Cannot forward deleted message");
+    }
+
+    // Verify user has access to target conversation
+    const targetParticipant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId: targetConversationId,
+        userId,
+        leftAt: null,
+        conversation: {
+          organizationId,
+          isArchived: false,
+        },
+      },
+    });
+
+    if (!targetParticipant) {
+      return fail("You don't have access to the target conversation");
+    }
+
+    // Get user info for sender fields
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { fullName: true, avatarUrl: true },
+    });
+
+    // Build forwarded message content
+    const originalSenderName =
+      originalMessage.senderUser?.fullName ||
+      originalMessage.senderClient?.fullName ||
+      originalMessage.senderName;
+
+    const forwardedContent = `📤 Forwarded from ${originalSenderName}:\n\n${originalMessage.content}`;
+
+    // Create the forwarded message
+    const forwardedMessage = await prisma.message.create({
+      data: {
+        conversationId: targetConversationId,
+        senderUserId: userId,
+        senderName: user?.fullName || "Unknown",
+        senderAvatar: user?.avatarUrl,
+        content: forwardedContent,
+        attachments: includeAttachments ? originalMessage.attachments : undefined,
+      },
+      include: {
+        senderUser: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+        senderClient: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        reactions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
+          },
+        },
+        readReceipts: {
+          select: {
+            userId: true,
+            clientId: true,
+            readAt: true,
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Update conversation's lastMessageAt
+    await prisma.conversation.update({
+      where: { id: targetConversationId },
+      data: {
+        lastMessageAt: forwardedMessage.createdAt,
+        lastMessageId: forwardedMessage.id,
+      },
+    });
+
+    revalidatePath(`/messages/${targetConversationId}`);
+    return success(forwardedMessage as unknown as MessageWithDetails);
+  } catch (error) {
+    console.error("[Messages] Error forwarding message:", error);
+    return fail("Failed to forward message");
+  }
+}
+
+/**
+ * Forward multiple messages to another conversation
+ */
+export async function forwardMessages(
+  messageIds: string[],
+  targetConversationId: string,
+  includeAttachments: boolean = true
+): Promise<ActionResult<{ forwarded: number; total: number }>> {
+  try {
+    let forwarded = 0;
+
+    for (const messageId of messageIds) {
+      const result = await forwardMessage(messageId, targetConversationId, includeAttachments);
+      if (result.success) {
+        forwarded++;
+      }
+    }
+
+    return success({ forwarded, total: messageIds.length });
+  } catch (error) {
+    console.error("[Messages] Error forwarding messages:", error);
+    return fail("Failed to forward messages");
+  }
+}
+
+// =============================================================================
+// Email Notification Helpers
+// =============================================================================
+
+/**
+ * Send email notifications to conversation participants when a new message is sent
+ * This runs in the background and doesn't block the message sending
+ */
+async function sendMessageEmailNotifications(params: {
+  conversationId: string;
+  senderId: string;
+  senderName: string;
+  messagePreview: string;
+  organizationId: string;
+}): Promise<void> {
+  const { conversationId, senderId, senderName, messagePreview, organizationId } = params;
+
+  try {
+    // Get conversation details and all participants
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        participants: {
+          where: {
+            leftAt: null,
+            // Exclude the sender
+            NOT: { userId: senderId },
+            // Only users (not clients for now - clients get handled separately)
+            userId: { not: null },
+          },
+          select: {
+            userId: true,
+            lastReadAt: true,
+            isMuted: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+                fullName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!conversation) return;
+
+    const isGroupConversation = conversation.type !== "direct";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
+
+    // Check notification preferences and send emails
+    for (const participant of conversation.participants) {
+      if (!participant.user?.email || participant.isMuted) continue;
+
+      // Check if user has email notifications enabled
+      const shouldSend = await shouldSendNotification(
+        organizationId,
+        "newMessage",
+        "email"
+      );
+
+      if (!shouldSend) continue;
+
+      // Count unread messages for this participant
+      const unreadCount = await prisma.message.count({
+        where: {
+          conversationId,
+          isDeleted: false,
+          createdAt: participant.lastReadAt
+            ? { gt: participant.lastReadAt }
+            : undefined,
+        },
+      });
+
+      // Send email notification
+      await sendNewMessageNotificationEmail({
+        to: participant.user.email,
+        recipientName: participant.user.fullName || "there",
+        senderName,
+        conversationName: conversation.name || undefined,
+        messagePreview: messagePreview.length > 100
+          ? messagePreview.slice(0, 100) + "..."
+          : messagePreview,
+        messageUrl: `${appUrl}/messages/${conversationId}`,
+        isGroupConversation,
+        unreadCount,
+      });
+    }
+  } catch (error) {
+    // Log but don't throw - email notifications shouldn't break message sending
+    console.error("[Messages] Error sending email notifications:", error);
   }
 }

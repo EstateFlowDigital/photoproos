@@ -36,7 +36,7 @@ export function PinnedSettingsSection({ className }: PinnedSettingsSectionProps)
           </h2>
         </div>
       </div>
-      <div className="grid gap-3 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {pinnedItems.map((item) => (
           <PinnedSettingCard
             key={item.href}

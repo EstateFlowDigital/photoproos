@@ -58,6 +58,7 @@ import { AddonCompletedEmail } from "@/emails/addon-completed";
 import { ExpenseApprovalRequiredEmail } from "@/emails/expense-approval-required";
 import { ExpenseApprovalResultEmail } from "@/emails/expense-approval-result";
 import { ReviewRequestEmail } from "@/emails/review-request";
+import { NewMessageNotificationEmail } from "@/emails/new-message-notification";
 
 /**
  * Send gallery delivered notification to client
@@ -1826,4 +1827,84 @@ export async function sendReviewRequestEmail(params: {
       primaryColor,
     }),
   });
+}
+
+// =============================================================================
+// Messaging Notification Emails
+// =============================================================================
+
+/**
+ * Send new message notification email
+ *
+ * Triggered by: sendMessage() action when recipient has email notifications enabled
+ * Location: src/lib/actions/messages.ts
+ */
+export async function sendNewMessageNotificationEmail(params: {
+  to: string;
+  recipientName: string;
+  senderName: string;
+  conversationName?: string;
+  messagePreview: string;
+  messageUrl: string;
+  isGroupConversation?: boolean;
+  unreadCount?: number;
+}) {
+  const {
+    to,
+    recipientName,
+    senderName,
+    conversationName,
+    messagePreview,
+    messageUrl,
+    isGroupConversation = false,
+    unreadCount = 1,
+  } = params;
+
+  const subject = isGroupConversation
+    ? `New message in ${conversationName}`
+    : `New message from ${senderName}`;
+
+  return sendEmail({
+    to,
+    subject,
+    react: NewMessageNotificationEmail({
+      recipientName,
+      senderName,
+      conversationName,
+      messagePreview,
+      messageUrl,
+      isGroupConversation,
+      unreadCount,
+    }),
+  });
+}
+
+/**
+ * Send batch message notifications
+ * For notifying multiple recipients at once
+ */
+export async function sendBatchMessageNotifications(
+  notifications: Array<{
+    to: string;
+    recipientName: string;
+    senderName: string;
+    conversationName?: string;
+    messagePreview: string;
+    messageUrl: string;
+    isGroupConversation?: boolean;
+    unreadCount?: number;
+  }>
+): Promise<{ success: boolean; sent: number; total: number }> {
+  const results = await Promise.all(
+    notifications.map((notification) =>
+      sendNewMessageNotificationEmail(notification)
+    )
+  );
+
+  const successCount = results.filter((r) => r.success).length;
+  return {
+    success: successCount > 0,
+    sent: successCount,
+    total: notifications.length,
+  };
 }

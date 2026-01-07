@@ -116,8 +116,16 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
   // Favorites state (persisted to localStorage) - for photos
   const [favorites, setFavorites] = useState<Set<string>>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(`portal_favorites_${client.id}`);
-      return stored ? new Set(JSON.parse(stored)) : new Set();
+      try {
+        const stored = localStorage.getItem(`portal_favorites_${client.id}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return Array.isArray(parsed) ? new Set(parsed) : new Set();
+        }
+      } catch {
+        // Clear corrupted data silently
+        localStorage.removeItem(`portal_favorites_${client.id}`);
+      }
     }
     return new Set();
   });
@@ -125,8 +133,16 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
   // Saved properties state (persisted to localStorage)
   const [savedProperties, setSavedProperties] = useState<Set<string>>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(`portal_saved_properties_${client.id}`);
-      return stored ? new Set(JSON.parse(stored)) : new Set();
+      try {
+        const stored = localStorage.getItem(`portal_saved_properties_${client.id}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return Array.isArray(parsed) ? new Set(parsed) : new Set();
+        }
+      } catch {
+        // Clear corrupted data silently
+        localStorage.removeItem(`portal_saved_properties_${client.id}`);
+      }
     }
     return new Set();
   });
@@ -519,7 +535,12 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
           leads={leads}
         />
 
-        <PortalStats stats={stats} />
+        <PortalStats
+          stats={stats}
+          galleries={galleries}
+          invoices={invoices}
+          questionnaires={questionnaires}
+        />
 
         {/* Desktop Tabs - Hidden on mobile */}
         <div className="hidden md:block">

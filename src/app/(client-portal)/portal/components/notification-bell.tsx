@@ -31,8 +31,15 @@ export function NotificationBell({
   const hydrated = useHydrated();
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("portal_read_notifications");
-      return stored ? new Set(JSON.parse(stored)) : new Set();
+      try {
+        const stored = localStorage.getItem("portal_read_notifications");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return Array.isArray(parsed) ? new Set(parsed) : new Set();
+        }
+      } catch {
+        localStorage.removeItem("portal_read_notifications");
+      }
     }
     return new Set();
   });

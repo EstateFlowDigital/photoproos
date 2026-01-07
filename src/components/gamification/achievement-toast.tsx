@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { AchievementBadge, RarityLabel } from "./achievement-badge";
@@ -29,9 +29,23 @@ export function AchievementToast({ achievements, onDismiss, onDismissAll }: Achi
   const [visibleAchievements, setVisibleAchievements] = useState<UnlockedAchievement[]>([]);
   const { celebrate, confettiProps } = useCelebration();
 
+  // Track timeout IDs for cleanup
+  const queueTimeouts = useRef<NodeJS.Timeout[]>([]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      queueTimeouts.current.forEach((timeout) => clearTimeout(timeout));
+    };
+  }, []);
+
   // Show achievements one at a time with delay
   useEffect(() => {
     if (achievements.length === 0) return;
+
+    // Clear any existing timeouts
+    queueTimeouts.current.forEach((timeout) => clearTimeout(timeout));
+    queueTimeouts.current = [];
 
     // Show first achievement immediately
     setVisibleAchievements([achievements[0]]);
@@ -48,9 +62,10 @@ export function AchievementToast({ achievements, onDismiss, onDismissAll }: Achi
 
     // Queue remaining achievements
     achievements.slice(1).forEach((achievement, index) => {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         setVisibleAchievements((prev) => [...prev, achievement]);
       }, (index + 1) * 1500);
+      queueTimeouts.current.push(timeout);
     });
   }, [achievements, celebrate]);
 
@@ -70,7 +85,12 @@ export function AchievementToast({ achievements, onDismiss, onDismissAll }: Achi
   return (
     <>
       <Confetti {...confettiProps} />
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3">
+      <div
+        className="fixed bottom-4 right-4 z-50 flex flex-col gap-3"
+        role="region"
+        aria-label="Achievement notifications"
+        aria-live="polite"
+      >
         <AnimatePresence mode="popLayout">
           {visibleAchievements.map((achievement) => (
             <motion.div
@@ -108,6 +128,8 @@ function AchievementToastItem({
 
   return (
     <div
+      role="alert"
+      aria-label={`Achievement unlocked: ${achievement.name}`}
       className={cn(
         "achievement-toast relative flex items-center gap-4 rounded-xl border bg-[var(--card)] p-4 shadow-lg",
         "border-[var(--card-border)] backdrop-blur-sm",
@@ -117,13 +139,15 @@ function AchievementToastItem({
       {/* Close button */}
       <button
         onClick={onDismiss}
-        className="absolute right-2 top-2 rounded-md p-1 text-[var(--foreground-muted)] hover:bg-[var(--background-secondary)] hover:text-[var(--foreground)]"
+        aria-label={`Dismiss ${achievement.name} notification`}
+        className="absolute right-2 top-2 rounded-md p-1 text-[var(--foreground-muted)] hover:bg-[var(--background-secondary)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--card)]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
           className="h-4 w-4"
+          aria-hidden="true"
         >
           <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
         </svg>

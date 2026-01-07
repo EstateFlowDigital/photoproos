@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { triggerIntegrationConnected } from "@/lib/gamification/trigger";
 
 interface QuickBooksTokenResponse {
   access_token: string;
@@ -228,6 +229,9 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+
+    // Fire gamification trigger for integration connection (non-blocking)
+    triggerIntegrationConnected(userId, organization.id, "quickbooks");
 
     return NextResponse.redirect(
       new URL("/settings/quickbooks?success=connected", request.url)

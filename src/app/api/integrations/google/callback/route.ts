@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { triggerIntegrationConnected } from "@/lib/gamification/trigger";
 
 interface GoogleTokenResponse {
   access_token: string;
@@ -220,6 +221,9 @@ export async function GET(request: NextRequest) {
         lastSyncError: null,
       },
     });
+
+    // Fire gamification trigger for integration connection (non-blocking)
+    triggerIntegrationConnected(userId, organization.id, "google_calendar");
 
     // Clear the code verifier cookie and redirect to success
     const response = NextResponse.redirect(

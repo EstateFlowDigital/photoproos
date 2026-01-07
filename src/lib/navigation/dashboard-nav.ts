@@ -52,6 +52,13 @@ export const DASHBOARD_SUB_NAV: Record<string, DashboardNavSubItem[]> = {
     { label: "Overview", href: "/dashboard" },
     { label: "Analytics", href: "/analytics" },
   ],
+  achievements: [
+    { label: "Overview", href: "/achievements" },
+    { label: "Quests", href: "/quests" },
+    { label: "Skill Trees", href: "/skills" },
+    { label: "Leaderboard", href: "/leaderboard" },
+    { label: "Year in Review", href: "/achievements/year-in-review" },
+  ],
   projects: [
     { label: "All Projects", href: "/projects" },
     { label: "Analytics", href: "/projects/analytics" },

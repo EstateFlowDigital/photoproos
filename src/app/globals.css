@@ -182,6 +182,17 @@
   --avatar-gradient-end: #8b5cf6;
   --avatar-gradient: linear-gradient(to bottom right, var(--avatar-gradient-start), var(--avatar-gradient-end));
 
+  /* --- Gamification/Reward Colors --- */
+  --reward: #f59e0b;              /* Amber - for rewards/bonuses */
+  --reward-hover: #d97706;
+  --reward-gradient-start: #f59e0b;
+  --reward-gradient-end: #ea580c;
+  --reward-gradient: linear-gradient(to right, var(--reward-gradient-start), var(--reward-gradient-end));
+  --reward-muted: rgba(245, 158, 11, 0.15);
+  --reward-text: #fbbf24;         /* AA compliant on dark bg */
+  --reward-ring: rgba(245, 158, 11, 0.5);
+  --reward-shadow: rgba(245, 158, 11, 0.25);
+
   /* --- Overlays --- */
   --overlay: rgba(0, 0, 0, 0.6);
   --overlay-heavy: rgba(0, 0, 0, 0.8);

@@ -136,6 +136,13 @@ async function handleTrigger(
         triggerTypes.push("onboarding_speed");
       }
       break;
+
+    default:
+      // Log unknown event types for debugging but don't fail silently
+      console.warn(
+        `[Gamification] Unknown event type: ${(event as { type: string }).type}`
+      );
+      return;
   }
 
   // Check for newly unlocked achievements

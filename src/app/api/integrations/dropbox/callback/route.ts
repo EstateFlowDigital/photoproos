@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { triggerIntegrationConnected } from "@/lib/gamification/trigger";
 
 interface DropboxTokenResponse {
   access_token: string;
@@ -216,6 +217,9 @@ export async function GET(request: NextRequest) {
       console.error("Failed to create Dropbox folders:", folderError);
       // Don't fail the whole flow for this
     }
+
+    // Fire gamification trigger for integration connection (non-blocking)
+    triggerIntegrationConnected(userId, organization.id, "dropbox");
 
     // Clear the code verifier cookie and redirect to success
     const response = NextResponse.redirect(

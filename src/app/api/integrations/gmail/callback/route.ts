@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { triggerIntegrationConnected } from "@/lib/gamification/trigger";
 
 interface StatePayload {
   orgId: string;
@@ -203,6 +204,12 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+
+    // Fire gamification trigger for integration connection (non-blocking)
+    // Only trigger for new connections, not reconnections
+    if (!existingAccount) {
+      triggerIntegrationConnected(userId, statePayload.orgId, "gmail");
+    }
 
     // Create response with success redirect
     const response = NextResponse.redirect(

@@ -8,6 +8,126 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Settings Area Improvements (Continued)** - Additional settings enhancements
+  - **Unsaved Changes Warning** - Prevent accidental navigation away from forms with unsaved changes
+    - Context provider for tracking form dirty state across settings pages
+    - Browser beforeunload handler to catch tab/window close
+    - Confirmation dialog when navigating with unsaved changes
+    - `useUnsavedChanges()` and `useFormUnsavedChanges()` hooks for easy integration
+  - **Collapsible Settings Categories** - Organize settings into expandable/collapsible sections
+    - Click-to-toggle section headers with chevron indicators
+    - Item count badges showing number of settings in each category
+    - State persisted in localStorage for user preference retention
+    - Smooth animations for expand/collapse transitions
+    - "Personal" and "Business" categories open by default
+
+- **Comprehensive Module Audit** - Deep dive into all modules to identify gaps and issues
+  - Created `AUDIT_FIX_PLAN.md` documenting 147 issues across 8 modules
+  - Audited: Leads, Clients, Galleries, Invoices, Scheduling, Messaging, Projects, Settings
+  - Identified critical issues: missing manual lead creation, broken video calls, scheduled messages not sending
+  - Documented validation gaps, error handling issues, and missing functionality
+  - Created prioritized implementation roadmap with 4-phase approach
+
+- **Client Portal Enhancements** - Improved client-facing experience
+  - **Questionnaire Progress Tracking** - Enhanced form completion experience
+    - Time estimates per field type (text, textarea, email, phone, etc.)
+    - Estimated time remaining displayed in header
+    - Section-by-section progress indicators with completion counts
+    - Visual checkmarks for completed sections
+    - Per-section progress bars with time estimates
+    - "Save & Continue Later" button with explicit save action
+    - Auto-save indicator with timestamp
+  - **Gallery Filtering, Sorting & Views** - Enhanced gallery browsing experience
+    - Filter pills: All, New (delivered within 7 days), With Favorites, Expiring Soon
+    - Sort options: Newest First, Oldest First, Name A-Z, Most Photos
+    - View toggle: List view (detailed cards) and Grid view (photo-centric cards)
+    - Filter counts with color-coded badges
+    - Empty filter state with clear filter option
+    - Responsive grid layout for grid view
+  - **Enhanced Dashboard with Engagement Metrics** - Improved stats and progress visualization
+    - Redesigned stat cards with icons and color-coded badges
+    - "Popular" badge for high-view properties (1000+ views)
+    - "New leads" badge count for recent lead notifications
+    - Active galleries progress bar with delivery status
+    - Questionnaire completion progress ring with percentage
+    - Action needed summary card highlighting pending items
+    - Dynamic color coding based on completion status
+  - **Improved Mobile Navigation** - Better mobile UX with scrollable tabs
+    - Horizontal scrollable tab bar for all 8 sections
+    - Primary tabs (Properties, Galleries, Invoices, Forms) always visible
+    - Secondary tabs (Downloads, Leads, Messages, Settings) accessible via scroll
+    - Gradient overlays indicating more content
+    - Active tab background highlight with rounded icon container
+    - Attention banner when pending items exist (questionnaires, invoices)
+    - Animated badge pulse for urgent items
+    - Touch-friendly larger tap targets with press feedback
+  - **Contextual Empty States with CTAs** - Enhanced empty state experiences
+    - Multiple variants: default, compact, inProgress
+    - Contextual tips based on content type (photos, property, invoice, etc.)
+    - Feature highlights with checkmark badges
+    - Secondary action button support
+    - Progress indicator variant with percentage ring
+    - New illustration icons for leads and messages
+    - "What to expect" section with numbered tips
+    - Compact variant for inline/card use
+
+- **Messaging System Optional Enhancements** - Additional features for the messaging system
+  - **Email Notifications** - Get notified when you receive new messages
+    - New message notification email template with preview
+    - Batch notification support for multiple recipients
+    - Configurable per-user notification preferences
+  - **Typing Indicators** - See when others are typing in conversations
+    - Real-time typing status with animated dots
+    - User avatars showing who is typing
+    - Auto-clear after 3 seconds of inactivity
+    - Polling-based with 3-second refresh
+  - **Message Forwarding** - Forward messages to other conversations
+    - Forward single or multiple messages
+    - Option to include or exclude attachments
+    - Conversation picker modal for selecting destination
+  - **Starred Messages** - Save important messages for later
+    - Per-user starring (personal bookmarks)
+    - Optional notes on starred messages
+    - Filter starred messages by conversation
+    - Search across all starred messages
+  - **Message Scheduling** - Send messages at a future time
+    - Schedule messages for specific date/time
+    - Edit or cancel scheduled messages
+    - Send immediately option
+    - Cron endpoint for processing due messages
+  - **Voice/Video Call Integration** - Provider-agnostic call system (Coming Soon)
+    - Support for Daily.co, Twilio, and LiveKit providers
+    - Full call lifecycle management (start, join, leave, end)
+    - Incoming call notifications with accept/decline
+    - Call interface with mute, camera, screen share controls
+    - Call history tracking
+    - Participant management and status tracking
+    - *Note: Requires VIDEO_CALL_PROVIDER and API key configuration to activate*
+
+- **Settings Area Improvements** - Comprehensive enhancements to the settings experience
+  - **Settings Breadcrumbs Navigation** - Clear navigation path showing Settings > Category > Page
+    - Desktop-only breadcrumbs with proper hierarchy
+    - Support for nested pages (e.g., Settings > Communications > Reviews > Requests)
+    - Accessible navigation with proper ARIA labels
+  - **Settings Export/Import** - Backup and transfer settings between accounts
+    - Export branding, notifications, workflow, travel, SMS, reviews, and gamification settings
+    - Selective import with category checkboxes
+    - JSON format with version tracking
+    - Validation of import data before applying
+  - **Settings Change History** - Audit log for tracking settings modifications
+    - View recent settings changes with timestamps and user attribution
+    - Expandable change details showing before/after values
+    - Pagination support for viewing full history
+    - Integration with existing ActivityLog system
+  - **Responsive Breakpoint Fixes** - Fixed grid layouts across 10+ settings pages
+    - Added intermediate `sm:` and `md:` breakpoints for smoother transitions
+    - Fixed grids that jumped from 1 column directly to 3+ columns
+    - Updated: developer, branding, profile, travel, roadmap, SMS, and skeleton components
+  - **Constants File Refactoring** - Fixed "use server" export issues
+    - Created `/lib/constants/notification-preferences.ts` for notification types and defaults
+    - Created `/lib/constants/onboarding.ts` for onboarding XP rewards and achievements
+    - Updated action files to import from constants instead of re-exporting
+
 - **Onboarding Gamification Integration** - Complete XP and achievement system for onboarding
   - **XP Rewards for Setup Steps** - Earn 50-150 XP for completing each onboarding step
     - Category-based organization (Getting Started, Payments, Workflow, Advanced)
@@ -63,6 +183,157 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Triggers on first login when profile is created
     - Also checks and starts quest if user has no active/completed quests
   - Existing triggers already in place: galleries (create, deliver), clients (add), payments, bookings
+
+### Fixed
+- **Onboarding Checklist Accessibility & Code Quality Improvements**
+  - Added comprehensive ARIA attributes for screen reader support
+    - Category toggle buttons with `aria-expanded`, `aria-controls`, `aria-label`
+    - Action buttons (tip, skip, restore) with descriptive `aria-label` attributes
+    - Form labels properly associated with inputs via `htmlFor`
+    - Modal dialog with `role="dialog"`, `aria-modal`, `aria-labelledby`
+    - Icon picker with `role="listbox"` and `aria-selected`
+    - Error alerts with `role="alert"` for immediate announcement
+  - Added keyboard navigation support for reordering checklist items
+    - Arrow keys (Up/Down) to move items in settings page
+    - Focus states with visible ring indicators
+    - Action buttons always focusable (not hidden on hover)
+  - Performance optimizations with `useMemo` for computed values
+    - `normalizedItems` and `itemsByCategory` memoized in checklist
+    - `enabledCount`, `customCount`, and `milestones` memoized in settings
+  - Improved error handling with user feedback
+    - Skip action now shows error messages on failure
+    - Auto-dismissing error alerts (3 seconds)
+  - Removed unused imports (`CheckCircle2`, `Circle`, `CATEGORY_LABELS` in settings)
+
+- **Gamification Components Accessibility & Code Quality Improvements**
+  - **Daily Bonus Card** (`daily-bonus.tsx`)
+    - Added proper semantic HTML with `<ol>` list for week progress days
+    - Added `aria-live="polite"` for availability status indicator
+    - Added comprehensive `aria-label` attributes on claim button for all states
+    - Added focus ring styles for keyboard navigation
+    - Added error handling with auto-dismissing error alerts
+    - Wrapped handler in `useCallback` for performance
+  - **Quest Card** (`quest-card.tsx`)
+    - Added `aria-expanded` to storyline toggle button
+    - Added `aria-label` attributes to start, abandon, and view buttons
+    - Added error state with user feedback for failed operations
+    - Added loading spinner for start quest button
+    - Memoized `objectivesCompleted` and `progressPercent` with `useMemo`
+    - Progress bars already had proper `role="progressbar"` attributes
+    - Removed unused `X` import, added `AlertCircle` for errors
+  - **Active Quest Widget**
+    - Added `article` semantic element with `aria-labelledby`
+    - Added `aria-hidden` to decorative icons
+    - Added focus ring styles to view quest link
+    - Memoized progress calculations with `useMemo`
+  - **Achievement Badge** (`achievement-badge.tsx`)
+    - Added `role="img"` with descriptive `aria-label` for badge status and rarity
+    - Added `aria-hidden="true"` to decorative icons
+    - Migrated hardcoded Tailwind colors to CSS variables (`--foreground-muted`, `--background-tertiary`)
+  - **Level Progress** (`level-progress.tsx`)
+    - Added proper `role="progressbar"` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`
+    - Added descriptive `aria-label` showing level, XP progress, and percentage
+    - Added `role="img"` with `aria-label` to LevelBadge component
+  - **Challenge Card** (`challenge-card.tsx`)
+    - Added `role="progressbar"` with full ARIA attributes to progress bars
+    - Added descriptive labels for challenge progress status
+    - Changed to semantic `<article>` element with `aria-label`
+    - Added `useMemo` for `progressPercent` and `timeRemaining` calculations
+    - Added `role="status"` with `aria-label` for completed state
+    - Added `aria-hidden` to decorative icons
+    - `ChallengeList` now uses `<section>` with `aria-label` for grouping
+  - **Achievement Toast** (`achievement-toast.tsx`)
+    - Added `useRef` for timeout tracking to prevent memory leaks
+    - Added cleanup in `useEffect` to clear pending queue timeouts on unmount
+    - Added `role="region"` with `aria-live="polite"` to toast container
+    - Added `role="alert"` with `aria-label` to individual toast items
+    - Added `aria-label` to dismiss button with achievement name context
+    - Added `aria-hidden` to close button icon
+    - Added focus ring styles for keyboard navigation
+  - **Skill Tree** (`skill-tree.tsx`)
+    - Fixed type safety by replacing non-null assertion with proper null check and fallback
+    - Added `role="tablist"` and `role="tab"` for proper tab accessibility
+    - Added `role="tabpanel"` with `aria-labelledby` for tab content
+    - Added `aria-selected` attribute to tab buttons
+    - Added error handling with user feedback (auto-dismissing alerts)
+    - Added `useCallback` for `handleUnlockSkill` and `handleResetSkills`
+    - Added `useMemo` for `currentTree` and `skillsByTier` computations
+    - Added `useRef` with cleanup for timeout management
+    - Added `aria-label` to reset button and skill point display
+    - SkillCard changed to `<article>` with accessibility status label
+    - SkillTreeWidget changed to `<article>` with proper progress bar ARIA
+    - Added focus ring styles to all interactive elements
+  - **Streak Display** (`streak-display.tsx`)
+    - Added `role="status"` with `aria-label` for live status updates
+    - Added `aria-hidden="true"` to decorative flame/rocket icons
+    - StreakBadge updated with `role="img"` and proper labels
+  - **Milestone Celebration** (`milestone-celebration.tsx`)
+    - Implemented focus trap for modal keyboard navigation (Tab/Shift+Tab)
+    - Added `role="dialog"`, `aria-modal`, `aria-labelledby`, `aria-describedby`
+    - Added Escape key handler to close modal
+    - Auto-focus management on open/close
+  - **Daily Bonus Card** - Fixed memory leak
+    - Added `useRef` for timeout tracking
+    - Added cleanup function in `useEffect` to clear pending timeouts on unmount
+    - Migrated hardcoded amber/orange colors to `--reward-*` CSS variables
+  - **Personal Bests** (`personal-bests.tsx`)
+    - Migrated hardcoded Tailwind colors (`amber-500`, `orange-500`) to design system variables
+  - **Skill Tree** (`skill-tree.tsx`)
+    - Migrated hardcoded gray/green/blue/purple colors to CSS custom properties
+  - **Error Boundary** - New component (`error-boundary.tsx`)
+    - Created `GamificationErrorBoundary` class component
+    - Added `GamificationErrorFallback` for full-width error display
+    - Added `GamificationErrorCompact` for widget-sized errors
+    - Graceful error recovery with retry functionality
+  - **localStorage Error Handling**
+    - Added try-catch for JSON.parse in gamification-settings-client.tsx
+    - Added try-catch for favorites/savedProperties in portal-client.tsx
+    - Added try-catch for read notifications in notification-bell.tsx
+    - Added try-catch for notification preferences in settings-tab.tsx
+    - Fallback to defaults on parse failure with console warnings
+  - **Year-in-Review Query Optimization** (`gamification.ts`)
+    - Refactored `getYearInReview()` from 16+ sequential queries to 13 parallel queries
+    - Used `Promise.all` for concurrent database operations
+    - Significant performance improvement for year-in-review page load
+  - **Design System Variables** - New reward tokens in `globals.css`
+    - Added `--reward`, `--reward-hover`, `--reward-gradient-start`, `--reward-gradient-end`
+    - Added `--reward-gradient`, `--reward-muted`, `--reward-text`, `--reward-ring`, `--reward-shadow`
+  - **Performance Optimization - Query Parallelization**
+    - `getGamificationState()` now uses `Promise.all` for 3 concurrent queries
+    - `getAllAchievements()` now parallelizes achievement and user achievement queries
+    - Significant reduction in page load times for gamification pages
+  - **Loading Skeletons** - New skeleton components (`skeletons.tsx`)
+    - `GamificationWidgetSkeleton` - Dashboard widget loading state
+    - `AchievementBadgeSkeleton` - Badge loading with size variants
+    - `PersonalBestsSkeleton` - Personal records loading state
+    - `QuestCardSkeleton` - Quest card loading with progress indicators
+    - `ChallengeCardSkeleton` - Challenge loading state
+    - `DailyBonusSkeleton` - Daily bonus with week progress skeleton
+    - `SkillTreeSkeleton` - Skill tree grid loading
+    - `LeaderboardSkeleton` - Leaderboard entries loading
+    - `AchievementsPageSkeleton` - Full page loading state
+    - `StreakDisplaySkeleton` - Streak badge loading
+  - **Mobile Responsiveness** - Daily Bonus
+    - Week progress now horizontally scrollable on small screens
+    - Added `min-w-[320px]` to prevent layout overflow
+  - **Prefers-Reduced-Motion Support**
+    - New `useReducedMotion` hook for accessibility
+    - Daily bonus infinite animations respect motion preferences
+    - DailyBonusBadge pulse animation disabled for reduced motion users
+  - **Error Boundaries for Routes** - Next.js App Router error handling
+    - `/achievements/error.tsx` - Achievements page error boundary
+    - `/quests/error.tsx` - Quests page error boundary
+    - `/achievements/year-in-review/error.tsx` - Year in review error boundary
+  - **Loading States for Routes** - Next.js App Router loading states
+    - `/achievements/loading.tsx` - Skeleton loading for achievements page
+    - `/quests/loading.tsx` - Skeleton loading for quests page
+  - **Trigger Handler Default Case**
+    - Added default case to gamification trigger switch statement
+    - Unknown event types now log warnings instead of failing silently
+  - **Type Safety Improvements**
+    - Added `parseObjectiveProgress()` helper for safe JSON field parsing
+    - Added `parseStringArray()` helper for array validation
+    - Replaced unsafe `as Record<string, number>` casts with validated parsing
 
 ### Changed
 - **Settings Page Consistency Audit** - Refactored settings pages for consistent patterns

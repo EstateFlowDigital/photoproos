@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   type ChecklistItemData,
@@ -39,16 +39,13 @@ import {
   FileSpreadsheet,
   ArrowRight,
   Sparkles,
-  CheckCircle2,
-  Circle,
   Zap,
   Trophy,
   Star,
   Target,
-  Info,
 } from "lucide-react";
 import Link from "next/link";
-import { CATEGORY_LABELS, ONBOARDING_XP_REWARDS } from "@/lib/constants/onboarding";
+import { ONBOARDING_XP_REWARDS } from "@/lib/constants/onboarding";
 
 // ============================================================================
 // Types
@@ -131,30 +128,19 @@ export function OnboardingSettingsClient({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ChecklistItemData | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
-  // Calculate local stats
-  const enabledCount = items.filter((item) => item.isEnabled).length;
-  const customCount = items.filter((item) => item.isCustom).length;
+  // Calculate local stats (memoized for performance)
+  const enabledCount = useMemo(() => items.filter((item) => item.isEnabled).length, [items]);
+  const customCount = useMemo(() => items.filter((item) => item.isCustom).length, [items]);
   const allComplete = completionStats.completionRate === 100;
 
-  // Group items by category
-  const itemsByCategory = items.reduce((acc, item) => {
-    const category = item.category || "getting_started";
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(item);
-    return acc;
-  }, {} as Record<string, ChecklistItemData[]>);
-
-  // Milestone data
-  const milestones = [
+  // Milestone data (memoized - static array)
+  const milestones = useMemo(() => [
     { percent: 25, label: "25%", bonusXp: ONBOARDING_XP_REWARDS.MILESTONE_25 },
     { percent: 50, label: "50%", bonusXp: ONBOARDING_XP_REWARDS.MILESTONE_50 },
     { percent: 75, label: "75%", bonusXp: ONBOARDING_XP_REWARDS.MILESTONE_75 },
     { percent: 100, label: "100%", bonusXp: ONBOARDING_XP_REWARDS.MILESTONE_100 },
-  ];
+  ], []);
 
   // ============================================================================
   // Handlers
@@ -265,6 +251,35 @@ export function OnboardingSettingsClient({
       setIsLoading(false);
     }
   };
+
+  // Keyboard-based reordering for accessibility
+  const handleKeyboardReorder = useCallback(async (itemId: string, direction: "up" | "down") => {
+    const currentIndex = items.findIndex((item) => item.id === itemId);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= items.length) return;
+
+    const newItems = [...items];
+    const [removed] = newItems.splice(currentIndex, 1);
+    newItems.splice(newIndex, 0, removed);
+    setItems(newItems);
+
+    // Persist the reorder
+    setIsLoading(true);
+    setError(null);
+    try {
+      const itemIds = newItems.map((item) => item.id);
+      const result = await reorderChecklistItems(itemIds);
+      if (!result.success) {
+        setError(result.error || "Failed to reorder items");
+      }
+    } catch {
+      setError("Failed to reorder items");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [items]);
 
   const handleSaveItem = async (data: {
     label: string;
@@ -450,12 +465,13 @@ export function OnboardingSettingsClient({
 
       {/* Error message */}
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-4 text-[var(--error)]">
-          <AlertCircle className="h-4 w-4" />
+        <div role="alert" className="flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-4 text-[var(--error)]">
+          <AlertCircle className="h-4 w-4" aria-hidden="true" />
           <span>{error}</span>
           <button
             onClick={() => setError(null)}
-            className="ml-auto p-1 hover:bg-[var(--error)]/20 rounded"
+            className="ml-auto p-1 hover:bg-[var(--error)]/20 rounded focus:outline-none focus:ring-2 focus:ring-[var(--error)]"
+            aria-label="Dismiss error"
           >
             <X className="h-4 w-4" />
           </button>
@@ -504,9 +520,23 @@ export function OnboardingSettingsClient({
               draggedItem === item.id && "opacity-50 border-[var(--primary)]"
             )}
           >
-            {/* Drag handle */}
-            <div className="cursor-grab text-foreground-muted hover:text-foreground">
-              <GripVertical className="h-5 w-5" />
+            {/* Drag handle - supports keyboard reordering with arrow keys */}
+            <div
+              className="cursor-grab text-foreground-muted hover:text-foreground focus:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)] rounded"
+              aria-label={`Reorder ${item.label}. Use arrow keys to move up or down.`}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  handleKeyboardReorder(item.id, "up");
+                } else if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  handleKeyboardReorder(item.id, "down");
+                }
+              }}
+            >
+              <GripVertical className="h-5 w-5" aria-hidden="true" />
             </div>
 
             {/* Icon */}
@@ -546,21 +576,21 @@ export function OnboardingSettingsClient({
               </p>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Actions - always visible for keyboard accessibility */}
+            <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
               <button
                 onClick={() => setEditingItem(item)}
                 disabled={isLoading}
-                className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
-                title="Edit"
+                className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground focus:bg-[var(--background-hover)] focus:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
+                aria-label={`Edit ${item.label}`}
               >
                 <Pencil className="h-4 w-4" />
               </button>
               <button
                 onClick={() => handleToggle(item.id)}
                 disabled={isLoading}
-                className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
-                title={item.isEnabled ? "Disable" : "Enable"}
+                className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground focus:bg-[var(--background-hover)] focus:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
+                aria-label={item.isEnabled ? `Disable ${item.label}` : `Enable ${item.label}`}
               >
                 {item.isEnabled ? (
                   <Eye className="h-4 w-4" />
@@ -572,8 +602,8 @@ export function OnboardingSettingsClient({
                 <button
                   onClick={() => handleDelete(item.id)}
                   disabled={isLoading}
-                  className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)] transition-colors"
-                  title="Delete"
+                  className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)] focus:bg-[var(--error)]/10 focus:text-[var(--error)] focus:outline-none focus:ring-2 focus:ring-[var(--error)] transition-colors"
+                  aria-label={`Delete ${item.label}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -648,16 +678,24 @@ function ItemModal({ item, onSave, onClose, isLoading }: ItemModalProps) {
     await onSave({ label, description, href, icon });
   };
 
+  const modalTitleId = "modal-title";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={modalTitleId}
+    >
       <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 id={modalTitleId} className="text-lg font-semibold text-foreground">
             {item ? "Edit Checklist Step" : "Add Checklist Step"}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            aria-label="Close dialog"
           >
             <X className="h-5 w-5" />
           </button>
@@ -666,59 +704,65 @@ function ItemModal({ item, onSave, onClose, isLoading }: ItemModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Label */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="checklist-label" className="block text-sm font-medium text-foreground mb-1">
               Label
             </label>
             <input
+              id="checklist-label"
               type="text"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Add your first client"
               required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="checklist-description" className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <input
+              id="checklist-description"
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Start building your client database"
               required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             />
           </div>
 
           {/* Link */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="checklist-href" className="block text-sm font-medium text-foreground mb-1">
               Link (URL)
             </label>
             <input
+              id="checklist-href"
               type="text"
               value={href}
               onChange={(e) => setHref(e.target.value)}
               placeholder="/clients/new"
               required
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             />
           </div>
 
           {/* Icon */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
+            <label id="icon-picker-label" className="block text-sm font-medium text-foreground mb-1">
               Icon
             </label>
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowIconPicker(!showIconPicker)}
-                className="w-full flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground"
+                aria-expanded={showIconPicker}
+                aria-haspopup="listbox"
+                aria-labelledby="icon-picker-label"
+                className="w-full flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               >
                 <div className="flex items-center gap-2">
                   {ICON_MAP[icon] || <Check className="h-4 w-4" />}
@@ -732,18 +776,24 @@ function ItemModal({ item, onSave, onClose, isLoading }: ItemModalProps) {
               </button>
 
               {showIconPicker && (
-                <div className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-lg z-10">
+                <div
+                  role="listbox"
+                  aria-label="Select an icon"
+                  className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-lg z-10"
+                >
                   <div className="grid grid-cols-3 gap-1">
                     {AVAILABLE_ICONS.map((iconOption) => (
                       <button
                         key={iconOption.value}
                         type="button"
+                        role="option"
+                        aria-selected={icon === iconOption.value}
                         onClick={() => {
                           setIcon(iconOption.value);
                           setShowIconPicker(false);
                         }}
                         className={cn(
-                          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)]",
                           icon === iconOption.value
                             ? "bg-[var(--primary)] text-white"
                             : "hover:bg-[var(--background-hover)] text-foreground"

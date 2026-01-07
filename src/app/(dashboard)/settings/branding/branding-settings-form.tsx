@@ -140,9 +140,9 @@ export function BrandingSettingsForm({
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         {/* Settings */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="md:col-span-2 space-y-6">
           {/* Logo Section */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-2">Logo</h2>

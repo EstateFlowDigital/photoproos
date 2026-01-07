@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import type { PortalTab } from "./types";
 
 interface MobileNavProps {
@@ -19,7 +20,12 @@ export function MobileNav({
   newLeads = 0,
   unreadMessages = 0,
 }: MobileNavProps) {
-  const tabs: { id: PortalTab; label: string; icon: React.ReactNode; badge?: number }[] = [
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showLeftGradient, setShowLeftGradient] = useState(false);
+  const [showRightGradient, setShowRightGradient] = useState(true);
+
+  // Primary tabs (always visible) - most frequently used
+  const primaryTabs: { id: PortalTab; label: string; icon: React.ReactNode; badge?: number }[] = [
     {
       id: "properties",
       label: "Properties",
@@ -31,27 +37,31 @@ export function MobileNav({
       icon: <ImageIcon />,
     },
     {
-      id: "downloads",
-      label: "Downloads",
-      icon: <DownloadIcon />,
-    },
-    {
       id: "invoices",
       label: "Invoices",
       icon: <ReceiptIcon />,
       badge: unpaidInvoices > 0 ? unpaidInvoices : undefined,
     },
     {
-      id: "leads",
-      label: "Leads",
-      icon: <InboxIcon />,
-      badge: newLeads > 0 ? newLeads : undefined,
-    },
-    {
       id: "questionnaires",
       label: "Forms",
       icon: <ClipboardIcon />,
       badge: pendingQuestionnaires > 0 ? pendingQuestionnaires : undefined,
+    },
+  ];
+
+  // Secondary tabs (scrollable)
+  const secondaryTabs: { id: PortalTab; label: string; icon: React.ReactNode; badge?: number }[] = [
+    {
+      id: "downloads",
+      label: "Downloads",
+      icon: <DownloadIcon />,
+    },
+    {
+      id: "leads",
+      label: "Leads",
+      icon: <InboxIcon />,
+      badge: newLeads > 0 ? newLeads : undefined,
     },
     {
       id: "messages",
@@ -66,52 +76,126 @@ export function MobileNav({
     },
   ];
 
+  const allTabs = [...primaryTabs, ...secondaryTabs];
+
+  // Calculate total badge count for attention indicator
+  const totalBadges = pendingQuestionnaires + unpaidInvoices + newLeads + unreadMessages;
+
+  // Handle scroll to update gradient visibility
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setShowLeftGradient(scrollLeft > 5);
+      setShowRightGradient(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
+  // Scroll active tab into view
+  useEffect(() => {
+    if (scrollRef.current) {
+      const activeIndex = allTabs.findIndex((tab) => tab.id === activeTab);
+      if (activeIndex > 3) {
+        // Only scroll for secondary tabs
+        const scrollAmount = (activeIndex - 3) * 80; // Approximate tab width
+        scrollRef.current.scrollTo({ left: scrollAmount, behavior: "smooth" });
+      } else if (activeIndex <= 3) {
+        scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+      }
+    }
+  }, [activeTab, allTabs]);
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--card-border)] bg-[var(--card)] pb-[env(safe-area-inset-bottom)] md:hidden"
       aria-label="Mobile navigation"
     >
-      <div className="grid h-16 grid-cols-8" role="tablist">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          const badgeLabel =
-            tab.badge !== undefined && tab.badge > 0
-              ? ` (${tab.badge} pending)`
-              : "";
+      {/* Attention banner for pending items */}
+      {totalBadges > 0 && activeTab === "properties" && (
+        <div className="flex items-center justify-between bg-[var(--warning)]/10 px-4 py-2 text-xs">
+          <span className="text-[var(--warning)]">
+            You have {totalBadges} item{totalBadges !== 1 ? "s" : ""} needing attention
+          </span>
+          <button
+            onClick={() => {
+              // Navigate to the most urgent tab
+              if (pendingQuestionnaires > 0) onTabChange("questionnaires");
+              else if (unpaidInvoices > 0) onTabChange("invoices");
+              else if (unreadMessages > 0) onTabChange("messages");
+              else if (newLeads > 0) onTabChange("leads");
+            }}
+            className="font-medium text-[var(--warning)] hover:underline"
+          >
+            View
+          </button>
+        </div>
+      )}
 
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              role="tab"
-              aria-selected={isActive}
-              aria-controls={`${tab.id}-panel`}
-              aria-label={`${tab.label}${badgeLabel}`}
-              tabIndex={isActive ? 0 : -1}
-              className={`relative flex flex-col items-center justify-center gap-1 transition-colors ${
-                isActive
-                  ? "text-[var(--primary)]"
-                  : "text-[var(--foreground-muted)] hover:text-[var(--foreground-secondary)]"
-              }`}
-            >
-              <div className="relative" aria-hidden="true">
-                {tab.icon}
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--error)] px-1 text-[10px] font-bold text-white">
-                    {tab.badge > 9 ? "9+" : tab.badge}
-                  </span>
+      <div className="relative">
+        {/* Left gradient overlay */}
+        {showLeftGradient && (
+          <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-8 bg-gradient-to-r from-[var(--card)] to-transparent" />
+        )}
+
+        {/* Right gradient overlay */}
+        {showRightGradient && (
+          <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-[var(--card)] to-transparent" />
+        )}
+
+        {/* Scrollable tabs */}
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex h-16 overflow-x-auto scrollbar-hide"
+          role="tablist"
+        >
+          {allTabs.map((tab, index) => {
+            const isActive = activeTab === tab.id;
+            const badgeLabel =
+              tab.badge !== undefined && tab.badge > 0
+                ? ` (${tab.badge} pending)`
+                : "";
+            const isPrimary = index < 4;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`${tab.id}-panel`}
+                aria-label={`${tab.label}${badgeLabel}`}
+                tabIndex={isActive ? 0 : -1}
+                className={`relative flex min-w-[72px] flex-shrink-0 flex-col items-center justify-center gap-1 px-3 transition-all active:scale-95 ${
+                  isPrimary ? "flex-1" : ""
+                } ${
+                  isActive
+                    ? "text-[var(--primary)]"
+                    : "text-[var(--foreground-muted)] hover:text-[var(--foreground-secondary)]"
+                }`}
+              >
+                <div className={`relative rounded-xl p-1.5 transition-colors ${
+                  isActive ? "bg-[var(--primary)]/10" : ""
+                }`} aria-hidden="true">
+                  {tab.icon}
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--error)] px-1 text-[10px] font-bold text-white animate-pulse">
+                      {tab.badge > 9 ? "9+" : tab.badge}
+                    </span>
+                  )}
+                </div>
+                <span className={`text-[10px] font-medium transition-colors ${
+                  isActive ? "text-[var(--primary)]" : ""
+                }`}>{tab.label}</span>
+                {isActive && (
+                  <span
+                    className="absolute left-1/2 top-0 h-0.5 w-10 -translate-x-1/2 rounded-full bg-[var(--primary)]"
+                    aria-hidden="true"
+                  />
                 )}
-              </div>
-              <span className="text-[10px] font-medium">{tab.label}</span>
-              {isActive && (
-                <span
-                  className="absolute left-1/2 top-0 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[var(--primary)]"
-                  aria-hidden="true"
-                />
-              )}
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

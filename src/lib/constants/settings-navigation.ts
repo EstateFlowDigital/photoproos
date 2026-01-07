@@ -60,7 +60,8 @@ export type SettingsIconName =
   | "zap"
   | "star"
   | "rocket"
-  | "clipboard";
+  | "clipboard"
+  | "trophy";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -122,6 +123,13 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
         href: "/settings/onboarding",
         iconName: "clipboard",
         description: "Customize setup steps for your dashboard",
+      },
+      {
+        id: "gamification",
+        label: "Gamification",
+        href: "/settings/gamification",
+        iconName: "trophy",
+        description: "XP, levels, achievements, and rewards",
       },
     ],
   },
@@ -444,6 +452,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
         description: "Customize the setup steps shown on your dashboard",
         href: "/settings/onboarding",
         iconName: "clipboard",
+      },
+      {
+        id: "gamification",
+        label: "Gamification",
+        description: "Customize XP rewards, levels, achievements, and perks",
+        href: "/settings/gamification",
+        iconName: "trophy",
       },
     ],
   },

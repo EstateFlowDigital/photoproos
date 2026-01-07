@@ -57,8 +57,12 @@ export function StreakDisplay({
   const Icon = config.icon;
   const isActive = count > 0;
 
+  const ariaLabel = `${config.label}: ${count} days${longestStreak && longestStreak > count ? `, best streak: ${longestStreak} days` : ""}`;
+
   return (
     <div
+      role="status"
+      aria-label={ariaLabel}
       className={cn(
         "streak-display inline-flex items-center rounded-lg px-3 py-1.5",
         config.bgColor,
@@ -72,19 +76,20 @@ export function StreakDisplay({
           isActive ? config.color : "text-[var(--foreground-muted)]",
           isActive && "animate-pulse"
         )}
+        aria-hidden="true"
       />
       <div className="flex flex-col">
-        <span className={cn("font-bold leading-tight", styles.text, config.color)}>
+        <span className={cn("font-bold leading-tight", styles.text, config.color)} aria-hidden="true">
           {count}
         </span>
         {showLabel && (
-          <span className="text-[10px] text-[var(--foreground-muted)] leading-tight">
+          <span className="text-[10px] text-[var(--foreground-muted)] leading-tight" aria-hidden="true">
             {config.label}
           </span>
         )}
       </div>
       {longestStreak && longestStreak > count && (
-        <span className="text-[10px] text-[var(--foreground-muted)]">
+        <span className="text-[10px] text-[var(--foreground-muted)]" aria-hidden="true">
           (Best: {longestStreak})
         </span>
       )}
@@ -111,14 +116,16 @@ export function StreakBadge({
 
   return (
     <div
+      role="status"
+      aria-label={`${config.label}: ${count} days`}
       className={cn(
         "inline-flex items-center gap-1 rounded-full px-2 py-0.5",
         config.bgColor
       )}
       title={`${count} ${config.label}`}
     >
-      <Icon className={cn(iconSize, config.color)} />
-      <span className={cn("font-semibold", textSize, config.color)}>{count}</span>
+      <Icon className={cn(iconSize, config.color)} aria-hidden="true" />
+      <span className={cn("font-semibold", textSize, config.color)} aria-hidden="true">{count}</span>
     </div>
   );
 }

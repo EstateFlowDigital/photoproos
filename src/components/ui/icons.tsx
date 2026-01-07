@@ -218,6 +218,24 @@ export function RocketIcon({ className }: IconProps) {
   );
 }
 
+export function TrophyIcon({ className }: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 1c-1.828 0-3.623.149-5.371.435a.75.75 0 0 0-.629.74v.387c-.827.157-1.642.345-2.445.564a.75.75 0 0 0-.552.698 5.006 5.006 0 0 0 2.328 4.559A21.96 21.96 0 0 0 5 9.377v.038a7.5 7.5 0 0 0 3.5 6.337V17.5h-2a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-2v-1.748a7.5 7.5 0 0 0 3.5-6.337v-.038c.64-.331 1.252-.7 1.831-1.101a5.005 5.005 0 0 0 2.163-3.762.75.75 0 0 0-.539-.672 25.478 25.478 0 0 0-2.455-.615V2.175a.75.75 0 0 0-.629-.74A28.02 28.02 0 0 0 10 1Zm-4.5 8.88v-.05c0-1.21-.004-2.388.012-3.538a28.02 28.02 0 0 1 8.976 0c.016 1.15.012 2.328.012 3.538v.05a6 6 0 0 1-9 0Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
 export function PhoneIcon({ className }: IconProps) {
   return (
     <svg

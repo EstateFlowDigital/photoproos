@@ -11,7 +11,7 @@ import {
   type TriggerType,
   type AchievementTrigger,
 } from "@/lib/gamification/achievements";
-import type { AchievementCategory, AchievementRarity } from "@prisma/client";
+import { Prisma, type AchievementCategory, type AchievementRarity } from "@prisma/client";
 import {
   checkMilestoneCrossed,
   ALL_MILESTONES,
@@ -33,6 +33,54 @@ import {
   type YearInReviewStats,
   type YearHighlight,
 } from "@/lib/gamification/year-in-review";
+import {
+  SKILLS,
+  SKILL_TREE_INFO,
+  getSkillById,
+  getSkillsByCategory,
+  canUnlockSkill,
+  calculateSkillPoints,
+  getAvailableSkillPoints,
+  getTreeCompletion,
+  getNextUnlockableSkills,
+  hasPerk,
+  getBestPerkValue,
+  type Skill,
+  type SkillTreeCategory,
+  type SkillPerkType,
+} from "@/lib/gamification/skill-trees";
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Safely parse a Prisma JSON field to Record<string, number>
+ * Returns empty object if invalid or null
+ */
+function parseObjectiveProgress(
+  value: Prisma.JsonValue | null | undefined
+): Record<string, number> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+  // Validate all values are numbers
+  const result: Record<string, number> = {};
+  for (const [key, val] of Object.entries(value)) {
+    if (typeof val === "number") {
+      result[key] = val;
+    }
+  }
+  return result;
+}
+
+/**
+ * Safely parse a string array from Prisma JSON
+ */
+function parseStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string");
+}
 
 // ============================================================================
 // TYPES
@@ -116,23 +164,24 @@ export async function getGamificationState(): Promise<ActionResult<GamificationS
       });
     }
 
-    // Get recent achievements (last 5)
-    const recentAchievements = await prisma.userAchievement.findMany({
-      where: { userId },
-      include: { achievement: true },
-      orderBy: { unlockedAt: "desc" },
-      take: 5,
-    });
-
-    // Count total unlocked
-    const unlockedCount = await prisma.userAchievement.count({
-      where: { userId },
-    });
-
-    // Get all non-hidden achievements count
-    const totalCount = await prisma.achievement.count({
-      where: { isHidden: false },
-    });
+    // Parallelize remaining queries for better performance
+    const [recentAchievements, unlockedCount, totalCount] = await Promise.all([
+      // Get recent achievements (last 5)
+      prisma.userAchievement.findMany({
+        where: { userId },
+        include: { achievement: true },
+        orderBy: { unlockedAt: "desc" },
+        take: 5,
+      }),
+      // Count total unlocked
+      prisma.userAchievement.count({
+        where: { userId },
+      }),
+      // Get all non-hidden achievements count
+      prisma.achievement.count({
+        where: { isHidden: false },
+      }),
+    ]);
 
     const level = calculateLevel(profile.totalXp);
     const xpProgress = getXpProgress(profile.totalXp, level);
@@ -201,16 +250,18 @@ export async function getAllAchievements(): Promise<ActionResult<AchievementWith
   try {
     const { userId } = await requireAuth();
 
-    // Get all achievements
-    const achievements = await prisma.achievement.findMany({
-      orderBy: [{ category: "asc" }, { order: "asc" }],
-    });
-
-    // Get user's unlocked achievements
-    const userAchievements = await prisma.userAchievement.findMany({
-      where: { userId },
-      select: { achievementId: true, unlockedAt: true, progress: true },
-    });
+    // Parallelize both queries for better performance
+    const [achievements, userAchievements] = await Promise.all([
+      // Get all achievements
+      prisma.achievement.findMany({
+        orderBy: [{ category: "asc" }, { order: "asc" }],
+      }),
+      // Get user's unlocked achievements
+      prisma.userAchievement.findMany({
+        where: { userId },
+        select: { achievementId: true, unlockedAt: true, progress: true },
+      }),
+    ]);
 
     const unlockedMap = new Map(
       userAchievements.map((ua) => [
@@ -385,15 +436,29 @@ export async function updateLoginStreak(userId: string): Promise<void> {
     });
 
     if (!profile) {
+      // Create new profile and auto-start the first quest
       await prisma.gamificationProfile.create({
         data: {
           userId,
           currentLoginStreak: 1,
           longestLoginStreak: 1,
           lastLoginDate: new Date(),
+          activeQuestId: "quest-welcome", // Auto-start the welcome quest
+          questObjectives: Prisma.JsonNull,
         },
       });
       return;
+    }
+
+    // Check if user has no active quest and no completed quests - auto-start first quest
+    if (!profile.activeQuestId && (!profile.completedQuestIds || profile.completedQuestIds.length === 0)) {
+      await prisma.gamificationProfile.update({
+        where: { userId },
+        data: {
+          activeQuestId: "quest-welcome",
+          questObjectives: Prisma.JsonNull,
+        },
+      });
     }
 
     const today = new Date();
@@ -1159,6 +1224,7 @@ export interface YearInReviewData extends YearInReviewStats {
 
 /**
  * Get Year in Review stats for a specific year
+ * Optimized: All independent queries run in parallel using Promise.all
  */
 export async function getYearInReview(
   year?: number
@@ -1171,46 +1237,128 @@ export async function getYearInReview(
     const targetYear = year || new Date().getFullYear();
     const startDate = new Date(targetYear, 0, 1); // Jan 1
     const endDate = new Date(targetYear, 11, 31, 23, 59, 59, 999); // Dec 31
+    const prevYearStart = new Date(targetYear - 1, 0, 1);
+    const prevYearEnd = new Date(targetYear - 1, 11, 31, 23, 59, 59, 999);
 
-    // Get galleries created and delivered in the year
-    const galleriesCreated = await prisma.project.count({
-      where: {
-        organizationId,
-        createdAt: { gte: startDate, lte: endDate },
-      },
-    });
+    // Run all independent queries in parallel (optimized from 16+ sequential queries)
+    const [
+      galleriesCreated,
+      galleriesDelivered,
+      galleriesWithPhotos,
+      payments,
+      newClients,
+      totalClients,
+      clientGalleries,
+      completedBookings,
+      profile,
+      achievementsInYear,
+      prevYearPayments,
+      prevYearGalleries,
+      prevYearClients,
+    ] = await Promise.all([
+      // Current year gallery stats
+      prisma.project.count({
+        where: {
+          organizationId,
+          createdAt: { gte: startDate, lte: endDate },
+        },
+      }),
+      prisma.project.count({
+        where: {
+          organizationId,
+          deliveredAt: { gte: startDate, lte: endDate },
+        },
+      }),
+      prisma.project.findMany({
+        where: {
+          organizationId,
+          deliveredAt: { gte: startDate, lte: endDate },
+        },
+        select: {
+          _count: { select: { assets: true } },
+        },
+      }),
+      // Revenue stats
+      prisma.payment.findMany({
+        where: {
+          organizationId,
+          createdAt: { gte: startDate, lte: endDate },
+          status: "paid",
+        },
+        select: { amountCents: true, createdAt: true },
+      }),
+      // Client stats
+      prisma.client.count({
+        where: {
+          organizationId,
+          createdAt: { gte: startDate, lte: endDate },
+        },
+      }),
+      prisma.client.count({
+        where: {
+          organizationId,
+          createdAt: { lte: endDate },
+        },
+      }),
+      // Repeat clients
+      prisma.project.groupBy({
+        by: ["clientId"],
+        where: {
+          organizationId,
+          deliveredAt: { gte: startDate, lte: endDate },
+          clientId: { not: null },
+        },
+        _count: { id: true },
+      }),
+      // Booking stats (get full data, calculate count and hours from result)
+      prisma.booking.findMany({
+        where: {
+          organizationId,
+          status: "completed",
+          endTime: { gte: startDate, lte: endDate },
+        },
+        select: { startTime: true, endTime: true },
+      }),
+      // Gamification profile
+      prisma.gamificationProfile.findUnique({
+        where: { userId },
+      }),
+      // Achievements unlocked in year (get all at once with details)
+      prisma.userAchievement.findMany({
+        where: {
+          userId,
+          unlockedAt: { gte: startDate, lte: endDate },
+        },
+        include: { achievement: true },
+      }),
+      // Previous year stats for comparison
+      prisma.payment.aggregate({
+        where: {
+          organizationId,
+          createdAt: { gte: prevYearStart, lte: prevYearEnd },
+          status: "paid",
+        },
+        _sum: { amountCents: true },
+      }),
+      prisma.project.count({
+        where: {
+          organizationId,
+          deliveredAt: { gte: prevYearStart, lte: prevYearEnd },
+        },
+      }),
+      prisma.client.count({
+        where: {
+          organizationId,
+          createdAt: { gte: prevYearStart, lte: prevYearEnd },
+        },
+      }),
+    ]);
 
-    const galleriesDelivered = await prisma.project.count({
-      where: {
-        organizationId,
-        deliveredAt: { gte: startDate, lte: endDate },
-      },
-    });
-
-    // Count photos shared
-    const galleriesWithPhotos = await prisma.project.findMany({
-      where: {
-        organizationId,
-        deliveredAt: { gte: startDate, lte: endDate },
-      },
-      select: {
-        _count: { select: { assets: true } },
-      },
-    });
+    // Calculate derived values from parallel query results
     const photosShared = galleriesWithPhotos.reduce(
       (sum, g) => sum + g._count.assets,
       0
     );
-
-    // Get revenue stats
-    const payments = await prisma.payment.findMany({
-      where: {
-        organizationId,
-        createdAt: { gte: startDate, lte: endDate },
-        status: "paid",
-      },
-      select: { amountCents: true, createdAt: true },
-    });
 
     const totalRevenueCents = payments.reduce((sum, p) => sum + p.amountCents, 0);
     const paymentsReceived = payments.length;
@@ -1250,79 +1398,18 @@ export async function getYearInReview(
     ];
     const bestMonthName = monthNames[bestMonthIndex];
 
-    // Get client stats
-    const newClients = await prisma.client.count({
-      where: {
-        organizationId,
-        createdAt: { gte: startDate, lte: endDate },
-      },
-    });
-
-    const totalClients = await prisma.client.count({
-      where: {
-        organizationId,
-        createdAt: { lte: endDate },
-      },
-    });
-
-    // Count repeat clients (clients with more than one gallery delivered this year)
-    const clientGalleries = await prisma.project.groupBy({
-      by: ["clientId"],
-      where: {
-        organizationId,
-        deliveredAt: { gte: startDate, lte: endDate },
-        clientId: { not: null },
-      },
-      _count: { id: true },
-    });
+    // Derive repeat clients from grouped data
     const repeatClients = clientGalleries.filter((c) => c._count.id > 1).length;
 
-    // Get booking stats
-    const bookingsCompleted = await prisma.booking.count({
-      where: {
-        organizationId,
-        status: "completed",
-        endTime: { gte: startDate, lte: endDate },
-      },
-    });
-
-    // Calculate total booking hours
-    const completedBookings = await prisma.booking.findMany({
-      where: {
-        organizationId,
-        status: "completed",
-        endTime: { gte: startDate, lte: endDate },
-      },
-      select: { startTime: true, endTime: true },
-    });
-
+    // Calculate booking stats from fetched data
+    const bookingsCompleted = completedBookings.length;
     const totalBookingHours = completedBookings.reduce((sum, b) => {
       const hours = (b.endTime.getTime() - b.startTime.getTime()) / (1000 * 60 * 60);
       return sum + Math.max(0, hours);
     }, 0);
 
-    // Get gamification profile for year
-    const profile = await prisma.gamificationProfile.findUnique({
-      where: { userId },
-    });
-
-    // Get achievements unlocked in the year
-    const achievementsUnlocked = await prisma.userAchievement.count({
-      where: {
-        userId,
-        unlockedAt: { gte: startDate, lte: endDate },
-      },
-    });
-
-    // Estimate XP earned in the year (would need XP history for exact numbers)
-    // For now use achievements XP as approximation
-    const achievementsInYear = await prisma.userAchievement.findMany({
-      where: {
-        userId,
-        unlockedAt: { gte: startDate, lte: endDate },
-      },
-      include: { achievement: true },
-    });
+    // Calculate achievement/XP stats
+    const achievementsUnlocked = achievementsInYear.length;
     const xpEarned = achievementsInYear.reduce(
       (sum, ua) => sum + ua.achievement.xpReward,
       0
@@ -1333,35 +1420,9 @@ export async function getYearInReview(
     const startLevel = profile ? Math.max(1, profile.level - levelsGained) : 1;
     const endLevel = profile?.level || 1;
 
-    // Get previous year stats for comparison
-    const prevYearStart = new Date(targetYear - 1, 0, 1);
-    const prevYearEnd = new Date(targetYear - 1, 11, 31, 23, 59, 59, 999);
-
-    const prevYearPayments = await prisma.payment.aggregate({
-      where: {
-        organizationId,
-        createdAt: { gte: prevYearStart, lte: prevYearEnd },
-        status: "paid",
-      },
-      _sum: { amountCents: true },
-    });
+    // Calculate percentage changes from previous year
     const prevYearRevenue = prevYearPayments._sum?.amountCents || 0;
 
-    const prevYearGalleries = await prisma.project.count({
-      where: {
-        organizationId,
-        deliveredAt: { gte: prevYearStart, lte: prevYearEnd },
-      },
-    });
-
-    const prevYearClients = await prisma.client.count({
-      where: {
-        organizationId,
-        createdAt: { gte: prevYearStart, lte: prevYearEnd },
-      },
-    });
-
-    // Calculate percentage changes
     const revenueVsLastYear =
       prevYearRevenue > 0
         ? Math.round(((totalRevenueCents - prevYearRevenue) / prevYearRevenue) * 100)
@@ -1423,3 +1484,517 @@ export async function getYearInReview(
     return fail("Failed to get year in review");
   }
 }
+
+// ============================================================================
+// SKILL TREES
+// ============================================================================
+
+export interface SkillTreeState {
+  totalSkillPoints: number;
+  availableSkillPoints: number;
+  spentSkillPoints: number;
+  unlockedSkillIds: string[];
+  trees: {
+    category: SkillTreeCategory;
+    name: string;
+    icon: string;
+    description: string;
+    color: string;
+    completion: number;
+    skills: SkillWithStatus[];
+    nextUnlockable: Skill[];
+  }[];
+}
+
+export interface SkillWithStatus extends Skill {
+  isUnlocked: boolean;
+  canUnlock: boolean;
+}
+
+/**
+ * Get skill tree state for current user
+ */
+export async function getSkillTreeState(): Promise<ActionResult<SkillTreeState>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    const level = profile?.level || 1;
+    const unlockedSkillIds = profile?.unlockedSkillIds || [];
+    const spentSkillPoints = profile?.spentSkillPoints || 0;
+    const totalSkillPoints = calculateSkillPoints(level);
+    const availableSkillPoints = getAvailableSkillPoints(level, spentSkillPoints);
+
+    // Build tree state for each category
+    const trees = (["marketing", "operations", "client_relations"] as SkillTreeCategory[]).map(
+      (category) => {
+        const treeInfo = SKILL_TREE_INFO[category];
+        const treeSkills = getSkillsByCategory(category);
+        const nextUnlockable = getNextUnlockableSkills(category, unlockedSkillIds);
+
+        const skillsWithStatus: SkillWithStatus[] = treeSkills.map((skill) => ({
+          ...skill,
+          isUnlocked: unlockedSkillIds.includes(skill.id),
+          canUnlock:
+            canUnlockSkill(skill.id, unlockedSkillIds) &&
+            availableSkillPoints >= skill.cost,
+        }));
+
+        return {
+          category,
+          name: treeInfo.name,
+          icon: treeInfo.icon,
+          description: treeInfo.description,
+          color: treeInfo.color,
+          completion: getTreeCompletion(category, unlockedSkillIds),
+          skills: skillsWithStatus,
+          nextUnlockable,
+        };
+      }
+    );
+
+    return success({
+      totalSkillPoints,
+      availableSkillPoints,
+      spentSkillPoints,
+      unlockedSkillIds,
+      trees,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error getting skill tree state:", error);
+    return fail("Failed to get skill tree state");
+  }
+}
+
+export interface UnlockSkillResult {
+  skill: Skill;
+  remainingPoints: number;
+  perkUnlocked: string;
+}
+
+/**
+ * Unlock a skill in a skill tree
+ */
+export async function unlockSkill(skillId: string): Promise<ActionResult<UnlockSkillResult>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const skill = getSkillById(skillId);
+    if (!skill) {
+      return fail("Skill not found");
+    }
+
+    let profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      profile = await prisma.gamificationProfile.create({
+        data: { userId },
+      });
+    }
+
+    const unlockedSkillIds = profile.unlockedSkillIds || [];
+    const spentSkillPoints = profile.spentSkillPoints || 0;
+    const availableSkillPoints = getAvailableSkillPoints(
+      profile.level,
+      spentSkillPoints
+    );
+
+    // Check if already unlocked
+    if (unlockedSkillIds.includes(skillId)) {
+      return fail("Skill already unlocked");
+    }
+
+    // Check prerequisites
+    if (!canUnlockSkill(skillId, unlockedSkillIds)) {
+      return fail("Prerequisites not met");
+    }
+
+    // Check if user has enough points
+    if (availableSkillPoints < skill.cost) {
+      return fail("Not enough skill points");
+    }
+
+    // Unlock the skill
+    await prisma.gamificationProfile.update({
+      where: { userId },
+      data: {
+        unlockedSkillIds: { push: skillId },
+        spentSkillPoints: spentSkillPoints + skill.cost,
+      },
+    });
+
+    console.log(
+      `[Gamification] User ${userId} unlocked skill: ${skill.name} (${skill.id})`
+    );
+
+    return success({
+      skill,
+      remainingPoints: availableSkillPoints - skill.cost,
+      perkUnlocked: skill.perk.description,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error unlocking skill:", error);
+    return fail("Failed to unlock skill");
+  }
+}
+
+/**
+ * Reset all skill points (allows re-spec)
+ * Only available once per prestige
+ */
+export async function resetSkillPoints(): Promise<ActionResult<{ pointsRefunded: number }>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return fail("Profile not found");
+    }
+
+    const pointsRefunded = profile.spentSkillPoints;
+
+    if (pointsRefunded === 0) {
+      return fail("No skill points to reset");
+    }
+
+    await prisma.gamificationProfile.update({
+      where: { userId },
+      data: {
+        unlockedSkillIds: [],
+        spentSkillPoints: 0,
+      },
+    });
+
+    console.log(
+      `[Gamification] User ${userId} reset skill points: ${pointsRefunded} points refunded`
+    );
+
+    return success({ pointsRefunded });
+  } catch (error) {
+    console.error("[Gamification] Error resetting skill points:", error);
+    return fail("Failed to reset skill points");
+  }
+}
+
+/**
+ * Check if user has a specific perk unlocked
+ */
+export async function checkPerk(perkType: SkillPerkType): Promise<ActionResult<{
+  hasPerk: boolean;
+  value: number | string | boolean | undefined;
+}>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+      select: { unlockedSkillIds: true },
+    });
+
+    const unlockedSkillIds = profile?.unlockedSkillIds || [];
+
+    return success({
+      hasPerk: hasPerk(perkType, unlockedSkillIds),
+      value: getBestPerkValue(perkType, unlockedSkillIds),
+    });
+  } catch (error) {
+    console.error("[Gamification] Error checking perk:", error);
+    return fail("Failed to check perk");
+  }
+}
+
+// NOTE: To use skill tree types and helpers in components, import directly from:
+// import { SKILLS, SKILL_TREE_INFO, type Skill, type SkillTreeCategory, type SkillPerkType } from "@/lib/gamification/skill-trees";
+
+// ============================================================================
+// QUEST/STORY MODE
+// ============================================================================
+
+import {
+  QUESTS,
+  QUEST_CATEGORY_INFO,
+  getQuestById,
+  getQuestsByCategory,
+  getQuestStatus,
+  getNextAvailableQuest,
+  getQuestsByStatus,
+  getQuestProgress,
+  getTotalQuestXp,
+  type Quest,
+  type QuestCategory,
+  type QuestStatus,
+  type QuestObjective,
+} from "@/lib/gamification/quests";
+
+export interface QuestState {
+  currentQuest: Quest | null;
+  objectiveProgress: Record<string, number>;
+  completedQuestIds: string[];
+  categories: {
+    category: QuestCategory;
+    name: string;
+    icon: string;
+    description: string;
+    color: string;
+    quests: QuestWithStatus[];
+    completedCount: number;
+    totalCount: number;
+  }[];
+  overallProgress: number;
+  totalXpAvailable: number;
+  xpEarned: number;
+}
+
+export interface QuestWithStatus extends Quest {
+  status: QuestStatus;
+  objectiveProgress?: Record<string, number>;
+}
+
+/**
+ * Get quest state for current user
+ */
+export async function getQuestState(): Promise<ActionResult<QuestState>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    const completedQuestIds = parseStringArray(profile?.completedQuestIds);
+    const activeQuestId = profile?.activeQuestId || null;
+    const questObjectives = parseObjectiveProgress(profile?.questObjectives);
+
+    // Get current quest
+    const currentQuest = activeQuestId ? getQuestById(activeQuestId) || null : null;
+
+    // Build category data
+    const categories = (
+      ["onboarding", "gallery", "clients", "revenue", "growth"] as QuestCategory[]
+    ).map((category) => {
+      const categoryInfo = QUEST_CATEGORY_INFO[category];
+      const categoryQuests = getQuestsByCategory(category);
+
+      const questsWithStatus: QuestWithStatus[] = categoryQuests.map((quest) => ({
+        ...quest,
+        status: getQuestStatus(
+          quest.id,
+          completedQuestIds,
+          activeQuestId ? [activeQuestId] : []
+        ),
+        objectiveProgress:
+          quest.id === activeQuestId ? questObjectives : undefined,
+      }));
+
+      const completedCount = questsWithStatus.filter(
+        (q) => q.status === "completed"
+      ).length;
+
+      return {
+        category,
+        name: categoryInfo.name,
+        icon: categoryInfo.icon,
+        description: categoryInfo.description,
+        color: categoryInfo.color,
+        quests: questsWithStatus,
+        completedCount,
+        totalCount: categoryQuests.length,
+      };
+    });
+
+    // Calculate XP earned from completed quests
+    const xpEarned = completedQuestIds.reduce((sum, questId) => {
+      const quest = getQuestById(questId);
+      return sum + (quest?.xpReward || 0);
+    }, 0);
+
+    return success({
+      currentQuest,
+      objectiveProgress: questObjectives,
+      completedQuestIds,
+      categories,
+      overallProgress: getQuestProgress(completedQuestIds),
+      totalXpAvailable: getTotalQuestXp(),
+      xpEarned,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error getting quest state:", error);
+    return fail("Failed to get quest state");
+  }
+}
+
+/**
+ * Start a quest
+ */
+export async function startQuest(questId: string): Promise<ActionResult<{ quest: Quest }>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const quest = getQuestById(questId);
+    if (!quest) {
+      return fail("Quest not found");
+    }
+
+    let profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      profile = await prisma.gamificationProfile.create({
+        data: { userId },
+      });
+    }
+
+    const completedQuestIds = profile.completedQuestIds || [];
+
+    // Check if already completed
+    if (completedQuestIds.includes(questId)) {
+      return fail("Quest already completed");
+    }
+
+    // Check if already has an active quest
+    if (profile.activeQuestId) {
+      return fail("Already have an active quest");
+    }
+
+    // Check prerequisites
+    const prerequisitesMet = quest.prerequisiteQuestIds.every((prereq) =>
+      completedQuestIds.includes(prereq)
+    );
+    if (!prerequisitesMet) {
+      return fail("Prerequisites not met");
+    }
+
+    // Initialize objective progress
+    const initialProgress: Record<string, number> = {};
+    for (const objective of quest.objectives) {
+      initialProgress[objective.id] = 0;
+    }
+
+    await prisma.gamificationProfile.update({
+      where: { userId },
+      data: {
+        activeQuestId: questId,
+        questObjectives: initialProgress,
+      },
+    });
+
+    console.log(`[Gamification] User ${userId} started quest: ${quest.name}`);
+
+    return success({ quest });
+  } catch (error) {
+    console.error("[Gamification] Error starting quest:", error);
+    return fail("Failed to start quest");
+  }
+}
+
+/**
+ * Update objective progress
+ * Called by triggers when user performs actions
+ */
+export async function updateQuestObjective(
+  userId: string,
+  objectiveType: string,
+  incrementBy: number = 1
+): Promise<void> {
+  try {
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile?.activeQuestId) return;
+
+    const quest = getQuestById(profile.activeQuestId);
+    if (!quest) return;
+
+    const questObjectives = parseObjectiveProgress(profile.questObjectives);
+
+    // Find matching objectives
+    let updated = false;
+    for (const objective of quest.objectives) {
+      if (objective.type === objectiveType) {
+        questObjectives[objective.id] = Math.min(
+          (questObjectives[objective.id] || 0) + incrementBy,
+          objective.targetValue
+        );
+        updated = true;
+      }
+    }
+
+    if (!updated) return;
+
+    // Check if all objectives are complete
+    const allComplete = quest.objectives.every(
+      (obj) => (questObjectives[obj.id] || 0) >= obj.targetValue
+    );
+
+    if (allComplete) {
+      // Complete the quest
+      await prisma.gamificationProfile.update({
+        where: { userId },
+        data: {
+          completedQuestIds: { push: profile.activeQuestId },
+          activeQuestId: null,
+          questObjectives: Prisma.JsonNull,
+          totalXp: { increment: quest.xpReward },
+        },
+      });
+      console.log(
+        `[Gamification] User ${userId} completed quest: ${quest.name} (+${quest.xpReward} XP)`
+      );
+    } else {
+      // Just update progress
+      await prisma.gamificationProfile.update({
+        where: { userId },
+        data: {
+          questObjectives,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("[Gamification] Error updating quest objective:", error);
+  }
+}
+
+/**
+ * Abandon current quest
+ */
+export async function abandonQuest(): Promise<ActionResult<{ success: boolean }>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile?.activeQuestId) {
+      return fail("No active quest to abandon");
+    }
+
+    await prisma.gamificationProfile.update({
+      where: { userId },
+      data: {
+        activeQuestId: null,
+        questObjectives: Prisma.JsonNull,
+      },
+    });
+
+    console.log(`[Gamification] User ${userId} abandoned quest`);
+
+    return success({ success: true });
+  } catch (error) {
+    console.error("[Gamification] Error abandoning quest:", error);
+    return fail("Failed to abandon quest");
+  }
+}
+
+// NOTE: To use quest types in components, import directly from:
+// import { QUESTS, QUEST_CATEGORY_INFO, type Quest, type QuestCategory, type QuestStatus, type QuestObjective } from "@/lib/gamification/quests";

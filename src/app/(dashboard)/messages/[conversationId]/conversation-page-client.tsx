@@ -33,11 +33,19 @@ import {
   Link as LinkIcon,
   Zap,
   Reply,
+  Star,
+  Forward,
+  Loader2,
 } from "lucide-react";
 import { QuickReplyPicker } from "@/components/messaging/quick-reply-picker";
 import { EmojiPicker, ReactionPicker } from "@/components/messaging/emoji-picker";
 import { ThreadView } from "@/components/messaging/thread-view";
 import { ReadReceiptsDisplay } from "@/components/messaging/read-receipts";
+import { TypingIndicator, useTypingIndicator } from "@/components/messaging/typing-indicator";
+import { CallInterface } from "@/components/messaging/call-interface";
+import { IncomingCall } from "@/components/messaging/incoming-call";
+import { ForwardMessageModal } from "@/components/messaging/forward-message-modal";
+import { useCall } from "@/hooks/use-call";
 import type { ConversationWithDetails } from "@/lib/actions/conversations";
 import type { MessageWithDetails, MessageAttachment } from "@/lib/actions/messages";
 import {
@@ -58,6 +66,7 @@ import {
   toggleMuteConversation,
   togglePinConversation,
 } from "@/lib/actions/conversation-participants";
+import { toggleStarMessage } from "@/lib/actions/starred-messages";
 import type { ConversationType, MessageReactionType } from "@prisma/client";
 
 interface ConversationPageClientProps {
@@ -104,7 +113,11 @@ export function ConversationPageClient({
   const [newMessage, setNewMessage] = useState("");
   const [isPending, startTransition] = useTransition();
   const [showMenu, setShowMenu] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+
+  // Typing indicator hook
+  const { handleTyping, stopTyping } = useTypingIndicator({
+    conversationId: conversation.id,
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -143,6 +156,27 @@ export function ConversationPageClient({
   // Upload progress state
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Call hook
+  const {
+    activeCall,
+    incomingCall,
+    isStartingCall,
+    startVoiceCall,
+    startVideoCall,
+    acceptCall,
+    dismissIncomingCall,
+    clearActiveCall,
+  } = useCall({
+    conversationId: conversation.id,
+    currentUserId,
+  });
+
+  // Forward modal state
+  const [forwardingMessage, setForwardingMessage] = useState<MessageWithDetails | null>(null);
+
+  // Starred messages state (track locally for optimistic updates)
+  const [starredMessageIds, setStarredMessageIds] = useState<Set<string>>(new Set());
 
   const displayName = getConversationDisplayName(conversation, currentUserId);
   const icon = TYPE_ICONS[conversation.type];
@@ -261,6 +295,7 @@ export function ConversationPageClient({
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setNewMessage(value);
+    handleTyping(); // Update typing indicator
 
     // Check for @ mentions
     const cursorPos = e.target.selectionStart;
@@ -311,6 +346,7 @@ export function ConversationPageClient({
     setNewMessage("");
     setAttachments([]);
     setAttachmentPreviews([]);
+    stopTyping(); // Clear typing indicator
 
     // Upload attachments to R2 if any
     const messageAttachments: MessageAttachment[] = [];
@@ -525,6 +561,27 @@ export function ConversationPageClient({
     });
   };
 
+  // Star message handler
+  const handleStarMessage = async (messageId: string) => {
+    // Optimistic update
+    setStarredMessageIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(messageId)) {
+        next.delete(messageId);
+      } else {
+        next.add(messageId);
+      }
+      return next;
+    });
+
+    await toggleStarMessage(messageId);
+  };
+
+  // Forward message handler
+  const handleForwardMessage = (message: MessageWithDetails) => {
+    setForwardingMessage(message);
+  };
+
   // Group messages by date
   const groupedMessages = groupMessagesByDate(messages);
 
@@ -604,15 +661,21 @@ export function ConversationPageClient({
             {notificationsEnabled ? <BellRing className="h-5 w-5" aria-hidden="true" /> : <Bell className="h-5 w-5" aria-hidden="true" />}
           </button>
 
+          {/* Voice Call - Coming Soon */}
           <button
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
-            aria-label="Start voice call"
+            disabled
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--foreground-muted)] opacity-50 cursor-not-allowed"
+            aria-label="Voice call - Coming soon"
+            title="Coming soon"
           >
             <Phone className="h-5 w-5" aria-hidden="true" />
           </button>
+          {/* Video Call - Coming Soon */}
           <button
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
-            aria-label="Start video call"
+            disabled
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--foreground-muted)] opacity-50 cursor-not-allowed"
+            aria-label="Video call - Coming soon"
+            title="Coming soon"
           >
             <Video className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -812,6 +875,9 @@ export function ConversationPageClient({
                         onCopy={() => handleCopyMessage(message.content)}
                         onReaction={(type) => handleReaction(message.id, type)}
                         onOpenThread={() => handleOpenThread(message)}
+                        onStar={() => handleStarMessage(message.id)}
+                        onForward={() => handleForwardMessage(message)}
+                        isStarred={starredMessageIds.has(message.id)}
                         allowReactions={conversation.allowReactions}
                         allowThreads={conversation.allowThreads}
                         currentUserId={currentUserId}
@@ -822,20 +888,6 @@ export function ConversationPageClient({
               </div>
             ))}
             <div ref={messagesEndRef} />
-          </div>
-        )}
-
-        {/* Typing Indicator */}
-        {isTyping && (
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
-              <span className="text-xs">{initials.charAt(0)}</span>
-            </div>
-            <div className="typing-indicator flex gap-1 rounded-full bg-[var(--background-tertiary)] px-4 py-2">
-              <span className="h-2 w-2 rounded-full bg-[var(--foreground-muted)] animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="h-2 w-2 rounded-full bg-[var(--foreground-muted)] animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="h-2 w-2 rounded-full bg-[var(--foreground-muted)] animate-bounce" style={{ animationDelay: "300ms" }} />
-            </div>
           </div>
         )}
       </div>
@@ -892,6 +944,9 @@ export function ConversationPageClient({
           </div>
         </div>
       )}
+
+      {/* Typing Indicator */}
+      <TypingIndicator conversationId={conversation.id} />
 
       {/* Message Input */}
       <div className="chat-input border-t border-[var(--card-border)] bg-[var(--card)] p-4">
@@ -1038,11 +1093,38 @@ export function ConversationPageClient({
           />
         </div>
       )}
+
+      {/* Call Interface */}
+      {activeCall && (
+        <CallInterface
+          call={activeCall}
+          currentUserId={currentUserId}
+          onClose={clearActiveCall}
+        />
+      )}
+
+      {/* Incoming Call Notification */}
+      {incomingCall && !activeCall && (
+        <IncomingCall
+          call={incomingCall}
+          onAccept={acceptCall}
+          onDecline={dismissIncomingCall}
+        />
+      )}
+
+      {/* Forward Message Modal */}
+      {forwardingMessage && (
+        <ForwardMessageModal
+          message={forwardingMessage}
+          onClose={() => setForwardingMessage(null)}
+          onForwarded={() => setForwardingMessage(null)}
+        />
+      )}
     </div>
   );
 }
 
-// Enhanced Message Bubble with edit/delete/copy actions
+// Enhanced Message Bubble with edit/delete/copy/star/forward actions
 function MessageBubble({
   message,
   isOwn,
@@ -1060,6 +1142,9 @@ function MessageBubble({
   onCopy,
   onReaction,
   onOpenThread,
+  onStar,
+  onForward,
+  isStarred,
   allowReactions,
   allowThreads,
   currentUserId,
@@ -1080,6 +1165,9 @@ function MessageBubble({
   onCopy: () => void;
   onReaction: (type: MessageReactionType) => void;
   onOpenThread: () => void;
+  onStar: () => void;
+  onForward: () => void;
+  isStarred: boolean;
   allowReactions: boolean;
   allowThreads: boolean;
   currentUserId: string;
@@ -1284,6 +1372,27 @@ function MessageBubble({
                     aria-label="Copy message"
                   >
                     <Copy className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />
+                  </button>
+
+                  {/* Star button */}
+                  <button
+                    onClick={onStar}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors ${
+                      isStarred ? "text-yellow-500" : ""
+                    }`}
+                    aria-label={isStarred ? "Unstar message" : "Star message"}
+                    aria-pressed={isStarred}
+                  >
+                    <Star className={`h-4 w-4 ${isStarred ? "fill-current" : "text-[var(--foreground-muted)]"}`} aria-hidden="true" />
+                  </button>
+
+                  {/* Forward button */}
+                  <button
+                    onClick={onForward}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
+                    aria-label="Forward message"
+                  >
+                    <Forward className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />
                   </button>
 
                   {/* Edit button (own messages only) */}

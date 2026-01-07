@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition } from "react";
+import { useState, useEffect, useCallback, useTransition, useMemo } from "react";
 import Link from "next/link";
 import type { PortalQuestionnaireWithRelations } from "@/lib/actions/questionnaire-portal";
 import {
@@ -21,6 +21,37 @@ type FormValues = Record<string, string | string[] | boolean>;
 interface SignatureState {
   signatureData: string | null;
   signatureType: "drawn" | "typed" | "uploaded" | null;
+}
+
+// Average time per field type (in seconds)
+const FIELD_TIME_ESTIMATES: Record<string, number> = {
+  text: 15,
+  email: 10,
+  phone: 10,
+  textarea: 45,
+  number: 8,
+  date: 10,
+  time: 8,
+  select: 8,
+  checkbox: 5,
+  radio: 10,
+  url: 15,
+  address: 30,
+};
+
+// Time for agreements (in seconds)
+const AGREEMENT_TIME = 60;
+
+// Format seconds into human-readable time
+function formatEstimatedTime(seconds: number): string {
+  if (seconds < 60) return "less than a minute";
+  const minutes = Math.ceil(seconds / 60);
+  if (minutes === 1) return "about 1 minute";
+  if (minutes < 60) return `about ${minutes} minutes`;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  if (remainingMinutes === 0) return `about ${hours} hour${hours > 1 ? 's' : ''}`;
+  return `about ${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} min`;
 }
 
 export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
@@ -73,6 +104,55 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
     },
     {} as Record<string, typeof questionnaire.template.fields>
   );
+
+  // Calculate section progress
+  const sectionProgress = useMemo(() => {
+    const progress: Record<string, { completed: number; total: number; timeRemaining: number }> = {};
+
+    Object.entries(sections).forEach(([sectionName, fields]) => {
+      let completed = 0;
+      let timeRemaining = 0;
+
+      fields.forEach((field) => {
+        const value = values[field.label];
+        const isFieldComplete = value !== undefined && value !== null && value !== "";
+        const fieldTime = FIELD_TIME_ESTIMATES[field.type] || 15;
+
+        if (isFieldComplete) {
+          completed++;
+        } else {
+          timeRemaining += fieldTime;
+        }
+      });
+
+      progress[sectionName] = {
+        completed,
+        total: fields.length,
+        timeRemaining,
+      };
+    });
+
+    return progress;
+  }, [sections, values]);
+
+  // Calculate total estimated time remaining
+  const estimatedTimeRemaining = useMemo(() => {
+    let totalTime = 0;
+
+    // Add time for incomplete fields
+    Object.values(sectionProgress).forEach((section) => {
+      totalTime += section.timeRemaining;
+    });
+
+    // Add time for incomplete agreements
+    const incompleteAgreements = questionnaire.template.legalAgreements.filter((a) => {
+      const agreement = questionnaire.agreements.find((ag) => ag.agreementType === a.agreementType);
+      return !agreement || !agreementStates[agreement.id];
+    });
+    totalTime += incompleteAgreements.length * AGREEMENT_TIME;
+
+    return totalTime;
+  }, [sectionProgress, questionnaire.template.legalAgreements, questionnaire.agreements, agreementStates]);
 
   // Auto-save logic
   const saveProgress = useCallback(async () => {
@@ -278,19 +358,51 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
               </h1>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm text-white">{progress}% complete</p>
-                {lastSaved && (
-                  <p className="text-xs text-[var(--foreground-muted)]">
-                    {isSaving ? "Saving..." : `Saved ${formatTime(lastSaved)}`}
-                  </p>
+              {/* Save & Continue Later button */}
+              <button
+                type="button"
+                onClick={() => saveProgress()}
+                disabled={isSaving}
+                className="hidden sm:flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--background-hover)] hover:text-white disabled:opacity-50"
+              >
+                {isSaving ? (
+                  <>
+                    <LoadingSpinner className="h-3.5 w-3.5" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <SaveIcon className="h-3.5 w-3.5" />
+                    Save & Continue Later
+                  </>
                 )}
-              </div>
-              <div className="h-2 w-32 rounded-full bg-[var(--card-border)] overflow-hidden">
-                <div
-                  className="h-full bg-[var(--primary)] transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
+              </button>
+              <div className="text-right">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-white">{progress}%</span>
+                  <div className="h-2 w-24 rounded-full bg-[var(--card-border)] overflow-hidden">
+                    <div
+                      className="h-full bg-[var(--primary)] transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-1 text-xs text-[var(--foreground-muted)]">
+                  {estimatedTimeRemaining > 0 ? (
+                    <span className="flex items-center gap-1">
+                      <ClockIcon className="h-3 w-3" />
+                      {formatEstimatedTime(estimatedTimeRemaining)} left
+                    </span>
+                  ) : (
+                    <span className="text-[var(--success)]">Ready to submit</span>
+                  )}
+                  {lastSaved && (
+                    <>
+                      <span>·</span>
+                      <span>{isSaving ? "Saving..." : `Saved ${formatTime(lastSaved)}`}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -328,23 +440,59 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
           }}
           className="space-y-8"
         >
-          {Object.entries(sections).map(([sectionName, fields]) => (
-            <section key={sectionName} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-              <div className="border-b border-[var(--card-border)] px-6 py-4">
-                <h2 className="text-lg font-medium text-white">{sectionName}</h2>
-              </div>
-              <div className="p-6 space-y-6">
-                {fields.map((field) => (
-                  <FormField
-                    key={field.id}
-                    field={field}
-                    value={values[field.label]}
-                    onChange={(value) => handleFieldChange(field.label, value)}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+          {Object.entries(sections).map(([sectionName, fields]) => {
+            const sectionStats = sectionProgress[sectionName];
+            const sectionPercent = sectionStats.total > 0
+              ? Math.round((sectionStats.completed / sectionStats.total) * 100)
+              : 100;
+            const isSectionComplete = sectionStats.completed === sectionStats.total;
+
+            return (
+              <section key={sectionName} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+                <div className="border-b border-[var(--card-border)] px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {isSectionComplete ? (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--success)]/20">
+                          <CheckSmallIcon className="h-4 w-4 text-[var(--success)]" />
+                        </div>
+                      ) : (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/20 text-xs font-medium text-[var(--primary)]">
+                          {sectionStats.completed}/{sectionStats.total}
+                        </div>
+                      )}
+                      <h2 className="text-lg font-medium text-white">{sectionName}</h2>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {sectionStats.timeRemaining > 0 && (
+                        <span className="text-xs text-[var(--foreground-muted)]">
+                          ~{formatEstimatedTime(sectionStats.timeRemaining)}
+                        </span>
+                      )}
+                      <div className="hidden sm:block h-1.5 w-20 rounded-full bg-[var(--card-border)] overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${
+                            isSectionComplete ? "bg-[var(--success)]" : "bg-[var(--primary)]"
+                          }`}
+                          style={{ width: `${sectionPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 space-y-6">
+                  {fields.map((field) => (
+                    <FormField
+                      key={field.id}
+                      field={field}
+                      value={values[field.label]}
+                      onChange={(value) => handleFieldChange(field.label, value)}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
 
           {/* Legal Agreements */}
           {questionnaire.template.legalAgreements.length > 0 && (
@@ -722,6 +870,22 @@ function CheckSmallIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function SaveIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M15.988 3.012A2.25 2.25 0 0 1 18 5.25v9.5A2.25 2.25 0 0 1 15.75 17H4.25A2.25 2.25 0 0 1 2 14.75v-9.5A2.25 2.25 0 0 1 4.25 3h9.5c.586 0 1.155.233 1.575.632l.663.632ZM5.25 4.5H4.25a.75.75 0 0 0-.75.75v9.5c0 .414.336.75.75.75h11.5a.75.75 0 0 0 .75-.75v-9.5a.75.75 0 0 0-.22-.53l-.663-.633a.75.75 0 0 0-.525-.218H6v2.75c0 .69-.56 1.25-1.25 1.25h-.5c.69 0 1.25.56 1.25 1.25v1.5c0 .69-.56 1.25-1.25 1.25-.69 0-1.25-.56-1.25-1.25v-5.5c0-.69.56-1.25 1.25-1.25Zm5.5 9a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-.75.75Z" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm.75-10.25a.75.75 0 0 0-1.5 0v3.69l-1.72 1.72a.75.75 0 1 0 1.06 1.06l2-2a.75.75 0 0 0 .22-.53V4.75Z" clipRule="evenodd" />
     </svg>
   );
 }

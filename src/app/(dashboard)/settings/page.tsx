@@ -9,6 +9,7 @@ import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 import { RecentSettingsSection } from "@/components/settings/recent-settings";
 import { PinnedSettingsSection } from "@/components/settings/pinned-settings";
 import { SettingCardWithPin } from "@/components/settings/settings-card-with-pin";
+import { CollapsibleSettingsSection } from "@/components/settings/collapsible-settings-section";
 import {
   UserIcon,
   PaletteIcon,
@@ -18,30 +19,6 @@ import {
   SparklesIcon,
 } from "@/components/ui/settings-icons";
 import { SettingsPageClient } from "./settings-page-client";
-
-// ============================================================================
-// Components
-// ============================================================================
-
-interface SettingsSectionProps {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}
-
-function SettingsSection({ title, description, children }: SettingsSectionProps) {
-  return (
-    <section className="space-y-4">
-      <div className="flex items-baseline gap-3">
-        <h2 className="text-base font-semibold text-foreground">{title}</h2>
-        {description && (
-          <p className="text-sm text-foreground-muted">{description}</p>
-        )}
-      </div>
-      <div className="grid gap-3 lg:grid-cols-3">{children}</div>
-    </section>
-  );
-}
 
 // ============================================================================
 // Page
@@ -106,10 +83,13 @@ export default async function SettingsPage() {
       {/* Settings Categories */}
       <div className="space-y-10">
         {SETTINGS_PAGE_CATEGORIES.map((category) => (
-          <SettingsSection
+          <CollapsibleSettingsSection
             key={category.id}
+            id={category.id}
             title={category.label}
             description={category.description}
+            itemCount={category.items.length}
+            defaultOpen={category.id === "personal" || category.id === "business"}
           >
             {category.items.map((item) => (
               <SettingCardWithPin
@@ -120,7 +100,7 @@ export default async function SettingsPage() {
                 iconName={item.iconName}
               />
             ))}
-          </SettingsSection>
+          </CollapsibleSettingsSection>
         ))}
       </div>
 

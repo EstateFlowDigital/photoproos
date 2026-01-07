@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
@@ -30,6 +30,7 @@ import {
   Star,
   Info,
   Lock,
+  AlertCircle,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { skipChecklistItem } from "@/lib/actions/onboarding-checklist";
@@ -236,8 +237,8 @@ export function OnboardingChecklist({
     });
   };
 
-  // Normalize items to handle both old and new formats
-  const normalizedItems = items.map((item) => {
+  // Normalize items to handle both old and new formats (memoized for performance)
+  const normalizedItems = useMemo(() => items.map((item) => {
     const isNewFormat = "isCompleted" in item;
     const typedItem = item as ChecklistItemWithIcon;
     const completed = isNewFormat
@@ -263,17 +264,17 @@ export function OnboardingChecklist({
       xpReward: typedItem.xpReward || 50,
       xpAwarded: typedItem.xpAwarded || false,
     };
-  });
+  }), [items]);
 
-  // Group items by category
-  const itemsByCategory = normalizedItems.reduce((acc, item) => {
+  // Group items by category (memoized for performance)
+  const itemsByCategory = useMemo(() => normalizedItems.reduce((acc, item) => {
     const category = item.category;
     if (!acc[category]) {
       acc[category] = [];
     }
     acc[category].push(item);
     return acc;
-  }, {} as Record<string, typeof normalizedItems>);
+  }, {} as Record<string, typeof normalizedItems>), [normalizedItems]);
 
   // Get completed items for dependency checking
   const completedItemIds = new Set(
@@ -298,11 +299,21 @@ export function OnboardingChecklist({
   );
 
   const [skippingItems, setSkippingItems] = useState<Set<string>>(new Set());
+  const [skipError, setSkipError] = useState<string | null>(null);
 
   const handleSkip = async (itemId: string, currentlySkipped: boolean) => {
     setSkippingItems((prev) => new Set(prev).add(itemId));
+    setSkipError(null);
     try {
-      await skipChecklistItem(itemId, !currentlySkipped);
+      const result = await skipChecklistItem(itemId, !currentlySkipped);
+      if (!result.success) {
+        setSkipError(result.error || "Failed to update item");
+        // Auto-clear error after 3 seconds
+        setTimeout(() => setSkipError(null), 3000);
+      }
+    } catch {
+      setSkipError("Failed to update item");
+      setTimeout(() => setSkipError(null), 3000);
     } finally {
       setSkippingItems((prev) => {
         const next = new Set(prev);
@@ -602,6 +613,14 @@ export function OnboardingChecklist({
         </div>
       </div>
 
+      {/* Skip Error Message */}
+      {skipError && (
+        <div role="alert" className="mt-4 flex items-center gap-2 rounded-lg bg-[var(--error)]/10 border border-[var(--error)]/20 px-3 py-2 text-sm text-[var(--error)]">
+          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{skipError}</span>
+        </div>
+      )}
+
       {/* Checklist Items by Category */}
       <div className="mt-5 space-y-4">
         {Object.entries(itemsByCategory).map(([category, categoryItems]) => {
@@ -616,6 +635,9 @@ export function OnboardingChecklist({
               {/* Category Header */}
               <button
                 onClick={() => toggleCategory(category)}
+                aria-expanded={!isCollapsed}
+                aria-controls={`category-items-${category}`}
+                aria-label={`${categoryLabel} category, ${completedInCategory} of ${totalInCategory} completed. ${isCollapsed ? 'Expand' : 'Collapse'} section`}
                 className={cn(
                   "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors",
                   "hover:bg-[var(--background-hover)]"
@@ -643,7 +665,7 @@ export function OnboardingChecklist({
 
               {/* Category Items */}
               {!isCollapsed && (
-                <div className="space-y-1 pl-2">
+                <div id={`category-items-${category}`} className="space-y-1 pl-2" role="group" aria-label={`${categoryLabel} checklist items`}>
                   {categoryItems.map((item) => {
                     const isSkipping = skippingItems.has(item.id);
                     const isActuallyCompleted = item.completed && !item.skipped;
@@ -769,7 +791,8 @@ export function OnboardingChecklist({
                                     ? "bg-[var(--primary)]/10 text-[var(--primary)]"
                                     : "text-foreground-muted hover:text-foreground hover:bg-[var(--background-secondary)]"
                                 )}
-                                title="Show tip"
+                                aria-label={showTip ? `Hide tip for ${item.label}` : `Show tip for ${item.label}`}
+                                aria-expanded={showTip}
                               >
                                 <Info className="h-3.5 w-3.5" />
                               </button>
@@ -781,7 +804,7 @@ export function OnboardingChecklist({
                                 onClick={() => handleSkip(item.id, true)}
                                 disabled={isSkipping}
                                 className="flex items-center gap-1 px-2 py-1 text-xs text-foreground-muted hover:text-foreground hover:bg-[var(--background-secondary)] rounded transition-colors disabled:opacity-50"
-                                title="Restore this item"
+                                aria-label={`Restore ${item.label} to checklist`}
                               >
                                 <Undo2 className="h-3 w-3" />
                                 <span className="hidden sm:inline">Restore</span>
@@ -798,12 +821,12 @@ export function OnboardingChecklist({
                                   }}
                                   disabled={isSkipping}
                                   className="flex items-center gap-1 px-2 py-1 text-xs text-foreground-muted hover:text-foreground hover:bg-[var(--background-secondary)] rounded transition-colors disabled:opacity-50"
-                                  title="Skip this item"
+                                  aria-label={`Skip ${item.label}`}
                                 >
                                   <SkipForward className="h-3 w-3" />
                                   <span className="hidden sm:inline">Skip</span>
                                 </button>
-                                <Link href={item.href}>
+                                <Link href={item.href} aria-label={`Go to ${item.label}`}>
                                   <ChevronRight className="h-4 w-4 text-foreground-muted group-hover:text-[var(--primary)] transition-colors" />
                                 </Link>
                               </>

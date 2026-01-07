@@ -15,29 +15,29 @@ interface AchievementBadgeProps {
 
 const rarityStyles: Record<AchievementRarity, { glow: string; border: string; bg: string }> = {
   common: {
-    glow: "shadow-[0_0_12px_rgba(156,163,175,0.4)]",
-    border: "border-gray-400/40",
-    bg: "bg-gray-500/10",
+    glow: "shadow-[0_0_12px_var(--foreground-muted)]",
+    border: "border-[var(--foreground-muted)]/40",
+    bg: "bg-[var(--foreground-muted)]/10",
   },
   uncommon: {
-    glow: "shadow-[0_0_16px_rgba(34,197,94,0.5)]",
+    glow: "shadow-[0_0_16px_var(--success)]",
     border: "border-[var(--success)]/40",
     bg: "bg-[var(--success)]/10",
   },
   rare: {
-    glow: "shadow-[0_0_20px_rgba(59,130,246,0.5)]",
+    glow: "shadow-[0_0_20px_var(--primary)]",
     border: "border-[var(--primary)]/40",
     bg: "bg-[var(--primary)]/10",
   },
   epic: {
-    glow: "shadow-[0_0_24px_rgba(139,92,246,0.6)]",
+    glow: "shadow-[0_0_24px_var(--ai)]",
     border: "border-[var(--ai)]/50",
     bg: "bg-[var(--ai)]/15",
   },
   legendary: {
-    glow: "shadow-[0_0_28px_rgba(249,115,22,0.7)]",
+    glow: "shadow-[0_0_28px_var(--warning)]",
     border: "border-[var(--warning)]/60",
-    bg: "bg-gradient-to-br from-[var(--warning)]/20 to-yellow-500/10",
+    bg: "bg-gradient-to-br from-[var(--warning)]/20 to-[var(--warning)]/10",
   },
 };
 
@@ -70,6 +70,8 @@ export function AchievementBadge({
 
   return (
     <div
+      role="img"
+      aria-label={`${name} achievement badge${isUnlocked ? "" : " (locked)"} - ${rarity} rarity`}
       className={cn(
         "achievement-badge relative flex items-center justify-center rounded-full border-2 transition-all duration-300",
         sizeStyle.container,
@@ -81,16 +83,19 @@ export function AchievementBadge({
       )}
       title={name}
     >
-      <span className={cn("select-none", sizeStyle.icon)}>{icon}</span>
+      <span className={cn("select-none", sizeStyle.icon)} aria-hidden="true">
+        {icon}
+      </span>
 
       {/* Locked overlay */}
       {!isUnlocked && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30">
+        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30" aria-hidden="true">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
             fill="currentColor"
             className="h-4 w-4 text-[var(--foreground-muted)]"
+            aria-hidden="true"
           >
             <path
               fillRule="evenodd"
@@ -107,7 +112,7 @@ export function AchievementBadge({
 // Rarity label component
 export function RarityLabel({ rarity }: { rarity: AchievementRarity }) {
   const colors: Record<AchievementRarity, string> = {
-    common: "text-gray-400",
+    common: "text-[var(--foreground-muted)]",
     uncommon: "text-[var(--success)]",
     rare: "text-[var(--primary)]",
     epic: "text-[var(--ai)]",

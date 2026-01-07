@@ -75,17 +75,32 @@ export function LevelProgress({
 
         {/* Progress bar */}
         {!isMaxLevel && (
-          <div className={cn("mt-1 w-full overflow-hidden rounded-full bg-[var(--background-secondary)]", styles.bar)}>
+          <div
+            role="progressbar"
+            aria-valuenow={currentXp}
+            aria-valuemin={0}
+            aria-valuemax={requiredXp}
+            aria-label={`Level ${level} progress: ${currentXp} of ${requiredXp} XP (${Math.round(progressPercent)}%)`}
+            className={cn("mt-1 w-full overflow-hidden rounded-full bg-[var(--background-secondary)]", styles.bar)}
+          >
             <div
               className={cn("h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] transition-all duration-500")}
               style={{ width: `${progressPercent}%` }}
+              aria-hidden="true"
             />
           </div>
         )}
 
         {/* Max level indicator */}
         {isMaxLevel && (
-          <div className={cn("mt-1 w-full rounded-full bg-gradient-to-r from-[var(--success)] to-[var(--primary)]", styles.bar)} />
+          <div
+            role="progressbar"
+            aria-valuenow={100}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Maximum level reached"
+            className={cn("mt-1 w-full rounded-full bg-gradient-to-r from-[var(--success)] to-[var(--primary)]", styles.bar)}
+          />
         )}
       </div>
     </div>
@@ -102,13 +117,15 @@ export function LevelBadge({ level, size = "md" }: { level: number; size?: "sm" 
 
   return (
     <div
+      role="img"
+      aria-label={`Level ${level}`}
       className={cn(
         "flex items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] font-bold text-white",
         sizeClass[size]
       )}
       title={`Level ${level}`}
     >
-      {level}
+      <span aria-hidden="true">{level}</span>
     </div>
   );
 }

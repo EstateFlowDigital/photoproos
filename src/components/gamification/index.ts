@@ -19,3 +19,24 @@ export {
   MilestoneToast,
   useMilestoneCelebration,
 } from "./milestone-celebration";
+export { SkillTree, SkillTreeWidget } from "./skill-tree";
+export { QuestCard, ActiveQuestWidget } from "./quest-card";
+export {
+  GamificationErrorBoundary,
+  GamificationErrorFallback,
+  GamificationErrorCompact,
+} from "./error-boundary";
+
+// Loading Skeletons
+export {
+  GamificationWidgetSkeleton,
+  AchievementBadgeSkeleton,
+  PersonalBestsSkeleton,
+  QuestCardSkeleton,
+  ChallengeCardSkeleton,
+  DailyBonusSkeleton,
+  SkillTreeSkeleton,
+  LeaderboardSkeleton,
+  AchievementsPageSkeleton,
+  StreakDisplaySkeleton,
+} from "./skeletons";

@@ -12,13 +12,15 @@ import { ArrowLeftIcon, MailIcon, BellIcon, MoonIcon, CheckIcon } from "@/compon
 import {
   getNotificationPreferences,
   updateAllNotificationSettings,
+} from "@/lib/actions/notification-preferences";
+import {
   type NotificationPreferences,
   type DigestSettings,
   type QuietHoursSettings,
   defaultNotificationPreferences,
   defaultDigestSettings,
   defaultQuietHours,
-} from "@/lib/actions/notification-preferences";
+} from "@/lib/constants/notification-preferences";
 
 const notificationTypes = [
   {

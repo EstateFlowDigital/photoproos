@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import nextDynamic from "next/dynamic";
 import Image from "next/image";
 import { ImageIcon, DownloadIcon, LoadingSpinner } from "../icons";
@@ -8,6 +8,11 @@ import { EmptyState } from "../empty-state";
 import { formatDate, BLUR_DATA_URL } from "../utils";
 import type { GalleryData } from "../types";
 import { useHydrated } from "@/hooks/use-hydrated";
+
+// View and sort options
+type ViewMode = "list" | "grid";
+type SortOption = "newest" | "oldest" | "name" | "photos";
+type FilterOption = "all" | "new" | "favorites" | "expiring";
 
 const Lightbox = nextDynamic(
   () => import("../lightbox").then((m) => m.Lightbox),
@@ -48,6 +53,12 @@ export function GalleriesTab({
   const [comparisonPhotos, setComparisonPhotos] = useState<Photo[]>([]);
   const [showComparison, setShowComparison] = useState(false);
 
+  // View, sort, and filter state
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [filterOption, setFilterOption] = useState<FilterOption>("all");
+  const hydrated = useHydrated();
+
   const openLightbox = (gallery: GalleryData, photoIndex: number) => {
     setLightboxGallery(gallery);
     setLightboxIndex(photoIndex);
@@ -72,6 +83,67 @@ export function GalleriesTab({
   // Get all photos across all galleries for comparison swapping
   const allPhotos = galleries.flatMap((g) => g.photos);
 
+  // Filter galleries
+  const filteredGalleries = useMemo(() => {
+    return galleries.filter((gallery) => {
+      if (filterOption === "all") return true;
+
+      if (filterOption === "new") {
+        if (!gallery.deliveredAt) return false;
+        const daysSinceDelivery = (Date.now() - new Date(gallery.deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+        return daysSinceDelivery <= 7;
+      }
+
+      if (filterOption === "favorites") {
+        return gallery.photos.some((p) => favorites.has(p.id));
+      }
+
+      if (filterOption === "expiring") {
+        if (!gallery.expiresAt) return false;
+        const daysUntilExpiry = (new Date(gallery.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+        return daysUntilExpiry > 0 && daysUntilExpiry <= 14;
+      }
+
+      return true;
+    });
+  }, [galleries, filterOption, favorites]);
+
+  // Sort galleries
+  const sortedGalleries = useMemo(() => {
+    return [...filteredGalleries].sort((a, b) => {
+      switch (sortOption) {
+        case "newest":
+          return new Date(b.deliveredAt || 0).getTime() - new Date(a.deliveredAt || 0).getTime();
+        case "oldest":
+          return new Date(a.deliveredAt || 0).getTime() - new Date(b.deliveredAt || 0).getTime();
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "photos":
+          return b.photoCount - a.photoCount;
+        default:
+          return 0;
+      }
+    });
+  }, [filteredGalleries, sortOption]);
+
+  // Filter counts for badges
+  const filterCounts = useMemo(() => {
+    const now = Date.now();
+    return {
+      all: galleries.length,
+      new: galleries.filter((g) => {
+        if (!g.deliveredAt) return false;
+        return (now - new Date(g.deliveredAt).getTime()) / (1000 * 60 * 60 * 24) <= 7;
+      }).length,
+      favorites: galleries.filter((g) => g.photos.some((p) => favorites.has(p.id))).length,
+      expiring: galleries.filter((g) => {
+        if (!g.expiresAt) return false;
+        const daysLeft = (new Date(g.expiresAt).getTime() - now) / (1000 * 60 * 60 * 24);
+        return daysLeft > 0 && daysLeft <= 14;
+      }).length,
+    };
+  }, [galleries, favorites]);
+
   if (galleries.length === 0) {
     return (
       <EmptyState
@@ -85,19 +157,147 @@ export function GalleriesTab({
 
   return (
     <>
-      <div className="space-y-4">
-        {galleries.map((gallery) => (
-          <GalleryCard
-            key={gallery.id}
-            gallery={gallery}
-            isDownloading={downloadingGallery === gallery.id}
-            onDownload={() => onDownload(gallery.id)}
-            onPhotoClick={(index) => openLightbox(gallery, index)}
-            favorites={favorites}
-            onToggleFavorite={onToggleFavorite}
+      {/* Toolbar */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Filter Pills */}
+        <div className="flex flex-wrap gap-2">
+          <FilterPill
+            label="All"
+            count={filterCounts.all}
+            isActive={filterOption === "all"}
+            onClick={() => setFilterOption("all")}
           />
-        ))}
+          {filterCounts.new > 0 && (
+            <FilterPill
+              label="New"
+              count={filterCounts.new}
+              isActive={filterOption === "new"}
+              onClick={() => setFilterOption("new")}
+              variant="primary"
+            />
+          )}
+          {filterCounts.favorites > 0 && (
+            <FilterPill
+              label="With Favorites"
+              count={filterCounts.favorites}
+              isActive={filterOption === "favorites"}
+              onClick={() => setFilterOption("favorites")}
+              variant="error"
+            />
+          )}
+          {filterCounts.expiring > 0 && (
+            <FilterPill
+              label="Expiring Soon"
+              count={filterCounts.expiring}
+              isActive={filterOption === "expiring"}
+              onClick={() => setFilterOption("expiring")}
+              variant="warning"
+            />
+          )}
+        </div>
+
+        {/* Sort & View Controls */}
+        <div className="flex items-center gap-3">
+          {/* Sort Dropdown */}
+          <div className="relative">
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as SortOption)}
+              className="appearance-none rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 pl-3 pr-8 text-sm text-[var(--foreground)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              suppressHydrationWarning
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="name">Name A-Z</option>
+              <option value="photos">Most Photos</option>
+            </select>
+            <ChevronDownIcon className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)]" />
+          </div>
+
+          {/* View Toggle */}
+          <div className="hidden sm:flex items-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-1">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`rounded-md p-1.5 transition-colors ${
+                viewMode === "list"
+                  ? "bg-[var(--primary)] text-white"
+                  : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+              }`}
+              title="List view"
+            >
+              <ListViewIcon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`rounded-md p-1.5 transition-colors ${
+                viewMode === "grid"
+                  ? "bg-[var(--primary)] text-white"
+                  : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+              }`}
+              title="Grid view"
+            >
+              <GridViewIcon className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Results Count */}
+      {filterOption !== "all" && (
+        <p className="mb-4 text-sm text-[var(--foreground-muted)]">
+          Showing {sortedGalleries.length} of {galleries.length} galleries
+          {sortedGalleries.length === 0 && (
+            <button
+              onClick={() => setFilterOption("all")}
+              className="ml-2 text-[var(--primary)] hover:underline"
+            >
+              Clear filter
+            </button>
+          )}
+        </p>
+      )}
+
+      {/* Gallery List/Grid */}
+      {sortedGalleries.length === 0 ? (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8 text-center">
+          <p className="text-[var(--foreground-secondary)]">
+            No galleries match the current filter.
+          </p>
+          <button
+            onClick={() => setFilterOption("all")}
+            className="mt-2 text-sm text-[var(--primary)] hover:underline"
+          >
+            Show all galleries
+          </button>
+        </div>
+      ) : viewMode === "list" ? (
+        <div className="space-y-4">
+          {sortedGalleries.map((gallery) => (
+            <GalleryCard
+              key={gallery.id}
+              gallery={gallery}
+              isDownloading={downloadingGallery === gallery.id}
+              onDownload={() => onDownload(gallery.id)}
+              onPhotoClick={(index) => openLightbox(gallery, index)}
+              favorites={favorites}
+              onToggleFavorite={onToggleFavorite}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sortedGalleries.map((gallery) => (
+            <GalleryGridCard
+              key={gallery.id}
+              gallery={gallery}
+              isDownloading={downloadingGallery === gallery.id}
+              onDownload={() => onDownload(gallery.id)}
+              onPhotoClick={(index) => openLightbox(gallery, index)}
+              favorites={favorites}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Lightbox */}
       {lightboxGallery && (
@@ -405,6 +605,161 @@ function SparklesIcon({ className }: { className?: string }) {
       viewBox="0 0 20 20"
     >
       <path d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" />
+    </svg>
+  );
+}
+
+// Filter Pill Component
+interface FilterPillProps {
+  label: string;
+  count: number;
+  isActive: boolean;
+  onClick: () => void;
+  variant?: "default" | "primary" | "error" | "warning";
+}
+
+function FilterPill({ label, count, isActive, onClick, variant = "default" }: FilterPillProps) {
+  const variantStyles = {
+    default: isActive
+      ? "bg-[var(--foreground)] text-[var(--background)]"
+      : "bg-[var(--card)] text-[var(--foreground-secondary)] hover:bg-[var(--background-hover)]",
+    primary: isActive
+      ? "bg-[var(--primary)] text-white"
+      : "bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20",
+    error: isActive
+      ? "bg-[var(--error)] text-white"
+      : "bg-[var(--error)]/10 text-[var(--error)] hover:bg-[var(--error)]/20",
+    warning: isActive
+      ? "bg-[var(--warning)] text-white"
+      : "bg-[var(--warning)]/10 text-[var(--warning)] hover:bg-[var(--warning)]/20",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1.5 rounded-full border border-[var(--card-border)] px-3 py-1.5 text-sm font-medium transition-colors ${variantStyles[variant]}`}
+    >
+      {label}
+      <span className="opacity-70">{count}</span>
+    </button>
+  );
+}
+
+// Grid View Card Component
+interface GalleryGridCardProps {
+  gallery: GalleryData;
+  isDownloading: boolean;
+  onDownload: () => void;
+  onPhotoClick: (index: number) => void;
+  favorites: Set<string>;
+}
+
+function GalleryGridCard({
+  gallery,
+  isDownloading,
+  onDownload,
+  onPhotoClick,
+  favorites,
+}: GalleryGridCardProps) {
+  const hydrated = useHydrated();
+  const favoriteCount = gallery.photos.filter((p) => favorites.has(p.id)).length;
+  const isNew = hydrated && gallery.deliveredAt
+    ? new Date().getTime() - new Date(gallery.deliveredAt).getTime() < 7 * 24 * 60 * 60 * 1000
+    : false;
+
+  return (
+    <div className="group overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--primary)]/30">
+      {/* Cover Image */}
+      <button
+        onClick={() => onPhotoClick(0)}
+        className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--background-tertiary)]"
+      >
+        {gallery.photos.length > 0 && gallery.photos[0].thumbnailUrl ? (
+          <Image
+            src={gallery.photos[0].thumbnailUrl}
+            alt={gallery.name}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <ImageIcon className="h-12 w-12 text-[var(--foreground-muted)]" />
+          </div>
+        )}
+        {/* Overlay badges */}
+        <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+          {isNew && (
+            <span className="rounded-full bg-[var(--primary)] px-2 py-0.5 text-xs font-medium text-white shadow-sm">
+              New
+            </span>
+          )}
+          {favoriteCount > 0 && (
+            <span className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+              <HeartIcon className="h-3 w-3 text-red-400" filled />
+              {favoriteCount}
+            </span>
+          )}
+        </div>
+        {/* Photo count */}
+        <div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+          {gallery.photoCount} photos
+        </div>
+      </button>
+
+      {/* Info */}
+      <div className="p-4">
+        <h3 className="font-medium text-[var(--foreground)] line-clamp-1">{gallery.name}</h3>
+        <p className="mt-1 text-sm text-[var(--foreground-muted)]" suppressHydrationWarning>
+          {gallery.serviceName || "Photo Gallery"}
+          {gallery.deliveredAt && ` • ${formatDate(gallery.deliveredAt)}`}
+        </p>
+        {gallery.downloadable && (
+          <button
+            onClick={onDownload}
+            disabled={isDownloading}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+          >
+            {isDownloading ? (
+              <>
+                <LoadingSpinner className="h-4 w-4" />
+                Downloading...
+              </>
+            ) : (
+              <>
+                <DownloadIcon className="h-4 w-4" />
+                Download
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Additional Icons
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
+function ListViewIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+function GridViewIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
     </svg>
   );
 }
