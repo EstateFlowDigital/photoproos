@@ -84,16 +84,16 @@ function SettingCard({ title, description, href, iconName }: SettingCardProps) {
   return (
     <Link
       href={href}
-      className="group flex items-start gap-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/5"
+      className="group flex items-center gap-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all duration-200 hover:border-[var(--primary)]/30 hover:bg-[var(--primary)]/5"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--background-secondary)] text-foreground-muted transition-colors group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-foreground-muted transition-colors duration-200 group-hover:bg-[var(--primary)]/15 group-hover:text-[var(--primary)]">
         {IconComponent && <IconComponent className="h-5 w-5" />}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-foreground">{title}</h3>
-        <p className="mt-1 text-sm text-foreground-muted">{description}</p>
+        <h3 className="font-medium text-foreground group-hover:text-[var(--primary)] transition-colors">{title}</h3>
+        <p className="mt-0.5 text-sm text-foreground-muted line-clamp-1">{description}</p>
       </div>
-      <ChevronRightIcon className="h-5 w-5 shrink-0 text-foreground-muted transition-transform group-hover:translate-x-1" />
+      <ChevronRightIcon className="h-4 w-4 shrink-0 text-foreground-muted opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0.5" />
     </Link>
   );
 }
@@ -106,15 +106,15 @@ interface SettingsSectionProps {
 
 function SettingsSection({ title, description, children }: SettingsSectionProps) {
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+    <section className="space-y-4">
+      <div className="flex items-baseline gap-3">
+        <h2 className="text-base font-semibold text-foreground">{title}</h2>
         {description && (
-          <p className="mt-1 text-sm text-foreground-muted">{description}</p>
+          <p className="text-sm text-foreground-muted">{description}</p>
         )}
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">{children}</div>
-    </div>
+      <div className="grid gap-3 lg:grid-cols-3">{children}</div>
+    </section>
   );
 }
 
@@ -146,7 +146,7 @@ export default async function SettingsPage() {
     : "open";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 sm:p-6 lg:p-8">
       {/* Page Walkthrough */}
       <WalkthroughWrapper
         pageId="settings"

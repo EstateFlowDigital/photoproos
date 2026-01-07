@@ -623,6 +623,75 @@ export async function bulkDeleteExpenses(expenseIds: string[]) {
   }
 }
 
+/**
+ * Bulk create expenses from CSV import
+ */
+export async function bulkCreateExpenses(
+  projectId: string,
+  expenses: CreateExpenseInput[]
+) {
+  const { orgId, userId } = await auth();
+  if (!orgId || !userId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    // Verify the project belongs to this organization
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, organizationId: org.id },
+    });
+
+    if (!project) {
+      return fail("Project not found");
+    }
+
+    // Create all expenses in a transaction
+    const createdExpenses = await prisma.$transaction(
+      expenses.map((input) =>
+        prisma.projectExpense.create({
+          data: {
+            organizationId: org.id,
+            projectId,
+            description: input.description,
+            category: input.category,
+            amountCents: input.amountCents,
+            currency: input.currency || "USD",
+            vendor: input.vendor || null,
+            teamMemberId: input.teamMemberId || null,
+            expenseDate: input.expenseDate || new Date(),
+            isPaid: input.isPaid ?? true,
+            paidDate: input.paidDate || (input.isPaid !== false ? new Date() : null),
+            receiptUrl: input.receiptUrl || null,
+            notes: input.notes || null,
+            createdBy: userId,
+            isBillable: input.isBillable ?? false,
+            paymentMethod: input.paymentMethod || null,
+            taxCents: input.taxCents || null,
+            mileageDistance: input.mileageDistance || null,
+            mileageRateCents: input.mileageRateCents || null,
+          },
+        })
+      )
+    );
+
+    revalidatePath(`/galleries/${projectId}`);
+
+    return success({ count: createdExpenses.length, expenses: createdExpenses });
+  } catch (error) {
+    console.error("Error bulk creating expenses:", error);
+    return fail("Failed to import expenses");
+  }
+}
+
 // ============================================================================
 // EXPORT
 // ============================================================================

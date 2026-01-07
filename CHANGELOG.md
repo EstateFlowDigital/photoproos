@@ -8,11 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Dashboard React Error (Too Many Re-renders)** - Fixed Date serialization issue causing React error #310 and #301 on dashboard page. Date objects passed from server to client components must be serialized as ISO strings to avoid becoming empty objects during hydration. Updated `UpcomingBookings` component to accept ISO string dates.
 - **PWA Icon Missing (404)** - Created SVG icon and updated manifest.json to use SVG format instead of missing PNG files
 - **Middleware Route Mismatch** - Added `/support(.*)` to public routes after renaming marketing help folder
 - **Clerk Deprecation Warning** - Updated .env.example to document deprecated `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` and `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` environment variables (use `fallbackRedirectUrl` prop instead)
+- **TypeScript Errors** - Fixed type errors in settings search and breadcrumb components
 
 ### Added
+- **Settings Page Improvements** - Comprehensive settings UX overhaul
+  - **Shared Settings Components** - Reusable components for consistent settings pages
+    - `SettingsFormCard` - Card component with variants (default, danger, info, success) and sticky footer
+    - `SettingsSection`, `SettingsField`, `SettingsRow` - Form layout components for consistent structure
+    - `SettingsBreadcrumb` - Auto-generated breadcrumb navigation based on current path
+    - `SettingsSearch` - Command palette style search with Cmd+K keyboard shortcut
+    - `SettingsPageSkeleton`, `SettingsCardSkeleton`, `SettingsRowSkeleton` - Loading state components
+  - **Centralized Icon Map** - Consolidated duplicate icon maps into single source of truth (`settings-icon-map.ts`)
+  - **3-Column Grid Layout** - Main settings page now displays items in 3 columns on large screens, 1 column on mobile
+  - **Refined Settings Cards** - Improved hover states with primary color accents and subtle animations
+  - **Search in Sidebar** - Added compact search input to settings sidebar and mobile nav
+- **Walkthrough System Enhancements** - Improved tutorial/walkthrough features
+  - `restoreDismissedWalkthrough()` server action to restore individual dismissed walkthroughs
+  - `resetAllDismissedWalkthroughs()` server action to restore all walkthroughs at once
+  - Enhanced keyboard navigation in walkthroughs (Arrow keys, Home, End, Escape)
+  - ARIA live regions for accessibility announcements
+  - Focus management between walkthrough steps
 - **Bulk Expense Edit** - Edit multiple expenses at once
   - Select multiple expenses with checkbox selection
   - Update category, payment method, billable status, or paid status in bulk

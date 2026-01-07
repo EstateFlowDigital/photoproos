@@ -423,7 +423,7 @@ export function BookingFormPublic({ form, organization, clientProfile }: Booking
       if (field.industries.length > 0 && selectedIndustry && !field.industries.includes(selectedIndustry)) {
         return false;
       }
-      if (field.conditionalOn && field.conditionalValue) {
+      if (field.conditionalOn && field.conditionalValue !== undefined && field.conditionalValue !== null) {
         const dependentValue = formData[field.conditionalOn];
         if (Array.isArray(dependentValue)) {
           return dependentValue.includes(field.conditionalValue);
@@ -460,6 +460,15 @@ export function BookingFormPublic({ form, organization, clientProfile }: Booking
 
     prefillApplied.current = true;
   }, [clientProfile]);
+
+  useEffect(() => {
+    if (!showIndustrySelector) return;
+    if (selectedIndustry) return;
+    const preferredIndustry = clientProfile?.preferences?.booking?.preferredIndustry as Industry | undefined;
+    if (preferredIndustry && industryOptions[preferredIndustry]) {
+      setSelectedIndustry(preferredIndustry);
+    }
+  }, [clientProfile, selectedIndustry, showIndustrySelector]);
 
   useEffect(() => {
     const initialState: Record<string, boolean> = {};
@@ -686,7 +695,10 @@ export function BookingFormPublic({ form, organization, clientProfile }: Booking
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div
+      className="min-h-screen bg-[var(--background)]"
+      style={{ "--primary": primaryColor } as React.CSSProperties}
+    >
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-[var(--card-border)]">
         <div

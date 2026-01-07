@@ -409,11 +409,12 @@ export default async function DashboardPage() {
     (now.getTime() - organization.onboardingCompletedAt.getTime()) < 30 * 24 * 60 * 60 * 1000;
 
   // Transform bookings to match UpcomingBookings component format
+  // Convert Date to ISO string for proper serialization to client components
   const formattedBookings = upcomingBookings.map((booking) => ({
     id: booking.id,
     title: booking.title,
     client: booking.client?.company || booking.client?.fullName || booking.clientName || "Unknown Client",
-    date: booking.startTime,
+    date: booking.startTime.toISOString(),
     time: booking.startTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
     location: booking.location || undefined,
     status: booking.status as "confirmed" | "pending" | "cancelled",

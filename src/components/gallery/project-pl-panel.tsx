@@ -38,6 +38,7 @@ import {
   getTeamMembers,
   bulkUpdateExpenseStatus,
   bulkDeleteExpenses,
+  bulkCreateExpenses,
   exportExpensesToCSV,
   getReceiptUploadUrl,
   // Recurring templates
@@ -709,6 +710,34 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     isBillable: null,
     isPaid: null,
   });
+
+  // CSV Import state
+  const [showCsvImportModal, setShowCsvImportModal] = useState(false);
+  const [csvData, setCsvData] = useState<string[][]>([]);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [csvMapping, setCsvMapping] = useState<{
+    description: string;
+    amount: string;
+    category: string;
+    date: string;
+    vendor: string;
+    notes: string;
+    billable: string;
+    paid: string;
+  }>({
+    description: "",
+    amount: "",
+    category: "",
+    date: "",
+    vendor: "",
+    notes: "",
+    billable: "",
+    paid: "",
+  });
+  const [csvImportStep, setCsvImportStep] = useState<"upload" | "mapping" | "preview" | "importing">("upload");
+  const [csvImportError, setCsvImportError] = useState<string | null>(null);
+  const [csvPreviewData, setCsvPreviewData] = useState<CreateExpenseInput[]>([]);
+  const csvFileInputRef = useRef<HTMLInputElement>(null);
 
   // Active tab for advanced features
   const [activeAdvancedTab, setActiveAdvancedTab] = useState<"expenses" | "templates" | "budget" | "analytics">("expenses");

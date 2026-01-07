@@ -10,7 +10,7 @@ interface Booking {
   id: string;
   title: string;
   client: string;
-  date: Date;
+  date: string; // ISO string for proper server-to-client serialization
   time: string;
   location?: string;
   status: BookingStatus;
@@ -22,7 +22,8 @@ interface UpcomingBookingsProps {
   className?: string;
 }
 
-function formatDate(date: Date): string {
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
   const now = new Date();
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);

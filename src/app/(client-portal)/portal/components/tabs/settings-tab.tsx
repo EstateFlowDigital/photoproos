@@ -470,6 +470,67 @@ function NotificationToggle({
   );
 }
 
+interface SettingsInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+  placeholder?: string;
+}
+
+function SettingsInput({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+}: SettingsInputProps) {
+  return (
+    <label className="text-sm text-[var(--foreground)]">
+      <span className="block mb-1 font-medium">{label}</span>
+      <input
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+      />
+    </label>
+  );
+}
+
+interface SettingsSelectProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+}
+
+function SettingsSelect({
+  label,
+  value,
+  onChange,
+  options,
+}: SettingsSelectProps) {
+  return (
+    <label className="text-sm text-[var(--foreground)]">
+      <span className="block mb-1 font-medium">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+      >
+        <option value="">Select</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 // Icons
 function CheckCircleIcon({ className }: { className?: string }) {
   return (
