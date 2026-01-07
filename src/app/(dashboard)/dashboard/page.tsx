@@ -20,6 +20,7 @@ import { WalkthroughWrapper } from "@/components/walkthrough";
 import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 import { IconBadge } from "@/components/ui/icon-badge";
 import { DebugBanner } from "@/components/debug/debug-banner";
+import { ErrorBoundary } from "@/components/debug/error-boundary";
 
 const OnboardingFallback = () => (
   <div className="h-[260px] rounded-xl border border-[var(--card-border)] bg-[var(--card)]" aria-hidden />
@@ -451,7 +452,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <>
+    <ErrorBoundary label="dashboard-page">
       <DebugBanner route="/dashboard" />
     <div className="flex flex-col density-gap-section">
       <Suspense fallback={null}>
@@ -659,6 +660,6 @@ export default async function DashboardPage() {
         </div>
       </div>
     </div>
-    </>
+    </ErrorBoundary>
   );
 }
