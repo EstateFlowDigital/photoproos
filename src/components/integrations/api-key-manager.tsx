@@ -65,7 +65,7 @@ export function ApiKeyManager({ apiKeys, onRefresh, className }: ApiKeyManagerPr
       setNewKeyName("");
       onRefresh();
     } else {
-      setError(result.error || "Failed to generate API key");
+      setError("error" in result ? result.error : "Failed to generate API key");
     }
 
     setIsLoading(false);

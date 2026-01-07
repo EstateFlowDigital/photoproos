@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { POICategory } from "@prisma/client";
 
 // ============================================================================
@@ -18,7 +18,7 @@ export async function getNeighborhoodData(propertyWebsiteId: string) {
 
   try {
     // Get or create neighborhood data
-    let neighborhoodData = await db.neighborhoodData.findUnique({
+    let neighborhoodData = await prisma.neighborhoodData.findUnique({
       where: { propertyWebsiteId },
       include: {
         pointsOfInterest: {
@@ -29,7 +29,7 @@ export async function getNeighborhoodData(propertyWebsiteId: string) {
 
     if (!neighborhoodData) {
       // Create empty neighborhood data record
-      neighborhoodData = await db.neighborhoodData.create({
+      neighborhoodData = await prisma.neighborhoodData.create({
         data: {
           propertyWebsiteId,
         },
@@ -62,7 +62,7 @@ export async function updateNeighborhoodScores(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const neighborhoodData = await db.neighborhoodData.upsert({
+    const neighborhoodData = await prisma.neighborhoodData.upsert({
       where: { propertyWebsiteId },
       update: {
         ...scores,
@@ -96,7 +96,7 @@ export async function updateCrimeData(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const neighborhoodData = await db.neighborhoodData.upsert({
+    const neighborhoodData = await prisma.neighborhoodData.upsert({
       where: { propertyWebsiteId },
       update: {
         crimeIndex: crimeData.crimeIndex,
@@ -134,7 +134,7 @@ export async function updateSchoolRatings(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const neighborhoodData = await db.neighborhoodData.upsert({
+    const neighborhoodData = await prisma.neighborhoodData.upsert({
       where: { propertyWebsiteId },
       update: ratings,
       create: {
@@ -191,17 +191,17 @@ export async function addPointOfInterest(
 
   try {
     // Ensure neighborhood data exists
-    let neighborhoodData = await db.neighborhoodData.findUnique({
+    let neighborhoodData = await prisma.neighborhoodData.findUnique({
       where: { propertyWebsiteId },
     });
 
     if (!neighborhoodData) {
-      neighborhoodData = await db.neighborhoodData.create({
+      neighborhoodData = await prisma.neighborhoodData.create({
         data: { propertyWebsiteId },
       });
     }
 
-    const pointOfInterest = await db.pointOfInterest.create({
+    const pointOfInterest = await prisma.pointOfInterest.create({
       data: {
         neighborhoodDataId: neighborhoodData.id,
         ...poi,
@@ -229,17 +229,17 @@ export async function bulkAddPointsOfInterest(
 
   try {
     // Ensure neighborhood data exists
-    let neighborhoodData = await db.neighborhoodData.findUnique({
+    let neighborhoodData = await prisma.neighborhoodData.findUnique({
       where: { propertyWebsiteId },
     });
 
     if (!neighborhoodData) {
-      neighborhoodData = await db.neighborhoodData.create({
+      neighborhoodData = await prisma.neighborhoodData.create({
         data: { propertyWebsiteId },
       });
     }
 
-    const created = await db.pointOfInterest.createMany({
+    const created = await prisma.pointOfInterest.createMany({
       data: pois.map((poi) => ({
         neighborhoodDataId: neighborhoodData!.id,
         ...poi,
@@ -266,7 +266,7 @@ export async function updatePointOfInterest(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const pointOfInterest = await db.pointOfInterest.update({
+    const pointOfInterest = await prisma.pointOfInterest.update({
       where: { id: poiId },
       data: {
         ...updates,
@@ -290,7 +290,7 @@ export async function deletePointOfInterest(poiId: string) {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    await db.pointOfInterest.delete({
+    await prisma.pointOfInterest.delete({
       where: { id: poiId },
     });
 
@@ -310,12 +310,12 @@ export async function clearAllPointsOfInterest(propertyWebsiteId: string) {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const neighborhoodData = await db.neighborhoodData.findUnique({
+    const neighborhoodData = await prisma.neighborhoodData.findUnique({
       where: { propertyWebsiteId },
     });
 
     if (neighborhoodData) {
-      await db.pointOfInterest.deleteMany({
+      await prisma.pointOfInterest.deleteMany({
         where: { neighborhoodDataId: neighborhoodData.id },
       });
     }

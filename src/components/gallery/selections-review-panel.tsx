@@ -124,7 +124,7 @@ export function SelectionsReviewPanel({
         window.URL.revokeObjectURL(url);
         showToast("Selections exported successfully", "success");
       } else if (!result.success) {
-        showToast(result.error || "Failed to export selections", "error");
+        showToast("error" in result ? result.error : "Failed to export selections", "error");
       }
     } catch (error) {
       console.error("Error exporting selections:", error);

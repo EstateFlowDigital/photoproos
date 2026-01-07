@@ -10,13 +10,22 @@ interface StatCardProps {
   href?: string;
   icon?: React.ReactNode;
   variant?: "default" | "success";
+  /** Color variant for the value text */
+  valueVariant?: "default" | "success" | "error" | "primary";
 }
 
-export function StatCard({ label, value, change, positive, className, href, icon, variant = "default" }: StatCardProps) {
+export function StatCard({ label, value, change, positive, className, href, icon, variant = "default", valueVariant = "default" }: StatCardProps) {
   const accentClass =
     variant === "success"
       ? "bg-[var(--success)]/10 text-[var(--success)]"
       : "bg-[var(--primary)]/10 text-[var(--primary)]";
+
+  const valueColorClass = {
+    default: "text-foreground",
+    success: "text-[var(--success)]",
+    error: "text-[var(--error)]",
+    primary: "text-[var(--primary)]",
+  }[valueVariant];
 
   const content = (
     <>
@@ -39,7 +48,7 @@ export function StatCard({ label, value, change, positive, className, href, icon
         )}
       </div>
       <div className="mt-2 flex items-baseline gap-2">
-        <span className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">{value}</span>
+        <span className={cn("text-2xl font-bold tracking-tight lg:text-3xl", valueColorClass)}>{value}</span>
         {change && (
           <span className={cn(
             "rounded-full px-2 py-0.5 text-xs font-medium",

@@ -1039,6 +1039,7 @@ export async function approveAddonQuote(requestId: string, deliverySlug?: string
                 description: `${request.addon.name}${request.quoteDescription ? ` - ${request.quoteDescription}` : ""}`,
                 quantity: 1,
                 unitCents: priceCents,
+                totalCents: priceCents,
                 sortOrder: 0,
               },
             ],
@@ -1063,7 +1064,7 @@ export async function approveAddonQuote(requestId: string, deliverySlug?: string
     await prisma.activityLog.create({
       data: {
         organizationId: request.organizationId,
-        type: "addon_approved",
+        type: "order_created",
         description: `Client approved add-on "${request.addon.name}" for gallery "${request.project.name}"`,
         projectId: request.projectId,
         metadata: {

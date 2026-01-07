@@ -345,7 +345,7 @@ export async function exportGalleryAnalyticsReport(
   const analyticsResult = await getComprehensiveGalleryAnalytics(projectId);
 
   if (!analyticsResult.success || !analyticsResult.data) {
-    return fail(analyticsResult.error || "Failed to fetch analytics");
+    return fail("error" in analyticsResult ? analyticsResult.error : "Failed to fetch analytics");
   }
 
   const { overview, photoEngagement, downloadHistory, downloadsByDay, downloadsByFormat } =

@@ -4,7 +4,7 @@ import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import type { PropertyWebsiteTemplate, PropertyType, LeadStatus, PropertySectionType } from "@prisma/client";
+import type { PropertyWebsiteTemplate, PropertyType, LeadStatus, PropertySectionType, Prisma } from "@prisma/client";
 import { sendPropertyLeadEmail } from "@/lib/email/send";
 import { extractKeyFromUrl, generatePresignedDownloadUrl } from "@/lib/storage";
 import {
@@ -85,6 +85,23 @@ export interface PropertyWebsiteWithRelations {
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
+  // Access control
+  isPasswordProtected: boolean;
+  password: string | null;
+  // Scheduling
+  scheduledPublishAt: Date | null;
+  expiresAt: Date | null;
+  // Feature toggles
+  enableSharing: boolean;
+  enableMortgageCalc: boolean;
+  enableScheduleTour: boolean;
+  enableFavorite: boolean;
+  // Branding
+  logoUrl: string | null;
+  socialImage: string | null;
+  agentPhotoUrl: string | null;
+  brokerageName: string | null;
+  brokerageLogo: string | null;
   project: {
     id: string;
     name: string;
@@ -1107,7 +1124,7 @@ export async function initializePropertySections(
         sectionType,
         position: index,
         isVisible: true,
-        config: { ...definition?.defaultConfig, ...autoFilledConfig },
+        config: { ...definition?.defaultConfig, ...autoFilledConfig } as Prisma.InputJsonValue,
       };
     });
 
@@ -1199,7 +1216,7 @@ export async function createPropertySection(data: {
         sectionType: data.sectionType,
         position,
         isVisible: true,
-        config: data.config || { ...definition?.defaultConfig, ...autoFilledConfig },
+        config: (data.config || { ...definition?.defaultConfig, ...autoFilledConfig }) as Prisma.InputJsonValue,
       },
     });
 
@@ -1236,7 +1253,7 @@ export async function updatePropertySection(
     await prisma.propertyWebsiteSection.update({
       where: { id: sectionId },
       data: {
-        config: data.config !== undefined ? data.config : undefined,
+        config: data.config !== undefined ? (data.config as Prisma.InputJsonValue) : undefined,
         customTitle: data.customTitle,
         isVisible: data.isVisible,
         backgroundColor: data.backgroundColor,
@@ -1375,7 +1392,7 @@ export async function duplicatePropertySection(
         sectionType: section.sectionType,
         position: section.position + 1,
         isVisible: section.isVisible,
-        config: section.config as Record<string, unknown>,
+        config: section.config as Prisma.InputJsonValue,
         customTitle: section.customTitle ? `${section.customTitle} (Copy)` : null,
         backgroundColor: section.backgroundColor,
         paddingTop: section.paddingTop,
@@ -1484,7 +1501,7 @@ export async function refreshPropertySectionAutoFill(
 
         await prisma.propertyWebsiteSection.update({
           where: { id: section.id },
-          data: { config: mergedConfig },
+          data: { config: mergedConfig as Prisma.InputJsonValue },
         });
       })
     );

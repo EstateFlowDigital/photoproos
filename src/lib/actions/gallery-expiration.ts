@@ -328,7 +328,7 @@ export async function processExpirationNotifications() {
   try {
     const result = await getPendingExpirationNotifications();
     if (!result.success || !result.data) {
-      return fail(result.error);
+      return fail("error" in result ? result.error : "Failed to get notifications");
     }
 
     let sent = 0;

@@ -8,6 +8,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Route-to-Action Atlas Complete** - Finished comprehensive route documentation with 190/190 routes (100%)
+  - **Settings (100%)**: All 35 settings routes fully documented including notifications, email logs, gallery addons, watermarks, integrations (Dropbox, Slack, Zapier, QuickBooks, Mailchimp, Calendly), equipment, photographer pay, and payouts
+  - **Public Routes (100%)**: All 14 public routes including `/order/[slug]`, `/book/[slug]/confirmation`, `/invite/[token]`, `/r/[code]`, `/schedule`, `/track`, `/unsubscribe`
+  - **Field Operations (100%)**: New section with `/field` and `/field/check-in` routes
+  - **API Routes (100%)**: All 52 API routes documented including:
+    - 6 webhooks (Stripe, Clerk, Resend, Twilio, Railway, Dropbox)
+    - 15 cron jobs (reminders, digests, recurring invoices, auto-archive, late fees, email sync)
+    - 2 auth routes (magic link, dev bypass)
+    - 9 gallery APIs, 2 download APIs, 4 upload APIs, 7 OAuth integration APIs
+    - Form, image processing, and bulk PDF APIs
+  - **Galleries (100%)**: Added 3 redirect routes for legacy `/galleries/services/*` paths
+  - **Services & Products (100%)**: All bundles and products routes
+  - **Projects (100%)**: `/projects/analytics`, `/projects/tasks/[id]`
+  - **Properties (100%)**: `/properties/new`, `/properties/[id]`, `/properties/[id]/edit`
+  - **Portfolios (100%)**: `/portfolios/new`, `/portfolios/[id]`
+  - **Client Portal (100%)**: `/portal/login`, `/portal/questionnaires/[id]`
+  - **Orders (100%)**: `/orders/[id]`, `/orders/analytics`
+  - **Invoices & Billing (100%)**: `/billing/credit-notes/[id]`, `/billing/estimates/[id]`, `/billing/estimates/[id]/edit`, `/billing/retainers/[id]`
+
+- **Component Consolidation - New Shared Components** - Created reusable UI components for consistency
+  - `FilterPills` (`/src/components/ui/filter-pills.tsx`) - Status/category filter tabs with Link or button mode
+  - `ViewModeToggle` (`/src/components/ui/view-mode-toggle.tsx`) - Grid/List view toggle with proper ARIA
+  - `BulkActionBar` (`/src/components/ui/bulk-action-bar.tsx`) - Floating bulk action bar for selections
+  - `FormSection`, `FormRow`, `FormGrid` (`/src/components/ui/form-section.tsx`) - Form field grouping components
+  - Added `leftIcon` and `rightIcon` props to `Button` component
+  - Added `valueVariant` prop to `StatCard` for colored value text (success/error/primary)
+
+- **Design System Tokens** - Added overlay tokens for modal/dialog backgrounds
+  - `--overlay: rgba(0, 0, 0, 0.6)` - Standard modal overlay
+  - `--overlay-heavy: rgba(0, 0, 0, 0.8)` - Alert dialog overlay
+  - `--overlay-light: rgba(0, 0, 0, 0.4)` - Light overlay variant
+
+### Changed
+- **Galleries Page** - Migrated to use `FilterPills` and `ViewModeToggle` components
+- **Payments Page** - Migrated to use `FilterPills` component for status filter tabs
+- **Invoices Page** - Migrated to use `FilterPills` and `StatCard` components for consistent UI
+- **Services Page** - Migrated to use `ViewModeToggle` component and centralized icons library
+
+### Fixed
+- **Design System Compliance** - Replaced hardcoded colors with design tokens
+  - `switch.tsx` - Changed `bg-white` to `bg-[var(--foreground)]`
+  - `dialog.tsx` - Changed `bg-black/60` to `bg-[var(--overlay)]`
+  - `alert-dialog.tsx` - Changed `bg-black/80` to `bg-[var(--overlay-heavy)]`
+  - `toast.tsx` - Changed `hover:bg-black/10` to `hover:bg-[var(--background-hover)]`
+  - `image-lightbox.tsx` - Replaced all hardcoded white/black colors with design tokens
+
 - **Property Website Font Customization** - Custom typography support for property websites
   - 11 Google Font options for headings: Inter, Playfair Display, Montserrat, Lora, Roboto, Poppins, Source Serif, DM Serif Display, Josefin Sans, Cormorant Garamond, Libre Baskerville
   - Same font options for body text with independent selection
@@ -32,6 +78,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - CTA to view full analytics in dashboard
   - Cron job (`/src/app/api/cron/property-digest/route.ts`) that:
     - Runs weekly to aggregate property website analytics
+
+- **Property Website Advanced Settings** - Comprehensive settings UI for property websites
+  - **Password Protection**: Enable/disable password protection with password input field
+  - **Scheduled Publishing**: Date/time picker to auto-publish websites at a specific date
+  - **Expiration Date**: Date/time picker to auto-unpublish websites after a specific date
+  - **Accent Color Picker**: Color input with hex value display and live preview swatch
+  - **Interactive Features Toggles**:
+    - Social Sharing buttons toggle
+    - Mortgage Calculator toggle
+    - Schedule Tour button toggle
+    - Favorite/save button toggle
+  - **SEO Settings**:
+    - Meta title with character count (60 max)
+    - Meta description with character count (160 max)
+    - Live Google search result preview
+  - **Agent & Brokerage Branding**:
+    - Agent photo URL with circular preview
+    - Brokerage name field
+  - Updated `PropertyWebsiteWithRelations` type to include all new fields
     - Sends digest to organization owners with published property websites
     - Calculates week-over-week views change
     - Skips organizations with no activity

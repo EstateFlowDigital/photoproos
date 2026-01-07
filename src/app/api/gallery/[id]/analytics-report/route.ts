@@ -45,7 +45,7 @@ export async function GET(
 
     if (!analyticsResult.success || !analyticsResult.data) {
       return NextResponse.json(
-        { error: analyticsResult.error || "Failed to fetch analytics" },
+        { error: "error" in analyticsResult ? analyticsResult.error : "Failed to fetch analytics" },
         { status: 500 }
       );
     }

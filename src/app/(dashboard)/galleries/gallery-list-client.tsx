@@ -12,8 +12,6 @@ import {
   SearchIcon,
   XIcon as CloseIcon,
   ChevronDownIcon,
-  GridIcon,
-  ListIcon,
   GalleryPlaceholderIcon,
   PlusIcon,
   MoreIcon,
@@ -28,6 +26,7 @@ import {
   EyeIcon,
   DownloadIcon,
 } from "@/components/ui/icons";
+import { ViewModeToggle } from "@/components/ui/view-mode-toggle";
 
 interface GalleryService {
   id: string;
@@ -515,32 +514,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
           )}
 
           {/* View Toggle */}
-          <div className="flex items-center rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-1">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={cn(
-                "flex items-center justify-center rounded-md p-2 transition-colors",
-                viewMode === "grid"
-                  ? "bg-[var(--primary)] text-white"
-                  : "text-foreground-muted hover:text-foreground"
-              )}
-              title="Grid view"
-            >
-              <GridIcon className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={cn(
-                "flex items-center justify-center rounded-md p-2 transition-colors",
-                viewMode === "list"
-                  ? "bg-[var(--primary)] text-white"
-                  : "text-foreground-muted hover:text-foreground"
-              )}
-              title="List view"
-            >
-              <ListIcon className="h-4 w-4" />
-            </button>
-          </div>
+          <ViewModeToggle value={viewMode} onChange={setViewMode} />
 
           {/* Select Mode Toggle */}
           {displayedGalleries.length > 0 && (

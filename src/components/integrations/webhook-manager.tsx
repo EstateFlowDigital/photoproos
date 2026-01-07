@@ -95,7 +95,7 @@ export function WebhookManager({ webhooks, onRefresh, className }: WebhookManage
       setTestResult({
         id: webhookId,
         success: false,
-        message: result.error || "Test failed",
+        message: "error" in result ? result.error : "Test failed",
       });
     }
 
@@ -131,7 +131,7 @@ export function WebhookManager({ webhooks, onRefresh, className }: WebhookManage
     if (result.success) {
       onRefresh();
     } else {
-      setError(result.error || "Failed to update webhook");
+      setError("error" in result ? result.error : "Failed to update webhook");
     }
 
     setIsLoading(false);
@@ -326,7 +326,7 @@ function WebhookCreateForm({ onSuccess, onCancel, onError }: WebhookCreateFormPr
     if (result.success && result.webhook?.secret) {
       onSuccess(result.webhook.secret);
     } else {
-      onError(result.error || "Failed to create webhook");
+      onError("error" in result ? result.error : "Failed to create webhook");
     }
 
     setIsLoading(false);

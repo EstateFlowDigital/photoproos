@@ -60,7 +60,7 @@ export function SelectionPanel({
         setSelections(result.data.selections as Selection[]);
         setSummary(result.data.summary as SelectionSummary);
       } else {
-        setError(result.error || "Failed to load selections");
+        setError("error" in result ? result.error : "Failed to load selections");
       }
     } catch {
       setError("Failed to load selections");

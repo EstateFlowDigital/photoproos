@@ -225,7 +225,7 @@ export function AnalyticsDashboard({
           URL.revokeObjectURL(url);
           showToast("Analytics exported successfully", "success");
         } else {
-          showToast(result.error || "Export failed", "error");
+          showToast("error" in result ? result.error : "Export failed", "error");
         }
       }
     } catch (err) {

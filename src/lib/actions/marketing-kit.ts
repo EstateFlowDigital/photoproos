@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import {
   MarketingAssetType,
   MarketingAssetVariant,
@@ -50,7 +50,7 @@ export async function createMarketingKit(input: CreateMarketingKitInput) {
   try {
     // Check if property already has a kit (if propertyWebsiteId provided)
     if (input.propertyWebsiteId) {
-      const existing = await db.marketingKit.findUnique({
+      const existing = await prisma.marketingKit.findUnique({
         where: { propertyWebsiteId: input.propertyWebsiteId },
       });
       if (existing) {
@@ -58,7 +58,7 @@ export async function createMarketingKit(input: CreateMarketingKitInput) {
       }
     }
 
-    const marketingKit = await db.marketingKit.create({
+    const marketingKit = await prisma.marketingKit.create({
       data: {
         organizationId: orgId,
         ...input,
@@ -88,7 +88,7 @@ export async function getMarketingKit(kitId: string) {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const marketingKit = await db.marketingKit.findUnique({
+    const marketingKit = await prisma.marketingKit.findUnique({
       where: { id: kitId },
       include: {
         assets: {
@@ -143,7 +143,7 @@ export async function getMarketingKitByPropertyWebsite(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const marketingKit = await db.marketingKit.findUnique({
+    const marketingKit = await prisma.marketingKit.findUnique({
       where: { propertyWebsiteId },
       include: {
         assets: {
@@ -174,7 +174,7 @@ export async function updateMarketingKit(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const existing = await db.marketingKit.findUnique({
+    const existing = await prisma.marketingKit.findUnique({
       where: { id: kitId },
     });
 
@@ -182,7 +182,7 @@ export async function updateMarketingKit(
       return { error: "Marketing kit not found" };
     }
 
-    const marketingKit = await db.marketingKit.update({
+    const marketingKit = await prisma.marketingKit.update({
       where: { id: kitId },
       data: updates,
     });
@@ -204,7 +204,7 @@ export async function deleteMarketingKit(kitId: string) {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const existing = await db.marketingKit.findUnique({
+    const existing = await prisma.marketingKit.findUnique({
       where: { id: kitId },
     });
 
@@ -212,7 +212,7 @@ export async function deleteMarketingKit(kitId: string) {
       return { error: "Marketing kit not found" };
     }
 
-    await db.marketingKit.delete({
+    await prisma.marketingKit.delete({
       where: { id: kitId },
     });
 
@@ -240,7 +240,7 @@ export async function generateMarketingAssets(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const kit = await db.marketingKit.findUnique({
+    const kit = await prisma.marketingKit.findUnique({
       where: { id: kitId },
       include: {
         propertyWebsite: {
@@ -297,7 +297,7 @@ export async function generateMarketingAssets(
     for (const assetType of typesToGenerate as MarketingAssetType[]) {
       for (const variant of variants) {
         // Create the asset record
-        const asset = await db.marketingAsset.create({
+        const asset = await prisma.marketingAsset.create({
           data: {
             organizationId: orgId,
             propertyWebsiteId: property?.id,
@@ -336,7 +336,7 @@ export async function generateMarketingAssets(
 
         // Queue the actual rendering (in production, this would go to a job queue)
         // For now, we'll mark it as ready for the frontend to render
-        await db.marketingAsset.update({
+        await prisma.marketingAsset.update({
           where: { id: asset.id },
           data: { status: "ready" },
         });
@@ -360,7 +360,7 @@ export async function regenerateAsset(assetId: string) {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const asset = await db.marketingAsset.findUnique({
+    const asset = await prisma.marketingAsset.findUnique({
       where: { id: assetId },
     });
 
@@ -369,7 +369,7 @@ export async function regenerateAsset(assetId: string) {
     }
 
     // Reset status to pending
-    await db.marketingAsset.update({
+    await prisma.marketingAsset.update({
       where: { id: assetId },
       data: {
         status: "pending",
@@ -379,7 +379,7 @@ export async function regenerateAsset(assetId: string) {
     });
 
     // Queue regeneration (in production, this would go to a job queue)
-    await db.marketingAsset.update({
+    await prisma.marketingAsset.update({
       where: { id: assetId },
       data: { status: "ready" },
     });
@@ -405,7 +405,7 @@ export async function getMarketingAssets(kitId: string) {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const kit = await db.marketingKit.findUnique({
+    const kit = await prisma.marketingKit.findUnique({
       where: { id: kitId },
     });
 
@@ -413,7 +413,7 @@ export async function getMarketingAssets(kitId: string) {
       return { error: "Marketing kit not found" };
     }
 
-    const assets = await db.marketingAsset.findMany({
+    const assets = await prisma.marketingAsset.findMany({
       where: { marketingKitId: kitId },
       orderBy: [{ type: "asc" }, { variant: "asc" }, { createdAt: "desc" }],
     });
@@ -440,7 +440,7 @@ export async function updateMarketingAsset(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const asset = await db.marketingAsset.findUnique({
+    const asset = await prisma.marketingAsset.findUnique({
       where: { id: assetId },
     });
 
@@ -448,7 +448,7 @@ export async function updateMarketingAsset(
       return { error: "Asset not found" };
     }
 
-    const updatedAsset = await db.marketingAsset.update({
+    const updatedAsset = await prisma.marketingAsset.update({
       where: { id: assetId },
       data: {
         name: updates.name,
@@ -474,7 +474,7 @@ export async function deleteMarketingAsset(assetId: string) {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const asset = await db.marketingAsset.findUnique({
+    const asset = await prisma.marketingAsset.findUnique({
       where: { id: assetId },
     });
 
@@ -482,7 +482,7 @@ export async function deleteMarketingAsset(assetId: string) {
       return { error: "Asset not found" };
     }
 
-    await db.marketingAsset.delete({
+    await prisma.marketingAsset.delete({
       where: { id: assetId },
     });
 
@@ -507,7 +507,7 @@ export async function getMarketingTemplates(type?: MarketingAssetType) {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const templates = await db.marketingTemplate.findMany({
+    const templates = await prisma.marketingTemplate.findMany({
       where: {
         OR: [
           { organizationId: orgId },
@@ -538,7 +538,7 @@ export async function createTemplateFromAsset(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const asset = await db.marketingAsset.findUnique({
+    const asset = await prisma.marketingAsset.findUnique({
       where: { id: assetId },
     });
 
@@ -546,7 +546,7 @@ export async function createTemplateFromAsset(
       return { error: "Asset not found" };
     }
 
-    const template = await db.marketingTemplate.create({
+    const template = await prisma.marketingTemplate.create({
       data: {
         organizationId: orgId,
         name,
@@ -584,7 +584,7 @@ export async function getAudioTracks(filters?: {
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const tracks = await db.audioTrack.findMany({
+    const tracks = await prisma.audioTrack.findMany({
       where: {
         OR: [
           { organizationId: orgId },
@@ -622,7 +622,7 @@ export async function purchaseMarketingKit(
   if (!orgId) return { error: "Unauthorized" };
 
   try {
-    const kit = await db.marketingKit.findUnique({
+    const kit = await prisma.marketingKit.findUnique({
       where: { id: kitId },
     });
 
@@ -631,7 +631,7 @@ export async function purchaseMarketingKit(
     }
 
     // Update the kit as purchased
-    const updatedKit = await db.marketingKit.update({
+    const updatedKit = await prisma.marketingKit.update({
       where: { id: kitId },
       data: {
         isPurchased: true,
@@ -642,7 +642,7 @@ export async function purchaseMarketingKit(
     });
 
     // Generate assets if not already generated
-    const existingAssets = await db.marketingAsset.count({
+    const existingAssets = await prisma.marketingAsset.count({
       where: { marketingKitId: kitId },
     });
 

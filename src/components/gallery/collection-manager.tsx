@@ -207,7 +207,7 @@ export function CollectionManager({
       if (result.success && result.data) {
         setCollections(result.data as Collection[]);
       } else {
-        showToast(result.error || "Failed to load collections", "error");
+        showToast("error" in result ? result.error : "Failed to load collections", "error");
       }
     } catch {
       showToast("Failed to load collections", "error");

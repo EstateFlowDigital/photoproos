@@ -246,7 +246,7 @@ export async function logEmailSent(params: {
   subject: string;
   status?: EmailStatus;
 }) {
-  const { success, logId } = await createEmailLog({
+  const result = await createEmailLog({
     organizationId: params.organizationId,
     toEmail: params.toEmail,
     toName: params.toName,
@@ -256,11 +256,13 @@ export async function logEmailSent(params: {
     subject: params.subject,
   });
 
-  if (success && logId && params.status) {
+  const logId = result.success ? result.logId : undefined;
+
+  if (result.success && logId && params.status) {
     await updateEmailLogStatus(logId, params.status);
   }
 
-  return { success, logId };
+  return { success: result.success, logId };
 }
 
 /**

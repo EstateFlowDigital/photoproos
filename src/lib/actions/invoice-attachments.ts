@@ -69,10 +69,10 @@ export async function addInvoiceAttachment(
 
   await logActivity({
     organizationId,
-    entityType: "invoice",
-    entityId: input.invoiceId,
-    action: "attachment_added",
-    details: { fileName: input.fileName },
+    type: "file_uploaded",
+    description: `Attachment "${input.fileName}" added to invoice`,
+    invoiceId: input.invoiceId,
+    metadata: { fileName: input.fileName },
   });
 
   revalidatePath("/invoices/" + input.invoiceId);
@@ -204,10 +204,10 @@ export async function deleteInvoiceAttachment(
 
   await logActivity({
     organizationId,
-    entityType: "invoice",
-    entityId: existing.invoice.id,
-    action: "attachment_deleted",
-    details: { fileName: existing.fileName },
+    type: "file_downloaded", // Using file_downloaded for deletion as closest match
+    description: `Attachment "${existing.fileName}" removed from invoice ${existing.invoice.invoiceNumber}`,
+    invoiceId: existing.invoice.id,
+    metadata: { fileName: existing.fileName },
   });
 
   revalidatePath("/invoices/" + existing.invoice.id);

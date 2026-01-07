@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, fail, type VoidActionResult } from "@/lib/types/action-result";
+import { ok, fail, type VoidActionResult, type ActionResult } from "@/lib/types/action-result";
 
 import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";

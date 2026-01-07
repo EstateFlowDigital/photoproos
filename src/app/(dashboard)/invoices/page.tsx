@@ -1,14 +1,14 @@
 export const dynamic = "force-dynamic";
-import { PageHeader, PageContextNav, DocumentIcon, CurrencyIcon, StripeIcon } from "@/components/dashboard";
+import { PageHeader, PageContextNav, DocumentIcon, CurrencyIcon, StripeIcon, StatCard } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import type { InvoiceStatus } from "@prisma/client";
 import { BulkExportButton } from "@/components/invoices/bulk-export-button";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import { InvoicesPageClient } from "./invoices-page-client";
+import { FilterPills } from "@/components/ui/filter-pills";
 
 
 interface PageProps {
@@ -119,117 +119,24 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
 
       {/* Summary Cards */}
       <div className="auto-grid grid-min-220 grid-gap-4">
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-          <p className="text-sm font-medium text-foreground-muted">Total Outstanding</p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {formatCurrency(totalOutstanding)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-          <p className="text-sm font-medium text-foreground-muted">Paid This Month</p>
-          <p className="mt-2 text-2xl font-semibold text-[var(--success)]">
-            {formatCurrency(totalPaid)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-          <p className="text-sm font-medium text-foreground-muted">Pending</p>
-          <p className="mt-2 text-2xl font-semibold text-[var(--primary)]">
-            {statusCounts.sent}
-          </p>
-        </div>
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-          <p className="text-sm font-medium text-foreground-muted">Overdue</p>
-          <p className="mt-2 text-2xl font-semibold text-[var(--error)]">
-            {statusCounts.overdue}
-          </p>
-        </div>
+        <StatCard label="Total Outstanding" value={formatCurrency(totalOutstanding)} />
+        <StatCard label="Paid This Month" value={formatCurrency(totalPaid)} valueVariant="success" />
+        <StatCard label="Pending" value={String(statusCounts.sent)} valueVariant="primary" />
+        <StatCard label="Overdue" value={String(statusCounts.overdue)} valueVariant="error" />
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="flex flex-wrap gap-2">
-        <Link
-          href="/invoices"
-          className={cn(
-            "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-            !statusFilter
-              ? "bg-[var(--primary)] text-white"
-              : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
-          )}
-        >
-          All
-          <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-xs">
-            {statusCounts.all}
-          </span>
-        </Link>
-        <Link
-          href="/invoices?status=draft"
-          className={cn(
-            "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-            statusFilter === "draft"
-              ? "bg-[var(--primary)] text-white"
-              : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
-          )}
-        >
-          Draft
-          <span className={cn(
-            "rounded-full px-1.5 py-0.5 text-xs",
-            statusFilter === "draft" ? "bg-white/20" : "bg-[var(--background-tertiary)]"
-          )}>
-            {statusCounts.draft}
-          </span>
-        </Link>
-        <Link
-          href="/invoices?status=sent"
-          className={cn(
-            "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-            statusFilter === "sent"
-              ? "bg-[var(--primary)] text-white"
-              : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
-          )}
-        >
-          Sent
-          <span className={cn(
-            "rounded-full px-1.5 py-0.5 text-xs",
-            statusFilter === "sent" ? "bg-white/20" : "bg-[var(--background-tertiary)]"
-          )}>
-            {statusCounts.sent}
-          </span>
-        </Link>
-        <Link
-          href="/invoices?status=paid"
-          className={cn(
-            "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-            statusFilter === "paid"
-              ? "bg-[var(--primary)] text-white"
-              : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
-          )}
-        >
-          Paid
-          <span className={cn(
-            "rounded-full px-1.5 py-0.5 text-xs",
-            statusFilter === "paid" ? "bg-white/20" : "bg-[var(--background-tertiary)]"
-          )}>
-            {statusCounts.paid}
-          </span>
-        </Link>
-        <Link
-          href="/invoices?status=overdue"
-          className={cn(
-            "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-            statusFilter === "overdue"
-              ? "bg-[var(--primary)] text-white"
-              : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
-          )}
-        >
-          Overdue
-          <span className={cn(
-            "rounded-full px-1.5 py-0.5 text-xs",
-            statusFilter === "overdue" ? "bg-white/20" : "bg-[var(--background-tertiary)]"
-          )}>
-            {statusCounts.overdue}
-          </span>
-        </Link>
-      </div>
+      <FilterPills
+        options={[
+          { value: "all", label: "All", count: statusCounts.all, href: "/invoices" },
+          { value: "draft", label: "Draft", count: statusCounts.draft, href: "/invoices?status=draft" },
+          { value: "sent", label: "Sent", count: statusCounts.sent, href: "/invoices?status=sent" },
+          { value: "paid", label: "Paid", count: statusCounts.paid, href: "/invoices?status=paid" },
+          { value: "overdue", label: "Overdue", count: statusCounts.overdue, href: "/invoices?status=overdue" },
+        ]}
+        value={statusFilter || "all"}
+        asLinks
+      />
 
       {/* Invoices Table */}
       <InvoicesPageClient invoices={invoices} statusFilter={statusFilter} />

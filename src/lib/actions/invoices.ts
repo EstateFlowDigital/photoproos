@@ -2244,12 +2244,17 @@ export async function getDepositBalancePair(invoiceId: string): Promise<
       id: string;
       invoiceNumber: string;
       totalCents: number;
-      status?: InvoiceStatus | string;
-      paidAmountCents?: number;
+      status: InvoiceStatus;
+      paidAmountCents: number;
+    } | null;
+    type ParentInvoiceSummary = {
+      id: string;
+      invoiceNumber: string;
+      totalCents: number;
     } | null;
     let depositInvoice: InvoiceSummary = null;
     let balanceInvoice: InvoiceSummary = null;
-    let parentInvoice: InvoiceSummary = null;
+    let parentInvoice: ParentInvoiceSummary = null;
 
     // Check if this invoice is part of a deposit/balance pair
     if (invoice.isDeposit || invoice.isBalance) {
@@ -2270,8 +2275,8 @@ export async function getDepositBalancePair(invoiceId: string): Promise<
             id: sibling.id,
             invoiceNumber: sibling.invoiceNumber,
             totalCents: sibling.totalCents,
-            status: "status" in sibling ? sibling.status : "draft",
-            paidAmountCents: "paidAmountCents" in sibling ? sibling.paidAmountCents : 0,
+            status: ("status" in sibling ? sibling.status : "draft") as InvoiceStatus,
+            paidAmountCents: ("paidAmountCents" in sibling ? sibling.paidAmountCents : 0) as number,
           };
         }
       } else {
@@ -2290,8 +2295,8 @@ export async function getDepositBalancePair(invoiceId: string): Promise<
             id: sibling.id,
             invoiceNumber: sibling.invoiceNumber,
             totalCents: sibling.totalCents,
-            status: "status" in sibling ? sibling.status : "draft",
-            paidAmountCents: "paidAmountCents" in sibling ? sibling.paidAmountCents : 0,
+            status: ("status" in sibling ? sibling.status : "draft") as InvoiceStatus,
+            paidAmountCents: ("paidAmountCents" in sibling ? sibling.paidAmountCents : 0) as number,
           };
         }
       }

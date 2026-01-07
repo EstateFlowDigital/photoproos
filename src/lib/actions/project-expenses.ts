@@ -418,7 +418,7 @@ export async function toggleExpensePaidStatus(expenseId: string) {
 /**
  * Get expense category labels and icons
  */
-export async function getExpenseCategoryInfo(category: ExpenseCategory) {
+export function getExpenseCategoryInfo(category: ExpenseCategory) {
   const categories: Record<ExpenseCategory, { label: string; icon: string }> = {
     labor: { label: "Labor", icon: "users" },
     travel: { label: "Travel", icon: "car" },
@@ -437,7 +437,7 @@ export async function getExpenseCategoryInfo(category: ExpenseCategory) {
 /**
  * Get all expense categories
  */
-export async function getExpenseCategories() {
+export function getExpenseCategories() {
   const categories: ExpenseCategory[] = [
     "labor",
     "travel",
@@ -450,12 +450,8 @@ export async function getExpenseCategories() {
     "other",
   ];
 
-  const result = await Promise.all(
-    categories.map(async (cat) => ({
-      value: cat,
-      ...(await getExpenseCategoryInfo(cat)),
-    }))
-  );
-
-  return result;
+  return categories.map((cat) => ({
+    value: cat,
+    ...getExpenseCategoryInfo(cat),
+  }));
 }

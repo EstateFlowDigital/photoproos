@@ -163,7 +163,7 @@ export async function getGalleryActivityTimeline(
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
-          amount: true,
+          amountCents: true,
           clientEmail: true,
           createdAt: true,
         },
@@ -270,11 +270,11 @@ export async function getGalleryActivityTimeline(
         id: `payment-${payment.id}`,
         type: "gallery_paid",
         title: "Payment received",
-        description: `$${(payment.amount / 100).toFixed(2)} from ${payment.clientEmail || "client"}`,
+        description: `$${(payment.amountCents / 100).toFixed(2)} from ${payment.clientEmail || "client"}`,
         timestamp: payment.createdAt,
         metadata: {
           clientEmail: payment.clientEmail,
-          amount: payment.amount,
+          amount: payment.amountCents,
         },
       });
     }
@@ -355,7 +355,7 @@ export async function getGalleryActivitySummary(projectId: string) {
           projectId,
           status: "paid",
         },
-        _sum: { amount: true },
+        _sum: { amountCents: true },
       }),
 
       // Count unique clients
@@ -375,7 +375,7 @@ export async function getGalleryActivitySummary(projectId: string) {
       views: viewCount,
       downloads: downloadCount,
       favorites: favoriteCount,
-      revenue: paymentTotal._sum.amount || 0,
+      revenue: paymentTotal._sum?.amountCents || 0,
       uniqueClients,
     });
   } catch (error) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -11,6 +11,8 @@ import {
   updatePropertyWebsite,
   deletePropertyWebsite,
   updateLeadStatus,
+  updatePropertyWebsiteSettings,
+  updatePropertyAgentInfo,
 } from "@/lib/actions/property-websites";
 import {
   generatePropertyFlyer,
@@ -102,6 +104,49 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
   const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
   const [domainVerified, setDomainVerified] = useState(website.customDomainVerified);
   const [showDomainInstructions, setShowDomainInstructions] = useState(false);
+  const [cnameTarget, setCnameTarget] = useState<string>("cname.photoproos.com");
+
+  // Password protection state
+  const [isPasswordProtected, setIsPasswordProtected] = useState(website.isPasswordProtected);
+  const [password, setPassword] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+
+  // Scheduling state
+  const [scheduledPublishAt, setScheduledPublishAt] = useState<string>(
+    website.scheduledPublishAt ? new Date(website.scheduledPublishAt).toISOString().slice(0, 16) : ""
+  );
+  const [expiresAt, setExpiresAt] = useState<string>(
+    website.expiresAt ? new Date(website.expiresAt).toISOString().slice(0, 16) : ""
+  );
+  const [isSavingScheduling, setIsSavingScheduling] = useState(false);
+
+  // Feature toggles state
+  const [enableSharing, setEnableSharing] = useState(website.enableSharing);
+  const [enableMortgageCalc, setEnableMortgageCalc] = useState(website.enableMortgageCalc);
+  const [enableScheduleTour, setEnableScheduleTour] = useState(website.enableScheduleTour);
+  const [enableFavorite, setEnableFavorite] = useState(website.enableFavorite);
+  const [isSavingFeatures, setIsSavingFeatures] = useState(false);
+
+  // SEO state
+  const [metaTitle, setMetaTitle] = useState(website.metaTitle || "");
+  const [metaDescription, setMetaDescription] = useState(website.metaDescription || "");
+  const [isSavingSeo, setIsSavingSeo] = useState(false);
+
+  // Agent/brokerage state
+  const [brokerageName, setBrokerageName] = useState(website.brokerageName || "");
+  const [isSavingBrokerage, setIsSavingBrokerage] = useState(false);
+
+  // Accent color state
+  const [accentColor, setAccentColor] = useState(website.accentColor || "#3b82f6");
+
+  // Agent photo state
+  const [agentPhotoUrl, setAgentPhotoUrl] = useState(website.agentPhotoUrl || "");
+  const [isUploadingAgentPhoto, setIsUploadingAgentPhoto] = useState(false);
+
+  // Fetch CNAME target on mount
+  useEffect(() => {
+    getCnameTarget().then(setCnameTarget);
+  }, []);
 
   const handleTogglePublish = async () => {
     setIsPublishing(true);
@@ -127,6 +172,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         isBranded,
         showPrice,
         showAgent,
+        accentColor: accentColor || null,
       });
       if (result.success) {
         showToast("Settings saved successfully", "success");
@@ -250,6 +296,110 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
       showToast("Failed to generate social graphic", "error");
     } finally {
       setIsGeneratingSocial(false);
+    }
+  };
+
+  // Save password protection settings
+  const handleSavePasswordProtection = async () => {
+    setIsSavingPassword(true);
+    try {
+      const result = await updatePropertyWebsiteSettings(website.id, {
+        isPasswordProtected,
+        password: password || null,
+      });
+      if (result.success) {
+        showToast("Password protection updated", "success");
+        setPassword("");
+      } else {
+        showToast(result.error || "Failed to update password protection", "error");
+      }
+    } catch {
+      showToast("Failed to update password protection", "error");
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  // Save scheduling settings
+  const handleSaveScheduling = async () => {
+    setIsSavingScheduling(true);
+    try {
+      const result = await updatePropertyWebsiteSettings(website.id, {
+        scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      });
+      if (result.success) {
+        showToast("Scheduling updated", "success");
+        router.refresh();
+      } else {
+        showToast(result.error || "Failed to update scheduling", "error");
+      }
+    } catch {
+      showToast("Failed to update scheduling", "error");
+    } finally {
+      setIsSavingScheduling(false);
+    }
+  };
+
+  // Save feature toggles
+  const handleSaveFeatures = async () => {
+    setIsSavingFeatures(true);
+    try {
+      const result = await updatePropertyWebsiteSettings(website.id, {
+        enableSharing,
+        enableMortgageCalc,
+        enableScheduleTour,
+        enableFavorite,
+      });
+      if (result.success) {
+        showToast("Features updated", "success");
+      } else {
+        showToast(result.error || "Failed to update features", "error");
+      }
+    } catch {
+      showToast("Failed to update features", "error");
+    } finally {
+      setIsSavingFeatures(false);
+    }
+  };
+
+  // Save SEO settings
+  const handleSaveSeo = async () => {
+    setIsSavingSeo(true);
+    try {
+      const result = await updatePropertyWebsite(website.id, {
+        metaTitle: metaTitle || null,
+        metaDescription: metaDescription || null,
+      });
+      if (result.success) {
+        showToast("SEO settings updated", "success");
+      } else {
+        showToast(result.error || "Failed to update SEO settings", "error");
+      }
+    } catch {
+      showToast("Failed to update SEO settings", "error");
+    } finally {
+      setIsSavingSeo(false);
+    }
+  };
+
+  // Save agent and brokerage info
+  const handleSaveBrokerage = async () => {
+    setIsSavingBrokerage(true);
+    try {
+      const result = await updatePropertyAgentInfo(website.id, {
+        brokerageName: brokerageName || null,
+        agentPhotoUrl: agentPhotoUrl || null,
+      });
+      if (result.success) {
+        showToast("Agent & brokerage info updated", "success");
+      } else {
+        showToast(result.error || "Failed to update agent & brokerage info", "error");
+      }
+    } catch {
+      showToast("Failed to update agent & brokerage info", "error");
+    } finally {
+      setIsSavingBrokerage(false);
     }
   };
 
@@ -992,6 +1142,34 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                     />
                   </button>
                 </label>
+
+                <div className="pt-2 border-t border-[var(--card-border)]">
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Accent Color
+                  </label>
+                  <p className="text-xs text-foreground-muted mb-3">
+                    Customize the accent color for buttons and highlights
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="h-10 w-14 cursor-pointer rounded-lg border border-[var(--card-border)] bg-[var(--background)]"
+                    />
+                    <input
+                      type="text"
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      placeholder="#3b82f6"
+                      className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground font-mono"
+                    />
+                    <div
+                      className="h-10 w-10 rounded-lg border border-[var(--card-border)]"
+                      style={{ backgroundColor: accentColor }}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="mt-6 flex justify-end">
@@ -1082,12 +1260,12 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                       </div>
                       <div className="flex justify-between items-center py-2 px-3 rounded bg-[var(--background)] border border-[var(--card-border)]">
                         <span className="text-foreground-muted">Target</span>
-                        <span className="font-mono text-foreground">{getCnameTarget()}</span>
+                        <span className="font-mono text-foreground">{cnameTarget}</span>
                       </div>
                     </div>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(getCnameTarget());
+                        navigator.clipboard.writeText(cnameTarget);
                         showToast("CNAME target copied!", "success");
                       }}
                       className="text-sm text-[var(--primary)] hover:underline"
@@ -1186,6 +1364,394 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                   </p>
                 </div>
               )}
+            </div>
+
+            {/* Password Protection */}
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="mb-4 font-semibold text-foreground">Password Protection</h2>
+              <p className="mb-4 text-sm text-foreground-secondary">
+                Require visitors to enter a password before viewing this property website.
+              </p>
+              <div className="space-y-4">
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">Enable Password Protection</p>
+                    <p className="text-sm text-foreground-secondary">
+                      Visitors must enter a password to view
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsPasswordProtected(!isPasswordProtected)}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      isPasswordProtected ? "bg-[var(--primary)]" : "bg-[var(--background-tertiary)]"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                        isPasswordProtected ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </label>
+
+                {isPasswordProtected && (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-foreground">
+                      {website.password ? "Update Password" : "Set Password"}
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={website.password ? "Enter new password" : "Enter password"}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    />
+                    {website.password && (
+                      <p className="mt-1 text-xs text-foreground-muted">
+                        Leave blank to keep the current password
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSavePasswordProtection}
+                    disabled={isSavingPassword}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                  >
+                    {isSavingPassword ? (
+                      <>
+                        <LoadingSpinner className="h-4 w-4" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Scheduling */}
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="mb-4 font-semibold text-foreground">Scheduling</h2>
+              <p className="mb-4 text-sm text-foreground-secondary">
+                Schedule when this property website should be published or expire.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">
+                    Scheduled Publish Date
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledPublishAt}
+                    onChange={(e) => setScheduledPublishAt(e.target.value)}
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    Automatically publish the website at this date and time
+                  </p>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">
+                    Expiration Date
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={expiresAt}
+                    onChange={(e) => setExpiresAt(e.target.value)}
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    Automatically unpublish the website after this date
+                  </p>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSaveScheduling}
+                    disabled={isSavingScheduling}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                  >
+                    {isSavingScheduling ? (
+                      <>
+                        <LoadingSpinner className="h-4 w-4" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Scheduling"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature Toggles */}
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="mb-4 font-semibold text-foreground">Interactive Features</h2>
+              <p className="mb-4 text-sm text-foreground-secondary">
+                Enable or disable interactive features on your property website.
+              </p>
+              <div className="space-y-4">
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">Social Sharing</p>
+                    <p className="text-sm text-foreground-secondary">
+                      Show share buttons for social media
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setEnableSharing(!enableSharing)}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      enableSharing ? "bg-[var(--primary)]" : "bg-[var(--background-tertiary)]"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                        enableSharing ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </label>
+
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">Mortgage Calculator</p>
+                    <p className="text-sm text-foreground-secondary">
+                      Show a mortgage payment calculator
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setEnableMortgageCalc(!enableMortgageCalc)}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      enableMortgageCalc ? "bg-[var(--primary)]" : "bg-[var(--background-tertiary)]"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                        enableMortgageCalc ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </label>
+
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">Schedule Tour Button</p>
+                    <p className="text-sm text-foreground-secondary">
+                      Allow visitors to request a tour
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setEnableScheduleTour(!enableScheduleTour)}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      enableScheduleTour ? "bg-[var(--primary)]" : "bg-[var(--background-tertiary)]"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                        enableScheduleTour ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </label>
+
+                <label className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">Favorite Button</p>
+                    <p className="text-sm text-foreground-secondary">
+                      Allow visitors to save this property
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setEnableFavorite(!enableFavorite)}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      enableFavorite ? "bg-[var(--primary)]" : "bg-[var(--background-tertiary)]"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                        enableFavorite ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </label>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSaveFeatures}
+                    disabled={isSavingFeatures}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                  >
+                    {isSavingFeatures ? (
+                      <>
+                        <LoadingSpinner className="h-4 w-4" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Features"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* SEO Settings */}
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="mb-4 font-semibold text-foreground">SEO Settings</h2>
+              <p className="mb-4 text-sm text-foreground-secondary">
+                Customize how this property appears in search results and social media.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">
+                    Meta Title
+                  </label>
+                  <input
+                    type="text"
+                    value={metaTitle}
+                    onChange={(e) => setMetaTitle(e.target.value)}
+                    placeholder={`${website.address} - ${website.city}, ${website.state}`}
+                    maxLength={60}
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    {metaTitle.length}/60 characters
+                  </p>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">
+                    Meta Description
+                  </label>
+                  <textarea
+                    value={metaDescription}
+                    onChange={(e) => setMetaDescription(e.target.value)}
+                    placeholder="Enter a description for search engines..."
+                    maxLength={160}
+                    rows={3}
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    {metaDescription.length}/160 characters
+                  </p>
+                </div>
+
+                {/* SEO Preview */}
+                <div className="rounded-lg bg-[var(--background-tertiary)] p-4">
+                  <p className="mb-2 text-xs font-medium text-foreground-muted uppercase">Search Preview</p>
+                  <div className="space-y-1">
+                    <p className="text-[#1a0dab] text-base font-medium truncate">
+                      {metaTitle || `${website.address} - ${website.city}, ${website.state}`}
+                    </p>
+                    <p className="text-[#006621] text-xs truncate">
+                      {typeof window !== "undefined" ? window.location.origin : ""}/p/{website.slug}
+                    </p>
+                    <p className="text-sm text-foreground-secondary line-clamp-2">
+                      {metaDescription || website.description || "View property details, photos, and more."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSaveSeo}
+                    disabled={isSavingSeo}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                  >
+                    {isSavingSeo ? (
+                      <>
+                        <LoadingSpinner className="h-4 w-4" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save SEO Settings"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Agent & Brokerage Branding */}
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="mb-4 font-semibold text-foreground">Agent & Brokerage</h2>
+              <p className="mb-4 text-sm text-foreground-secondary">
+                Customize agent photo and brokerage information displayed on the property website.
+              </p>
+              <div className="space-y-4">
+                {/* Agent Photo */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">
+                    Agent Photo
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-20 w-20 flex-shrink-0">
+                      {agentPhotoUrl ? (
+                        <img
+                          src={agentPhotoUrl}
+                          alt="Agent"
+                          className="h-full w-full rounded-full object-cover border border-[var(--card-border)]"
+                        />
+                      ) : (
+                        <div className="h-full w-full rounded-full bg-[var(--background-tertiary)] flex items-center justify-center border border-[var(--card-border)]">
+                          <UserIcon className="h-8 w-8 text-foreground-muted" />
+                        </div>
+                      )}
+                      {isUploadingAgentPhoto && (
+                        <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                          <LoadingSpinner className="h-6 w-6 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="url"
+                        value={agentPhotoUrl}
+                        onChange={(e) => setAgentPhotoUrl(e.target.value)}
+                        placeholder="Enter image URL"
+                        className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                      />
+                      <p className="mt-1 text-xs text-foreground-muted">
+                        Enter a URL to the agent&apos;s photo (e.g., from a headshot or profile page)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Brokerage Name */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">
+                    Brokerage Name
+                  </label>
+                  <input
+                    type="text"
+                    value={brokerageName}
+                    onChange={(e) => setBrokerageName(e.target.value)}
+                    placeholder="Enter brokerage name"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSaveBrokerage}
+                    disabled={isSavingBrokerage}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+                  >
+                    {isSavingBrokerage ? (
+                      <>
+                        <LoadingSpinner className="h-4 w-4" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Agent & Brokerage"
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
