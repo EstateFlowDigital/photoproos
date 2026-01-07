@@ -1992,8 +1992,9 @@ export async function updateOrganizationMileageRate(rateCents: number) {
 
 /**
  * Calculate mileage expense amount
+ * Note: This is a pure utility function, not a server action
  */
-export function calculateMileageAmount(distance: number, rateCents: number): number {
+export async function calculateMileageAmount(distance: number, rateCents: number): Promise<number> {
   return Math.round(distance * rateCents);
 }
 
