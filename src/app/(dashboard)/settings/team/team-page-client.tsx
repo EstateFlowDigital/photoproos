@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { InviteModal, PendingInvitations } from "./invite-modal";
-import { ArrowLeftIcon, PlusIcon, CheckIcon, XIcon, UsersIcon } from "@/components/ui/settings-icons";
+import { ArrowLeftIcon, PlusIcon, CheckIcon, XIcon, UsersIcon, ShieldIcon, UserIcon, TrashIcon } from "@/components/ui/settings-icons";
+import { updateMemberRole, removeMember } from "@/lib/actions/settings";
+import { toast } from "sonner";
 
 interface TeamMember {
   id: string;
@@ -44,11 +46,49 @@ const roleLabels = {
 
 export function TeamPageClient({ members, pendingInvitations, memberLimit }: TeamPageClientProps) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const inviteHandledRef = useRef(false);
 
   const canInvite = memberLimit === -1 || members.length < memberLimit;
   const inviteParam = searchParams?.get("invite");
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setOpenDropdown(null);
+    if (openDropdown) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [openDropdown]);
+
+  const handleRoleChange = (memberId: string, newRole: "admin" | "member") => {
+    startTransition(async () => {
+      const result = await updateMemberRole(memberId, newRole);
+      if (result.success) {
+        toast.success(`Role updated to ${newRole}`);
+      } else {
+        toast.error(result.error || "Failed to update role");
+      }
+      setOpenDropdown(null);
+    });
+  };
+
+  const handleRemoveMember = (memberId: string, memberName: string) => {
+    if (!confirm(`Are you sure you want to remove ${memberName} from the team?`)) {
+      return;
+    }
+    startTransition(async () => {
+      const result = await removeMember(memberId);
+      if (result.success) {
+        toast.success("Team member removed");
+      } else {
+        toast.error(result.error || "Failed to remove member");
+      }
+      setOpenDropdown(null);
+    });
+  };
 
   useEffect(() => {
     if (inviteHandledRef.current || !inviteParam) {
@@ -148,9 +188,54 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
                       Skills & Equipment
                     </Link>
                     {member.role !== "owner" && (
-                      <button className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground">
-                        <MoreIcon className="h-4 w-4" />
-                      </button>
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdown(openDropdown === member.id ? null : member.id);
+                          }}
+                          className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
+                          disabled={isPending}
+                        >
+                          <MoreIcon className="h-4 w-4" />
+                        </button>
+                        {openDropdown === member.id && (
+                          <div
+                            className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-lg"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="px-3 py-2 text-xs font-medium text-foreground-muted">
+                              Change Role
+                            </div>
+                            {member.role !== "admin" && (
+                              <button
+                                onClick={() => handleRoleChange(member.id, "admin")}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                              >
+                                <ShieldIcon className="h-4 w-4 text-blue-400" />
+                                Make Admin
+                              </button>
+                            )}
+                            {member.role !== "member" && (
+                              <button
+                                onClick={() => handleRoleChange(member.id, "member")}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                              >
+                                <UserIcon className="h-4 w-4 text-gray-400" />
+                                Make Member
+                              </button>
+                            )}
+                            <div className="my-1 border-t border-[var(--card-border)]" />
+                            <button
+                              onClick={() => handleRemoveMember(member.id, member.user.fullName || member.user.email)}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--error)] hover:bg-[var(--error)]/10"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                              Remove from Team
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -224,6 +309,30 @@ function MoreIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10 3a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM10 8.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM11.5 15.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z" />
+    </svg>
+  );
+}
+
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M9.661 2.237a.531.531 0 0 1 .678 0 11.947 11.947 0 0 0 7.078 2.749.5.5 0 0 1 .479.425c.069.52.104 1.05.104 1.59 0 5.162-3.26 9.563-7.834 11.256a.48.48 0 0 1-.332 0C5.26 16.564 2 12.163 2 7c0-.538.035-1.069.104-1.589a.5.5 0 0 1 .48-.425 11.947 11.947 0 0 0 7.077-2.75Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function UserIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.519.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
     </svg>
   );
 }

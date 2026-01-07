@@ -5,6 +5,7 @@ import {
   getGalleryZipDownload,
   getWebSizeDownload,
   getHighResDownload,
+  getMarketingKitDownload,
   getInvoicePaymentLink,
   getInvoicePdfDownload,
 } from "@/lib/actions/portal-downloads";
@@ -298,12 +299,49 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
     setDownloadingGallery(galleryId);
     setDownloadType("marketing");
     try {
-      const gallery = galleries.find((g) => g.id === galleryId);
-      if (!gallery) {
-        showToast("Gallery not found", "error");
+      const result = await getMarketingKitDownload(galleryId);
+
+      if (!result.success || !result.marketingKit) {
+        showToast(result.error || "Failed to get marketing kit", "error");
         return;
       }
-      showToast("Marketing kit coming soon! Check the property page for marketing assets.", "info");
+
+      const { marketingKit } = result;
+
+      // Check if there are any marketing assets
+      if (marketingKit.assets.length === 0) {
+        showToast("No marketing materials available for this gallery yet.", "info");
+        return;
+      }
+
+      // Download the marketing kit via API
+      const response = await fetch("/api/download/marketing-kit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          galleryId: marketingKit.galleryId,
+          assetIds: marketingKit.assets.map((a) => a.id),
+        }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const filename = marketingKit.propertyAddress
+          ? `${marketingKit.propertyAddress.replace(/[^a-zA-Z0-9]/g, "-")}-marketing-kit.zip`
+          : `${marketingKit.galleryName}-marketing-kit.zip`;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        showToast(`Downloaded ${marketingKit.assets.length} marketing materials`, "success");
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        showToast(errorData.error || "Failed to download marketing kit", "error");
+      }
     } catch (error) {
       console.error("Download error:", error);
       showToast("Download failed. Please try again.", "error");

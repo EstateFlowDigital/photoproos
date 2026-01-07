@@ -42,6 +42,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Processes only modified threads for significant API call reduction
   - Graceful fallback to limited sync when history is expired (30+ days)
 
+- **Marketing Kit Downloads** - Full implementation of marketing kit download in client portal
+  - Removed "Coming Soon" status from Marketing Kit button in Downloads tab
+  - Updated `getMarketingKitDownload()` action to fetch marketing assets via project→propertyWebsite relationship
+  - Created `/api/download/marketing-kit` API endpoint for streaming ZIP downloads
+  - Features: parallel asset fetching, organized folders by asset type, README with asset manifest
+  - Activity logging for download tracking
+
+- **Design Editor Templates** - 10 professional pre-designed templates for the marketing design editor
+  - **Instagram Posts** (5 templates): Just Listed - Modern, Just Sold - Celebration, Open House - Minimal, Price Reduction, Coming Soon
+  - **Instagram Stories** (2 templates): Just Listed Story, Open House Story
+  - **Facebook Posts** (1 template): Featured Listing with split layout
+  - **Print Materials** (2 templates): Luxury Property Flyer (portrait), Just Sold Postcard
+  - Template features: placeholder support with property data substitution, organized by category with filter tabs
+  - Template loading function with canvas size and background color auto-adjustment
+
+- **Team Management Enhancements** - Full role management UI for team members
+  - Member actions dropdown menu with role change and remove options
+  - Make Admin / Make Member role switching with confirmation
+  - Remove from Team action with confirmation dialog
+  - Real-time updates with optimistic UI feedback via toast notifications
+
+- **Contracts & E-Sign** - Updated marketing page from "Coming Soon" to "Available Now"
+  - Changed badge color from warning to success
+  - Updated CTA buttons text
+  - Replaced timeline section with "How it works" step-by-step guide
+
 - **Client Portal Experience Enhancements** - New features for the client portal
   - **Saved Properties** - Clients can save/favorite property websites with localStorage persistence
   - **Property Comparison** - Side-by-side comparison tool for up to 3 properties with key metrics (price, beds, baths, sqft, views, leads)

@@ -9,19 +9,21 @@ import { Select } from "@/components/ui/select";
 import {
   CalendlyIcon,
   CheckIcon,
-  InfoIcon,
   KeyIcon,
   ExternalLinkIcon,
+  RefreshIcon,
+  InfoIcon,
 } from "@/components/ui/settings-icons";
-
-interface CalendlyConfig {
-  id: string;
-  apiToken: string;
-  isActive: boolean;
-  autoCreateBookings: boolean;
-  notifyOnNewBookings: boolean;
-  lastSyncAt: Date | null;
-}
+import {
+  type CalendlyConfig,
+  type CalendlyEventType,
+  connectCalendly,
+  disconnectCalendly,
+  updateCalendlySettings,
+  getCalendlyEventTypes,
+  setupCalendlyWebhook,
+} from "@/lib/actions/calendly";
+import { toast } from "sonner";
 
 interface CalendlySettingsClientProps {
   initialConfig: CalendlyConfig | null;
@@ -46,7 +48,7 @@ export function CalendlySettingsClient({
   initialConfig,
 }: CalendlySettingsClientProps) {
   const [config, setConfig] = React.useState<CalendlyConfig | null>(initialConfig);
-  const [apiToken, setApiToken] = React.useState(config?.apiToken || "");
+  const [apiToken, setApiToken] = React.useState("");
   const [showToken, setShowToken] = React.useState(false);
   const [autoCreateBookings, setAutoCreateBookings] = React.useState(
     config?.autoCreateBookings ?? true
@@ -55,11 +57,40 @@ export function CalendlySettingsClient({
     config?.notifyOnNewBookings ?? true
   );
   const [serviceMappings, setServiceMappings] = React.useState<ServiceMapping[]>([]);
+  const [calendlyEventTypes, setCalendlyEventTypes] = React.useState<CalendlyEventType[]>([]);
+  const [eventTypesLoading, setEventTypesLoading] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState<{
     type: "success" | "error" | "info";
     text: string;
   } | null>(null);
+
+  // Load event types when connected
+  React.useEffect(() => {
+    async function loadEventTypes() {
+      if (!config?.isActive) return;
+
+      setEventTypesLoading(true);
+      const result = await getCalendlyEventTypes();
+      if (result.success && result.data) {
+        setCalendlyEventTypes(result.data);
+      }
+      setEventTypesLoading(false);
+    }
+    loadEventTypes();
+  }, [config?.isActive]);
+
+  // Initialize service mappings from config
+  React.useEffect(() => {
+    if (config?.eventMappings) {
+      const mappings = Object.entries(config.eventMappings).map(([eventType, service], i) => ({
+        id: `mapping-${i}`,
+        calendlyEventType: eventType,
+        photoProOSService: service,
+      }));
+      setServiceMappings(mappings);
+    }
+  }, [config?.eventMappings]);
 
   const handleSaveToken = async () => {
     if (!apiToken.trim()) {
@@ -74,17 +105,27 @@ export function CalendlySettingsClient({
     setMessage(null);
 
     try {
-      // Simulate API call - to be replaced with actual implementation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await connectCalendly(apiToken);
 
-      // For now, just show that the token was saved (coming soon feature)
+      if (!result.success) {
+        setMessage({ type: "error", text: result.error || "Failed to connect" });
+        return;
+      }
+
+      toast.success(`Connected to Calendly as ${result.data?.userName}`);
       setMessage({
-        type: "info",
-        text: "Your API token has been saved. Full Calendly integration is coming soon!",
+        type: "success",
+        text: `Connected to Calendly as ${result.data?.userName}. Setting up webhook...`,
       });
 
-      // In the future, this would create/update the config
-      // setConfig({ ... });
+      // Setup webhook for real-time sync
+      const webhookResult = await setupCalendlyWebhook();
+      if (webhookResult.success) {
+        toast.success("Webhook configured for real-time booking sync");
+      }
+
+      // Reload the page to get fresh config
+      window.location.reload();
     } catch {
       setMessage({ type: "error", text: "Failed to save API token" });
     } finally {
@@ -97,12 +138,29 @@ export function CalendlySettingsClient({
     setMessage(null);
 
     try {
-      // Simulate API call - to be replaced with actual implementation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Convert service mappings to event mappings object
+      const eventMappings: Record<string, string> = {};
+      for (const mapping of serviceMappings) {
+        if (mapping.calendlyEventType && mapping.photoProOSService) {
+          eventMappings[mapping.calendlyEventType] = mapping.photoProOSService;
+        }
+      }
 
+      const result = await updateCalendlySettings({
+        autoCreateBookings,
+        notifyOnNewBookings,
+        eventMappings,
+      });
+
+      if (!result.success) {
+        setMessage({ type: "error", text: result.error || "Failed to save settings" });
+        return;
+      }
+
+      toast.success("Settings saved successfully");
       setMessage({
-        type: "info",
-        text: "Settings saved. These will take effect when Calendly integration launches.",
+        type: "success",
+        text: "Settings saved successfully",
       });
     } catch {
       setMessage({ type: "error", text: "Failed to save settings" });
@@ -124,12 +182,19 @@ export function CalendlySettingsClient({
     setMessage(null);
 
     try {
-      // Simulate API call - to be replaced with actual implementation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await disconnectCalendly();
+
+      if (!result.success) {
+        setMessage({ type: "error", text: result.error || "Failed to disconnect" });
+        return;
+      }
 
       setConfig(null);
       setApiToken("");
-      setMessage({ type: "success", text: "Calendly disconnected" });
+      setCalendlyEventTypes([]);
+      setServiceMappings([]);
+      toast.success("Calendly disconnected");
+      setMessage({ type: "success", text: "Calendly disconnected successfully" });
     } catch {
       setMessage({ type: "error", text: "Failed to disconnect" });
     } finally {
@@ -164,21 +229,6 @@ export function CalendlySettingsClient({
 
   return (
     <div className="space-y-6">
-      {/* Coming Soon Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <div className="flex items-start gap-3">
-          <InfoIcon className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-[var(--primary)]">
-              Coming Soon
-            </p>
-            <p className="text-sm text-foreground-muted mt-1">
-              Calendly integration is currently in development. You can save your API token now to be ready when it launches.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Status Banner */}
       {message && (
         <div
@@ -218,9 +268,14 @@ export function CalendlySettingsClient({
             </h2>
             <p className="text-sm text-foreground-muted">
               {config
-                ? "Connected to Calendly"
+                ? `Connected as ${config.userName || config.userEmail || "Unknown"}`
                 : "Connect Calendly to import bookings automatically"}
             </p>
+            {config?.lastSyncAt && (
+              <p className="text-xs text-foreground-muted mt-1">
+                Last sync: {new Date(config.lastSyncAt).toLocaleString()}
+              </p>
+            )}
           </div>
           {config && (
             <div
@@ -304,148 +359,172 @@ export function CalendlySettingsClient({
       </div>
 
       {/* Event Type Mapping */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-2">
-          Event Type Mapping
-        </h2>
-        <p className="text-sm text-foreground-muted mb-6">
-          Map your Calendly event types to PhotoProOS services. When a booking is made on Calendly, it will automatically be assigned the correct service.
-        </p>
+      {config?.isActive && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-2">
+            Event Type Mapping
+          </h2>
+          <p className="text-sm text-foreground-muted mb-6">
+            Map your Calendly event types to PhotoProOS services. When a booking is made on Calendly, it will automatically be assigned the correct service.
+          </p>
 
-        <div className="space-y-4">
-          {serviceMappings.length === 0 ? (
+          {eventTypesLoading ? (
             <div className="rounded-lg bg-[var(--background)] p-4 text-center">
               <p className="text-sm text-foreground-muted">
-                No event type mappings configured yet.
+                Loading event types from Calendly...
+              </p>
+            </div>
+          ) : calendlyEventTypes.length === 0 ? (
+            <div className="rounded-lg bg-[var(--background)] p-4 text-center">
+              <p className="text-sm text-foreground-muted">
+                No active event types found in your Calendly account.
               </p>
             </div>
           ) : (
-            serviceMappings.map((mapping) => (
-              <div
-                key={mapping.id}
-                className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center"
-              >
-                <div className="flex-1">
-                  <Input
-                    label="Calendly Event Type"
-                    value={mapping.calendlyEventType}
-                    onChange={(e) =>
-                      updateServiceMapping(
-                        mapping.id,
-                        "calendlyEventType",
-                        e.target.value
-                      )
-                    }
-                    placeholder="e.g., 30-minute-consultation"
-                  />
+            <div className="space-y-4">
+              {serviceMappings.length === 0 ? (
+                <div className="rounded-lg bg-[var(--background)] p-4 text-center">
+                  <p className="text-sm text-foreground-muted">
+                    No event type mappings configured yet. Click &quot;Add Mapping&quot; to get started.
+                  </p>
                 </div>
-                <div className="flex items-center justify-center text-foreground-muted sm:px-2 sm:mt-6">
-                  <svg
-                    className="h-4 w-4 rotate-90 sm:rotate-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+              ) : (
+                serviceMappings.map((mapping) => (
+                  <div
+                    key={mapping.id}
+                    className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <Select
-                    label="PhotoProOS Service"
-                    value={mapping.photoProOSService}
-                    onChange={(e) =>
-                      updateServiceMapping(
-                        mapping.id,
-                        "photoProOSService",
-                        e.target.value
-                      )
-                    }
-                    options={[
-                      { value: "", label: "Select a service..." },
-                      ...MOCK_SERVICES,
-                    ]}
-                  />
-                </div>
-                <button
-                  onClick={() => removeServiceMapping(mapping.id)}
-                  className="self-end rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-[var(--error)] sm:self-center sm:mt-6"
-                  aria-label="Remove mapping"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                </button>
-              </div>
-            ))
-          )}
+                    <div className="flex-1">
+                      <Select
+                        label="Calendly Event Type"
+                        value={mapping.calendlyEventType}
+                        onChange={(e) =>
+                          updateServiceMapping(
+                            mapping.id,
+                            "calendlyEventType",
+                            e.target.value
+                          )
+                        }
+                        options={[
+                          { value: "", label: "Select an event type..." },
+                          ...calendlyEventTypes.map((et) => ({
+                            value: et.uri,
+                            label: `${et.name} (${et.duration} min)`,
+                          })),
+                        ]}
+                      />
+                    </div>
+                    <div className="flex items-center justify-center text-foreground-muted sm:px-2 sm:mt-6">
+                      <svg
+                        className="h-4 w-4 rotate-90 sm:rotate-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <Select
+                        label="PhotoProOS Service"
+                        value={mapping.photoProOSService}
+                        onChange={(e) =>
+                          updateServiceMapping(
+                            mapping.id,
+                            "photoProOSService",
+                            e.target.value
+                          )
+                        }
+                        options={[
+                          { value: "", label: "Select a service..." },
+                          ...MOCK_SERVICES,
+                        ]}
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeServiceMapping(mapping.id)}
+                      className="self-end rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-[var(--error)] sm:self-center sm:mt-6"
+                      aria-label="Remove mapping"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ))
+              )}
 
-          <Button variant="secondary" onClick={addServiceMapping}>
-            Add Mapping
-          </Button>
+              <Button variant="secondary" onClick={addServiceMapping}>
+                Add Mapping
+              </Button>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Sync Settings */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Sync Settings
-        </h2>
+      {config?.isActive && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Sync Settings
+          </h2>
 
-        <div className="space-y-4">
-          <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                Auto-Create Bookings
-              </p>
-              <p className="text-xs text-foreground-muted">
-                Automatically create PhotoProOS bookings when Calendly events are scheduled
-              </p>
+          <div className="space-y-4">
+            <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Auto-Create Bookings
+                </p>
+                <p className="text-xs text-foreground-muted">
+                  Automatically create PhotoProOS bookings when Calendly events are scheduled
+                </p>
+              </div>
+              <Switch
+                checked={autoCreateBookings}
+                onCheckedChange={setAutoCreateBookings}
+              />
             </div>
-            <Switch
-              checked={autoCreateBookings}
-              onCheckedChange={setAutoCreateBookings}
-            />
-          </div>
 
-          <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                Notify on New Bookings
-              </p>
-              <p className="text-xs text-foreground-muted">
-                Receive notifications when new Calendly bookings are imported
-              </p>
+            <div className="flex flex-col gap-3 rounded-lg bg-[var(--background)] p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Notify on New Bookings
+                </p>
+                <p className="text-xs text-foreground-muted">
+                  Receive notifications when new Calendly bookings are imported
+                </p>
+              </div>
+              <Switch
+                checked={notifyOnNewBookings}
+                onCheckedChange={setNotifyOnNewBookings}
+              />
             </div>
-            <Switch
-              checked={notifyOnNewBookings}
-              onCheckedChange={setNotifyOnNewBookings}
-            />
-          </div>
 
-          <Button
-            variant="primary"
-            onClick={handleSaveSettings}
-            disabled={loading}
-          >
-            {loading ? "Saving..." : "Save Settings"}
-          </Button>
+            <Button
+              variant="primary"
+              onClick={handleSaveSettings}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save Settings"}
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* What Gets Imported */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">

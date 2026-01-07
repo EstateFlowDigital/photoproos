@@ -223,20 +223,22 @@ export async function getHighResDownload(galleryId: string): Promise<{
 }
 
 /**
- * Get marketing kit assets for a property
- * Returns existing generated assets and info to generate missing ones
+ * Get marketing kit assets for a gallery (project)
+ * Finds the associated PropertyWebsite and returns its marketing assets
  */
-export async function getMarketingKitDownload(propertyId: string): Promise<{
+export async function getMarketingKitDownload(galleryId: string): Promise<{
   success: boolean;
   error?: string;
   marketingKit?: {
-    propertyId: string;
-    propertyAddress: string;
+    galleryId: string;
+    galleryName: string;
+    propertyAddress: string | null;
     assets: {
       id: string;
       type: string;
       name: string;
       fileUrl: string;
+      thumbnailUrl: string | null;
     }[];
     photosAvailable: number;
   };
@@ -248,49 +250,60 @@ export async function getMarketingKitDownload(propertyId: string): Promise<{
       return fail("Please log in to download");
     }
 
-    // Get property with marketing assets
-    const property = await prisma.propertyWebsite.findFirst({
+    // Get project with property website and marketing assets
+    const project = await prisma.project.findFirst({
       where: {
-        id: propertyId,
-        project: {
-          clientId: session.clientId,
-        },
+        id: galleryId,
+        clientId: session.clientId,
       },
       include: {
-        project: {
-          select: {
-            assets: {
-              select: { id: true },
-            },
-          },
+        assets: {
+          select: { id: true },
         },
-        marketingAssets: {
-          select: {
-            id: true,
-            type: true,
-            name: true,
-            fileUrl: true,
+        propertyWebsite: {
+          include: {
+            marketingAssets: {
+              where: {
+                status: "ready",
+              },
+              select: {
+                id: true,
+                type: true,
+                name: true,
+                fileUrl: true,
+                thumbnailUrl: true,
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
           },
         },
       },
     });
 
-    if (!property) {
-      return fail("Property not found");
+    if (!project) {
+      return fail("Gallery not found");
     }
+
+    // Get marketing assets from property website if available
+    const propertyWebsite = project.propertyWebsite;
+    const marketingAssets = propertyWebsite?.marketingAssets || [];
 
     return {
       success: true,
       marketingKit: {
-        propertyId: property.id,
-        propertyAddress: property.address,
-        assets: property.marketingAssets.map((a) => ({
+        galleryId: project.id,
+        galleryName: project.name,
+        propertyAddress: propertyWebsite?.address || null,
+        assets: marketingAssets.map((a) => ({
           id: a.id,
           type: a.type,
           name: a.name,
           fileUrl: a.fileUrl,
+          thumbnailUrl: a.thumbnailUrl,
         })),
-        photosAvailable: property.project.assets.length,
+        photosAvailable: project.assets.length,
       },
     };
   } catch (error) {

@@ -29,6 +29,7 @@ export {
   InfoIcon,
   LoadingSpinner,
   // Settings & Feature Icons
+  ShieldIcon,
   UserIcon,
   UsersIcon,
   BellIcon,

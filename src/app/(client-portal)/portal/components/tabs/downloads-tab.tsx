@@ -444,7 +444,6 @@ function DownloadCard({
             icon={<DocumentIcon className="h-5 w-5" />}
             isLoading={isDownloading && downloadType === "marketing"}
             onClick={() => onMarketingKitDownload(gallery.id)}
-            comingSoon
           />
         </div>
       </div>
