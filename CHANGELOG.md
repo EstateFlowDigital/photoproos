@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Breadcrumb Navigation Styling** - Improved visual clarity for breadcrumb components
+  - Adjusted spacing and chevron margins for better visual hierarchy
+  - Made chevrons more subtle with 60% opacity to indicate navigation flow without overwhelming
+  - Applied consistent styling across dashboard and help breadcrumb components
+
 ### Added
 - **Advanced Expense Tracking Features** - Comprehensive expense management enhancements
   - **Recurring Expense Templates** - Create and manage templates for expenses that occur regularly
