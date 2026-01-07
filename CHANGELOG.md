@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Marketing Kit Individual Downloads** - Individual asset download functionality in client portal
+  - New `MarketingKitModal` component (`/portal/components/marketing-kit-modal.tsx`) for browsing marketing materials
+  - Assets grouped by category (Social Media, Social Tiles, Print Materials, Videos, Email, Other)
+  - Individual download buttons for each asset with loading states
+  - New API endpoint `/api/download/marketing-asset` for single asset downloads with rate limiting
+  - Added `singleDownloadRatelimit` (30 requests/minute) for asset downloads
+- **Auto-Generate Marketing Kit Toggle** - New property setting to auto-create marketing materials
+  - Added `autoGenerateMarketingKit` field to PropertyWebsite model
+  - Toggle in property settings page under "Auto-Generate Marketing Kit"
+  - When enabled and property is published, automatically creates a MarketingKit with default asset types
+  - Auto-generates flyers, social squares, and "Just Listed" tiles on publish
+
 ### Changed
+- **Marketing Kit Download Flow** - Switched from ZIP download to individual asset downloads
+  - Client portal now opens a modal showing all available marketing materials
+  - Users can download specific assets they need rather than entire ZIP packages
+  - Removed ZIP download approach in favor of individual downloads for better UX
 - **Marketing Integrations Page** - Updated integration statuses to reflect availability
   - QuickBooks: Changed from "Coming Soon" to "Available"
   - Mailchimp: Changed from "Coming Soon" to "Available"
@@ -40,6 +57,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Webhook subscription management
   - Helper functions for connection testing and signature verification
 - **ShieldIcon** - Added to centralized icons library for team role UI
+
+### Changed
+- **Calendly Settings Accessibility** - Improved accessibility and screen reader support
+  - Added `role="alert"` and `aria-live="polite"` to status message banners
+  - Added `aria-label` to show/hide API token toggle button
+  - Added `aria-hidden="true"` to decorative arrow and trash icons
+  - Added `role="status"` and `aria-label` to connection status indicator
+- **Mailchimp Settings Accessibility** - Improved accessibility and screen reader support
+  - Added `role="alert"` and `aria-live="polite"` to status message banners
+  - Added `role="status"` and `aria-label` to connection status indicator
+  - Added `aria-hidden="true"` to decorative status dot
+- **Calendly Webhook Security** - Improved integration matching
+  - Removed overly broad fallback query that could match wrong integration
+  - Added signature verification when webhook signing key is configured
+  - Added proper validation of user identifier extraction
 
 ### Fixed
 - **Client Portal Page** - Fixed Next.js 15 build error with `ssr: false` in Server Components

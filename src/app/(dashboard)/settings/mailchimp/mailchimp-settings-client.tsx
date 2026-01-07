@@ -249,6 +249,8 @@ export function MailchimpSettingsClient({ initialConfig }: MailchimpSettingsClie
       {/* Status Banner */}
       {message && (
         <div
+          role="alert"
+          aria-live="polite"
           className={cn(
             "rounded-lg border px-4 py-3",
             message.type === "success"
@@ -300,8 +302,10 @@ export function MailchimpSettingsClient({ initialConfig }: MailchimpSettingsClie
                 "flex items-center gap-2 rounded-full px-3 py-1",
                 "bg-[var(--success)]/10 text-[var(--success)]"
               )}
+              role="status"
+              aria-label="Mailchimp connection is active"
             >
-              <span className="h-2 w-2 rounded-full bg-[var(--success)]" />
+              <span className="h-2 w-2 rounded-full bg-[var(--success)]" aria-hidden="true" />
               <span className="text-sm font-medium">Connected</span>
             </div>
           )}

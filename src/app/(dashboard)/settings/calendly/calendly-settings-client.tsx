@@ -11,8 +11,6 @@ import {
   CheckIcon,
   KeyIcon,
   ExternalLinkIcon,
-  RefreshIcon,
-  InfoIcon,
 } from "@/components/ui/settings-icons";
 import {
   type CalendlyConfig,
@@ -232,6 +230,8 @@ export function CalendlySettingsClient({
       {/* Status Banner */}
       {message && (
         <div
+          role="alert"
+          aria-live="polite"
           className={cn(
             "rounded-lg border px-4 py-3",
             message.type === "success"
@@ -285,12 +285,15 @@ export function CalendlySettingsClient({
                   ? "bg-[var(--success)]/10 text-[var(--success)]"
                   : "bg-[var(--foreground-muted)]/10 text-foreground-muted"
               )}
+              role="status"
+              aria-label={`Calendly connection is ${config.isActive ? "active" : "paused"}`}
             >
               <span
                 className={cn(
                   "h-2 w-2 rounded-full",
                   config.isActive ? "bg-[var(--success)]" : "bg-foreground-muted"
                 )}
+                aria-hidden="true"
               />
               <span className="text-sm font-medium">
                 {config.isActive ? "Active" : "Paused"}
@@ -315,6 +318,7 @@ export function CalendlySettingsClient({
                     type="button"
                     onClick={() => setShowToken(!showToken)}
                     className="text-sm text-foreground-muted hover:text-foreground"
+                    aria-label={showToken ? "Hide API token" : "Show API token"}
                   >
                     {showToken ? "Hide" : "Show"}
                   </button>
@@ -420,6 +424,7 @@ export function CalendlySettingsClient({
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"
@@ -456,6 +461,7 @@ export function CalendlySettingsClient({
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"

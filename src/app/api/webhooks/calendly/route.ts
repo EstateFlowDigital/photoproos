@@ -105,14 +105,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload structure" }, { status: 400 });
   }
 
-  // Find the integration by user URI
+  // Extract user identifier from the URI (last segment)
+  const userIdentifier = userUri.split("/").pop();
+
+  if (!userIdentifier) {
+    console.error("Calendly webhook: Could not extract user identifier from URI");
+    return NextResponse.json({ error: "Invalid user URI" }, { status: 400 });
+  }
+
+  // Find the integration by user URI (must be active and match the user)
   const integration = await prisma.calendlyIntegration.findFirst({
     where: {
-      OR: [
-        { userUri: { contains: userUri.split("/").pop() || "" } },
-        // Fallback: try to match by organization URI in the event
-        { isActive: true },
-      ],
+      userUri: { contains: userIdentifier },
+      isActive: true,
     },
   });
 
@@ -121,9 +126,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Integration not found" }, { status: 404 });
   }
 
-  // Note: Webhook signature verification can be added when webhookSigningKey
-  // is stored in the integration. For now, we validate the integration exists.
-  // Future: verify signature using the Calendly webhook signing key
+  // Verify webhook signature if signing key is configured
+  if (integration.webhookSigningKey && signature) {
+    const isValid = verifySignature(body, signature, integration.webhookSigningKey);
+    if (!isValid) {
+      console.error("Calendly webhook: Invalid signature");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
+  }
 
   try {
     // Process the webhook event
