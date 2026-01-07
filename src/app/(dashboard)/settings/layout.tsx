@@ -19,16 +19,10 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
-  // Don't show sidebar on main settings landing page
   const isLandingPage = pathname === "/settings";
 
   const handleOpenMenu = React.useCallback(() => setMobileMenuOpen(true), []);
   const handleCloseMenu = React.useCallback(() => setMobileMenuOpen(false), []);
-
-  // On the landing page, just render children without sidebar
-  if (isLandingPage) {
-    return <>{children}</>;
-  }
 
   return (
     <div className="flex h-full min-h-0">
@@ -45,16 +39,18 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
 
       {/* Main Content */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Mobile header with menu button */}
+        {/* Mobile header with menu button - hide back arrow on landing page */}
         <div className="flex items-center gap-3 border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3 lg:hidden">
           <SettingsMobileMenuButton onClick={handleOpenMenu} />
           <div className="flex items-center gap-2">
-            <Link
-              href="/settings"
-              className="text-foreground-muted hover:text-foreground"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-            </Link>
+            {!isLandingPage && (
+              <Link
+                href="/settings"
+                className="text-foreground-muted hover:text-foreground"
+              >
+                <ArrowLeftIcon className="h-4 w-4" />
+              </Link>
+            )}
             <span className="text-sm font-medium text-foreground">Settings</span>
           </div>
         </div>
