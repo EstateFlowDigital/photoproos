@@ -571,6 +571,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
 
   // Vendors state
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendorSuggestions, setVendorSuggestions] = useState<Vendor[]>([]);
   const [mileageRate, setMileageRate] = useState<number>(67); // Default IRS rate
 
   // Forecast state
@@ -1858,6 +1859,20 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <h3 className="font-semibold text-foreground">Expenses</h3>
             <div className="flex items-center gap-2">
+              {recurringTemplates.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    await handleLoadForecast();
+                    setShowForecastModal(true);
+                  }}
+                  aria-label="View expense forecast"
+                >
+                  <TrendingIcon className="h-4 w-4 mr-1" />
+                  Forecast
+                </Button>
+              )}
               {expenses.length > 0 && (
                 <Button
                   variant="ghost"
@@ -2211,6 +2226,14 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                         <EditIcon className="h-4 w-4" />
                       </button>
                       <button
+                        onClick={(e) => { e.stopPropagation(); handleDuplicateExpense(expense.id); }}
+                        className="p-1.5 rounded text-foreground-muted hover:bg-[var(--background-secondary)] transition-colors"
+                        title="Duplicate expense"
+                        aria-label={`Duplicate expense: ${expense.description}`}
+                      >
+                        <CopyIcon className="h-4 w-4" />
+                      </button>
+                      <button
                         onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(expense.id); }}
                         className="p-1.5 rounded text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-[var(--error)] transition-colors"
                         title="Delete expense"
@@ -2318,12 +2341,154 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                 <label htmlFor="expense-vendor" className="block text-sm font-medium text-foreground mb-1.5">
                   Vendor/Payee
                 </label>
+                <div className="relative">
+                  <Input
+                    id="expense-vendor"
+                    value={formData.vendor || ""}
+                    onChange={(e) => {
+                      setFormData({ ...formData, vendor: e.target.value });
+                      // Search vendors as user types
+                      if (e.target.value.length >= 2) {
+                        searchVendors(e.target.value).then((result) => {
+                          if (result.success && result.data) {
+                            setVendorSuggestions(result.data);
+                          }
+                        });
+                      } else {
+                        setVendorSuggestions([]);
+                      }
+                    }}
+                    onFocus={() => {
+                      if (formData.vendor && formData.vendor.length >= 2) {
+                        searchVendors(formData.vendor).then((result) => {
+                          if (result.success && result.data) {
+                            setVendorSuggestions(result.data);
+                          }
+                        });
+                      }
+                    }}
+                    onBlur={() => {
+                      // Delay hiding to allow click on suggestion
+                      setTimeout(() => setVendorSuggestions([]), 200);
+                    }}
+                    placeholder="e.g., Company name"
+                    autoComplete="off"
+                  />
+                  {vendorSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-[var(--card)] border border-[var(--card-border)] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {vendorSuggestions.map((vendor) => (
+                        <button
+                          key={vendor.id}
+                          type="button"
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--background-hover)] flex items-center justify-between"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              vendor: vendor.name,
+                              paymentMethod: vendor.defaultPaymentMethod || formData.paymentMethod,
+                            });
+                            setVendorSuggestions([]);
+                          }}
+                        >
+                          <span>{vendor.name}</span>
+                          <span className="text-xs text-foreground-muted">{vendor.category}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Method & Tax */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="expense-payment-method" className="block text-sm font-medium text-foreground mb-1.5">
+                  Payment Method
+                </label>
+                <select
+                  id="expense-payment-method"
+                  value={formData.paymentMethod}
+                  onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as PaymentMethod | "" })}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                >
+                  <option value="">Select method...</option>
+                  {PAYMENT_METHODS.map((method) => (
+                    <option key={method.value} value={method.value}>
+                      {method.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="expense-tax" className="block text-sm font-medium text-foreground mb-1.5">
+                  Tax Amount
+                </label>
                 <Input
-                  id="expense-vendor"
-                  value={formData.vendor || ""}
-                  onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
-                  placeholder="e.g., Company name"
+                  id="expense-tax"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.taxCents > 0 ? formData.taxCents / 100 : ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      taxCents: Math.round(parseFloat(e.target.value || "0") * 100),
+                    })
+                  }
+                  placeholder="0.00"
                 />
+              </div>
+            </div>
+
+            {/* Mileage Calculator */}
+            <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3">
+              <div className="flex items-center gap-2 mb-3">
+                <CarIcon className="h-4 w-4 text-foreground-muted" />
+                <span className="text-sm font-medium">Mileage Calculator</span>
+                <span className="text-xs text-foreground-muted ml-auto">
+                  Rate: ${(mileageRate / 100).toFixed(2)}/mi
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="expense-mileage" className="block text-xs text-foreground-muted mb-1">
+                    Miles Driven
+                  </label>
+                  <Input
+                    id="expense-mileage"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={formData.mileageDistance > 0 ? formData.mileageDistance : ""}
+                    onChange={(e) => {
+                      const distance = parseFloat(e.target.value || "0");
+                      const calculatedAmount = Math.round(distance * mileageRate);
+                      setFormData({
+                        ...formData,
+                        mileageDistance: distance,
+                        mileageRateCents: mileageRate,
+                        // Auto-fill amount if empty or was previously mileage-calculated
+                        amountCents: formData.amountCents === 0 || formData.mileageDistance > 0
+                          ? calculatedAmount
+                          : formData.amountCents,
+                      });
+                    }}
+                    placeholder="0"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-foreground-muted mb-1">
+                    Calculated Amount
+                  </label>
+                  <div className="px-3 py-2 bg-[var(--background)] rounded-lg border border-[var(--card-border)] text-sm text-foreground-muted">
+                    {formData.mileageDistance > 0
+                      ? formatCurrency(Math.round(formData.mileageDistance * mileageRate))
+                      : "$0.00"}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2417,20 +2582,42 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               </div>
             </div>
 
-            <div>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isPaid}
-                  onChange={(e) => setFormData({ ...formData, isPaid: e.target.checked })}
-                  className="rounded"
-                  aria-describedby="expense-paid-description"
-                />
-                <span>Expense has been paid</span>
-              </label>
-              <p id="expense-paid-description" className="sr-only">
-                Check this box if you have already paid this expense
-              </p>
+            {/* Checkboxes Row */}
+            <div className="flex items-center gap-6">
+              <div>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isPaid}
+                    onChange={(e) => setFormData({ ...formData, isPaid: e.target.checked })}
+                    className="rounded"
+                    aria-describedby="expense-paid-description"
+                  />
+                  <span>Expense has been paid</span>
+                </label>
+                <p id="expense-paid-description" className="sr-only">
+                  Check this box if you have already paid this expense
+                </p>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isBillable}
+                    onChange={(e) => setFormData({ ...formData, isBillable: e.target.checked })}
+                    className="rounded"
+                    aria-describedby="expense-billable-description"
+                  />
+                  <span className="flex items-center gap-1">
+                    Billable to client
+                    <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-[10px]">$</span>
+                  </span>
+                </label>
+                <p id="expense-billable-description" className="sr-only">
+                  Check this box if this expense can be billed to the client
+                </p>
+              </div>
             </div>
 
             <div>
@@ -2901,6 +3088,98 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
             </Button>
             <Button variant="destructive" onClick={handleRejectExpense}>
               Reject Expense
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Expense Forecast Modal */}
+      <Dialog open={showForecastModal} onOpenChange={(open) => !open && setShowForecastModal(false)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <TrendingIcon className="h-5 w-5 text-[var(--primary)]" />
+              Expense Forecast
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            {forecast ? (
+              <>
+                {/* Summary */}
+                <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-foreground">
+                      {forecast.periodMonths}-Month Forecast
+                    </span>
+                    <span className="text-lg font-bold text-foreground">
+                      {formatCurrency(forecast.summary.totalProjected)}
+                    </span>
+                  </div>
+
+                  {/* By Month */}
+                  <div className="space-y-2">
+                    <span className="text-xs text-foreground-muted">Monthly Breakdown</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {forecast.summary.byMonth.map((m) => (
+                        <div key={m.month} className="p-2 rounded bg-[var(--background)] text-center">
+                          <div className="text-xs text-foreground-muted">{m.month}</div>
+                          <div className="text-sm font-medium text-foreground">{formatCurrency(m.amountCents)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* By Category */}
+                {forecast.summary.byCategory.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-foreground mb-2">By Category</h4>
+                    <div className="space-y-1">
+                      {forecast.summary.byCategory.map((c) => (
+                        <div key={c.category} className="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--background-secondary)]">
+                          <span className="text-sm text-foreground-muted capitalize">{c.category.replace("_", " ")}</span>
+                          <span className="text-sm font-medium text-foreground">{formatCurrency(c.amountCents)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Active Templates */}
+                <div>
+                  <h4 className="text-sm font-medium text-foreground mb-2">Active Recurring Templates ({forecast.forecasts.length})</h4>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {forecast.forecasts.map((f) => (
+                      <div key={f.templateId} className="p-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)]">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-foreground">{f.templateName}</span>
+                          <span className="text-sm text-foreground-muted capitalize">{f.frequency}</span>
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs text-foreground-muted capitalize">{f.category}</span>
+                          <span className="text-sm font-medium text-[var(--primary)]">
+                            {formatCurrency(f.amountCents)}/occurrence
+                          </span>
+                        </div>
+                        <div className="text-xs text-foreground-muted mt-1">
+                          {f.projectedExpenses.length} occurrence{f.projectedExpenses.length !== 1 ? "s" : ""} = {formatCurrency(f.totalProjected)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8 text-foreground-muted">
+                <TrendingIcon className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>No recurring expense templates found.</p>
+                <p className="text-sm mt-1">Create recurring templates to see expense forecasts.</p>
+              </div>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowForecastModal(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

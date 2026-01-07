@@ -263,6 +263,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
+            data-tour="add-client-button"
           >
             <PlusIcon className="h-4 w-4" />
             Add Client
@@ -280,7 +281,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
 
       {/* Search and Sort Controls */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[200px] max-w-md">
+        <div className="flex-1 min-w-[200px] max-w-md" data-tour="client-search">
           <ClientSearch initialQuery={searchQuery || ""} />
         </div>
 
@@ -348,6 +349,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
         <div
           ref={tableParentRef}
           className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] max-h-[70vh] overflow-auto"
+          data-tour="client-list"
         >
           <table className="w-full min-w-[640px]">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] sticky top-0 z-10">

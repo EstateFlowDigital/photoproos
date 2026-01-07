@@ -464,7 +464,9 @@ export default async function DashboardPage() {
           title="Dashboard"
           subtitle={`Welcome back! Here's what's happening with ${organization.name}.`}
         />
-        <DashboardCustomizePanel config={dashboardConfig} />
+        <div data-tour="customize-button">
+          <DashboardCustomizePanel config={dashboardConfig} />
+        </div>
       </div>
 
       {/* Referral Program (highlight) */}
@@ -486,7 +488,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="auto-grid grid-min-220 grid-gap-4">
+      <div className="auto-grid grid-min-220 grid-gap-4" data-tour="metrics-section">
         <StatCard
           label="Monthly Revenue"
           value={formatCurrency(thisMonthRevenueValue)}
@@ -517,24 +519,28 @@ export default async function DashboardPage() {
 
       {/* Quick Actions */}
       {isSectionVisible(dashboardConfig, "quick-actions") && (
-        <CollapsibleSection
-          sectionId="quick-actions"
-          title="Quick Actions"
-          defaultCollapsed={isSectionCollapsed(dashboardConfig, "quick-actions")}
-        >
-          <QuickActions />
-        </CollapsibleSection>
+        <div data-tour="quick-actions">
+          <CollapsibleSection
+            sectionId="quick-actions"
+            title="Quick Actions"
+            defaultCollapsed={isSectionCollapsed(dashboardConfig, "quick-actions")}
+          >
+            <QuickActions />
+          </CollapsibleSection>
+        </div>
       )}
 
       {/* Unified Scheduler */}
       {isSectionVisible(dashboardConfig, "calendar") && (
-        <CollapsibleSection
-          sectionId="calendar"
-          title="Calendar"
-          defaultCollapsed={isSectionCollapsed(dashboardConfig, "calendar")}
-        >
-          <DashboardCalendar events={calendarEvents} />
-        </CollapsibleSection>
+        <div data-tour="calendar-widget">
+          <CollapsibleSection
+            sectionId="calendar"
+            title="Calendar"
+            defaultCollapsed={isSectionCollapsed(dashboardConfig, "calendar")}
+          >
+            <DashboardCalendar events={calendarEvents} />
+          </CollapsibleSection>
+        </div>
       )}
 
       {/* Main Content Grid */}

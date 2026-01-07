@@ -378,7 +378,7 @@ export async function deleteCannedResponse(
     revalidatePath("/messages");
     revalidatePath("/settings/canned-responses");
 
-    return ok(undefined);
+    return ok();
   } catch (error) {
     console.error("Failed to delete canned response:", error);
     return fail("Failed to delete canned response");
@@ -405,7 +405,7 @@ export async function recordCannedResponseUsage(
       },
     });
 
-    return ok(undefined);
+    return ok();
   } catch (error) {
     console.error("Failed to record canned response usage:", error);
     return fail("Failed to record usage");
@@ -438,7 +438,7 @@ export async function reorderCannedResponses(
 
     revalidatePath("/settings/canned-responses");
 
-    return ok(undefined);
+    return ok();
   } catch (error) {
     console.error("Failed to reorder canned responses:", error);
     return fail("Failed to reorder canned responses");
@@ -657,7 +657,7 @@ export async function seedDefaultCannedResponses(
       })),
     });
 
-    return ok(undefined);
+    return ok();
   } catch (error) {
     console.error("Failed to seed default canned responses:", error);
     return fail("Failed to seed default canned responses");

@@ -85,6 +85,7 @@ export function GalleriesPageClient({
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 sm:w-auto"
+            data-tour="new-gallery-button"
           >
             <PlusIcon className="h-4 w-4" />
             New Gallery
@@ -136,11 +137,13 @@ export function GalleriesPageClient({
 
       {/* Gallery List with Search, Sort, View Toggle */}
       {galleries.length > 0 && (
-        <GalleryListClient
-          galleries={galleries}
-          filter={filter}
-          availableServices={availableServices}
-        />
+        <div data-tour="gallery-list">
+          <GalleryListClient
+            galleries={galleries}
+            filter={filter}
+            availableServices={availableServices}
+          />
+        </div>
       )}
 
       {/* Create Gallery Modal */}

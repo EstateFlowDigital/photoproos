@@ -31,7 +31,9 @@ import {
   BellRing,
   AtSign,
   Link as LinkIcon,
+  Zap,
 } from "lucide-react";
+import { QuickReplyPicker } from "@/components/messaging/quick-reply-picker";
 import type { ConversationWithDetails } from "@/lib/actions/conversations";
 import type { MessageWithDetails, MessageAttachment } from "@/lib/actions/messages";
 import {
@@ -122,6 +124,9 @@ export function ConversationPageClient({
 
   // Notifications state
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  // Quick reply state
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
 
   const displayName = getConversationDisplayName(conversation, currentUserId);
   const icon = TYPE_ICONS[conversation.type];
@@ -266,6 +271,13 @@ export function ConversationPageClient({
     const newText = textBeforeCursor.slice(0, atPos) + `@${user.name} ` + textAfterCursor;
     setNewMessage(newText);
     setShowMentions(false);
+    inputRef.current?.focus();
+  };
+
+  // Handle quick reply selection
+  const handleQuickReplySelect = (content: string) => {
+    setNewMessage(content);
+    setShowQuickReplies(false);
     inputRef.current?.focus();
   };
 
@@ -779,6 +791,31 @@ export function ConversationPageClient({
           >
             <Paperclip className="h-5 w-5" aria-hidden="true" />
           </button>
+
+          {/* Quick Reply Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowQuickReplies(!showQuickReplies)}
+              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
+                showQuickReplies
+                  ? "bg-[var(--primary)] text-white"
+                  : "text-[var(--warning)] hover:bg-[var(--warning)]/10"
+              }`}
+              aria-label="Quick replies"
+              aria-expanded={showQuickReplies}
+              aria-haspopup="dialog"
+            >
+              <Zap className="h-5 w-5" aria-hidden="true" />
+            </button>
+
+            {/* Quick Reply Picker */}
+            <QuickReplyPicker
+              isOpen={showQuickReplies}
+              onClose={() => setShowQuickReplies(false)}
+              onSelect={handleQuickReplySelect}
+              position="above"
+            />
+          </div>
 
           {/* Input Field */}
           <div className="relative flex-1">

@@ -214,26 +214,26 @@ export function CannedResponsesClient({ responses: initialResponses }: CannedRes
           shortcut: input.shortcut,
           category: input.category,
         });
-        if (result.success && result.data) {
-          setResponses((prev) =>
-            prev.map((r) => (r.id === editingResponse.id ? result.data! : r))
-          );
-          showToast("Response updated successfully", "success");
-          setIsModalOpen(false);
-          resetForm();
-        } else {
+        if (!result.success) {
           showToast(result.error || "Failed to update response", "error");
+          return;
         }
+        setResponses((prev) =>
+          prev.map((r) => (r.id === editingResponse.id ? result.data : r))
+        );
+        showToast("Response updated successfully", "success");
+        setIsModalOpen(false);
+        resetForm();
       } else {
         const result = await createCannedResponse(input);
-        if (result.success && result.data) {
-          setResponses((prev) => [...prev, result.data!]);
-          showToast("Response created successfully", "success");
-          setIsModalOpen(false);
-          resetForm();
-        } else {
+        if (!result.success) {
           showToast(result.error || "Failed to create response", "error");
+          return;
         }
+        setResponses((prev) => [...prev, result.data]);
+        showToast("Response created successfully", "success");
+        setIsModalOpen(false);
+        resetForm();
       }
     } catch {
       showToast("An error occurred", "error");
@@ -260,12 +260,12 @@ export function CannedResponsesClient({ responses: initialResponses }: CannedRes
   const handleDuplicate = async (id: string) => {
     try {
       const result = await duplicateCannedResponse(id);
-      if (result.success && result.data) {
-        setResponses((prev) => [...prev, result.data!]);
-        showToast("Response duplicated successfully", "success");
-      } else {
+      if (!result.success) {
         showToast(result.error || "Failed to duplicate response", "error");
+        return;
       }
+      setResponses((prev) => [...prev, result.data]);
+      showToast("Response duplicated successfully", "success");
     } catch {
       showToast("An error occurred", "error");
     }
@@ -276,17 +276,17 @@ export function CannedResponsesClient({ responses: initialResponses }: CannedRes
       const result = await updateCannedResponse(response.id, {
         isActive: !response.isActive,
       });
-      if (result.success && result.data) {
-        setResponses((prev) =>
-          prev.map((r) => (r.id === response.id ? result.data! : r))
-        );
-        showToast(
-          response.isActive ? "Response deactivated" : "Response activated",
-          "success"
-        );
-      } else {
+      if (!result.success) {
         showToast(result.error || "Failed to update response", "error");
+        return;
       }
+      setResponses((prev) =>
+        prev.map((r) => (r.id === response.id ? result.data : r))
+      );
+      showToast(
+        response.isActive ? "Response deactivated" : "Response activated",
+        "success"
+      );
     } catch {
       showToast("An error occurred", "error");
     }
@@ -316,14 +316,11 @@ export function CannedResponsesClient({ responses: initialResponses }: CannedRes
             onChange={(e) => setSelectedCategory(e.target.value as CannedResponseCategory | "all")}
             className="w-full sm:w-48"
             aria-label="Filter by category"
-          >
-            <option value="all">All Categories</option>
-            {CATEGORY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Select>
+            options={[
+              { value: "all", label: "All Categories" },
+              ...CATEGORY_OPTIONS,
+            ]}
+          />
 
           {/* Show Inactive Toggle */}
           <label className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] cursor-pointer whitespace-nowrap">
@@ -448,7 +445,7 @@ export function CannedResponsesClient({ responses: initialResponses }: CannedRes
       )}
 
       {/* Create/Edit Modal */}
-      <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
@@ -512,7 +509,6 @@ export function CannedResponsesClient({ responses: initialResponses }: CannedRes
                     Category
                   </label>
                   <Select
-                    id="response-category"
                     value={formData.category}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -520,13 +516,8 @@ export function CannedResponsesClient({ responses: initialResponses }: CannedRes
                         category: e.target.value as CannedResponseCategory,
                       }))
                     }
-                  >
-                    {CATEGORY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </Select>
+                    options={CATEGORY_OPTIONS}
+                  />
                 </div>
 
                 <div>

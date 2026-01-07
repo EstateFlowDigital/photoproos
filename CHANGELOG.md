@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Canned Responses / Quick Replies System** - Pre-written message templates for faster client communication
+  - **CannedResponse Database Model** - Store reusable message templates
+    - Organize by category (greeting, booking, pricing, scheduling, delivery, follow-up, objection, closing, support, general)
+    - Personal responses (visible only to owner) or organization-wide templates
+    - Optional keyboard shortcuts (e.g., `/pricing`, `/thanks`)
+    - Usage tracking for analytics and smart sorting
+  - **Canned Responses Management UI** - Settings page for creating and organizing templates
+    - Full CRUD operations for templates
+    - Category filtering and search functionality
+    - Drag-to-reorder within categories
+    - Duplicate and toggle active status
+    - Personal vs organization-wide visibility badges
+  - **Quick Reply Picker** - In-chat component for fast template insertion
+    - Lightning bolt button in message input area
+    - Search by title, content, or shortcut
+    - Category filter tabs
+    - Keyboard navigation (arrow keys, Enter, Escape)
+    - Usage recording for analytics
+  - **Default Templates** - Pre-seeded templates for new organizations covering common photographer scenarios
+
+- **Lead Messaging Integration** - Direct messaging capability for leads
+  - **Message Lead Action** - One-click to start a conversation with any lead
+    - Automatically creates client record if needed
+    - Creates client_support conversation
+    - Sends message and updates lead status to "contacted"
+  - **Lead Message Email Notification** - Branded email sent to lead
+    - Message preview in email body
+    - Magic link for secure portal access (24-hour expiry)
+    - Links directly to conversation in client portal
+    - Custom branding support (logo, brand color)
+  - **Lead Conversation Lookup** - Check for existing conversations with leads
+
 ### Changed
 - **Breadcrumb Navigation Styling** - Improved visual clarity for breadcrumb components
   - Adjusted spacing and chevron margins for better visual hierarchy
@@ -14,6 +47,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Applied consistent styling across dashboard and help breadcrumb components
 
 ### Added
+- **Dashboard Walkthrough System** - Interactive tutorial system for new users
+  - **PageWalkthrough Component** - Multi-step tutorial with open/minimized/hidden/dismissed states
+  - **Spotlight Component** - Highlights UI elements during interactive tutorials
+    - SVG mask-based overlay for element highlighting
+    - Auto-positioning tooltips (top, bottom, left, right, auto)
+    - Smooth scroll-into-view for highlighted elements
+  - **Interactive Mode** - Toggle spotlight highlighting for hands-on learning
+  - **Walkthrough Configurations** - Step-by-step content for 10 key pages:
+    - Dashboard, Galleries, Clients, Invoices, Contracts
+    - Calendar, Settings, Analytics, Integrations, Property Websites
+  - **WalkthroughWrapper** - Client-side state management with server sync
+  - **Spotlight hook** - `useTourTarget()` for adding tour targets to elements
+
+- **Dashboard Widget System Enhancements** - Data integration and new widgets
+  - **Widget Data Server Actions** - Real-time data fetching for widgets
+    - `getRevenueWidgetData()` - Monthly and YTD revenue
+    - `getKeyMetricsWidgetData()` - Revenue, galleries, clients, invoices
+  - **Data-Connected Widget Wrappers** - Server components with Suspense
+    - `RevenueWidgetWithData` - Revenue widget with live data
+    - `KeyMetricsWidgetWithData` - Key metrics with live data
+  - **WidgetContainerSkeleton** - Loading state skeleton for widgets
+
 - **Enhanced Expense Tracking Features (Phase 2)** - Additional expense management capabilities
   - **Billable Expense Tracking** - Mark expenses as billable to clients
     - `isBillable` field on expenses for client billing
@@ -41,11 +96,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Default expense category and payment method per vendor
     - Search vendors by name
     - Active/inactive status for vendors
+  - **UI Integration**:
+    - Payment Method dropdown in expense modal
+    - Tax Amount field for separate tax tracking
+    - Billable checkbox with $ indicator badge
+    - Mileage Calculator section with auto-calculate
+    - Vendor autocomplete with type-ahead search
+    - Duplicate expense button (copy icon) on each expense row
+    - Forecast button in expenses header (when recurring templates exist)
+    - Forecast modal with monthly breakdown, category summary, and template details
   - **Database Schema Updates**:
     - `PaymentMethod` enum for payment tracking
     - `Vendor` model for vendor directory
     - Enhanced `ProjectExpense` with billable, payment method, tax, and mileage fields
     - `expenseMileageRateCents` on Organization for default mileage rate
+  - **File Locations**:
+    - Server Actions: `src/lib/actions/project-expenses.ts`
+    - UI Component: `src/components/gallery/project-pl-panel.tsx`
+    - Schema: `prisma/schema.prisma` (PaymentMethod enum, Vendor model, ProjectExpense enhancements)
 
 - **Advanced Expense Tracking Features (Phase 1)** - Comprehensive expense management enhancements
   - **Recurring Expense Templates** - Create and manage templates for expenses that occur regularly
