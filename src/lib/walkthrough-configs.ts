@@ -204,6 +204,10 @@ export const invoicesWalkthrough: WalkthroughConfig = {
       description:
         "Click 'New Invoice' to create a professional invoice. Add line items, taxes, and discounts.",
       icon: Plus,
+      targetSelector: "[data-tour='create-invoice-button']",
+      tooltipPosition: "bottom",
+      actionLabel: "Create Invoice",
+      actionHref: "/invoices/new",
     },
     {
       id: "send",
@@ -211,6 +215,8 @@ export const invoicesWalkthrough: WalkthroughConfig = {
       description:
         "Send invoices via email with one click. Track when clients view and pay their invoices.",
       icon: Send,
+      targetSelector: "[data-tour='invoice-list']",
+      tooltipPosition: "top",
     },
     {
       id: "payments",
@@ -218,6 +224,8 @@ export const invoicesWalkthrough: WalkthroughConfig = {
       description:
         "Clients can pay online via credit card or bank transfer. Funds go directly to your account.",
       icon: CreditCard,
+      targetSelector: "[data-tour='invoice-stats']",
+      tooltipPosition: "bottom",
     },
     {
       id: "reminders",
@@ -246,6 +254,8 @@ export const contractsWalkthrough: WalkthroughConfig = {
       description:
         "Start with a template or create your own. Save commonly used contracts for quick reuse.",
       icon: FileText,
+      actionLabel: "View Templates",
+      actionHref: "/contracts/templates",
     },
     {
       id: "customize",
@@ -253,6 +263,8 @@ export const contractsWalkthrough: WalkthroughConfig = {
       description:
         "Add your terms, pricing, and conditions. Use merge fields to auto-fill client details.",
       icon: PenTool,
+      targetSelector: "[data-tour='create-contract-button']",
+      tooltipPosition: "bottom",
     },
     {
       id: "send",
@@ -260,6 +272,8 @@ export const contractsWalkthrough: WalkthroughConfig = {
       description:
         "Send contracts via email. Clients can sign digitally from any device.",
       icon: Send,
+      targetSelector: "[data-tour='contract-list']",
+      tooltipPosition: "top",
     },
     {
       id: "track",
@@ -267,6 +281,8 @@ export const contractsWalkthrough: WalkthroughConfig = {
       description:
         "See when contracts are viewed and signed. Store completed contracts securely.",
       icon: Eye,
+      targetSelector: "[data-tour='contract-stats']",
+      tooltipPosition: "bottom",
     },
   ],
 };
@@ -288,6 +304,8 @@ export const calendarWalkthrough: WalkthroughConfig = {
       description:
         "Switch between day, week, month, and agenda views to see your schedule your way.",
       icon: Calendar,
+      targetSelector: "[data-tour='calendar-view']",
+      tooltipPosition: "left",
     },
     {
       id: "bookings",
@@ -295,6 +313,10 @@ export const calendarWalkthrough: WalkthroughConfig = {
       description:
         "Click on any booking to view details, reschedule, or communicate with the client.",
       icon: Clock,
+      targetSelector: "[data-tour='new-booking-button']",
+      tooltipPosition: "bottom",
+      actionLabel: "Create Booking",
+      actionHref: "/scheduling/new",
     },
     {
       id: "sync",
@@ -302,6 +324,8 @@ export const calendarWalkthrough: WalkthroughConfig = {
       description:
         "Connect Google Calendar or Outlook to see all your events in one place.",
       icon: Link2,
+      actionLabel: "Settings",
+      actionHref: "/settings/integrations",
     },
     {
       id: "availability",
@@ -309,6 +333,8 @@ export const calendarWalkthrough: WalkthroughConfig = {
       description:
         "Define your working hours and time off. Clients can only book when you're available.",
       icon: Target,
+      actionLabel: "Availability",
+      actionHref: "/scheduling/availability",
     },
   ],
 };
@@ -372,6 +398,8 @@ export const analyticsWalkthrough: WalkthroughConfig = {
       description:
         "See your revenue trends, client growth, and booking patterns at a glance.",
       icon: BarChart3,
+      targetSelector: "[data-tour='analytics-stats']",
+      tooltipPosition: "bottom",
     },
     {
       id: "revenue",
@@ -379,6 +407,8 @@ export const analyticsWalkthrough: WalkthroughConfig = {
       description:
         "Track income by service type, client, or time period. Identify your most profitable work.",
       icon: CreditCard,
+      targetSelector: "[data-tour='revenue-chart']",
+      tooltipPosition: "right",
     },
     {
       id: "clients",
@@ -386,6 +416,8 @@ export const analyticsWalkthrough: WalkthroughConfig = {
       description:
         "Understand client behavior, repeat business rates, and acquisition sources.",
       icon: Users,
+      targetSelector: "[data-tour='client-insights']",
+      tooltipPosition: "left",
     },
     {
       id: "export",

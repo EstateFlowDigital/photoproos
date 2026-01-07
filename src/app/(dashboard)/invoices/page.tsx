@@ -9,6 +9,8 @@ import { BulkExportButton } from "@/components/invoices/bulk-export-button";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import { InvoicesPageClient } from "./invoices-page-client";
 import { FilterPills } from "@/components/ui/filter-pills";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 
 interface PageProps {
@@ -81,8 +83,20 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
     overdue: allInvoices.filter((i) => i.status === "overdue").length,
   };
 
+  // Fetch walkthrough preference
+  const walkthroughPreferenceResult = await getWalkthroughPreference("invoices");
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
+
   return (
     <div className="space-y-6">
+      {/* Page Walkthrough */}
+      <WalkthroughWrapper
+        pageId="invoices"
+        initialState={walkthroughState}
+      />
+
       <PageHeader
         title="Invoices"
         subtitle={`${invoices.length} invoice${invoices.length !== 1 ? "s" : ""}`}
@@ -92,6 +106,7 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
             <Link
               href="/invoices/new"
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 md:px-4"
+              data-tour="create-invoice-button"
             >
               <PlusIcon className="h-4 w-4" />
               <span className="hidden md:inline">Create Invoice</span>
@@ -118,7 +133,7 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
       />
 
       {/* Summary Cards */}
-      <div className="auto-grid grid-min-220 grid-gap-4">
+      <div className="auto-grid grid-min-220 grid-gap-4" data-tour="invoice-stats">
         <StatCard label="Total Outstanding" value={formatCurrency(totalOutstanding)} />
         <StatCard label="Paid This Month" value={formatCurrency(totalPaid)} valueVariant="success" />
         <StatCard label="Pending" value={String(statusCounts.sent)} valueVariant="primary" />
@@ -139,7 +154,9 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
       />
 
       {/* Invoices Table */}
-      <InvoicesPageClient invoices={invoices} statusFilter={statusFilter} />
+      <div data-tour="invoice-list">
+        <InvoicesPageClient invoices={invoices} statusFilter={statusFilter} />
+      </div>
     </div>
   );
 }

@@ -898,6 +898,7 @@ export async function getGallery(id: string) {
         height: asset.height,
         sortOrder: asset.sortOrder,
         collectionId: asset.collectionId,
+        exifData: asset.exifData as Record<string, unknown> | null,
       })),
       // Payments
       payments: gallery.payments,

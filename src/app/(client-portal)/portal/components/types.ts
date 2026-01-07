@@ -1,9 +1,12 @@
+import type { ClientPreferences } from "@/lib/types/client-preferences";
+
 export interface ClientData {
   id: string;
   fullName: string | null;
   email: string;
   company: string | null;
   phone: string | null;
+  preferences?: ClientPreferences | null;
 }
 
 export interface PropertyData {

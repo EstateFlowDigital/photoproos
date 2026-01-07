@@ -95,6 +95,7 @@ export function ContractsPageClient({
             <Link
               href="/contracts/new"
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 md:px-4"
+              data-tour="create-contract-button"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden md:inline">Create Contract</span>
@@ -112,7 +113,7 @@ export function ContractsPageClient({
       />
 
       {/* Summary Cards */}
-      <div className="auto-grid grid-min-200 grid-gap-4">
+      <div className="auto-grid grid-min-200 grid-gap-4" data-tour="contract-stats">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <p className="text-sm font-medium text-foreground-muted">Awaiting Signature</p>
           <p className="mt-2 text-2xl font-semibold text-[var(--primary)]">
@@ -257,7 +258,7 @@ export function ContractsPageClient({
       {/* Contracts Table */}
       {contracts.length > 0 ? (
         filteredContracts.length > 0 ? (
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto" data-tour="contract-list">
             {searchQuery && (
               <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-2 text-sm text-foreground-muted">
                 Showing {filteredContracts.length} of {contracts.length} contracts

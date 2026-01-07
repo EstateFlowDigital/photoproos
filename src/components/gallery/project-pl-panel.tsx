@@ -14,6 +14,21 @@ import {
   DialogBody,
 } from "@/components/ui/dialog";
 import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
+import {
   getProjectPL,
   getProjectExpenses,
   createProjectExpense,
@@ -323,6 +338,22 @@ function TrendingIcon({ className }: { className?: string }) {
   );
 }
 
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function SplitIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+    </svg>
+  );
+}
+
 // ============================================================================
 // CONSTANTS
 // ============================================================================
@@ -337,6 +368,32 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: "venmo", label: "Venmo" },
   { value: "zelle", label: "Zelle" },
   { value: "other", label: "Other" },
+];
+
+const APPROVAL_STATUSES: { value: ExpenseApprovalStatus; label: string }[] = [
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+];
+
+// Quick-add expense templates for common expenses
+const QUICK_TEMPLATES: Array<{
+  name: string;
+  description: string;
+  category: ExpenseCategory;
+  icon: string;
+  defaultAmount?: number; // in cents
+}> = [
+  { name: "Gas/Fuel", description: "Vehicle fuel", category: "travel", icon: "⛽" },
+  { name: "Parking", description: "Parking fee", category: "travel", icon: "🅿️" },
+  { name: "Tolls", description: "Road tolls", category: "travel", icon: "🛣️" },
+  { name: "Lunch/Meals", description: "Meal expense", category: "food", icon: "🍽️" },
+  { name: "Coffee", description: "Coffee/beverages", category: "food", icon: "☕", defaultAmount: 500 },
+  { name: "Office Supplies", description: "Office supplies purchase", category: "supplies", icon: "📎" },
+  { name: "Equipment Rental", description: "Equipment rental", category: "equipment", icon: "📷" },
+  { name: "Software", description: "Software subscription", category: "software", icon: "💻" },
+  { name: "Marketing", description: "Marketing expense", category: "marketing", icon: "📣" },
+  { name: "Shipping", description: "Shipping/delivery", category: "other", icon: "📦" },
 ];
 
 // ============================================================================
@@ -356,6 +413,10 @@ interface FilterState {
   status: "all" | "paid" | "unpaid";
   dateFrom: string;
   dateTo: string;
+  // Advanced filters
+  paymentMethod: PaymentMethod | "all";
+  billable: "all" | "billable" | "non-billable";
+  approvalStatus: ExpenseApprovalStatus | "all";
 }
 
 type SortField = "date" | "amount" | "category" | "description";
@@ -510,8 +571,13 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     status: "all",
     dateFrom: "",
     dateTo: "",
+    // Advanced filters
+    paymentMethod: "all",
+    billable: "all",
+    approvalStatus: "all",
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Sort state
   const [sort, setSort] = useState<SortState>({
@@ -616,8 +682,36 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
   const [reportDateTo, setReportDateTo] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
 
+  // Expense split state
+  const [showSplitModal, setShowSplitModal] = useState(false);
+  const [splittingExpense, setSplittingExpense] = useState<ProjectExpense | null>(null);
+  const [splitItems, setSplitItems] = useState<Array<{
+    category: ExpenseCategory;
+    amountCents: number;
+    description: string;
+  }>>([]);
+  const [isSplitting, setIsSplitting] = useState(false);
+
+  // Quick-add templates state
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const quickAddRef = useRef<HTMLDivElement>(null);
+
+  // Bulk edit state
+  const [showBulkEditModal, setShowBulkEditModal] = useState(false);
+  const [bulkEditData, setBulkEditData] = useState<{
+    category: ExpenseCategory | "";
+    paymentMethod: PaymentMethod | "";
+    isBillable: boolean | null;
+    isPaid: boolean | null;
+  }>({
+    category: "",
+    paymentMethod: "",
+    isBillable: null,
+    isPaid: null,
+  });
+
   // Active tab for advanced features
-  const [activeAdvancedTab, setActiveAdvancedTab] = useState<"expenses" | "templates" | "budget">("expenses");
+  const [activeAdvancedTab, setActiveAdvancedTab] = useState<"expenses" | "templates" | "budget" | "analytics">("expenses");
 
   // Load data
   useEffect(() => {
@@ -706,6 +800,21 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         if (new Date(expense.expenseDate) > toDate) return false;
       }
 
+      // Advanced filters
+      // Payment method filter
+      if (filters.paymentMethod !== "all" && expense.paymentMethod !== filters.paymentMethod) {
+        return false;
+      }
+
+      // Billable filter
+      if (filters.billable === "billable" && !expense.isBillable) return false;
+      if (filters.billable === "non-billable" && expense.isBillable) return false;
+
+      // Approval status filter
+      if (filters.approvalStatus !== "all" && expense.approvalStatus !== filters.approvalStatus) {
+        return false;
+      }
+
       return true;
     });
 
@@ -735,8 +844,114 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     if (filters.status !== "all") count++;
     if (filters.dateFrom) count++;
     if (filters.dateTo) count++;
+    // Advanced filters
+    if (filters.paymentMethod !== "all") count++;
+    if (filters.billable !== "all") count++;
+    if (filters.approvalStatus !== "all") count++;
     return count;
   }, [filters]);
+
+  // Analytics data
+  const analyticsData = useMemo(() => {
+    if (expenses.length === 0) {
+      return {
+        categoryBreakdown: [],
+        paymentMethodBreakdown: [],
+        monthlyTrend: [],
+        totalSpent: 0,
+        averageExpense: 0,
+        topCategory: null,
+        billableVsNonBillable: { billable: 0, nonBillable: 0 },
+      };
+    }
+
+    // Category breakdown
+    const categoryMap = new Map<string, number>();
+    expenses.forEach((exp) => {
+      const current = categoryMap.get(exp.category) || 0;
+      categoryMap.set(exp.category, current + exp.amountCents);
+    });
+    const categoryBreakdown = Array.from(categoryMap.entries())
+      .map(([category, amountCents]) => ({
+        name: getCategoryLabel(category as ExpenseCategory),
+        value: amountCents / 100,
+        category,
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    // Payment method breakdown
+    const paymentMap = new Map<string, number>();
+    expenses.forEach((exp) => {
+      const method = exp.paymentMethod || "other";
+      const current = paymentMap.get(method) || 0;
+      paymentMap.set(method, current + exp.amountCents);
+    });
+    const paymentMethodBreakdown = Array.from(paymentMap.entries())
+      .map(([method, amountCents]) => ({
+        name: PAYMENT_METHODS.find((m) => m.value === method)?.label || "Other",
+        value: amountCents / 100,
+        method,
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    // Monthly trend (group by month)
+    const monthMap = new Map<string, number>();
+    expenses.forEach((exp) => {
+      const date = new Date(exp.expenseDate);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      const current = monthMap.get(monthKey) || 0;
+      monthMap.set(monthKey, current + exp.amountCents);
+    });
+    const monthlyTrend = Array.from(monthMap.entries())
+      .map(([month, amountCents]) => ({
+        month,
+        label: new Date(month + "-01").toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
+        amount: amountCents / 100,
+      }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+
+    // Totals
+    const totalSpent = expenses.reduce((sum, exp) => sum + exp.amountCents, 0);
+    const averageExpense = totalSpent / expenses.length;
+    const topCategory = categoryBreakdown[0] || null;
+
+    // Billable vs non-billable
+    const billableVsNonBillable = expenses.reduce(
+      (acc, exp) => {
+        if (exp.isBillable) {
+          acc.billable += exp.amountCents;
+        } else {
+          acc.nonBillable += exp.amountCents;
+        }
+        return acc;
+      },
+      { billable: 0, nonBillable: 0 }
+    );
+
+    return {
+      categoryBreakdown,
+      paymentMethodBreakdown,
+      monthlyTrend,
+      totalSpent,
+      averageExpense,
+      topCategory,
+      billableVsNonBillable,
+    };
+  }, [expenses]);
+
+  // Chart colors (Dovetail-inspired palette)
+  const CHART_COLORS = [
+    "#3b82f6", // Primary blue
+    "#22c55e", // Success green
+    "#f97316", // Warning orange
+    "#8b5cf6", // AI purple
+    "#ec4899", // Pink
+    "#14b8a6", // Teal
+    "#f59e0b", // Amber
+    "#6366f1", // Indigo
+    "#84cc16", // Lime
+    "#06b6d4", // Cyan
+  ];
 
   function resetForm() {
     setFormData({
@@ -894,6 +1109,155 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     }
   }
 
+  // Open split expense modal
+  function openSplitModal(expense: ProjectExpense) {
+    setSplittingExpense(expense);
+    // Initialize with two split items, each getting half the amount
+    const halfAmount = Math.floor(expense.amountCents / 2);
+    setSplitItems([
+      {
+        category: expense.category as ExpenseCategory,
+        amountCents: halfAmount,
+        description: expense.description,
+      },
+      {
+        category: "other" as ExpenseCategory,
+        amountCents: expense.amountCents - halfAmount,
+        description: expense.description,
+      },
+    ]);
+    setShowSplitModal(true);
+  }
+
+  // Add a split item
+  function addSplitItem() {
+    if (!splittingExpense) return;
+    setSplitItems([
+      ...splitItems,
+      {
+        category: "other" as ExpenseCategory,
+        amountCents: 0,
+        description: splittingExpense.description,
+      },
+    ]);
+  }
+
+  // Remove a split item
+  function removeSplitItem(index: number) {
+    if (splitItems.length <= 2) return; // Minimum 2 items
+    setSplitItems(splitItems.filter((_, i) => i !== index));
+  }
+
+  // Update a split item
+  function updateSplitItem(index: number, field: keyof (typeof splitItems)[0], value: string | number) {
+    setSplitItems(
+      splitItems.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      )
+    );
+  }
+
+  // Calculate remaining amount
+  const splitRemainingAmount = useMemo(() => {
+    if (!splittingExpense) return 0;
+    const allocated = splitItems.reduce((sum, item) => sum + item.amountCents, 0);
+    return splittingExpense.amountCents - allocated;
+  }, [splittingExpense, splitItems]);
+
+  // Handle split expense submission
+  async function handleSplitExpense() {
+    if (!splittingExpense) return;
+    if (splitRemainingAmount !== 0) {
+      setError("Split amounts must equal the original expense amount");
+      return;
+    }
+    if (splitItems.some((item) => item.amountCents <= 0)) {
+      setError("All split items must have a positive amount");
+      return;
+    }
+
+    setIsSplitting(true);
+    try {
+      // Create new expenses for each split item (except the first one which will update the original)
+      const promises = splitItems.slice(1).map((item) =>
+        createProjectExpense({
+          galleryId,
+          description: item.description,
+          category: item.category,
+          amountCents: item.amountCents,
+          vendor: splittingExpense.vendor,
+          isPaid: splittingExpense.isPaid,
+          notes: `Split from: ${splittingExpense.description}`,
+          teamMemberId: splittingExpense.teamMemberId || undefined,
+          expenseDate: splittingExpense.expenseDate.toISOString().split("T")[0],
+          isBillable: splittingExpense.isBillable || false,
+          paymentMethod: splittingExpense.paymentMethod || undefined,
+        })
+      );
+
+      // Update the original expense with the first split item
+      promises.push(
+        updateProjectExpense(splittingExpense.id, {
+          description: splitItems[0].description,
+          category: splitItems[0].category,
+          amountCents: splitItems[0].amountCents,
+          notes: `Split expense (${splitItems.length} parts)`,
+        })
+      );
+
+      const results = await Promise.all(promises);
+      const failed = results.filter((r) => !r.success);
+      if (failed.length > 0) {
+        setError(`Failed to split expense: ${failed.map((r) => r.error).join(", ")}`);
+      } else {
+        setShowSplitModal(false);
+        setSplittingExpense(null);
+        setSplitItems([]);
+        await loadData();
+      }
+    } catch {
+      setError("Failed to split expense");
+    } finally {
+      setIsSplitting(false);
+    }
+  }
+
+  // Handle quick template selection
+  function handleQuickTemplate(template: typeof QUICK_TEMPLATES[0]) {
+    setFormData({
+      description: template.description,
+      category: template.category,
+      amountCents: template.defaultAmount || 0,
+      vendor: "",
+      isPaid: true,
+      notes: `Quick add: ${template.name}`,
+      teamMemberId: "",
+      receiptUrl: "",
+      expenseDate: new Date().toISOString().split("T")[0],
+      isBillable: false,
+      paymentMethod: "",
+      taxCents: 0,
+      mileageDistance: 0,
+      mileageRateCents: mileageRate,
+    });
+    setShowQuickAdd(false);
+    setEditingExpense(null);
+    setIsModalOpen(true);
+  }
+
+  // Close quick-add dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (quickAddRef.current && !quickAddRef.current.contains(event.target as Node)) {
+        setShowQuickAdd(false);
+      }
+    }
+    if (showQuickAdd) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showQuickAdd]);
+
   // Receipt upload handler
   async function handleReceiptUpload(file: File) {
     if (!file) return;
@@ -1003,6 +1367,69 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     }
   }
 
+  // Bulk edit handler
+  function openBulkEditModal() {
+    setBulkEditData({
+      category: "",
+      paymentMethod: "",
+      isBillable: null,
+      isPaid: null,
+    });
+    setShowBulkEditModal(true);
+  }
+
+  async function handleBulkEdit() {
+    if (selectedIds.size === 0) return;
+
+    // Check if any changes were made
+    const hasChanges =
+      bulkEditData.category !== "" ||
+      bulkEditData.paymentMethod !== "" ||
+      bulkEditData.isBillable !== null ||
+      bulkEditData.isPaid !== null;
+
+    if (!hasChanges) {
+      setError("Please select at least one field to update");
+      return;
+    }
+
+    setIsBulkProcessing(true);
+    try {
+      // Update each selected expense
+      const updatePromises = Array.from(selectedIds).map((id) => {
+        const updates: Record<string, unknown> = {};
+        if (bulkEditData.category !== "") {
+          updates.category = bulkEditData.category;
+        }
+        if (bulkEditData.paymentMethod !== "") {
+          updates.paymentMethod = bulkEditData.paymentMethod;
+        }
+        if (bulkEditData.isBillable !== null) {
+          updates.isBillable = bulkEditData.isBillable;
+        }
+        if (bulkEditData.isPaid !== null) {
+          updates.isPaid = bulkEditData.isPaid;
+        }
+        return updateProjectExpense(id, updates);
+      });
+
+      const results = await Promise.all(updatePromises);
+      const failed = results.filter((r) => !r.success);
+
+      if (failed.length > 0) {
+        setError(`Failed to update ${failed.length} expense(s)`);
+      } else {
+        setShowBulkEditModal(false);
+        clearSelection();
+        await loadData();
+      }
+    } catch {
+      setError("Failed to update expenses");
+    } finally {
+      setIsBulkProcessing(false);
+    }
+  }
+
   // CSV Export
   async function handleExportCSV() {
     try {
@@ -1035,7 +1462,12 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       status: "all",
       dateFrom: "",
       dateTo: "",
+      // Advanced filters
+      paymentMethod: "all",
+      billable: "all",
+      approvalStatus: "all",
     });
+    setShowAdvancedFilters(false);
   }
 
   // Sort handler
@@ -1630,6 +2062,14 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               </span>
             )}
           </Button>
+          <Button
+            variant={activeAdvancedTab === "analytics" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setActiveAdvancedTab("analytics")}
+          >
+            <TrendingIcon className="h-4 w-4 mr-1" />
+            Analytics
+          </Button>
         </div>
         <div className="flex items-center gap-2">
           {recurringTemplates.length > 0 && (
@@ -1851,6 +2291,265 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         </div>
       )}
 
+      {/* Analytics Tab Content */}
+      {activeAdvancedTab === "analytics" && (
+        <div className="space-y-6">
+          {expenses.length === 0 ? (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8 text-center">
+              <TrendingIcon className="h-12 w-12 mx-auto text-foreground-muted mb-3" />
+              <h3 className="font-semibold text-foreground mb-1">No Expense Data</h3>
+              <p className="text-sm text-foreground-muted">
+                Add expenses to see analytics and insights
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Analytics Summary Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                  <div className="text-xs text-foreground-muted mb-1">Total Spent</div>
+                  <div className="text-xl font-bold text-foreground">
+                    {formatCurrency(analyticsData.totalSpent)}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                  <div className="text-xs text-foreground-muted mb-1">Avg per Expense</div>
+                  <div className="text-xl font-bold text-foreground">
+                    {formatCurrency(analyticsData.averageExpense)}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                  <div className="text-xs text-foreground-muted mb-1">Top Category</div>
+                  <div className="text-xl font-bold text-foreground truncate">
+                    {analyticsData.topCategory?.name || "—"}
+                  </div>
+                  {analyticsData.topCategory && (
+                    <div className="text-xs text-foreground-muted">
+                      {formatCurrency(analyticsData.topCategory.value * 100)}
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                  <div className="text-xs text-foreground-muted mb-1">Expense Count</div>
+                  <div className="text-xl font-bold text-foreground">
+                    {expenses.length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Charts Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Spending Trend Chart */}
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                  <h4 className="font-semibold text-foreground mb-4">Spending Over Time</h4>
+                  {analyticsData.monthlyTrend.length > 1 ? (
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analyticsData.monthlyTrend}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" />
+                          <XAxis
+                            dataKey="label"
+                            tick={{ fill: "var(--foreground-muted)", fontSize: 12 }}
+                            axisLine={{ stroke: "var(--card-border)" }}
+                          />
+                          <YAxis
+                            tick={{ fill: "var(--foreground-muted)", fontSize: 12 }}
+                            axisLine={{ stroke: "var(--card-border)" }}
+                            tickFormatter={(value) => `$${value}`}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "var(--card)",
+                              border: "1px solid var(--card-border)",
+                              borderRadius: "8px",
+                            }}
+                            formatter={(value: number) => [`$${value.toFixed(2)}`, "Amount"]}
+                          />
+                          <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-64 flex items-center justify-center text-sm text-foreground-muted">
+                      Need more data to show trends
+                    </div>
+                  )}
+                </div>
+
+                {/* Category Breakdown Pie Chart */}
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                  <h4 className="font-semibold text-foreground mb-4">By Category</h4>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={analyticsData.categoryBreakdown}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={80}
+                          paddingAngle={2}
+                          dataKey="value"
+                          label={({ name, percent }) =>
+                            `${name} ${(percent * 100).toFixed(0)}%`
+                          }
+                          labelLine={{ stroke: "var(--foreground-muted)" }}
+                        >
+                          {analyticsData.categoryBreakdown.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={CHART_COLORS[index % CHART_COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "var(--card)",
+                            border: "1px solid var(--card-border)",
+                            borderRadius: "8px",
+                          }}
+                          formatter={(value: number) => [`$${value.toFixed(2)}`, "Amount"]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Analytics Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Payment Method Breakdown */}
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                  <h4 className="font-semibold text-foreground mb-4">By Payment Method</h4>
+                  <div className="space-y-3">
+                    {analyticsData.paymentMethodBreakdown.map((method, index) => {
+                      const percentage = (method.value / (analyticsData.totalSpent / 100)) * 100;
+                      return (
+                        <div key={method.method}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm text-foreground">{method.name}</span>
+                            <span className="text-sm text-foreground-muted">
+                              {formatCurrency(method.value * 100)} ({percentage.toFixed(0)}%)
+                            </span>
+                          </div>
+                          <div className="h-2 bg-[var(--background-secondary)] rounded-full overflow-hidden">
+                            <div
+                              className="h-full transition-all"
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Billable vs Non-Billable */}
+                <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+                  <h4 className="font-semibold text-foreground mb-4">Billable vs Non-Billable</h4>
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: "Billable", value: analyticsData.billableVsNonBillable.billable / 100 },
+                            { name: "Non-Billable", value: analyticsData.billableVsNonBillable.nonBillable / 100 },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={40}
+                          outerRadius={70}
+                          paddingAngle={2}
+                          dataKey="value"
+                          label={({ name, percent }) =>
+                            percent > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ""
+                          }
+                          labelLine={{ stroke: "var(--foreground-muted)" }}
+                        >
+                          <Cell fill="#22c55e" />
+                          <Cell fill="#6366f1" />
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "var(--card)",
+                            border: "1px solid var(--card-border)",
+                            borderRadius: "8px",
+                          }}
+                          formatter={(value: number) => [`$${value.toFixed(2)}`, "Amount"]}
+                        />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4 text-center">
+                    <div>
+                      <div className="text-lg font-bold text-[var(--success)]">
+                        {formatCurrency(analyticsData.billableVsNonBillable.billable)}
+                      </div>
+                      <div className="text-xs text-foreground-muted">Billable</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-[#6366f1]">
+                        {formatCurrency(analyticsData.billableVsNonBillable.nonBillable)}
+                      </div>
+                      <div className="text-xs text-foreground-muted">Non-Billable</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Details Table */}
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+                <div className="p-4 border-b border-[var(--card-border)]">
+                  <h4 className="font-semibold text-foreground">Category Details</h4>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
+                        <th className="text-left p-3 text-xs font-medium text-foreground-muted">Category</th>
+                        <th className="text-right p-3 text-xs font-medium text-foreground-muted">Amount</th>
+                        <th className="text-right p-3 text-xs font-medium text-foreground-muted">% of Total</th>
+                        <th className="text-right p-3 text-xs font-medium text-foreground-muted">Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analyticsData.categoryBreakdown.map((cat, index) => {
+                        const count = expenses.filter((e) => e.category === cat.category).length;
+                        const percentage = (cat.value / (analyticsData.totalSpent / 100)) * 100;
+                        return (
+                          <tr key={cat.category} className="border-b border-[var(--card-border)] last:border-0">
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                                />
+                                <span className="text-sm text-foreground">{cat.name}</span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-right text-sm text-foreground">
+                              {formatCurrency(cat.value * 100)}
+                            </td>
+                            <td className="p-3 text-right text-sm text-foreground-muted">
+                              {percentage.toFixed(1)}%
+                            </td>
+                            <td className="p-3 text-right text-sm text-foreground-muted">{count}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Expenses List */}
       {activeAdvancedTab === "expenses" && (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
@@ -1884,6 +2583,44 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   Export
                 </Button>
               )}
+              {/* Quick Add Dropdown */}
+              <div className="relative" ref={quickAddRef}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowQuickAdd(!showQuickAdd)}
+                  aria-label="Quick add common expense"
+                  aria-expanded={showQuickAdd}
+                  aria-haspopup="menu"
+                >
+                  <ChevronDownIcon className="h-4 w-4 mr-1" />
+                  Quick Add
+                </Button>
+                {showQuickAdd && (
+                  <div
+                    className="absolute right-0 top-full mt-1 w-64 bg-[var(--card)] border border-[var(--card-border)] rounded-lg shadow-lg z-50 py-1 max-h-80 overflow-y-auto"
+                    role="menu"
+                  >
+                    <div className="px-3 py-2 text-xs font-medium text-foreground-muted border-b border-[var(--card-border)]">
+                      Quick Add Templates
+                    </div>
+                    {QUICK_TEMPLATES.map((template) => (
+                      <button
+                        key={template.name}
+                        onClick={() => handleQuickTemplate(template)}
+                        className="w-full px-3 py-2 text-left hover:bg-[var(--background-secondary)] transition-colors flex items-center gap-2"
+                        role="menuitem"
+                      >
+                        <span className="text-lg">{template.icon}</span>
+                        <div>
+                          <div className="text-sm font-medium text-foreground">{template.name}</div>
+                          <div className="text-xs text-foreground-muted">{template.description}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <Button size="sm" onClick={openAddModal} aria-label="Add new expense">
                 <PlusIcon className="h-4 w-4 mr-1" />
                 Add Expense
@@ -2023,6 +2760,80 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                 />
               </div>
 
+              {/* Advanced Filters Toggle */}
+              <div className="col-span-2 md:col-span-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors"
+                >
+                  <ChevronDownIcon className={cn("h-3 w-3 transition-transform", showAdvancedFilters && "rotate-180")} />
+                  {showAdvancedFilters ? "Hide" : "Show"} Advanced Filters
+                </button>
+              </div>
+
+              {/* Advanced Filters */}
+              {showAdvancedFilters && (
+                <>
+                  {/* Payment Method Filter */}
+                  <div>
+                    <label htmlFor="filter-payment-method" className="block text-xs text-foreground-muted mb-1">
+                      Payment Method
+                    </label>
+                    <select
+                      id="filter-payment-method"
+                      value={filters.paymentMethod}
+                      onChange={(e) => setFilters({ ...filters, paymentMethod: e.target.value as PaymentMethod | "all" })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm"
+                    >
+                      <option value="all">All Methods</option>
+                      {PAYMENT_METHODS.map((method) => (
+                        <option key={method.value} value={method.value}>
+                          {method.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Billable Filter */}
+                  <div>
+                    <label htmlFor="filter-billable" className="block text-xs text-foreground-muted mb-1">
+                      Billable Status
+                    </label>
+                    <select
+                      id="filter-billable"
+                      value={filters.billable}
+                      onChange={(e) => setFilters({ ...filters, billable: e.target.value as "all" | "billable" | "non-billable" })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm"
+                    >
+                      <option value="all">All</option>
+                      <option value="billable">Billable</option>
+                      <option value="non-billable">Non-Billable</option>
+                    </select>
+                  </div>
+
+                  {/* Approval Status Filter */}
+                  <div>
+                    <label htmlFor="filter-approval-status" className="block text-xs text-foreground-muted mb-1">
+                      Approval Status
+                    </label>
+                    <select
+                      id="filter-approval-status"
+                      value={filters.approvalStatus}
+                      onChange={(e) => setFilters({ ...filters, approvalStatus: e.target.value as ExpenseApprovalStatus | "all" })}
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm"
+                    >
+                      <option value="all">All Status</option>
+                      {APPROVAL_STATUSES.map((status) => (
+                        <option key={status.value} value={status.value}>
+                          {status.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
               {/* Clear Filters */}
               {activeFilterCount > 0 && (
                 <div className="col-span-2 md:col-span-4 flex justify-end">
@@ -2053,6 +2864,16 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               </button>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={openBulkEditModal}
+                disabled={isBulkProcessing}
+                aria-label="Edit selected expenses"
+              >
+                <EditIcon className="h-4 w-4 mr-1" />
+                Bulk Edit
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -2232,6 +3053,14 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                         aria-label={`Duplicate expense: ${expense.description}`}
                       >
                         <CopyIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openSplitModal(expense); }}
+                        className="p-1.5 rounded text-foreground-muted hover:bg-[var(--background-secondary)] transition-colors"
+                        title="Split expense"
+                        aria-label={`Split expense: ${expense.description}`}
+                      >
+                        <SplitIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(expense.id); }}
@@ -3180,6 +4009,245 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowForecastModal(false)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Split Expense Modal */}
+      <Dialog open={showSplitModal} onOpenChange={(open) => !open && setShowSplitModal(false)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Split Expense</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            {splittingExpense && (
+              <>
+                {/* Original Expense Info */}
+                <div className="p-3 rounded-lg bg-[var(--background-secondary)] border border-[var(--card-border)]">
+                  <div className="text-sm text-foreground-muted mb-1">Splitting:</div>
+                  <div className="font-medium text-foreground">{splittingExpense.description}</div>
+                  <div className="text-lg font-bold text-foreground mt-1">
+                    {formatCurrency(splittingExpense.amountCents)}
+                  </div>
+                </div>
+
+                {/* Split Items */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Split Into:</span>
+                    <Button variant="ghost" size="sm" onClick={addSplitItem}>
+                      <PlusIcon className="h-4 w-4 mr-1" />
+                      Add Part
+                    </Button>
+                  </div>
+
+                  {splitItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className="p-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-foreground">Part {index + 1}</span>
+                        {splitItems.length > 2 && (
+                          <button
+                            onClick={() => removeSplitItem(index)}
+                            className="p-1 rounded text-foreground-muted hover:text-[var(--error)] transition-colors"
+                            title="Remove this part"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs text-foreground-muted mb-1">Category</label>
+                          <select
+                            value={item.category}
+                            onChange={(e) => updateSplitItem(index, "category", e.target.value)}
+                            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm"
+                          >
+                            {EXPENSE_CATEGORIES.map((cat) => (
+                              <option key={cat.value} value={cat.value}>
+                                {cat.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-foreground-muted mb-1">Amount</label>
+                          <Input
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            value={(item.amountCents / 100).toFixed(2)}
+                            onChange={(e) =>
+                              updateSplitItem(
+                                index,
+                                "amountCents",
+                                Math.round(parseFloat(e.target.value || "0") * 100)
+                              )
+                            }
+                            className="text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-foreground-muted mb-1">Description</label>
+                        <Input
+                          value={item.description}
+                          onChange={(e) => updateSplitItem(index, "description", e.target.value)}
+                          className="text-sm"
+                          placeholder="Description for this part"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Remaining Amount */}
+                <div className={cn(
+                  "p-3 rounded-lg border flex items-center justify-between",
+                  splitRemainingAmount === 0
+                    ? "bg-[var(--success)]/10 border-[var(--success)]/20"
+                    : "bg-[var(--warning)]/10 border-[var(--warning)]/20"
+                )}>
+                  <span className="text-sm font-medium">
+                    {splitRemainingAmount === 0 ? "Fully allocated" : "Remaining to allocate:"}
+                  </span>
+                  <span className={cn(
+                    "text-lg font-bold",
+                    splitRemainingAmount === 0 ? "text-[var(--success)]" : "text-[var(--warning)]"
+                  )}>
+                    {formatCurrency(Math.abs(splitRemainingAmount))}
+                    {splitRemainingAmount < 0 && " over"}
+                  </span>
+                </div>
+              </>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowSplitModal(false);
+                setSplittingExpense(null);
+                setSplitItems([]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSplitExpense}
+              disabled={isSplitting || splitRemainingAmount !== 0}
+            >
+              {isSplitting ? "Splitting..." : "Split Expense"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Edit Modal */}
+      <Dialog open={showBulkEditModal} onOpenChange={(open) => !open && setShowBulkEditModal(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bulk Edit {selectedIds.size} Expense{selectedIds.size !== 1 ? "s" : ""}</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <p className="text-sm text-foreground-muted">
+              Only fields you select will be updated. Leave fields unchanged to keep existing values.
+            </p>
+
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Category
+              </label>
+              <select
+                value={bulkEditData.category}
+                onChange={(e) => setBulkEditData({ ...bulkEditData, category: e.target.value as ExpenseCategory | "" })}
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+              >
+                <option value="">— Keep existing —</option>
+                {EXPENSE_CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Payment Method */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Payment Method
+              </label>
+              <select
+                value={bulkEditData.paymentMethod}
+                onChange={(e) => setBulkEditData({ ...bulkEditData, paymentMethod: e.target.value as PaymentMethod | "" })}
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+              >
+                <option value="">— Keep existing —</option>
+                {PAYMENT_METHODS.map((method) => (
+                  <option key={method.value} value={method.value}>
+                    {method.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Billable Status */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Billable Status
+              </label>
+              <select
+                value={bulkEditData.isBillable === null ? "" : bulkEditData.isBillable ? "true" : "false"}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setBulkEditData({
+                    ...bulkEditData,
+                    isBillable: value === "" ? null : value === "true",
+                  });
+                }}
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+              >
+                <option value="">— Keep existing —</option>
+                <option value="true">Billable</option>
+                <option value="false">Non-Billable</option>
+              </select>
+            </div>
+
+            {/* Paid Status */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Paid Status
+              </label>
+              <select
+                value={bulkEditData.isPaid === null ? "" : bulkEditData.isPaid ? "true" : "false"}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setBulkEditData({
+                    ...bulkEditData,
+                    isPaid: value === "" ? null : value === "true",
+                  });
+                }}
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+              >
+                <option value="">— Keep existing —</option>
+                <option value="true">Paid</option>
+                <option value="false">Unpaid</option>
+              </select>
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowBulkEditModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleBulkEdit} disabled={isBulkProcessing}>
+              {isBulkProcessing ? "Updating..." : `Update ${selectedIds.size} Expense${selectedIds.size !== 1 ? "s" : ""}`}
             </Button>
           </DialogFooter>
         </DialogContent>

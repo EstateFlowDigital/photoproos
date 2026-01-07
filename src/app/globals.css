@@ -196,6 +196,17 @@
   --shadow-2xl: 0 16px 48px rgba(0, 0, 0, 0.6);
   --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.5);
   --shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  /* Premium card shadow for elevated hover states */
+  --shadow-card-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+                       0 8px 10px -6px rgba(0, 0, 0, 0.2);
+
+  /* --- Skeleton Loading --- */
+  --skeleton: rgba(255, 255, 255, 0.05);
+  --skeleton-highlight: rgba(255, 255, 255, 0.1);
+
+  /* --- Animation Timing --- */
+  --ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* --- Border Radius --- */
   --radius-xs: 2px;
@@ -895,6 +906,33 @@ ul, ol {
   }
 }
 
+/* Fade in up animation for staggered grid items */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Shake animation for error feedback */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
 .section-reveal {
   opacity: 0;
   animation: sectionReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -918,6 +956,7 @@ ul, ol {
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
+  .animate-fade-in-up,
   .animate-slide-up,
   .animate-slide-down,
   .animate-number-pop,
@@ -2030,5 +2069,62 @@ html[data-scroll-theme="light"] {
   /* Avatar with gradient background for initials */
   .avatar-gradient {
     background: var(--avatar-gradient);
+  }
+
+  /* ============================================
+     MICRO-INTERACTIONS
+     Premium button and form interactions
+     ============================================ */
+
+  /* Button press feedback */
+  .btn-press {
+    @apply transition-transform duration-100;
+  }
+
+  .btn-press:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  /* Enhanced focus ring for premium feel */
+  .focus-ring-premium {
+    @apply outline-none;
+  }
+
+  .focus-ring-premium:focus-visible {
+    @apply ring-2 ring-offset-2 ring-[var(--primary)];
+    ring-offset-color: var(--background);
+  }
+
+  /* Subtle glow on focus */
+  .focus-glow:focus-visible {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  /* Interactive element lift on hover */
+  .hover-lift {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Card hover with subtle scale */
+  .card-hover-scale {
+    @apply transition-transform duration-300 ease-out;
+  }
+
+  .card-hover-scale:hover {
+    transform: scale(1.02);
+  }
+
+  /* Smooth content fade for loading states */
+  .content-fade {
+    @apply transition-opacity duration-300 ease-out;
+  }
+
+  .content-fade[data-loading="true"] {
+    opacity: 0.5;
   }
 }

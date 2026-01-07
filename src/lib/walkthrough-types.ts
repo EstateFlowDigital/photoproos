@@ -290,13 +290,15 @@ export const DEFAULT_WALKTHROUGH_STATE: WalkthroughState = "open";
 
 /**
  * Check if a walkthrough state allows restoration
+ * Note: All states can now be restored via Settings
  */
 export function isWalkthroughRestorable(state: WalkthroughState): boolean {
-  return state !== "dismissed";
+  return state === "hidden" || state === "dismissed";
 }
 
 /**
  * State transition helpers
+ * Dismissed walkthroughs can now be restored to "open" via Settings
  */
 export const WALKTHROUGH_TRANSITIONS: Record<
   WalkthroughState,
@@ -305,7 +307,7 @@ export const WALKTHROUGH_TRANSITIONS: Record<
   open: ["minimized", "hidden", "dismissed"],
   minimized: ["open", "hidden", "dismissed"],
   hidden: ["open", "dismissed"],
-  dismissed: [], // No transitions from dismissed
+  dismissed: ["open"], // Can be restored via Settings
 };
 
 /**

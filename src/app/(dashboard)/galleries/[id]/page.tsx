@@ -54,6 +54,9 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
       mediumUrl: photo.mediumUrl,
       filename: photo.filename,
       collectionId: photo.collectionId ?? null,
+      width: photo.width,
+      height: photo.height,
+      exifData: photo.exifData,
     })),
     deliveryLink: gallery.deliverySlug
       ? `${process.env.NEXT_PUBLIC_APP_URL || ""}/g/${gallery.deliverySlug}`

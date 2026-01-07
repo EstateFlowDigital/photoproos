@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Clerk Deprecation Warning** - Updated .env.example to document deprecated `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` and `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` environment variables (use `fallbackRedirectUrl` prop instead)
 
 ### Added
+- **Bulk Expense Edit** - Edit multiple expenses at once
+  - Select multiple expenses with checkbox selection
+  - Update category, payment method, billable status, or paid status in bulk
+  - "Keep existing" option for fields you don't want to change
+  - Real-time count of selected expenses
 - **Expense Analytics Dashboard** - Comprehensive expense analytics with interactive charts
   - Spending over time bar chart with monthly trends
   - Category breakdown pie chart with percentage labels
@@ -21,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Summary cards (total spent, average per expense, top category, expense count)
   - Detailed category table with amounts, percentages, and counts
   - Installed recharts library for chart rendering
+- **Quick-Add Expense Templates** - Rapid expense entry with common presets
+  - 10 common expense templates (Gas, Parking, Tolls, Meals, Coffee, Office Supplies, etc.)
+  - One-click pre-fill for expense form with category and description
+  - Dropdown menu with icons for quick identification
+  - Default amounts for common purchases (e.g., Coffee = $5)
 - **Expense Split Functionality** - Split expenses across multiple categories
   - Split any expense into 2+ parts with different categories
   - Real-time allocation tracking with remaining amount display

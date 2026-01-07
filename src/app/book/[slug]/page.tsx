@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBookingFormBySlug } from "@/lib/actions/booking-forms";
+import { getClientSession } from "@/lib/actions/client-auth";
+import { prisma } from "@/lib/db";
 import { BookingFormPublic } from "./booking-form-public";
 
 export const dynamic = "force-dynamic";
@@ -32,13 +34,25 @@ export default async function BookingPage({ params }: BookingPageProps) {
     notFound();
   }
 
-  // The organization is already included in the form from getBookingFormBySlug
-  // View count is also incremented in getBookingFormBySlug
+  const session = await getClientSession();
+  const clientProfile = session
+    ? await prisma.client.findUnique({
+        where: { id: session.clientId },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          preferences: true,
+        },
+      })
+    : null;
 
   return (
     <BookingFormPublic
       form={form}
       organization={form.organization}
+      clientProfile={clientProfile}
     />
   );
 }

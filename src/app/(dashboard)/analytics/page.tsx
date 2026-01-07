@@ -4,26 +4,40 @@ import { Suspense } from "react";
 import { getDashboardAnalytics, getRevenueForecast, getClientLTVMetrics } from "@/lib/actions/analytics";
 import { AnalyticsDashboardClient } from "./analytics-dashboard-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 export default async function AnalyticsPage() {
-  const [dashboardResult, forecastResult, ltvResult] = await Promise.all([
+  const [dashboardResult, forecastResult, ltvResult, walkthroughPreferenceResult] = await Promise.all([
     getDashboardAnalytics(),
     getRevenueForecast(),
     getClientLTVMetrics(),
+    getWalkthroughPreference("analytics"),
   ]);
 
   const dashboardData = dashboardResult.success && dashboardResult.data ? dashboardResult.data : null;
   const forecastData = forecastResult.success && forecastResult.data ? forecastResult.data : null;
   const ltvData = ltvResult.success && ltvResult.data ? ltvResult.data : null;
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   return (
-    <Suspense fallback={<AnalyticsSkeleton />}>
-      <AnalyticsDashboardClient
-        dashboardData={dashboardData}
-        forecastData={forecastData}
-        ltvData={ltvData}
+    <>
+      {/* Page Walkthrough */}
+      <WalkthroughWrapper
+        pageId="analytics"
+        initialState={walkthroughState}
       />
-    </Suspense>
+
+      <Suspense fallback={<AnalyticsSkeleton />}>
+        <AnalyticsDashboardClient
+          dashboardData={dashboardData}
+          forecastData={forecastData}
+          ltvData={ltvData}
+        />
+      </Suspense>
+    </>
   );
 }
 

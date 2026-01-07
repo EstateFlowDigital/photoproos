@@ -52,17 +52,17 @@ export function DismissWarningModal({
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--warning)]/10">
               <AlertTriangle className="h-5 w-5 text-[var(--warning)]" />
             </div>
-            <AlertDialogTitle>Permanently Dismiss Tutorial?</AlertDialogTitle>
+            <AlertDialogTitle>Dismiss Tutorial?</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="space-y-3 pt-2">
             <p>
-              This will permanently hide the <strong>{pageTitle}</strong>{" "}
-              tutorial. This action cannot be undone.
+              Are you sure you want to dismiss the <strong>{pageTitle}</strong>{" "}
+              tutorial? It will be hidden from this page.
             </p>
             <p className="text-foreground-muted">
-              If you just want to hide it temporarily, use the{" "}
-              <strong>Hide</strong> option instead &mdash; you can restore it
-              later from <strong>Settings &rarr; Walkthroughs</strong>.
+              You can restore it later from{" "}
+              <strong>Settings &rarr; Walkthroughs</strong>. If you just want to
+              hide it temporarily, use the <strong>Hide</strong> option instead.
             </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -70,9 +70,9 @@ export function DismissWarningModal({
           <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-[var(--warning)] text-white hover:bg-[var(--warning)]/90"
+            className="bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
           >
-            Dismiss Permanently
+            Dismiss Tutorial
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

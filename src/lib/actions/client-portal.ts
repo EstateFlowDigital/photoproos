@@ -30,6 +30,7 @@ export async function getClientPortalData() {
         email: true,
         company: true,
         phone: true,
+        preferences: true,
       },
     }),
 

@@ -116,6 +116,9 @@ interface Photo {
   comments?: PhotoComment[];
   metadata?: PhotoMetadata;
   collectionId?: string | null;
+  width?: number | null;
+  height?: number | null;
+  exifData?: Record<string, unknown> | null;
 }
 
 interface PhotoComment {
@@ -2713,7 +2716,20 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
       {/* Image Lightbox */}
       <ImageLightbox
-        photos={photos}
+        photos={photos.map((photo) => ({
+          ...photo,
+          width: photo.width,
+          height: photo.height,
+          exif: photo.exifData ? {
+            camera: photo.exifData.camera as string | undefined,
+            lens: photo.exifData.lens as string | undefined,
+            aperture: photo.exifData.aperture as string | undefined,
+            shutterSpeed: photo.exifData.shutterSpeed as string | undefined,
+            iso: photo.exifData.iso as string | undefined,
+            focalLength: photo.exifData.focalLength as string | undefined,
+            dateTaken: photo.exifData.dateTaken as string | undefined,
+          } : null,
+        }))}
         initialIndex={lightboxIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
@@ -2721,6 +2737,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         onDelete={handlePhotoDelete}
         isDownloading={isPhotoDownloading}
         isDeleting={isPhotoDeleting}
+        showInfo={true}
       />
 
       {/* Delete Confirmation Dialog */}

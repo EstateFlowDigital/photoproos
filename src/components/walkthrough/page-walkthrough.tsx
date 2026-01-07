@@ -79,12 +79,57 @@ export function PageWalkthrough({
   const [showDismissWarning, setShowDismissWarning] = React.useState(false);
   const [interactiveMode, setInteractiveMode] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const cardRef = React.useRef<HTMLDivElement>(null);
   const walkthroughId = `walkthrough-${pageId}`;
 
   // Check if any steps have interactive targets
   const hasInteractiveSteps = config.steps.some((step) => step.targetSelector);
   const currentStepConfig = config.steps[currentStep];
   const showSpotlight = interactiveMode && currentStepConfig?.targetSelector;
+
+  // Handle keyboard navigation
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle if walkthrough is focused or active
+      if (!cardRef.current?.contains(document.activeElement)) return;
+
+      switch (event.key) {
+        case "ArrowRight":
+        case "ArrowDown":
+          if (currentStep < config.steps.length - 1) {
+            event.preventDefault();
+            setCurrentStep(currentStep + 1);
+          }
+          break;
+        case "ArrowLeft":
+        case "ArrowUp":
+          if (currentStep > 0) {
+            event.preventDefault();
+            setCurrentStep(currentStep - 1);
+          }
+          break;
+        case "Escape":
+          event.preventDefault();
+          if (interactiveMode) {
+            setInteractiveMode(false);
+          } else {
+            onStateChange("minimized");
+          }
+          break;
+        case "Home":
+          event.preventDefault();
+          setCurrentStep(0);
+          break;
+        case "End":
+          event.preventDefault();
+          setCurrentStep(config.steps.length - 1);
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [currentStep, config.steps.length, interactiveMode, onStateChange]);
 
   // Don't render if dismissed or hidden
   if (state === "dismissed" || state === "hidden") {
@@ -203,13 +248,27 @@ export function PageWalkthrough({
   // Open state - full walkthrough card
   return (
     <>
+      {/* Live region for screen reader announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        Step {currentStep + 1} of {config.steps.length}: {currentStepConfig?.title}
+      </div>
+
       <Card
+        ref={cardRef}
         id={walkthroughId}
         role="region"
-        aria-label={`${config.title} tutorial`}
+        aria-label={`${config.title} tutorial - Step ${currentStep + 1} of ${config.steps.length}`}
+        aria-describedby={`${walkthroughId}-description`}
+        tabIndex={0}
         className={cn(
           "walkthrough-card",
           "border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/5 to-transparent",
+          "focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:ring-offset-2 focus:ring-offset-[var(--background)]",
           transitionClasses,
           className
         )}
@@ -222,7 +281,10 @@ export function PageWalkthrough({
               </div>
               <div>
                 <CardTitle className="text-lg">{config.title}</CardTitle>
-                <CardDescription className="mt-1">
+                <CardDescription
+                  id={`${walkthroughId}-description`}
+                  className="mt-1"
+                >
                   {config.description}
                 </CardDescription>
               </div>
@@ -298,15 +360,19 @@ export function PageWalkthrough({
           )}
 
           {/* Steps */}
-          <div className="walkthrough-steps space-y-3">
+          <div className="walkthrough-steps space-y-3" role="group" aria-label="Tutorial steps">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-foreground">
+              <h4 className="text-sm font-medium text-foreground" id={`${walkthroughId}-steps-label`}>
                 Quick Guide
               </h4>
-              <span className="text-xs text-foreground-muted">
+              <span className="text-xs text-foreground-muted" aria-live="polite">
                 Step {currentStep + 1} of {config.steps.length}
               </span>
             </div>
+            {/* Screen reader instructions */}
+            <p className="sr-only">
+              Use arrow keys to navigate between steps. Press Escape to minimize.
+            </p>
 
             {/* Step Progress */}
             <div

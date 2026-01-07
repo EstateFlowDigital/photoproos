@@ -5,6 +5,8 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import type { ContractStatus } from "@prisma/client";
 import { ContractsPageClient } from "./contracts-page-client";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 interface PageProps {
   searchParams: Promise<{ status?: ContractStatus }>;
@@ -86,12 +88,26 @@ export default async function ContractsPage({ searchParams }: PageProps) {
     expired: allContracts.filter((c) => c.status === "expired").length,
   };
 
+  // Fetch walkthrough preference
+  const walkthroughPreferenceResult = await getWalkthroughPreference("contracts");
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
+
   return (
-    <ContractsPageClient
-      contracts={contracts}
-      templates={templates}
-      statusCounts={statusCounts}
-      statusFilter={statusFilter}
-    />
+    <>
+      {/* Page Walkthrough */}
+      <WalkthroughWrapper
+        pageId="contracts"
+        initialState={walkthroughState}
+      />
+
+      <ContractsPageClient
+        contracts={contracts}
+        templates={templates}
+        statusCounts={statusCounts}
+        statusFilter={statusFilter}
+      />
+    </>
   );
 }

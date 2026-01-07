@@ -1,10 +1,33 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import {
+  Briefcase,
+  Calendar,
+  Camera,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  Lightbulb,
+  Moon,
+  Package,
+  Palette,
+  ShieldCheck,
+  Sparkles,
+  Sun,
+  User,
+  UtensilsCrossed,
+} from "lucide-react";
+import type { Industry, FormFieldType } from "@prisma/client";
+
 import { cn } from "@/lib/utils";
 import { submitBookingForm } from "@/lib/actions/booking-forms";
+import { ProgressIndicator } from "@/components/onboarding/progress-indicator";
+import type { ClientPreferences } from "@/lib/types/client-preferences";
+import { updateClientBookingPreferences } from "@/lib/actions/client-preferences";
 
 // File upload types
 interface UploadedFile {
@@ -14,7 +37,6 @@ interface UploadedFile {
   size: number;
   type: string;
 }
-import type { Industry, FormFieldType } from "@prisma/client";
 
 interface FieldValidation {
   options?: string[];
@@ -35,6 +57,8 @@ interface FormField {
   sortOrder: number;
   industries: Industry[];
   validation: FieldValidation | null;
+  conditionalOn?: string | null;
+  conditionalValue?: string | null;
   [key: string]: unknown;
 }
 
@@ -86,118 +110,542 @@ interface Organization {
   [key: string]: unknown;
 }
 
+interface ClientProfile {
+  id: string;
+  fullName: string | null;
+  email: string;
+  phone: string | null;
+  preferences: ClientPreferences | null;
+}
+
 interface BookingFormPublicProps {
   form: BookingForm;
   organization: Organization | null;
+  clientProfile?: ClientProfile | null;
 }
 
-const industryLabels: Record<Industry, string> = {
-  real_estate: "Real Estate",
-  commercial: "Commercial",
-  events: "Events",
-  portraits: "Portraits",
-  food: "Food & Hospitality",
-  product: "Product",
+interface PreferenceOption {
+  value: string;
+  label: string;
+  description?: string;
+  icon?: React.ReactNode;
+}
+
+interface PreferenceGroup {
+  key: string;
+  title: string;
+  description?: string;
+  required?: boolean;
+  options: PreferenceOption[];
+}
+
+interface ChecklistConfig {
+  title: string;
+  description?: string;
+  items: string[];
+}
+
+const BOOKING_STEPS = [
+  { id: "select", title: "Select" },
+  { id: "contact", title: "Contact" },
+  { id: "details", title: "Details" },
+  { id: "preferences", title: "Preferences" },
+];
+
+const POLICY_VERSION = "2026-01-07";
+
+const industryOptions: Record<Industry, { label: string; description: string; icon: React.ReactNode }>
+  = {
+  real_estate: {
+    label: "Real Estate",
+    description: "Residential and property listings",
+    icon: <Home className="h-4 w-4" />,
+  },
+  commercial: {
+    label: "Commercial",
+    description: "Corporate and architectural shoots",
+    icon: <Briefcase className="h-4 w-4" />,
+  },
+  events: {
+    label: "Events",
+    description: "Weddings and live events",
+    icon: <Calendar className="h-4 w-4" />,
+  },
+  portraits: {
+    label: "Portraits",
+    description: "Headshots and personal sessions",
+    icon: <User className="h-4 w-4" />,
+  },
+  food: {
+    label: "Food",
+    description: "Restaurants and hospitality",
+    icon: <UtensilsCrossed className="h-4 w-4" />,
+  },
+  product: {
+    label: "Product",
+    description: "E-commerce and catalog imagery",
+    icon: <Package className="h-4 w-4" />,
+  },
 };
 
-export function BookingFormPublic({ form, organization }: BookingFormPublicProps) {
+const CHECKLISTS: Partial<Record<Industry, ChecklistConfig>> = {
+  real_estate: {
+    title: "Real Estate Prep Checklist",
+    description: "A quick run-through to make sure the property is camera-ready.",
+    items: [
+      "Home is cleaned and staged",
+      "Counters and surfaces are clear",
+      "Cars are removed from driveway",
+      "Exterior is tidy and lawn is mowed",
+      "Pets are secured during the shoot",
+      "Interior lights are accessible",
+    ],
+  },
+  commercial: {
+    title: "Commercial Shoot Checklist",
+    description: "Set up the space so we can move quickly and capture every detail.",
+    items: [
+      "Reception or lobby is tidy",
+      "Key work areas are staged",
+      "Branding elements are visible",
+      "Exterior signage is clean",
+      "Access codes or keys provided",
+    ],
+  },
+  portraits: {
+    title: "Portrait Session Checklist",
+    description: "Help us match the look you want and stay on schedule.",
+    items: [
+      "Wardrobe selected and ready",
+      "Hair and makeup planned",
+      "Reference images shared (if any)",
+      "Arrival time confirmed",
+    ],
+  },
+  events: {
+    title: "Event Coverage Checklist",
+    description: "Confirm key moments so we capture the full story.",
+    items: [
+      "Timeline shared with our team",
+      "Key moments identified",
+      "Point of contact assigned",
+      "Venue access confirmed",
+    ],
+  },
+  food: {
+    title: "Food Shoot Checklist",
+    description: "Make sure the kitchen and styling teams are aligned.",
+    items: [
+      "Menu items selected for capture",
+      "Props and plating ready",
+      "Chef or stylist on-site",
+      "Branding guidelines provided",
+    ],
+  },
+  product: {
+    title: "Product Shoot Checklist",
+    description: "Ensure we capture everything needed for sales and marketing.",
+    items: [
+      "Products prepared and cleaned",
+      "SKU list or shot list provided",
+      "Packaging variants included",
+      "Usage goals specified (web, print, ads)",
+    ],
+  },
+};
+
+const DEFAULT_CHECKLIST: ChecklistConfig = {
+  title: "Session Readiness",
+  description: "A few quick confirmations before we lock in the shoot.",
+  items: [
+    "Location details are accurate",
+    "Access instructions shared",
+    "We can reach you on shoot day",
+  ],
+};
+
+const PREFERENCE_GROUPS: Partial<Record<Industry, PreferenceGroup[]>> = {
+  real_estate: [
+    {
+      key: "pref_blinds",
+      title: "Blinds",
+      description: "How should window coverings be handled?",
+      required: true,
+      options: [
+        { value: "open", label: "Open", description: "Natural light and views", icon: <Sun className="h-4 w-4" /> },
+        { value: "closed", label: "Closed", description: "Clean, uniform look", icon: <Moon className="h-4 w-4" /> },
+        { value: "photographer", label: "Photographer decides", description: "We adjust room by room" },
+      ],
+    },
+    {
+      key: "pref_lights",
+      title: "Lights",
+      description: "Interior lighting preference",
+      options: [
+        { value: "on", label: "Lights on", description: "Warm, inviting feel", icon: <Lightbulb className="h-4 w-4" /> },
+        { value: "off", label: "Lights off", description: "Clean daylight look" },
+        { value: "mixed", label: "Mixed", description: "We decide per room" },
+      ],
+    },
+    {
+      key: "pref_exterior",
+      title: "Exterior Coverage",
+      description: "Preferred exterior style",
+      options: [
+        { value: "standard", label: "Standard", description: "Daylight exterior" },
+        { value: "twilight", label: "Twilight", description: "Evening glow" },
+        { value: "both", label: "Both", description: "Capture both looks", icon: <Sparkles className="h-4 w-4" /> },
+      ],
+    },
+  ],
+  portraits: [
+    {
+      key: "pref_background",
+      title: "Backdrop",
+      description: "Preferred background color",
+      options: [
+        { value: "light", label: "Light", description: "Clean, airy look", icon: <Palette className="h-4 w-4" /> },
+        { value: "dark", label: "Dark", description: "Moody, dramatic" },
+        { value: "neutral", label: "Neutral", description: "Soft, balanced" },
+        { value: "custom", label: "Custom", description: "We will note your request" },
+      ],
+    },
+    {
+      key: "pref_retouching",
+      title: "Retouching",
+      description: "How much retouching do you prefer?",
+      options: [
+        { value: "light", label: "Light", description: "Natural cleanup" },
+        { value: "standard", label: "Standard", description: "Balanced polish" },
+        { value: "editorial", label: "Editorial", description: "High-end finish", icon: <Sparkles className="h-4 w-4" /> },
+      ],
+    },
+  ],
+  events: [
+    {
+      key: "pref_event_focus",
+      title: "Coverage Focus",
+      description: "What should we prioritize?",
+      options: [
+        { value: "candid", label: "Candid", description: "Natural moments" },
+        { value: "posed", label: "Posed", description: "Structured portraits" },
+        { value: "mixed", label: "Mixed", description: "Balanced coverage" },
+      ],
+    },
+  ],
+  commercial: [
+    {
+      key: "pref_branding",
+      title: "Branding Emphasis",
+      description: "How prominent should branding be?",
+      options: [
+        { value: "subtle", label: "Subtle", description: "Clean environment" },
+        { value: "balanced", label: "Balanced", description: "Logo plus lifestyle" },
+        { value: "bold", label: "Bold", description: "Brand-forward" },
+      ],
+    },
+  ],
+  food: [
+    {
+      key: "pref_food_style",
+      title: "Food Styling",
+      description: "Preferred visual style",
+      options: [
+        { value: "fresh", label: "Fresh & Bright", description: "Light, airy" },
+        { value: "moody", label: "Moody", description: "Deep contrast" },
+        { value: "editorial", label: "Editorial", description: "Magazine-ready" },
+      ],
+    },
+  ],
+  product: [
+    {
+      key: "pref_product_style",
+      title: "Product Styling",
+      description: "Preferred product look",
+      options: [
+        { value: "clean", label: "Clean", description: "Simple, minimal" },
+        { value: "lifestyle", label: "Lifestyle", description: "Contextual scenes" },
+        { value: "hero", label: "Hero", description: "Premium spotlight" },
+      ],
+    },
+  ],
+};
+
+export function BookingFormPublic({ form, organization, clientProfile }: BookingFormPublicProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const services = form.services ?? [];
+  const [currentStep, setCurrentStep] = useState(0);
   const [selectedIndustry, setSelectedIndustry] = useState<Industry | null>(form.industry);
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>(() => {
+    const bookingPrefs = clientProfile?.preferences?.booking;
+    return bookingPrefs?.preferences ? { ...bookingPrefs.preferences } : {};
+  });
   const [selectedService, setSelectedService] = useState<string | null>(
     services.find((s) => s.isDefault)?.serviceId || services[0]?.serviceId || null
   );
   const [contactInfo, setContactInfo] = useState({
-    name: "",
-    email: "",
-    phone: "",
+    name: clientProfile?.fullName || "",
+    email: clientProfile?.email || "",
+    phone: clientProfile?.phone || "",
     preferredDate: "",
     preferredTime: "",
   });
+  const [clientExtras, setClientExtras] = useState(() => ({
+    birthDate: clientProfile?.preferences?.booking?.profile?.birthDate || "",
+    thankYouPreference: clientProfile?.preferences?.booking?.profile?.thankYouPreference || "",
+    giftPreferenceNotes: clientProfile?.preferences?.booking?.profile?.giftPreferenceNotes || "",
+  }));
+  const [preferenceSelections, setPreferenceSelections] = useState<Record<string, string>>(() => {
+    const bookingPrefs = clientProfile?.preferences?.booking;
+    return bookingPrefs?.preferences ? { ...bookingPrefs.preferences } : {};
+  });
+  const [notes, setNotes] = useState("" as string);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [policyOpen, setPolicyOpen] = useState(false);
+  const [policyAcceptedAt, setPolicyAcceptedAt] = useState<string | null>(
+    clientProfile?.preferences?.booking?.agreements?.policyAcceptedAt || null
+  );
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
+  const prefillApplied = useRef(false);
 
   const primaryColor = form.primaryColor || "#3b82f6";
   const logo = form.logoOverrideUrl || organization?.logo;
+  const isReturningClient = Boolean(clientProfile?.id);
 
-  // Filter fields based on selected industry
-  const visibleFields = (form.fields || [])
-    .filter((field) => {
-      if (field.industries.length === 0) return true;
-      if (!selectedIndustry) return true;
-      return field.industries.includes(selectedIndustry);
-    })
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-
-  // Check if we need to show industry selector
   const showIndustrySelector =
     !form.industry && organization?.industries && organization.industries.length > 1;
 
+  const visibleFields = useMemo(() => {
+    const fields = form.fields || [];
+    const filtered = fields.filter((field) => {
+      if (field.industries.length > 0 && selectedIndustry && !field.industries.includes(selectedIndustry)) {
+        return false;
+      }
+      if (field.conditionalOn && field.conditionalValue) {
+        const dependentValue = formData[field.conditionalOn];
+        if (Array.isArray(dependentValue)) {
+          return dependentValue.includes(field.conditionalValue);
+        }
+        return dependentValue === field.conditionalValue;
+      }
+      return true;
+    });
+    return filtered.sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [form.fields, formData, selectedIndustry]);
+
+  const checklistConfig = useMemo(() => {
+    if (selectedIndustry && CHECKLISTS[selectedIndustry]) {
+      return CHECKLISTS[selectedIndustry] as ChecklistConfig;
+    }
+    return DEFAULT_CHECKLIST;
+  }, [selectedIndustry]);
+
+  const preferenceGroups = useMemo(() => {
+    if (selectedIndustry && PREFERENCE_GROUPS[selectedIndustry]) {
+      return PREFERENCE_GROUPS[selectedIndustry] as PreferenceGroup[];
+    }
+    return [];
+  }, [selectedIndustry]);
+
+  useEffect(() => {
+    if (prefillApplied.current) return;
+    if (!clientProfile) return;
+
+    const bookingPrefs = clientProfile.preferences?.booking;
+    if (bookingPrefs?.preferences) {
+      setPreferenceSelections({ ...bookingPrefs.preferences });
+    }
+
+    prefillApplied.current = true;
+  }, [clientProfile]);
+
+  useEffect(() => {
+    const initialState: Record<string, boolean> = {};
+    checklistConfig.items.forEach((item) => {
+      initialState[item] = false;
+    });
+    setChecklistState(initialState);
+  }, [checklistConfig]);
+
   const handleFieldChange = (fieldId: string, value: unknown) => {
     setFormData((prev) => ({ ...prev, [fieldId]: value }));
-    // Clear error when user types
     if (errors[fieldId]) {
       setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[fieldId];
-        return newErrors;
+        const next = { ...prev };
+        delete next[fieldId];
+        return next;
       });
     }
   };
 
-  const validateForm = () => {
+  const handlePreferenceChange = (key: string, value: string) => {
+    setPreferenceSelections((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleChecklistToggle = (item: string) => {
+    setChecklistState((prev) => ({ ...prev, [item]: !prev[item] }));
+    if (errors.checklist) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.checklist;
+        return next;
+      });
+    }
+  };
+
+  const handleSelectAllChecklist = () => {
+    const allChecked = checklistConfig.items.every((item) => checklistState[item]);
+    const updated: Record<string, boolean> = {};
+    checklistConfig.items.forEach((item) => {
+      updated[item] = !allChecked;
+    });
+    setChecklistState(updated);
+  };
+
+  const handlePolicyAccept = () => {
+    const acceptedAt = new Date().toISOString();
+    setPolicyAcceptedAt(acceptedAt);
+    setPolicyOpen(false);
+    if (errors.policy) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.policy;
+        return next;
+      });
+    }
+  };
+
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const validateFields = (fields: FormField[]) => {
     const newErrors: Record<string, string> = {};
 
-    // Validate contact info
-    if (!contactInfo.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-    if (!contactInfo.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactInfo.email)) {
-      newErrors.email = "Please enter a valid email";
-    }
-
-    // Validate required fields
-    visibleFields.forEach((field) => {
-      if (field.isRequired) {
-        const value = formData[field.id];
-        if (value === undefined || value === null || value === "") {
-          newErrors[field.id] = `${field.label} is required`;
-        }
-      }
-
-      // Validate field constraints
+    fields.forEach((field) => {
+      if (!field.isRequired) return;
       const value = formData[field.id];
-      if (value && field.validation) {
-        if (field.validation.minLength && typeof value === "string" && value.length < field.validation.minLength) {
-          newErrors[field.id] = `Minimum ${field.validation.minLength} characters required`;
-        }
-        if (field.validation.maxLength && typeof value === "string" && value.length > field.validation.maxLength) {
-          newErrors[field.id] = `Maximum ${field.validation.maxLength} characters allowed`;
-        }
+      if (value === undefined || value === null || value === "" || (Array.isArray(value) && value.length === 0)) {
+        newErrors[field.id] = `${field.label} is required`;
       }
     });
 
-    setErrors(newErrors);
+    fields.forEach((field) => {
+      const value = formData[field.id];
+      if (!value || !field.validation) return;
+      if (field.validation.minLength && typeof value === "string" && value.length < field.validation.minLength) {
+        newErrors[field.id] = `Minimum ${field.validation.minLength} characters required`;
+      }
+      if (field.validation.maxLength && typeof value === "string" && value.length > field.validation.maxLength) {
+        newErrors[field.id] = `Maximum ${field.validation.maxLength} characters allowed`;
+      }
+      if (field.validation.min !== undefined && typeof value === "number" && value < field.validation.min) {
+        newErrors[field.id] = `Minimum value is ${field.validation.min}`;
+      }
+      if (field.validation.max !== undefined && typeof value === "number" && value > field.validation.max) {
+        newErrors[field.id] = `Maximum value is ${field.validation.max}`;
+      }
+    });
+
+    return newErrors;
+  };
+
+  const validateStep = (stepIndex: number) => {
+    const newErrors: Record<string, string> = {};
+
+    if (stepIndex === 0) {
+      if (showIndustrySelector && !selectedIndustry) {
+        newErrors.industry = "Please select an industry";
+      }
+      if (services.length > 0 && !selectedService) {
+        newErrors.service = "Please select a service";
+      }
+    }
+
+    if (stepIndex === 1) {
+      if (!contactInfo.name.trim()) {
+        newErrors.name = "Name is required";
+      }
+      if (!contactInfo.email.trim() || !validateEmail(contactInfo.email)) {
+        newErrors.email = "Please enter a valid email";
+      }
+    }
+
+    if (stepIndex === 2) {
+      const requiresPropertyDetails = selectedIndustry === "real_estate" || selectedIndustry === "commercial";
+      if (requiresPropertyDetails) {
+        if (!formData.propertyAddress) {
+          newErrors.propertyAddress = "Address is required";
+        }
+        if (!formData.squareFootage) {
+          newErrors.squareFootage = "Square footage is required";
+        }
+      }
+      const fieldErrors = validateFields(visibleFields);
+      Object.assign(newErrors, fieldErrors);
+    }
+
+    if (stepIndex === 3) {
+      const allChecked = checklistConfig.items.every((item) => checklistState[item]);
+      if (!allChecked) {
+        newErrors.checklist = "Please confirm each checklist item";
+      }
+      if (!policyAcceptedAt) {
+        newErrors.policy = "Please accept the policies to continue";
+      }
+    }
+
+    setErrors((prev) => ({ ...prev, ...newErrors }));
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (!validateStep(currentStep)) return;
+    setCurrentStep((prev) => Math.min(prev + 1, BOOKING_STEPS.length - 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleBack = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
 
-    if (!validateForm()) {
-      return;
-    }
+    const canSubmit = validateStep(3);
+    if (!canSubmit) return;
+
+    const submissionData = {
+      ...formData,
+      notes,
+      selectedIndustry,
+      preferences: preferenceSelections,
+      checklist: {
+        title: checklistConfig.title,
+        items: checklistConfig.items,
+        confirmedItems: checklistConfig.items.filter((item) => checklistState[item]),
+        confirmedAt: new Date().toISOString(),
+      },
+      policy: {
+        acceptedAt: policyAcceptedAt,
+        version: POLICY_VERSION,
+      },
+      clientProfile: {
+        birthDate: clientExtras.birthDate || null,
+        thankYouPreference: clientExtras.thankYouPreference || null,
+        giftPreferenceNotes: clientExtras.giftPreferenceNotes || null,
+      },
+      returningClient: isReturningClient,
+      clientId: clientProfile?.id || null,
+    };
 
     startTransition(async () => {
       try {
         await submitBookingForm({
           bookingFormId: form.id,
-          data: formData,
+          data: submissionData,
           clientName: contactInfo.name,
           clientEmail: contactInfo.email,
           clientPhone: contactInfo.phone || null,
@@ -208,7 +656,27 @@ export function BookingFormPublic({ form, organization }: BookingFormPublicProps
           serviceId: selectedService,
         });
 
-        // Redirect to confirmation page
+        if (isReturningClient) {
+          try {
+            await updateClientBookingPreferences({
+              profile: {
+                birthDate: clientExtras.birthDate || undefined,
+                thankYouPreference: clientExtras.thankYouPreference || undefined,
+                giftPreferenceNotes: clientExtras.giftPreferenceNotes || undefined,
+              },
+              preferences: preferenceSelections,
+              agreements: {
+                policyAcceptedAt: policyAcceptedAt || undefined,
+                policyVersion: POLICY_VERSION,
+                checklistAcceptedAt: new Date().toISOString(),
+              },
+              preferredIndustry: selectedIndustry || undefined,
+            });
+          } catch (preferenceError) {
+            console.error("Failed to update client preferences:", preferenceError);
+          }
+        }
+
         router.push(`/book/${form.slug}/confirmation`);
       } catch (error) {
         console.error("Error submitting form:", error);
@@ -218,255 +686,511 @@ export function BookingFormPublic({ form, organization }: BookingFormPublicProps
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Hero Section */}
-      <div
-        className="relative py-12 px-6"
-        style={{ backgroundColor: `${primaryColor}10` }}
-      >
-        <div className="max-w-2xl mx-auto text-center">
+      <div className="relative overflow-hidden border-b border-[var(--card-border)]">
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(circle at top left, ${primaryColor}20, transparent 60%), radial-gradient(circle at bottom right, ${primaryColor}10, transparent 55%)`,
+          }}
+        />
+        {form.heroImageUrl && (
+          <div className="absolute inset-0 opacity-10">
+            <Image
+              src={form.heroImageUrl}
+              alt=""
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
+        <div className="relative max-w-3xl mx-auto px-6 py-12 text-center">
           {logo && (
             <div className="mb-6">
               <Image
                 src={logo}
                 alt={organization?.name || "Logo"}
-                width={120}
-                height={40}
+                width={140}
+                height={48}
                 className="mx-auto h-10 w-auto object-contain"
               />
             </div>
           )}
-          <h1
-            className="text-3xl font-bold mb-3"
-            style={{ color: primaryColor }}
-          >
+          <h1 className="text-3xl sm:text-4xl font-semibold text-foreground">
             {form.headline || "Book Your Session"}
           </h1>
-          {form.subheadline && (
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
-              {form.subheadline}
-            </p>
+          <p className="mt-3 text-base sm:text-lg text-foreground-muted">
+            {form.subheadline || "Tell us what you need and we will handle the rest."}
+          </p>
+          {(organization?.publicPhone || organization?.publicEmail) && (
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-foreground-muted">
+              {organization?.publicPhone && (
+                <span>{organization.publicPhone}</span>
+              )}
+              {organization?.publicEmail && (
+                <span>{organization.publicEmail}</span>
+              )}
+            </div>
           )}
         </div>
       </div>
 
       {/* Form Section */}
-      <div className="max-w-2xl mx-auto px-6 py-12">
+      <div className="max-w-3xl mx-auto px-6 py-10">
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Industry Selector */}
-          {showIndustrySelector && (
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
-                What type of photography do you need?
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {organization?.industries?.map((ind) => (
-                  <button
-                    key={ind}
-                    type="button"
-                    onClick={() => setSelectedIndustry(ind)}
-                    className={cn(
-                      "px-4 py-3 rounded-lg text-sm font-medium border transition-all text-left",
-                      selectedIndustry === ind
-                        ? "text-white"
-                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:hover:border-gray-600"
-                    )}
-                    style={
-                      selectedIndustry === ind
-                        ? { backgroundColor: primaryColor, borderColor: primaryColor }
-                        : undefined
-                    }
-                  >
-                    {industryLabels[ind]}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Service Selection */}
-          {form.services && form.services.length > 0 && (
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
-                Select a Service
-              </label>
-              <div className="space-y-2">
-                {form.services.map((formService) => (
-                  <button
-                    key={formService.serviceId}
-                    type="button"
-                    onClick={() => setSelectedService(formService.serviceId)}
-                    className={cn(
-                      "w-full px-4 py-4 rounded-lg border transition-all text-left",
-                      selectedService === formService.serviceId
-                        ? "border-2"
-                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600"
-                    )}
-                    style={
-                      selectedService === formService.serviceId
-                        ? { borderColor: primaryColor, backgroundColor: `${primaryColor}08` }
-                        : undefined
-                    }
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-gray-100">
-                          {formService.service.name}
-                        </p>
-                        {formService.service.description && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                            {formService.service.description}
-                          </p>
-                        )}
-                      </div>
-                      {formService.service.price && (
-                        <span className="font-medium text-gray-900 dark:text-gray-100">
-                          ${formService.service.price}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Contact Information */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Contact Information
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Your Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={contactInfo.name}
-                  onChange={(e) =>
-                    setContactInfo((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  className={cn(
-                    "w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2",
-                    errors.name
-                      ? "border-red-500 focus:ring-red-200"
-                      : "border-gray-200 dark:border-gray-700"
-                  )}
-                  style={{ "--tw-ring-color": `${primaryColor}40` } as React.CSSProperties}
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  value={contactInfo.email}
-                  onChange={(e) =>
-                    setContactInfo((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                  className={cn(
-                    "w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2",
-                    errors.email
-                      ? "border-red-500 focus:ring-red-200"
-                      : "border-gray-200 dark:border-gray-700"
-                  )}
-                  style={{ "--tw-ring-color": `${primaryColor}40` } as React.CSSProperties}
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Phone (optional)
-                </label>
-                <input
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  value={contactInfo.phone}
-                  onChange={(e) =>
-                    setContactInfo((prev) => ({ ...prev, phone: e.target.value }))
-                  }
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2"
-                  style={{ "--tw-ring-color": `${primaryColor}40` } as React.CSSProperties}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Preferred Date/Time */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Preferred Date & Time{" "}
-              <span className="text-sm font-normal text-gray-500">(optional)</span>
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Preferred Date
-                </label>
-                <input
-                  type="date"
-                  value={contactInfo.preferredDate}
-                  onChange={(e) =>
-                    setContactInfo((prev) => ({ ...prev, preferredDate: e.target.value }))
-                  }
-                  min={new Date().toISOString().split("T")[0]}
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2"
-                  style={{ "--tw-ring-color": `${primaryColor}40` } as React.CSSProperties}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Preferred Time
-                </label>
-                <select
-                  value={contactInfo.preferredTime}
-                  onChange={(e) =>
-                    setContactInfo((prev) => ({ ...prev, preferredTime: e.target.value }))
-                  }
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2"
-                  style={{ "--tw-ring-color": `${primaryColor}40` } as React.CSSProperties}
-                >
-                  <option value="">Select a time</option>
-                  <option value="Morning (8am-12pm)">Morning (8am-12pm)</option>
-                  <option value="Afternoon (12pm-5pm)">Afternoon (12pm-5pm)</option>
-                  <option value="Evening (5pm-8pm)">Evening (5pm-8pm)</option>
-                  <option value="Flexible">Flexible</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Dynamic Form Fields */}
-          {visibleFields.length > 0 && (
+          <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-sm">
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Project Details
-              </h2>
-              <div className="space-y-4">
-                {visibleFields.map((field) => (
-                  <FormFieldInput
-                    key={field.id}
-                    field={field}
-                    value={formData[field.id]}
-                    onChange={(value) => handleFieldChange(field.id, value)}
-                    error={errors[field.id]}
-                    primaryColor={primaryColor}
-                    bookingFormId={form.id}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-foreground-muted">Step {currentStep + 1} of {BOOKING_STEPS.length}</p>
+                  <h2 className="text-xl font-semibold text-foreground">{BOOKING_STEPS[currentStep].title}</h2>
+                </div>
+                <div className="hidden md:block w-2/3">
+                  <ProgressIndicator steps={BOOKING_STEPS} currentStep={currentStep} />
+                </div>
+              </div>
+              <div className="md:hidden">
+                <ProgressIndicator steps={BOOKING_STEPS} currentStep={currentStep} />
+              </div>
+            </div>
+          </div>
+
+          {/* Step 1: Select */}
+          {currentStep === 0 && (
+            <div className="space-y-8">
+              {showIndustrySelector && (
+                <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                  <StepHeader
+                    title="What type of photography do you need?"
+                    description="Pick the category that best matches your project."
                   />
-                ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {organization?.industries?.map((industry) => {
+                      const option = industryOptions[industry];
+                      if (!option) return null;
+                      const isSelected = selectedIndustry === industry;
+                      return (
+                        <button
+                          key={industry}
+                          type="button"
+                          onClick={() => setSelectedIndustry(industry)}
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl border px-4 py-4 text-left transition-all",
+                            isSelected
+                              ? "border-transparent text-white shadow"
+                              : "border-[var(--card-border)] text-foreground hover:border-[var(--border-hover)]"
+                          )}
+                          style={
+                            isSelected
+                              ? { backgroundColor: primaryColor }
+                              : undefined
+                          }
+                        >
+                          <div className={cn(
+                            "flex h-10 w-10 items-center justify-center rounded-full",
+                            isSelected ? "bg-white/20" : "bg-[var(--background-tertiary)] text-foreground"
+                          )}>
+                            {option.icon}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">{option.label}</p>
+                            <p className={cn("text-xs", isSelected ? "text-white/80" : "text-foreground-muted")}>{option.description}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.industry && (
+                    <p className="mt-2 text-sm text-red-500">{errors.industry}</p>
+                  )}
+                </div>
+              )}
+
+              {form.services && form.services.length > 0 && (
+                <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                  <StepHeader
+                    title="Select a Service"
+                    description="Choose the package that fits your goals."
+                  />
+                  <div className="grid gap-3">
+                    {form.services.map((formService) => {
+                      const isSelected = selectedService === formService.serviceId;
+                      return (
+                        <button
+                          key={formService.serviceId}
+                          type="button"
+                          onClick={() => setSelectedService(formService.serviceId)}
+                          className={cn(
+                            "w-full rounded-xl border px-4 py-4 text-left transition-all",
+                            isSelected
+                              ? "border-transparent shadow"
+                              : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+                          )}
+                          style={
+                            isSelected
+                              ? { backgroundColor: `${primaryColor}12`, borderColor: primaryColor }
+                              : undefined
+                          }
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                {formService.service.name}
+                              </p>
+                              {formService.service.description && (
+                                <p className="mt-1 text-xs text-foreground-muted">
+                                  {formService.service.description}
+                                </p>
+                              )}
+                            </div>
+                            {formService.service.price && (
+                              <span className="text-sm font-semibold text-foreground">
+                                ${formService.service.price}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.service && (
+                    <p className="mt-2 text-sm text-red-500">{errors.service}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 2: Contact */}
+          {currentStep === 1 && (
+            <div className="space-y-8">
+              <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <StepHeader
+                  title="Contact Information"
+                  description={isReturningClient ? "We pre-filled your saved contact details." : "Tell us how to reach you."}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <InputField
+                    label="Your Name"
+                    required
+                    value={contactInfo.name}
+                    onChange={(value) => setContactInfo((prev) => ({ ...prev, name: value }))}
+                    error={errors.name}
+                    primaryColor={primaryColor}
+                  />
+                  <InputField
+                    label="Email"
+                    required
+                    type="email"
+                    value={contactInfo.email}
+                    onChange={(value) => setContactInfo((prev) => ({ ...prev, email: value }))}
+                    error={errors.email}
+                    primaryColor={primaryColor}
+                  />
+                  <InputField
+                    label="Phone"
+                    type="tel"
+                    value={contactInfo.phone}
+                    onChange={(value) => setContactInfo((prev) => ({ ...prev, phone: value }))}
+                    primaryColor={primaryColor}
+                  />
+                </div>
+              </div>
+
+              {!isReturningClient && (
+                <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                  <StepHeader
+                    title="New Client Details"
+                    description="Help us personalize your experience."
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <InputField
+                      label="Birthdate"
+                      type="date"
+                      value={clientExtras.birthDate}
+                      onChange={(value) => setClientExtras((prev) => ({ ...prev, birthDate: value }))}
+                      primaryColor={primaryColor}
+                    />
+                    <SelectField
+                      label="Thank You Preference"
+                      value={clientExtras.thankYouPreference}
+                      onChange={(value) => setClientExtras((prev) => ({ ...prev, thankYouPreference: value }))}
+                      options={[
+                        { value: "gift_card", label: "Gift card" },
+                        { value: "discount", label: "Discount on next shoot" },
+                        { value: "prints", label: "Prints or album" },
+                        { value: "surprise", label: "Surprise me" },
+                      ]}
+                      primaryColor={primaryColor}
+                    />
+                    <TextAreaField
+                      label="Gift Notes"
+                      value={clientExtras.giftPreferenceNotes}
+                      onChange={(value) => setClientExtras((prev) => ({ ...prev, giftPreferenceNotes: value }))}
+                      placeholder="Any preferences or ideas we should know about?"
+                      primaryColor={primaryColor}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <StepHeader
+                  title="Preferred Date & Time"
+                  description="Share your preferred timing and we will confirm availability."
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <InputField
+                    label="Preferred Date"
+                    type="date"
+                    value={contactInfo.preferredDate}
+                    onChange={(value) => setContactInfo((prev) => ({ ...prev, preferredDate: value }))}
+                    primaryColor={primaryColor}
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                  <SelectField
+                    label="Preferred Time"
+                    value={contactInfo.preferredTime}
+                    onChange={(value) => setContactInfo((prev) => ({ ...prev, preferredTime: value }))}
+                    options={[
+                      { value: "Morning (8am-12pm)", label: "Morning (8am-12pm)" },
+                      { value: "Afternoon (12pm-5pm)", label: "Afternoon (12pm-5pm)" },
+                      { value: "Evening (5pm-8pm)", label: "Evening (5pm-8pm)" },
+                      { value: "Flexible", label: "Flexible" },
+                    ]}
+                    primaryColor={primaryColor}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Details */}
+          {currentStep === 2 && (
+            <div className="space-y-8">
+              {(selectedIndustry === "real_estate" || selectedIndustry === "commercial") && (
+                <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                  <StepHeader
+                    title="Property Details"
+                    description="We need the basics to prepare for the shoot."
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <TextAreaField
+                      label="Property Address"
+                      required
+                      value={(formData.propertyAddress as string) || ""}
+                      onChange={(value) => handleFieldChange("propertyAddress", value)}
+                      error={errors.propertyAddress}
+                      placeholder="Street, city, state, zip"
+                      primaryColor={primaryColor}
+                    />
+                    <InputField
+                      label="Square Footage"
+                      required
+                      type="number"
+                      value={(formData.squareFootage as string) || ""}
+                      onChange={(value) => handleFieldChange("squareFootage", value ? Number(value) : "")}
+                      error={errors.squareFootage}
+                      primaryColor={primaryColor}
+                    />
+                    <InputField
+                      label="Bedrooms"
+                      type="number"
+                      value={(formData.bedrooms as string) || ""}
+                      onChange={(value) => handleFieldChange("bedrooms", value ? Number(value) : "")}
+                      primaryColor={primaryColor}
+                    />
+                    <InputField
+                      label="Bathrooms"
+                      type="number"
+                      value={(formData.bathrooms as string) || ""}
+                      onChange={(value) => handleFieldChange("bathrooms", value ? Number(value) : "")}
+                      primaryColor={primaryColor}
+                    />
+                    <SelectField
+                      label="Occupancy"
+                      value={(formData.occupancy as string) || ""}
+                      onChange={(value) => handleFieldChange("occupancy", value)}
+                      options={[
+                        { value: "occupied", label: "Occupied" },
+                        { value: "vacant", label: "Vacant" },
+                        { value: "staged", label: "Staged" },
+                      ]}
+                      primaryColor={primaryColor}
+                    />
+                    <SelectField
+                      label="Listing Stage"
+                      value={(formData.listingStage as string) || ""}
+                      onChange={(value) => handleFieldChange("listingStage", value)}
+                      options={[
+                        { value: "pre-list", label: "Pre-list" },
+                        { value: "active", label: "Active listing" },
+                        { value: "under-contract", label: "Under contract" },
+                      ]}
+                      primaryColor={primaryColor}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {visibleFields.length > 0 && (
+                <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                  <StepHeader
+                    title="Project Details"
+                    description="Share any specifics about the shoot."
+                  />
+                  <div className="space-y-4">
+                    {visibleFields.map((field) => (
+                      <FormFieldInput
+                        key={field.id}
+                        field={field}
+                        value={formData[field.id]}
+                        onChange={(value) => handleFieldChange(field.id, value)}
+                        error={errors[field.id]}
+                        primaryColor={primaryColor}
+                        bookingFormId={form.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 4: Preferences */}
+          {currentStep === 3 && (
+            <div className="space-y-8">
+              {preferenceGroups.length > 0 && (
+                <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                  <StepHeader
+                    title="Shoot Preferences"
+                    description="Tell us how you want the shoot to feel."
+                  />
+                  <div className="space-y-6">
+                    {preferenceGroups.map((group) => (
+                      <PreferenceGroupSection
+                        key={group.key}
+                        group={group}
+                        selectedValue={preferenceSelections[group.key] || ""}
+                        onSelect={(value) => handlePreferenceChange(group.key, value)}
+                        primaryColor={primaryColor}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <StepHeader
+                  title={checklistConfig.title}
+                  description={checklistConfig.description}
+                />
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleSelectAllChecklist}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-xs font-medium text-foreground-muted hover:text-foreground"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    {checklistConfig.items.every((item) => checklistState[item]) ? "Clear all" : "Select all"}
+                  </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {checklistConfig.items.map((item) => (
+                      <label
+                        key={item}
+                        className={cn(
+                          "flex items-start gap-2 rounded-lg border px-3 py-2 text-sm",
+                          checklistState[item]
+                            ? "border-[var(--success)]/40 bg-[var(--success)]/10 text-foreground"
+                            : "border-[var(--card-border)] text-foreground-muted"
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checklistState[item] || false}
+                          onChange={() => handleChecklistToggle(item)}
+                          className="mt-1 h-4 w-4 rounded border-gray-300"
+                          style={{ accentColor: primaryColor }}
+                        />
+                        <span>{item}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {errors.checklist && (
+                    <p className="text-sm text-red-500">{errors.checklist}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <StepHeader
+                  title="Policies & Agreements"
+                  description="Please review and confirm our shoot expectations."
+                />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPolicyOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)]"
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                    Review policies
+                  </button>
+                  {policyAcceptedAt && (
+                    <span className="text-sm text-[var(--success)]">Accepted</span>
+                  )}
+                </div>
+                {errors.policy && (
+                  <p className="mt-2 text-sm text-red-500">{errors.policy}</p>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <StepHeader
+                  title="Important Notes"
+                  description="Anything else we should know before the shoot?"
+                />
+                <TextAreaField
+                  label="Notes"
+                  value={notes}
+                  onChange={setNotes}
+                  placeholder="Special requests, access notes, or anything else."
+                  primaryColor={primaryColor}
+                />
+              </div>
+
+              <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+                <StepHeader
+                  title="Review"
+                  description="Confirm the details below before submitting."
+                />
+                <div className="grid gap-3 text-sm text-foreground">
+                  <SummaryItem label="Industry" value={selectedIndustry ? industryOptions[selectedIndustry]?.label : ""} />
+                  <SummaryItem
+                    label="Service"
+                    value={services.find((s) => s.serviceId === selectedService)?.service.name || ""}
+                  />
+                  <SummaryItem label="Contact" value={`${contactInfo.name} · ${contactInfo.email}`} />
+                  {contactInfo.preferredDate && (
+                    <SummaryItem
+                      label="Preferred Date"
+                      value={`${contactInfo.preferredDate} ${contactInfo.preferredTime || ""}`}
+                    />
+                  )}
+                  {selectedIndustry === "real_estate" && formData.propertyAddress && (
+                    <SummaryItem label="Property" value={String(formData.propertyAddress)} />
+                  )}
+                  {Object.keys(preferenceSelections).length > 0 && (
+                    <SummaryItem
+                      label="Preferences"
+                      value={Object.entries(preferenceSelections)
+                        .map(([key, value]) => `${key.replace("pref_", "").replace(/_/g, " ")}: ${value}`)
+                        .join(" · ")}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -478,33 +1202,328 @@ export function BookingFormPublic({ form, organization }: BookingFormPublicProps
             </div>
           )}
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full py-3 px-6 rounded-lg text-white font-medium text-lg transition-opacity disabled:opacity-70"
-            style={{ backgroundColor: primaryColor }}
-          >
-            {isPending ? "Submitting..." : "Submit Request"}
-          </button>
+          {/* Navigation Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {currentStep > 0 && (
+              <button
+                type="button"
+                onClick={handleBack}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-foreground hover:bg-[var(--background-hover)]"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back
+              </button>
+            )}
+            {currentStep < BOOKING_STEPS.length - 1 && (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white"
+                style={{ backgroundColor: primaryColor }}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+            {currentStep === BOOKING_STEPS.length - 1 && (
+              <button
+                type="submit"
+                disabled={isPending}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-70"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {isPending ? "Submitting..." : "Submit Request"}
+              </button>
+            )}
+          </div>
 
           {form.requireApproval && (
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-              Your request will be reviewed and we'll get back to you shortly.
+            <p className="text-center text-sm text-foreground-muted">
+              Your request will be reviewed and we will confirm availability shortly.
             </p>
           )}
         </form>
       </div>
 
       {/* Footer */}
-      <footer className="py-8 px-6 text-center border-t border-gray-200 dark:border-gray-800">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Powered by{" "}
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            PhotoProOS
-          </span>
+      <footer className="py-8 px-6 text-center border-t border-[var(--card-border)]">
+        <p className="text-sm text-foreground-muted">
+          Powered by <span className="font-medium text-foreground">PhotoProOS</span>
         </p>
       </footer>
+
+      <PolicyModal
+        open={policyOpen}
+        onClose={() => setPolicyOpen(false)}
+        onAccept={handlePolicyAccept}
+        primaryColor={primaryColor}
+      />
+    </div>
+  );
+}
+
+function StepHeader({ title, description }: { title: string; description?: string }) {
+  return (
+    <div className="mb-4">
+      <h3 className="text-base font-semibold text-foreground">{title}</h3>
+      {description && (
+        <p className="mt-1 text-sm text-foreground-muted">{description}</p>
+      )}
+    </div>
+  );
+}
+
+function SummaryItem({ label, value }: { label: string; value?: string }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+      <span className="text-xs uppercase tracking-[0.2em] text-foreground-muted">{label}</span>
+      <span className="text-sm font-medium text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function PreferenceGroupSection({
+  group,
+  selectedValue,
+  onSelect,
+  primaryColor,
+}: {
+  group: PreferenceGroup;
+  selectedValue: string;
+  onSelect: (value: string) => void;
+  primaryColor: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
+        {group.required && (
+          <span className="text-xs text-red-500">Required</span>
+        )}
+      </div>
+      {group.description && (
+        <p className="mt-1 text-xs text-foreground-muted">{group.description}</p>
+      )}
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {group.options.map((option) => {
+          const isSelected = selectedValue === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onSelect(option.value)}
+              className={cn(
+                "flex items-start gap-3 rounded-xl border px-3 py-3 text-left transition-all",
+                isSelected
+                  ? "border-transparent text-white shadow"
+                  : "border-[var(--card-border)] text-foreground hover:border-[var(--border-hover)]"
+              )}
+              style={
+                isSelected
+                  ? { backgroundColor: primaryColor }
+                  : undefined
+              }
+            >
+              <div className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-full",
+                isSelected ? "bg-white/20" : "bg-[var(--background-tertiary)]"
+              )}>
+                {option.icon || <Camera className="h-4 w-4" />}
+              </div>
+              <div>
+                <p className="text-sm font-semibold">{option.label}</p>
+                {option.description && (
+                  <p className={cn("text-xs", isSelected ? "text-white/80" : "text-foreground-muted")}>{option.description}</p>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function InputField({
+  label,
+  value,
+  onChange,
+  error,
+  required,
+  type = "text",
+  primaryColor,
+  min,
+}: {
+  label: string;
+  value: string | number | undefined;
+  onChange: (value: string) => void;
+  error?: string;
+  required?: boolean;
+  type?: string;
+  primaryColor: string;
+  min?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-foreground mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        type={type}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        min={min}
+        className={cn(
+          "w-full rounded-lg border bg-[var(--background)] px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2",
+          error ? "border-red-500" : "border-[var(--card-border)]"
+        )}
+        style={{ "--tw-ring-color": `${primaryColor}40` } as React.CSSProperties}
+      />
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+  primaryColor,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  primaryColor: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-foreground mb-1">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2"
+        style={{ "--tw-ring-color": `${primaryColor}40` } as React.CSSProperties}
+      >
+        <option value="">Select an option</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function TextAreaField({
+  label,
+  value,
+  onChange,
+  error,
+  placeholder,
+  primaryColor,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  placeholder?: string;
+  primaryColor: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="sm:col-span-2">
+      <label className="block text-sm font-medium text-foreground mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={3}
+        placeholder={placeholder}
+        className={cn(
+          "w-full rounded-lg border bg-[var(--background)] px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2",
+          error ? "border-red-500" : "border-[var(--card-border)]"
+        )}
+        style={{ "--tw-ring-color": `${primaryColor}40` } as React.CSSProperties}
+      />
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    </div>
+  );
+}
+
+function PolicyModal({
+  open,
+  onClose,
+  onAccept,
+  primaryColor,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAccept: () => void;
+  primaryColor: string;
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-xl rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Policies & Agreements</h3>
+            <p className="mt-1 text-sm text-foreground-muted">Version {POLICY_VERSION}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-[var(--card-border)] px-2 py-1 text-xs text-foreground-muted"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="mt-6 space-y-4 text-sm text-foreground">
+          <div>
+            <p className="font-semibold">We will:</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground-muted">
+              <li>Arrive on time and prepared for the shoot</li>
+              <li>Deliver professional imagery aligned with your selections</li>
+              <li>Communicate any schedule adjustments promptly</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-semibold">You agree to:</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground-muted">
+              <li>Provide access to the location on shoot day</li>
+              <li>Complete the prep checklist before our arrival</li>
+              <li>Notify us if anything changes with the property or schedule</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex flex-1 items-center justify-center rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground"
+          >
+            Review later
+          </button>
+          <button
+            type="button"
+            onClick={onAccept}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <ShieldCheck className="h-4 w-4" />
+            I agree
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -526,8 +1545,8 @@ function FormFieldInput({
   bookingFormId: string;
 }) {
   const inputStyles = cn(
-    "w-full px-4 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2",
-    error ? "border-red-500 focus:ring-red-200" : "border-gray-200 dark:border-gray-700"
+    "w-full px-4 py-2.5 rounded-lg border bg-[var(--background)] text-foreground focus:outline-none focus:ring-2",
+    error ? "border-red-500" : "border-[var(--card-border)]"
   );
 
   const renderInput = () => {
@@ -645,7 +1664,7 @@ function FormFieldInput({
                   className="h-4 w-4 rounded border-gray-300"
                   style={{ accentColor: primaryColor }}
                 />
-                <span className="text-gray-900 dark:text-gray-100">{opt}</span>
+                <span className="text-foreground">{opt}</span>
               </label>
             ))}
           </div>
@@ -664,7 +1683,7 @@ function FormFieldInput({
                   className="mt-0.5 h-4 w-4 rounded-full border-2 border-[var(--border-visible)] bg-transparent accent-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
                   style={{ accentColor: primaryColor }}
                 />
-                <span className="text-gray-900 dark:text-gray-100">{opt}</span>
+                <span className="text-foreground">{opt}</span>
               </label>
             ))}
           </div>
@@ -680,7 +1699,7 @@ function FormFieldInput({
               className="h-4 w-4 rounded border-gray-300"
               style={{ accentColor: primaryColor }}
             />
-            <span className="text-gray-900 dark:text-gray-100">
+            <span className="text-foreground">
               {field.placeholder || "Yes"}
             </span>
           </label>
@@ -718,13 +1737,13 @@ function FormFieldInput({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <label className="block text-sm font-medium text-foreground mb-1">
         {field.label}
         {field.isRequired && <span className="text-red-500 ml-1">*</span>}
       </label>
       {renderInput()}
       {field.helpText && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{field.helpText}</p>
+        <p className="text-sm text-foreground-muted mt-1">{field.helpText}</p>
       )}
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
@@ -874,7 +1893,7 @@ function FileUploadField({
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
           className={cn(
-            "inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-700",
+            "inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--card-border)] bg-[var(--background)] text-foreground text-sm font-medium transition-colors hover:bg-[var(--background-hover)]",
             isUploading && "opacity-50 cursor-not-allowed"
           )}
         >
@@ -895,7 +1914,7 @@ function FileUploadField({
             </>
           )}
         </button>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
+        <span className="text-sm text-foreground-muted">
           Images, PDF, DOC (max 10MB each)
         </span>
       </div>
@@ -911,15 +1930,15 @@ function FileUploadField({
           {uploadedFiles.map((file, index) => (
             <li
               key={file.key}
-              className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+              className="flex items-center justify-between p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)]"
             >
               <div className="flex items-center gap-3 min-w-0">
                 {getFileIcon(file.type)}
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {file.filename}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-foreground-muted">
                     {formatFileSize(file.size)}
                   </p>
                 </div>
@@ -927,7 +1946,7 @@ function FileUploadField({
               <button
                 type="button"
                 onClick={() => handleRemoveFile(index)}
-                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                className="p-1 text-foreground-muted hover:text-red-500 transition-colors"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -936,6 +1955,9 @@ function FileUploadField({
             </li>
           ))}
         </ul>
+      )}
+      {error && isRequired && (
+        <p className="text-red-500 text-sm">{error}</p>
       )}
     </div>
   );

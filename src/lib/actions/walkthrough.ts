@@ -308,3 +308,111 @@ export async function shouldShowWalkthrough(
     return true;
   }
 }
+
+/**
+ * Restore a dismissed walkthrough (reset to open state)
+ * This allows users to recover accidentally dismissed walkthroughs
+ */
+export async function restoreDismissedWalkthrough(
+  pageId: WalkthroughPageId
+): Promise<ActionResult<WalkthroughPreferenceData>> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return fail("Unauthorized");
+    }
+
+    // Get the internal user ID
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return fail("User not found");
+    }
+
+    // Check if the walkthrough exists and is dismissed
+    const existing = await prisma.userWalkthroughPreference.findUnique({
+      where: {
+        userId_pageId: {
+          userId: user.id,
+          pageId,
+        },
+      },
+    });
+
+    if (!existing || existing.state !== "dismissed") {
+      return fail("Walkthrough is not dismissed");
+    }
+
+    // Restore to open state
+    const preference = await prisma.userWalkthroughPreference.update({
+      where: {
+        userId_pageId: {
+          userId: user.id,
+          pageId,
+        },
+      },
+      data: {
+        state: "open",
+        dismissedAt: null,
+        hiddenAt: null,
+      },
+    });
+
+    // Revalidate the settings page
+    revalidatePath("/settings/walkthroughs");
+
+    return success(preference);
+  } catch (error) {
+    console.error("[restoreDismissedWalkthrough] Error:", error);
+    return fail("Failed to restore walkthrough");
+  }
+}
+
+/**
+ * Reset all dismissed walkthroughs to open state
+ * Use with caution - this restores ALL permanently dismissed walkthroughs
+ */
+export async function resetAllDismissedWalkthroughs(): Promise<
+  ActionResult<{ count: number }>
+> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return fail("Unauthorized");
+    }
+
+    // Get the internal user ID
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return fail("User not found");
+    }
+
+    // Update all dismissed walkthroughs to open
+    const result = await prisma.userWalkthroughPreference.updateMany({
+      where: {
+        userId: user.id,
+        state: "dismissed",
+      },
+      data: {
+        state: "open",
+        dismissedAt: null,
+        hiddenAt: null,
+      },
+    });
+
+    // Revalidate the settings page
+    revalidatePath("/settings/walkthroughs");
+
+    return success({ count: result.count });
+  } catch (error) {
+    console.error("[resetAllDismissedWalkthroughs] Error:", error);
+    return fail("Failed to reset dismissed walkthroughs");
+  }
+}

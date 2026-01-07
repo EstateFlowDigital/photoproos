@@ -8,6 +8,8 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   width?: string | number;
   height?: string | number;
   animate?: boolean;
+  animationType?: "shimmer" | "pulse";
+  delay?: number; // For staggered animations (in ms)
 }
 
 export function Skeleton({
@@ -16,9 +18,12 @@ export function Skeleton({
   width,
   height,
   animate = true,
+  animationType = "shimmer",
+  delay = 0,
+  style,
   ...props
 }: SkeletonProps) {
-  const baseStyles = "bg-[var(--background-elevated)]";
+  const baseStyles = "bg-[var(--background-elevated)] relative overflow-hidden";
 
   const variantStyles = {
     default: "rounded-md",
@@ -27,17 +32,24 @@ export function Skeleton({
     image: "rounded-lg aspect-video",
   };
 
+  const animationStyles = {
+    shimmer: "shimmer",
+    pulse: "animate-pulse",
+  };
+
   return (
     <div
       className={cn(
         baseStyles,
         variantStyles[variant],
-        animate && "animate-pulse",
+        animate && animationStyles[animationType],
         className
       )}
       style={{
         width: typeof width === "number" ? `${width}px` : width,
         height: typeof height === "number" ? `${height}px` : height,
+        animationDelay: delay ? `${delay}ms` : undefined,
+        ...style,
       }}
       {...props}
     />
@@ -48,9 +60,10 @@ export function Skeleton({
 interface ImageSkeletonProps {
   className?: string;
   aspectRatio?: "square" | "video" | "portrait" | "wide";
+  delay?: number; // For staggered animations (in ms)
 }
 
-export function ImageSkeleton({ className, aspectRatio = "video" }: ImageSkeletonProps) {
+export function ImageSkeleton({ className, aspectRatio = "video", delay = 0 }: ImageSkeletonProps) {
   const aspectStyles = {
     square: "aspect-square",
     video: "aspect-video",
@@ -65,9 +78,13 @@ export function ImageSkeleton({ className, aspectRatio = "video" }: ImageSkeleto
         aspectStyles[aspectRatio],
         className
       )}
+      style={{ animationDelay: delay ? `${delay}ms` : undefined }}
     >
       {/* Shimmer overlay */}
-      <div className="absolute inset-0 shimmer-skeleton" />
+      <div
+        className="absolute inset-0 shimmer-skeleton"
+        style={{ animationDelay: delay ? `${delay}ms` : undefined }}
+      />
       {/* Image icon placeholder */}
       <div className="absolute inset-0 flex items-center justify-center">
         <ImageIcon className="h-8 w-8 text-foreground-muted/30" />
@@ -101,12 +118,33 @@ export function CardSkeleton({ className }: { className?: string }) {
   );
 }
 
-// Gallery grid skeleton
-export function GallerySkeleton({ count = 6 }: { count?: number }) {
+// Gallery grid skeleton with staggered animation
+interface GallerySkeletonProps {
+  count?: number;
+  staggerDelay?: number; // Delay between each item in ms
+  columns?: 2 | 3 | 4 | 5;
+}
+
+export function GallerySkeleton({
+  count = 6,
+  staggerDelay = 50,
+  columns = 3
+}: GallerySkeletonProps) {
+  const columnClasses = {
+    2: "grid-cols-2",
+    3: "grid-cols-2 md:grid-cols-3",
+    4: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
+    5: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
+  };
+
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+    <div className={cn("grid gap-4", columnClasses[columns])}>
       {Array.from({ length: count }).map((_, i) => (
-        <ImageSkeleton key={i} aspectRatio="square" />
+        <ImageSkeleton
+          key={i}
+          aspectRatio="square"
+          delay={i * staggerDelay}
+        />
       ))}
     </div>
   );

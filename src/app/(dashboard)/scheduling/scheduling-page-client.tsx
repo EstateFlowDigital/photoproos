@@ -693,6 +693,7 @@ export function SchedulingPageClient({
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              data-tour="new-booking-button"
             >
               <PlusIcon className="h-4 w-4" />
               New Booking
@@ -847,7 +848,7 @@ export function SchedulingPageClient({
       </div>
 
       {/* Calendar Container */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden" data-tour="calendar-view">
         {/* Calendar Header */}
         <div className="flex flex-col gap-3 border-b border-[var(--card-border)] p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">

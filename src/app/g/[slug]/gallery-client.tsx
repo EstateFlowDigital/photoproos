@@ -1797,17 +1797,19 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
         {gallery.photos.length > 0 && (
         <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {displayedPhotos.map((photo: Photo) => (
+          {displayedPhotos.map((photo: Photo, index: number) => (
             <div
               key={photo.id}
               className={cn(
-                "group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer transition-all duration-300",
+                "group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer transition-all duration-300 ease-out opacity-0 animate-fade-in-up",
                 comparePhotos.find((p) => p.id === photo.id) && "ring-4",
                 selectedPhotoIds.has(photo.id) && "ring-4"
               )}
               style={{
                 backgroundColor: colors.cardBg,
                 ["--tw-ring-color" as string]: primaryColor,
+                animationDelay: `${Math.min(index * 30, 300)}ms`,
+                animationFillMode: "forwards",
               }}
               onClick={() => {
                 if (compareMode) {
@@ -1823,7 +1825,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 src={photo.thumbnailUrl || photo.url}
                 alt={photo.filename}
                 className={cn(
-                  "h-full w-full object-cover transition-transform duration-300 group-hover:scale-105",
+                  "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105",
                   !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
                 )}
               />
@@ -1931,11 +1933,11 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 )}
               </div>
 
-              {/* Lock Icon for unpaid */}
+              {/* Lock Icon for unpaid - subtle overlay */}
               {!gallery.isPaid && gallery.price > 0 && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="rounded-full bg-black/50 p-3">
-                    <LockIcon className="h-6 w-6 text-white" />
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/30 via-transparent to-transparent">
+                  <div className="rounded-full bg-white/10 backdrop-blur-sm p-3 border border-white/20 shadow-lg">
+                    <LockIcon className="h-5 w-5 text-white/80" />
                   </div>
                 </div>
               )}

@@ -143,6 +143,21 @@ export function Spotlight({
     }
   };
 
+  // Handle keyboard events
+  React.useEffect(() => {
+    if (!isActive) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && onClickOutside) {
+        e.preventDefault();
+        onClickOutside();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isActive, onClickOutside]);
+
   if (!mounted || !isActive || !targetRect) {
     return null;
   }
@@ -196,7 +211,9 @@ export function Spotlight({
     <div
       className="spotlight-overlay fixed inset-0 z-[9999]"
       onClick={handleOverlayClick}
-      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Tutorial spotlight - highlighting an element"
     >
       {/* Background overlay with cutout */}
       <svg className="absolute inset-0 h-full w-full">
@@ -241,9 +258,12 @@ export function Spotlight({
       {children && (
         <div
           ref={tooltipRef}
+          role="tooltip"
+          aria-live="polite"
           className={cn(
             "spotlight-tooltip absolute z-10 max-w-sm rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 shadow-2xl",
-            "animate-in fade-in-0 zoom-in-95 duration-200"
+            "animate-in fade-in-0 zoom-in-95 duration-200",
+            "focus-within:ring-2 focus-within:ring-[var(--primary)]/50"
           )}
           style={getTooltipStyle()}
           onClick={(e) => e.stopPropagation()}

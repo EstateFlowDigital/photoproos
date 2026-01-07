@@ -5,6 +5,8 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import { SchedulingPageClient } from "./scheduling-page-client";
 import { getPendingTimeOffCount } from "@/lib/actions/availability";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 // Helper to check if date is today
 function isToday(date: Date): boolean {
@@ -41,7 +43,7 @@ export default async function SchedulingPage() {
   const threeMonthsFromNow = new Date();
   threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
 
-  const [bookings, clients, calendarIntegration, timeOffBlocks, pendingTimeOffResult] = await Promise.all([
+  const [bookings, clients, calendarIntegration, timeOffBlocks, pendingTimeOffResult, walkthroughPreferenceResult] = await Promise.all([
     prisma.booking.findMany({
       where: {
         organizationId: organization.id,
@@ -103,9 +105,14 @@ export default async function SchedulingPage() {
     }),
     // Get count of pending time-off requests for badge
     getPendingTimeOffCount(),
+    // Walkthrough preference
+    getWalkthroughPreference("calendar"),
   ]);
 
   const pendingTimeOffCount = pendingTimeOffResult.success ? pendingTimeOffResult.data : 0;
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   // Generate mini calendar for current week
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -131,6 +138,12 @@ export default async function SchedulingPage() {
 
   return (
     <div className="space-y-6">
+      {/* Page Walkthrough */}
+      <WalkthroughWrapper
+        pageId="calendar"
+        initialState={walkthroughState}
+      />
+
       <SchedulingPageClient
         clients={clients}
         bookings={bookings}

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
+import { formatStatusLabel, getStatusBadgeClasses, getStatusDotClasses } from "@/lib/status-badges";
 import Link from "next/link";
 import {
   EyeIcon,
@@ -58,7 +58,7 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
   };
 
   return (
-    <div className="group relative rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all duration-200 hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/10">
+    <div className="group relative rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all duration-300 ease-out hover:border-[var(--border-hover)] hover:shadow-xl hover:shadow-black/20 hover:-translate-y-0.5">
       {/* Quick Action Menu Button */}
       {onQuickAction && (
         <div ref={menuRef} className="absolute top-2 right-2 z-10">
@@ -117,13 +117,17 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
 
       <Link href={`/galleries/${id}`} className="block">
         {/* Thumbnail */}
-        <div className="relative mb-3 aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-[var(--primary)]/20 to-[var(--ai)]/20">
+        <div className="relative mb-3 aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-[var(--primary)]/20 via-[var(--background-tertiary)] to-[var(--ai)]/20">
           {thumbnailUrl ? (
-            <img
-              src={thumbnailUrl}
-              alt={title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
+            <>
+              <img
+                src={thumbnailUrl}
+                alt={title}
+                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              />
+              {/* Subtle vignette overlay for premium look */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            </>
           ) : (
             <div className="flex h-full items-center justify-center">
               <GalleryPlaceholderIcon className="h-8 w-8 text-foreground-muted/50" />
@@ -175,9 +179,10 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
         <div className="mt-3 flex items-center justify-between">
           <span className="text-xs text-foreground-muted">{photos} photos</span>
           <span className={cn(
-            "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",
+            "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",
             getStatusBadgeClasses(status)
           )}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", getStatusDotClasses(status))} />
             {formatStatusLabel(status)}
           </span>
         </div>

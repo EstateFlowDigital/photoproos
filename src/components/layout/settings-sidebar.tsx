@@ -4,69 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  SETTINGS_NAVIGATION,
-  type SettingsIconName,
-} from "@/lib/constants/settings-navigation";
-import {
-  ArrowLeftIcon,
-  ChevronDownIcon,
-  UserIcon,
-  PaletteIcon,
-  CreditCardIcon,
-  StripeIcon,
-  BankIcon,
-  UsersIcon,
-  MapIcon,
-  GiftIcon,
-  MailIcon,
-  MailOutlineIcon,
-  MessageIcon,
-  BellIcon,
-  PlugIcon,
-  CalendarIcon,
-  DropboxIcon,
-  SparklesIcon,
-  CarIcon,
-  CameraIcon,
-  LayersIcon,
-  CodeIcon,
-  PackageIcon,
-  ImageIcon,
-  HelpCircleIcon,
-  ZapIcon,
-} from "@/components/ui/settings-icons";
-
-// ============================================================================
-// Icon Mapping
-// ============================================================================
-
-const ICON_MAP: Record<SettingsIconName, React.FC<{ className?: string }>> = {
-  user: UserIcon,
-  palette: PaletteIcon,
-  creditCard: CreditCardIcon,
-  stripe: StripeIcon,
-  bank: BankIcon,
-  users: UsersIcon,
-  map: MapIcon,
-  gift: GiftIcon,
-  mail: MailIcon,
-  mailOutline: MailOutlineIcon,
-  message: MessageIcon,
-  bell: BellIcon,
-  plug: PlugIcon,
-  calendar: CalendarIcon,
-  dropbox: DropboxIcon,
-  sparkles: SparklesIcon,
-  car: CarIcon,
-  camera: CameraIcon,
-  layers: LayersIcon,
-  code: CodeIcon,
-  package: PackageIcon,
-  image: ImageIcon,
-  helpCircle: HelpCircleIcon,
-  zap: ZapIcon,
-};
+import { SETTINGS_NAVIGATION } from "@/lib/constants/settings-navigation";
+import { ArrowLeftIcon, ChevronDownIcon } from "@/components/ui/settings-icons";
+import { SETTINGS_ICON_MAP } from "@/components/settings/settings-icon-map";
+import { SettingsSearch } from "@/components/settings/settings-search";
 
 // ============================================================================
 // Component
@@ -124,6 +65,11 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
         <span className="text-base font-semibold text-foreground">Settings</span>
       </div>
 
+      {/* Search */}
+      <div className="px-3 py-3 border-b border-[var(--card-border)]">
+        <SettingsSearch compact placeholder="Search settings..." />
+      </div>
+
       {/* Navigation */}
       <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-4">
         <div className="space-y-1">
@@ -154,7 +100,7 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
                 )}
               >
                 {category.items.map((item) => {
-                  const IconComponent = ICON_MAP[item.iconName];
+                  const IconComponent = SETTINGS_ICON_MAP[item.iconName];
                   const active = isActive(item.href);
 
                   return (

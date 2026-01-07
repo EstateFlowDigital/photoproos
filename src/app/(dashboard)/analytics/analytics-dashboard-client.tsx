@@ -166,7 +166,7 @@ export function AnalyticsDashboardClient({
 
       {/* Revenue Overview */}
       {dashboardData && (
-        <div className="auto-grid grid-min-200 grid-gap-4">
+        <div className="auto-grid grid-min-200 grid-gap-4" data-tour="analytics-stats">
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
             <p className="text-sm font-medium text-foreground-muted">This Month</p>
             <div className="mt-2 flex items-baseline gap-2">
@@ -274,7 +274,7 @@ export function AnalyticsDashboardClient({
 
       {/* Revenue Forecast */}
       {forecastData && forecastData.monthlyRevenue.length > 0 && (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-tour="revenue-chart">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Revenue Trend</h3>
             <div className="flex items-center gap-4 text-xs">
@@ -345,7 +345,7 @@ export function AnalyticsDashboardClient({
 
       {/* Top Clients */}
       {ltvData && ltvData.topClients.length > 0 && (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden" data-tour="client-insights">
           <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
             <h3 className="text-sm font-semibold text-foreground">Top Clients by Revenue</h3>
           </div>

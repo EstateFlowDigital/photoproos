@@ -73,25 +73,25 @@ describe("getStatusBadgeClasses", () => {
 
     it("returns info classes for sent status", () => {
       const classes = getStatusBadgeClasses("sent");
-      expect(classes).toContain("bg-[var(--primary)]/10");
+      expect(classes).toContain("bg-[var(--primary)]/15");
       expect(classes).toContain("text-[var(--primary)]");
     });
 
     it("returns success classes for completed status", () => {
       const classes = getStatusBadgeClasses("completed");
-      expect(classes).toContain("bg-[var(--success)]/10");
+      expect(classes).toContain("bg-[var(--success)]/15");
       expect(classes).toContain("text-[var(--success)]");
     });
 
     it("returns warning classes for pending status", () => {
       const classes = getStatusBadgeClasses("pending");
-      expect(classes).toContain("bg-[var(--warning)]/10");
+      expect(classes).toContain("bg-[var(--warning)]/15");
       expect(classes).toContain("text-[var(--warning)]");
     });
 
     it("returns danger classes for failed status", () => {
       const classes = getStatusBadgeClasses("failed");
-      expect(classes).toContain("bg-[var(--error)]/10");
+      expect(classes).toContain("bg-[var(--error)]/15");
       expect(classes).toContain("text-[var(--error)]");
     });
   });
@@ -100,7 +100,7 @@ describe("getStatusBadgeClasses", () => {
     it("uses tone override instead of status mapping", () => {
       // 'completed' normally maps to 'success', but we override to 'danger'
       const classes = getStatusBadgeClasses("completed", "danger");
-      expect(classes).toContain("bg-[var(--error)]/10");
+      expect(classes).toContain("bg-[var(--error)]/15");
       expect(classes).toContain("text-[var(--error)]");
     });
 
@@ -111,7 +111,7 @@ describe("getStatusBadgeClasses", () => {
 
     it("applies info override", () => {
       const classes = getStatusBadgeClasses("failed", "info");
-      expect(classes).toContain("bg-[var(--primary)]/10");
+      expect(classes).toContain("bg-[var(--primary)]/15");
     });
   });
 });

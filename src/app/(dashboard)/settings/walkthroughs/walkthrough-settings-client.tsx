@@ -42,6 +42,8 @@ import {
 import {
   updateWalkthroughState,
   resetHiddenWalkthroughs,
+  restoreDismissedWalkthrough,
+  resetAllDismissedWalkthroughs,
 } from "@/lib/actions/walkthrough";
 import {
   WALKTHROUGH_CATEGORY_LABELS,
@@ -93,8 +95,10 @@ export function WalkthroughSettingsClient({
   walkthroughs,
 }: WalkthroughSettingsClientProps) {
   const [items, setItems] = React.useState(walkthroughs);
-  const [isResetting, setIsResetting] = React.useState(false);
+  const [isResettingHidden, setIsResettingHidden] = React.useState(false);
+  const [isResettingDismissed, setIsResettingDismissed] = React.useState(false);
   const [savingItems, setSavingItems] = React.useState<Set<string>>(new Set());
+  const [restoringItems, setRestoringItems] = React.useState<Set<string>>(new Set());
 
   // Group walkthroughs by category
   const groupedWalkthroughs = React.useMemo(() => {
@@ -168,8 +172,8 @@ export function WalkthroughSettingsClient({
     }
   };
 
-  const handleResetAll = async () => {
-    setIsResetting(true);
+  const handleResetHidden = async () => {
+    setIsResettingHidden(true);
 
     const result = await resetHiddenWalkthroughs();
 
@@ -182,12 +186,68 @@ export function WalkthroughSettingsClient({
             : item
         )
       );
-      toast.success(`Restored ${result.data.count} walkthrough(s)`);
+      toast.success(`Restored ${result.data.count} hidden walkthrough(s)`);
     } else {
-      toast.error("Failed to reset walkthroughs");
+      toast.error("Failed to reset hidden walkthroughs");
     }
 
-    setIsResetting(false);
+    setIsResettingHidden(false);
+  };
+
+  const handleResetDismissed = async () => {
+    setIsResettingDismissed(true);
+
+    const result = await resetAllDismissedWalkthroughs();
+
+    if (result.success) {
+      // Update local state
+      setItems((prev) =>
+        prev.map((item) =>
+          item.state === "dismissed"
+            ? { ...item, state: "open" as const, dismissedAt: null }
+            : item
+        )
+      );
+      toast.success(`Restored ${result.data.count} dismissed walkthrough(s)`);
+    } else {
+      toast.error("Failed to reset dismissed walkthroughs");
+    }
+
+    setIsResettingDismissed(false);
+  };
+
+  const handleRestoreDismissed = async (pageId: WalkthroughPageId) => {
+    // Optimistic update
+    setRestoringItems((prev) => new Set(prev).add(pageId));
+    setItems((prev) =>
+      prev.map((item) =>
+        item.pageId === pageId
+          ? { ...item, state: "open" as const, dismissedAt: null }
+          : item
+      )
+    );
+
+    const result = await restoreDismissedWalkthrough(pageId);
+
+    setRestoringItems((prev) => {
+      const next = new Set(prev);
+      next.delete(pageId);
+      return next;
+    });
+
+    if (!result.success) {
+      // Revert on error
+      setItems((prev) =>
+        prev.map((item) =>
+          item.pageId === pageId
+            ? { ...item, state: "dismissed" as const, dismissedAt: new Date() }
+            : item
+        )
+      );
+      toast.error("Failed to restore walkthrough");
+    } else {
+      toast.success("Walkthrough restored");
+    }
   };
 
   return (
@@ -208,34 +268,51 @@ export function WalkthroughSettingsClient({
             </div>
           </div>
 
-          {hiddenCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleResetAll}
-              disabled={isResetting}
-              className="gap-2"
-            >
-              <RotateCcw
-                className={cn("h-4 w-4", isResetting && "animate-spin")}
-              />
-              Reset Hidden ({hiddenCount})
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {hiddenCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetHidden}
+                disabled={isResettingHidden}
+                className="gap-2"
+              >
+                <RotateCcw
+                  className={cn("h-4 w-4", isResettingHidden && "animate-spin")}
+                />
+                Reset Hidden ({hiddenCount})
+              </Button>
+            )}
+            {dismissedCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetDismissed}
+                disabled={isResettingDismissed}
+                className="gap-2"
+              >
+                <RotateCcw
+                  className={cn("h-4 w-4", isResettingDismissed && "animate-spin")}
+                />
+                Reset Dismissed ({dismissedCount})
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 
       {/* Info about dismissed walkthroughs */}
       {dismissedCount > 0 && (
-        <div className="flex items-start gap-3 rounded-lg border border-[var(--warning)]/30 bg-[var(--warning)]/5 p-4">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--warning)]" />
+        <div className="flex items-start gap-3 rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
+          <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--primary)]" />
           <div>
             <p className="font-medium text-foreground">
-              {dismissedCount} walkthrough(s) permanently dismissed
+              {dismissedCount} walkthrough(s) previously dismissed
             </p>
             <p className="text-sm text-foreground-muted">
-              Permanently dismissed walkthroughs cannot be restored. They are
-              marked below but cannot be toggled back on.
+              You can restore dismissed walkthroughs by clicking the &ldquo;Restore&rdquo;
+              button next to each item, or use the &ldquo;Reset Dismissed&rdquo; button above
+              to restore all at once.
             </p>
           </div>
         </div>
@@ -262,7 +339,9 @@ export function WalkthroughSettingsClient({
                     key={item.pageId}
                     item={item}
                     isSaving={savingItems.has(item.pageId)}
+                    isRestoring={restoringItems.has(item.pageId)}
                     onToggle={handleToggle}
+                    onRestore={handleRestoreDismissed}
                   />
                 ))}
               </CardContent>
@@ -277,13 +356,17 @@ export function WalkthroughSettingsClient({
 interface WalkthroughToggleItemProps {
   item: WalkthroughWithPref;
   isSaving: boolean;
+  isRestoring: boolean;
   onToggle: (pageId: WalkthroughPageId, currentState: WalkthroughState) => void;
+  onRestore: (pageId: WalkthroughPageId) => void;
 }
 
 function WalkthroughToggleItem({
   item,
   isSaving,
+  isRestoring,
   onToggle,
+  onRestore,
 }: WalkthroughToggleItemProps) {
   const IconComponent = WALKTHROUGH_ICONS[item.icon] ?? HelpCircle;
   const isDismissed = item.state === "dismissed";
@@ -295,7 +378,7 @@ function WalkthroughToggleItem({
       className={cn(
         "flex items-center justify-between rounded-lg px-4 py-3 transition-colors",
         isDismissed
-          ? "bg-[var(--error)]/5 opacity-60"
+          ? "bg-[var(--background-tertiary)]"
           : "hover:bg-[var(--ghost-hover)]"
       )}
     >
@@ -304,7 +387,7 @@ function WalkthroughToggleItem({
           className={cn(
             "flex h-8 w-8 items-center justify-center rounded-lg",
             isDismissed
-              ? "bg-[var(--error)]/10"
+              ? "bg-[var(--border)]"
               : isVisible
                 ? "bg-[var(--primary)]/10"
                 : "bg-[var(--border)]"
@@ -314,7 +397,7 @@ function WalkthroughToggleItem({
             className={cn(
               "h-4 w-4",
               isDismissed
-                ? "text-[var(--error)]"
+                ? "text-foreground-muted"
                 : isVisible
                   ? "text-[var(--primary)]"
                   : "text-foreground-muted"
@@ -340,7 +423,7 @@ function WalkthroughToggleItem({
           className={cn(
             "flex items-center gap-1.5 text-xs font-medium",
             isDismissed
-              ? "text-[var(--error)]"
+              ? "text-foreground-muted"
               : isVisible
                 ? "text-[var(--success)]"
                 : "text-foreground-muted"
@@ -364,13 +447,28 @@ function WalkthroughToggleItem({
           )}
         </span>
 
-        {/* Toggle switch */}
-        <Switch
-          checked={isVisible}
-          onCheckedChange={() => onToggle(item.pageId, item.state)}
-          disabled={isDismissed || isSaving}
-          aria-label={`Toggle ${item.label} walkthrough`}
-        />
+        {/* Restore button for dismissed items */}
+        {isDismissed ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onRestore(item.pageId)}
+            disabled={isRestoring}
+            className="gap-1.5"
+            aria-label={`Restore ${item.label} walkthrough`}
+          >
+            <RotateCcw className={cn("h-3.5 w-3.5", isRestoring && "animate-spin")} />
+            Restore
+          </Button>
+        ) : (
+          /* Toggle switch for non-dismissed items */
+          <Switch
+            checked={isVisible}
+            onCheckedChange={() => onToggle(item.pageId, item.state)}
+            disabled={isSaving}
+            aria-label={`Toggle ${item.label} walkthrough`}
+          />
+        )}
       </div>
     </div>
   );

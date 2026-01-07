@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import type { NotificationPreferences, ClientData } from "../types";
+import type { ClientBookingPreferences } from "@/lib/types/client-preferences";
+import { updateClientBookingPreferences } from "@/lib/actions/client-preferences";
 
 interface SettingsTabProps {
   client: ClientData;
@@ -61,6 +63,62 @@ const NOTIFICATION_OPTIONS: {
   },
 ];
 
+const INDUSTRY_OPTIONS = [
+  { value: "real_estate", label: "Real Estate" },
+  { value: "commercial", label: "Commercial" },
+  { value: "events", label: "Events" },
+  { value: "portraits", label: "Portraits" },
+  { value: "food", label: "Food" },
+  { value: "product", label: "Product" },
+];
+
+const THANK_YOU_OPTIONS = [
+  { value: "gift_card", label: "Gift card" },
+  { value: "discount", label: "Discount on next shoot" },
+  { value: "prints", label: "Prints or album" },
+  { value: "surprise", label: "Surprise me" },
+];
+
+const SHOOT_PREFERENCE_OPTIONS = [
+  {
+    key: "pref_blinds",
+    label: "Blinds",
+    options: [
+      { value: "open", label: "Open" },
+      { value: "closed", label: "Closed" },
+      { value: "photographer", label: "Photographer decides" },
+    ],
+  },
+  {
+    key: "pref_lights",
+    label: "Lights",
+    options: [
+      { value: "on", label: "On" },
+      { value: "off", label: "Off" },
+      { value: "mixed", label: "Mixed" },
+    ],
+  },
+  {
+    key: "pref_background",
+    label: "Portrait Background",
+    options: [
+      { value: "light", label: "Light" },
+      { value: "dark", label: "Dark" },
+      { value: "neutral", label: "Neutral" },
+      { value: "custom", label: "Custom" },
+    ],
+  },
+  {
+    key: "pref_retouching",
+    label: "Retouching",
+    options: [
+      { value: "light", label: "Light" },
+      { value: "standard", label: "Standard" },
+      { value: "editorial", label: "Editorial" },
+    ],
+  },
+];
+
 export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
   const [preferences, setPreferences] = useState<NotificationPreferences>(() => {
     if (typeof window !== "undefined") {
@@ -70,6 +128,18 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
     return DEFAULT_PREFERENCES;
   });
   const [saved, setSaved] = useState(false);
+  const [bookingPreferences, setBookingPreferences] = useState<ClientBookingPreferences>(() => ({
+    profile: {
+      birthDate: client.preferences?.booking?.profile?.birthDate || "",
+      thankYouPreference: client.preferences?.booking?.profile?.thankYouPreference || "",
+      giftPreferenceNotes: client.preferences?.booking?.profile?.giftPreferenceNotes || "",
+    },
+    preferences: client.preferences?.booking?.preferences || {},
+    agreements: client.preferences?.booking?.agreements || {},
+    preferredIndustry: client.preferences?.booking?.preferredIndustry || "",
+  }));
+  const [bookingSaved, setBookingSaved] = useState(false);
+  const [bookingSaving, setBookingSaving] = useState(false);
 
   // Persist preferences to localStorage
   useEffect(() => {
@@ -113,6 +183,42 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleBookingProfileChange = (key: keyof NonNullable<ClientBookingPreferences["profile"]>, value: string) => {
+    setBookingPreferences((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        [key]: value,
+      },
+    }));
+  };
+
+  const handleBookingPreferenceChange = (key: string, value: string) => {
+    setBookingPreferences((prev) => ({
+      ...prev,
+      preferences: {
+        ...(prev.preferences || {}),
+        [key]: value,
+      },
+    }));
+  };
+
+  const handleSaveBookingPreferences = async () => {
+    setBookingSaving(true);
+    const result = await updateClientBookingPreferences({
+      profile: bookingPreferences.profile,
+      preferences: bookingPreferences.preferences,
+      agreements: bookingPreferences.agreements,
+      preferredIndustry: bookingPreferences.preferredIndustry,
+    });
+    setBookingSaving(false);
+
+    if (result.success) {
+      setBookingSaved(true);
+      setTimeout(() => setBookingSaved(false), 2000);
+    }
   };
 
   const essentialOptions = NOTIFICATION_OPTIONS.filter((o) => o.category === "essential");
@@ -223,6 +329,83 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
               onToggle={() => handleToggle(option.key)}
             />
           ))}
+        </div>
+      </div>
+
+      {/* Shoot Preferences */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-semibold text-[var(--foreground)]">
+              Shoot Preferences
+            </h3>
+            <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+              Save preferences so new booking requests auto-fill for you.
+            </p>
+          </div>
+          {bookingSaved && (
+            <span className="flex items-center gap-1.5 rounded-full bg-[var(--success)]/10 px-3 py-1 text-xs font-medium text-[var(--success)]">
+              <CheckCircleIcon className="h-3.5 w-3.5" />
+              Saved
+            </span>
+          )}
+        </div>
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <SettingsSelect
+            label="Preferred Shoot Type"
+            value={bookingPreferences.preferredIndustry || ""}
+            options={INDUSTRY_OPTIONS}
+            onChange={(value) =>
+              setBookingPreferences((prev) => ({ ...prev, preferredIndustry: value }))
+            }
+          />
+          <SettingsInput
+            label="Birthdate"
+            type="date"
+            value={bookingPreferences.profile?.birthDate || ""}
+            onChange={(value) => handleBookingProfileChange("birthDate", value)}
+          />
+          <SettingsSelect
+            label="Thank You Preference"
+            value={bookingPreferences.profile?.thankYouPreference || ""}
+            options={THANK_YOU_OPTIONS}
+            onChange={(value) => handleBookingProfileChange("thankYouPreference", value)}
+          />
+          <SettingsInput
+            label="Gift Notes"
+            value={bookingPreferences.profile?.giftPreferenceNotes || ""}
+            placeholder="Anything we should keep in mind?"
+            onChange={(value) => handleBookingProfileChange("giftPreferenceNotes", value)}
+          />
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {SHOOT_PREFERENCE_OPTIONS.map((preference) => (
+            <SettingsSelect
+              key={preference.key}
+              label={preference.label}
+              value={bookingPreferences.preferences?.[preference.key] || ""}
+              options={preference.options}
+              onChange={(value) => handleBookingPreferenceChange(preference.key, value)}
+            />
+          ))}
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSaveBookingPreferences}
+            disabled={bookingSaving}
+            className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {bookingSaving ? "Saving..." : "Save Preferences"}
+          </button>
+          {bookingPreferences.agreements?.policyAcceptedAt && (
+            <span className="text-xs text-[var(--foreground-muted)]">
+              Policy accepted on {new Date(bookingPreferences.agreements.policyAcceptedAt).toLocaleDateString()}
+            </span>
+          )}
         </div>
       </div>
 

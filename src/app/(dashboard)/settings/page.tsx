@@ -113,7 +113,7 @@ function SettingsSection({ title, description, children }: SettingsSectionProps)
           <p className="mt-1 text-sm text-foreground-muted">{description}</p>
         )}
       </div>
-      <div className="grid gap-4 md:grid-cols-2">{children}</div>
+      <div className="grid gap-4 lg:grid-cols-3">{children}</div>
     </div>
   );
 }
