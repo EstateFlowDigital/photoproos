@@ -82,7 +82,7 @@ export default async function TaxReportsPage() {
       COUNT(*) as count
     FROM "Invoice"
     WHERE "organizationId" = ${organizationId}
-      AND "status" IN ('paid', 'partially_paid')
+      AND "status" IN ('paid', 'partial')
       AND "paidAt" >= ${thisYearStart}
     GROUP BY DATE_TRUNC('month', "paidAt")
     ORDER BY month DESC
