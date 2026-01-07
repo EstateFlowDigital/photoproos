@@ -7,7 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Code Quality Improvements** - Fixed lint warnings across 23 files
+  - Removed unused catch error parameters
+  - Prefixed intentionally unused parameters with underscore
+  - Removed unused import statements
+  - Cleaned up unused Icon components and variables
+
 ### Added
+- **Enhanced Project Expense Tracking** - Comprehensive expense management with full feature set
+  - Search functionality to filter expenses by description or vendor
+  - Advanced filtering panel with category, paid status, and date range filters
+  - Bulk operations: select multiple expenses, mark paid/unpaid in bulk, bulk delete
+  - Team member assignment dropdown for expense attribution
+  - Receipt URL field with clickable receipt icon in expense list
+  - CSV export for all project expenses with proper formatting
+  - Select all/deselect all checkbox for efficient bulk selection
+  - Active filter count badge on filter toggle button
+  - Results summary showing filtered vs total expense count
+- **Expense Tracking Server Actions** - New backend functionality
+  - `getTeamMembers()` action for fetching organization team members
+  - `bulkUpdateExpenseStatus()` for batch paid/unpaid status updates
+  - `bulkDeleteExpenses()` for batch deletion with authorization
+  - `exportExpensesToCSV()` for generating downloadable expense reports
 - **Marketing Kit Individual Downloads** - Individual asset download functionality in client portal
   - New `MarketingKitModal` component (`/portal/components/marketing-kit-modal.tsx`) for browsing marketing materials
   - Assets grouped by category (Social Media, Social Tiles, Print Materials, Videos, Email, Other)
