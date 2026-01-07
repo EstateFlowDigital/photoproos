@@ -14,16 +14,19 @@ import {
   KeyIcon,
   UsersIcon,
   MailIcon,
-  SparklesIcon,
 } from "@/components/ui/settings-icons";
-
-// Mock data for audiences - in a real implementation, this would come from the Mailchimp API
-const MOCK_AUDIENCES = [
-  { value: "", label: "Select an audience..." },
-  { value: "audience_1", label: "All Clients" },
-  { value: "audience_2", label: "Photography Leads" },
-  { value: "audience_3", label: "Past Customers" },
-];
+import {
+  type MailchimpConfig,
+  type MailchimpAudience,
+  type MailchimpSyncHistoryItem,
+  connectMailchimp,
+  disconnectMailchimp,
+  updateMailchimpSettings,
+  getMailchimpAudiences,
+  getMailchimpSyncHistory,
+  syncClientsToMailchimp,
+} from "@/lib/actions/mailchimp";
+import { toast } from "sonner";
 
 // Client type tags for mapping
 const CLIENT_TYPE_TAGS = [
@@ -34,51 +37,62 @@ const CLIENT_TYPE_TAGS = [
   { id: "architecture", label: "Architecture", mailchimpTag: "architecture-clients" },
 ];
 
-// Mock sync history data
-const MOCK_SYNC_HISTORY = [
-  {
-    id: "1",
-    date: "2024-01-04T10:30:00Z",
-    action: "Synced 12 new contacts",
-    status: "success",
-  },
-  {
-    id: "2",
-    date: "2024-01-03T14:15:00Z",
-    action: "Updated 5 contact tags",
-    status: "success",
-  },
-  {
-    id: "3",
-    date: "2024-01-02T09:00:00Z",
-    action: "Initial sync: 48 contacts",
-    status: "success",
-  },
-];
+interface MailchimpSettingsClientProps {
+  initialConfig: MailchimpConfig | null;
+}
 
-export function MailchimpSettingsClient() {
+export function MailchimpSettingsClient({ initialConfig }: MailchimpSettingsClientProps) {
   // Connection state
+  const [config, setConfig] = React.useState<MailchimpConfig | null>(initialConfig);
   const [apiKey, setApiKey] = React.useState("");
-  const [isConnected] = React.useState(false);
-  const [selectedAudience, setSelectedAudience] = React.useState("");
+  const [selectedAudience, setSelectedAudience] = React.useState(config?.audienceId || "");
+  const [audiences, setAudiences] = React.useState<MailchimpAudience[]>([]);
+  const [syncHistory, setSyncHistory] = React.useState<MailchimpSyncHistoryItem[]>([]);
 
   // Sync settings
-  const [autoSyncNewClients, setAutoSyncNewClients] = React.useState(true);
+  const [autoSyncNewClients, setAutoSyncNewClients] = React.useState(
+    config?.autoSyncNewClients ?? true
+  );
   const [tagMappings, setTagMappings] = React.useState<Record<string, boolean>>(
     CLIENT_TYPE_TAGS.reduce((acc, tag) => ({ ...acc, [tag.id]: true }), {})
   );
 
   // Marketing preferences
-  const [defaultOptIn, setDefaultOptIn] = React.useState(true);
-  const [welcomeEmailTrigger, setWelcomeEmailTrigger] = React.useState(false);
+  const [defaultOptIn, setDefaultOptIn] = React.useState(config?.defaultOptIn ?? true);
+  const [welcomeEmailTrigger, setWelcomeEmailTrigger] = React.useState(
+    config?.welcomeEmailTrigger ?? false
+  );
 
   // UI state
   const [loading, setLoading] = React.useState(false);
   const [syncing, setSyncing] = React.useState(false);
+  const [audiencesLoading, setAudiencesLoading] = React.useState(false);
   const [message, setMessage] = React.useState<{
     type: "success" | "error" | "info";
     text: string;
   } | null>(null);
+
+  // Load audiences and sync history when connected
+  React.useEffect(() => {
+    async function loadData() {
+      if (!config?.isActive) return;
+
+      // Load audiences
+      setAudiencesLoading(true);
+      const audiencesResult = await getMailchimpAudiences();
+      if (audiencesResult.success && audiencesResult.data) {
+        setAudiences(audiencesResult.data);
+      }
+      setAudiencesLoading(false);
+
+      // Load sync history
+      const historyResult = await getMailchimpSyncHistory();
+      if (historyResult.success && historyResult.data) {
+        setSyncHistory(historyResult.data);
+      }
+    }
+    loadData();
+  }, [config?.isActive]);
 
   const handleSaveApiKey = async () => {
     if (!apiKey.trim()) {
@@ -101,29 +115,87 @@ export function MailchimpSettingsClient() {
     setLoading(true);
     setMessage(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const result = await connectMailchimp(apiKey);
 
-    // Since this is coming soon, just show a success message
-    setMessage({
-      type: "info",
-      text: "API key saved. Full Mailchimp integration is coming soon!",
-    });
-    setLoading(false);
+      if (!result.success) {
+        setMessage({ type: "error", text: result.error || "Failed to connect" });
+        return;
+      }
+
+      toast.success("Connected to Mailchimp!");
+      setMessage({
+        type: "success",
+        text: "Connected to Mailchimp successfully!",
+      });
+
+      // Reload the page to get fresh config
+      window.location.reload();
+    } catch {
+      setMessage({ type: "error", text: "Failed to connect to Mailchimp" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    if (!confirm("Are you sure you want to disconnect Mailchimp? Your settings will be removed.")) {
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const result = await disconnectMailchimp();
+
+      if (!result.success) {
+        setMessage({ type: "error", text: result.error || "Failed to disconnect" });
+        return;
+      }
+
+      setConfig(null);
+      setApiKey("");
+      setAudiences([]);
+      setSyncHistory([]);
+      toast.success("Mailchimp disconnected");
+      setMessage({ type: "success", text: "Mailchimp disconnected successfully" });
+    } catch {
+      setMessage({ type: "error", text: "Failed to disconnect" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSyncExistingClients = async () => {
     setSyncing(true);
     setMessage(null);
 
-    // Simulate sync
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const result = await syncClientsToMailchimp();
 
-    setMessage({
-      type: "info",
-      text: "Sync functionality is coming soon. Your settings have been saved.",
-    });
-    setSyncing(false);
+      if (!result.success) {
+        setMessage({ type: "error", text: result.error || "Failed to sync" });
+        return;
+      }
+
+      const { synced, errors } = result.data || { synced: 0, errors: 0 };
+      toast.success(`Synced ${synced} contacts to Mailchimp`);
+      setMessage({
+        type: errors > 0 ? "info" : "success",
+        text: `Synced ${synced} contacts${errors > 0 ? `, ${errors} failed` : ""}`,
+      });
+
+      // Reload sync history
+      const historyResult = await getMailchimpSyncHistory();
+      if (historyResult.success && historyResult.data) {
+        setSyncHistory(historyResult.data);
+      }
+    } catch {
+      setMessage({ type: "error", text: "Failed to sync contacts" });
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const handleTagMappingToggle = (tagId: string, enabled: boolean) => {
@@ -134,35 +206,46 @@ export function MailchimpSettingsClient() {
     setLoading(true);
     setMessage(null);
 
-    // Simulate saving settings
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Build tag mappings
+      const tagMappingsData: Record<string, string> = {};
+      for (const tag of CLIENT_TYPE_TAGS) {
+        if (tagMappings[tag.id]) {
+          tagMappingsData[tag.id] = tag.mailchimpTag;
+        }
+      }
 
-    setMessage({
-      type: "success",
-      text: "Settings saved successfully. They will be applied when the integration launches.",
-    });
-    setLoading(false);
+      // Find the selected audience name
+      const selectedAudienceData = audiences.find((a) => a.id === selectedAudience);
+
+      const result = await updateMailchimpSettings({
+        audienceId: selectedAudience || undefined,
+        audienceName: selectedAudienceData?.name,
+        autoSyncNewClients,
+        defaultOptIn,
+        welcomeEmailTrigger,
+        tagMappings: tagMappingsData,
+      });
+
+      if (!result.success) {
+        setMessage({ type: "error", text: result.error || "Failed to save settings" });
+        return;
+      }
+
+      toast.success("Settings saved successfully");
+      setMessage({
+        type: "success",
+        text: "Settings saved successfully",
+      });
+    } catch {
+      setMessage({ type: "error", text: "Failed to save settings" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Coming Soon Banner */}
-      <div className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
-        <div className="flex items-start gap-3">
-          <SparklesIcon className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              Coming Soon
-            </p>
-            <p className="text-sm text-foreground-muted mt-1">
-              The Mailchimp integration is currently in development. You can configure your settings
-              now, and they will be ready when the full integration launches. Save your API key to
-              be notified when it&apos;s available.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Status Banner */}
       {message && (
         <div
@@ -201,20 +284,27 @@ export function MailchimpSettingsClient() {
               Mailchimp Connection
             </h2>
             <p className="text-sm text-foreground-muted">
-              {isConnected
-                ? "Connected to your Mailchimp account"
+              {config?.isActive
+                ? `Connected (${config.datacenter})`
                 : "Connect Mailchimp to sync your clients for email marketing"}
             </p>
-          </div>
-          <div
-            className={cn(
-              "flex items-center gap-2 rounded-full px-3 py-1",
-              "bg-[var(--foreground-muted)]/10 text-foreground-muted"
+            {config?.lastSyncAt && (
+              <p className="text-xs text-foreground-muted mt-1">
+                Last sync: {new Date(config.lastSyncAt).toLocaleString()} · {config.syncedContacts} contacts synced
+              </p>
             )}
-          >
-            <span className="h-2 w-2 rounded-full bg-foreground-muted" />
-            <span className="text-sm font-medium">Coming Soon</span>
           </div>
+          {config?.isActive && (
+            <div
+              className={cn(
+                "flex items-center gap-2 rounded-full px-3 py-1",
+                "bg-[var(--success)]/10 text-[var(--success)]"
+              )}
+            >
+              <span className="h-2 w-2 rounded-full bg-[var(--success)]" />
+              <span className="text-sm font-medium">Connected</span>
+            </div>
+          )}
         </div>
 
         {/* API Key Input */}
@@ -233,7 +323,7 @@ export function MailchimpSettingsClient() {
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter your Mailchimp API key"
+                  placeholder={config?.isActive ? "Enter new API key to reconnect" : "Enter your Mailchimp API key"}
                   leftIcon={<KeyIcon className="h-4 w-4" />}
                 />
               </div>
@@ -242,8 +332,17 @@ export function MailchimpSettingsClient() {
                 onClick={handleSaveApiKey}
                 disabled={loading || !apiKey.trim()}
               >
-                {loading ? "Saving..." : "Save Key"}
+                {loading ? "Saving..." : config?.isActive ? "Update Key" : "Connect"}
               </Button>
+              {config?.isActive && (
+                <Button
+                  variant="destructive"
+                  onClick={handleDisconnect}
+                  disabled={loading}
+                >
+                  Disconnect
+                </Button>
+              )}
             </div>
             <p className="mt-1.5 text-xs text-foreground-muted">
               Your API key is stored securely and used to connect to Mailchimp.
@@ -253,32 +352,43 @@ export function MailchimpSettingsClient() {
       </div>
 
       {/* Audience Selection */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <UsersIcon className="h-5 w-5 text-foreground-muted" />
-          <h2 className="text-lg font-semibold text-foreground">
-            Audience Settings
-          </h2>
-        </div>
-        <p className="text-sm text-foreground-muted mb-6">
-          Select which Mailchimp audience to sync your contacts with.
-        </p>
+      {config?.isActive && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <UsersIcon className="h-5 w-5 text-foreground-muted" />
+            <h2 className="text-lg font-semibold text-foreground">
+              Audience Settings
+            </h2>
+          </div>
+          <p className="text-sm text-foreground-muted mb-6">
+            Select which Mailchimp audience to sync your contacts with.
+          </p>
 
-        <div className="space-y-4">
-          <Select
-            label="Target Audience"
-            options={MOCK_AUDIENCES}
-            value={selectedAudience}
-            onChange={(e) => setSelectedAudience(e.target.value)}
-            disabled={!isConnected}
-            helperText={
-              !isConnected
-                ? "Connect your Mailchimp account to select an audience"
-                : undefined
-            }
-          />
+          <div className="space-y-4">
+            {audiencesLoading ? (
+              <p className="text-sm text-foreground-muted">Loading audiences...</p>
+            ) : (
+              <Select
+                label="Target Audience"
+                options={[
+                  { value: "", label: "Select an audience..." },
+                  ...audiences.map((a) => ({
+                    value: a.id,
+                    label: `${a.name} (${a.memberCount.toLocaleString()} contacts)`,
+                  })),
+                ]}
+                value={selectedAudience}
+                onChange={(e) => setSelectedAudience(e.target.value)}
+                helperText={
+                  audiences.length === 0
+                    ? "No audiences found in your Mailchimp account"
+                    : undefined
+                }
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Contact Sync Settings */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
@@ -322,7 +432,7 @@ export function MailchimpSettingsClient() {
             <Button
               variant="secondary"
               onClick={handleSyncExistingClients}
-              disabled={syncing || !isConnected}
+              disabled={syncing || !config?.isActive || !selectedAudience}
             >
               {syncing ? "Syncing..." : "Sync Now"}
             </Button>
@@ -408,64 +518,87 @@ export function MailchimpSettingsClient() {
       </div>
 
       {/* Sync History */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Sync History
-        </h2>
-        <p className="text-sm text-foreground-muted mb-6">
-          Recent sync activity between PhotoProOS and Mailchimp.
-        </p>
+      {config?.isActive && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Sync History
+          </h2>
+          <p className="text-sm text-foreground-muted mb-6">
+            Recent sync activity between PhotoProOS and Mailchimp.
+          </p>
 
-        {isConnected && MOCK_SYNC_HISTORY.length > 0 ? (
-          <div className="space-y-3">
-            {MOCK_SYNC_HISTORY.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between rounded-lg bg-[var(--background)] p-4"
-              >
-                <div className="flex items-center gap-3">
-                  <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {item.action}
-                    </p>
-                    <p className="text-xs text-foreground-muted">
-                      {new Date(item.date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </p>
+          {syncHistory.length > 0 ? (
+            <div className="space-y-3">
+              {syncHistory.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between rounded-lg bg-[var(--background)] p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <CheckIcon
+                      className={cn(
+                        "h-4 w-4",
+                        item.status === "success"
+                          ? "text-[var(--success)]"
+                          : item.status === "partial"
+                            ? "text-[var(--warning)]"
+                            : "text-[var(--error)]"
+                      )}
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {item.description}
+                      </p>
+                      <p className="text-xs text-foreground-muted">
+                        {new Date(item.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                        {item.contactCount > 0 && ` · ${item.contactCount} contacts`}
+                      </p>
+                    </div>
                   </div>
+                  <span
+                    className={cn(
+                      "text-xs font-medium px-2 py-1 rounded-full",
+                      item.status === "success"
+                        ? "text-[var(--success)] bg-[var(--success)]/10"
+                        : item.status === "partial"
+                          ? "text-[var(--warning)] bg-[var(--warning)]/10"
+                          : "text-[var(--error)] bg-[var(--error)]/10"
+                    )}
+                  >
+                    {item.status}
+                  </span>
                 </div>
-                <span className="text-xs font-medium text-[var(--success)] bg-[var(--success)]/10 px-2 py-1 rounded-full">
-                  {item.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg bg-[var(--background)] p-8 text-center">
-            <InfoIcon className="h-8 w-8 text-foreground-muted mx-auto mb-3" />
-            <p className="text-sm text-foreground-muted">
-              No sync history yet. Connect your Mailchimp account to start syncing.
-            </p>
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg bg-[var(--background)] p-8 text-center">
+              <InfoIcon className="h-8 w-8 text-foreground-muted mx-auto mb-3" />
+              <p className="text-sm text-foreground-muted">
+                No sync history yet. Use &quot;Sync Now&quot; to sync your clients.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <Button
-          variant="primary"
-          onClick={handleSaveSettings}
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Save All Settings"}
-        </Button>
-      </div>
+      {config?.isActive && (
+        <div className="flex justify-end">
+          <Button
+            variant="primary"
+            onClick={handleSaveSettings}
+            disabled={loading}
+          >
+            {loading ? "Saving..." : "Save All Settings"}
+          </Button>
+        </div>
+      )}
 
       {/* Setup Instructions */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">

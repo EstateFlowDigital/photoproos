@@ -20,6 +20,7 @@ export { MobileNav } from "./mobile-nav";
 export { NotificationBell } from "./notification-bell";
 export { EmptyState } from "./empty-state";
 export { RecentActivity } from "./recent-activity";
+export { MarketingKitModal } from "./marketing-kit-modal";
 
 // Skeleton Loaders
 export {

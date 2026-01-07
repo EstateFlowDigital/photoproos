@@ -5,8 +5,12 @@ import { PageHeader } from "@/components/dashboard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon } from "@/components/ui/settings-icons";
 import { MailchimpSettingsClient } from "./mailchimp-settings-client";
+import { getMailchimpConfig } from "@/lib/actions/mailchimp";
 
 export default async function MailchimpSettingsPage() {
+  const configResult = await getMailchimpConfig();
+  const initialConfig = configResult.success ? configResult.data : null;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -22,7 +26,7 @@ export default async function MailchimpSettingsPage() {
         }
       />
 
-      <MailchimpSettingsClient />
+      <MailchimpSettingsClient initialConfig={initialConfig ?? null} />
     </div>
   );
 }

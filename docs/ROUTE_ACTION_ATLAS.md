@@ -3887,7 +3887,7 @@ interface LeadsAnalytics {
 
 ---
 
-### `/settings/quickbooks` ✅ 🔒 🔜
+### `/settings/quickbooks` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/settings/quickbooks/page.tsx`
 **Dynamic:** `force-dynamic`
@@ -3895,19 +3895,19 @@ interface LeadsAnalytics {
 | Layer | File | Purpose |
 |-------|------|---------|
 | Page | `settings/quickbooks/page.tsx` | Server component |
-| Client | `settings/quickbooks/quickbooks-settings-client.tsx` | Coming soon placeholder |
+| Client | `settings/quickbooks/quickbooks-settings-client.tsx` | Integration settings |
 
-**Status:** Coming Soon
+**Status:** Available
 
-**Planned Features:**
+**Features:**
 - QuickBooks OAuth integration
-- Invoice sync
+- Invoice sync (automatic and manual)
 - Customer sync
 - Expense tracking
 
 ---
 
-### `/settings/mailchimp` ✅ 🔒 🔜
+### `/settings/mailchimp` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/settings/mailchimp/page.tsx`
 **Dynamic:** `force-dynamic`
@@ -3915,19 +3915,19 @@ interface LeadsAnalytics {
 | Layer | File | Purpose |
 |-------|------|---------|
 | Page | `settings/mailchimp/page.tsx` | Server component |
-| Client | `settings/mailchimp/mailchimp-settings-client.tsx` | Coming soon placeholder |
+| Client | `settings/mailchimp/mailchimp-settings-client.tsx` | Integration settings |
 
-**Status:** Coming Soon
+**Status:** Available
 
-**Planned Features:**
-- Mailchimp OAuth integration
-- Audience sync
-- Campaign triggers
-- Email marketing automation
+**Features:**
+- Mailchimp API key integration
+- Audience/list selection
+- Client sync to selected audience
+- Tag management for segmentation
 
 ---
 
-### `/settings/calendly` ✅ 🔒 🔜
+### `/settings/calendly` ✅ 🔒
 
 **Page:** `src/app/(dashboard)/settings/calendly/page.tsx`
 **Dynamic:** `force-dynamic`
@@ -3935,14 +3935,15 @@ interface LeadsAnalytics {
 | Layer | File | Purpose |
 |-------|------|---------|
 | Page | `settings/calendly/page.tsx` | Server component |
-| Client | `settings/calendly/calendly-settings-client.tsx` | Coming soon placeholder |
+| Client | `settings/calendly/calendly-settings-client.tsx` | Integration settings |
 
-**Status:** Coming Soon
+**Status:** Available
 
-**Planned Features:**
-- Calendly event type mapping
-- Booking import
-- Availability sync
+**Features:**
+- Calendly API key integration
+- Event type selection and mapping
+- Booking sync to project schedule
+- Webhook event handling
 
 ---
 

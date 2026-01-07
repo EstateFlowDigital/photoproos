@@ -12,7 +12,7 @@ const integrationGroups = [
     description: "Accept payments and automate billing workflows.",
     items: [
       { name: "Stripe", status: "Available" },
-      { name: "QuickBooks", status: "Coming Soon" },
+      { name: "QuickBooks", status: "Available" },
     ],
   },
   {
@@ -36,14 +36,14 @@ const integrationGroups = [
     description: "Keep your schedule in sync across tools.",
     items: [
       { name: "Google Calendar", status: "Available" },
-      { name: "Calendly", status: "Coming Soon" },
+      { name: "Calendly", status: "Available" },
     ],
   },
   {
     title: "Marketing",
     description: "Grow your list and automate follow-ups.",
     items: [
-      { name: "Mailchimp", status: "Coming Soon" },
+      { name: "Mailchimp", status: "Available" },
       { name: "Zapier", status: "Available" },
     ],
   },

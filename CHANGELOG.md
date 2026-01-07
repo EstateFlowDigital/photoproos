@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Marketing Integrations Page** - Updated integration statuses to reflect availability
+  - QuickBooks: Changed from "Coming Soon" to "Available"
+  - Mailchimp: Changed from "Coming Soon" to "Available"
+  - Calendly: Changed from "Coming Soon" to "Available"
+- **Documentation Updates** - Updated ROUTE_ACTION_ATLAS.md to reflect integration availability
+  - Removed 🔜 (coming soon) flag from QuickBooks, Mailchimp, and Calendly routes
+  - Updated status and feature descriptions for all three integrations
+
 ### Added
 - **Integration Backend Implementations** - Full backend for third-party integrations
   - **QuickBooks Integration** - Complete OAuth 2.0 flow with:
