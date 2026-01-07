@@ -18,6 +18,7 @@ import Link from "next/link";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import { WalkthroughWrapper } from "@/components/walkthrough";
 import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
+import { IconBadge } from "@/components/ui/icon-badge";
 
 const OnboardingFallback = () => (
   <div className="h-[260px] rounded-xl border border-[var(--card-border)] bg-[var(--card)]" aria-hidden />
@@ -50,6 +51,11 @@ const OnboardingChecklist = nextDynamic(
 const DashboardCustomizePanel = nextDynamic(
   () => import("@/components/dashboard/dashboard-customize-panel").then((m) => m.DashboardCustomizePanel),
   { loading: () => <CustomizeFallback /> }
+);
+
+const DebugBanner = nextDynamic(
+  () => import("@/components/debug/debug-banner").then((m) => m.DebugBanner),
+  { ssr: false }
 );
 
 // Icons
@@ -449,6 +455,8 @@ export default async function DashboardPage() {
   ];
 
   return (
+    <>
+      <DebugBanner route="/dashboard" />
     <div className="flex flex-col density-gap-section">
       <Suspense fallback={null}>
         <TourStarter />
@@ -655,5 +663,6 @@ export default async function DashboardPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
