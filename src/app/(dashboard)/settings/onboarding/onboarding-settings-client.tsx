@@ -37,14 +37,28 @@ import {
   Clock,
   FileText,
   FileSpreadsheet,
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  Circle,
 } from "lucide-react";
+import Link from "next/link";
 
 // ============================================================================
 // Types
 // ============================================================================
 
+interface CompletionStats {
+  total: number;
+  completed: number;
+  completionRate: number;
+  firstIncompleteHref: string | null;
+  firstIncompleteLabel: string | null;
+}
+
 interface OnboardingSettingsClientProps {
   initialItems: ChecklistItemData[];
+  completionStats: CompletionStats;
 }
 
 // ============================================================================
@@ -89,6 +103,7 @@ const AVAILABLE_ICONS = [
 
 export function OnboardingSettingsClient({
   initialItems,
+  completionStats,
 }: OnboardingSettingsClientProps) {
   const [items, setItems] = useState<ChecklistItemData[]>(initialItems);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,6 +111,11 @@ export function OnboardingSettingsClient({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ChecklistItemData | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
+
+  // Calculate local stats
+  const enabledCount = items.filter((item) => item.isEnabled).length;
+  const customCount = items.filter((item) => item.isCustom).length;
+  const allComplete = completionStats.completionRate === 100;
 
   // ============================================================================
   // Handlers
@@ -253,6 +273,81 @@ export function OnboardingSettingsClient({
 
   return (
     <div className="space-y-6">
+      {/* Progress Card */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          {/* Progress Info */}
+          <div className="flex items-start gap-4">
+            <div
+              className={cn(
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
+                allComplete
+                  ? "bg-[var(--success)]/10 text-[var(--success)]"
+                  : "bg-[var(--primary)]/10 text-[var(--primary)]"
+              )}
+            >
+              {allComplete ? (
+                <CheckCircle2 className="h-6 w-6" />
+              ) : (
+                <Sparkles className="h-6 w-6" />
+              )}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">
+                {allComplete ? "Setup Complete!" : "Setup Progress"}
+              </h3>
+              <p className="text-sm text-foreground-muted">
+                {allComplete
+                  ? "You've completed all onboarding steps"
+                  : `${completionStats.completed} of ${completionStats.total} steps completed`}
+              </p>
+              {/* Progress Bar */}
+              <div className="mt-3 flex items-center gap-3">
+                <div className="h-2 w-48 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-500",
+                      allComplete ? "bg-[var(--success)]" : "bg-[var(--primary)]"
+                    )}
+                    style={{ width: `${completionStats.completionRate}%` }}
+                  />
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  {completionStats.completionRate}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Resume Setup Button */}
+          {!allComplete && completionStats.firstIncompleteHref && (
+            <Link
+              href={completionStats.firstIncompleteHref}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            >
+              Resume Setup
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </div>
+
+        {/* Stats Row */}
+        <div className="mt-6 grid grid-cols-3 gap-4 border-t border-[var(--card-border)] pt-6">
+          <div className="text-center">
+            <p className="text-2xl font-bold text-foreground">{items.length}</p>
+            <p className="text-xs text-foreground-muted">Total Steps</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-foreground">{enabledCount}</p>
+            <p className="text-xs text-foreground-muted">Enabled</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-foreground">{customCount}</p>
+            <p className="text-xs text-foreground-muted">Custom</p>
+          </div>
+        </div>
+      </div>
+
       {/* Error message */}
       {error && (
         <div className="flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-4 text-[var(--error)]">
@@ -268,7 +363,7 @@ export function OnboardingSettingsClient({
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-sm text-foreground-muted">
           Drag items to reorder. Toggle visibility or add custom steps.
         </p>

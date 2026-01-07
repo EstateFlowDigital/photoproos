@@ -22,6 +22,7 @@ export interface ChecklistItemData {
   completionType: string | null;
   completionValue: string | null;
   completed: boolean;
+  skippedAt: Date | null;
   industries: string[];
   plans: string[];
 }
@@ -69,6 +70,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasClients",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -84,6 +86,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasServices",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -99,6 +102,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasGalleries",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -114,6 +118,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasProperties",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: ["real_estate"],
     plans: [],
   },
@@ -129,6 +134,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasBranding",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -144,6 +150,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasPaymentMethod",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -159,6 +166,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasExpenseSettings",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -174,6 +182,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasExpenseTemplates",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -189,6 +198,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasBookingForms",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -204,6 +214,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasAvailability",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -219,6 +230,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasContractTemplates",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -234,6 +246,7 @@ const DEFAULT_CHECKLIST_ITEMS: Omit<ChecklistItemData, "id">[] = [
     completionType: "hasInvoiceTemplates",
     completionValue: null,
     completed: false,
+    skippedAt: null,
     industries: [],
     plans: [],
   },
@@ -282,7 +295,7 @@ export async function getOnboardingChecklistItems(): Promise<
  * Get checklist items with completion status calculated
  */
 export async function getChecklistItemsWithStatus(): Promise<
-  ActionResult<(ChecklistItemData & { isCompleted: boolean })[]>
+  ActionResult<(ChecklistItemData & { isCompleted: boolean; isSkipped: boolean })[]>
 > {
   try {
     const organizationId = await requireOrganizationId();
@@ -369,13 +382,19 @@ export async function getChecklistItemsWithStatus(): Promise<
         return true;
       })
       .filter((item) => item.isEnabled)
-      .map((item) => ({
-        ...item,
-        isCompleted:
-          item.completionType
-            ? completionStatus[item.completionType] ?? item.completed
-            : item.completed,
-      }));
+      .map((item) => {
+        const isSkipped = item.skippedAt !== null;
+        const actuallyCompleted = item.completionType
+          ? completionStatus[item.completionType] ?? item.completed
+          : item.completed;
+
+        return {
+          ...item,
+          isSkipped,
+          // Treat skipped items as completed for progress tracking
+          isCompleted: actuallyCompleted || isSkipped,
+        };
+      });
 
     return success(filteredItems);
   } catch (error) {
@@ -663,6 +682,48 @@ export async function markChecklistItemComplete(
       return fail(error.message);
     }
     return fail("Failed to update checklist item");
+  }
+}
+
+// ============================================================================
+// SKIP CHECKLIST ITEM
+// ============================================================================
+
+/**
+ * Skip or unskip a checklist item
+ * Skipped items are treated as completed for progress tracking
+ */
+export async function skipChecklistItem(
+  itemId: string,
+  skip: boolean = true
+): Promise<ActionResult<ChecklistItemData>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Verify ownership
+    const existing = await prisma.onboardingChecklistItem.findFirst({
+      where: { id: itemId, organizationId },
+    });
+
+    if (!existing) {
+      return fail("Checklist item not found");
+    }
+
+    const item = await prisma.onboardingChecklistItem.update({
+      where: { id: itemId },
+      data: { skippedAt: skip ? new Date() : null },
+    });
+
+    revalidatePath("/settings/onboarding");
+    revalidatePath("/dashboard");
+
+    return success(item as ChecklistItemData);
+  } catch (error) {
+    console.error("[OnboardingChecklist] Error skipping item:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to skip checklist item");
   }
 }
 

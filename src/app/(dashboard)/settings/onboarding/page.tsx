@@ -1,13 +1,33 @@
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";
-import { getOnboardingChecklistItems } from "@/lib/actions/onboarding-checklist";
+import {
+  getOnboardingChecklistItems,
+  getChecklistItemsWithStatus,
+} from "@/lib/actions/onboarding-checklist";
 import { OnboardingSettingsClient } from "./onboarding-settings-client";
 
 export default async function OnboardingSettingsPage() {
-  const result = await getOnboardingChecklistItems();
+  // Fetch both raw items and items with completion status
+  const [itemsResult, statusResult] = await Promise.all([
+    getOnboardingChecklistItems(),
+    getChecklistItemsWithStatus(),
+  ]);
 
-  const items = result.success && result.data ? result.data : [];
+  const items = itemsResult.success && itemsResult.data ? itemsResult.data : [];
+  const itemsWithStatus =
+    statusResult.success && statusResult.data ? statusResult.data : [];
+
+  // Calculate completion stats
+  const enabledItems = itemsWithStatus.filter((item) => item.isEnabled);
+  const completedItems = enabledItems.filter((item) => item.isCompleted);
+  const completionRate =
+    enabledItems.length > 0
+      ? Math.round((completedItems.length / enabledItems.length) * 100)
+      : 0;
+
+  // Find first incomplete item for "Resume Setup"
+  const firstIncomplete = enabledItems.find((item) => !item.isCompleted);
 
   return (
     <div className="space-y-6">
@@ -16,7 +36,16 @@ export default async function OnboardingSettingsPage() {
         subtitle="Customize the getting started checklist that appears on your dashboard"
       />
 
-      <OnboardingSettingsClient initialItems={items} />
+      <OnboardingSettingsClient
+        initialItems={items}
+        completionStats={{
+          total: enabledItems.length,
+          completed: completedItems.length,
+          completionRate,
+          firstIncompleteHref: firstIncomplete?.href || null,
+          firstIncompleteLabel: firstIncomplete?.label || null,
+        }}
+      />
     </div>
   );
 }

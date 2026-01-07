@@ -8,6 +8,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Customizable Onboarding Checklist System** - Complete system for managing setup steps
+  - **Database-Driven Checklist** - Checklist items stored in database per organization
+    - 12 default setup steps covering clients, services, galleries, payments, and more
+    - Industry-based filtering (e.g., property websites only for real estate photographers)
+    - Custom completion tracking based on organization data
+  - **Settings Page** (`/settings/onboarding`) - Full checklist configuration
+    - Enable/disable individual checklist items
+    - Add custom setup steps with custom labels, descriptions, and links
+    - Drag-and-drop reordering of checklist items
+    - Reset to defaults option
+    - Progress dashboard showing completion rate and stats
+    - "Resume Setup" button to continue from first incomplete item
+  - **Skip Functionality** - Allow users to skip irrelevant setup steps
+    - Skip button on each incomplete item in dashboard checklist
+    - Skipped items treated as completed for progress tracking
+    - Restore/unskip option to bring items back
+    - Visual distinction between completed and skipped items
+  - **Confetti Celebration** - Celebratory animation when all setup steps complete
+    - Multi-burst confetti effect on completion
+    - Celebration card with success message
+    - "Customize checklist" link in celebration state
+    - Celebration shown once per organization (localStorage tracking)
+  - **Customize Link** - Quick access to settings from dashboard
+    - Footer link in checklist card
+    - Link in celebration state
+  - **Email Reminders** - Automated reminders for incomplete onboarding
+    - Cron job sends reminders to organizations with incomplete setup
+    - Sends 3 days after signup, then weekly
+    - Shows progress bar and incomplete steps in email
+    - Opt-out option via settings
+    - Email template with branded design (`onboarding-reminder.tsx`)
+  - **Database Changes**
+    - `OnboardingChecklistItem` model for per-org checklist items
+    - `skippedAt` field for tracking skipped items
+    - `onboardingReminderSentAt` and `onboardingRemindersDisabled` on Organization
+- **Gamification System** - Complete engagement system with achievements, levels, XP, and streaks
+  - **Achievement System** - 45 achievements across 10 categories
+    - Categories: Galleries, Deliveries, Revenue, Clients, Streaks, Payments, Bookings, Contracts, Onboarding, Levels
+    - Rarity tiers: Common, Uncommon, Rare, Epic, Legendary with visual differentiation
+    - Hidden achievements that reveal on unlock
+    - XP rewards (50-1500 XP) based on achievement difficulty
+  - **Level System** - 20 levels with progressive XP thresholds
+    - Level titles (Starter, Rookie, Pro, Expert, Master, etc.)
+    - XP progress tracking with visual progress bars
+    - Max level cap at 60,000 XP
+  - **Streak Tracking** - Login and delivery streaks
+    - Login streak resets if user doesn't visit dashboard for a day
+    - Delivery streak tracks consecutive days with gallery deliveries
+    - Longest streak records for both types
+  - **Gamification Engine** - Non-blocking triggers integrated into server actions
+    - `triggerGalleryCreated`, `triggerGalleryDelivered` in galleries.ts
+    - `triggerClientAdded` in clients.ts
+    - `triggerPaymentReceived` in payments.ts
+    - `triggerBookingConfirmed` in bookings.ts
+    - `triggerLoginStreak` on dashboard page load
+  - **Database Models** - New Prisma models for gamification
+    - `Achievement` - Achievement definitions with trigger configs
+    - `UserAchievement` - Per-user achievement unlocks with timestamps
+    - `GamificationProfile` - User stats, XP, levels, and streaks
+    - `Challenge` / `ChallengeProgress` - Weekly challenge tracking (infrastructure ready)
+  - **UI Components** (`src/components/gamification/`)
+    - `AchievementBadge` - Rarity-based glow effects and lock overlay
+    - `LevelProgress` - XP progress bar with level badge
+    - `StreakDisplay` - Flame and rocket icons with streak counts
+    - `AchievementToast` - Animated unlock notifications with confetti
+    - `GamificationWidget` - Dashboard summary widget
+    - `ChallengeCard` - Weekly challenge progress cards
+  - **Achievements Page** (`/achievements`) - Full achievements browser
+    - Stats overview (level, streaks, progress)
+    - Achievements grouped by category
+    - Sorted by unlock status and rarity
+    - Hidden achievement placeholders
+  - **Weekly Challenges** - Time-limited bonus XP opportunities
+    - 3 random challenges per week (e.g., "Create 3 galleries", "Deliver 5 galleries")
+    - Auto-generated on first access each week
+    - Progress tracking with completion rewards (150-250 XP)
+    - Challenges server actions for getting/updating progress
+  - **Leaderboard Page** (`/leaderboard`) - Organization rankings
+    - Team member rankings sorted by XP
+    - Current user highlighting with rank badge
+    - Level badges and streak indicators
+    - Gold/Silver/Bronze styling for top 3
+    - Privacy controls (only rank and XP visible to others)
+  - **Seed Script** (`prisma/seed-achievements.ts`) - Seeds 45 achievements
 - **Review Gate System** - Smart review collection that captures internal feedback first
   - **Rating-Based Routing** - 4-5 star ratings redirect to public review platforms, 1-3 stars collect private feedback
     - Configurable review platforms (Google Business, Yelp, TripAdvisor, Facebook, Thumbtack, WeddingWire, The Knot, custom)

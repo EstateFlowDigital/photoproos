@@ -875,9 +875,11 @@ model Organization {
   // ============================================================================
 
   // Onboarding State
-  onboardingCompleted   Boolean   @default(false)
-  onboardingStep        Int       @default(0)
-  onboardingCompletedAt DateTime?
+  onboardingCompleted         Boolean   @default(false)
+  onboardingStep              Int       @default(0)
+  onboardingCompletedAt       DateTime?
+  onboardingReminderSentAt    DateTime? // When the last onboarding reminder email was sent
+  onboardingRemindersDisabled Boolean   @default(false) // User can opt-out
 
   // Industry Selection (array of industry IDs)
   industries      Industry[] @default([real_estate])
@@ -2976,6 +2978,7 @@ model OnboardingChecklistItem {
   completionType  String? // "hasClients", "hasGalleries", "hasExpenses", "custom", etc.
   completionValue String? // For custom completion checks (e.g., a URL or action ID)
   completed       Boolean @default(false) // Manual completion for custom items
+  skippedAt       DateTime? // When the user skipped this item (null = not skipped)
 
   // Visibility conditions
   industries String[] @default([]) // Only show for these industries (empty = all)
@@ -8495,6 +8498,19 @@ model GamificationProfile {
   currentDeliveryStreak Int       @default(0)
   longestDeliveryStreak Int       @default(0)
   lastDeliveryDate      DateTime?
+
+  // Daily Login Bonus
+  lastBonusClaimDate   DateTime? // Last date the user claimed their daily bonus
+  consecutiveBonusDays Int       @default(0) // Days in current bonus streak (1-7, resets weekly)
+  totalBonusesClaimed  Int       @default(0) // Total lifetime bonuses claimed
+
+  // Personal Bests
+  bestMonthRevenueCents BigInt    @default(0) // Best single month revenue
+  bestMonthRevenueDate  DateTime? // When best month was achieved
+  fastestDeliveryHours  Int?      // Fastest gallery delivery in hours
+  fastestDeliveryDate   DateTime? // When fastest delivery was achieved
+  bestWeekDeliveries    Int       @default(0) // Most deliveries in a single week
+  bestWeekDeliveriesDate DateTime? // When best week was achieved
 
   // Cached Stats (for performance - updated periodically)
   totalDeliveries   Int    @default(0)
