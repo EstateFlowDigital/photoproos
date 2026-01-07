@@ -14,6 +14,7 @@ import {
   DownloadIcon,
   GalleryPlaceholderIcon,
 } from "@/components/ui/icons";
+import { Sparkline } from "@/components/ui/sparkline";
 
 type GalleryStatus = "delivered" | "pending" | "draft" | "archived";
 
@@ -30,10 +31,12 @@ interface GalleryCardProps {
   views?: number;
   downloads?: number;
   pendingAddonRequests?: number;
+  /** 7-day view trend data for sparkline */
+  viewTrend?: number[];
   onQuickAction?: (action: QuickAction, galleryId: string) => void;
 }
 
-export function GalleryCard({ id, title, client, photos, status, revenue, thumbnailUrl, views, downloads, pendingAddonRequests, onQuickAction }: GalleryCardProps) {
+export function GalleryCard({ id, title, client, photos, status, revenue, thumbnailUrl, views, downloads, pendingAddonRequests, viewTrend, onQuickAction }: GalleryCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -157,6 +160,19 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
                   {downloads >= 1000 ? `${(downloads / 1000).toFixed(1)}k` : downloads}
                 </div>
               )}
+            </div>
+          )}
+          {/* View Trend Sparkline */}
+          {viewTrend && viewTrend.length > 0 && status === "delivered" && (
+            <div className="absolute bottom-2 right-2 rounded-md bg-black/60 px-1.5 py-1 backdrop-blur-sm">
+              <Sparkline
+                data={viewTrend}
+                width={40}
+                height={16}
+                color="rgba(255, 255, 255, 0.8)"
+                variant="bar"
+                showTrend={false}
+              />
             </div>
           )}
         </div>

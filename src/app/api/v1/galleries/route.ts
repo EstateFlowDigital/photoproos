@@ -51,10 +51,10 @@ async function getGalleries(request: NextRequest, context: ApiContext) {
   }
 
   // Get total count
-  const total = await prisma.gallery.count({ where });
+  const total = await prisma.project.count({ where });
 
-  // Get galleries
-  const galleries = await prisma.gallery.findMany({
+  // Get galleries (projects)
+  const galleries = await prisma.project.findMany({
     where,
     orderBy: { createdAt: "desc" },
     skip: offset,
@@ -145,7 +145,7 @@ async function createGallery(request: NextRequest, context: ApiContext) {
   let slug = baseSlug;
   let counter = 1;
   while (
-    await prisma.gallery.findFirst({
+    await prisma.project.findFirst({
       where: { organizationId: context.organizationId, slug },
     })
   ) {
@@ -153,8 +153,8 @@ async function createGallery(request: NextRequest, context: ApiContext) {
     counter++;
   }
 
-  // Create gallery
-  const gallery = await prisma.gallery.create({
+  // Create gallery (project)
+  const gallery = await prisma.project.create({
     data: {
       organizationId: context.organizationId,
       name,

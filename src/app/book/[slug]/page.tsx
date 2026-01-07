@@ -3,6 +3,7 @@ import { getBookingFormBySlug } from "@/lib/actions/booking-forms";
 import { getClientSession } from "@/lib/actions/client-auth";
 import { prisma } from "@/lib/db";
 import { BookingFormPublic } from "./booking-form-public";
+import type { ClientPreferences } from "@/lib/types/client-preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
   }
 
   const session = await getClientSession();
-  const clientProfile = session
+  const rawClientProfile = session
     ? await prisma.client.findUnique({
         where: { id: session.clientId },
         select: {
@@ -46,6 +47,14 @@ export default async function BookingPage({ params }: BookingPageProps) {
           preferences: true,
         },
       })
+    : null;
+
+  // Transform to properly type preferences
+  const clientProfile = rawClientProfile
+    ? {
+        ...rawClientProfile,
+        preferences: rawClientProfile.preferences as ClientPreferences | null,
+      }
     : null;
 
   return (

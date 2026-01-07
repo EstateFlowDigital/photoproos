@@ -7,6 +7,8 @@ import { useGalleryTheme, getThemedLogoUrl } from "@/lib/theme";
 import Link from "next/link";
 import { Confetti } from "@/components/ui/confetti";
 import { useCelebration, celebrations } from "@/hooks/use-celebration";
+import { MasonryGrid, LayoutToggle, type LayoutType } from "@/components/gallery/masonry-grid";
+import { LiveViewers } from "@/components/gallery/live-viewers";
 import { PayButton } from "./pay-button";
 import {
   getClientSelections,
@@ -188,6 +190,21 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
   // Sharing state
   const [showLinkCopied, setShowLinkCopied] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+
+  // Layout state (grid vs masonry)
+  const [galleryLayout, setGalleryLayout] = useState<LayoutType>(() => {
+    if (typeof window === "undefined") return "grid";
+    const saved = localStorage.getItem("gallery-layout");
+    return (saved as LayoutType) || "grid";
+  });
+
+  // Persist layout preference
+  const handleLayoutChange = (layout: LayoutType) => {
+    setGalleryLayout(layout);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("gallery-layout", layout);
+    }
+  };
 
   // Photo zoom state
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -1371,6 +1388,14 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 </button>
               )}
 
+              {/* Layout Toggle - hidden on mobile */}
+              <div className="hidden sm:block">
+                <LayoutToggle
+                  layout={galleryLayout}
+                  onChange={handleLayoutChange}
+                />
+              </div>
+
               {/* Download / Pay Button */}
               {gallery.isPaid && gallery.allowDownload ? (
                 <div className="flex items-center gap-2">
@@ -1496,6 +1521,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 )}
               </span>
             )}
+            {/* Live viewers indicator */}
+            <LiveViewers galleryId={gallery.id} variant="inline" />
           </div>
         </div>
       </div>
@@ -1819,155 +1846,310 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           </div>
         )}
 
+        {/* Photo Grid / Masonry Layout */}
         {gallery.photos.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {displayedPhotos.map((photo: Photo, index: number) => (
-            <div
-              key={photo.id}
-              className={cn(
-                "group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer transition-all duration-300 ease-out opacity-0 animate-fade-in-up",
-                comparePhotos.find((p) => p.id === photo.id) && "ring-4",
-                selectedPhotoIds.has(photo.id) && "ring-4"
-              )}
-              style={{
-                backgroundColor: colors.cardBg,
-                ["--tw-ring-color" as string]: primaryColor,
-                animationDelay: `${Math.min(index * 30, 300)}ms`,
-                animationFillMode: "forwards",
-              }}
-              onClick={() => {
-                if (compareMode) {
-                  handleAddToCompare(photo);
-                } else if (selectionMode) {
-                  handleTogglePhotoSelection(photo.id);
-                } else {
-                  handleOpenPhotoModal(photo);
-                }
-              }}
-            >
-              <img
-                src={photo.thumbnailUrl || photo.url}
-                alt={photo.filename}
-                className={cn(
-                  "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105",
-                  !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
-                )}
-              />
+          galleryLayout === "masonry" ? (
+            <MasonryGrid
+              photos={displayedPhotos}
+              columns={{ sm: 2, md: 3, lg: 4, xl: 5 }}
+              gap={16}
+              renderItem={(photo, index) => (
+                <div
+                  className={cn(
+                    "group relative overflow-hidden rounded-lg cursor-pointer transition-all duration-300 ease-out",
+                    comparePhotos.find((p) => p.id === photo.id) && "ring-4",
+                    selectedPhotoIds.has(photo.id) && "ring-4"
+                  )}
+                  style={{
+                    backgroundColor: colors.cardBg,
+                    ["--tw-ring-color" as string]: primaryColor,
+                  }}
+                  onClick={() => {
+                    if (compareMode) {
+                      handleAddToCompare(photo);
+                    } else if (selectionMode) {
+                      handleTogglePhotoSelection(photo.id);
+                    } else {
+                      handleOpenPhotoModal(photo);
+                    }
+                  }}
+                >
+                  <img
+                    src={photo.thumbnailUrl || photo.url}
+                    alt={photo.filename}
+                    className={cn(
+                      "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105",
+                      !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
+                    )}
+                    style={{
+                      aspectRatio: `${photo.width} / ${photo.height}`,
+                    }}
+                  />
 
-              {/* Compare mode indicator */}
-              {compareMode && (
-                <div className="absolute top-3 right-3 z-10">
-                  {comparePhotos.find((p) => p.id === photo.id) ? (
-                    <div
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      {comparePhotos.findIndex((p) => p.id === photo.id) + 1}
+                  {/* Compare mode indicator */}
+                  {compareMode && (
+                    <div className="absolute top-3 right-3 z-10">
+                      {comparePhotos.find((p) => p.id === photo.id) ? (
+                        <div
+                          className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          {comparePhotos.findIndex((p) => p.id === photo.id) + 1}
+                        </div>
+                      ) : (
+                        <div
+                          className="flex h-7 w-7 items-center justify-center rounded-full border-2 text-sm font-medium"
+                          style={{ borderColor: "rgba(255,255,255,0.5)", backgroundColor: "rgba(0,0,0,0.3)", color: "white" }}
+                        >
+                          +
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div
-                      className="flex h-7 w-7 items-center justify-center rounded-full border-2 text-sm font-medium"
-                      style={{ borderColor: "rgba(255,255,255,0.5)", backgroundColor: "rgba(0,0,0,0.3)", color: "white" }}
+                  )}
+
+                  {/* Selection mode checkbox */}
+                  {selectionMode && (
+                    <div className="absolute top-3 right-3 z-10">
+                      <div
+                        className={cn(
+                          "flex h-6 w-6 items-center justify-center rounded border-2 transition-colors",
+                          selectedPhotoIds.has(photo.id)
+                            ? "border-transparent"
+                            : "border-white/50 bg-black/30"
+                        )}
+                        style={{
+                          backgroundColor: selectedPhotoIds.has(photo.id) ? primaryColor : undefined,
+                        }}
+                      >
+                        {selectedPhotoIds.has(photo.id) && (
+                          <CheckIcon className="h-4 w-4 text-white" />
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Comment count badge */}
+                  {commentCounts[photo.id] > 0 && !compareMode && !selectionMode && (
+                    <div className="absolute top-3 left-3">
+                      <span className="flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
+                        <ChatIcon className="h-3 w-3" />
+                        {commentCounts[photo.id]}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Overlay - Always visible on mobile for filename */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+                      <p className="text-xs md:text-sm font-medium text-white truncate">{photo.filename}</p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons - Always visible on mobile, hover on desktop */}
+                  <div className="absolute top-2 right-2 md:top-3 md:right-3 flex items-center gap-1.5 md:gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    {gallery.allowFavorites && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFavorite(photo.id);
+                        }}
+                        disabled={isTogglingFavorite === photo.id}
+                        className={cn(
+                          "rounded-full p-2 md:p-2.5 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center",
+                          favoriteAssetIds.has(photo.id)
+                            ? "bg-red-500 text-white hover:bg-red-600"
+                            : "bg-black/50 text-white hover:bg-black/70"
+                        )}
+                        title={favoriteAssetIds.has(photo.id) ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        <HeartIcon className={cn("h-4 w-4 md:h-5 md:w-5", favoriteAssetIds.has(photo.id) && "fill-current")} />
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenPhotoModal(photo);
+                      }}
+                      className="rounded-full bg-black/50 p-2 md:p-2.5 text-white hover:bg-black/70 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
+                      title="Add comment"
                     >
-                      +
+                      <ChatIcon className="h-4 w-4 md:h-5 md:w-5" />
+                    </button>
+                    {gallery.isPaid && gallery.allowDownload && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadPhoto(photo);
+                        }}
+                        className="rounded-full bg-black/50 p-2 md:p-2.5 text-white hover:bg-black/70 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
+                        title={`Download ${photo.filename}`}
+                      >
+                        <DownloadIcon className="h-4 w-4 md:h-5 md:w-5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Lock Icon for unpaid - subtle overlay */}
+                  {!gallery.isPaid && gallery.price > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/30 via-transparent to-transparent">
+                      <div className="rounded-full bg-white/10 backdrop-blur-sm p-3 border border-white/20 shadow-lg">
+                        <LockIcon className="h-5 w-5 text-white/80" />
+                      </div>
                     </div>
                   )}
                 </div>
               )}
-
-              {/* Selection mode checkbox */}
-              {selectionMode && (
-                <div className="absolute top-3 right-3 z-10">
-                  <div
-                    className={cn(
-                      "flex h-6 w-6 items-center justify-center rounded border-2 transition-colors",
-                      selectedPhotoIds.has(photo.id)
-                        ? "border-transparent"
-                        : "border-white/50 bg-black/30"
-                    )}
-                    style={{
-                      backgroundColor: selectedPhotoIds.has(photo.id) ? primaryColor : undefined,
-                    }}
-                  >
-                    {selectedPhotoIds.has(photo.id) && (
-                      <CheckIcon className="h-4 w-4 text-white" />
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Comment count badge */}
-              {commentCounts[photo.id] > 0 && !compareMode && !selectionMode && (
-                <div className="absolute top-3 left-3">
-                  <span className="flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
-                    <ChatIcon className="h-3 w-3" />
-                    {commentCounts[photo.id]}
-                  </span>
-                </div>
-              )}
-
-              {/* Overlay - Always visible on mobile for filename */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
-                  <p className="text-xs md:text-sm font-medium text-white truncate">{photo.filename}</p>
-                </div>
-              </div>
-
-              {/* Action Buttons - Always visible on mobile, hover on desktop */}
-              <div className="absolute top-2 right-2 md:top-3 md:right-3 flex items-center gap-1.5 md:gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                {gallery.allowFavorites && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleFavorite(photo.id);
-                    }}
-                    disabled={isTogglingFavorite === photo.id}
-                    className={cn(
-                      "rounded-full p-2 md:p-2.5 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center",
-                      favoriteAssetIds.has(photo.id)
-                        ? "bg-red-500 text-white hover:bg-red-600"
-                        : "bg-black/50 text-white hover:bg-black/70"
-                    )}
-                    title={favoriteAssetIds.has(photo.id) ? "Remove from favorites" : "Add to favorites"}
-                  >
-                    <HeartIcon className={cn("h-4 w-4 md:h-5 md:w-5", favoriteAssetIds.has(photo.id) && "fill-current")} />
-                  </button>
-                )}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenPhotoModal(photo);
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {displayedPhotos.map((photo: Photo, index: number) => (
+                <div
+                  key={photo.id}
+                  className={cn(
+                    "group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer transition-all duration-300 ease-out opacity-0 animate-fade-in-up",
+                    comparePhotos.find((p) => p.id === photo.id) && "ring-4",
+                    selectedPhotoIds.has(photo.id) && "ring-4"
+                  )}
+                  style={{
+                    backgroundColor: colors.cardBg,
+                    ["--tw-ring-color" as string]: primaryColor,
+                    animationDelay: `${Math.min(index * 30, 300)}ms`,
+                    animationFillMode: "forwards",
                   }}
-                  className="rounded-full bg-black/50 p-2 md:p-2.5 text-white hover:bg-black/70 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
-                  title="Add comment"
+                  onClick={() => {
+                    if (compareMode) {
+                      handleAddToCompare(photo);
+                    } else if (selectionMode) {
+                      handleTogglePhotoSelection(photo.id);
+                    } else {
+                      handleOpenPhotoModal(photo);
+                    }
+                  }}
                 >
-                  <ChatIcon className="h-4 w-4 md:h-5 md:w-5" />
-                </button>
-                {gallery.isPaid && gallery.allowDownload && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownloadPhoto(photo);
-                    }}
-                    className="rounded-full bg-black/50 p-2 md:p-2.5 text-white hover:bg-black/70 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
-                    title={`Download ${photo.filename}`}
-                  >
-                    <DownloadIcon className="h-4 w-4 md:h-5 md:w-5" />
-                  </button>
-                )}
-              </div>
+                  <img
+                    src={photo.thumbnailUrl || photo.url}
+                    alt={photo.filename}
+                    className={cn(
+                      "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105",
+                      !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
+                    )}
+                  />
 
-              {/* Lock Icon for unpaid - subtle overlay */}
-              {!gallery.isPaid && gallery.price > 0 && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/30 via-transparent to-transparent">
-                  <div className="rounded-full bg-white/10 backdrop-blur-sm p-3 border border-white/20 shadow-lg">
-                    <LockIcon className="h-5 w-5 text-white/80" />
+                  {/* Compare mode indicator */}
+                  {compareMode && (
+                    <div className="absolute top-3 right-3 z-10">
+                      {comparePhotos.find((p) => p.id === photo.id) ? (
+                        <div
+                          className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          {comparePhotos.findIndex((p) => p.id === photo.id) + 1}
+                        </div>
+                      ) : (
+                        <div
+                          className="flex h-7 w-7 items-center justify-center rounded-full border-2 text-sm font-medium"
+                          style={{ borderColor: "rgba(255,255,255,0.5)", backgroundColor: "rgba(0,0,0,0.3)", color: "white" }}
+                        >
+                          +
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Selection mode checkbox */}
+                  {selectionMode && (
+                    <div className="absolute top-3 right-3 z-10">
+                      <div
+                        className={cn(
+                          "flex h-6 w-6 items-center justify-center rounded border-2 transition-colors",
+                          selectedPhotoIds.has(photo.id)
+                            ? "border-transparent"
+                            : "border-white/50 bg-black/30"
+                        )}
+                        style={{
+                          backgroundColor: selectedPhotoIds.has(photo.id) ? primaryColor : undefined,
+                        }}
+                      >
+                        {selectedPhotoIds.has(photo.id) && (
+                          <CheckIcon className="h-4 w-4 text-white" />
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Comment count badge */}
+                  {commentCounts[photo.id] > 0 && !compareMode && !selectionMode && (
+                    <div className="absolute top-3 left-3">
+                      <span className="flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
+                        <ChatIcon className="h-3 w-3" />
+                        {commentCounts[photo.id]}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Overlay - Always visible on mobile for filename */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+                      <p className="text-xs md:text-sm font-medium text-white truncate">{photo.filename}</p>
+                    </div>
                   </div>
+
+                  {/* Action Buttons - Always visible on mobile, hover on desktop */}
+                  <div className="absolute top-2 right-2 md:top-3 md:right-3 flex items-center gap-1.5 md:gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    {gallery.allowFavorites && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFavorite(photo.id);
+                        }}
+                        disabled={isTogglingFavorite === photo.id}
+                        className={cn(
+                          "rounded-full p-2 md:p-2.5 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center",
+                          favoriteAssetIds.has(photo.id)
+                            ? "bg-red-500 text-white hover:bg-red-600"
+                            : "bg-black/50 text-white hover:bg-black/70"
+                        )}
+                        title={favoriteAssetIds.has(photo.id) ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        <HeartIcon className={cn("h-4 w-4 md:h-5 md:w-5", favoriteAssetIds.has(photo.id) && "fill-current")} />
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenPhotoModal(photo);
+                      }}
+                      className="rounded-full bg-black/50 p-2 md:p-2.5 text-white hover:bg-black/70 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
+                      title="Add comment"
+                    >
+                      <ChatIcon className="h-4 w-4 md:h-5 md:w-5" />
+                    </button>
+                    {gallery.isPaid && gallery.allowDownload && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadPhoto(photo);
+                        }}
+                        className="rounded-full bg-black/50 p-2 md:p-2.5 text-white hover:bg-black/70 transition-colors min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
+                        title={`Download ${photo.filename}`}
+                      >
+                        <DownloadIcon className="h-4 w-4 md:h-5 md:w-5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Lock Icon for unpaid - subtle overlay */}
+                  {!gallery.isPaid && gallery.price > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/30 via-transparent to-transparent">
+                      <div className="rounded-full bg-white/10 backdrop-blur-sm p-3 border border-white/20 shadow-lg">
+                        <LockIcon className="h-5 w-5 text-white/80" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
+          )
         )}
       </div>
 

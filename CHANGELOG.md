@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Dashboard React Error (Too Many Re-renders)** - Fixed Date serialization issue causing React error #310 and #301 on dashboard page. Date objects passed from server to client components must be serialized as ISO strings to avoid becoming empty objects during hydration. Updated `UpcomingBookings` component to accept ISO string dates.
 - **Client Portal Date Serialization** - Fixed the same Date serialization issue across the entire client portal. Updated all date fields in types to use `string` and converted all Date objects to ISO strings in `getClientPortalData` server action. Affects properties, galleries, invoices, questionnaires, and leads tabs.
+- **Booking Form ClientPreferences Type** - Fixed JsonValue to ClientPreferences type casting in public booking form page
+- **Missing BookOpenIcon** - Added BookOpenIcon to icons library and exported from settings-icons
 - **PWA Icon Missing (404)** - Created SVG icon and updated manifest.json to use SVG format instead of missing PNG files
 - **Middleware Route Mismatch** - Added `/support(.*)` to public routes after renaming marketing help folder
 - **Clerk Deprecation Warning** - Updated .env.example to document deprecated `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` and `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` environment variables (use `fallbackRedirectUrl` prop instead)
