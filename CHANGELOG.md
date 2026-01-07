@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Messaging System Enhancements** - Completed Phase 2-6 of messaging implementation
+  - **New Conversation Page** (`/messages/new`) - Team member selection UI for creating DMs, groups, and channels
+    - Search and filter team members
+    - Type-specific creation flow (direct/group/channel)
+    - Real-time validation and error handling
+  - **Unread Message Badges** - Navigation sidebar now shows unread message count
+    - Badge count fetched server-side for instant display
+    - Supports messages nav item in dashboard sidebar
+  - **Brokerage Access Features** - Full broker-level visibility controls
+    - `grantBrokerAccess()` and `revokeBrokerAccess()` server actions
+    - Broker participants can see all conversation messages
+    - `addClientParticipant()` supports `hasBrokerAccess` parameter
 - **Expense Approval Workflow Notifications** - Email/SMS alerts for expense approvals
   - Email templates for approval required notifications (`expense-approval-required.tsx`)
   - Email templates for approval/rejection results (`expense-approval-result.tsx`)
@@ -92,6 +104,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `SettingCardWithPin` client component replaces static cards
     - Pin star appears on hover
     - Visual feedback for pinned state
+  - **Unsaved Changes Warning** - Prevent accidental data loss
+    - `useUnsavedChanges` hook for tracking form state
+    - `useFormChanges` hook for comparing initial vs current values
+    - Browser beforeunload event handling for refresh/close
+    - `UnsavedChangesDialog` - Confirmation dialog with amber warning styling
+    - `UnsavedChangesIndicator` - Animated dot for header/tab indicators
+    - `UnsavedChangesBanner` - Sticky bottom banner with Save/Discard actions
 - **Premium Gallery Experience - Phase 2** - Advanced UI enhancements for galleries
   - **Confetti Celebrations** - Animated confetti component with Framer Motion
     - Payment success celebrations with customizable particle effects
