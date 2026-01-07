@@ -210,8 +210,8 @@ export function DashboardSidebar({
                         : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                     )}
                   >
-                    <IconBadge tone={tone} size="md" className="shrink-0">
-                      <Icon className="h-4 w-4" />
+                    <IconBadge tone={tone} size="sm" className="shrink-0">
+                      <Icon className="h-3.5 w-3.5" />
                     </IconBadge>
                     <span className="sidebar-label flex-1 truncate">
                       {item.label}
@@ -268,8 +268,8 @@ export function DashboardSidebar({
                             aria-label={`Toggle ${item.label}`}
                             aria-expanded={isExpanded}
                           >
-                            <IconBadge tone={isActive ? "primary" : "default"} size="md" className="shrink-0">
-                              <Icon className="h-4 w-4" />
+                            <IconBadge tone={isActive ? "primary" : "default"} size="sm" className="shrink-0">
+                              <Icon className="h-3.5 w-3.5" />
                             </IconBadge>
                             <span className="sidebar-label flex-1 truncate">
                               {item.label}
@@ -289,8 +289,8 @@ export function DashboardSidebar({
                           </button>
                         ) : (
                           <Link href={item.href} onClick={onClose} className={itemClassName}>
-                            <IconBadge tone={isActive ? "primary" : "default"} size="md" className="shrink-0">
-                              <Icon className="h-4 w-4" />
+                            <IconBadge tone={isActive ? "primary" : "default"} size="sm" className="shrink-0">
+                              <Icon className="h-3.5 w-3.5" />
                             </IconBadge>
                             <span className="sidebar-label flex-1 truncate">
                               {item.label}

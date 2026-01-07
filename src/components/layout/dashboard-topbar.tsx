@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { QuickThemeSwitcher } from "@/components/ui/quick-theme-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Bell, HelpCircle, Search, LightningBolt } from "lucide-react";
 import {
   getNotifications,
   markNotificationAsRead,
@@ -19,6 +19,7 @@ import { globalSearch, type SearchResult as GlobalSearchResult } from "@/lib/act
 import { QuickActions, QUICK_ACTIONS } from "@/components/dashboard/quick-actions";
 import { useStableOrgProfile } from "@/hooks/use-stable-org-profile";
 import { getNotificationType } from "@/lib/constants";
+import { IconBadge } from "@/components/ui/icon-badge";
 
 type NotificationCache = {
   data: DisplayNotification[];
@@ -495,7 +496,9 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
           className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground transition-colors hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
           aria-label="Search"
         >
-          <SearchIcon className="h-5 w-5" />
+          <IconBadge size="sm" tone={searchOpen ? "primary" : "default"}>
+            <Search className="h-3.5 w-3.5" />
+          </IconBadge>
         </button>
       </div>
 
@@ -506,15 +509,17 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
         <div ref={quickActionsRef} className="relative">
           <button
             type="button"
-            onClick={() => setQuickActionsOpen((prev) => !prev)}
-            className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
-          >
-            <PlusIcon className="h-4 w-4" />
-            <span className="hidden lg:inline">Quick Actions</span>
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 transition-transform",
-                quickActionsOpen ? "rotate-180" : "rotate-0"
+          onClick={() => setQuickActionsOpen((prev) => !prev)}
+          className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+        >
+          <IconBadge size="sm" tone={quickActionsOpen ? "primary" : "default"}>
+            <LightningBolt className="h-3.5 w-3.5" />
+          </IconBadge>
+          <span className="hidden lg:inline">Quick Actions</span>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 transition-transform",
+              quickActionsOpen ? "rotate-180" : "rotate-0"
               )}
             />
           </button>
@@ -609,7 +614,9 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
             onClick={() => setNotificationsOpen(!notificationsOpen)}
             className="relative flex h-9 w-9 items-center justify-center rounded-lg text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
           >
-            <BellIcon className="h-5 w-5" />
+            <IconBadge size="sm" tone={notificationsOpen ? "primary" : unreadCount > 0 ? "danger" : "default"}>
+              <Bell className="h-3.5 w-3.5" />
+            </IconBadge>
             {unreadCount > 0 && (
               <span className="absolute right-1.5 top-1.5 flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
@@ -690,7 +697,9 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
             onClick={() => setHelpOpen(!helpOpen)}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
           >
-            <HelpIcon className="h-5 w-5" />
+            <IconBadge size="sm" tone={helpOpen ? "primary" : "default"}>
+              <HelpCircle className="h-3.5 w-3.5" />
+            </IconBadge>
           </button>
 
           {/* Help dropdown */}
