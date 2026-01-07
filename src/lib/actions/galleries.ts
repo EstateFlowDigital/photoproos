@@ -1085,6 +1085,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
               width: true,
               height: true,
               collectionId: true,
+              blurDataUrl: true,
             },
           },
           collections: {
@@ -1170,6 +1171,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
                   width: true,
                   height: true,
                   collectionId: true,
+                  blurDataUrl: true,
                 },
               },
               collections: {
@@ -1283,6 +1285,7 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
           width: asset.width || 4,
           height: asset.height || 3,
           collectionId: asset.collectionId,
+          blurDataUrl: asset.blurDataUrl,
         };
       })
     );

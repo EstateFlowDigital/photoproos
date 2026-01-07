@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, success } from "@/lib/types/action-result";
 import { generatePresignedUploadUrl, generateFileKey } from "@/lib/storage";
 import type { ExpenseCategory, ExpenseApprovalStatus, RecurrenceFrequency, PaymentMethod } from "@prisma/client";
+import { sendExpenseApprovalRequiredEmail, sendExpenseApprovalResultEmail } from "@/lib/email/send";
+import { createNotification } from "@/lib/actions/notifications";
 
 // ============================================================================
 // TYPES
@@ -1201,16 +1203,153 @@ function getDaysInMonth(date: Date): number {
 }
 
 // ============================================================================
-// EXPENSE APPROVAL WORKFLOW
+// RECURRING EXPENSE AUTO-GENERATION (CRON)
 // ============================================================================
 
+export interface RecurringExpenseProcessResult {
+  processed: number;
+  failed: number;
+  details: {
+    templateId: string;
+    templateName: string;
+    projectId?: string;
+    success: boolean;
+    error?: string;
+  }[];
+}
+
 /**
- * Submit an expense for approval
+ * Process all due recurring expense templates (called by cron job)
+ * This function runs across ALL organizations
  */
-export async function submitExpenseForApproval(expenseId: string) {
+export async function processRecurringExpenses(): Promise<{
+  success: boolean;
+  data?: RecurringExpenseProcessResult;
+  error?: string;
+}> {
+  try {
+    const now = new Date();
+
+    // Find all active templates with due dates that have passed
+    const dueTemplates = await prisma.recurringExpenseTemplate.findMany({
+      where: {
+        isActive: true,
+        nextDueDate: {
+          lte: now,
+        },
+      },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    const results: RecurringExpenseProcessResult = {
+      processed: 0,
+      failed: 0,
+      details: [],
+    };
+
+    for (const template of dueTemplates) {
+      try {
+        // For organization-wide recurring expenses, we create a standalone expense
+        // (not tied to a specific project) unless the template specifies one
+
+        // Create the expense from template
+        await prisma.projectExpense.create({
+          data: {
+            organizationId: template.organizationId,
+            projectId: null, // Organization-level recurring expense
+            description: `[Recurring] ${template.description}`,
+            category: template.category,
+            amountCents: template.amountCents,
+            currency: template.currency,
+            vendor: template.vendor,
+            expenseDate: new Date(),
+            isPaid: false,
+            recurringTemplateId: template.id,
+            createdBy: template.createdBy,
+            notes: `Auto-generated from recurring template: ${template.name}`,
+          },
+        });
+
+        // Calculate and update next due date
+        const nextDueDate = calculateNextDueDate(
+          template.frequency,
+          template.dayOfWeek,
+          template.dayOfMonth,
+          template.monthOfYear
+        );
+
+        await prisma.recurringExpenseTemplate.update({
+          where: { id: template.id },
+          data: {
+            lastGeneratedAt: now,
+            nextDueDate,
+          },
+        });
+
+        results.processed++;
+        results.details.push({
+          templateId: template.id,
+          templateName: template.name,
+          success: true,
+        });
+
+        // Create notification for the organization
+        await createNotification({
+          organizationId: template.organizationId,
+          type: "system",
+          title: "Recurring Expense Created",
+          message: `A recurring expense "${template.name}" ($${(template.amountCents / 100).toFixed(2)}) has been automatically created.`,
+          linkUrl: "/expenses",
+        });
+
+      } catch (templateError) {
+        console.error(`Failed to process recurring template ${template.id}:`, templateError);
+        results.failed++;
+        results.details.push({
+          templateId: template.id,
+          templateName: template.name,
+          success: false,
+          error: templateError instanceof Error ? templateError.message : "Unknown error",
+        });
+      }
+    }
+
+    console.log(
+      `Recurring expenses processed: ${results.processed} created, ${results.failed} failed`
+    );
+
+    return {
+      success: true,
+      data: results,
+    };
+  } catch (error) {
+    console.error("Error processing recurring expenses:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Generate recurring expense for a specific project
+ * This is used when a template should be applied to an active project
+ */
+export async function processProjectRecurringExpenses(projectId: string): Promise<{
+  success: boolean;
+  data?: RecurringExpenseProcessResult;
+  error?: string;
+}> {
   const { orgId } = await auth();
   if (!orgId) {
-    return fail("Not authenticated");
+    return { success: false, error: "Not authenticated" };
   }
 
   try {
@@ -1220,11 +1359,137 @@ export async function submitExpenseForApproval(expenseId: string) {
     });
 
     if (!org) {
+      return { success: false, error: "Organization not found" };
+    }
+
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, organizationId: org.id },
+    });
+
+    if (!project) {
+      return { success: false, error: "Project not found" };
+    }
+
+    const now = new Date();
+
+    // Find all active templates for this org with due dates that have passed
+    const dueTemplates = await prisma.recurringExpenseTemplate.findMany({
+      where: {
+        organizationId: org.id,
+        isActive: true,
+        nextDueDate: {
+          lte: now,
+        },
+      },
+    });
+
+    const results: RecurringExpenseProcessResult = {
+      processed: 0,
+      failed: 0,
+      details: [],
+    };
+
+    for (const template of dueTemplates) {
+      try {
+        // Create the expense from template for this project
+        await prisma.projectExpense.create({
+          data: {
+            organizationId: org.id,
+            projectId,
+            description: `[Recurring] ${template.description}`,
+            category: template.category,
+            amountCents: template.amountCents,
+            currency: template.currency,
+            vendor: template.vendor,
+            expenseDate: new Date(),
+            isPaid: false,
+            recurringTemplateId: template.id,
+            createdBy: template.createdBy,
+            notes: `Auto-generated from recurring template: ${template.name}`,
+          },
+        });
+
+        // Calculate and update next due date
+        const nextDueDate = calculateNextDueDate(
+          template.frequency,
+          template.dayOfWeek,
+          template.dayOfMonth,
+          template.monthOfYear
+        );
+
+        await prisma.recurringExpenseTemplate.update({
+          where: { id: template.id },
+          data: {
+            lastGeneratedAt: now,
+            nextDueDate,
+          },
+        });
+
+        results.processed++;
+        results.details.push({
+          templateId: template.id,
+          templateName: template.name,
+          projectId,
+          success: true,
+        });
+      } catch (templateError) {
+        console.error(`Failed to process recurring template ${template.id}:`, templateError);
+        results.failed++;
+        results.details.push({
+          templateId: template.id,
+          templateName: template.name,
+          projectId,
+          success: false,
+          error: templateError instanceof Error ? templateError.message : "Unknown error",
+        });
+      }
+    }
+
+    revalidatePath(`/galleries/${projectId}`);
+
+    return {
+      success: true,
+      data: results,
+    };
+  } catch (error) {
+    console.error("Error processing project recurring expenses:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+// ============================================================================
+// EXPENSE APPROVAL WORKFLOW
+// ============================================================================
+
+/**
+ * Submit an expense for approval
+ */
+export async function submitExpenseForApproval(expenseId: string) {
+  const { orgId, userId } = await auth();
+  if (!orgId || !userId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true, name: true },
+    });
+
+    if (!org) {
       return fail("Organization not found");
     }
 
     const expense = await prisma.projectExpense.findUnique({
       where: { id: expenseId },
+      include: {
+        project: {
+          select: { id: true, name: true },
+        },
+      },
     });
 
     if (!expense || expense.organizationId !== org.id) {
@@ -1241,6 +1506,67 @@ export async function submitExpenseForApproval(expenseId: string) {
         approvalStatus: "pending",
       },
     });
+
+    // Get submitter info
+    const submitter = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { fullName: true, email: true },
+    });
+
+    // Get organization admins/owners who can approve expenses
+    const approvers = await prisma.organizationMember.findMany({
+      where: {
+        organizationId: org.id,
+        role: { in: ["admin", "owner"] },
+      },
+      include: {
+        user: {
+          select: { email: true, fullName: true },
+        },
+      },
+    });
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+    const approvalUrl = `${baseUrl}/galleries/${expense.projectId}`;
+    const formattedDate = expense.expenseDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Create in-app notification
+    await createNotification({
+      organizationId: org.id,
+      type: "expense_approval_required",
+      title: "Expense Approval Required",
+      message: `${submitter?.fullName || "A team member"} submitted an expense for approval: ${expense.description} ($${(expense.amountCents / 100).toFixed(2)})`,
+      linkUrl: approvalUrl,
+    });
+
+    // Send email notifications to approvers
+    for (const approver of approvers) {
+      if (approver.user.email) {
+        try {
+          await sendExpenseApprovalRequiredEmail({
+            to: approver.user.email,
+            approverName: approver.user.fullName || "Admin",
+            submitterName: submitter?.fullName || "Team Member",
+            expenseDescription: expense.description,
+            amountCents: expense.amountCents,
+            currency: expense.currency,
+            category: expense.category,
+            projectName: expense.project?.name || "Unknown Project",
+            vendor: expense.vendor || undefined,
+            expenseDate: formattedDate,
+            approvalUrl,
+            organizationName: org.name || "Your Organization",
+            notes: expense.notes || undefined,
+          });
+        } catch (emailError) {
+          console.error(`Failed to send approval email to ${approver.user.email}:`, emailError);
+        }
+      }
+    }
 
     revalidatePath(`/galleries/${expense.projectId}`);
 
@@ -1263,7 +1589,7 @@ export async function approveExpense(expenseId: string) {
   try {
     const org = await prisma.organization.findUnique({
       where: { clerkOrganizationId: orgId },
-      select: { id: true },
+      select: { id: true, name: true },
     });
 
     if (!org) {
@@ -1272,6 +1598,11 @@ export async function approveExpense(expenseId: string) {
 
     const expense = await prisma.projectExpense.findUnique({
       where: { id: expenseId },
+      include: {
+        project: {
+          select: { id: true, name: true },
+        },
+      },
     });
 
     if (!expense || expense.organizationId !== org.id) {
@@ -1294,6 +1625,60 @@ export async function approveExpense(expenseId: string) {
       },
     });
 
+    // Get approver info
+    const approver = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { fullName: true },
+    });
+
+    // Get submitter info (who created the expense)
+    const submitter = expense.createdBy
+      ? await prisma.user.findUnique({
+          where: { clerkUserId: expense.createdBy },
+          select: { fullName: true, email: true },
+        })
+      : null;
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+    const viewExpenseUrl = `${baseUrl}/galleries/${expense.projectId}`;
+    const formattedDate = expense.expenseDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Create in-app notification
+    await createNotification({
+      organizationId: org.id,
+      type: "expense_approved",
+      title: "Expense Approved",
+      message: `Your expense "${expense.description}" ($${(expense.amountCents / 100).toFixed(2)}) has been approved by ${approver?.fullName || "an admin"}.`,
+      linkUrl: viewExpenseUrl,
+    });
+
+    // Send email notification to submitter
+    if (submitter?.email) {
+      try {
+        await sendExpenseApprovalResultEmail({
+          to: submitter.email,
+          submitterName: submitter.fullName || "Team Member",
+          expenseDescription: expense.description,
+          amountCents: expense.amountCents,
+          currency: expense.currency,
+          category: expense.category,
+          projectName: expense.project?.name || "Unknown Project",
+          vendor: expense.vendor || undefined,
+          expenseDate: formattedDate,
+          isApproved: true,
+          approverName: approver?.fullName || "Admin",
+          viewExpenseUrl,
+          organizationName: org.name || "Your Organization",
+        });
+      } catch (emailError) {
+        console.error("Failed to send approval result email:", emailError);
+      }
+    }
+
     revalidatePath(`/galleries/${expense.projectId}`);
 
     return success(updated);
@@ -1315,7 +1700,7 @@ export async function rejectExpense(expenseId: string, reason: string) {
   try {
     const org = await prisma.organization.findUnique({
       where: { clerkOrganizationId: orgId },
-      select: { id: true },
+      select: { id: true, name: true },
     });
 
     if (!org) {
@@ -1324,6 +1709,11 @@ export async function rejectExpense(expenseId: string, reason: string) {
 
     const expense = await prisma.projectExpense.findUnique({
       where: { id: expenseId },
+      include: {
+        project: {
+          select: { id: true, name: true },
+        },
+      },
     });
 
     if (!expense || expense.organizationId !== org.id) {
@@ -1345,6 +1735,61 @@ export async function rejectExpense(expenseId: string, reason: string) {
         approvedAt: null,
       },
     });
+
+    // Get rejector info
+    const rejector = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { fullName: true },
+    });
+
+    // Get submitter info (who created the expense)
+    const submitter = expense.createdBy
+      ? await prisma.user.findUnique({
+          where: { clerkUserId: expense.createdBy },
+          select: { fullName: true, email: true },
+        })
+      : null;
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+    const viewExpenseUrl = `${baseUrl}/galleries/${expense.projectId}`;
+    const formattedDate = expense.expenseDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Create in-app notification
+    await createNotification({
+      organizationId: org.id,
+      type: "expense_rejected",
+      title: "Expense Rejected",
+      message: `Your expense "${expense.description}" ($${(expense.amountCents / 100).toFixed(2)}) has been rejected by ${rejector?.fullName || "an admin"}. Reason: ${reason}`,
+      linkUrl: viewExpenseUrl,
+    });
+
+    // Send email notification to submitter
+    if (submitter?.email) {
+      try {
+        await sendExpenseApprovalResultEmail({
+          to: submitter.email,
+          submitterName: submitter.fullName || "Team Member",
+          expenseDescription: expense.description,
+          amountCents: expense.amountCents,
+          currency: expense.currency,
+          category: expense.category,
+          projectName: expense.project?.name || "Unknown Project",
+          vendor: expense.vendor || undefined,
+          expenseDate: formattedDate,
+          isApproved: false,
+          approverName: rejector?.fullName || "Admin",
+          rejectionReason: reason,
+          viewExpenseUrl,
+          organizationName: org.name || "Your Organization",
+        });
+      } catch (emailError) {
+        console.error("Failed to send rejection result email:", emailError);
+      }
+    }
 
     revalidatePath(`/galleries/${expense.projectId}`);
 

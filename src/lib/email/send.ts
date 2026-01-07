@@ -55,6 +55,8 @@ import { WaitlistNotificationEmail } from "@/emails/waitlist-notification";
 import { AddonRequestEmail } from "@/emails/addon-request";
 import { AddonQuoteEmail } from "@/emails/addon-quote";
 import { AddonCompletedEmail } from "@/emails/addon-completed";
+import { ExpenseApprovalRequiredEmail } from "@/emails/expense-approval-required";
+import { ExpenseApprovalResultEmail } from "@/emails/expense-approval-result";
 
 /**
  * Send gallery delivered notification to client
@@ -1635,5 +1637,140 @@ export async function sendAddonCompletedEmailToClient(params: {
       galleryUrl,
     }),
     replyTo: photographerEmail,
+  });
+}
+
+// =============================================================================
+// Expense Approval Emails
+// =============================================================================
+
+/**
+ * Send expense approval required notification to approvers
+ *
+ * Triggered by: submitExpenseForApproval() action
+ * Location: src/lib/actions/project-expenses.ts
+ */
+export async function sendExpenseApprovalRequiredEmail(params: {
+  to: string;
+  approverName: string;
+  submitterName: string;
+  expenseDescription: string;
+  amountCents: number;
+  currency: string;
+  category: string;
+  projectName: string;
+  vendor?: string;
+  expenseDate: string;
+  approvalUrl: string;
+  organizationName: string;
+  notes?: string;
+}) {
+  const {
+    to,
+    approverName,
+    submitterName,
+    expenseDescription,
+    amountCents,
+    currency,
+    category,
+    projectName,
+    vendor,
+    expenseDate,
+    approvalUrl,
+    organizationName,
+    notes,
+  } = params;
+
+  const formattedAmount = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+  }).format(amountCents / 100);
+
+  return sendEmail({
+    to,
+    subject: `Expense approval required: ${expenseDescription} (${formattedAmount})`,
+    react: ExpenseApprovalRequiredEmail({
+      approverName,
+      submitterName,
+      expenseDescription,
+      amountCents,
+      currency,
+      category,
+      projectName,
+      vendor,
+      expenseDate,
+      approvalUrl,
+      organizationName,
+      notes,
+    }),
+  });
+}
+
+/**
+ * Send expense approval/rejection result to submitter
+ *
+ * Triggered by: approveExpense() or rejectExpense() action
+ * Location: src/lib/actions/project-expenses.ts
+ */
+export async function sendExpenseApprovalResultEmail(params: {
+  to: string;
+  submitterName: string;
+  expenseDescription: string;
+  amountCents: number;
+  currency: string;
+  category: string;
+  projectName: string;
+  vendor?: string;
+  expenseDate: string;
+  isApproved: boolean;
+  approverName: string;
+  rejectionReason?: string;
+  viewExpenseUrl: string;
+  organizationName: string;
+}) {
+  const {
+    to,
+    submitterName,
+    expenseDescription,
+    amountCents,
+    currency,
+    category,
+    projectName,
+    vendor,
+    expenseDate,
+    isApproved,
+    approverName,
+    rejectionReason,
+    viewExpenseUrl,
+    organizationName,
+  } = params;
+
+  const formattedAmount = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+  }).format(amountCents / 100);
+
+  const subject = isApproved
+    ? `Expense approved: ${expenseDescription} (${formattedAmount})`
+    : `Expense rejected: ${expenseDescription} (${formattedAmount})`;
+
+  return sendEmail({
+    to,
+    subject,
+    react: ExpenseApprovalResultEmail({
+      submitterName,
+      expenseDescription,
+      amountCents,
+      currency,
+      category,
+      projectName,
+      vendor,
+      expenseDate,
+      isApproved,
+      approverName,
+      rejectionReason,
+      viewExpenseUrl,
+      organizationName,
+    }),
   });
 }

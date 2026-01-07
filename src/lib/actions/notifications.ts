@@ -161,6 +161,9 @@ export type NotificationType =
   | "lead_received"
   | "client_added"
   | "task_automation"
+  | "expense_approval_required"
+  | "expense_approved"
+  | "expense_rejected"
   | "system";
 
 interface CreateNotificationInput {

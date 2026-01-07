@@ -12,6 +12,7 @@ import { GlobalUploadModal } from "@/components/upload/global-upload-modal";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
+import { getTotalUnreadCount as getUnreadMessageCount } from "@/lib/actions/conversations";
 import { getModulesForIndustries } from "@/lib/constants/industries";
 import { FONT_OPTIONS, DENSITY_OPTIONS, FONT_SIZE_OPTIONS } from "@/lib/appearance-types";
 
@@ -156,6 +157,10 @@ export default async function DashboardLayout({
   const notificationCountResult = await getUnreadNotificationCount();
   const unreadNotificationCount = notificationCountResult.success ? notificationCountResult.data : 0;
 
+  // Get unread message count for badge
+  const messageCountResult = await getUnreadMessageCount();
+  const unreadMessageCount = messageCountResult.success ? messageCountResult.data : 0;
+
   return (
     <ToastProvider>
       <ConfirmProvider>
@@ -221,6 +226,7 @@ export default async function DashboardLayout({
             enabledModules={enabledModules}
             industries={organizationIndustries}
             unreadNotificationCount={unreadNotificationCount}
+            badgeCounts={{ messages: unreadMessageCount }}
             sidebarPosition={userAppearance.sidebarPosition}
             sidebarCompact={userAppearance.sidebarCompact}
             autoTheme={userAppearance.autoThemeEnabled ? {

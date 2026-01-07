@@ -42,20 +42,34 @@ const ENDPOINTS: Record<string, Endpoint[]> = {
       parameters: [
         { name: "page", type: "integer", required: false, description: "Page number (default: 1)" },
         { name: "limit", type: "integer", required: false, description: "Items per page (default: 20, max: 100)" },
-        { name: "status", type: "string", required: false, description: "Filter by status: draft, published, archived" },
+        { name: "status", type: "string", required: false, description: "Filter by status: draft, active, delivered, archived" },
         { name: "client_id", type: "string", required: false, description: "Filter by client ID" },
-        { name: "search", type: "string", required: false, description: "Search by name or address" },
+        { name: "search", type: "string", required: false, description: "Search by name or description" },
       ],
       response: `{
   "data": [
     {
       "id": "gal_123",
-      "name": "123 Main Street",
-      "slug": "123-main-street",
-      "status": "published",
+      "name": "Smith Wedding Gallery",
+      "description": "Wedding photos from June 15th",
+      "slug": "smith-wedding-2024",
+      "status": "active",
       "photo_count": 45,
+      "price_cents": 15000,
+      "currency": "USD",
       "view_count": 128,
-      "created_at": "2024-01-15T10:30:00Z"
+      "download_count": 12,
+      "is_password_protected": true,
+      "allow_downloads": true,
+      "expires_at": "2024-12-31T23:59:59Z",
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-16T09:00:00Z",
+      "client": {
+        "id": "cli_456",
+        "name": "John Smith",
+        "email": "john@example.com",
+        "company": null
+      }
     }
   ],
   "pagination": {
@@ -74,14 +88,18 @@ const ENDPOINTS: Record<string, Endpoint[]> = {
       scope: "write",
       bodyParams: [
         { name: "name", type: "string", required: true, description: "Gallery name" },
-        { name: "address", type: "string", required: false, description: "Property address" },
+        { name: "description", type: "string", required: false, description: "Gallery description" },
         { name: "client_id", type: "string", required: false, description: "Associated client ID" },
+        { name: "price_cents", type: "integer", required: false, description: "Price in cents (e.g., 15000 = $150.00)" },
+        { name: "currency", type: "string", required: false, description: "Currency code (default: USD)" },
       ],
       response: `{
   "id": "gal_456",
-  "name": "456 Oak Avenue",
-  "slug": "456-oak-avenue",
+  "name": "Johnson Family Portrait",
+  "description": "Family portrait session",
   "status": "draft",
+  "price_cents": 7500,
+  "currency": "USD",
   "created_at": "2024-01-20T14:00:00Z"
 }`,
     },
@@ -92,18 +110,38 @@ const ENDPOINTS: Record<string, Endpoint[]> = {
       scope: "read",
       response: `{
   "id": "gal_123",
-  "name": "123 Main Street",
-  "slug": "123-main-street",
-  "status": "published",
+  "name": "Smith Wedding Gallery",
+  "description": "Wedding photos from June 15th",
+  "slug": "smith-wedding-2024",
+  "status": "active",
   "photo_count": 45,
+  "price_cents": 15000,
+  "currency": "USD",
+  "view_count": 128,
+  "download_count": 12,
+  "is_password_protected": true,
+  "allow_downloads": true,
+  "allow_favorites": true,
+  "allow_comments": false,
+  "show_watermark": true,
+  "expires_at": "2024-12-31T23:59:59Z",
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-16T09:00:00Z",
+  "client": {
+    "id": "cli_456",
+    "name": "John Smith",
+    "email": "john@example.com",
+    "company": null
+  },
   "photos": [
     {
       "id": "pho_789",
-      "filename": "living-room.jpg",
+      "filename": "ceremony-01.jpg",
       "url": "https://...",
       "thumbnail_url": "https://...",
       "width": 4000,
-      "height": 3000
+      "height": 3000,
+      "position": 0
     }
   ]
 }`,
@@ -115,15 +153,24 @@ const ENDPOINTS: Record<string, Endpoint[]> = {
       scope: "write",
       bodyParams: [
         { name: "name", type: "string", required: false, description: "Gallery name" },
-        { name: "status", type: "string", required: false, description: "Status: draft, published, archived" },
-        { name: "address", type: "string", required: false, description: "Property address" },
+        { name: "description", type: "string", required: false, description: "Gallery description" },
+        { name: "status", type: "string", required: false, description: "Status: draft, active, delivered, archived" },
         { name: "client_id", type: "string", required: false, description: "Associated client ID" },
         { name: "expires_at", type: "string", required: false, description: "Expiration date (ISO 8601)" },
+        { name: "price_cents", type: "integer", required: false, description: "Price in cents" },
+        { name: "allow_downloads", type: "boolean", required: false, description: "Allow photo downloads" },
+        { name: "allow_favorites", type: "boolean", required: false, description: "Allow favoriting photos" },
+        { name: "allow_comments", type: "boolean", required: false, description: "Allow comments on photos" },
+        { name: "show_watermark", type: "boolean", required: false, description: "Show watermark on photos" },
       ],
       response: `{
   "id": "gal_123",
-  "name": "123 Main Street Updated",
-  "status": "published",
+  "name": "Smith Wedding Gallery - Updated",
+  "description": "Wedding photos from June 15th",
+  "status": "active",
+  "price_cents": 15000,
+  "currency": "USD",
+  "allow_downloads": true,
   "updated_at": "2024-01-20T15:00:00Z"
 }`,
     },

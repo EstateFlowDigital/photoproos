@@ -22,6 +22,7 @@ interface DashboardLayoutClientProps {
   enabledModules: string[];
   industries: string[];
   unreadNotificationCount?: number;
+  badgeCounts?: Partial<Record<string, number>>;
   sidebarPosition?: "left" | "right";
   sidebarCompact?: boolean;
   autoTheme?: AutoThemeConfig;
@@ -32,6 +33,7 @@ export function DashboardLayoutClient({
   enabledModules,
   industries,
   unreadNotificationCount = 0,
+  badgeCounts = {},
   sidebarPosition = "left",
   sidebarCompact = false,
   autoTheme,
@@ -47,8 +49,9 @@ export function DashboardLayoutClient({
         enabledModules,
         industries,
         notificationCount: unreadNotificationCount,
+        badgeCounts,
       }),
-    [enabledModules, industries, unreadNotificationCount]
+    [enabledModules, industries, unreadNotificationCount, badgeCounts]
   );
 
   useEffect(() => {

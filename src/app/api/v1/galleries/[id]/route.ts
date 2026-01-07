@@ -33,15 +33,18 @@ async function getGallery(
     select: {
       id: true,
       name: true,
-      slug: true,
+      description: true,
       status: true,
-      address: true,
       coverImageUrl: true,
-      photoCount: true,
+      priceCents: true,
+      currency: true,
       viewCount: true,
       downloadCount: true,
-      shareCount: true,
-      isPasswordProtected: true,
+      password: true,
+      allowDownloads: true,
+      allowFavorites: true,
+      allowComments: true,
+      showWatermark: true,
       expiresAt: true,
       createdAt: true,
       updatedAt: true,
@@ -53,8 +56,19 @@ async function getGallery(
           company: true,
         },
       },
-      photos: {
-        orderBy: { position: "asc" },
+      _count: {
+        select: {
+          assets: true,
+        },
+      },
+      deliveryLinks: {
+        take: 1,
+        select: {
+          slug: true,
+        },
+      },
+      assets: {
+        orderBy: { sortOrder: "asc" },
         take: 100,
         select: {
           id: true,
@@ -63,7 +77,7 @@ async function getGallery(
           thumbnailUrl: true,
           width: true,
           height: true,
-          position: true,
+          sortOrder: true,
         },
       },
     },
@@ -76,15 +90,20 @@ async function getGallery(
   return apiSuccess({
     id: gallery.id,
     name: gallery.name,
-    slug: gallery.slug,
+    description: gallery.description,
+    slug: gallery.deliveryLinks[0]?.slug || null,
     status: gallery.status,
-    address: gallery.address,
     cover_image_url: gallery.coverImageUrl,
-    photo_count: gallery.photoCount,
+    photo_count: gallery._count.assets,
+    price_cents: gallery.priceCents,
+    currency: gallery.currency,
     view_count: gallery.viewCount,
     download_count: gallery.downloadCount,
-    share_count: gallery.shareCount,
-    is_password_protected: gallery.isPasswordProtected,
+    is_password_protected: !!gallery.password,
+    allow_downloads: gallery.allowDownloads,
+    allow_favorites: gallery.allowFavorites,
+    allow_comments: gallery.allowComments,
+    show_watermark: gallery.showWatermark,
     expires_at: gallery.expiresAt?.toISOString() || null,
     created_at: gallery.createdAt.toISOString(),
     updated_at: gallery.updatedAt.toISOString(),
@@ -96,14 +115,14 @@ async function getGallery(
           company: gallery.client.company,
         }
       : null,
-    photos: gallery.photos.map((photo) => ({
-      id: photo.id,
-      filename: photo.filename,
-      url: photo.originalUrl,
-      thumbnail_url: photo.thumbnailUrl,
-      width: photo.width,
-      height: photo.height,
-      position: photo.position,
+    photos: gallery.assets.map((asset) => ({
+      id: asset.id,
+      filename: asset.filename,
+      url: asset.originalUrl,
+      thumbnail_url: asset.thumbnailUrl,
+      width: asset.width,
+      height: asset.height,
+      position: asset.sortOrder,
     })),
   });
 }
@@ -154,11 +173,11 @@ async function updateGallery(
   if (typeof body.name === "string") {
     updateData.name = body.name;
   }
-  if (typeof body.address === "string") {
-    updateData.address = body.address;
+  if (typeof body.description === "string") {
+    updateData.description = body.description;
   }
   if (typeof body.status === "string") {
-    const validStatuses = ["draft", "published", "archived"];
+    const validStatuses = ["draft", "active", "delivered", "archived"];
     if (!validStatuses.includes(body.status)) {
       return apiError(
         API_ERRORS.BAD_REQUEST,
@@ -173,6 +192,21 @@ async function updateGallery(
   if (body.expires_at !== undefined) {
     updateData.expiresAt = body.expires_at ? new Date(body.expires_at as string) : null;
   }
+  if (typeof body.price_cents === "number") {
+    updateData.priceCents = body.price_cents;
+  }
+  if (typeof body.allow_downloads === "boolean") {
+    updateData.allowDownloads = body.allow_downloads;
+  }
+  if (typeof body.allow_favorites === "boolean") {
+    updateData.allowFavorites = body.allow_favorites;
+  }
+  if (typeof body.allow_comments === "boolean") {
+    updateData.allowComments = body.allow_comments;
+  }
+  if (typeof body.show_watermark === "boolean") {
+    updateData.showWatermark = body.show_watermark;
+  }
 
   const gallery = await prisma.project.update({
     where: { id: params.id },
@@ -180,9 +214,11 @@ async function updateGallery(
     select: {
       id: true,
       name: true,
-      slug: true,
+      description: true,
       status: true,
-      address: true,
+      priceCents: true,
+      currency: true,
+      allowDownloads: true,
       updatedAt: true,
     },
   });
@@ -190,9 +226,11 @@ async function updateGallery(
   return apiSuccess({
     id: gallery.id,
     name: gallery.name,
-    slug: gallery.slug,
+    description: gallery.description,
     status: gallery.status,
-    address: gallery.address,
+    price_cents: gallery.priceCents,
+    currency: gallery.currency,
+    allow_downloads: gallery.allowDownloads,
     updated_at: gallery.updatedAt.toISOString(),
   });
 }

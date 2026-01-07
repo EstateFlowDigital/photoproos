@@ -9,6 +9,7 @@ import {
 } from "@/components/layout/settings-mobile-nav";
 import { ArrowLeftIcon } from "@/components/ui/settings-icons";
 import Link from "next/link";
+import { SettingsAutoTracker } from "@/components/settings/recent-settings";
 
 interface SettingsLayoutProps {
   children: React.ReactNode;
@@ -31,6 +32,9 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
 
   return (
     <div className="flex h-full min-h-0">
+      {/* Track visits to settings pages */}
+      <SettingsAutoTracker />
+
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <SettingsSidebar />

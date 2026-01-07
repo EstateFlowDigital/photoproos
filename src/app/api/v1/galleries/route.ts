@@ -46,7 +46,7 @@ async function getGalleries(request: NextRequest, context: ApiContext) {
   if (search) {
     where.OR = [
       { name: { contains: search, mode: "insensitive" } },
-      { address: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
     ];
   }
 
@@ -62,16 +62,16 @@ async function getGalleries(request: NextRequest, context: ApiContext) {
     select: {
       id: true,
       name: true,
-      slug: true,
+      description: true,
       status: true,
-      address: true,
       coverImageUrl: true,
-      photoCount: true,
+      priceCents: true,
+      currency: true,
       viewCount: true,
       downloadCount: true,
-      shareCount: true,
-      isPasswordProtected: true,
+      password: true,
       expiresAt: true,
+      allowDownloads: true,
       createdAt: true,
       updatedAt: true,
       client: {
@@ -82,6 +82,17 @@ async function getGalleries(request: NextRequest, context: ApiContext) {
           company: true,
         },
       },
+      _count: {
+        select: {
+          assets: true,
+        },
+      },
+      deliveryLinks: {
+        take: 1,
+        select: {
+          slug: true,
+        },
+      },
     },
   });
 
@@ -89,15 +100,17 @@ async function getGalleries(request: NextRequest, context: ApiContext) {
   const data = galleries.map((gallery) => ({
     id: gallery.id,
     name: gallery.name,
-    slug: gallery.slug,
+    description: gallery.description,
+    slug: gallery.deliveryLinks[0]?.slug || null,
     status: gallery.status,
-    address: gallery.address,
     cover_image_url: gallery.coverImageUrl,
-    photo_count: gallery.photoCount,
+    photo_count: gallery._count.assets,
+    price_cents: gallery.priceCents,
+    currency: gallery.currency,
     view_count: gallery.viewCount,
     download_count: gallery.downloadCount,
-    share_count: gallery.shareCount,
-    is_password_protected: gallery.isPasswordProtected,
+    is_password_protected: !!gallery.password,
+    allow_downloads: gallery.allowDownloads,
     expires_at: gallery.expiresAt?.toISOString() || null,
     created_at: gallery.createdAt.toISOString(),
     updated_at: gallery.updatedAt.toISOString(),
@@ -135,44 +148,24 @@ async function createGallery(request: NextRequest, context: ApiContext) {
     return apiError(API_ERRORS.BAD_REQUEST, "Missing required field: name");
   }
 
-  // Generate slug from name
-  const baseSlug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
-  // Ensure unique slug
-  let slug = baseSlug;
-  let counter = 1;
-  while (
-    await prisma.project.findFirst({
-      where: { organizationId: context.organizationId, slug },
-    })
-  ) {
-    slug = `${baseSlug}-${counter}`;
-    counter++;
-  }
-
   // Create gallery (project)
   const gallery = await prisma.project.create({
     data: {
       organizationId: context.organizationId,
       name,
-      slug,
-      address: (body.address as string) || null,
+      description: (body.description as string) || null,
       clientId: (body.client_id as string) || null,
       status: "draft",
-      photoCount: 0,
-      viewCount: 0,
-      downloadCount: 0,
-      shareCount: 0,
+      priceCents: typeof body.price_cents === "number" ? body.price_cents : 0,
+      currency: (body.currency as string) || "USD",
     },
     select: {
       id: true,
       name: true,
-      slug: true,
+      description: true,
       status: true,
-      address: true,
+      priceCents: true,
+      currency: true,
       createdAt: true,
     },
   });
@@ -181,9 +174,10 @@ async function createGallery(request: NextRequest, context: ApiContext) {
     {
       id: gallery.id,
       name: gallery.name,
-      slug: gallery.slug,
+      description: gallery.description,
       status: gallery.status,
-      address: gallery.address,
+      price_cents: gallery.priceCents,
+      currency: gallery.currency,
       created_at: gallery.createdAt.toISOString(),
     },
     201

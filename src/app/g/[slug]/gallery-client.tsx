@@ -9,6 +9,7 @@ import { Confetti } from "@/components/ui/confetti";
 import { useCelebration, celebrations } from "@/hooks/use-celebration";
 import { MasonryGrid, LayoutToggle, type LayoutType } from "@/components/gallery/masonry-grid";
 import { LiveViewers } from "@/components/gallery/live-viewers";
+import { R2BlurImage } from "@/components/ui/r2-blur-image";
 import { PayButton } from "./pay-button";
 import {
   getClientSelections,
@@ -79,6 +80,7 @@ interface Photo {
   height: number;
   exif?: ExifData;
   collectionId?: string | null;
+  blurDataUrl?: string | null;
 }
 
 interface Collection {
@@ -1874,11 +1876,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     }
                   }}
                 >
-                  <img
+                  <R2BlurImage
                     src={photo.thumbnailUrl || photo.url}
+                    blurDataUrl={photo.blurDataUrl}
                     alt={photo.filename}
                     className={cn(
-                      "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105",
+                      "h-full w-full transition-transform duration-500 ease-out group-hover:scale-105",
                       !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
                     )}
                     style={{
@@ -2026,11 +2029,12 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     }
                   }}
                 >
-                  <img
+                  <R2BlurImage
                     src={photo.thumbnailUrl || photo.url}
+                    blurDataUrl={photo.blurDataUrl}
                     alt={photo.filename}
                     className={cn(
-                      "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105",
+                      "h-full w-full transition-transform duration-500 ease-out group-hover:scale-105",
                       !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
                     )}
                   />

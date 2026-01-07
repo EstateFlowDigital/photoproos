@@ -1,102 +1,27 @@
 export const dynamic = "force-dynamic";
 
 import { PageHeader, PageContextNav } from "@/components/dashboard";
-import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
-import { SETTINGS_PAGE_CATEGORIES, type SettingsIconName } from "@/lib/constants/settings-navigation";
+import { SETTINGS_PAGE_CATEGORIES } from "@/lib/constants/settings-navigation";
 import { WalkthroughWrapper } from "@/components/walkthrough";
 import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
+import { RecentSettingsSection } from "@/components/settings/recent-settings";
+import { PinnedSettingsSection } from "@/components/settings/pinned-settings";
+import { SettingCardWithPin } from "@/components/settings/settings-card-with-pin";
 import {
-  ChevronRightIcon,
   UserIcon,
   PaletteIcon,
   CreditCardIcon,
   StripeIcon,
-  BankIcon,
   UsersIcon,
-  MapIcon,
-  GiftIcon,
-  MailIcon,
-  MailOutlineIcon,
-  MessageIcon,
-  BellIcon,
-  PlugIcon,
-  CalendarIcon,
-  DropboxIcon,
   SparklesIcon,
-  CarIcon,
-  CameraIcon,
-  LayersIcon,
-  CodeIcon,
-  PackageIcon,
-  ImageIcon,
-  HelpCircleIcon,
-  ZapIcon,
 } from "@/components/ui/settings-icons";
 import { SettingsPageClient } from "./settings-page-client";
 
 // ============================================================================
-// Icon Mapping
-// ============================================================================
-
-const ICON_MAP: Record<SettingsIconName, React.FC<{ className?: string }>> = {
-  user: UserIcon,
-  palette: PaletteIcon,
-  creditCard: CreditCardIcon,
-  stripe: StripeIcon,
-  bank: BankIcon,
-  users: UsersIcon,
-  map: MapIcon,
-  gift: GiftIcon,
-  mail: MailIcon,
-  mailOutline: MailOutlineIcon,
-  message: MessageIcon,
-  bell: BellIcon,
-  plug: PlugIcon,
-  calendar: CalendarIcon,
-  dropbox: DropboxIcon,
-  sparkles: SparklesIcon,
-  car: CarIcon,
-  camera: CameraIcon,
-  layers: LayersIcon,
-  code: CodeIcon,
-  package: PackageIcon,
-  image: ImageIcon,
-  helpCircle: HelpCircleIcon,
-  zap: ZapIcon,
-};
-
-// ============================================================================
 // Components
 // ============================================================================
-
-interface SettingCardProps {
-  title: string;
-  description: string;
-  href: string;
-  iconName: SettingsIconName;
-}
-
-function SettingCard({ title, description, href, iconName }: SettingCardProps) {
-  const IconComponent = ICON_MAP[iconName];
-
-  return (
-    <Link
-      href={href}
-      className="group flex items-center gap-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all duration-200 hover:border-[var(--primary)]/30 hover:bg-[var(--primary)]/5"
-    >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-foreground-muted transition-colors duration-200 group-hover:bg-[var(--primary)]/15 group-hover:text-[var(--primary)]">
-        {IconComponent && <IconComponent className="h-5 w-5" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-foreground group-hover:text-[var(--primary)] transition-colors">{title}</h3>
-        <p className="mt-0.5 text-sm text-foreground-muted line-clamp-1">{description}</p>
-      </div>
-      <ChevronRightIcon className="h-4 w-4 shrink-0 text-foreground-muted opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0.5" />
-    </Link>
-  );
-}
 
 interface SettingsSectionProps {
   title: string;
@@ -172,6 +97,12 @@ export default async function SettingsPage() {
         ]}
       />
 
+      {/* Pinned Settings */}
+      <PinnedSettingsSection />
+
+      {/* Recently Visited */}
+      <RecentSettingsSection />
+
       {/* Settings Categories */}
       <div className="space-y-10">
         {SETTINGS_PAGE_CATEGORIES.map((category) => (
@@ -181,7 +112,7 @@ export default async function SettingsPage() {
             description={category.description}
           >
             {category.items.map((item) => (
-              <SettingCard
+              <SettingCardWithPin
                 key={item.id}
                 title={item.label}
                 description={item.description}

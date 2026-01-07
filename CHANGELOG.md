@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Expense Approval Workflow Notifications** - Email/SMS alerts for expense approvals
+  - Email templates for approval required notifications (`expense-approval-required.tsx`)
+  - Email templates for approval/rejection results (`expense-approval-result.tsx`)
+  - In-app notification types: `expense_approval_required`, `expense_approved`, `expense_rejected`
+  - Auto-send emails to organization admins/owners when expense submitted for approval
+  - Auto-notify submitter when expense is approved or rejected
+  - Rich email content with expense details, category, vendor, and approval links
+- **Recurring Expense Auto-Generation** - Cron job for automatic expense creation
+  - `processRecurringExpenses()` function for cross-organization recurring expense processing
+  - Cron API route at `/api/cron/recurring-expenses` (daily execution at 6 AM)
+  - Auto-calculates next due date based on frequency (daily, weekly, monthly, quarterly, yearly)
+  - Creates in-app notifications when recurring expenses are generated
+  - Supports organization-level and project-level recurring expenses
+- **Expense Report PDF Export** - Professional PDF reports with charts
+  - PDF template with category breakdown bar charts (`expense-report-pdf.tsx`)
+  - Summary metrics (total expenses, paid, unpaid, expense count)
+  - Category distribution table with percentages
+  - Budget status visualization with progress bar
+  - Detailed expense list with all fields
+  - API route at `/api/project/[id]/expense-report` with date range support
+- **Mobile-Optimized Expense Entry** - Touch-friendly expense creation
+  - Multi-step wizard (Amount → Details → Receipt)
+  - Large touch targets for mobile usability
+  - Quick-add amount buttons (+$5, $10, $20, $50, $100)
+  - Category grid with intuitive icons
+  - Camera capture and file upload for receipts
+  - Receipt preview with remove option
+  - Expense summary before submission
+  - Progress indicators for each step
+
 ### Fixed
 - **Dashboard React Error (Too Many Re-renders)** - Fixed Date serialization issue causing React error #310 and #301 on dashboard page. Date objects passed from server to client components must be serialized as ISO strings to avoid becoming empty objects during hydration. Updated `UpcomingBookings` component to accept ISO string dates.
 - **Client Portal Date Serialization** - Fixed the same Date serialization issue across the entire client portal. Updated all date fields in types to use `string` and converted all Date objects to ISO strings in `getClientPortalData` server action. Affects properties, galleries, invoices, questionnaires, and leads tabs.
@@ -18,6 +49,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TypeScript Errors** - Fixed type errors in settings search and breadcrumb components
 
 ### Added
+- **Public REST API** - External API for third-party integrations
+  - **API Authentication Middleware** (`/lib/api/middleware.ts`) - Secure Bearer token authentication
+    - SHA-256 API key hashing for secure storage
+    - Scope-based authorization (read/write/admin)
+    - Rate limiting headers (X-RateLimit-Limit, X-RateLimit-Remaining)
+    - Consistent error response format with error codes
+    - Pagination helpers with configurable limits (max 100)
+    - Organization-scoped data isolation
+  - **Galleries API** (`/api/v1/galleries`)
+    - GET /api/v1/galleries - List all galleries with pagination and filters (status, client_id, search)
+    - POST /api/v1/galleries - Create new gallery with pricing and client assignment
+    - GET /api/v1/galleries/:id - Get gallery details with photos, client info, and settings
+    - PATCH /api/v1/galleries/:id - Update gallery (name, description, status, pricing, permissions)
+    - DELETE /api/v1/galleries/:id - Delete gallery
+    - Supports all gallery settings: allow_downloads, allow_favorites, allow_comments, show_watermark
+  - **Clients API** (`/api/v1/clients`)
+    - GET /api/v1/clients - List all clients with pagination and filters (email, search)
+    - POST /api/v1/clients - Create new client with contact details
+    - Includes gallery and invoice counts
+  - **API Documentation Page** (`/settings/developer/api`)
+    - Interactive API documentation with expandable endpoint details
+    - Code examples in cURL, JavaScript, and Python with copy-to-clipboard
+    - Quick start guide with 3-step setup instructions
+    - Authentication section with scope and rate limit documentation
+    - Error codes reference table
+    - Language switcher for code examples
+- **Settings UX Improvements** - Enhanced settings page navigation and organization
+  - **Recently Visited Settings** - Track and display recently accessed settings pages
+    - `useRecentSettings` hook with localStorage persistence
+    - Automatic tracking via `SettingsAutoTracker` component in layout
+    - Displays up to 6 most recent items with 30-day expiration
+    - One-click clear functionality
+    - Shows in dedicated section on main settings page
+  - **Pinned Settings** - Favorite frequently used settings for quick access
+    - `usePinnedSettings` hook with localStorage persistence
+    - Star icon toggle on each settings card (hover to reveal)
+    - Up to 8 pinned items with amber-colored highlights
+    - Pinned section appears at top of settings page
+    - Click to unpin with × button on hover
+  - **Interactive Settings Cards** - Enhanced card component with pin functionality
+    - `SettingCardWithPin` client component replaces static cards
+    - Pin star appears on hover
+    - Visual feedback for pinned state
 - **Premium Gallery Experience - Phase 2** - Advanced UI enhancements for galleries
   - **Confetti Celebrations** - Animated confetti component with Framer Motion
     - Payment success celebrations with customizable particle effects
@@ -56,6 +130,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `LiveViewers` component with badge, inline, and compact variants
     - `useGalleryPresence` hook for custom implementations
     - Automatic cleanup of stale presence entries
+  - **Client Gallery Integrations** - Full integration of Phase 2 components
+    - Layout toggle in client gallery toolbar (Grid/Masonry switch)
+    - Masonry layout preserves photo aspect ratios
+    - Live viewers indicator in gallery info section
+    - Sparklines on dashboard gallery cards for 7-day view trends
+    - R2BlurImage integration for smooth blur-up image loading
+    - blurDataUrl field now fetched and passed to client gallery
+    - Both grid and masonry layouts use blur-up transitions
 - **Settings Page Improvements** - Comprehensive settings UX overhaul
   - **Shared Settings Components** - Reusable components for consistent settings pages
     - `SettingsFormCard` - Card component with variants (default, danger, info, success) and sticky footer

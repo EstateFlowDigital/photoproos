@@ -16,6 +16,7 @@ interface Photo {
   filename: string;
   width: number;
   height: number;
+  blurDataUrl?: string | null;
 }
 
 interface PublicGalleryPageProps {
