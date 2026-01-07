@@ -33,6 +33,7 @@ export function DashboardSidebar({
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
   const [forceExpanded, setForceExpanded] = React.useState(false);
+  const [isAutoCompact, setIsAutoCompact] = React.useState(false);
   const { topItems, sections } = navData;
   const sidebarRef = React.useRef<HTMLElement | null>(null);
 
@@ -52,14 +53,38 @@ export function DashboardSidebar({
     };
   }, []);
 
+  const isSidebarCollapsed = () => {
+    return isCompact || isAutoCompact;
+  };
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (variant !== "inline") return;
+    if (!sidebarRef.current || !("ResizeObserver" in window)) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const width = entry.contentRect.width;
+      setIsAutoCompact(width <= 100);
+    });
+
+    observer.observe(sidebarRef.current);
+    return () => observer.disconnect();
+  }, [variant]);
+
   const handleToggle = (id: string, nextState: boolean) => {
     setExpanded((prev) => ({ ...prev, [id]: nextState }));
   };
 
-  const isSidebarCollapsed = () => {
-    if (isCompact) return true;
-    const width = sidebarRef.current?.getBoundingClientRect().width ?? 0;
-    return width > 0 && width <= 100;
+  const expandSidebar = (id?: string) => {
+    if (isCompact && onToggleCompact) {
+      onToggleCompact();
+    }
+    setForceExpanded(true);
+    if (id) {
+      setExpanded((prev) => ({ ...prev, [id]: true }));
+    }
   };
 
   const handleCascadeToggle = () => {
@@ -68,8 +93,8 @@ export function DashboardSidebar({
       return;
     }
 
-    if (variant === "inline" && isSidebarCollapsed() && !isCompact) {
-      setForceExpanded(true);
+    if (variant === "inline" && isSidebarCollapsed()) {
+      expandSidebar();
       return;
     }
 
@@ -78,8 +103,7 @@ export function DashboardSidebar({
 
   const handleParentClick = (id: string, nextState: boolean) => {
     if (variant === "inline" && !forceExpanded && isSidebarCollapsed()) {
-      setForceExpanded(true);
-      setExpanded((prev) => ({ ...prev, [id]: true }));
+      expandSidebar(id);
       return;
     }
 
@@ -137,14 +161,14 @@ export function DashboardSidebar({
             "sidebar-cascade-toggle absolute top-1/2 z-20 flex h-11 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--card-border)] bg-[var(--card)] text-foreground-muted shadow-md transition-colors hover:bg-[var(--background-hover)] hover:text-foreground",
             sidebarPosition === "right" ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
           )}
-          aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
-          title={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={isSidebarCollapsed() ? "Expand sidebar" : "Collapse sidebar"}
+          title={isSidebarCollapsed() ? "Expand sidebar" : "Collapse sidebar"}
         >
           {sidebarPosition === "right"
-            ? isCompact
+            ? isSidebarCollapsed()
               ? <ChevronsLeft className="h-4 w-4" />
               : <ChevronsRight className="h-4 w-4" />
-            : isCompact
+            : isSidebarCollapsed()
               ? <ChevronsRight className="h-4 w-4" />
               : <ChevronsLeft className="h-4 w-4" />}
         </button>

@@ -70,15 +70,31 @@ async function ensureEnum(
 }
 
 async function ensureMarketingTemplateTable(pool: Pool) {
-  const tableCheck = await pool.query(`
-    SELECT EXISTS (
-      SELECT FROM information_schema.tables
+  const tableCheck = await pool.query(
+    `
+      SELECT table_name
+      FROM information_schema.tables
       WHERE table_schema = 'public'
-      AND table_name = 'MarketingTemplate'
-    );
-  `);
+        AND table_name IN ('MarketingTemplate', 'marketingtemplate', 'marketing_template');
+    `
+  );
 
-  if (tableCheck.rows[0]?.exists) {
+  const existingTables = tableCheck.rows
+    .map((row) => row.table_name as string)
+    .filter(Boolean);
+  if (existingTables.includes('MarketingTemplate')) {
+    const legacyTables = existingTables.filter((name) => name !== 'MarketingTemplate');
+    if (legacyTables.length) {
+      console.warn(`MarketingTemplate table exists. Legacy tables still present: ${legacyTables.join(', ')}`);
+    }
+    return;
+  }
+
+  const legacyPriority = ['marketing_template', 'marketingtemplate'];
+  const legacyTable = legacyPriority.find((name) => existingTables.includes(name));
+  if (legacyTable) {
+    console.log(`Renaming ${legacyTable} to MarketingTemplate...`);
+    await pool.query(`ALTER TABLE "${legacyTable}" RENAME TO "MarketingTemplate";`);
     return;
   }
 
@@ -122,6 +138,7 @@ async function migrate() {
   // Connect to database to clean up duplicates before schema push
   const pool = new Pool({ connectionString: databaseUrl });
   let hadError = false;
+  let poolClosed = false;
 
   try {
     await ensureMarketingTemplateTable(pool);
@@ -159,7 +176,10 @@ async function migrate() {
     hadError = true;
   } finally {
     try {
-      await pool.end();
+      if (!poolClosed && !pool.ended) {
+        await pool.end();
+        poolClosed = true;
+      }
     } catch (closeError) {
       console.warn('Error closing database connection:', closeError);
     }

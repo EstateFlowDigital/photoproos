@@ -589,7 +589,7 @@ export async function getTipStats(options?: {
 
   const where = {
     organizationId,
-    status: "succeeded" as PaymentStatus,
+    status: "paid" as PaymentStatus,
     tipAmountCents: { gt: 0 },
     ...(options?.startDate && { paidAt: { gte: options.startDate } }),
     ...(options?.endDate && { paidAt: { lte: options.endDate } }),

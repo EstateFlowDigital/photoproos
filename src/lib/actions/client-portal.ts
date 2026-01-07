@@ -20,7 +20,7 @@ export async function getClientPortalData() {
   const clientId = session.clientId;
 
   // Fetch all data in parallel
-  const [client, properties, galleries, invoices, questionnaires] = await Promise.all([
+  const [client, properties, galleries, invoices, questionnaires, leads] = await Promise.all([
     // Get client details
     prisma.client.findUnique({
       where: { id: clientId },
@@ -133,6 +133,28 @@ export async function getClientPortalData() {
         { createdAt: "desc" },
       ],
     }),
+
+    // Get leads for this client's properties
+    prisma.propertyLead.findMany({
+      where: {
+        propertyWebsite: {
+          project: {
+            clientId: clientId,
+          },
+        },
+      },
+      include: {
+        propertyWebsite: {
+          select: {
+            id: true,
+            address: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
   ]);
 
   if (!client) {
@@ -153,6 +175,11 @@ export async function getClientPortalData() {
     state: property.state,
     zipCode: property.zipCode,
     price: property.price ? Number(property.price) : null,
+    beds: property.beds,
+    baths: property.baths,
+    sqft: property.sqft,
+    lotSize: property.lotSize,
+    yearBuilt: property.yearBuilt,
     status: property.isPublished ? "published" : "draft",
     template: property.template,
     viewCount: property.viewCount,
@@ -207,10 +234,32 @@ export async function getClientPortalData() {
     responseCount: q._count.responses,
   }));
 
+  const transformedLeads = leads.map((lead) => ({
+    id: lead.id,
+    name: lead.name,
+    email: lead.email,
+    phone: lead.phone,
+    message: lead.message,
+    status: lead.status as "new" | "contacted" | "qualified" | "closed",
+    temperature: lead.temperature as "hot" | "warm" | "cold",
+    score: lead.score,
+    propertyAddress: lead.propertyWebsite.address,
+    propertyId: lead.propertyWebsite.id,
+    pageViews: lead.pageViews,
+    photoViews: lead.photoViews,
+    tourClicks: lead.tourClicks,
+    totalTimeSeconds: lead.totalTimeSeconds,
+    createdAt: lead.createdAt,
+    lastActivityAt: lead.lastActivityAt,
+  }));
+
   // Count pending questionnaires for the badge
   const pendingQuestionnaires = questionnaires.filter(
     (q) => q.status === "pending" || q.status === "in_progress"
   ).length;
+
+  // Count new leads for the badge
+  const newLeadsCount = leads.filter((l) => l.status === "new").length;
 
   return {
     client,
@@ -220,11 +269,13 @@ export async function getClientPortalData() {
       totalLeads,
       totalPhotos,
       pendingQuestionnaires,
+      newLeads: newLeadsCount,
     },
     properties: transformedProperties,
     galleries: transformedGalleries,
     invoices: transformedInvoices,
     questionnaires: transformedQuestionnaires,
+    leads: transformedLeads,
   };
 }
 

@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Client Portal Experience Enhancements** - New features for the client portal
+  - **Saved Properties** - Clients can save/favorite property websites with localStorage persistence
+  - **Property Comparison** - Side-by-side comparison tool for up to 3 properties with key metrics (price, beds, baths, sqft, views, leads)
+  - **Hot Property Badges** - Properties with 50+ views display a "Hot" badge with fire icon
+  - **Lead Status Tracking** - New "Leads" tab showing all property leads with:
+    - Lead scoring (0-100) with temperature indicators (hot/warm/cold)
+    - Status tracking (new, contacted, qualified, closed)
+    - Engagement metrics (page views, photo views, tour clicks, time on site)
+    - Contact actions (email, call) directly from lead cards
+    - Filter by status and sort by date, score, or temperature
+  - **Gallery Engagement Badges** - Visual indicators for gallery engagement
+    - "New" badge for galleries delivered within the last 7 days
+    - Large collection badge (sparkle icon) for galleries with 20+ photos
+  - **Extended Property Data** - Added beds, baths, sqft, lotSize, yearBuilt to PropertyData type for comparison
+
 - **Route-to-Action Atlas Complete** - Finished comprehensive route documentation with 190/190 routes (100%)
   - **Settings (100%)**: All 35 settings routes fully documented including notifications, email logs, gallery addons, watermarks, integrations (Dropbox, Slack, Zapier, QuickBooks, Mailchimp, Calendly), equipment, photographer pay, and payouts
   - **Public Routes (100%)**: All 14 public routes including `/order/[slug]`, `/book/[slug]/confirmation`, `/invite/[token]`, `/r/[code]`, `/schedule`, `/track`, `/unsubscribe`
@@ -32,8 +47,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ViewModeToggle` (`/src/components/ui/view-mode-toggle.tsx`) - Grid/List view toggle with proper ARIA
   - `BulkActionBar` (`/src/components/ui/bulk-action-bar.tsx`) - Floating bulk action bar for selections
   - `FormSection`, `FormRow`, `FormGrid` (`/src/components/ui/form-section.tsx`) - Form field grouping components
+  - `PropertyCard` (`/src/components/dashboard/property-card.tsx`) - Property listing card with selection, actions, and stats
   - Added `leftIcon` and `rightIcon` props to `Button` component
   - Added `valueVariant` prop to `StatCard` for colored value text (success/error/primary)
+
+- **Gallery Theme System** - Centralized theming for public gallery pages
+  - Created `/src/lib/theme/gallery-theme.ts` - Theme constants and utility functions
+  - Created `/src/lib/theme/use-gallery-theme.ts` - React hook for auto theme detection
+  - `getGalleryThemeColors()` - Returns consistent theme colors (bgColor, cardBg, textColor, mutedColor, borderColor)
+  - `useGalleryTheme()` - Client hook with system preference detection for auto theme
+  - `getThemedLogoUrl()` - Returns appropriate logo based on light/dark theme
+  - Theme colors map to design system tokens in globals.css
+
+- **Component Patterns Documentation** - Created comprehensive usage guide
+  - `/docs/COMPONENT_PATTERNS.md` - Documents all shared components, usage patterns, and best practices
+  - Covers: Design system tokens, FilterPills, ViewModeToggle, BulkActionBar, StatCard, EmptyState
+  - Icon sizing standards, gallery theming, responsive patterns
+  - File organization and best practices guidelines
 
 - **Design System Tokens** - Added overlay tokens for modal/dialog backgrounds
   - `--overlay: rgba(0, 0, 0, 0.6)` - Standard modal overlay
@@ -45,6 +75,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Payments Page** - Migrated to use `FilterPills` component for status filter tabs
 - **Invoices Page** - Migrated to use `FilterPills` and `StatCard` components for consistent UI
 - **Services Page** - Migrated to use `ViewModeToggle` component and centralized icons library
+- **Public Gallery Pages** - Refactored to use gallery theme system
+  - `/src/app/g/[slug]/page.tsx` - Uses `getGalleryThemeColors()` instead of inline color definitions
+  - `/src/app/g/[slug]/gallery-client.tsx` - Uses `useGalleryTheme()` hook for auto theme detection
+  - `/src/app/g/[slug]/password-gate.tsx` - Uses `getGalleryThemeColors()` for consistent theming
+- **Properties Page** - Extracted inline `PropertyCard` to shared component
 
 ### Fixed
 - **Design System Compliance** - Replaced hardcoded colors with design tokens

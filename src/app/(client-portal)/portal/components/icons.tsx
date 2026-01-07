@@ -20,6 +20,9 @@ export {
   CheckCircleIcon,
   ChevronRightIcon,
   ClockIcon,
+  HeartIcon,
+  FireIcon,
+  CompareIcon,
 } from "@/components/ui/icons";
 
 export type { IconProps } from "@/components/ui/icons";

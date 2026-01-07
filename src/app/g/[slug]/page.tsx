@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { getGalleryThemeColors, getThemedLogoUrl, type ResolvedTheme } from "@/lib/theme";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { getPublicGallery, recordGalleryView } from "@/lib/actions/galleries";
@@ -72,27 +73,8 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
 
   // For "auto" theme, we render client component that detects system preference
   // For explicit dark/light, we render appropriate colors
-  const getInitialThemeColors = () => {
-    if (theme === "light") {
-      return {
-        bgColor: "#ffffff",
-        textColor: "#0a0a0a",
-        mutedColor: "#6b7280",
-        cardBg: "#f3f4f6",
-        borderColor: "rgba(0,0,0,0.1)",
-      };
-    }
-    // Default to dark theme
-    return {
-      bgColor: "#0a0a0a",
-      textColor: "#ffffff",
-      mutedColor: "#a7a7a7",
-      cardBg: "#141414",
-      borderColor: "rgba(255,255,255,0.1)",
-    };
-  };
-
-  const colors = getInitialThemeColors();
+  const resolvedTheme: ResolvedTheme = theme === "auto" ? "dark" : theme;
+  const colors = getGalleryThemeColors(resolvedTheme);
 
   // Gallery not found or not available
   if (!gallery || gallery.photos.length === 0) {
@@ -133,12 +115,11 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
   }
 
   // Get the appropriate logo based on theme
-  const getLogo = () => {
-    if (theme === "light" && gallery.photographer.logoLightUrl) {
-      return gallery.photographer.logoLightUrl;
-    }
-    return gallery.photographer.logoUrl;
-  };
+  const logoUrl = getThemedLogoUrl(
+    resolvedTheme,
+    gallery.photographer.logoUrl,
+    gallery.photographer.logoLightUrl
+  );
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.bgColor, color: colors.textColor }}>
@@ -161,8 +142,8 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
           <div className="flex h-16 items-center justify-between">
             {/* Logo / Photographer */}
             <div className="flex items-center gap-3">
-              {getLogo() ? (
-                <img src={getLogo()!} alt={gallery.photographer.name} className="h-8" />
+              {logoUrl ? (
+                <img src={logoUrl} alt={gallery.photographer.name} className="h-8" />
               ) : (
                 <span className="text-lg font-semibold">{gallery.photographer.name}</span>
               )}

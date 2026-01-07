@@ -3,7 +3,7 @@
 A comprehensive mapping of every route to its data flow: Route → Page → Client → Actions → Models.
 
 **Last Updated:** 2026-01-06
-**Total Routes Mapped:** 190 / 190
+**Total Routes Mapped:** 193 / 193
 **Verification Status:** COMPLETE (100%)
 
 ---
@@ -3416,7 +3416,9 @@ ContractTemplate.findMany({ where: { organizationId }, orderBy: { name: "asc" } 
 
 ---
 
-### `/f/[slug]` 🌐
+### `/f/[slug]` ✅ 🌐
+
+**Page:** `src/app/f/[slug]/page.tsx`
 
 **Public form submission route**
 
@@ -6009,8 +6011,8 @@ Quick reference of all 129 server action files by domain.
 |---------|--------|--------|------------|
 | Dashboard Core | 5 | 5 | 100% |
 | Galleries | 7 | 7 | 100% |
-| Invoices & Billing | 14 | 14 | 100% |
-| Clients | 6 | 6 | 100% |
+| Invoices & Billing | 15 | 15 | 100% |
+| Clients | 5 | 5 | 100% |
 | Scheduling | 10 | 10 | 100% |
 | Contracts | 7 | 7 | 100% |
 | Services & Products | 11 | 11 | 100% |
@@ -6018,14 +6020,14 @@ Quick reference of all 129 server action files by domain.
 | Projects | 3 | 3 | 100% |
 | Properties | 4 | 4 | 100% |
 | Portfolios | 3 | 3 | 100% |
-| Questionnaires | 5 | 5 | 100% |
+| Questionnaires & Forms | 8 | 8 | 100% |
 | Leads | 3 | 3 | 100% |
 | Settings | 35 | 35 | 100% |
 | Public | 14 | 14 | 100% |
 | Field Operations | 2 | 2 | 100% |
 | Client Portal | 3 | 3 | 100% |
 | API Routes | 52 | 52 | 100% |
-| **TOTAL** | **190** | **190** | **100%** |
+| **TOTAL** | **193** | **193** | **100%** |
 
 ---
 

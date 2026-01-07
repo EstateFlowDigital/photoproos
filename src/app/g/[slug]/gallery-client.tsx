@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { useGalleryTheme, getThemedLogoUrl } from "@/lib/theme";
 import Link from "next/link";
 import { PayButton } from "./pay-button";
 import {
@@ -133,7 +134,13 @@ interface GalleryClientProps {
 }
 
 export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryClientProps) {
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark");
+  // Theme system
+  const { resolvedTheme, colors, logoUrl: themedLogoUrl } = useGalleryTheme({
+    theme: gallery.theme,
+    logoUrl: gallery.photographer.logoUrl,
+    logoLightUrl: gallery.photographer.logoLightUrl,
+  });
+
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<{ current: number; total: number } | null>(null);
   const [favoriteAssetIds, setFavoriteAssetIds] = useState<Set<string>>(new Set());
@@ -283,19 +290,6 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
     return () => clearInterval(interval);
   }, [gallery.expiresAt]);
-
-  useEffect(() => {
-    // Check system preference
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    setResolvedTheme(mediaQuery.matches ? "dark" : "light");
-
-    // Listen for changes
-    const handler = (e: MediaQueryListEvent) => {
-      setResolvedTheme(e.matches ? "dark" : "light");
-    };
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, []);
 
   // Load favorites on mount
   useEffect(() => {
@@ -1094,36 +1088,9 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
     return "";
   }, []);
 
-  const getThemeColors = () => {
-    if (resolvedTheme === "light") {
-      return {
-        bgColor: "#ffffff",
-        textColor: "#0a0a0a",
-        mutedColor: "#6b7280",
-        cardBg: "#f3f4f6",
-        borderColor: "rgba(0,0,0,0.1)",
-      };
-    }
-    return {
-      bgColor: "#0a0a0a",
-      textColor: "#ffffff",
-      mutedColor: "#a7a7a7",
-      cardBg: "#141414",
-      borderColor: "rgba(255,255,255,0.1)",
-    };
-  };
-
-  const colors = getThemeColors();
+  // Gallery custom colors (from settings)
   const primaryColor = gallery.primaryColor;
   const accentColor = gallery.accentColor;
-
-  // Get the appropriate logo based on theme
-  const getLogo = () => {
-    if (resolvedTheme === "light" && gallery.photographer.logoLightUrl) {
-      return gallery.photographer.logoLightUrl;
-    }
-    return gallery.photographer.logoUrl;
-  };
 
   return (
     <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: colors.bgColor, color: colors.textColor }}>
@@ -1146,8 +1113,8 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           <div className="flex h-16 items-center justify-between">
             {/* Logo / Photographer */}
             <div className="flex items-center gap-3">
-              {getLogo() ? (
-                <img src={getLogo()!} alt={gallery.photographer.name} className="h-8" />
+              {themedLogoUrl ? (
+                <img src={themedLogoUrl} alt={gallery.photographer.name} className="h-8" />
               ) : (
                 <span className="text-lg font-semibold">{gallery.photographer.name}</span>
               )}

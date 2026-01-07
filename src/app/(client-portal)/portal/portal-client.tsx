@@ -20,12 +20,14 @@ import {
   GalleriesTab,
   DownloadsTab,
   InvoicesTab,
+  LeadsTab,
   QuestionnairesTab,
   SettingsTab,
   type ClientData,
   type PropertyData,
   type GalleryData,
   type InvoiceData,
+  type LeadData,
   type QuestionnaireData,
   type PortalStatsData,
   type PortalTab,
@@ -38,6 +40,7 @@ interface PortalClientProps {
   properties: PropertyData[];
   galleries: GalleryData[];
   invoices: InvoiceData[];
+  leads: LeadData[];
   questionnaires: QuestionnaireData[];
 }
 
@@ -49,7 +52,7 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-export function PortalClient({ client, stats, properties, galleries, invoices, questionnaires }: PortalClientProps) {
+export function PortalClient({ client, stats, properties, galleries, invoices, leads, questionnaires }: PortalClientProps) {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<PortalTab>(
     stats.pendingQuestionnaires > 0 ? "questionnaires" : "properties"
@@ -59,10 +62,19 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
   const [payingInvoice, setPayingInvoice] = useState<string | null>(null);
   const [downloadingInvoicePdf, setDownloadingInvoicePdf] = useState<string | null>(null);
 
-  // Favorites state (persisted to localStorage)
+  // Favorites state (persisted to localStorage) - for photos
   const [favorites, setFavorites] = useState<Set<string>>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem(`portal_favorites_${client.id}`);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    }
+    return new Set();
+  });
+
+  // Saved properties state (persisted to localStorage)
+  const [savedProperties, setSavedProperties] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(`portal_saved_properties_${client.id}`);
       return stored ? new Set(JSON.parse(stored)) : new Set();
     }
     return new Set();
@@ -81,11 +93,19 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
     );
   }, [favorites, client.id]);
 
+  // Persist saved properties to localStorage
+  useEffect(() => {
+    localStorage.setItem(
+      `portal_saved_properties_${client.id}`,
+      JSON.stringify(Array.from(savedProperties))
+    );
+  }, [savedProperties, client.id]);
+
   const displayName = client.fullName || client.email.split("@")[0];
   const firstName = displayName.split(" ")[0];
   const greeting = getGreeting();
 
-  // Toggle favorite handler
+  // Toggle favorite handler (for photos)
   const handleToggleFavorite = (photoId: string) => {
     setFavorites((prev) => {
       const next = new Set(prev);
@@ -95,6 +115,21 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
       } else {
         next.add(photoId);
         showToast("Added to favorites", "success");
+      }
+      return next;
+    });
+  };
+
+  // Toggle save handler (for properties)
+  const handleToggleSaveProperty = (propertyId: string) => {
+    setSavedProperties((prev) => {
+      const next = new Set(prev);
+      if (next.has(propertyId)) {
+        next.delete(propertyId);
+        showToast("Removed from saved", "info");
+      } else {
+        next.add(propertyId);
+        showToast("Property saved", "success");
       }
       return next;
     });
@@ -383,6 +418,7 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
             activeTab={activeTab}
             onTabChange={setActiveTab}
             pendingQuestionnaires={stats.pendingQuestionnaires}
+            newLeads={stats.newLeads}
           />
         </div>
 
@@ -394,7 +430,13 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
           aria-labelledby={`${activeTab}-tab`}
           tabIndex={0}
         >
-          {activeTab === "properties" && <PropertiesTab properties={properties} />}
+          {activeTab === "properties" && (
+            <PropertiesTab
+              properties={properties}
+              savedProperties={savedProperties}
+              onToggleSave={handleToggleSaveProperty}
+            />
+          )}
 
           {activeTab === "galleries" && (
             <GalleriesTab
@@ -431,6 +473,10 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
             />
           )}
 
+          {activeTab === "leads" && (
+            <LeadsTab leads={leads} />
+          )}
+
           {activeTab === "questionnaires" && (
             <QuestionnairesTab questionnaires={questionnaires} />
           )}
@@ -449,6 +495,7 @@ export function PortalClient({ client, stats, properties, galleries, invoices, q
         onTabChange={setActiveTab}
         pendingQuestionnaires={stats.pendingQuestionnaires}
         unpaidInvoices={unpaidInvoicesCount}
+        newLeads={stats.newLeads}
       />
     </div>
   );

@@ -4,6 +4,7 @@ interface PortalTabsProps {
   activeTab: PortalTab;
   onTabChange: (tab: PortalTab) => void;
   pendingQuestionnaires: number;
+  newLeads?: number;
 }
 
 const TABS: { id: PortalTab; label: string; icon?: React.ReactNode }[] = [
@@ -11,11 +12,12 @@ const TABS: { id: PortalTab; label: string; icon?: React.ReactNode }[] = [
   { id: "galleries", label: "Galleries" },
   { id: "downloads", label: "Downloads" },
   { id: "invoices", label: "Invoices" },
+  { id: "leads", label: "Leads" },
   { id: "questionnaires", label: "Questionnaires" },
   { id: "settings", label: "Settings", icon: <SettingsIcon /> },
 ];
 
-export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires }: PortalTabsProps) {
+export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires, newLeads = 0 }: PortalTabsProps) {
   return (
     <div
       className="mb-6 flex items-center gap-2 border-b border-[var(--card-border)]"
@@ -24,7 +26,10 @@ export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires }: Po
     >
       {TABS.map((tab) => {
         const isActive = activeTab === tab.id;
-        const hasBadge = tab.id === "questionnaires" && pendingQuestionnaires > 0;
+        const hasBadge =
+          (tab.id === "questionnaires" && pendingQuestionnaires > 0) ||
+          (tab.id === "leads" && newLeads > 0);
+        const badgeCount = tab.id === "questionnaires" ? pendingQuestionnaires : tab.id === "leads" ? newLeads : 0;
 
         return (
           <button
@@ -45,10 +50,12 @@ export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires }: Po
             {tab.label}
             {hasBadge && (
               <span
-                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--warning)] text-[10px] font-bold text-white"
-                aria-label={`${pendingQuestionnaires} pending questionnaires`}
+                className={`absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white ${
+                  tab.id === "leads" ? "bg-[var(--primary)]" : "bg-[var(--warning)]"
+                }`}
+                aria-label={`${badgeCount} ${tab.id === "leads" ? "new leads" : "pending questionnaires"}`}
               >
-                {pendingQuestionnaires}
+                {badgeCount}
               </span>
             )}
           </button>

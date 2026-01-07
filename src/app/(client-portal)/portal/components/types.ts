@@ -13,6 +13,11 @@ export interface PropertyData {
   state: string;
   zipCode: string;
   price: number | null;
+  beds: number | null;
+  baths: number | null;
+  sqft: number | null;
+  lotSize: string | null;
+  yearBuilt: number | null;
   status: string;
   template: string;
   viewCount: number;
@@ -74,9 +79,29 @@ export interface PortalStatsData {
   totalLeads: number;
   totalPhotos: number;
   pendingQuestionnaires: number;
+  newLeads: number;
 }
 
-export type PortalTab = "properties" | "galleries" | "downloads" | "invoices" | "questionnaires" | "settings";
+export interface LeadData {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  message: string | null;
+  status: "new" | "contacted" | "qualified" | "closed";
+  temperature: "hot" | "warm" | "cold";
+  score: number;
+  propertyAddress: string;
+  propertyId: string;
+  pageViews: number;
+  photoViews: number;
+  tourClicks: number;
+  totalTimeSeconds: number;
+  createdAt: Date;
+  lastActivityAt: Date | null;
+}
+
+export type PortalTab = "properties" | "galleries" | "downloads" | "invoices" | "leads" | "questionnaires" | "settings";
 
 export interface NotificationPreferences {
   galleryDelivered: boolean;

@@ -136,6 +136,14 @@ function GalleryCard({
   // Count favorites in this gallery
   const favoriteCount = gallery.photos.filter((p) => favorites.has(p.id)).length;
 
+  // Check if gallery was delivered within the last 7 days (for "New" badge)
+  const isNew = gallery.deliveredAt
+    ? new Date().getTime() - new Date(gallery.deliveredAt).getTime() < 7 * 24 * 60 * 60 * 1000
+    : false;
+
+  // Check if this is a large gallery (20+ photos)
+  const isLargeCollection = gallery.photoCount >= 20;
+
   // Calculate expiration countdown
   const getExpirationInfo = () => {
     if (!gallery.expiresAt) return null;
@@ -188,7 +196,20 @@ function GalleryCard({
             </div>
           )}
           <div>
-            <h3 className="font-medium text-[var(--foreground)]">{gallery.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-[var(--foreground)]">{gallery.name}</h3>
+              {isNew && (
+                <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">
+                  New
+                </span>
+              )}
+              {isLargeCollection && (
+                <span className="rounded-full bg-[var(--success)]/10 px-2 py-0.5 text-xs font-medium text-[var(--success)]">
+                  <SparklesIcon className="mr-0.5 inline h-3 w-3" />
+                  {gallery.photoCount}+
+                </span>
+              )}
+            </div>
             <p className="text-sm text-[var(--foreground-muted)]">
               {gallery.photoCount} photos
               {gallery.serviceName && ` • ${gallery.serviceName}`}
@@ -361,6 +382,18 @@ function ClockIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
       />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 20 20"
+    >
+      <path d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" />
     </svg>
   );
 }

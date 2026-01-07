@@ -1389,6 +1389,24 @@ export function HeartIcon({ className, filled }: IconProps & { filled?: boolean 
   );
 }
 
+export function FireIcon({ className }: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M13.5 4.938a7 7 0 1 1-9.006 1.737c.202-.257.59-.218.793.039.278.352.594.672.943.954.332.269.786-.049.773-.476a5.977 5.977 0 0 1 .572-2.759 6.026 6.026 0 0 1 2.486-2.665c.247-.14.55-.016.677.238A6.967 6.967 0 0 0 13.5 4.938ZM14 12a4 4 0 0 1-4 4c-1.913 0-3.52-1.398-3.91-3.182-.093-.429.44-.643.754-.413a4.006 4.006 0 0 0 3.16.478 3.97 3.97 0 0 0 2.137-1.293c.21-.251.617-.21.76.09A3.98 3.98 0 0 1 14 12Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
 export function CommentIcon({ className }: IconProps) {
   return (
     <svg

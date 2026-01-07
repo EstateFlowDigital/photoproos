@@ -1,6 +1,7 @@
 export { StatCard } from "./stat-card";
 export { ActivityItem } from "./activity-item";
 export { GalleryCard } from "./gallery-card";
+export { PropertyCard, type PropertyWebsite, type PropertyCardProps } from "./property-card";
 export { PageHeader } from "./page-header";
 export {
   PageContextNav,

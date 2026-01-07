@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getGalleryThemeColors, type ResolvedTheme } from "@/lib/theme";
 
 interface PasswordGateProps {
   galleryId: string;
@@ -9,7 +10,7 @@ interface PasswordGateProps {
   photographerName: string;
   logoUrl?: string | null;
   primaryColor: string;
-  theme: "light" | "dark";
+  theme: ResolvedTheme;
 }
 
 export function PasswordGate({
@@ -25,21 +26,7 @@ export function PasswordGate({
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const colors = theme === "light"
-    ? {
-        bgColor: "#ffffff",
-        textColor: "#0a0a0a",
-        mutedColor: "#6b7280",
-        cardBg: "#f3f4f6",
-        borderColor: "rgba(0,0,0,0.1)",
-      }
-    : {
-        bgColor: "#0a0a0a",
-        textColor: "#ffffff",
-        mutedColor: "#a7a7a7",
-        cardBg: "#141414",
-        borderColor: "rgba(255,255,255,0.1)",
-      };
+  const colors = getGalleryThemeColors(theme);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
