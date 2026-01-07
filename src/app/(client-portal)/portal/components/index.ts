@@ -19,6 +19,7 @@ export { Lightbox } from "./lightbox";
 export { MobileNav } from "./mobile-nav";
 export { NotificationBell } from "./notification-bell";
 export { EmptyState } from "./empty-state";
+export { RecentActivity } from "./recent-activity";
 
 // Skeleton Loaders
 export {

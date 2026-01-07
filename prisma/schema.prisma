@@ -840,11 +840,14 @@ model Organization {
   payoutBatches PayoutBatch[]
 
   // Phase 3: SMS & Field Operations relations
-  smsTemplates       SMSTemplate[]
-  smsLogs            SMSLog[]
-  slackIntegrations  SlackIntegration[]
-  dropboxIntegration DropboxIntegration?
-  bookingSlots       BookingSlot[]
+  smsTemplates          SMSTemplate[]
+  smsLogs               SMSLog[]
+  slackIntegrations     SlackIntegration[]
+  dropboxIntegration    DropboxIntegration?
+  quickbooksIntegration QuickBooksIntegration?
+  mailchimpIntegration  MailchimpIntegration?
+  calendlyIntegration   CalendlyIntegration?
+  bookingSlots          BookingSlot[]
 
   // Public booking forms
   bookingForms    BookingForm[]
@@ -1053,6 +1056,9 @@ model Client {
 
   // Phase 2: Brokerage relationship (client is an agent under a brokerage)
   brokerageId String?
+
+  // QuickBooks integration
+  qbCustomerId String? // QuickBooks customer ID
 
   // Relations
   organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -1720,6 +1726,10 @@ model Booking {
   // Follow-up tracking
   followupsSent String[] @default([]) // Tracks which follow-up emails were sent (e.g., "thank_you_1", "review_request_3")
 
+  // External integration sync
+  externalId     String? // ID from external system (Calendly, Google Calendar, etc.)
+  externalSource String? // Source system: "calendly", "google_calendar", etc.
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1965,6 +1975,9 @@ model Invoice {
   // Payment link
   stripePaymentLinkId String?
   paymentLinkUrl      String?
+
+  // QuickBooks integration
+  qbInvoiceId String? // QuickBooks invoice ID
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -6094,6 +6107,192 @@ model DropboxIntegration {
 
   @@index([organizationId])
   @@index([accountId])
+}
+
+// ============================================================================
+// QUICKBOOKS INTEGRATION (Accounting sync)
+// ============================================================================
+
+model QuickBooksIntegration {
+  id             String @id @default(cuid())
+  organizationId String @unique
+
+  // QuickBooks company info
+  realmId     String // QuickBooks company ID (realm)
+  companyName String
+
+  // OAuth tokens
+  accessToken  String   @db.Text
+  refreshToken String   @db.Text
+  tokenExpiry  DateTime
+
+  // Sync settings
+  syncEnabled         Boolean @default(true)
+  autoSyncInvoices    Boolean @default(true)
+  autoCreateCustomers Boolean @default(true)
+  syncFrequency       String  @default("realtime") // realtime, daily, manual
+
+  // Account mappings
+  defaultIncomeAccount  String?
+  defaultExpenseAccount String?
+  taxEnabled            Boolean @default(false)
+  defaultTaxCodeId      String?
+
+  // Sync status
+  lastSyncAt    DateTime?
+  lastSyncError String?
+
+  // Sync cursors for incremental sync
+  lastInvoiceSyncAt  DateTime?
+  lastCustomerSyncAt DateTime?
+  lastPaymentSyncAt  DateTime?
+
+  // Settings
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  syncHistory  QuickBooksSyncHistory[]
+
+  @@index([organizationId])
+  @@index([realmId])
+}
+
+model QuickBooksSyncHistory {
+  id            String @id @default(cuid())
+  integrationId String
+
+  // Sync details
+  syncType    String // invoice, payment, customer, full
+  action      String // created, updated, synced, error
+  entityType  String // Invoice, Payment, Customer
+  entityId    String? // PhotoProOS entity ID
+  qbEntityId  String? // QuickBooks entity ID
+  description String
+
+  // Status
+  status       String // success, error, skipped
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  integration QuickBooksIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId])
+  @@index([createdAt])
+  @@index([syncType])
+}
+
+// ============================================================================
+// MAILCHIMP INTEGRATION (Email marketing sync)
+// ============================================================================
+
+model MailchimpIntegration {
+  id             String @id @default(cuid())
+  organizationId String @unique
+
+  // API credentials
+  apiKey     String @db.Text // Encrypted API key
+  datacenter String // e.g., "us21"
+
+  // Connected audience
+  audienceId   String?
+  audienceName String?
+
+  // Sync settings
+  syncEnabled         Boolean @default(true)
+  autoSyncNewClients  Boolean @default(true)
+  defaultOptIn        Boolean @default(true)
+  welcomeEmailTrigger Boolean @default(false)
+
+  // Tag mappings (JSON: { clientType: mailchimpTag })
+  tagMappings Json?
+
+  // Sync status
+  lastSyncAt     DateTime?
+  lastSyncError  String?
+  syncedContacts Int       @default(0)
+
+  // Settings
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  syncHistory  MailchimpSyncHistory[]
+
+  @@index([organizationId])
+}
+
+model MailchimpSyncHistory {
+  id            String @id @default(cuid())
+  integrationId String
+
+  // Sync details
+  action       String // synced, created, updated, removed, error
+  description  String
+  contactCount Int    @default(0)
+
+  // Status
+  status       String // success, error
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  integration MailchimpIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// CALENDLY INTEGRATION (Booking import)
+// ============================================================================
+
+model CalendlyIntegration {
+  id             String @id @default(cuid())
+  organizationId String @unique
+
+  // API credentials
+  apiToken String @db.Text // Personal Access Token
+
+  // User info from Calendly
+  userUri   String?
+  userName  String?
+  userEmail String?
+
+  // Webhook
+  webhookUri String? // Calendly webhook subscription URI
+
+  // Sync settings
+  syncEnabled         Boolean @default(true)
+  autoCreateBookings  Boolean @default(true)
+  notifyOnNewBookings Boolean @default(true)
+
+  // Event type to service mappings
+  eventMappings Json? // { calendlyEventType: serviceId }
+
+  // Sync status
+  lastSyncAt    DateTime?
+  lastSyncError String?
+
+  // Settings
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
 }
 
 // ============================================================================

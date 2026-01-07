@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -11,35 +12,19 @@ import {
   InfoIcon,
   RefreshIcon,
 } from "@/components/ui/settings-icons";
-
-// Types for QuickBooks configuration (to be implemented when the integration is built)
-interface QuickBooksConfig {
-  id: string;
-  companyId: string;
-  companyName: string;
-  realmId: string;
-  isActive: boolean;
-  autoSyncInvoices: boolean;
-  syncFrequency: "realtime" | "daily" | "manual";
-  defaultIncomeAccount: string;
-  taxEnabled: boolean;
-  taxRate: string;
-  autoCreateCustomers: boolean;
-  lastSyncAt: Date | null;
-  lastSyncError: string | null;
-}
-
-interface SyncHistoryItem {
-  id: string;
-  type: "invoice" | "payment" | "customer";
-  action: "created" | "updated" | "synced";
-  description: string;
-  timestamp: Date;
-  status: "success" | "error";
-}
+import {
+  type QuickBooksConfig,
+  type QuickBooksSyncHistoryItem,
+  updateQuickBooksSettings,
+  disconnectQuickBooks,
+  runFullQuickBooksSync,
+  getQuickBooksSyncHistory,
+} from "@/lib/actions/quickbooks";
+import { toast } from "sonner";
 
 interface QuickBooksSettingsClientProps {
   initialConfig: QuickBooksConfig | null;
+  initialSyncHistory?: QuickBooksSyncHistoryItem[];
 }
 
 // Mock income accounts for the select dropdown
@@ -66,9 +51,6 @@ const FIELD_MAPPINGS = [
   { photoProField: "Address", quickbooksField: "Billing Address", synced: false },
 ];
 
-// Mock sync history
-const MOCK_SYNC_HISTORY: SyncHistoryItem[] = [];
-
 // Clock icon for sync history empty state
 function ClockIcon({ className }: { className?: string }) {
   return (
@@ -89,16 +71,20 @@ function ClockIcon({ className }: { className?: string }) {
 
 export function QuickBooksSettingsClient({
   initialConfig,
+  initialSyncHistory = [],
 }: QuickBooksSettingsClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [config, setConfig] = React.useState<QuickBooksConfig | null>(initialConfig);
   const [loading, setLoading] = React.useState(false);
   const [syncing, setSyncing] = React.useState(false);
+  const [syncHistory, setSyncHistory] = React.useState<QuickBooksSyncHistoryItem[]>(initialSyncHistory);
   const [message, setMessage] = React.useState<{
     type: "success" | "error" | "info";
     text: string;
   } | null>(null);
 
-  // Form state (for when the integration is available)
+  // Form state
   const [autoSyncInvoices, setAutoSyncInvoices] = React.useState(
     config?.autoSyncInvoices ?? true
   );
@@ -113,72 +99,97 @@ export function QuickBooksSettingsClient({
     config?.autoCreateCustomers ?? true
   );
 
-  // Suppress unused variable warnings for now (these will be used when integration is built)
-  void setConfig;
+  // Handle OAuth callback messages
+  React.useEffect(() => {
+    const success = searchParams?.get("success");
+    const error = searchParams?.get("error");
+
+    if (success === "connected") {
+      toast.success("Successfully connected to QuickBooks!");
+      router.replace("/settings/quickbooks");
+    } else if (error) {
+      const errorMessages: Record<string, string> = {
+        not_configured: "QuickBooks credentials not configured. Please contact support.",
+        auth_failed: "Authentication failed. Please try again.",
+        token_exchange_failed: "Failed to exchange tokens. Please try again.",
+        org_not_found: "Organization not found. Please try again.",
+        org_mismatch: "Organization mismatch. Please try again.",
+        invalid_state: "Invalid state. Please try again.",
+        missing_params: "Missing parameters. Please try again.",
+        callback_failed: "Callback failed. Please try again.",
+      };
+      toast.error(errorMessages[error] || "An error occurred. Please try again.");
+      router.replace("/settings/quickbooks");
+    }
+  }, [searchParams, router]);
 
   const handleConnect = () => {
-    // This will trigger OAuth flow when implemented
-    setMessage({
-      type: "info",
-      text: "QuickBooks integration is coming soon! OAuth connection will be available in a future update.",
-    });
+    // Redirect to OAuth flow
+    window.location.href = "/api/integrations/quickbooks/authorize";
   };
 
   const handleSync = async () => {
     setSyncing(true);
     setMessage(null);
 
-    // Simulate sync action
-    setTimeout(() => {
-      setMessage({
-        type: "info",
-        text: "Manual sync will be available once the integration is connected.",
-      });
-      setSyncing(false);
-    }, 1000);
+    const result = await runFullQuickBooksSync();
+    if (result.success) {
+      toast.success(
+        `Synced ${result.data.customers.synced} customers and ${result.data.invoices.synced} invoices`
+      );
+      // Refresh sync history
+      const historyResult = await getQuickBooksSyncHistory();
+      if (historyResult.success) {
+        setSyncHistory(historyResult.data);
+      }
+    } else {
+      toast.error(result.error || "Sync failed");
+    }
+
+    setSyncing(false);
   };
 
   const handleSaveSettings = async () => {
     setLoading(true);
     setMessage(null);
 
-    // Simulate saving settings
-    setTimeout(() => {
-      setMessage({
-        type: "info",
-        text: "Settings will be saved once the integration is connected.",
-      });
-      setLoading(false);
-    }, 500);
+    const result = await updateQuickBooksSettings({
+      autoSyncInvoices,
+      syncFrequency,
+      defaultIncomeAccount,
+      taxEnabled,
+      autoCreateCustomers,
+    });
+
+    if (result.success) {
+      toast.success("Settings saved successfully");
+    } else {
+      toast.error(result.error || "Failed to save settings");
+    }
+
+    setLoading(false);
   };
 
   const handleDisconnect = async () => {
-    // Will disconnect when implemented
-    setMessage({
-      type: "info",
-      text: "Disconnect will be available once the integration is connected.",
-    });
+    if (!confirm("Are you sure you want to disconnect from QuickBooks? This will stop all syncing.")) {
+      return;
+    }
+
+    setLoading(true);
+    const result = await disconnectQuickBooks();
+
+    if (result.success) {
+      setConfig(null);
+      toast.success("Disconnected from QuickBooks");
+    } else {
+      toast.error(result.error || "Failed to disconnect");
+    }
+
+    setLoading(false);
   };
 
   return (
     <div className="space-y-6">
-      {/* Coming Soon Banner */}
-      <div className="rounded-xl border border-[var(--warning)]/30 bg-[var(--warning)]/10 p-4">
-        <div className="flex items-start gap-3">
-          <InfoIcon className="h-5 w-5 text-[var(--warning)] shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-[var(--warning)]">
-              Coming Soon
-            </p>
-            <p className="text-sm text-foreground-muted mt-1">
-              QuickBooks integration is currently under development. OAuth
-              connection and full sync functionality will be available in a future
-              update. You can preview the settings below.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Status Banner */}
       {message && (
         <div
@@ -321,14 +332,13 @@ export function QuickBooksSettingsClient({
 
             <button
               onClick={handleConnect}
-              disabled
-              className="inline-flex items-center gap-3 rounded-lg bg-[#2CA01C] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#2CA01C]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-3 rounded-lg bg-[#2CA01C] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#2CA01C]/90"
             >
               <QuickBooksIcon className="h-5 w-5" />
               Connect with QuickBooks
             </button>
             <p className="text-xs text-foreground-muted">
-              OAuth connection coming soon
+              You&apos;ll be redirected to Intuit to authorize access
             </p>
           </div>
         )}
@@ -488,9 +498,9 @@ export function QuickBooksSettingsClient({
           </Button>
         </div>
 
-        {MOCK_SYNC_HISTORY.length > 0 ? (
+        {syncHistory.length > 0 ? (
           <div className="space-y-3">
-            {MOCK_SYNC_HISTORY.map((item) => (
+            {syncHistory.map((item) => (
               <div
                 key={item.id}
                 className="flex items-center justify-between rounded-lg bg-[var(--background)] p-4"
@@ -509,12 +519,12 @@ export function QuickBooksSettingsClient({
                       {item.description}
                     </p>
                     <p className="text-xs text-foreground-muted">
-                      {item.type} - {item.action}
+                      {item.syncType} - {item.action}
                     </p>
                   </div>
                 </div>
                 <p className="text-xs text-foreground-muted">
-                  {new Date(item.timestamp).toLocaleString()}
+                  {new Date(item.createdAt).toLocaleString()}
                 </p>
               </div>
             ))}

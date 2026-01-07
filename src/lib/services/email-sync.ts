@@ -11,6 +11,7 @@ import {
   listGmailThreads,
   getGmailThread,
   getGmailProfile,
+  getGmailHistory,
   parseGmailHeaders,
   extractGmailBody,
 } from "@/lib/integrations/gmail";
@@ -177,20 +178,43 @@ export async function syncEmailAccount(
         }
       }
     } else {
-      // Incremental sync using history API
-      // For now, we'll just do a limited full sync
-      // TODO: Implement proper history-based incremental sync
-      const threadsResponse = await listGmailThreads(accountId, {
-        maxResults: Math.min(maxThreads, 20),
-        labelIds: ["INBOX"],
-      });
+      // Incremental sync using Gmail history API
+      // This efficiently fetches only threads that have changed since last sync
+      const historyResponse = await getGmailHistory(accountId, account.syncCursor!);
 
-      if (threadsResponse?.threads) {
-        for (const threadSummary of threadsResponse.threads) {
+      if (historyResponse?.history) {
+        // Collect unique thread IDs from history changes
+        const changedThreadIds = new Set<string>();
+
+        for (const historyRecord of historyResponse.history) {
+          // Process messages added (new emails)
+          if (historyRecord.messagesAdded) {
+            for (const added of historyRecord.messagesAdded) {
+              changedThreadIds.add(added.message.threadId);
+            }
+          }
+
+          // Process messages deleted (to update thread state)
+          if (historyRecord.messagesDeleted) {
+            for (const deleted of historyRecord.messagesDeleted) {
+              changedThreadIds.add(deleted.message.threadId);
+            }
+          }
+
+          // Note: Label changes (labelsAdded/labelsRemoved) only provide message IDs,
+          // not thread IDs. For now, we rely on messagesAdded/messagesDeleted which
+          // include thread IDs. A future optimization could fetch message details
+          // to get thread IDs for label changes, enabling read/unread state tracking.
+        }
+
+        // Process each changed thread (up to maxThreads limit)
+        const threadsToProcess = Array.from(changedThreadIds).slice(0, maxThreads);
+
+        for (const threadId of threadsToProcess) {
           const result = await processGmailThread(
             accountId,
             account.organizationId,
-            threadSummary.id
+            threadId
           );
 
           if (result) {
@@ -200,6 +224,33 @@ export async function syncEmailAccount(
               newThreads++;
             } else {
               updatedThreads++;
+            }
+          }
+        }
+      } else {
+        // No history available or expired - fall back to limited sync
+        // This can happen if historyId is too old (Gmail keeps ~30 days)
+        const threadsResponse = await listGmailThreads(accountId, {
+          maxResults: Math.min(maxThreads, 20),
+          labelIds: ["INBOX"],
+        });
+
+        if (threadsResponse?.threads) {
+          for (const threadSummary of threadsResponse.threads) {
+            const result = await processGmailThread(
+              accountId,
+              account.organizationId,
+              threadSummary.id
+            );
+
+            if (result) {
+              threadsProcessed++;
+              messagesProcessed += result.messagesCount;
+              if (result.isNew) {
+                newThreads++;
+              } else {
+                updatedThreads++;
+              }
             }
           }
         }

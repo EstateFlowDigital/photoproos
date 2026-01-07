@@ -8,6 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Integration Backend Implementations** - Full backend for third-party integrations
+  - **QuickBooks Integration** - Complete OAuth 2.0 flow with:
+    - Authorization and callback routes (`/api/integrations/quickbooks/authorize`, `/callback`)
+    - Token refresh mechanism with automatic renewal
+    - Invoice sync to QuickBooks with customer creation
+    - Customer sync for all marketing-opted-in clients
+    - Sync history tracking with `QuickBooksSyncHistory` model
+    - Full settings management (auto-sync, account mappings, tax settings)
+    - Database models: `QuickBooksIntegration`, `QuickBooksSyncHistory`
+    - Added `qbInvoiceId` to Invoice model, `qbCustomerId` to Client model
+  - **Mailchimp Integration** - API key-based integration with:
+    - Connection verification via Mailchimp API
+    - Audience (list) fetching and selection
+    - Contact sync with subscriber hash (MD5)
+    - Tag mappings for client industry segmentation
+    - Auto-sync for new clients (triggered on client create)
+    - Sync history tracking with `MailchimpSyncHistory` model
+    - Database models: `MailchimpIntegration`, `MailchimpSyncHistory`
+  - **Calendly Integration** - Personal Access Token integration with:
+    - Token validation via Calendly API
+    - Event type fetching for service mapping
+    - Webhook subscription setup for `invitee.created` and `invitee.canceled`
+    - Automatic booking creation from Calendly events
+    - Cancellation handling (updates existing booking status)
+    - Event-to-service mapping configuration
+    - Database model: `CalendlyIntegration`
+    - Added `externalId` and `externalSource` fields to Booking model
+
+- **Gmail History-Based Incremental Sync** - Improved email sync efficiency
+  - Implemented proper history API usage instead of limited full sync
+  - Collects changed thread IDs from `messagesAdded` and `messagesDeleted` events
+  - Processes only modified threads for significant API call reduction
+  - Graceful fallback to limited sync when history is expired (30+ days)
+
 - **Client Portal Experience Enhancements** - New features for the client portal
   - **Saved Properties** - Clients can save/favorite property websites with localStorage persistence
   - **Property Comparison** - Side-by-side comparison tool for up to 3 properties with key metrics (price, beds, baths, sqft, views, leads)
@@ -22,6 +56,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "New" badge for galleries delivered within the last 7 days
     - Large collection badge (sparkle icon) for galleries with 20+ photos
   - **Extended Property Data** - Added beds, baths, sqft, lotSize, yearBuilt to PropertyData type for comparison
+  - **Copy Property Link** - One-click copy button to share property website URLs with clipboard API and fallback support
+  - **QR Code Generation** - Generate and download QR codes for property websites (useful for open houses, signage, print materials)
+    - Uses Google Charts API (no dependencies required)
+    - Modal with preview, copy link, and download QR code buttons
+  - **Portal Search/Filter** - Global search bar to filter across properties, galleries, and leads
+    - Real-time filtering as you type
+    - Search results summary showing counts per category
+    - Clear button to reset search
+  - **Recent Activity Feed** - Dashboard widget showing recent portal activity
+    - New leads with temperature indicators
+    - Gallery deliveries
+    - Invoice payments and sent invoices
+    - Property publications
+    - Time-relative timestamps using date-fns
 
 - **Route-to-Action Atlas Complete** - Finished comprehensive route documentation with 190/190 routes (100%)
   - **Settings (100%)**: All 35 settings routes fully documented including notifications, email logs, gallery addons, watermarks, integrations (Dropbox, Slack, Zapier, QuickBooks, Mailchimp, Calendly), equipment, photographer pay, and payouts

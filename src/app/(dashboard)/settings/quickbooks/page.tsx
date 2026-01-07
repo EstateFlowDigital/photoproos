@@ -1,15 +1,21 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/dashboard";
 import { Button } from "@/components/ui/button";
 import { QuickBooksSettingsClient } from "./quickbooks-settings-client";
 import { ArrowLeftIcon } from "@/components/ui/settings-icons";
+import { getQuickBooksConfig, getQuickBooksSyncHistory } from "@/lib/actions/quickbooks";
 
 export default async function QuickBooksSettingsPage() {
-  // QuickBooks is a "coming soon" integration, so we don't have real config yet
-  // In the future, this would fetch from getQuickBooksConfig()
-  const config = null;
+  const [configResult, historyResult] = await Promise.all([
+    getQuickBooksConfig(),
+    getQuickBooksSyncHistory(20),
+  ]);
+
+  const config = configResult.success ? configResult.data : null;
+  const syncHistory = historyResult.success ? historyResult.data : [];
 
   return (
     <div className="space-y-6">
@@ -26,7 +32,12 @@ export default async function QuickBooksSettingsPage() {
         }
       />
 
-      <QuickBooksSettingsClient initialConfig={config} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <QuickBooksSettingsClient
+          initialConfig={config}
+          initialSyncHistory={syncHistory}
+        />
+      </Suspense>
     </div>
   );
 }

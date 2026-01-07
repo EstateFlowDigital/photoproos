@@ -8,10 +8,19 @@ import { formatPrice, BLUR_DATA_URL } from "../utils";
 import { EmptyState } from "../empty-state";
 import type { PropertyData } from "../types";
 
+// Get the base URL for property links
+function getPropertyUrl(slug: string): string {
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/p/${slug}`;
+  }
+  return `/p/${slug}`;
+}
+
 interface PropertiesTabProps {
   properties: PropertyData[];
   savedProperties?: Set<string>;
   onToggleSave?: (propertyId: string) => void;
+  onShowToast?: (message: string) => void;
 }
 
 // Threshold for "hot" property badge (views in last 7 days would be ideal, but we use total for now)
@@ -21,6 +30,7 @@ export function PropertiesTab({
   properties,
   savedProperties = new Set(),
   onToggleSave,
+  onShowToast,
 }: PropertiesTabProps) {
   const [selectedForComparison, setSelectedForComparison] = useState<Set<string>>(new Set());
   const [showComparison, setShowComparison] = useState(false);
@@ -95,6 +105,7 @@ export function PropertiesTab({
                   isSelectedForComparison={selectedForComparison.has(property.id)}
                   onToggleSave={onToggleSave}
                   onToggleComparison={handleToggleComparison}
+                  onShowToast={onShowToast}
                 />
               ))}
           </div>
@@ -113,6 +124,7 @@ export function PropertiesTab({
               isSelectedForComparison={selectedForComparison.has(property.id)}
               onToggleSave={onToggleSave}
               onToggleComparison={handleToggleComparison}
+              onShowToast={onShowToast}
             />
           ))}
       </div>
@@ -134,6 +146,7 @@ interface PropertyCardProps {
   isSelectedForComparison: boolean;
   onToggleSave?: (propertyId: string) => void;
   onToggleComparison: (propertyId: string) => void;
+  onShowToast?: (message: string) => void;
 }
 
 function PropertyCard({
@@ -142,8 +155,33 @@ function PropertyCard({
   isSelectedForComparison,
   onToggleSave,
   onToggleComparison,
+  onShowToast,
 }: PropertyCardProps) {
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [copied, setCopied] = useState(false);
   const isHot = property.viewCount >= HOT_PROPERTY_THRESHOLD;
+
+  const handleCopyLink = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = getPropertyUrl(property.slug);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      onShowToast?.("Link copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const input = document.createElement("input");
+      input.value = url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopied(true);
+      onShowToast?.("Link copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <div
@@ -249,16 +287,55 @@ function PropertyCard({
         </div>
 
         {property.status === "published" && (
-          <Link
-            href={`/p/${property.slug}`}
-            target="_blank"
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-          >
-            View Website
-            <ExternalLinkIcon className="h-4 w-4" />
-          </Link>
+          <div className="mt-4 space-y-2">
+            <Link
+              href={`/p/${property.slug}`}
+              target="_blank"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            >
+              View Website
+              <ExternalLinkIcon className="h-4 w-4" />
+            </Link>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCopyLink}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-[var(--input-border)] bg-[var(--card)] py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--background-hover)]"
+              >
+                {copied ? (
+                  <>
+                    <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <LinkIcon className="h-4 w-4" />
+                    Copy Link
+                  </>
+                )}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowQrModal(true);
+                }}
+                className="flex items-center justify-center rounded-lg border border-[var(--input-border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--background-hover)]"
+                title="Show QR Code"
+              >
+                <QrCodeIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         )}
       </div>
+
+      {/* QR Code Modal */}
+      {showQrModal && (
+        <QrCodeModal
+          url={getPropertyUrl(property.slug)}
+          address={property.address}
+          onClose={() => setShowQrModal(false)}
+        />
+      )}
     </div>
   );
 }
@@ -435,6 +512,135 @@ function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+function LinkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.193-9.193a4.5 4.5 0 00-6.364 0l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+  );
+}
+
+function QrCodeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
+    </svg>
+  );
+}
+
+interface QrCodeModalProps {
+  url: string;
+  address: string;
+  onClose: () => void;
+}
+
+function QrCodeModal({ url, address, onClose }: QrCodeModalProps) {
+  const [copied, setCopied] = useState(false);
+
+  // Generate QR code using Google Charts API (simple, no dependencies)
+  const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(url)}&chld=H|0`;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
+      const input = document.createElement("input");
+      input.value = url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.href = qrCodeUrl;
+    link.download = `${address.replace(/[^a-zA-Z0-9]/g, "-")}-qr-code.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--overlay)] p-4" onClick={onClose}>
+      <div
+        className="relative w-full max-w-sm rounded-xl bg-[var(--card)] p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-lg p-1 text-[var(--foreground-muted)] transition-colors hover:bg-[var(--background-hover)] hover:text-[var(--foreground)]"
+        >
+          <CloseIcon className="h-5 w-5" />
+        </button>
+
+        <h3 className="mb-2 text-lg font-semibold text-[var(--foreground)]">Share Property</h3>
+        <p className="mb-4 text-sm text-[var(--foreground-muted)]">{address}</p>
+
+        {/* QR Code */}
+        <div className="mb-4 flex justify-center rounded-lg bg-white p-4">
+          <img src={qrCodeUrl} alt="QR Code" className="h-48 w-48" />
+        </div>
+
+        {/* URL display */}
+        <div className="mb-4 rounded-lg bg-[var(--background-tertiary)] p-3">
+          <p className="break-all text-sm text-[var(--foreground-secondary)]">{url}</p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleCopy}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+          >
+            {copied ? (
+              <>
+                <CheckIcon className="h-4 w-4" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <LinkIcon className="h-4 w-4" />
+                Copy Link
+              </>
+            )}
+          </button>
+          <button
+            onClick={handleDownload}
+            className="flex items-center justify-center gap-2 rounded-lg border border-[var(--input-border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--background-hover)]"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            Save QR
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
     </svg>
   );
 }

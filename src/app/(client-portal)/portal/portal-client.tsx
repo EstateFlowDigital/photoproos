@@ -16,6 +16,7 @@ import {
   PortalFooter,
   ActionCards,
   MobileNav,
+  RecentActivity,
   PropertiesTab,
   GalleriesTab,
   DownloadsTab,
@@ -61,6 +62,37 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
   const [downloadType, setDownloadType] = useState<DownloadType>(null);
   const [payingInvoice, setPayingInvoice] = useState<string | null>(null);
   const [downloadingInvoicePdf, setDownloadingInvoicePdf] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter data based on search query
+  const filteredProperties = properties.filter((p) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      p.address.toLowerCase().includes(query) ||
+      p.city.toLowerCase().includes(query) ||
+      p.state.toLowerCase().includes(query)
+    );
+  });
+
+  const filteredGalleries = galleries.filter((g) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      g.name.toLowerCase().includes(query) ||
+      (g.serviceName && g.serviceName.toLowerCase().includes(query))
+    );
+  });
+
+  const filteredLeads = leads.filter((l) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      l.name.toLowerCase().includes(query) ||
+      l.email.toLowerCase().includes(query) ||
+      l.propertyAddress.toLowerCase().includes(query)
+    );
+  });
 
   // Favorites state (persisted to localStorage) - for photos
   const [favorites, setFavorites] = useState<Set<string>>(() => {
@@ -391,12 +423,49 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         {/* Welcome with time-based greeting */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-xl font-bold text-[var(--foreground)] sm:text-2xl">
-            {greeting}, {firstName}
-          </h1>
-          <p className="mt-1 text-sm text-[var(--foreground-secondary)] sm:text-base">
-            View your property websites, galleries, and downloads
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-[var(--foreground)] sm:text-2xl">
+                {greeting}, {firstName}
+              </h1>
+              <p className="mt-1 text-sm text-[var(--foreground-secondary)] sm:text-base">
+                View your property websites, galleries, and downloads
+              </p>
+            </div>
+            {/* Search Bar */}
+            <div className="relative w-full sm:w-72">
+              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)]" />
+              <input
+                type="text"
+                placeholder="Search properties, galleries..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 pl-10 pr-4 text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-[var(--foreground-muted)] hover:bg-[var(--background-tertiary)] hover:text-[var(--foreground-secondary)]"
+                >
+                  <XIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+          {/* Search Results Summary */}
+          {searchQuery && (
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--foreground-muted)]">
+              <span className="rounded-full bg-[var(--background-tertiary)] px-2 py-1">
+                {filteredProperties.length} properties
+              </span>
+              <span className="rounded-full bg-[var(--background-tertiary)] px-2 py-1">
+                {filteredGalleries.length} galleries
+              </span>
+              <span className="rounded-full bg-[var(--background-tertiary)] px-2 py-1">
+                {filteredLeads.length} leads
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Action Cards - Priority items requiring attention */}
@@ -408,6 +477,14 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
           onDownloadGallery={handleZipDownload}
           payingInvoice={payingInvoice}
           downloadingGallery={downloadingGallery}
+        />
+
+        {/* Recent Activity Feed */}
+        <RecentActivity
+          properties={properties}
+          galleries={galleries}
+          invoices={invoices}
+          leads={leads}
         />
 
         <PortalStats stats={stats} />
@@ -432,15 +509,16 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
         >
           {activeTab === "properties" && (
             <PropertiesTab
-              properties={properties}
+              properties={filteredProperties}
               savedProperties={savedProperties}
               onToggleSave={handleToggleSaveProperty}
+              onShowToast={(message) => showToast(message, "success")}
             />
           )}
 
           {activeTab === "galleries" && (
             <GalleriesTab
-              galleries={galleries}
+              galleries={filteredGalleries}
               downloadingGallery={downloadingGallery}
               onDownload={handleZipDownload}
               favorites={favorites}
@@ -474,7 +552,7 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
           )}
 
           {activeTab === "leads" && (
-            <LeadsTab leads={leads} />
+            <LeadsTab leads={filteredLeads} />
           )}
 
           {activeTab === "questionnaires" && (
@@ -498,5 +576,42 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
         newLeads={stats.newLeads}
       />
     </div>
+  );
+}
+
+// Icon components for search
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+      />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 18L18 6M6 6l12 12"
+      />
+    </svg>
   );
 }
