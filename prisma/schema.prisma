@@ -47,6 +47,21 @@ enum ExpenseCategory {
   other // Miscellaneous expenses
 }
 
+enum ExpenseApprovalStatus {
+  pending // Awaiting approval
+  approved // Approved by manager
+  rejected // Rejected by manager
+  none // No approval required
+}
+
+enum RecurrenceFrequency {
+  weekly
+  biweekly
+  monthly
+  quarterly
+  yearly
+}
+
 enum BookingStatus {
   pending
   confirmed
@@ -936,13 +951,15 @@ model Organization {
   waitlistEntries BookingWaitlist[]
 
   // Unified Email Inbox
-  emailAccounts        EmailAccount[]
-  emailThreads         EmailThread[]
-  galleryAddons        GalleryAddon[]
-  galleryAddonRequests GalleryAddonRequest[]
-  mlsPresets           MlsPreset[]
-  projectMessages      ProjectMessage[]
-  projectExpenses      ProjectExpense[]
+  emailAccounts             EmailAccount[]
+  emailThreads              EmailThread[]
+  galleryAddons             GalleryAddon[]
+  galleryAddonRequests      GalleryAddonRequest[]
+  mlsPresets                MlsPreset[]
+  projectMessages           ProjectMessage[]
+  projectExpenses           ProjectExpense[]
+  recurringExpenseTemplates RecurringExpenseTemplate[]
+  projectBudgets            ProjectBudget[]
 
   // Marketing Kit & Assets
   marketingKits      MarketingKit[]
@@ -1336,6 +1353,7 @@ model Project {
   showWatermark           Boolean               @default(false)
   downloadResolution      GalleryDownloadOption @default(both)
   downloadRequiresPayment Boolean               @default(true) // If true, downloads require payment. If false, allow free downloads even when gallery has a price.
+  sendNotifications       Boolean               @default(true) // Send email notifications for gallery events
 
   // Selection Settings
   allowSelections     Boolean @default(true) // Allow clients to make selections
@@ -1385,6 +1403,7 @@ model Project {
 
   // Project P&L
   expenses ProjectExpense[]
+  budget   ProjectBudget?
 
   // Messaging System
   conversations Conversation[] @relation("ConversationProject")
@@ -6351,7 +6370,8 @@ model CalendlyIntegration {
   userEmail String?
 
   // Webhook
-  webhookUri String? // Calendly webhook subscription URI
+  webhookUri        String? // Calendly webhook subscription URI
+  webhookSigningKey String? // Secret key for verifying webhook signatures
 
   // Sync settings
   syncEnabled         Boolean @default(true)
@@ -7687,6 +7707,98 @@ model ProjectExpense {
   // Tracking
   createdBy String? // User ID who created this
 
+  // Approval workflow
+  approvalStatus  ExpenseApprovalStatus @default(none)
+  approvedBy      String? // User ID who approved
+  approvedAt      DateTime?
+  rejectedBy      String? // User ID who rejected
+  rejectedAt      DateTime?
+  rejectionReason String? // Reason for rejection
+
+  // Recurring template reference
+  recurringTemplateId String? // If created from a template
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project           Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  recurringTemplate RecurringExpenseTemplate? @relation(fields: [recurringTemplateId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([category])
+  @@index([expenseDate])
+  @@index([approvalStatus])
+}
+
+// Recurring Expense Templates
+model RecurringExpenseTemplate {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Template details
+  name        String // Template name for easy identification
+  description String
+  category    ExpenseCategory @default(other)
+  amountCents Int // Default amount in cents
+  currency    String          @default("USD")
+  vendor      String? // Default vendor
+
+  // Recurrence settings
+  frequency   RecurrenceFrequency // How often this recurs
+  dayOfWeek   Int? // 0-6 for weekly (0 = Sunday)
+  dayOfMonth  Int? // 1-31 for monthly
+  monthOfYear Int? // 1-12 for yearly
+
+  // Status
+  isActive        Boolean   @default(true) // Is this template active?
+  lastGeneratedAt DateTime? // When the last expense was auto-generated
+  nextDueDate     DateTime? // When the next expense should be generated
+
+  // Tracking
+  createdBy String? // User ID who created this
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  expenses     ProjectExpense[] // Expenses created from this template
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([nextDueDate])
+}
+
+// Project Budget tracking
+model ProjectBudget {
+  id             String @id @default(cuid())
+  organizationId String
+  projectId      String @unique // One budget per project
+
+  // Budget limits by category (in cents)
+  totalBudgetCents     Int? // Overall project expense budget
+  laborBudgetCents     Int?
+  travelBudgetCents    Int?
+  equipmentBudgetCents Int?
+  softwareBudgetCents  Int?
+  materialsBudgetCents Int?
+  marketingBudgetCents Int?
+  feesBudgetCents      Int?
+  insuranceBudgetCents Int?
+  otherBudgetCents     Int?
+
+  // Alert thresholds (percentage of budget)
+  warningThreshold  Int @default(80) // Alert at 80% spent
+  criticalThreshold Int @default(95) // Critical alert at 95% spent
+
+  // Notifications
+  notifyOnWarning    Boolean @default(true)
+  notifyOnCritical   Boolean @default(true)
+  notifyOnOverBudget Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -7696,8 +7808,6 @@ model ProjectExpense {
 
   @@index([organizationId])
   @@index([projectId])
-  @@index([category])
-  @@index([expenseDate])
 }
 
 // ============================================================================

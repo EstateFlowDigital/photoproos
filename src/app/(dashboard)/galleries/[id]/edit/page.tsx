@@ -99,9 +99,12 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
     expiresAt: gallery.expiresAt,
     settings: {
       allowDownloads: gallery.allowDownloads,
-      allowFavorites: true, // Default - not in schema yet
+      allowFavorites: gallery.allowFavorites ?? true,
+      allowComments: gallery.allowComments ?? false,
       showWatermarks: gallery.showWatermark,
-      emailNotifications: true, // Default - not in schema yet
+      emailNotifications: gallery.sendNotifications ?? true,
+      downloadResolution: (gallery.downloadResolution as "full" | "web" | "both") || "both",
+      downloadRequiresPayment: gallery.downloadRequiresPayment ?? true,
     },
   };
 

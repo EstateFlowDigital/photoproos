@@ -39,8 +39,11 @@ interface GalleryData {
   settings: {
     allowDownloads: boolean;
     allowFavorites: boolean;
+    allowComments: boolean;
     showWatermarks: boolean;
     emailNotifications: boolean;
+    downloadResolution: "full" | "web" | "both";
+    downloadRequiresPayment: boolean;
   };
 }
 
@@ -68,6 +71,9 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
   const [clientId, setClientId] = useState(gallery.clientId);
   const [accessType, setAccessType] = useState<"public" | "password">(gallery.accessType);
   const [settings, setSettings] = useState(gallery.settings);
+  const [downloadResolution, setDownloadResolution] = useState<"full" | "web" | "both">(
+    gallery.settings.downloadResolution || "both"
+  );
 
   // Expiration state - determine initial type based on existing expiresAt
   const getInitialExpirationType = (): "never" | "30days" | "60days" | "90days" | "custom" => {
@@ -180,8 +186,12 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
         password: accessType === "password" ? undefined : null, // Keep existing password or clear
         expiresAt,
         allowDownloads: settings.allowDownloads,
+        allowFavorites: settings.allowFavorites,
+        allowComments: settings.allowComments,
         showWatermark: settings.showWatermarks,
-        // Note: allowFavorites and emailNotifications would need schema updates
+        sendNotifications: settings.emailNotifications,
+        downloadResolution,
+        downloadRequiresPayment: settings.downloadRequiresPayment,
       });
 
       if (result.success) {
@@ -386,15 +396,27 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
         <div className="space-y-4">
           <ToggleSetting
             label="Allow Downloads"
-            description="Let clients download photos after payment"
+            description="Let clients download photos from the gallery"
             checked={settings.allowDownloads}
             onToggle={() => toggleSetting("allowDownloads")}
+          />
+          <ToggleSetting
+            label="Require Payment for Downloads"
+            description="Block downloads until gallery payment is complete"
+            checked={settings.downloadRequiresPayment}
+            onToggle={() => toggleSetting("downloadRequiresPayment")}
           />
           <ToggleSetting
             label="Allow Favorites"
             description="Let clients mark their favorite photos"
             checked={settings.allowFavorites}
             onToggle={() => toggleSetting("allowFavorites")}
+          />
+          <ToggleSetting
+            label="Allow Comments"
+            description="Let clients leave comments on photos"
+            checked={settings.allowComments}
+            onToggle={() => toggleSetting("allowComments")}
           />
           <ToggleSetting
             label="Show Watermarks"
@@ -409,6 +431,42 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
             onToggle={() => toggleSetting("emailNotifications")}
           />
         </div>
+
+        {/* Download Resolution Options */}
+        {settings.allowDownloads && (
+          <div className="mt-6 pt-6 border-t border-[var(--card-border)]">
+            <label className="block text-sm font-medium text-foreground mb-3">Download Resolution</label>
+            <div className="space-y-2">
+              {[
+                { value: "full" as const, label: "Full Resolution Only", desc: "Clients can only download original files" },
+                { value: "web" as const, label: "Web Resolution Only", desc: "Clients can only download web-optimized files" },
+                { value: "both" as const, label: "Both Options", desc: "Clients can choose either resolution" },
+              ].map((option) => (
+                <label
+                  key={option.value}
+                  className={cn(
+                    "flex items-start gap-3 cursor-pointer rounded-lg border p-3 transition-colors",
+                    downloadResolution === option.value
+                      ? "border-[var(--primary)] bg-[var(--primary)]/5"
+                      : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="downloadResolution"
+                    checked={downloadResolution === option.value}
+                    onChange={() => setDownloadResolution(option.value)}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-foreground">{option.label}</div>
+                    <div className="text-xs text-foreground-muted">{option.desc}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Gallery Expiration Section */}

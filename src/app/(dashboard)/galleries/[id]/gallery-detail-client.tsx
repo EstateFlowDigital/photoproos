@@ -243,7 +243,7 @@ interface DownloadHistoryItem {
 export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const { showToast } = useToast();
   const router = useRouter();
-  const { startUpload, activeUpload } = useUpload();
+  const { startUpload, activeUpload, lastCompletedAt } = useUpload();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
@@ -526,17 +526,19 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   };
 
   // Refresh photos when uploads complete for this gallery
-  const prevCompletedRef = useRef(0);
+  const prevCompletedAtRef = useRef<number | null>(null);
   useEffect(() => {
-    if (activeUpload?.galleryId === gallery.id) {
-      const justCompleted = activeUpload.stats.completed - prevCompletedRef.current;
-      if (justCompleted > 0 && activeUpload.stats.uploading === 0 && activeUpload.stats.pending === 0) {
-        // All uploads finished - refresh the page to get new photos
-        router.refresh();
-      }
-      prevCompletedRef.current = activeUpload.stats.completed;
+    // Watch the lastCompletedAt timestamp - when it changes, refresh the gallery
+    if (
+      lastCompletedAt !== null &&
+      lastCompletedAt !== prevCompletedAtRef.current &&
+      activeUpload?.galleryId === gallery.id
+    ) {
+      // All uploads finished - refresh the page to get new photos
+      router.refresh();
+      prevCompletedAtRef.current = lastCompletedAt;
     }
-  }, [activeUpload, gallery.id, router]);
+  }, [lastCompletedAt, activeUpload?.galleryId, gallery.id, router]);
 
   const handleDownloadAll = async () => {
     showToast("Preparing download of all photos...", "info");

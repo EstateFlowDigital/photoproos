@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useCallback } from "react";
-import { X, Upload, Pause, Play, RotateCcw, CheckCircle2, AlertCircle, Loader2, Minimize2 } from "lucide-react";
+import { X, Upload, Pause, Play, RotateCcw, CheckCircle2, AlertCircle, Loader2, Minimize2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useUpload } from "@/contexts/upload-context";
@@ -130,25 +130,45 @@ export function GlobalUploadModal() {
         {/* Progress Bar */}
         {stats.total > 0 && (
           <div className="px-6 py-4 border-b border-[var(--card-border)]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground">
-                Overall Progress
-              </span>
-              <span className="text-sm text-foreground-muted">
-                {overallProgress}%
-              </span>
-            </div>
-            <div className="h-2 bg-[var(--background)] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[var(--primary)] transition-all duration-300"
-                style={{ width: `${overallProgress}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between mt-2 text-xs text-foreground-muted">
-              <span>{stats.uploading} uploading</span>
-              <span>{stats.pending} pending</span>
-              <span>{stats.completed} completed</span>
-            </div>
+            {/* Show success message when all uploads complete */}
+            {stats.uploading === 0 && stats.pending === 0 && stats.completed > 0 ? (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--success)]/10 border border-[var(--success)]/20">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--success)]/20">
+                  <CheckCircle2 className="h-5 w-5 text-[var(--success)]" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    Upload Complete!
+                  </p>
+                  <p className="text-xs text-foreground-muted">
+                    {stats.completed} {stats.completed === 1 ? 'photo' : 'photos'} uploaded successfully
+                    {stats.failed > 0 && ` • ${stats.failed} failed`}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-foreground">
+                    Overall Progress
+                  </span>
+                  <span className="text-sm text-foreground-muted">
+                    {overallProgress}%
+                  </span>
+                </div>
+                <div className="h-2 bg-[var(--background)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[var(--primary)] transition-all duration-300"
+                    style={{ width: `${overallProgress}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between mt-2 text-xs text-foreground-muted">
+                  <span>{stats.uploading} uploading</span>
+                  <span>{stats.pending} pending</span>
+                  <span>{stats.completed} completed</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -212,7 +232,7 @@ export function GlobalUploadModal() {
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--card-border)] bg-[var(--background)]">
           <div className="flex items-center gap-2">
-            {stats.completed > 0 && (
+            {stats.completed > 0 && stats.uploading === 0 && stats.pending === 0 && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -223,12 +243,12 @@ export function GlobalUploadModal() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            {tasks.length > 0 && (
+            {/* Pause/Resume when uploads are in progress */}
+            {tasks.length > 0 && (stats.uploading > 0 || stats.pending > 0) && (
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={isPaused ? resumeUpload : pauseUpload}
-                disabled={stats.uploading === 0 && stats.pending === 0}
               >
                 {isPaused ? (
                   <>
@@ -243,9 +263,20 @@ export function GlobalUploadModal() {
                 )}
               </Button>
             )}
-            <Button variant="secondary" onClick={handleClose}>
-              {stats.uploading > 0 || stats.pending > 0 ? "Minimize" : "Close"}
-            </Button>
+            {/* Show prominent Done button when all uploads complete */}
+            {stats.total > 0 && stats.uploading === 0 && stats.pending === 0 ? (
+              <Button
+                onClick={closeModal}
+                className="bg-[var(--success)] hover:bg-[var(--success)]/90 text-white"
+              >
+                <Check className="h-4 w-4 mr-2" />
+                Done
+              </Button>
+            ) : (
+              <Button variant="secondary" onClick={handleClose}>
+                {stats.uploading > 0 || stats.pending > 0 ? "Minimize" : "Close"}
+              </Button>
+            )}
           </div>
         </div>
       </div>

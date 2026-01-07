@@ -8,6 +8,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Real-time Gallery Photo Updates** - Photos now appear automatically after upload without page refresh
+  - Added `lastCompletedAt` timestamp to upload context to signal completion
+  - Gallery pages watch for completion signal and trigger automatic refresh
+- **Upload Modal Done Button** - Clear next step indication when uploads complete
+  - Prominent green "Done" button replaces "Close" when all uploads finish
+  - Success banner showing upload count with checkmark icon
+  - Clear visual feedback for completed state vs in-progress state
+- **Gallery Edit Form Enhancements** - Added missing settings to match gallery creation form
+  - Download resolution options (Full/Web/Both)
+  - Require payment for downloads toggle
+  - Allow comments toggle
+  - Email notifications toggle
+  - All settings now properly save and load from database
+- **Calendly Webhook Security** - Added webhook signature verification support
+  - New `webhookSigningKey` field in CalendlyIntegration model
+  - HMAC-SHA256 signature validation when key is configured
+  - Better error logging for webhook processing
+
+- **Walkthrough & Tutorial System** - Comprehensive in-app walkthrough system for user onboarding
+  - **Database Models**: `UserWalkthroughPreference` model with 4 states (open, minimized, hidden, dismissed)
+  - **`WalkthroughState` Enum**: Tracks walkthrough visibility state per page per user
+  - **`PhotographyType` Enum**: 8 photographer types for industry-based dashboard defaults
+  - **Organization Field**: Added `primaryPhotographyType` field for dashboard layout customization
+  - **TypeScript Types**: `walkthrough-types.ts` with 19 page definitions, categories, and state transitions
+  - **Widget Types**: `widget-types.ts` with 37 dashboard widgets, categories, and photography presets
+  - **PageWalkthrough Component**: Full-featured walkthrough with video placeholders, step navigation, progress bar
+  - **DismissWarningModal Component**: Confirmation dialog for permanent walkthrough dismissal
+  - **useWalkthrough Hook**: State management with optimistic updates and server sync
+  - **Server Actions**: CRUD operations for walkthrough preferences, batch updates, reset functionality
+  - **Settings Page**: `/settings/walkthroughs` page to manage walkthrough visibility across all pages
+  - **HelpCircleIcon**: New icon for walkthrough settings navigation
+  - **Settings Navigation**: Added walkthroughs to account settings category
 - **Email Marketing Coming Soon Page** - Notion-style documentation page at `/features/email-marketing`
   - Planned features with priority badges (Launch vs Phase 2)
   - Pre-built email template previews (Gallery Delivery, Booking Confirmation, etc.)
@@ -46,6 +78,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `chat-requests.ts`: Client request creation, team approval/rejection workflow
   - `client-messages.ts`: Client portal specific actions for viewing and sending messages
   - `conversation-permissions.ts`: Permission checking utilities
+- **iMessage-Style Messaging UI** - Complete redesign of messaging interface
+  - **Split-Pane Layout**: Conversation sidebar on left (320px), chat view on right
+  - **Conversation Sidebar**: Search bar, pinned conversations section, avatar with online status
+  - **Smart Time Display**: Shows "Today", "Yesterday", weekday names, or date based on recency
+  - **Message Bubbles**: iMessage-style rounded bubbles with connected corners for grouped messages
+  - **Date Separators**: Messages grouped by date with floating date pills
+  - **Read Receipts**: Double checkmarks for sent messages (blue when read)
+  - **Typing Indicator**: Animated dots when someone is typing
+  - **Online Status**: Green dot indicator on avatars
+  - **Quick Actions**: Phone, video call, and info buttons in chat header
+  - **Mobile Responsive**: Sidebar/chat toggle on mobile, back button navigation
+  - **Hover Reactions**: Emoji reaction picker appears on message hover
+  - **New Message Modal**: Clean type selection (DM, Group, Channel)
+- **Advanced Messaging Features** - Rich messaging capabilities
+  - **File/Image Attachments**: Upload and preview images and files in messages with drag-and-drop support
+  - **Attachment Previews**: Thumbnail previews for images, icon-based display for documents
+  - **In-Conversation Search**: Search messages within any conversation with highlighted results
+  - **Message Editing**: Edit sent messages inline with save/cancel controls
+  - **Message Deletion**: Delete messages with confirmation dialog
+  - **Copy Message**: One-click copy message content to clipboard
+  - **@ Mentions**: Tag team members with @ symbol and autocomplete dropdown
+  - **Keyboard Navigation**: Arrow keys and Enter/Tab to select mentions
+  - **Link Previews**: Automatic URL detection with hostname preview cards
+  - **Browser Push Notifications**: Request permission and receive desktop notifications for new messages
+  - **Notification Settings**: Toggle notifications on/off per conversation header
 
 ### Changed
 - **Project Expense Panel Accessibility** - Full WCAG 2.1 AA compliance improvements

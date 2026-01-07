@@ -31,6 +31,7 @@ interface UploadContextValue {
   activeUpload: ActiveUpload | null;
   isModalOpen: boolean;
   isMinimized: boolean;
+  lastCompletedAt: number | null; // Timestamp when all uploads finished - use to trigger gallery refresh
 
   // Actions
   startUpload: (galleryId: string, galleryName?: string) => void;
@@ -79,6 +80,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
   const [isPaused, setIsPaused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [lastCompletedAt, setLastCompletedAt] = useState<number | null>(null);
 
   // Initialize or get existing queue for a gallery
   const initializeQueue = useCallback((targetGalleryId: string) => {
@@ -158,6 +160,9 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
           `Successfully uploaded ${completedCount} ${completedCount === 1 ? 'photo' : 'photos'}. Generating thumbnails...`,
           "success"
         );
+
+        // Signal that all uploads completed - gallery pages can watch this to refresh
+        setLastCompletedAt(Date.now());
 
         // Trigger image processing for all completed assets
         const assetIds = completedAssetsRef.current.map((a) => a.id);
@@ -305,6 +310,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
         activeUpload,
         isModalOpen,
         isMinimized,
+        lastCompletedAt,
         startUpload,
         addFiles,
         pauseUpload,
