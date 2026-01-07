@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { ok, fail, success } from "@/lib/types/action-result";
+import { generatePresignedUploadUrl, generateFileKey } from "@/lib/storage";
 import type { ExpenseCategory } from "@prisma/client";
 
 // ============================================================================
@@ -668,5 +669,76 @@ export async function exportExpensesToCSV(projectId: string) {
   } catch (error) {
     console.error("Error exporting expenses:", error);
     return fail("Failed to export expenses");
+  }
+}
+
+// ============================================================================
+// RECEIPT UPLOAD
+// ============================================================================
+
+/**
+ * Generate a presigned URL for receipt upload
+ */
+export async function getReceiptUploadUrl(
+  projectId: string,
+  filename: string,
+  contentType: string
+) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  // Validate content type
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/heic",
+    "application/pdf",
+  ];
+  if (!allowedTypes.includes(contentType)) {
+    return fail("Invalid file type. Allowed: JPEG, PNG, WebP, HEIC, PDF");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    // Verify the project belongs to this organization
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, organizationId: org.id },
+      select: { id: true },
+    });
+
+    if (!project) {
+      return fail("Project not found");
+    }
+
+    // Generate file key for receipt storage
+    const extension = filename.split(".").pop() || "bin";
+    const key = generateFileKey(org.id, `receipts/${projectId}`, extension);
+
+    // Generate presigned upload URL (5 minute expiry)
+    const result = await generatePresignedUploadUrl({
+      key,
+      contentType,
+      expiresIn: 300,
+    });
+
+    return success({
+      uploadUrl: result.uploadUrl,
+      key,
+      publicUrl: `${process.env.R2_PUBLIC_URL}/${key}`,
+    });
+  } catch (error) {
+    console.error("Error generating receipt upload URL:", error);
+    return fail("Failed to generate upload URL");
   }
 }

@@ -76,11 +76,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Select all/deselect all checkbox for efficient bulk selection
   - Active filter count badge on filter toggle button
   - Results summary showing filtered vs total expense count
+  - **Expense date picker** in add/edit form with calendar icon
+  - **Sorting options** dropdown with 8 sort options (date, amount, category, name - asc/desc)
+  - **Receipt file upload** with presigned URL upload directly to R2 storage
+  - **Visual pie chart** showing expense breakdown by category with interactive legend
 - **Expense Tracking Server Actions** - New backend functionality
   - `getTeamMembers()` action for fetching organization team members
   - `bulkUpdateExpenseStatus()` for batch paid/unpaid status updates
   - `bulkDeleteExpenses()` for batch deletion with authorization
   - `exportExpensesToCSV()` for generating downloadable expense reports
+  - `getReceiptUploadUrl()` for generating presigned upload URLs for receipt files
 - **Marketing Kit Individual Downloads** - Individual asset download functionality in client portal
   - New `MarketingKitModal` component (`/portal/components/marketing-kit-modal.tsx`) for browsing marketing materials
   - Assets grouped by category (Social Media, Social Tiles, Print Materials, Videos, Email, Other)

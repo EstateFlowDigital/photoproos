@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { formatDate } from "./utils";
 import type { InvoiceData, QuestionnaireData, GalleryData } from "./types";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 interface Activity {
   id: string;
@@ -27,6 +28,7 @@ export function NotificationBell({
   galleries,
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const hydrated = useHydrated();
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("portal_read_notifications");
@@ -37,67 +39,72 @@ export function NotificationBell({
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Generate activities from data
-  const activities: Activity[] = [
-    // Recent galleries (delivered in last 30 days)
-    ...galleries
-      .filter((g) => g.deliveredAt && g.downloadable)
-      .map((g) => ({
-        id: `gallery-${g.id}`,
-        type: "gallery_delivered" as const,
-        title: "Gallery Delivered",
-        description: `${g.name} is ready with ${g.photoCount} photos`,
-        timestamp: new Date(g.deliveredAt!),
-        read: readIds.has(`gallery-${g.id}`),
-        actionLabel: "View Gallery",
-      })),
+  const activities = useMemo<Activity[]>(() => {
+    if (!hydrated) return [];
 
-    // Unpaid invoices
-    ...invoices
-      .filter((inv) => inv.status !== "paid" && inv.status !== "draft")
-      .map((inv) => ({
-        id: `invoice-${inv.id}`,
-        type: (inv.dueDate && new Date(inv.dueDate) < new Date()
-          ? "invoice_due"
-          : "invoice_sent") as "invoice_due" | "invoice_sent",
-        title:
-          inv.dueDate && new Date(inv.dueDate) < new Date()
-            ? "Invoice Overdue"
-            : "Invoice Awaiting Payment",
-        description: `Invoice ${inv.invoiceNumber} - $${(inv.amount / 100).toFixed(2)}`,
-        timestamp: new Date(inv.createdAt),
-        read: readIds.has(`invoice-${inv.id}`),
-        actionLabel: "Pay Now",
-      })),
+    const now = new Date();
 
-    // Pending questionnaires
-    ...questionnaires
-      .filter((q) => q.status !== "completed" && q.status !== "approved")
-      .map((q) => ({
-        id: `questionnaire-${q.id}`,
-        type: "questionnaire_assigned" as const,
-        title: "Questionnaire Required",
-        description: q.templateName,
-        timestamp: new Date(q.createdAt),
-        read: readIds.has(`questionnaire-${q.id}`),
-        actionUrl: `/portal/questionnaires/${q.id}`,
-        actionLabel: q.startedAt ? "Continue" : "Start",
-      })),
+    return [
+      // Recent galleries (delivered in last 30 days)
+      ...galleries
+        .filter((g) => g.deliveredAt && g.downloadable)
+        .map((g) => ({
+          id: `gallery-${g.id}`,
+          type: "gallery_delivered" as const,
+          title: "Gallery Delivered",
+          description: `${g.name} is ready with ${g.photoCount} photos`,
+          timestamp: new Date(g.deliveredAt!),
+          read: readIds.has(`gallery-${g.id}`),
+          actionLabel: "View Gallery",
+        })),
 
-    // Paid invoices (last 30 days)
-    ...invoices
-      .filter((inv) => inv.status === "paid" && inv.paidAt)
-      .map((inv) => ({
-        id: `payment-${inv.id}`,
-        type: "payment_received" as const,
-        title: "Payment Confirmed",
-        description: `Invoice ${inv.invoiceNumber} has been paid`,
-        timestamp: new Date(inv.paidAt!),
-        read: readIds.has(`payment-${inv.id}`),
-      })),
-  ].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      // Unpaid invoices
+      ...invoices
+        .filter((inv) => inv.status !== "paid" && inv.status !== "draft")
+        .map((inv) => ({
+          id: `invoice-${inv.id}`,
+          type: (inv.dueDate && new Date(inv.dueDate) < now
+            ? "invoice_due"
+            : "invoice_sent") as "invoice_due" | "invoice_sent",
+          title:
+            inv.dueDate && new Date(inv.dueDate) < now
+              ? "Invoice Overdue"
+              : "Invoice Awaiting Payment",
+          description: `Invoice ${inv.invoiceNumber} - $${(inv.amount / 100).toFixed(2)}`,
+          timestamp: new Date(inv.createdAt),
+          read: readIds.has(`invoice-${inv.id}`),
+          actionLabel: "Pay Now",
+        })),
 
-  // Count unread
-  const unreadCount = activities.filter((a) => !a.read).length;
+      // Pending questionnaires
+      ...questionnaires
+        .filter((q) => q.status !== "completed" && q.status !== "approved")
+        .map((q) => ({
+          id: `questionnaire-${q.id}`,
+          type: "questionnaire_assigned" as const,
+          title: "Questionnaire Required",
+          description: q.templateName,
+          timestamp: new Date(q.createdAt),
+          read: readIds.has(`questionnaire-${q.id}`),
+          actionUrl: `/portal/questionnaires/${q.id}`,
+          actionLabel: q.startedAt ? "Continue" : "Start",
+        })),
+
+      // Paid invoices (last 30 days)
+      ...invoices
+        .filter((inv) => inv.status === "paid" && inv.paidAt)
+        .map((inv) => ({
+          id: `payment-${inv.id}`,
+          type: "payment_received" as const,
+          title: "Payment Confirmed",
+          description: `Invoice ${inv.invoiceNumber} has been paid`,
+          timestamp: new Date(inv.paidAt!),
+          read: readIds.has(`payment-${inv.id}`),
+        })),
+    ].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }, [galleries, invoices, questionnaires, readIds, hydrated]);
+
+  const unreadCount = useMemo(() => activities.filter((a) => !a.read).length, [activities]);
 
   // Close on outside click
   useEffect(() => {

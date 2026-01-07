@@ -1,8 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { formatDate, formatPrice } from "./utils";
 import type { InvoiceData, QuestionnaireData, GalleryData } from "./types";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 interface ActionCardsProps {
   invoices: InvoiceData[];
@@ -23,24 +25,30 @@ export function ActionCards({
   payingInvoice,
   downloadingGallery,
 }: ActionCardsProps) {
+  const hydrated = useHydrated();
   // Get unpaid invoices
-  const unpaidInvoices = invoices.filter(
-    (inv) => inv.status !== "paid" && inv.status !== "draft"
+  const unpaidInvoices = useMemo(
+    () => invoices.filter((inv) => inv.status !== "paid" && inv.status !== "draft"),
+    [invoices]
   );
 
   // Get pending questionnaires
-  const pendingQuestionnaires = questionnaires.filter(
-    (q) => q.status !== "completed" && q.status !== "approved"
+  const pendingQuestionnaires = useMemo(
+    () => questionnaires.filter((q) => q.status !== "completed" && q.status !== "approved"),
+    [questionnaires]
   );
 
   // Get recently delivered galleries (last 7 days)
-  const recentGalleries = galleries.filter((g) => {
-    if (!g.deliveredAt || !g.downloadable) return false;
-    const deliveredDate = new Date(g.deliveredAt);
+  const recentGalleries = useMemo(() => {
+    if (!hydrated) return [];
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    return deliveredDate > sevenDaysAgo;
-  });
+    return galleries.filter((g) => {
+      if (!g.deliveredAt || !g.downloadable) return false;
+      const deliveredDate = new Date(g.deliveredAt);
+      return deliveredDate > sevenDaysAgo;
+    });
+  }, [galleries, hydrated]);
 
   // If no action items, don't render anything
   if (
@@ -180,8 +188,10 @@ function ActionCard({ variant, icon, title, subtitle, action }: ActionCardProps)
         <div>
           <p className="font-medium text-[var(--foreground)]">{title}</p>
           {subtitle && (
-            <p className="text-sm text-[var(--foreground-muted)]">{subtitle}</p>
-          )}
+          <p className="text-sm text-[var(--foreground-muted)]" suppressHydrationWarning>
+            {subtitle}
+          </p>
+        )}
         </div>
       </div>
       {action}

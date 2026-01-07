@@ -93,6 +93,17 @@ export const MODULES: Record<string, ModuleDefinition> = {
     category: "core",
     sortOrder: 1.6,
   },
+  messages: {
+    id: "messages",
+    name: "Messages",
+    description: "Team messaging and client communication",
+    icon: MessageSquare,
+    href: "/messages",
+    isCore: true,
+    industries: ["*"],
+    category: "core",
+    sortOrder: 1.7,
+  },
 
   // ============================================================================
   // OPERATIONS MODULES

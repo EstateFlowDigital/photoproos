@@ -24,6 +24,7 @@ import {
   bulkUpdateExpenseStatus,
   bulkDeleteExpenses,
   exportExpensesToCSV,
+  getReceiptUploadUrl,
   type ProjectPLSummary,
   type CreateExpenseInput,
 } from "@/lib/actions/project-expenses";
@@ -158,6 +159,35 @@ function UserIcon({ className }: { className?: string }) {
   );
 }
 
+function SortIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M11 5h10M11 9h7M11 13h4M3 17l3 3 3-3M6 18V4" />
+    </svg>
+  );
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -175,6 +205,126 @@ interface FilterState {
   status: "all" | "paid" | "unpaid";
   dateFrom: string;
   dateTo: string;
+}
+
+type SortField = "date" | "amount" | "category" | "description";
+type SortDirection = "asc" | "desc";
+
+interface SortState {
+  field: SortField;
+  direction: SortDirection;
+}
+
+// ============================================================================
+// CHART COLORS
+// ============================================================================
+
+const CHART_COLORS = [
+  "#3b82f6", // blue
+  "#22c55e", // green
+  "#f97316", // orange
+  "#8b5cf6", // purple
+  "#ec4899", // pink
+  "#14b8a6", // teal
+  "#f59e0b", // amber
+  "#ef4444", // red
+  "#6366f1", // indigo
+];
+
+// ============================================================================
+// PIE CHART COMPONENT
+// ============================================================================
+
+interface PieChartProps {
+  data: { category: ExpenseCategory; amount: number; count: number }[];
+  total: number;
+  getCategoryLabel: (cat: ExpenseCategory) => string;
+}
+
+function ExpensePieChart({ data, total, getCategoryLabel }: PieChartProps) {
+  if (data.length === 0 || total === 0) return null;
+
+  const size = 160;
+  const center = size / 2;
+  const radius = 60;
+
+  let cumulativePercent = 0;
+
+  const getCoordinatesForPercent = (percent: number) => {
+    const x = Math.cos(2 * Math.PI * percent);
+    const y = Math.sin(2 * Math.PI * percent);
+    return [x, y];
+  };
+
+  const slices = data.map((item, index) => {
+    const percent = item.amount / total;
+    const [startX, startY] = getCoordinatesForPercent(cumulativePercent);
+    cumulativePercent += percent;
+    const [endX, endY] = getCoordinatesForPercent(cumulativePercent);
+    const largeArcFlag = percent > 0.5 ? 1 : 0;
+
+    const pathData = [
+      `M ${center + startX * radius} ${center + startY * radius}`,
+      `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${center + endX * radius} ${center + endY * radius}`,
+      `L ${center} ${center}`,
+    ].join(" ");
+
+    return {
+      path: pathData,
+      color: CHART_COLORS[index % CHART_COLORS.length],
+      category: item.category,
+      percent: Math.round(percent * 100),
+      amount: item.amount,
+    };
+  });
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-4">
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className="shrink-0"
+        role="img"
+        aria-label="Expense breakdown pie chart"
+      >
+        <g transform={`rotate(-90 ${center} ${center})`}>
+          {slices.map((slice, i) => (
+            <path
+              key={i}
+              d={slice.path}
+              fill={slice.color}
+              className="transition-opacity hover:opacity-80"
+            >
+              <title>
+                {getCategoryLabel(slice.category)}: {slice.percent}%
+              </title>
+            </path>
+          ))}
+        </g>
+        <circle cx={center} cy={center} r={radius * 0.5} fill="var(--card)" />
+      </svg>
+
+      <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+        {slices.map((slice, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-full bg-[var(--background-secondary)]"
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: slice.color }}
+              aria-hidden="true"
+            />
+            <span className="text-foreground-muted truncate max-w-[100px]">
+              {getCategoryLabel(slice.category)}
+            </span>
+            <span className="font-medium text-foreground">{slice.percent}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ============================================================================
@@ -212,16 +362,39 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
   });
   const [showFilters, setShowFilters] = useState(false);
 
+  // Sort state
+  const [sort, setSort] = useState<SortState>({
+    field: "date",
+    direction: "desc",
+  });
+
   // Selection state for bulk operations
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+
+  // Receipt upload state
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Refs
   const searchInputRef = useRef<HTMLInputElement>(null);
   const firstExpenseRef = useRef<HTMLDivElement>(null);
 
-  // Form state
-  const [formData, setFormData] = useState<CreateExpenseInput>({
+  // Form state - separate from CreateExpenseInput to handle date as string
+  interface FormData {
+    description: string;
+    category: ExpenseCategory;
+    amountCents: number;
+    vendor: string;
+    isPaid: boolean;
+    notes: string;
+    teamMemberId: string;
+    receiptUrl: string;
+    expenseDate: string;
+  }
+
+  const [formData, setFormData] = useState<FormData>({
     description: "",
     category: "other",
     amountCents: 0,
@@ -230,6 +403,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     notes: "",
     teamMemberId: "",
     receiptUrl: "",
+    expenseDate: new Date().toISOString().split("T")[0],
   });
 
   // Load data
@@ -267,9 +441,10 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     }
   }
 
-  // Filtered expenses
-  const filteredExpenses = useMemo(() => {
-    return expenses.filter((expense) => {
+  // Filtered and sorted expenses
+  const filteredAndSortedExpenses = useMemo(() => {
+    // First filter
+    const filtered = expenses.filter((expense) => {
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
@@ -300,7 +475,25 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
 
       return true;
     });
-  }, [expenses, filters]);
+
+    // Then sort
+    return filtered.sort((a, b) => {
+      const direction = sort.direction === "asc" ? 1 : -1;
+
+      switch (sort.field) {
+        case "date":
+          return direction * (new Date(a.expenseDate).getTime() - new Date(b.expenseDate).getTime());
+        case "amount":
+          return direction * (a.amountCents - b.amountCents);
+        case "category":
+          return direction * a.category.localeCompare(b.category);
+        case "description":
+          return direction * a.description.localeCompare(b.description);
+        default:
+          return 0;
+      }
+    });
+  }, [expenses, filters, sort]);
 
   // Active filter count
   const activeFilterCount = useMemo(() => {
@@ -315,13 +508,14 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
   function resetForm() {
     setFormData({
       description: "",
-      category: "other",
+      category: "other" as ExpenseCategory,
       amountCents: 0,
       vendor: "",
       isPaid: true,
       notes: "",
       teamMemberId: "",
       receiptUrl: "",
+      expenseDate: new Date().toISOString().split("T")[0],
     });
     setEditingExpense(null);
   }
@@ -342,6 +536,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       notes: expense.notes || "",
       teamMemberId: expense.teamMemberId || "",
       receiptUrl: expense.receiptUrl || "",
+      expenseDate: new Date(expense.expenseDate).toISOString().split("T")[0],
     });
     setIsModalOpen(true);
   }
@@ -356,14 +551,26 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     setError(null);
 
     try {
+      const submitData: CreateExpenseInput = {
+        description: formData.description,
+        category: formData.category,
+        amountCents: formData.amountCents,
+        vendor: formData.vendor || undefined,
+        isPaid: formData.isPaid,
+        notes: formData.notes || undefined,
+        teamMemberId: formData.teamMemberId || undefined,
+        receiptUrl: formData.receiptUrl || undefined,
+        expenseDate: new Date(formData.expenseDate),
+      };
+
       if (editingExpense) {
-        const result = await updateProjectExpense(editingExpense.id, formData);
+        const result = await updateProjectExpense(editingExpense.id, submitData);
         if (!result.success) {
           setError(result.error);
           return;
         }
       } else {
-        const result = await createProjectExpense(galleryId, formData);
+        const result = await createProjectExpense(galleryId, submitData);
         if (!result.success) {
           setError(result.error);
           return;
@@ -407,6 +614,52 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     }
   }
 
+  // Receipt upload handler
+  async function handleReceiptUpload(file: File) {
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Get presigned upload URL
+      const urlResult = await getReceiptUploadUrl(galleryId, file.name, file.type);
+      if (!urlResult.success) {
+        setError(urlResult.error);
+        return;
+      }
+
+      setUploadProgress(30);
+
+      // Upload file directly to R2
+      const uploadResponse = await fetch(urlResult.data.uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Upload failed");
+      }
+
+      setUploadProgress(100);
+
+      // Set the receipt URL in form data
+      setFormData((prev) => ({
+        ...prev,
+        receiptUrl: urlResult.data.publicUrl,
+      }));
+    } catch (err) {
+      console.error("Receipt upload error:", err);
+      setError("Failed to upload receipt");
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  }
+
   // Selection handlers
   const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -421,12 +674,12 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
   }, []);
 
   const toggleSelectAll = useCallback(() => {
-    if (selectedIds.size === filteredExpenses.length) {
+    if (selectedIds.size === filteredAndSortedExpenses.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredExpenses.map((e) => e.id)));
+      setSelectedIds(new Set(filteredAndSortedExpenses.map((e) => e.id)));
     }
-  }, [filteredExpenses, selectedIds.size]);
+  }, [filteredAndSortedExpenses, selectedIds.size]);
 
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set());
@@ -503,6 +756,14 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       dateFrom: "",
       dateTo: "",
     });
+  }
+
+  // Sort handler
+  function handleSortChange(field: SortField) {
+    setSort((prev) => ({
+      field,
+      direction: prev.field === field && prev.direction === "desc" ? "asc" : "desc",
+    }));
   }
 
   function formatCurrency(cents: number) {
@@ -648,26 +909,47 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         </div>
       )}
 
-      {/* Expense Breakdown by Category */}
+      {/* Expense Breakdown by Category with Pie Chart */}
       {plSummary && plSummary.expenses.byCategory.length > 0 && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <h3 className="font-semibold text-foreground mb-4">Expenses by Category</h3>
-          <div className="space-y-3" role="list" aria-label="Expense breakdown by category">
-            {plSummary.expenses.byCategory.map((cat) => (
-              <div key={cat.category} className="flex items-center justify-between" role="listitem">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-foreground">
-                    {getCategoryLabel(cat.category)}
-                  </span>
-                  <span className="text-xs text-foreground-muted">
-                    ({cat.count})
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Pie Chart */}
+            <div className="flex-shrink-0">
+              <ExpensePieChart
+                data={plSummary.expenses.byCategory}
+                total={plSummary.expenses.total}
+                getCategoryLabel={getCategoryLabel}
+              />
+            </div>
+
+            {/* Category List */}
+            <div className="flex-1 space-y-2" role="list" aria-label="Expense breakdown by category">
+              {plSummary.expenses.byCategory.map((cat, i) => (
+                <div
+                  key={cat.category}
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--background-hover)] transition-colors"
+                  role="listitem"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0"
+                      style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm text-foreground">
+                      {getCategoryLabel(cat.category)}
+                    </span>
+                    <span className="text-xs text-foreground-muted">
+                      ({cat.count})
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">
+                    {formatCurrency(cat.amount)}
                   </span>
                 </div>
-                <span className="text-sm font-medium text-foreground">
-                  {formatCurrency(cat.amount)}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -697,7 +979,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
             </div>
           </div>
 
-          {/* Search and Filter Row */}
+          {/* Search, Sort, and Filter Row */}
           {expenses.length > 0 && (
             <div className="flex items-center gap-3 flex-wrap">
               {/* Search */}
@@ -712,6 +994,29 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   className="pl-9"
                   aria-label="Search expenses by description or vendor"
                 />
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-1">
+                <SortIcon className="h-4 w-4 text-foreground-muted" />
+                <select
+                  value={`${sort.field}-${sort.direction}`}
+                  onChange={(e) => {
+                    const [field, direction] = e.target.value.split("-") as [SortField, SortDirection];
+                    setSort({ field, direction });
+                  }}
+                  className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-2 py-1.5 text-sm"
+                  aria-label="Sort expenses"
+                >
+                  <option value="date-desc">Date (Newest)</option>
+                  <option value="date-asc">Date (Oldest)</option>
+                  <option value="amount-desc">Amount (High to Low)</option>
+                  <option value="amount-asc">Amount (Low to High)</option>
+                  <option value="category-asc">Category (A-Z)</option>
+                  <option value="category-desc">Category (Z-A)</option>
+                  <option value="description-asc">Name (A-Z)</option>
+                  <option value="description-desc">Name (Z-A)</option>
+                </select>
               </div>
 
               {/* Filter Toggle */}
@@ -871,7 +1176,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         )}
 
         {/* Expense List */}
-        {filteredExpenses.length === 0 ? (
+        {filteredAndSortedExpenses.length === 0 ? (
           <div className="p-8 text-center">
             {expenses.length === 0 ? (
               <>
@@ -894,24 +1199,24 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         ) : (
           <div role="list" aria-label="Expense list">
             {/* Select All Header */}
-            {filteredExpenses.length > 1 && (
+            {filteredAndSortedExpenses.length > 1 && (
               <div className="flex items-center gap-3 px-4 py-2 border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
                 <input
                   type="checkbox"
-                  checked={selectedIds.size === filteredExpenses.length}
+                  checked={selectedIds.size === filteredAndSortedExpenses.length}
                   onChange={toggleSelectAll}
                   className="rounded border-[var(--card-border)]"
-                  aria-label={selectedIds.size === filteredExpenses.length ? "Deselect all expenses" : "Select all expenses"}
+                  aria-label={selectedIds.size === filteredAndSortedExpenses.length ? "Deselect all expenses" : "Select all expenses"}
                 />
                 <span className="text-xs text-foreground-muted">
-                  {selectedIds.size === filteredExpenses.length ? "Deselect all" : "Select all"} ({filteredExpenses.length})
+                  {selectedIds.size === filteredAndSortedExpenses.length ? "Deselect all" : "Select all"} ({filteredAndSortedExpenses.length})
                 </span>
               </div>
             )}
 
             {/* Expense Items */}
             <div className="divide-y divide-[var(--card-border)]">
-              {filteredExpenses.map((expense, index) => (
+              {filteredAndSortedExpenses.map((expense, index) => (
                 <div
                   key={expense.id}
                   ref={index === 0 ? firstExpenseRef : undefined}
@@ -1025,16 +1330,16 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         )}
 
         {/* Results Summary */}
-        {filteredExpenses.length > 0 && (filters.search || activeFilterCount > 0) && (
+        {filteredAndSortedExpenses.length > 0 && (filters.search || activeFilterCount > 0) && (
           <div className="px-4 py-2 border-t border-[var(--card-border)] text-xs text-foreground-muted">
-            Showing {filteredExpenses.length} of {expenses.length} expense{expenses.length !== 1 ? "s" : ""}
+            Showing {filteredAndSortedExpenses.length} of {expenses.length} expense{expenses.length !== 1 ? "s" : ""}
           </div>
         )}
       </div>
 
       {/* Add/Edit Expense Modal */}
       <Dialog open={isModalOpen} onOpenChange={(open) => !open && setIsModalOpen(false)}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editingExpense ? "Edit Expense" : "Add Expense"}
@@ -1077,6 +1382,21 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               </div>
 
               <div>
+                <label htmlFor="expense-date" className="block text-sm font-medium text-foreground mb-1.5">
+                  <CalendarIcon className="h-3.5 w-3.5 inline mr-1" />
+                  Expense Date
+                </label>
+                <Input
+                  id="expense-date"
+                  type="date"
+                  value={formData.expenseDate}
+                  onChange={(e) => setFormData({ ...formData, expenseDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <label htmlFor="expense-category" className="block text-sm font-medium text-foreground mb-1.5">
                   Category
                 </label>
@@ -1095,9 +1415,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   ))}
                 </select>
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="expense-vendor" className="block text-sm font-medium text-foreground mb-1.5">
                   Vendor/Payee
@@ -1106,44 +1424,99 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   id="expense-vendor"
                   value={formData.vendor || ""}
                   onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
-                  placeholder="e.g., Company name, contractor"
+                  placeholder="e.g., Company name"
                 />
-              </div>
-
-              <div>
-                <label htmlFor="expense-team-member" className="block text-sm font-medium text-foreground mb-1.5">
-                  Team Member
-                </label>
-                <select
-                  id="expense-team-member"
-                  value={formData.teamMemberId || ""}
-                  onChange={(e) => setFormData({ ...formData, teamMemberId: e.target.value || undefined })}
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
-                >
-                  <option value="">No assignment</option>
-                  {teamMembers.map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {member.name}
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
 
             <div>
-              <label htmlFor="expense-receipt" className="block text-sm font-medium text-foreground mb-1.5">
-                Receipt URL
+              <label htmlFor="expense-team-member" className="block text-sm font-medium text-foreground mb-1.5">
+                Team Member
               </label>
-              <Input
-                id="expense-receipt"
-                type="url"
-                value={formData.receiptUrl || ""}
-                onChange={(e) => setFormData({ ...formData, receiptUrl: e.target.value })}
-                placeholder="https://..."
-              />
-              <p className="text-xs text-foreground-muted mt-1">
-                Paste a link to your uploaded receipt
-              </p>
+              <select
+                id="expense-team-member"
+                value={formData.teamMemberId || ""}
+                onChange={(e) => setFormData({ ...formData, teamMemberId: e.target.value })}
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+              >
+                <option value="">No assignment</option>
+                {teamMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Receipt Upload */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Receipt
+              </label>
+              <div className="space-y-2">
+                {formData.receiptUrl ? (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--background-secondary)]">
+                    <ReceiptIcon className="h-4 w-4 text-[var(--success)]" />
+                    <a
+                      href={formData.receiptUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-[var(--primary)] hover:underline truncate flex-1"
+                    >
+                      View Receipt
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, receiptUrl: "" })}
+                      className="p-1 hover:bg-[var(--background-hover)] rounded text-foreground-muted"
+                      aria-label="Remove receipt"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleReceiptUpload(file);
+                      }}
+                      className="hidden"
+                      id="receipt-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="flex-1"
+                    >
+                      <UploadIcon className="h-4 w-4 mr-1" />
+                      {isUploading ? `Uploading... ${uploadProgress}%` : "Upload Receipt"}
+                    </Button>
+                    <span className="text-xs text-foreground-muted">or</span>
+                    <Input
+                      type="url"
+                      placeholder="Paste URL..."
+                      value={formData.receiptUrl || ""}
+                      onChange={(e) => setFormData({ ...formData, receiptUrl: e.target.value })}
+                      className="flex-1 text-sm"
+                    />
+                  </div>
+                )}
+                {isUploading && (
+                  <div className="h-1 bg-[var(--background-secondary)] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[var(--primary)] transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
@@ -1179,7 +1552,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}>
+            <Button onClick={handleSubmit} disabled={isSubmitting || isUploading}>
               {isSubmitting ? "Saving..." : editingExpense ? "Save Changes" : "Add Expense"}
             </Button>
           </DialogFooter>

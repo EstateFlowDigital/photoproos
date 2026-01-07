@@ -56,6 +56,10 @@ export const DASHBOARD_SUB_NAV: Record<string, DashboardNavSubItem[]> = {
     { label: "All Projects", href: "/projects" },
     { label: "Analytics", href: "/projects/analytics" },
   ],
+  messages: [
+    { label: "Inbox", href: "/messages" },
+    { label: "Chat Requests", href: "/messages/requests" },
+  ],
   galleries: [
     { label: "All Galleries", href: "/galleries" },
     { label: "New Gallery", href: "/galleries/new" },

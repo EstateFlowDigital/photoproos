@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useHydrated } from "@/hooks/use-hydrated";
 import {
   getGalleryZipDownload,
   getWebSizeDownload,
@@ -24,6 +25,7 @@ import {
   InvoicesTab,
   LeadsTab,
   QuestionnairesTab,
+  MessagesTab,
   SettingsTab,
   MarketingKitModal,
   type ClientData,
@@ -71,6 +73,7 @@ function getGreeting(): string {
 
 export function PortalClient({ client, stats, properties, galleries, invoices, leads, questionnaires }: PortalClientProps) {
   const { showToast } = useToast();
+  const hydrated = useHydrated();
   const [activeTab, setActiveTab] = useState<PortalTab>(
     stats.pendingQuestionnaires > 0 ? "questionnaires" : "properties"
   );
@@ -151,7 +154,7 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
 
   const displayName = client.fullName || client.email.split("@")[0];
   const firstName = displayName.split(" ")[0];
-  const greeting = getGreeting();
+  const greeting = hydrated ? getGreeting() : "Welcome";
 
   // Toggle favorite handler (for photos)
   const handleToggleFavorite = (photoId: string) => {
@@ -451,7 +454,10 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-xl font-bold text-[var(--foreground)] sm:text-2xl">
+              <h1
+                className="text-xl font-bold text-[var(--foreground)] sm:text-2xl"
+                suppressHydrationWarning
+              >
                 {greeting}, {firstName}
               </h1>
               <p className="mt-1 text-sm text-[var(--foreground-secondary)] sm:text-base">
@@ -583,6 +589,10 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
 
           {activeTab === "questionnaires" && (
             <QuestionnairesTab questionnaires={questionnaires} />
+          )}
+
+          {activeTab === "messages" && (
+            <MessagesTab clientId={client.id} />
           )}
 
           {activeTab === "settings" && (

@@ -47,7 +47,7 @@ export interface MessageWithDetails {
   senderClientId: string | null;
   senderName: string;
   senderAvatar: string | null;
-  sender: {
+  senderUser: {
     id: string;
     fullName: string | null;
     email: string;
@@ -160,7 +160,7 @@ export async function sendMessage(
         clientMessageId: input.clientMessageId,
       },
       include: {
-        sender: {
+        senderUser: {
           select: {
             id: true,
             fullName: true,
@@ -261,7 +261,7 @@ export async function getConversationMessages(
         ...(options?.parentId !== undefined && { parentId: options.parentId }),
       },
       include: {
-        sender: {
+        senderUser: {
           select: {
             id: true,
             fullName: true,
@@ -362,7 +362,7 @@ export async function getThreadReplies(
         isDeleted: false,
       },
       include: {
-        sender: {
+        senderUser: {
           select: {
             id: true,
             fullName: true,
@@ -437,7 +437,7 @@ export async function editMessage(
         isEdited: true,
       },
       include: {
-        sender: {
+        senderUser: {
           select: {
             id: true,
             fullName: true,
@@ -781,7 +781,7 @@ export async function getPinnedMessages(
         isDeleted: false,
       },
       include: {
-        sender: {
+        senderUser: {
           select: {
             id: true,
             fullName: true,
@@ -861,7 +861,7 @@ export async function searchMessages(
         },
       },
       include: {
-        sender: {
+        senderUser: {
           select: {
             id: true,
             fullName: true,

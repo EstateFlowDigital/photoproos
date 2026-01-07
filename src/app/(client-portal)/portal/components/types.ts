@@ -101,7 +101,7 @@ export interface LeadData {
   lastActivityAt: Date | null;
 }
 
-export type PortalTab = "properties" | "galleries" | "downloads" | "invoices" | "leads" | "questionnaires" | "settings";
+export type PortalTab = "properties" | "galleries" | "downloads" | "invoices" | "leads" | "questionnaires" | "messages" | "settings";
 
 export interface NotificationPreferences {
   galleryDelivered: boolean;

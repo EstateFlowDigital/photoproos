@@ -515,6 +515,26 @@ enum Industry {
   product
 }
 
+// Photography Type (for dashboard layout defaults)
+enum PhotographyType {
+  real_estate
+  wedding
+  commercial
+  portrait
+  events
+  architecture
+  food_hospitality
+  general
+}
+
+// Walkthrough State
+enum WalkthroughState {
+  open
+  minimized
+  hidden
+  dismissed
+}
+
 // Phase 1: New Enums
 enum AvailabilityBlockType {
   time_off
@@ -753,6 +773,9 @@ model Organization {
   // Industry Selection (array of industry IDs)
   industries      Industry[] @default([real_estate])
   primaryIndustry Industry   @default(real_estate)
+
+  // Primary Photography Type (for dashboard layout defaults)
+  primaryPhotographyType PhotographyType @default(general)
 
   // Enabled Modules/Features (array of module IDs like "galleries", "scheduling", etc.)
   enabledModules String[] @default([])
@@ -1004,6 +1027,9 @@ model User {
   messageReactions         MessageReaction[]
   messageReadReceipts      MessageReadReceipt[]
   chatRequestResponses     ChatRequest[]             @relation("ChatRequestResponder")
+
+  // Walkthrough System
+  walkthroughPreferences UserWalkthroughPreference[]
 
   @@index([email])
   @@index([clerkUserId])
@@ -7902,4 +7928,26 @@ model ChatRequest {
   @@index([clientId])
   @@index([status])
   @@index([createdAt])
+}
+
+// ============================================================================
+// WALKTHROUGH & DASHBOARD WIDGET SYSTEM
+// ============================================================================
+
+// User walkthrough preferences - tracks walkthrough state per page per user
+model UserWalkthroughPreference {
+  id          String           @id @default(cuid())
+  userId      String
+  pageId      String // e.g., "dashboard", "galleries", "clients"
+  state       WalkthroughState @default(open)
+  dismissedAt DateTime? // Only set if permanently dismissed
+  hiddenAt    DateTime? // Set when hidden
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pageId])
+  @@index([userId])
 }

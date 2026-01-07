@@ -5,6 +5,7 @@ interface PortalTabsProps {
   onTabChange: (tab: PortalTab) => void;
   pendingQuestionnaires: number;
   newLeads?: number;
+  unreadMessages?: number;
 }
 
 const TABS: { id: PortalTab; label: string; icon?: React.ReactNode }[] = [
@@ -14,13 +15,14 @@ const TABS: { id: PortalTab; label: string; icon?: React.ReactNode }[] = [
   { id: "invoices", label: "Invoices" },
   { id: "leads", label: "Leads" },
   { id: "questionnaires", label: "Questionnaires" },
+  { id: "messages", label: "Messages", icon: <MessagesIcon /> },
   { id: "settings", label: "Settings", icon: <SettingsIcon /> },
 ];
 
-export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires, newLeads = 0 }: PortalTabsProps) {
+export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires, newLeads = 0, unreadMessages = 0 }: PortalTabsProps) {
   return (
     <div
-      className="mb-6 flex items-center gap-2 border-b border-[var(--card-border)]"
+      className="mb-6 flex items-center gap-2 border-b border-[var(--card-border)] overflow-x-auto"
       role="tablist"
       aria-label="Portal navigation"
     >
@@ -28,8 +30,9 @@ export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires, newL
         const isActive = activeTab === tab.id;
         const hasBadge =
           (tab.id === "questionnaires" && pendingQuestionnaires > 0) ||
-          (tab.id === "leads" && newLeads > 0);
-        const badgeCount = tab.id === "questionnaires" ? pendingQuestionnaires : tab.id === "leads" ? newLeads : 0;
+          (tab.id === "leads" && newLeads > 0) ||
+          (tab.id === "messages" && unreadMessages > 0);
+        const badgeCount = tab.id === "questionnaires" ? pendingQuestionnaires : tab.id === "leads" ? newLeads : tab.id === "messages" ? unreadMessages : 0;
 
         return (
           <button
@@ -51,9 +54,9 @@ export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires, newL
             {hasBadge && (
               <span
                 className={`absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white ${
-                  tab.id === "leads" ? "bg-[var(--primary)]" : "bg-[var(--warning)]"
+                  tab.id === "leads" ? "bg-[var(--primary)]" : tab.id === "messages" ? "bg-[var(--primary)]" : "bg-[var(--warning)]"
                 }`}
-                aria-label={`${badgeCount} ${tab.id === "leads" ? "new leads" : "pending questionnaires"}`}
+                aria-label={`${badgeCount} ${tab.id === "leads" ? "new leads" : tab.id === "messages" ? "unread messages" : "pending questionnaires"}`}
               >
                 {badgeCount}
               </span>
@@ -62,6 +65,24 @@ export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires, newL
         );
       })}
     </div>
+  );
+}
+
+function MessagesIcon() {
+  return (
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"
+      />
+    </svg>
   );
 }
 

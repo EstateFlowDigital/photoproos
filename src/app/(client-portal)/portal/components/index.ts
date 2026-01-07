@@ -47,4 +47,5 @@ export { DownloadsTab, type DownloadType } from "./tabs/downloads-tab";
 export { InvoicesTab } from "./tabs/invoices-tab";
 export { LeadsTab } from "./tabs/leads-tab";
 export { QuestionnairesTab } from "./tabs/questionnaires-tab";
+export { MessagesTab } from "./tabs/messages-tab";
 export { SettingsTab } from "./tabs/settings-tab";

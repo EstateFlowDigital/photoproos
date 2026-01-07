@@ -55,7 +55,7 @@ export interface ClientMessageWithDetails {
   senderClientId: string | null;
   senderName: string;
   senderAvatar: string | null;
-  sender: {
+  senderUser: {
     id: string;
     fullName: string | null;
     avatarUrl: string | null;
@@ -294,7 +294,7 @@ export async function getClientMessages(
         parentId: null, // Only top-level messages
       },
       include: {
-        sender: {
+        senderUser: {
           select: {
             id: true,
             fullName: true,
@@ -419,7 +419,7 @@ export async function sendClientMessage(
         clientMessageId: options?.clientMessageId,
       },
       include: {
-        sender: {
+        senderUser: {
           select: {
             id: true,
             fullName: true,

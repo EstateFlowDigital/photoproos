@@ -31,7 +31,7 @@ export interface ChatRequestWithDetails {
     company: string | null;
     brokerageId: string | null;
   };
-  responder: {
+  respondedBy: {
     id: string;
     fullName: string | null;
   } | null;
@@ -113,7 +113,7 @@ export async function createChatRequest(
             brokerageId: true,
           },
         },
-        responder: {
+        respondedBy: {
           select: {
             id: true,
             fullName: true,
@@ -163,7 +163,7 @@ export async function getClientChatRequests(): Promise<
             brokerageId: true,
           },
         },
-        responder: {
+        respondedBy: {
           select: {
             id: true,
             fullName: true,
@@ -249,7 +249,7 @@ export async function getPendingChatRequests(): Promise<
             brokerageId: true,
           },
         },
-        responder: {
+        respondedBy: {
           select: {
             id: true,
             fullName: true,
@@ -300,7 +300,7 @@ export async function getChatRequests(filters?: {
             brokerageId: true,
           },
         },
-        responder: {
+        respondedBy: {
           select: {
             id: true,
             fullName: true,
@@ -349,7 +349,7 @@ export async function getChatRequestById(
             brokerageId: true,
           },
         },
-        responder: {
+        respondedBy: {
           select: {
             id: true,
             fullName: true,
