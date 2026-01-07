@@ -371,6 +371,20 @@ const PREFERENCE_GROUPS: Partial<Record<Industry, PreferenceGroup[]>> = {
   ],
 };
 
+const GENERAL_PREFERENCE_GROUPS: PreferenceGroup[] = [
+  {
+    key: "pref_overall_style",
+    title: "Overall Style",
+    description: "Tell us the general vibe you prefer.",
+    options: [
+      { value: "bright", label: "Bright & Airy", description: "Clean, light, and welcoming" },
+      { value: "natural", label: "Natural", description: "True-to-life, balanced lighting" },
+      { value: "moody", label: "Moody", description: "Dramatic contrast and depth" },
+      { value: "cinematic", label: "Cinematic", description: "Stylized and polished" },
+    ],
+  },
+];
+
 export function BookingFormPublic({ form, organization, clientProfile }: BookingFormPublicProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -445,7 +459,7 @@ export function BookingFormPublic({ form, organization, clientProfile }: Booking
     if (selectedIndustry && PREFERENCE_GROUPS[selectedIndustry]) {
       return PREFERENCE_GROUPS[selectedIndustry] as PreferenceGroup[];
     }
-    return [];
+    return GENERAL_PREFERENCE_GROUPS;
   }, [selectedIndustry]);
 
   useEffect(() => {

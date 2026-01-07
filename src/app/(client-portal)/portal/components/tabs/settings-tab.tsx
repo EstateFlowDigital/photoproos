@@ -140,6 +140,7 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
   }));
   const [bookingSaved, setBookingSaved] = useState(false);
   const [bookingSaving, setBookingSaving] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   // Persist preferences to localStorage
   useEffect(() => {
@@ -207,6 +208,7 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
 
   const handleSaveBookingPreferences = async () => {
     setBookingSaving(true);
+    setBookingError(null);
     const result = await updateClientBookingPreferences({
       profile: bookingPreferences.profile,
       preferences: bookingPreferences.preferences,
@@ -218,6 +220,8 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
     if (result.success) {
       setBookingSaved(true);
       setTimeout(() => setBookingSaved(false), 2000);
+    } else {
+      setBookingError(result.error || "Could not save preferences. Please try again.");
     }
   };
 
@@ -401,9 +405,12 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
           >
             {bookingSaving ? "Saving..." : "Save Preferences"}
           </button>
+          {bookingError && (
+            <span className="text-xs text-red-500">{bookingError}</span>
+          )}
           {bookingPreferences.agreements?.policyAcceptedAt && (
             <span className="text-xs text-[var(--foreground-muted)]">
-              Policy accepted on {new Date(bookingPreferences.agreements.policyAcceptedAt).toLocaleDateString()}
+              {formatDateLabel(bookingPreferences.agreements.policyAcceptedAt)}
             </span>
           )}
         </div>
@@ -529,6 +536,13 @@ function SettingsSelect({
       </select>
     </label>
   );
+}
+
+function formatDateLabel(dateString: string | undefined) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "";
+  return `Policy accepted on ${date.toLocaleDateString()}`;
 }
 
 // Icons

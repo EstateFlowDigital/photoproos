@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
+import { IconBadge } from "@/components/ui/icon-badge";
 
 /**
  * SettingsFormCard
@@ -76,14 +77,19 @@ export function SettingsFormCard({
       {/* Header */}
       <div className="flex items-start gap-4 p-6 pb-4">
         {Icon && (
-          <div
-            className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)]",
-              styles.iconContainer
-            )}
+          <IconBadge
+            tone={
+              variant === "danger"
+                ? "danger"
+                : variant === "success"
+                  ? "success"
+                  : "default"
+            }
+            size="lg"
+            className="shrink-0"
           >
             <Icon className="h-5 w-5" />
-          </div>
+          </IconBadge>
         )}
         <div className="flex-1 min-w-0">
           <h2 className={cn("text-lg font-semibold", styles.title)}>

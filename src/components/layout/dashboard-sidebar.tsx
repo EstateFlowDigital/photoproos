@@ -9,6 +9,7 @@ import {
   type DashboardNavData,
   isActiveRoute,
 } from "@/lib/navigation/dashboard-nav";
+import { IconBadge } from "@/components/ui/icon-badge";
 
 interface DashboardSidebarProps {
   className?: string;
@@ -189,10 +190,13 @@ export function DashboardSidebar({
               {topItems.map((item) => {
                 const isActive = isActiveRoute(pathname, item.href);
                 const Icon = item.icon;
-                const badgeClassName =
-                  item.id === "notifications"
-                    ? "bg-red-500 text-white"
-                    : "bg-[var(--primary)]/15 text-[var(--primary)]";
+                const hasBadge = item.badge !== undefined && item.badge > 0;
+                const tone: "default" | "primary" | "danger" =
+                  item.id === "notifications" && hasBadge
+                    ? "danger"
+                    : isActive
+                      ? "primary"
+                      : "default";
 
                 return (
                   <Link
@@ -206,23 +210,17 @@ export function DashboardSidebar({
                         : "text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                     )}
                   >
-                    <Icon
-                      className={cn(
-                        "h-5 w-5 shrink-0",
-                        isActive ? "text-[var(--primary)]" : "text-foreground-muted"
-                      )}
-                    />
+                    <IconBadge tone={tone} size="md" className="shrink-0">
+                      <Icon className="h-4 w-4" />
+                    </IconBadge>
                     <span className="sidebar-label flex-1 truncate">
                       {item.label}
                     </span>
-                    <span
-                      className={cn(
-                        "sidebar-badge ml-auto rounded-full px-2 py-0.5 text-xs font-semibold",
-                        badgeClassName
-                      )}
-                    >
-                      {item.badge && item.badge > 99 ? "99+" : item.badge}
-                    </span>
+                    {hasBadge ? (
+                      <span className="sidebar-badge ml-auto rounded-full bg-[var(--primary)]/15 px-2 py-0.5 text-xs font-semibold text-[var(--primary)]">
+                        {item.badge && item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    ) : null}
                   </Link>
                 );
               })}
@@ -270,12 +268,9 @@ export function DashboardSidebar({
                             aria-label={`Toggle ${item.label}`}
                             aria-expanded={isExpanded}
                           >
-                            <Icon
-                              className={cn(
-                                "h-5 w-5 shrink-0",
-                                isActive ? "text-[var(--primary)]" : "text-foreground-muted"
-                              )}
-                            />
+                            <IconBadge tone={isActive ? "primary" : "default"} size="md" className="shrink-0">
+                              <Icon className="h-4 w-4" />
+                            </IconBadge>
                             <span className="sidebar-label flex-1 truncate">
                               {item.label}
                             </span>
@@ -294,12 +289,9 @@ export function DashboardSidebar({
                           </button>
                         ) : (
                           <Link href={item.href} onClick={onClose} className={itemClassName}>
-                            <Icon
-                              className={cn(
-                                "h-5 w-5 shrink-0",
-                                isActive ? "text-[var(--primary)]" : "text-foreground-muted"
-                              )}
-                            />
+                            <IconBadge tone={isActive ? "primary" : "default"} size="md" className="shrink-0">
+                              <Icon className="h-4 w-4" />
+                            </IconBadge>
                             <span className="sidebar-label flex-1 truncate">
                               {item.label}
                             </span>
