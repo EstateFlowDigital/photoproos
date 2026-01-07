@@ -8,6 +8,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Review Gate System** - Smart review collection that captures internal feedback first
+  - **Rating-Based Routing** - 4-5 star ratings redirect to public review platforms, 1-3 stars collect private feedback
+    - Configurable review platforms (Google Business, Yelp, TripAdvisor, Facebook, Thumbtack, WeddingWire, The Knot, custom)
+    - Platform priority ordering for multi-platform selection
+    - Private feedback capture with optional categories for improvement insights
+  - **Multiple Touchpoints** - Collect reviews through various customer interactions
+    - **Delivery Email CTA** - Optional review request in gallery delivery emails
+    - **Automated Follow-up** - Cron job sends review requests X days after gallery delivery (configurable per organization)
+    - **Gallery Page Prompt** - Optional modal prompt after 45 seconds of gallery viewing
+  - **Database Models** - Three new models for comprehensive review tracking
+    - `ReviewPlatform` - Organization's configured review platforms with URLs and priorities
+    - `ReviewRequest` - Token-based review requests with source tracking (manual, delivery, followup, gallery, chat)
+    - `ReviewResponse` - Client ratings, feedback, and platform click tracking
+  - **Settings Page** (`/settings/reviews`) - Full review gate configuration
+    - Step-by-step setup guide (platforms → settings → touchpoints → track)
+    - Platform CRUD with drag-and-drop reordering
+    - Touchpoint toggles (delivery email, follow-up, gallery prompt)
+    - Follow-up delay configuration (1-30 days)
+    - Real-time statistics (total, pending, completed, average rating)
+  - **Public Review Flow** (`/review/[token]`) - Client-facing review submission
+    - Branded experience with organization logo and colors
+    - Interactive 5-star rating selector
+    - Private feedback form for low ratings (with category selection)
+    - Platform selector for high ratings (shows configured platforms)
+    - Thank you page with confirmation
+  - **Email Template** (`review-request.tsx`) - Professional review request emails
+    - Star preview animation
+    - Photographer branding (logo, colors)
+    - Mobile-responsive design
+  - **API Endpoints**
+    - `/api/cron/review-followups` - Daily cron for automated follow-up emails
+    - `/api/reviews/create-gallery-request` - Create review request from gallery prompt
+    - `/api/reviews/submit` - Public endpoint for review submission
+- **Premium Gallery Celebration Features** - Confetti celebrations for key moments
+  - **Gallery Delivery Confetti** - Celebration animation when photographers deliver galleries to clients
+  - **View Milestone Celebrations** - Automatic celebrations at 100, 500, 1K, 5K, 10K views
+    - Hook (`useViewMilestone`) tracks milestones in localStorage to prevent duplicate celebrations
+    - Larger celebrations for higher milestones (more particles, longer duration)
+  - **Backfill Script** (`scripts/backfill-blur-placeholders.ts`) - One-time script to generate blur placeholders for existing assets
+  - Made Confetti `trigger` prop optional with default value for easier hook integration
 - **Messaging System Enhancements** - Completed Phase 2-6 of messaging implementation
   - **New Conversation Page** (`/messages/new`) - Team member selection UI for creating DMs, groups, and channels
     - Search and filter team members
@@ -20,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `grantBrokerAccess()` and `revokeBrokerAccess()` server actions
     - Broker participants can see all conversation messages
     - `addClientParticipant()` supports `hasBrokerAccess` parameter
+  - **Chat Request Notifications** - Automatic notifications for chat request workflow
+    - Team admins notified when client submits chat request
+    - Client notified when request is approved (with link to messages)
+    - Client notified when request is declined (with reason if provided)
 - **Expense Approval Workflow Notifications** - Email/SMS alerts for expense approvals
   - Email templates for approval required notifications (`expense-approval-required.tsx`)
   - Email templates for approval/rejection results (`expense-approval-result.tsx`)
@@ -49,6 +93,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Receipt preview with remove option
   - Expense summary before submission
   - Progress indicators for each step
+- **Customizable Onboarding Checklist** - Admin-configurable getting started steps
+  - Database model `OnboardingChecklistItem` for per-organization customization
+  - Full CRUD server actions for checklist item management
+  - Settings page at `/settings/onboarding` with drag-and-drop reordering
+  - Toggle enable/disable for individual checklist items
+  - Add custom onboarding steps with icon picker (13 icons available)
+  - Reset to defaults functionality
+  - Auto-completion tracking based on organization data
+  - Industry-based filtering (e.g., property website step only for real estate)
+  - Dashboard integration uses database-driven checklist with calculated completion status
+  - **12 Default Onboarding Steps:**
+    1. Add your first client
+    2. Create a service package
+    3. Create your first gallery
+    4. Create a property website (real estate only)
+    5. Customize your branding
+    6. Set up payments
+    7. Set up expense tracking
+    8. Create an expense template
+    9. Create a booking form
+    10. Set up your availability
+    11. Create a contract template
+    12. Create an invoice template
 
 ### Fixed
 - **Dashboard React Error (Too Many Re-renders)** - Fixed Date serialization issue causing React error #310 and #301 on dashboard page. Date objects passed from server to client components must be serialized as ISO strings to avoid becoming empty objects during hydration. Updated `UpcomingBookings` component to accept ISO string dates.

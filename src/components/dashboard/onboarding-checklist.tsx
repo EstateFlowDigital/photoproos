@@ -3,14 +3,58 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Check, X, ChevronRight, Sparkles } from "lucide-react";
+import {
+  Check,
+  X,
+  ChevronRight,
+  Sparkles,
+  Users,
+  Images,
+  CreditCard,
+  Tag,
+  Building2,
+  Palette,
+  Receipt,
+  Repeat,
+  CalendarPlus,
+  Clock,
+  FileText,
+  FileSpreadsheet,
+} from "lucide-react";
 import type { ChecklistItem } from "@/lib/utils/checklist-items";
 
 // Re-export type for backwards compatibility
 export type { ChecklistItem };
 
+// New type for database-driven checklist items
+export interface ChecklistItemWithIcon {
+  id: string;
+  label: string;
+  description: string;
+  href: string;
+  icon: string; // Icon name as string
+  isCompleted: boolean;
+}
+
+// Icon map for converting icon names to React components
+const ICON_MAP: Record<string, React.ReactNode> = {
+  users: <Users className="h-4 w-4" />,
+  images: <Images className="h-4 w-4" />,
+  "credit-card": <CreditCard className="h-4 w-4" />,
+  tag: <Tag className="h-4 w-4" />,
+  "building-2": <Building2 className="h-4 w-4" />,
+  palette: <Palette className="h-4 w-4" />,
+  receipt: <Receipt className="h-4 w-4" />,
+  repeat: <Repeat className="h-4 w-4" />,
+  check: <Check className="h-4 w-4" />,
+  "calendar-plus": <CalendarPlus className="h-4 w-4" />,
+  clock: <Clock className="h-4 w-4" />,
+  "file-text": <FileText className="h-4 w-4" />,
+  "file-invoice": <FileSpreadsheet className="h-4 w-4" />,
+};
+
 interface OnboardingChecklistProps {
-  items: ChecklistItem[];
+  items: ChecklistItem[] | ChecklistItemWithIcon[];
   organizationName?: string;
   className?: string;
 }
@@ -37,8 +81,29 @@ export function OnboardingChecklist({
     localStorage.setItem(STORAGE_KEY, "true");
   };
 
-  const completedCount = items.filter((item) => item.completed).length;
-  const totalCount = items.length;
+  // Normalize items to handle both old and new formats
+  const normalizedItems = items.map((item) => {
+    // Check if it's the new format (has isCompleted) or old format (has completed)
+    const isNewFormat = "isCompleted" in item;
+    const completed = isNewFormat
+      ? (item as ChecklistItemWithIcon).isCompleted
+      : (item as ChecklistItem).completed;
+    const icon = isNewFormat
+      ? ICON_MAP[(item as ChecklistItemWithIcon).icon] || <Check className="h-4 w-4" />
+      : (item as ChecklistItem).icon;
+
+    return {
+      id: item.id,
+      label: item.label,
+      description: item.description,
+      href: item.href,
+      completed,
+      icon,
+    };
+  });
+
+  const completedCount = normalizedItems.filter((item) => item.completed).length;
+  const totalCount = normalizedItems.length;
   const progress = Math.round((completedCount / totalCount) * 100);
   const allCompleted = completedCount === totalCount;
 
@@ -97,7 +162,7 @@ export function OnboardingChecklist({
 
       {/* Checklist Items */}
       <div className="mt-5 space-y-2">
-        {items.map((item) => (
+        {normalizedItems.map((item) => (
           <Link
             key={item.id}
             href={item.completed ? "#" : item.href}

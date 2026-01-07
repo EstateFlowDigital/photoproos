@@ -1,0 +1,591 @@
+"use client";
+
+import * as React from "react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import {
+  type ChecklistItemData,
+  createChecklistItem,
+  updateChecklistItem,
+  deleteChecklistItem,
+  toggleChecklistItem,
+  reorderChecklistItems,
+  resetChecklistToDefaults,
+} from "@/lib/actions/onboarding-checklist";
+import {
+  Users,
+  Images,
+  CreditCard,
+  Tag,
+  Building2,
+  Palette,
+  Receipt,
+  Repeat,
+  Check,
+  GripVertical,
+  Pencil,
+  Trash2,
+  Plus,
+  RotateCcw,
+  Eye,
+  EyeOff,
+  X,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  CalendarPlus,
+  Clock,
+  FileText,
+  FileSpreadsheet,
+} from "lucide-react";
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface OnboardingSettingsClientProps {
+  initialItems: ChecklistItemData[];
+}
+
+// ============================================================================
+// Icon Map
+// ============================================================================
+
+const ICON_MAP: Record<string, React.ReactNode> = {
+  users: <Users className="h-4 w-4" />,
+  images: <Images className="h-4 w-4" />,
+  "credit-card": <CreditCard className="h-4 w-4" />,
+  tag: <Tag className="h-4 w-4" />,
+  "building-2": <Building2 className="h-4 w-4" />,
+  palette: <Palette className="h-4 w-4" />,
+  receipt: <Receipt className="h-4 w-4" />,
+  repeat: <Repeat className="h-4 w-4" />,
+  check: <Check className="h-4 w-4" />,
+  "calendar-plus": <CalendarPlus className="h-4 w-4" />,
+  clock: <Clock className="h-4 w-4" />,
+  "file-text": <FileText className="h-4 w-4" />,
+  "file-invoice": <FileSpreadsheet className="h-4 w-4" />,
+};
+
+const AVAILABLE_ICONS = [
+  { value: "users", label: "Users" },
+  { value: "images", label: "Images" },
+  { value: "credit-card", label: "Credit Card" },
+  { value: "tag", label: "Tag" },
+  { value: "building-2", label: "Building" },
+  { value: "palette", label: "Palette" },
+  { value: "receipt", label: "Receipt" },
+  { value: "repeat", label: "Repeat" },
+  { value: "check", label: "Check" },
+  { value: "calendar-plus", label: "Calendar" },
+  { value: "clock", label: "Clock" },
+  { value: "file-text", label: "Document" },
+  { value: "file-invoice", label: "Invoice" },
+];
+
+// ============================================================================
+// Component
+// ============================================================================
+
+export function OnboardingSettingsClient({
+  initialItems,
+}: OnboardingSettingsClientProps) {
+  const [items, setItems] = useState<ChecklistItemData[]>(initialItems);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<ChecklistItemData | null>(null);
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+
+  // ============================================================================
+  // Handlers
+  // ============================================================================
+
+  const handleToggle = async (itemId: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await toggleChecklistItem(itemId);
+      if (!result.success) {
+        setError(result.error || "Failed to toggle item");
+        return;
+      }
+      if (result.data) {
+        setItems((prev) =>
+          prev.map((item) => (item.id === itemId ? result.data! : item))
+        );
+      }
+    } catch {
+      setError("Failed to toggle item");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (itemId: string) => {
+    if (!confirm("Are you sure you want to delete this checklist item?")) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await deleteChecklistItem(itemId);
+      if (result.success) {
+        setItems((prev) => prev.filter((item) => item.id !== itemId));
+      } else {
+        setError(result.error || "Failed to delete item");
+      }
+    } catch {
+      setError("Failed to delete item");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to reset to default checklist items? This will remove all custom items."
+      )
+    ) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await resetChecklistToDefaults();
+      if (result.success) {
+        window.location.reload();
+      } else {
+        setError(result.error || "Failed to reset checklist");
+      }
+    } catch {
+      setError("Failed to reset checklist");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDragStart = (itemId: string) => {
+    setDraggedItem(itemId);
+  };
+
+  const handleDragOver = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem === targetId) return;
+
+    const draggedIndex = items.findIndex((item) => item.id === draggedItem);
+    const targetIndex = items.findIndex((item) => item.id === targetId);
+
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    const newItems = [...items];
+    const [removed] = newItems.splice(draggedIndex, 1);
+    newItems.splice(targetIndex, 0, removed);
+    setItems(newItems);
+  };
+
+  const handleDragEnd = async () => {
+    if (!draggedItem) return;
+
+    setDraggedItem(null);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const itemIds = items.map((item) => item.id);
+      const result = await reorderChecklistItems(itemIds);
+      if (!result.success) {
+        setError(result.error || "Failed to reorder items");
+      }
+    } catch {
+      setError("Failed to reorder items");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveItem = async (data: {
+    label: string;
+    description: string;
+    href: string;
+    icon: string;
+  }) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (editingItem) {
+        const result = await updateChecklistItem(editingItem.id, data);
+        if (!result.success) {
+          setError(result.error || "Failed to update item");
+          return;
+        }
+        if (result.data) {
+          setItems((prev) =>
+            prev.map((item) => (item.id === editingItem.id ? result.data! : item))
+          );
+          setEditingItem(null);
+        }
+      } else {
+        const result = await createChecklistItem(data);
+        if (!result.success) {
+          setError(result.error || "Failed to create item");
+          return;
+        }
+        if (result.data) {
+          setItems((prev) => [...prev, result.data!]);
+          setShowAddModal(false);
+        }
+      }
+    } catch {
+      setError("Failed to save item");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ============================================================================
+  // Render
+  // ============================================================================
+
+  return (
+    <div className="space-y-6">
+      {/* Error message */}
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-4 text-[var(--error)]">
+          <AlertCircle className="h-4 w-4" />
+          <span>{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto p-1 hover:bg-[var(--error)]/20 rounded"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-foreground-muted">
+          Drag items to reorder. Toggle visibility or add custom steps.
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleReset}
+            disabled={isLoading}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset to Defaults
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            disabled={isLoading}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+          >
+            <Plus className="h-4 w-4" />
+            Add Custom Step
+          </button>
+        </div>
+      </div>
+
+      {/* Checklist Items */}
+      <div className="space-y-2">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            draggable
+            onDragStart={() => handleDragStart(item.id)}
+            onDragOver={(e) => handleDragOver(e, item.id)}
+            onDragEnd={handleDragEnd}
+            className={cn(
+              "group flex items-center gap-4 rounded-lg border p-4 transition-all",
+              item.isEnabled
+                ? "border-[var(--card-border)] bg-[var(--card)]"
+                : "border-[var(--card-border)]/50 bg-[var(--card)]/50 opacity-60",
+              draggedItem === item.id && "opacity-50 border-[var(--primary)]"
+            )}
+          >
+            {/* Drag handle */}
+            <div className="cursor-grab text-foreground-muted hover:text-foreground">
+              <GripVertical className="h-5 w-5" />
+            </div>
+
+            {/* Icon */}
+            <div
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg",
+                item.isEnabled
+                  ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                  : "bg-[var(--background-tertiary)] text-foreground-muted"
+              )}
+            >
+              {ICON_MAP[item.icon] || <Check className="h-4 w-4" />}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-foreground truncate">
+                  {item.label}
+                </h3>
+                {item.isCustom && (
+                  <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">
+                    Custom
+                  </span>
+                )}
+                {item.industries.length > 0 && (
+                  <span className="rounded-full bg-[var(--warning)]/10 px-2 py-0.5 text-xs font-medium text-[var(--warning)]">
+                    {item.industries.join(", ")}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-foreground-muted truncate">
+                {item.description}
+              </p>
+              <p className="text-xs text-foreground-muted/60 mt-1">
+                Links to: {item.href}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => setEditingItem(item)}
+                disabled={isLoading}
+                className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
+                title="Edit"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => handleToggle(item.id)}
+                disabled={isLoading}
+                className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
+                title={item.isEnabled ? "Disable" : "Enable"}
+              >
+                {item.isEnabled ? (
+                  <Eye className="h-4 w-4" />
+                ) : (
+                  <EyeOff className="h-4 w-4" />
+                )}
+              </button>
+              {item.isCustom && (
+                <button
+                  onClick={() => handleDelete(item.id)}
+                  disabled={isLoading}
+                  className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)] transition-colors"
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Enable/Disable indicator */}
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full",
+                item.isEnabled ? "bg-[var(--success)]" : "bg-foreground-muted"
+              )}
+            />
+          </div>
+        ))}
+
+        {items.length === 0 && (
+          <div className="text-center py-12 text-foreground-muted">
+            <Check className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No checklist items configured.</p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="mt-4 text-[var(--primary)] hover:underline"
+            >
+              Add your first step
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Add/Edit Modal */}
+      {(showAddModal || editingItem) && (
+        <ItemModal
+          item={editingItem}
+          onSave={handleSaveItem}
+          onClose={() => {
+            setShowAddModal(false);
+            setEditingItem(null);
+          }}
+          isLoading={isLoading}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Item Modal Component
+// ============================================================================
+
+interface ItemModalProps {
+  item: ChecklistItemData | null;
+  onSave: (data: {
+    label: string;
+    description: string;
+    href: string;
+    icon: string;
+  }) => Promise<void>;
+  onClose: () => void;
+  isLoading: boolean;
+}
+
+function ItemModal({ item, onSave, onClose, isLoading }: ItemModalProps) {
+  const [label, setLabel] = useState(item?.label || "");
+  const [description, setDescription] = useState(item?.description || "");
+  const [href, setHref] = useState(item?.href || "/");
+  const [icon, setIcon] = useState(item?.icon || "check");
+  const [showIconPicker, setShowIconPicker] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSave({ label, description, href, icon });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-foreground">
+            {item ? "Edit Checklist Step" : "Add Checklist Step"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Label */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Label
+            </label>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="Add your first client"
+              required
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Description
+            </label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Start building your client database"
+              required
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
+            />
+          </div>
+
+          {/* Link */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Link (URL)
+            </label>
+            <input
+              type="text"
+              value={href}
+              onChange={(e) => setHref(e.target.value)}
+              placeholder="/clients/new"
+              required
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none"
+            />
+          </div>
+
+          {/* Icon */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Icon
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowIconPicker(!showIconPicker)}
+                className="w-full flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground"
+              >
+                <div className="flex items-center gap-2">
+                  {ICON_MAP[icon] || <Check className="h-4 w-4" />}
+                  <span>{AVAILABLE_ICONS.find((i) => i.value === icon)?.label || icon}</span>
+                </div>
+                {showIconPicker ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+
+              {showIconPicker && (
+                <div className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-lg z-10">
+                  <div className="grid grid-cols-3 gap-1">
+                    {AVAILABLE_ICONS.map((iconOption) => (
+                      <button
+                        key={iconOption.value}
+                        type="button"
+                        onClick={() => {
+                          setIcon(iconOption.value);
+                          setShowIconPicker(false);
+                        }}
+                        className={cn(
+                          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                          icon === iconOption.value
+                            ? "bg-[var(--primary)] text-white"
+                            : "hover:bg-[var(--background-hover)] text-foreground"
+                        )}
+                      >
+                        {ICON_MAP[iconOption.value]}
+                        <span>{iconOption.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading || !label || !description || !href}
+              className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+            >
+              {isLoading ? "Saving..." : item ? "Save Changes" : "Add Step"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default OnboardingSettingsClient;

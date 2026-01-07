@@ -4,7 +4,7 @@ import nextDynamic from "next/dynamic";
 import { StatCard, ActivityItem, PageHeader, EmptyGalleries, ReferralWidget, CollapsibleSection, QuickActionsSkeleton, UpcomingBookingsSkeleton, OverdueInvoicesWidget } from "@/components/dashboard";
 import { ExpiringGalleriesWidget } from "@/components/dashboard/expiring-galleries-widget";
 import { getOverdueInvoicesForDashboard } from "@/lib/actions/invoices";
-import { getChecklistItems } from "@/lib/utils/checklist-items";
+import { getChecklistItemsWithStatus } from "@/lib/actions/onboarding-checklist";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { TourStarter } from "@/components/tour";
 import { prisma } from "@/lib/db";
@@ -200,6 +200,7 @@ export default async function DashboardPage() {
     expiringGalleriesResult,
     overdueInvoicesResult,
     walkthroughPreferenceResult,
+    checklistItemsResult,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -373,6 +374,9 @@ export default async function DashboardPage() {
 
     // Walkthrough preference
     getWalkthroughPreference("dashboard"),
+
+    // Onboarding checklist items (database-driven)
+    getChecklistItemsWithStatus(),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
@@ -386,25 +390,14 @@ export default async function DashboardPage() {
   const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
     ? walkthroughPreferenceResult.data.state
     : "open";
+  const checklistItems = checklistItemsResult.success && checklistItemsResult.data
+    ? checklistItemsResult.data
+    : [];
 
   // Calculate changes for stats
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
   const galleriesChange = calculateCountChange(activeGalleries, lastMonthActiveGalleries);
   const clientsChange = calculateCountChange(totalClients, lastMonthTotalClients);
-
-  // Prepare onboarding checklist data
-  const isRealEstate = organization.primaryIndustry === "real_estate" ||
-    (organization.industries && organization.industries.includes("real_estate"));
-
-  const checklistItems = getChecklistItems({
-    hasClients: totalClients > 0,
-    hasServices: servicesCount > 0,
-    hasGalleries: activeGalleries > 0 || recentGalleries.length > 0,
-    hasPaymentMethod: organization.paymentMethodAdded || !!organization.stripeConnectAccountId,
-    hasBranding: !!organization.logoUrl,
-    hasProperties: propertiesCount > 0,
-    isRealEstate,
-  });
 
   // Only show checklist if onboarding was recently completed (within 30 days)
   const showChecklist = organization.onboardingCompleted &&

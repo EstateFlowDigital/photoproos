@@ -40,6 +40,9 @@ const isPublicRoute = createRouteMatcher([
   // Public form submissions
   "/f/(.*)",
 
+  // Review pages (public review submission)
+  "/review/(.*)",
+
   // Webhooks (Stripe, Clerk, etc.)
   "/api/webhooks/(.*)",
 

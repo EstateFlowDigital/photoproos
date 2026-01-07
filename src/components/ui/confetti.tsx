@@ -18,9 +18,9 @@ interface Particle {
   rotationSpeed: number;
 }
 
-interface ConfettiProps {
-  /** Trigger the confetti animation */
-  trigger: boolean;
+export interface ConfettiProps {
+  /** Trigger the confetti animation (default: false) */
+  trigger?: boolean;
   /** Duration of animation in ms (default: 3000) */
   duration?: number;
   /** Number of particles (default: 50) */
@@ -127,7 +127,7 @@ function ParticleComponent({ particle, gravity }: { particle: Particle; gravity:
 }
 
 export function Confetti({
-  trigger,
+  trigger = false,
   duration = 3000,
   particleCount = 50,
   colors = DEFAULT_COLORS,

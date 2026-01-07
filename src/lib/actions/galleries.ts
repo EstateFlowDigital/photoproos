@@ -568,18 +568,56 @@ export async function deliverGallery(
     // Send email notification if requested (non-blocking - don't fail delivery if email fails)
     if (sendEmail && existing.client?.email) {
       try {
-        // Get organization info for photographer name
+        // Get organization info for photographer name and review gate settings
         const organization = await prisma.organization.findUnique({
           where: { id: organizationId },
-          select: { name: true },
+          select: {
+            name: true,
+            logoUrl: true,
+            primaryColor: true,
+            reviewGateEnabled: true,
+            reviewGateDeliveryEmailEnabled: true,
+          },
         });
 
-        const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/g/${deliverySlug || id}`;
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
+        const galleryUrl = `${baseUrl}/g/${deliverySlug || id}`;
 
         // Count photos for the email
         const photoCount = await prisma.asset.count({
           where: { projectId: id },
         });
+
+        // Review gate integration - create review request if enabled
+        let reviewUrl: string | undefined;
+        let showReviewCta = false;
+
+        if (
+          organization?.reviewGateEnabled &&
+          organization?.reviewGateDeliveryEmailEnabled &&
+          existing.client?.id
+        ) {
+          try {
+            // Create a review request for this delivery
+            const reviewRequest = await prisma.reviewRequest.create({
+              data: {
+                organizationId,
+                projectId: id,
+                clientId: existing.client.id,
+                clientEmail: existing.client.email,
+                clientName: existing.client.fullName || existing.client.company,
+                source: "delivery",
+                status: "pending",
+              },
+            });
+
+            reviewUrl = `${baseUrl}/review/${reviewRequest.token}`;
+            showReviewCta = true;
+          } catch (reviewErr) {
+            // Don't fail delivery if review request creation fails
+            console.error("[Gallery Delivery] Failed to create review request:", reviewErr);
+          }
+        }
 
         const emailResult = await sendGalleryDeliveredEmail({
           to: existing.client.email,
@@ -587,8 +625,12 @@ export async function deliverGallery(
           galleryName: existing.name,
           galleryUrl,
           photographerName: organization?.name || "Your Photographer",
+          photographerLogo: organization?.logoUrl,
           photoCount,
           expiresAt: existing.expiresAt || undefined,
+          reviewUrl,
+          showReviewCta,
+          primaryColor: organization?.primaryColor || undefined,
         });
 
         if (emailResult.success) {
@@ -1072,6 +1114,9 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
               portalMode: true,
               hidePlatformBranding: true,
               plan: true,
+              // Review gate settings
+              reviewGateEnabled: true,
+              reviewGateGalleryPromptEnabled: true,
             },
           },
           assets: {
@@ -1343,6 +1388,13 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
       outstandingBalance,
       hasOutstandingBalance,
       clientPortalUrl,
+      // View count for milestone celebrations
+      viewCount: project.viewCount,
+      // Review gate integration
+      reviewGateEnabled: org.reviewGateEnabled,
+      reviewGateGalleryPromptEnabled: org.reviewGateGalleryPromptEnabled,
+      clientId: project.client?.id || null,
+      organizationId: project.organizationId,
     };
   } catch (error) {
     console.error("Error fetching public gallery:", error);

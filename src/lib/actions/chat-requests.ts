@@ -6,6 +6,8 @@ import type { ChatRequestStatus } from "@prisma/client";
 import { requireOrganizationId, requireUserId, requireAdmin } from "./auth-helper";
 import { getClientSession } from "./client-auth";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import { createNotification } from "./notifications";
+import { createClientNotification } from "./client-notifications";
 
 // =============================================================================
 // Types
@@ -128,7 +130,14 @@ export async function createChatRequest(
       },
     });
 
-    // TODO: Send notification to team admins
+    // Send notification to team admins
+    await createNotification({
+      organizationId: client.organizationId,
+      type: "chat_request_received",
+      title: "New Chat Request",
+      message: `${client.fullName || client.email} has requested to start a conversation: "${input.subject}"`,
+      linkUrl: "/messages/requests",
+    });
 
     return success(chatRequest);
   } catch (error) {
@@ -491,7 +500,14 @@ export async function approveChatRequest(
       return conversation;
     });
 
-    // TODO: Send notification to client that their request was approved
+    // Send notification to client that their request was approved
+    await createClientNotification({
+      clientId: chatRequest.clientId,
+      type: "message_received",
+      title: "Chat Request Approved",
+      message: `Your request "${chatRequest.subject}" has been approved. You can now message the team.`,
+      linkUrl: "/portal?tab=messages",
+    });
 
     revalidatePath("/messages");
     revalidatePath("/messages/requests");
@@ -537,7 +553,16 @@ export async function rejectChatRequest(
       },
     });
 
-    // TODO: Send notification to client that their request was rejected
+    // Send notification to client that their request was rejected
+    await createClientNotification({
+      clientId: chatRequest.clientId,
+      type: "system",
+      title: "Chat Request Update",
+      message: rejectionReason
+        ? `Your chat request was declined: ${rejectionReason}`
+        : "Your chat request was declined. Please contact us via email if you need assistance.",
+      linkUrl: "/portal?tab=messages",
+    });
 
     revalidatePath("/messages/requests");
     return ok();

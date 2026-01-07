@@ -7,6 +7,7 @@ import { useGalleryTheme, getThemedLogoUrl } from "@/lib/theme";
 import Link from "next/link";
 import { Confetti } from "@/components/ui/confetti";
 import { useCelebration, celebrations } from "@/hooks/use-celebration";
+import { useViewMilestone, getMilestoneCelebration } from "@/hooks/use-view-milestone";
 import { MasonryGrid, LayoutToggle, type LayoutType } from "@/components/gallery/masonry-grid";
 import { LiveViewers } from "@/components/gallery/live-viewers";
 import { R2BlurImage } from "@/components/ui/r2-blur-image";
@@ -20,6 +21,7 @@ import {
 } from "@/lib/actions/client-selections";
 import { SlideshowViewer } from "@/components/gallery/slideshow-viewer";
 import { ClientAddonPanel } from "@/components/gallery/client-addon-panel";
+import { ReviewPromptModal, useReviewPrompt } from "@/components/gallery/review-prompt-modal";
 import {
   HeartIcon,
   DownloadIcon,
@@ -132,6 +134,13 @@ interface GalleryData {
   outstandingBalance?: number;
   hasOutstandingBalance?: boolean;
   clientPortalUrl?: string | null;
+  // View count for milestone celebrations
+  viewCount?: number;
+  // Review gate integration
+  reviewGateEnabled?: boolean;
+  reviewGateGalleryPromptEnabled?: boolean;
+  clientId?: string | null;
+  organizationId?: string;
 }
 
 interface GalleryClientProps {
@@ -155,7 +164,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
   // Trigger celebration on payment success
   useEffect(() => {
-    const paymentSuccess = searchParams.get("payment") === "success";
+    const paymentSuccess = searchParams?.get("payment") === "success";
     if (paymentSuccess && gallery.isPaid && !hasShownCelebration) {
       setHasShownCelebration(true);
       // Small delay for page to fully render
@@ -165,6 +174,68 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
       return () => clearTimeout(timer);
     }
   }, [searchParams, gallery.isPaid, hasShownCelebration, celebrate]);
+
+  // View milestone celebrations
+  const { reachedMilestone, acknowledgeMilestone } = useViewMilestone(
+    gallery.id,
+    gallery.viewCount || 0
+  );
+
+  // Review gate prompt - only for non-preview mode with enabled gallery prompts
+  const reviewPromptEnabled = !isPreview &&
+    gallery.reviewGateEnabled === true &&
+    gallery.reviewGateGalleryPromptEnabled === true;
+
+  const { showPrompt: showReviewPrompt, dismissPrompt: dismissReviewPrompt } = useReviewPrompt({
+    enabled: reviewPromptEnabled,
+    delayMs: 45000, // Show after 45 seconds of gallery viewing
+    galleryId: gallery.id,
+  });
+
+  const [reviewUrl, setReviewUrl] = useState<string | null>(null);
+
+  // Fetch review URL when prompt is triggered
+  useEffect(() => {
+    if (showReviewPrompt && reviewPromptEnabled && !reviewUrl) {
+      const fetchReviewUrl = async () => {
+        try {
+          const response = await fetch("/api/reviews/create-gallery-request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              organizationId: gallery.organizationId,
+              projectId: gallery.id,
+              clientId: gallery.clientId,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.reviewUrl) {
+              setReviewUrl(data.reviewUrl);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch review URL:", error);
+        }
+      };
+
+      fetchReviewUrl();
+    }
+  }, [showReviewPrompt, reviewPromptEnabled, reviewUrl, gallery.organizationId, gallery.id, gallery.clientId]);
+
+  // Trigger celebration when a view milestone is reached
+  useEffect(() => {
+    if (reachedMilestone && !isPreview) {
+      const celebrationConfig = getMilestoneCelebration(reachedMilestone);
+      const timer = setTimeout(() => {
+        celebrate(celebrationConfig);
+        // Acknowledge after a short delay to prevent re-triggering
+        setTimeout(() => acknowledgeMilestone(), 500);
+      }, 1000); // Delay to not overlap with payment celebration
+      return () => clearTimeout(timer);
+    }
+  }, [reachedMilestone, isPreview, celebrate, acknowledgeMilestone]);
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<{ current: number; total: number } | null>(null);
@@ -3282,6 +3353,17 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
             )}
           </div>
         </div>
+      )}
+
+      {/* Review Prompt Modal */}
+      {showReviewPrompt && reviewUrl && (
+        <ReviewPromptModal
+          isOpen={showReviewPrompt}
+          onClose={dismissReviewPrompt}
+          photographerName={gallery.photographer.name}
+          primaryColor={primaryColor}
+          reviewUrl={reviewUrl}
+        />
       )}
 
       {/* Footer */}

@@ -57,7 +57,8 @@ export type SettingsIconName =
   | "package"
   | "image"
   | "helpCircle"
-  | "zap";
+  | "zap"
+  | "star";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -210,6 +211,13 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
         href: "/settings/canned-responses",
         iconName: "zap",
         description: "Quick reply templates for messaging",
+      },
+      {
+        id: "reviews",
+        label: "Reviews",
+        href: "/settings/reviews",
+        iconName: "star",
+        description: "Review collection and platforms",
       },
       {
         id: "notifications",
@@ -517,6 +525,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
         description: "Quick reply templates for faster messaging",
         href: "/settings/canned-responses",
         iconName: "zap",
+      },
+      {
+        id: "reviews",
+        label: "Reviews",
+        description: "Collect reviews and route happy clients to public platforms",
+        href: "/settings/reviews",
+        iconName: "star",
       },
     ],
   },

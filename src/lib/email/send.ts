@@ -57,6 +57,7 @@ import { AddonQuoteEmail } from "@/emails/addon-quote";
 import { AddonCompletedEmail } from "@/emails/addon-completed";
 import { ExpenseApprovalRequiredEmail } from "@/emails/expense-approval-required";
 import { ExpenseApprovalResultEmail } from "@/emails/expense-approval-result";
+import { ReviewRequestEmail } from "@/emails/review-request";
 
 /**
  * Send gallery delivered notification to client
@@ -68,8 +69,13 @@ export async function sendGalleryDeliveredEmail(params: {
   galleryUrl: string;
   photographerName: string;
   photographerEmail?: string;
+  photographerLogo?: string | null;
   photoCount?: number;
   expiresAt?: Date;
+  // Review gate integration
+  reviewUrl?: string;
+  showReviewCta?: boolean;
+  primaryColor?: string;
 }) {
   const {
     to,
@@ -78,8 +84,12 @@ export async function sendGalleryDeliveredEmail(params: {
     galleryUrl,
     photographerName,
     photographerEmail,
+    photographerLogo,
     photoCount,
     expiresAt,
+    reviewUrl,
+    showReviewCta,
+    primaryColor,
   } = params;
 
   return sendEmail({
@@ -90,8 +100,12 @@ export async function sendGalleryDeliveredEmail(params: {
       galleryName,
       galleryUrl,
       photographerName,
+      photographerLogo,
       photoCount,
       expiresAt: expiresAt?.toISOString(),
+      reviewUrl,
+      showReviewCta,
+      primaryColor,
     }),
     replyTo: photographerEmail,
   });
@@ -1771,6 +1785,45 @@ export async function sendExpenseApprovalResultEmail(params: {
       rejectionReason,
       viewExpenseUrl,
       organizationName,
+    }),
+  });
+}
+
+/**
+ * Send review request email to client
+ *
+ * Triggered by: createReviewRequest() action or automated follow-up cron
+ * Location: src/lib/actions/review-gate.ts
+ */
+export async function sendReviewRequestEmail(params: {
+  to: string;
+  clientName: string;
+  photographerName: string;
+  photographerLogo?: string | null;
+  reviewUrl: string;
+  projectName?: string;
+  primaryColor?: string;
+}) {
+  const {
+    to,
+    clientName,
+    photographerName,
+    photographerLogo,
+    reviewUrl,
+    projectName,
+    primaryColor,
+  } = params;
+
+  return sendEmail({
+    to,
+    subject: `${photographerName} would love your feedback`,
+    react: ReviewRequestEmail({
+      clientName,
+      photographerName,
+      photographerLogo,
+      reviewUrl,
+      projectName,
+      primaryColor,
     }),
   });
 }

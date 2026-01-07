@@ -8,6 +8,8 @@ import { ServiceDisplay } from "@/components/dashboard/service-selector";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { useToast } from "@/components/ui/toast";
 import { QRCodeModal } from "@/components/ui/qr-code";
+import { Confetti } from "@/components/ui/confetti";
+import { useCelebration, celebrations } from "@/hooks/use-celebration";
 import { useUpload } from "@/contexts/upload-context";
 import {
   reorderPhotos,
@@ -245,6 +247,7 @@ interface DownloadHistoryItem {
 
 export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const { showToast } = useToast();
+  const { celebrate, confettiProps } = useCelebration();
   const router = useRouter();
   const { startUpload, activeUpload, lastCompletedAt } = useUpload();
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -501,6 +504,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     try {
       const result = await deliverGallery(gallery.id);
       if (result.success) {
+        // Celebrate the delivery!
+        celebrate(celebrations.delivery());
+
         // Check if email was sent successfully
         if (result.data.emailSent) {
           showToast("Gallery delivered and email sent!", "success");
@@ -1097,6 +1103,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
   return (
     <>
+      {/* Confetti celebration for gallery delivery */}
+      <Confetti {...confettiProps} />
+
       {/* Expiration Warning Banner */}
       {(isExpiringSoon || isExpired) && (
         <div
