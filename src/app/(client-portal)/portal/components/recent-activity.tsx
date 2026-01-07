@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import type { PropertyData, GalleryData, InvoiceData, LeadData } from "./types";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 interface ActivityItem {
   id: string;
@@ -29,82 +31,81 @@ export function RecentActivity({
   leads,
   maxItems = 8,
 }: RecentActivityProps) {
-  // Generate activity items from all sources
-  const activities: ActivityItem[] = [];
+  const hydrated = useHydrated();
+  const recentActivities = useMemo(() => {
+    const activities: ActivityItem[] = [];
 
-  // Add leads as activities
-  leads.forEach((lead) => {
-    activities.push({
-      id: `lead-${lead.id}`,
-      type: "lead",
-      title: `New lead from ${lead.name}`,
-      description: lead.propertyAddress,
-      timestamp: new Date(lead.createdAt),
-      icon: "user",
-      color: lead.temperature === "hot" ? "error" : lead.temperature === "warm" ? "warning" : "primary",
+    // Add leads as activities
+    leads.forEach((lead) => {
+      activities.push({
+        id: `lead-${lead.id}`,
+        type: "lead",
+        title: `New lead from ${lead.name}`,
+        description: lead.propertyAddress,
+        timestamp: new Date(lead.createdAt),
+        icon: "user",
+        color: lead.temperature === "hot" ? "error" : lead.temperature === "warm" ? "warning" : "primary",
+      });
     });
-  });
 
-  // Add gallery deliveries as activities
-  galleries.forEach((gallery) => {
-    if (gallery.deliveredAt) {
-      activities.push({
-        id: `gallery-${gallery.id}`,
-        type: "gallery",
-        title: `Gallery delivered: ${gallery.name}`,
-        description: `${gallery.photoCount} photos ready to view`,
-        timestamp: new Date(gallery.deliveredAt),
-        icon: "image",
-        color: "success",
-      });
-    }
-  });
+    // Add gallery deliveries as activities
+    galleries.forEach((gallery) => {
+      if (gallery.deliveredAt) {
+        activities.push({
+          id: `gallery-${gallery.id}`,
+          type: "gallery",
+          title: `Gallery delivered: ${gallery.name}`,
+          description: `${gallery.photoCount} photos ready to view`,
+          timestamp: new Date(gallery.deliveredAt),
+          icon: "image",
+          color: "success",
+        });
+      }
+    });
 
-  // Add paid invoices as activities
-  invoices.forEach((invoice) => {
-    if (invoice.paidAt) {
-      activities.push({
-        id: `invoice-paid-${invoice.id}`,
-        type: "invoice",
-        title: `Invoice paid: #${invoice.invoiceNumber}`,
-        description: `$${(invoice.amount / 100).toFixed(2)}`,
-        timestamp: new Date(invoice.paidAt),
-        icon: "receipt",
-        color: "success",
-      });
-    } else if (invoice.status === "sent" || invoice.status === "overdue") {
-      activities.push({
-        id: `invoice-sent-${invoice.id}`,
-        type: "invoice",
-        title: `Invoice sent: #${invoice.invoiceNumber}`,
-        description: `$${(invoice.amount / 100).toFixed(2)} ${invoice.status === "overdue" ? "(overdue)" : "due"}`,
-        timestamp: new Date(invoice.createdAt),
-        icon: "receipt",
-        color: invoice.status === "overdue" ? "error" : "warning",
-      });
-    }
-  });
+    // Add paid invoices as activities
+    invoices.forEach((invoice) => {
+      if (invoice.paidAt) {
+        activities.push({
+          id: `invoice-paid-${invoice.id}`,
+          type: "invoice",
+          title: `Invoice paid: #${invoice.invoiceNumber}`,
+          description: `$${(invoice.amount / 100).toFixed(2)}`,
+          timestamp: new Date(invoice.paidAt),
+          icon: "receipt",
+          color: "success",
+        });
+      } else if (invoice.status === "sent" || invoice.status === "overdue") {
+        activities.push({
+          id: `invoice-sent-${invoice.id}`,
+          type: "invoice",
+          title: `Invoice sent: #${invoice.invoiceNumber}`,
+          description: `$${(invoice.amount / 100).toFixed(2)} ${invoice.status === "overdue" ? "(overdue)" : "due"}`,
+          timestamp: new Date(invoice.createdAt),
+          icon: "receipt",
+          color: invoice.status === "overdue" ? "error" : "warning",
+        });
+      }
+    });
 
-  // Add properties as activities
-  properties.forEach((property) => {
-    if (property.status === "published") {
-      activities.push({
-        id: `property-${property.id}`,
-        type: "property",
-        title: `Property published`,
-        description: property.address,
-        timestamp: new Date(property.createdAt),
-        icon: "home",
-        color: "primary",
-      });
-    }
-  });
+    // Add properties as activities
+    properties.forEach((property) => {
+      if (property.status === "published") {
+        activities.push({
+          id: `property-${property.id}`,
+          type: "property",
+          title: `Property published`,
+          description: property.address,
+          timestamp: new Date(property.createdAt),
+          icon: "home",
+          color: "primary",
+        });
+      }
+    });
 
-  // Sort by timestamp descending
-  activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-  // Limit to maxItems
-  const recentActivities = activities.slice(0, maxItems);
+    activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return activities.slice(0, maxItems);
+  }, [galleries, invoices, leads, maxItems, properties]);
 
   if (recentActivities.length === 0) {
     return null;
@@ -120,14 +121,14 @@ export function RecentActivity({
       </div>
       <div className="space-y-3">
         {recentActivities.map((activity) => (
-          <ActivityRow key={activity.id} activity={activity} />
+          <ActivityRow key={activity.id} activity={activity} hydrated={hydrated} />
         ))}
       </div>
     </div>
   );
 }
 
-function ActivityRow({ activity }: { activity: ActivityItem }) {
+function ActivityRow({ activity, hydrated }: { activity: ActivityItem; hydrated: boolean }) {
   const iconColors = {
     primary: "bg-[var(--primary)]/10 text-[var(--primary)]",
     success: "bg-[var(--success)]/10 text-[var(--success)]",
@@ -144,8 +145,8 @@ function ActivityRow({ activity }: { activity: ActivityItem }) {
         <p className="text-sm font-medium text-[var(--foreground)]">{activity.title}</p>
         <p className="truncate text-xs text-[var(--foreground-muted)]">{activity.description}</p>
       </div>
-      <span className="flex-shrink-0 text-xs text-[var(--foreground-muted)]">
-        {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+      <span className="flex-shrink-0 text-xs text-[var(--foreground-muted)]" suppressHydrationWarning>
+        {hydrated ? formatDistanceToNow(activity.timestamp, { addSuffix: true }) : "—"}
       </span>
     </div>
   );

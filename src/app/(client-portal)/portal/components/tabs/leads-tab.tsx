@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { EmptyState } from "../empty-state";
 import type { LeadData } from "../types";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 interface LeadsTabProps {
   leads: LeadData[];
@@ -56,42 +57,49 @@ type FilterStatus = "all" | LeadData["status"];
 type SortOption = "newest" | "oldest" | "score" | "temperature";
 
 export function LeadsTab({ leads }: LeadsTabProps) {
+  const hydrated = useHydrated();
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
   // Filter leads
-  const filteredLeads = leads.filter((lead) => {
-    if (statusFilter === "all") return true;
-    return lead.status === statusFilter;
-  });
+  const filteredLeads = useMemo(() => {
+    if (statusFilter === "all") return leads;
+    return leads.filter((lead) => lead.status === statusFilter);
+  }, [leads, statusFilter]);
 
   // Sort leads
-  const sortedLeads = [...filteredLeads].sort((a, b) => {
-    switch (sortBy) {
-      case "newest":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      case "oldest":
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      case "score":
-        return b.score - a.score;
-      case "temperature": {
-        const tempOrder = { hot: 0, warm: 1, cold: 2 };
-        return tempOrder[a.temperature] - tempOrder[b.temperature];
+  const sortedLeads = useMemo(() => {
+    return [...filteredLeads].sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "oldest":
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case "score":
+          return b.score - a.score;
+        case "temperature": {
+          const tempOrder = { hot: 0, warm: 1, cold: 2 };
+          return tempOrder[a.temperature] - tempOrder[b.temperature];
+        }
+        default:
+          return 0;
       }
-      default:
-        return 0;
-    }
-  });
+    });
+  }, [filteredLeads, sortBy]);
 
   // Count by status
-  const statusCounts = leads.reduce(
-    (acc, lead) => {
-      acc[lead.status]++;
-      acc.all++;
-      return acc;
-    },
-    { all: 0, new: 0, contacted: 0, qualified: 0, closed: 0 }
+  const statusCounts = useMemo(
+    () =>
+      leads.reduce(
+        (acc, lead) => {
+          acc[lead.status]++;
+          acc.all++;
+          return acc;
+        },
+        { all: 0, new: 0, contacted: 0, qualified: 0, closed: 0 }
+      ),
+    [leads]
   );
 
   if (leads.length === 0) {
@@ -169,6 +177,7 @@ export function LeadsTab({ leads }: LeadsTabProps) {
             lead={lead}
             isExpanded={expandedLead === lead.id}
             onToggle={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
+            hydrated={hydrated}
           />
         ))}
       </div>
@@ -186,19 +195,18 @@ interface LeadCardProps {
   lead: LeadData;
   isExpanded: boolean;
   onToggle: () => void;
+  hydrated: boolean;
 }
 
-function LeadCard({ lead, isExpanded, onToggle }: LeadCardProps) {
+function LeadCard({ lead, isExpanded, onToggle, hydrated }: LeadCardProps) {
   const statusConfig = STATUS_CONFIG[lead.status];
   const tempConfig = TEMPERATURE_CONFIG[lead.temperature];
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    []
+  );
 
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  const formatDate = (date: Date) => dateFormatter.format(new Date(date));
 
   const formatTime = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
@@ -244,7 +252,9 @@ function LeadCard({ lead, isExpanded, onToggle }: LeadCardProps) {
           <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusConfig.bgClass} ${statusConfig.textClass}`}>
             {statusConfig.label}
           </span>
-          <span className="text-sm text-[var(--foreground-muted)]">{formatDate(lead.createdAt)}</span>
+          <span className="text-sm text-[var(--foreground-muted)]" suppressHydrationWarning>
+            {hydrated ? formatDate(lead.createdAt) : ""}
+          </span>
           <ChevronIcon className={`h-5 w-5 text-[var(--foreground-muted)] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
         </div>
       </button>

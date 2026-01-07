@@ -7,6 +7,7 @@ import { ImageIcon, DownloadIcon, LoadingSpinner } from "../icons";
 import { EmptyState } from "../empty-state";
 import { formatDate, BLUR_DATA_URL } from "../utils";
 import type { GalleryData } from "../types";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 const Lightbox = nextDynamic(
   () => import("../lightbox").then((m) => m.Lightbox),
@@ -142,11 +143,12 @@ function GalleryCard({
   favorites,
   onToggleFavorite,
 }: GalleryCardProps) {
+  const hydrated = useHydrated();
   // Count favorites in this gallery
   const favoriteCount = gallery.photos.filter((p) => favorites.has(p.id)).length;
 
   // Check if gallery was delivered within the last 7 days (for "New" badge)
-  const isNew = gallery.deliveredAt
+  const isNew = hydrated && gallery.deliveredAt
     ? new Date().getTime() - new Date(gallery.deliveredAt).getTime() < 7 * 24 * 60 * 60 * 1000
     : false;
 
@@ -155,7 +157,7 @@ function GalleryCard({
 
   // Calculate expiration countdown
   const getExpirationInfo = () => {
-    if (!gallery.expiresAt) return null;
+    if (!hydrated || !gallery.expiresAt) return null;
 
     const now = new Date();
     const expiresAt = new Date(gallery.expiresAt);
@@ -219,7 +221,7 @@ function GalleryCard({
                 </span>
               )}
             </div>
-            <p className="text-sm text-[var(--foreground-muted)]">
+            <p className="text-sm text-[var(--foreground-muted)]" suppressHydrationWarning>
               {gallery.photoCount} photos
               {gallery.serviceName && ` • ${gallery.serviceName}`}
               {gallery.deliveredAt && ` • Delivered ${formatDate(gallery.deliveredAt)}`}
