@@ -18,6 +18,21 @@ import {
   type Milestone,
   type MilestoneCategory,
 } from "@/lib/gamification/milestones";
+import {
+  canPrestige,
+  getPrestigeTier,
+  getPrestigeXpMultiplier,
+  MAX_PRESTIGE,
+  type PrestigeTier,
+} from "@/lib/gamification/prestige";
+import { DAILY_BONUS_XP } from "@/lib/gamification/constants";
+import {
+  generateHighlights,
+  getFunFacts,
+  getEncouragementMessage,
+  type YearInReviewStats,
+  type YearHighlight,
+} from "@/lib/gamification/year-in-review";
 
 // ============================================================================
 // TYPES
@@ -634,24 +649,6 @@ export async function getUnnotifiedAchievements(): Promise<ActionResult<Unlocked
   }
 }
 
-// ============================================================================
-// DAILY LOGIN BONUS
-// ============================================================================
-
-/**
- * Daily bonus XP rewards by consecutive day (1-7)
- * Day 7 gives a big bonus, then cycle resets
- */
-export const DAILY_BONUS_XP = [
-  10,   // Day 1
-  15,   // Day 2
-  25,   // Day 3
-  40,   // Day 4
-  60,   // Day 5
-  80,   // Day 6
-  100,  // Day 7 (weekly finale bonus!)
-];
-
 export interface DailyBonusState {
   canClaim: boolean;
   currentDay: number; // 1-7
@@ -1031,5 +1028,398 @@ export async function markMilestoneCelebrated(milestoneId: string): Promise<void
     });
   } catch (error) {
     console.error("[Gamification] Error marking milestone celebrated:", error);
+  }
+}
+
+// ============================================================================
+// PRESTIGE SYSTEM
+// ============================================================================
+
+export interface PrestigeState {
+  prestigeLevel: number;
+  lifetimeXp: number;
+  canPrestige: boolean;
+  currentTier: PrestigeTier;
+  xpMultiplier: number;
+  lastPrestigeDate: Date | null;
+}
+
+/**
+ * Get prestige state for current user
+ */
+export async function getPrestigeState(): Promise<ActionResult<PrestigeState>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      const defaultTier = getPrestigeTier(0);
+      return success({
+        prestigeLevel: 0,
+        lifetimeXp: 0,
+        canPrestige: false,
+        currentTier: defaultTier,
+        xpMultiplier: 1,
+        lastPrestigeDate: null,
+      });
+    }
+
+    const prestigeLevel = profile.prestigeLevel;
+    const currentLevel = calculateLevel(profile.totalXp);
+
+    return success({
+      prestigeLevel,
+      lifetimeXp: Number(profile.lifetimeXp),
+      canPrestige: canPrestige(currentLevel) && prestigeLevel < MAX_PRESTIGE,
+      currentTier: getPrestigeTier(prestigeLevel),
+      xpMultiplier: getPrestigeXpMultiplier(prestigeLevel),
+      lastPrestigeDate: profile.lastPrestigeDate,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error getting prestige state:", error);
+    return fail("Failed to get prestige state");
+  }
+}
+
+export interface PrestigeResult {
+  newPrestigeLevel: number;
+  newTier: PrestigeTier;
+  xpMultiplier: number;
+  rewards: string[];
+}
+
+/**
+ * Perform prestige - reset level and gain prestige badge
+ */
+export async function performPrestige(): Promise<ActionResult<PrestigeResult>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return fail("Profile not found");
+    }
+
+    const currentLevel = calculateLevel(profile.totalXp);
+
+    // Check if can prestige
+    if (!canPrestige(currentLevel)) {
+      return fail("Must reach max level (20) to prestige");
+    }
+
+    if (profile.prestigeLevel >= MAX_PRESTIGE) {
+      return fail("Already at max prestige level");
+    }
+
+    const newPrestigeLevel = profile.prestigeLevel + 1;
+    const newTier = getPrestigeTier(newPrestigeLevel);
+
+    // Update profile - reset XP but keep lifetime total
+    await prisma.gamificationProfile.update({
+      where: { userId },
+      data: {
+        totalXp: 0,
+        level: 1,
+        prestigeLevel: newPrestigeLevel,
+        lifetimeXp: { increment: profile.totalXp },
+        lastPrestigeDate: new Date(),
+      },
+    });
+
+    console.log(
+      `[Gamification] User ${userId} prestiged to level ${newPrestigeLevel} (${newTier.name})`
+    );
+
+    return success({
+      newPrestigeLevel,
+      newTier,
+      xpMultiplier: getPrestigeXpMultiplier(newPrestigeLevel),
+      rewards: newTier.rewards,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error performing prestige:", error);
+    return fail("Failed to prestige");
+  }
+}
+
+// ============================================================================
+// YEAR IN REVIEW
+// ============================================================================
+
+export interface YearInReviewData extends YearInReviewStats {
+  funFacts: string[];
+  encouragementMessage: string;
+}
+
+/**
+ * Get Year in Review stats for a specific year
+ */
+export async function getYearInReview(
+  year?: number
+): Promise<ActionResult<YearInReviewData>> {
+  try {
+    const { userId } = await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Default to current year if not specified
+    const targetYear = year || new Date().getFullYear();
+    const startDate = new Date(targetYear, 0, 1); // Jan 1
+    const endDate = new Date(targetYear, 11, 31, 23, 59, 59, 999); // Dec 31
+
+    // Get galleries created and delivered in the year
+    const galleriesCreated = await prisma.project.count({
+      where: {
+        organizationId,
+        createdAt: { gte: startDate, lte: endDate },
+      },
+    });
+
+    const galleriesDelivered = await prisma.project.count({
+      where: {
+        organizationId,
+        deliveredAt: { gte: startDate, lte: endDate },
+      },
+    });
+
+    // Count photos shared
+    const galleriesWithPhotos = await prisma.project.findMany({
+      where: {
+        organizationId,
+        deliveredAt: { gte: startDate, lte: endDate },
+      },
+      select: {
+        _count: { select: { assets: true } },
+      },
+    });
+    const photosShared = galleriesWithPhotos.reduce(
+      (sum, g) => sum + g._count.assets,
+      0
+    );
+
+    // Get revenue stats
+    const payments = await prisma.payment.findMany({
+      where: {
+        organizationId,
+        createdAt: { gte: startDate, lte: endDate },
+        status: "paid",
+      },
+      select: { amountCents: true, createdAt: true },
+    });
+
+    const totalRevenueCents = payments.reduce((sum, p) => sum + p.amountCents, 0);
+    const paymentsReceived = payments.length;
+    const averagePaymentCents =
+      paymentsReceived > 0 ? Math.round(totalRevenueCents / paymentsReceived) : 0;
+
+    // Calculate best month
+    const monthlyRevenue: Record<number, number> = {};
+    for (const payment of payments) {
+      const month = payment.createdAt.getMonth();
+      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + payment.amountCents;
+    }
+
+    let bestMonthRevenueCents = 0;
+    let bestMonthIndex = 0;
+    for (const [monthStr, revenue] of Object.entries(monthlyRevenue)) {
+      const month = parseInt(monthStr);
+      if (revenue > bestMonthRevenueCents) {
+        bestMonthRevenueCents = revenue;
+        bestMonthIndex = month;
+      }
+    }
+
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const bestMonthName = monthNames[bestMonthIndex];
+
+    // Get client stats
+    const newClients = await prisma.client.count({
+      where: {
+        organizationId,
+        createdAt: { gte: startDate, lte: endDate },
+      },
+    });
+
+    const totalClients = await prisma.client.count({
+      where: {
+        organizationId,
+        createdAt: { lte: endDate },
+      },
+    });
+
+    // Count repeat clients (clients with more than one gallery delivered this year)
+    const clientGalleries = await prisma.project.groupBy({
+      by: ["clientId"],
+      where: {
+        organizationId,
+        deliveredAt: { gte: startDate, lte: endDate },
+        clientId: { not: null },
+      },
+      _count: { id: true },
+    });
+    const repeatClients = clientGalleries.filter((c) => c._count.id > 1).length;
+
+    // Get booking stats
+    const bookingsCompleted = await prisma.booking.count({
+      where: {
+        organizationId,
+        status: "completed",
+        endTime: { gte: startDate, lte: endDate },
+      },
+    });
+
+    // Calculate total booking hours
+    const completedBookings = await prisma.booking.findMany({
+      where: {
+        organizationId,
+        status: "completed",
+        endTime: { gte: startDate, lte: endDate },
+      },
+      select: { startTime: true, endTime: true },
+    });
+
+    const totalBookingHours = completedBookings.reduce((sum, b) => {
+      const hours = (b.endTime.getTime() - b.startTime.getTime()) / (1000 * 60 * 60);
+      return sum + Math.max(0, hours);
+    }, 0);
+
+    // Get gamification profile for year
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    // Get achievements unlocked in the year
+    const achievementsUnlocked = await prisma.userAchievement.count({
+      where: {
+        userId,
+        unlockedAt: { gte: startDate, lte: endDate },
+      },
+    });
+
+    // Estimate XP earned in the year (would need XP history for exact numbers)
+    // For now use achievements XP as approximation
+    const achievementsInYear = await prisma.userAchievement.findMany({
+      where: {
+        userId,
+        unlockedAt: { gte: startDate, lte: endDate },
+      },
+      include: { achievement: true },
+    });
+    const xpEarned = achievementsInYear.reduce(
+      (sum, ua) => sum + ua.achievement.xpReward,
+      0
+    );
+
+    // Calculate levels gained (approximate - based on XP earned)
+    const levelsGained = achievementsUnlocked > 0 ? Math.floor(xpEarned / 1000) : 0;
+    const startLevel = profile ? Math.max(1, profile.level - levelsGained) : 1;
+    const endLevel = profile?.level || 1;
+
+    // Get previous year stats for comparison
+    const prevYearStart = new Date(targetYear - 1, 0, 1);
+    const prevYearEnd = new Date(targetYear - 1, 11, 31, 23, 59, 59, 999);
+
+    const prevYearPayments = await prisma.payment.aggregate({
+      where: {
+        organizationId,
+        createdAt: { gte: prevYearStart, lte: prevYearEnd },
+        status: "paid",
+      },
+      _sum: { amountCents: true },
+    });
+    const prevYearRevenue = prevYearPayments._sum?.amountCents || 0;
+
+    const prevYearGalleries = await prisma.project.count({
+      where: {
+        organizationId,
+        deliveredAt: { gte: prevYearStart, lte: prevYearEnd },
+      },
+    });
+
+    const prevYearClients = await prisma.client.count({
+      where: {
+        organizationId,
+        createdAt: { gte: prevYearStart, lte: prevYearEnd },
+      },
+    });
+
+    // Calculate percentage changes
+    const revenueVsLastYear =
+      prevYearRevenue > 0
+        ? Math.round(((totalRevenueCents - prevYearRevenue) / prevYearRevenue) * 100)
+        : null;
+
+    const galleriesVsLastYear =
+      prevYearGalleries > 0
+        ? Math.round(
+            ((galleriesDelivered - prevYearGalleries) / prevYearGalleries) * 100
+          )
+        : null;
+
+    const clientsVsLastYear =
+      prevYearClients > 0
+        ? Math.round(((newClients - prevYearClients) / prevYearClients) * 100)
+        : null;
+
+    const stats: YearInReviewStats = {
+      year: targetYear,
+      galleriesCreated,
+      galleriesDelivered,
+      photosShared,
+      totalRevenueCents,
+      paymentsReceived,
+      averagePaymentCents,
+      bestMonthRevenueCents,
+      bestMonthName,
+      newClients,
+      totalClients,
+      repeatClients,
+      bookingsCompleted,
+      totalBookingHours: Math.round(totalBookingHours),
+      achievementsUnlocked,
+      xpEarned,
+      levelsGained,
+      startLevel,
+      endLevel,
+      longestLoginStreak: profile?.longestLoginStreak || 0,
+      longestDeliveryStreak: profile?.longestDeliveryStreak || 0,
+      totalDaysActive: profile?.currentLoginStreak || 0, // Approximation
+      highlights: [],
+      comparisons: {
+        revenueVsLastYear,
+        galleriesVsLastYear,
+        clientsVsLastYear,
+      },
+    };
+
+    // Generate highlights
+    stats.highlights = generateHighlights(stats);
+
+    return success({
+      ...stats,
+      funFacts: getFunFacts(stats),
+      encouragementMessage: getEncouragementMessage(stats),
+    });
+  } catch (error) {
+    console.error("[Gamification] Error getting year in review:", error);
+    return fail("Failed to get year in review");
   }
 }

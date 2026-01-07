@@ -3,8 +3,9 @@
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { claimDailyBonus, DAILY_BONUS_XP } from "@/lib/actions/gamification";
+import { claimDailyBonus } from "@/lib/actions/gamification";
 import type { DailyBonusState } from "@/lib/actions/gamification";
+import { DAILY_BONUS_XP } from "@/lib/gamification/constants";
 import { Gift, Sparkles, Check, Star } from "lucide-react";
 
 interface DailyBonusCardProps {

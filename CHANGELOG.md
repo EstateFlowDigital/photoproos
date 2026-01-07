@@ -39,15 +39,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Blue checkmark indicates message was read
     - Updated all message queries to include user/client details in read receipts
 - **Roadmap Settings Page** (`/settings/roadmap`) - Central hub for upcoming features
-  - **Feature Categories** - Organized by Integrations, Marketing & Growth, Communication, and Workflow
+  - **25 Planned Features** across 5 categories with detailed descriptions and timelines
+  - **Feature Categories**:
+    - **Integrations (7)**: Google Drive, Notion, Adobe Lightroom, Capture One, iCloud Photos, Slack Notifications, WhatsApp Business
+    - **Marketing (5)**: Email Marketing, Social Media Manager, Referral Automation, Testimonial Collector, SEO Tools
+    - **Communication (4)**: SMS Reminders, Video Messaging, Voice Notes, Enhanced Client Chat
+    - **Workflow (6)**: AI Photo Culling, Advanced Scheduling, Native Mobile App, Batch Operations, Print Fulfillment, Offline Mode
+    - **Analytics (3)**: Advanced Business Analytics, Tax Preparation Exports, Client Lifetime Value
+  - **Feature Request Modal** - In-app form for users to submit feature requests with category selection
   - **Status Indicators** - Visual badges for In Progress, Planned, and Exploring states
-  - **Timeline Display** - Expected release quarters for planned features
-  - **Interactive Filtering** - Filter features by status with count badges
-  - **Hero Section** - Gradient banner with feature request email link
-  - **Status Legend** - Clear explanation of what each status means
+  - **Interactive Filtering** - Filter features by status with count badges and feature counts per category
+  - **Accessibility Enhancements**:
+    - ARIA labels on all interactive elements
+    - Semantic HTML (article, section, nav, dl/dt/dd)
+    - Focus rings and keyboard navigation
+    - aria-pressed for toggle buttons
+    - aria-modal and role="dialog" for modal
+    - aria-live regions for dynamic content
   - Added `RocketIcon` to icon library for roadmap branding
   - Navigation item in "Business & Payments" section with "New" badge
-  - Features included: Google Drive, Notion, Adobe Lightroom, Capture One, Email Marketing, Social Media Manager, SMS Reminders, AI Photo Culling, Advanced Scheduling
 - **Customizable Onboarding Checklist System** - Complete system for managing setup steps
   - **Database-Driven Checklist** - Checklist items stored in database per organization
     - 12 default setup steps covering clients, services, galleries, payments, and more
@@ -132,6 +142,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Gold/Silver/Bronze styling for top 3
     - Privacy controls (only rank and XP visible to others)
   - **Seed Script** (`prisma/seed-achievements.ts`) - Seeds 45 achievements
+  - **Daily Login Bonus System** - 7-day escalating XP rewards (10→100 XP)
+    - Week progress visualization with day circles
+    - Claim button with animation feedback
+    - Streak resets if day is missed
+    - `DailyBonusCard` and `DailyBonusBadge` components
+  - **Personal Bests Tracking** - Track personal records
+    - Best month revenue with date
+    - Fastest gallery delivery time
+    - Best week deliveries count
+    - Longest login and delivery streaks
+    - `PersonalBestsCard` and `PersonalBestsCompact` components
+  - **Milestone Celebrations** - Confetti animations for major achievements
+    - Revenue milestones ($1K, $10K, $50K, $100K)
+    - Client milestones (10, 25, 50, 100, 250 clients)
+    - Gallery/delivery milestones (10, 50, 100, 250, 500)
+    - Payment milestones (10, 50, 100, 500 payments)
+    - `MilestoneCelebration` and `MilestoneToast` components
+  - **Unlockable Themes** - Premium dashboard themes as level rewards
+    - 6 premium themes (Midnight Gold, Aurora, Cherry Blossom, Neon Pulse, Platinum, Legendary Gold)
+    - Theme unlock levels (5, 8, 10, 12, 15, 20)
+    - Helper functions for theme unlock status
+  - **Prestige System** - Post-max-level progression
+    - 5 prestige tiers (Bronze, Silver, Gold, Platinum, Diamond)
+    - XP multiplier bonus per prestige level (5-25%)
+    - Level reset with lifetime XP tracking
+    - Prestige badges and visual rewards
+  - **Year in Review** - Annual summary feature (`/achievements/year-in-review`)
+    - Gallery stats (created, delivered, photos shared)
+    - Revenue stats (total, average payment, best month)
+    - Client stats (new, total, repeat clients)
+    - Booking stats (completed, hours worked)
+    - Gamification stats (achievements, XP, levels gained)
+    - Streak stats (login, delivery, days active)
+    - Year-over-year comparison percentages
+    - Auto-generated highlights and fun facts
+    - Personalized encouragement messages
+    - Year selector for viewing previous years
 - **Review Gate System** - Smart review collection that captures internal feedback first
   - **Rating-Based Routing** - 4-5 star ratings redirect to public review platforms, 1-3 stars collect private feedback
     - Configurable review platforms (Google Business, Yelp, TripAdvisor, Facebook, Thumbtack, WeddingWire, The Knot, custom)

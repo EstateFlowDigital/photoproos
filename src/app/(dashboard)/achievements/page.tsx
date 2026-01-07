@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { getGamificationState, getAllAchievements, getPersonalBests } from "@/lib/actions/gamification";
 import { PageHeader } from "@/components/dashboard";
@@ -14,6 +15,7 @@ import {
 } from "@/components/gamification";
 import { cn } from "@/lib/utils";
 import { RARITY_ORDER, CATEGORY_LABELS, CATEGORY_ICONS } from "@/lib/gamification/achievements";
+import { Calendar, ChevronRight } from "lucide-react";
 import type { AchievementRarity, AchievementCategory } from "@prisma/client";
 
 export default async function AchievementsPage() {
@@ -161,6 +163,29 @@ export default async function AchievementsPage() {
           </div>
         )}
       </div>
+
+      {/* Year in Review Banner */}
+      <Link
+        href="/achievements/year-in-review"
+        className="group rounded-xl border border-[var(--card-border)] bg-gradient-to-br from-[var(--primary)]/5 to-[var(--ai)]/5 p-5 transition-all hover:border-[var(--card-border-hover)] hover:from-[var(--primary)]/10 hover:to-[var(--ai)]/10"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)]">
+              <Calendar className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-[var(--foreground)]">
+                {new Date().getFullYear()} Year in Review
+              </h3>
+              <p className="text-sm text-[var(--foreground-muted)]">
+                See your annual accomplishments, revenue highlights, and memorable moments
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-[var(--foreground-muted)] transition-transform group-hover:translate-x-1" />
+        </div>
+      </Link>
 
       {/* Achievements by Category */}
       <div className="flex flex-col gap-8">

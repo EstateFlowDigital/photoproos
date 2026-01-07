@@ -8490,6 +8490,11 @@ model GamificationProfile {
   totalXp Int @default(0)
   level   Int @default(1)
 
+  // Prestige System (post-max-level progression)
+  prestigeLevel    Int       @default(0) // Number of times prestiged (0 = never)
+  lifetimeXp       BigInt    @default(0) // Total XP earned across all prestiges
+  lastPrestigeDate DateTime? // When the user last prestiged
+
   // Login Streak
   currentLoginStreak Int       @default(0)
   longestLoginStreak Int       @default(0)
@@ -8520,6 +8525,10 @@ model GamificationProfile {
   totalGalleries    Int    @default(0)
   totalPayments     Int    @default(0)
   totalBookings     Int    @default(0)
+
+  // Skill Trees
+  unlockedSkillIds String[] @default([]) // Array of unlocked skill IDs
+  spentSkillPoints Int      @default(0) // Total skill points spent
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

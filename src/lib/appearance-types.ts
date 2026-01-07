@@ -361,6 +361,42 @@ export const THEME_PRESETS: ThemePreset[] = [
 ];
 
 /**
+ * Check if a theme is unlocked for a given level
+ */
+export function isThemeUnlocked(themeId: string, userLevel: number): boolean {
+  const theme = THEME_PRESETS.find((t) => t.id === themeId);
+  if (!theme) return false;
+  return (theme.unlockLevel || 0) <= userLevel;
+}
+
+/**
+ * Get all themes with their unlock status for a user
+ */
+export function getThemesWithUnlockStatus(userLevel: number): (ThemePreset & { isUnlocked: boolean })[] {
+  return THEME_PRESETS.map((theme) => ({
+    ...theme,
+    isUnlocked: (theme.unlockLevel || 0) <= userLevel,
+  }));
+}
+
+/**
+ * Get unlocked themes only
+ */
+export function getUnlockedThemes(userLevel: number): ThemePreset[] {
+  return THEME_PRESETS.filter((theme) => (theme.unlockLevel || 0) <= userLevel);
+}
+
+/**
+ * Get the next theme that will be unlocked
+ */
+export function getNextUnlockableTheme(userLevel: number): ThemePreset | null {
+  const lockedThemes = THEME_PRESETS
+    .filter((theme) => theme.unlockLevel && theme.unlockLevel > userLevel)
+    .sort((a, b) => (a.unlockLevel || 0) - (b.unlockLevel || 0));
+  return lockedThemes[0] || null;
+}
+
+/**
  * Default appearance preferences
  */
 export const DEFAULT_APPEARANCE: AppearancePreferences = {

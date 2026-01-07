@@ -960,11 +960,27 @@ export function ConversationPageClient({
               aria-autocomplete="list"
             />
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                showEmojiPicker
+                  ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                  : "text-[var(--foreground-muted)] hover:bg-[var(--background-hover)]"
+              }`}
               aria-label="Add emoji"
+              aria-expanded={showEmojiPicker}
+              aria-haspopup="dialog"
             >
               <Smile className="h-5 w-5" aria-hidden="true" />
             </button>
+
+            {/* Emoji Picker */}
+            <EmojiPicker
+              isOpen={showEmojiPicker}
+              onClose={() => setShowEmojiPicker(false)}
+              onSelect={handleEmojiSelect}
+              position="above"
+              recentEmojis={recentEmojis}
+            />
 
             {/* Mention Autocomplete */}
             {showMentions && mentionableUsers.length > 0 && (
